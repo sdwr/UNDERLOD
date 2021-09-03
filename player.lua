@@ -3571,12 +3571,12 @@ function Troop:update(dt)
 
   self:calculate_stats()
   
-
   -- try to rally first
   if input.m1.pressed then
     self:seek_mouse()
     self:rotate_towards_velocity(1)
     self:steering_separate(32, {Troop})
+    self:rotate_towards_velocity(1)
   else
     if not self.target then self.target = random:table(self.group:get_objects_by_classes(main.current.enemies)) end
     if self.target and self.target.dead then self.target = random:table(self.group:get_objects_by_classes(main.current.enemies)) end
