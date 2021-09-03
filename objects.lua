@@ -310,6 +310,10 @@ function Unit:calculate_stats(first_run)
     self.base_hp = 100*math.pow(2, self.level-1)
     self.base_dmg = 10*math.pow(2, self.level-1)
     self.base_mvspd = 75
+  elseif self:is(Troop) then
+    self.base_hp = 100*math.pow(2, self.level-1)
+    self.base_dmg = 10*math.pow(2, self.level-1)
+    self.base_mvspd = 75
   elseif self:is(Automaton) then
     self.base_hp = 100*math.pow(2, self.level-1)
     self.base_dmg = 10*math.pow(2, self.level-1)

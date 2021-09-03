@@ -1,3 +1,46 @@
+turn game into rts :o
+
+ui
+  - show cursor
+  - add unit hotbar (one per unit, or per class???)
+    * per class works for mages, warriors, archers...
+
+
+controls
+  - make mouse click a control (rally) :(
+    * has to overwrite attacking in Player.init()
+    * attack is a trigger that fires off cooldown
+  - add 1-0 hotkeys
+  - experiment with commander wasd vs free mouse
+
+units
+  - free movement
+  - targeting
+  - chasing
+  - collision? clustering?
+  - stutter step (can't attack while moving)
+  - troops vs single
+  - individual attack cooldown
+
+unit stats
+  - add group size
+  - change range, aggro range
+  
+
+shop
+  - ????
+
+spell effects
+  - charge
+  - delayed hitbox
+  - faster projectiles (archer)
+
+
+
+
+
+*REPO UNDER NEW MANAGEMENT*
+
 Weekly maintenance updates:
 
 #3

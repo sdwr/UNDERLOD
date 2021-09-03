@@ -20,9 +20,10 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
 
   self.starting_units = table.copy(units)
 
-  if not state.mouse_control then
-    input:set_mouse_visible(false)
-  end
+  --if not state.mouse_control then
+    --input:set_mouse_visible(false)
+  --end
+  input:set_mouse_visible(true)
 
   trigger:tween(2, main_song_instance, {volume = 0.5, pitch = 1}, math.linear)
 
@@ -95,6 +96,14 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
       self.player:add_follower(Player{group = self.main, character = unit.character, level = unit.level, passives = self.passives, ii = i})
     end
   end
+
+  Troop{group = self.main, x=gw/2 + 10, y = gh/2 -10, level = 1, self.passives}
+  
+  Troop{group = self.main, x=gw/2 + 10, y = gh/2 -10, level = 1, self.passives}
+  
+  Troop{group = self.main, x=gw/2 + 10, y = gh/2 -10, level = 1, self.passives}
+  
+  Troop{group = self.main, x=gw/2 + 10, y = gh/2 -10, level = 1, self.passives}
 
   local units = self.player:get_all_units()
   for _, unit in ipairs(units) do

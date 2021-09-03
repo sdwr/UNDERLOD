@@ -1929,7 +1929,7 @@ function Player:attack(area, mods)
   elseif self.character == 'psychic' then
     psychic1:play{pitch = random:float(0.9, 1.1), volume = 0.4}
   elseif self.character == 'launcher' then
-    buff1:play{pitch == random:float(0.9, 1.1), volume = 0.5}
+    buff1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
   end
 
   if self.character == 'juggernaut' then
@@ -3531,6 +3531,81 @@ function Saboteur:on_collision_enter(other, contact)
       self.dead = true
     end
   end
+end
+
+
+Troop = Object:extend()
+Troop:implement(GameObject)
+Troop:implement(Physics)
+Troop:implement(Unit)
+function Troop:init(args)
+  self:init_game_object(args)
+  self:init_unit()
+  self:set_as_rectangle(8, 8,'dynamic', 'player')
+  self:set_restitution(0.5)
+
+  self.color = character_colors.blade
+  self.character = 'blade'
+  self.classes = {'warrior', 'curser'}
+  self:calculate_stats(true)
+  self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
+
+  self.attack_sensor = Circle(self.x, self.y, 96)
+  self.t:cooldown(2, function() local enemies = self:get_objects_in_shape(self.attack_sensor, main.current.enemies); return enemies and #enemies > 0 and input.m1.pressed ~= true end, function()
+    local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.enemies)
+    if closest_enemy then
+      turret1:play{pitch = random:float(0.95, 1.05), volume = 0.10}
+      turret2:play{pitch = random:float(0.95, 1.05), volume = 0.10}
+      wizard1:play{pitch = random:float(0.95, 1.05), volume = 0.10}
+      local r = self:angle_to_object(closest_enemy)
+      HitCircle{group = main.current.effects, x = self.x + 0.8*self.shape.w*math.cos(r), y = self.y + 0.8*self.shape.w*math.sin(r), rs = 6}
+      local t = {group = main.current.main, x = self.x + 1.6*self.shape.w*math.cos(r), y = self.y + 1.6*self.shape.w*math.sin(r), v = 250, r = r, color = self.color, dmg = self.dmg, character = 'artificer',
+      parent = self, level = self.level}
+      Projectile(table.merge(t, mods or {}))
+    end
+  end)
+end
+
+function Troop:update(dt)
+  self:update_game_object(dt)
+
+  self:calculate_stats()
+  
+
+  -- try to rally first
+  if input.m1.pressed then
+    self:seek_mouse()
+    self:rotate_towards_velocity(1)
+    self:steering_separate(32, {Troop})
+  else
+    if not self.target then self.target = random:table(self.group:get_objects_by_classes(main.current.enemies)) end
+    if self.target and self.target.dead then self.target = random:table(self.group:get_objects_by_classes(main.current.enemies)) end
+    if not self.seek_f then return end
+    if not self.target then
+      self:seek_point(gw/2, gh/2)
+      self:wander(50, 200, 50)
+      self:rotate_towards_velocity(1)
+      self:steering_separate(32, {Seeker})
+    else
+      self:seek_point(self.target.x, self.target.y)
+      self:wander(50, 200, 50)
+      self:rotate_towards_velocity(1)
+      self:steering_separate(32, {Seeker})
+    end
+  end
+
+
+  
+  self.r = self:get_angle()
+
+  self.attack_sensor:move_to(self.x, self.y)
+end
+
+
+function Troop:draw()
+  graphics.push(self.x, self.y, self.r, self.hfx.hit.x, self.hfx.hit.x)
+    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or self.color)
+  graphics.pop()
 end
 
 
