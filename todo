@@ -1,10 +1,23 @@
 turn game into rts :o
 
-ui
-  - show cursor
-  - add unit hotbar (one per unit, or per class???)
-    * per class works for mages, warriors, archers...
+------------------
+CODE:
+------------------
 
+debugger
+  - find/setup vscode debugger for when game hangs
+
+arena
+  - change lose condition to all troops dying
+  - then remove snake (snake could be boss :o)
+
+ui
+  - show nice cursor
+  - add unit hotbar per class
+    * ui bar
+    * list of owned units
+    * sorted by class
+    * have selected class global var
 
 controls
   - make mouse click a control (rally) :(
@@ -14,26 +27,55 @@ controls
   - experiment with commander wasd vs free mouse
 
 units
-  - free movement
+  - movement
+    * melee units should stop in attack range, and don't push enemies
   - targeting
-  - chasing
+    * target closest enemy, not random
   - collision? clustering?
-  - stutter step (can't attack while moving)
-  - troops vs single
-  - individual attack cooldown
+    * crashes right now :(
+  - turn time
+    * already in engine
+    * see if attacking requires LoS angle
+
+combat
+  - add melee attacks
+    * targeted or cone or first enemy hit by cone?
+    * needs animation
+  - enemies should target summons
+    * need to change enemy target/aggro behavior
+  - add faster projectiles
+  - attack timing quantized to beat?
+    * classes can have different timings
+    * troops within class can be on different sub-beats (1/2/3/4)
+    * makes music out of sound effects
+
 
 unit stats
+  https://docs.google.com/spreadsheets/d/1HRqfD-rEdXdnwLKPiguDDNjRDQcnUGDvvm0q2Mh2z8E/edit#gid=0
   - add group size
   - change range, aggro range
-  
-
-shop
-  - ????
 
 spell effects
   - charge
   - delayed hitbox
   - faster projectiles (archer)
+
+shop
+  - can't be 
+
+
+------------------
+GAMEPLAY:
+------------------
+
+unit types:
+  warrior
+  archer
+  mage
+  healer
+  support
+
+
 
 
 

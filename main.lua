@@ -234,6 +234,12 @@ function init()
   divine_blessing = Image('divine_blessing')
   hardening = Image('hardening')
 
+  unit_states = {
+    ['normal'] = 'normal',
+    ['frozen'] = 'frozen',
+    ['stopped'] = 'stopped',
+  }
+
   class_colors = {
     ['warrior'] = yellow[0],
     ['ranger'] = green[0],
@@ -278,6 +284,7 @@ function init()
     ['wizard'] = 'Wizard',
     ['magician'] = 'Magician',
     ['archer'] = 'Archer',
+    ['sniper'] = 'Sniper',
     ['scout'] = 'Scout',
     ['cleric'] = 'Cleric',
     ['outlaw'] = 'Outlaw',
@@ -338,6 +345,7 @@ function init()
     ['wizard'] = blue[0],
     ['magician'] = blue[0],
     ['archer'] = green[0],
+    ['sniper'] = green[0],
     ['scout'] = red[0],
     ['cleric'] = green[0],
     ['outlaw'] = red[0],
@@ -398,6 +406,7 @@ function init()
     ['wizard'] = 'blue',
     ['magician'] = 'blue',
     ['archer'] = 'green',
+    ['sniper'] = 'green',
     ['scout'] = 'red',
     ['cleric'] = 'green',
     ['outlaw'] = 'red',
@@ -453,63 +462,13 @@ function init()
   }
 
   character_classes = {
-    ['vagrant'] = {'explorer', 'psyker'},
     ['swordsman'] = {'warrior'},
-    ['wizard'] = {'mage', 'nuker'},
-    ['magician'] = {'mage'},
+    ['juggernaut'] = {'warrior'},
     ['archer'] = {'ranger'},
-    ['scout'] = {'rogue'},
+    ['sniper'] = {'ranger'},
+    ['wizard'] = {'mage'},
     ['cleric'] = {'healer'},
-    ['outlaw'] = {'warrior', 'rogue'},
-    ['blade'] = {'warrior', 'nuker'},
-    ['elementor'] = {'mage', 'nuker'},
-    -- ['saboteur'] = {'rogue', 'conjurer', 'nuker'},
-    ['bomber'] = {'nuker', 'conjurer'},
-    ['stormweaver'] = {'enchanter'},
-    ['sage'] = {'nuker', 'forcer'},
-    ['squire'] = {'warrior', 'enchanter'},
-    ['cannoneer'] = {'ranger', 'nuker'},
-    ['dual_gunner'] = {'ranger', 'rogue'},
-    -- ['hunter'] = {'ranger', 'conjurer', 'forcer'},
-    ['sentry'] = {'ranger', 'conjurer'},
-    ['chronomancer'] = {'mage', 'enchanter'},
-    ['spellblade'] = {'mage', 'rogue'},
-    ['psykeeper'] = {'healer', 'psyker'},
-    ['engineer'] = {'conjurer'},
-    ['plague_doctor'] = {'nuker', 'voider'},
-    ['barbarian'] = {'curser', 'warrior'},
-    ['juggernaut'] = {'forcer', 'warrior'},
-    ['lich'] = {'mage'},
-    ['cryomancer'] = {'mage', 'voider'},
-    ['pyromancer'] = {'mage', 'nuker', 'voider'},
-    ['corruptor'] = {'ranger', 'swarmer'},
-    ['beastmaster'] = {'rogue', 'swarmer'},
-    ['launcher'] = {'curser', 'forcer'},
-    ['jester'] = {'curser', 'rogue'},
-    ['assassin'] = {'rogue', 'voider'},
-    ['host'] = {'swarmer'},
-    ['carver'] = {'conjurer', 'healer'},
-    ['bane'] = {'curser', 'voider'},
-    ['psykino'] = {'mage', 'psyker', 'forcer'},
-    ['barrager'] = {'ranger', 'forcer'},
-    ['highlander'] = {'warrior'},
-    ['fairy'] = {'enchanter', 'healer'},
-    ['priest'] = {'healer'},
-    ['infestor'] = {'curser', 'swarmer'},
-    ['flagellant'] = {'psyker', 'enchanter'},
-    ['arcanist'] = {'sorcerer'},
-    -- ['illusionist'] = {'sorcerer', 'conjurer'},
-    ['artificer'] = {'sorcerer', 'conjurer'},
-    ['witch'] = {'sorcerer', 'voider'},
-    ['silencer'] = {'sorcerer', 'curser'},
-    ['vulcanist'] = {'sorcerer', 'nuker'},
-    ['warden'] = {'sorcerer', 'forcer'},
-    ['psychic'] = {'sorcerer', 'psyker'},
-    ['miner'] = {'mercenary'},
-    ['merchant'] = {'mercenary'},
-    ['usurer'] = {'curser', 'mercenary', 'voider'},
-    ['gambler'] = {'mercenary', 'sorcerer'},
-    ['thief'] = {'rogue', 'mercenary'},
+    ['bomber'] = {'nuker'},
   }
 
   character_class_strings = {
@@ -518,6 +477,7 @@ function init()
     ['wizard'] = '[blue]Mage, [red]Nuker',
     ['magician'] = '[blue]Mage',
     ['archer'] = '[green]Ranger',
+    ['sniper'] = '[green]Ranger',
     ['scout'] = '[red]Rogue',
     ['cleric'] = '[green]Healer',
     ['outlaw'] = '[yellow]Warrior, [red]Rogue',
@@ -594,6 +554,7 @@ function init()
     ['wizard'] = function(lvl) return '[fg]shoots a projectile that deals [yellow]' .. get_character_stat('wizard', lvl, 'dmg') .. ' AoE[fg] damage' end,
     ['magician'] = function(lvl) return '[fg]creates a small area that deals [yellow]' .. get_character_stat('magician', lvl, 'dmg') .. ' AoE[fg] damage' end,
     ['archer'] = function(lvl) return '[fg]shoots an arrow that deals [yellow]' .. get_character_stat('archer', lvl, 'dmg') .. '[fg] damage and pierces' end,
+    ['sniper'] = function(lvl) return 'sniper shootie' end,
     ['scout'] = function(lvl) return '[fg]throws a knife that deals [yellow]' .. get_character_stat('scout', lvl, 'dmg') .. '[fg] damage and chains [yellow]3[fg] times' end,
     ['cleric'] = function(lvl) return '[fg]creates [yellow]1[fg] healing orb every [yellow]8[fg] seconds' end,
     ['outlaw'] = function(lvl) return '[fg]throws a fan of [yellow]5[fg] knives, each dealing [yellow]' .. get_character_stat('outlaw', lvl, 'dmg') .. '[fg] damage' end,
@@ -655,6 +616,7 @@ function init()
     ['wizard'] = '[blue]Magic Missile',
     ['magician'] = '[blue]Quick Cast',
     ['archer'] = '[green]Bounce Shot',
+    ['sniper'] = '[green]pew',
     ['scout'] = '[red]Dagger Resonance',
     ['cleric'] = '[green]Mass Heal',
     ['outlaw'] = '[red]Flying Daggers',
@@ -715,6 +677,7 @@ function init()
     ['wizard'] = '[light_bg]Magic Missile',
     ['magician'] = '[light_bg]Quick Cast',
     ['archer'] = '[light_bg]Bounce Shot',
+    ['sniper'] = '[light_bg]pew pwe',
     ['scout'] = '[light_bg]Dagger Resonance',
     ['cleric'] = '[light_bg]Mass Heal ',
     ['outlaw'] = '[light_bg]Flying Daggers',
@@ -775,6 +738,7 @@ function init()
     ['wizard'] = function() return '[fg]the projectile chains [yellow]2[fg] times' end,
     ['magician'] = function() return '[yellow]+50%[[fg] attack speed every [yellow]12[fg] seconds for [yellow]6[fg] seconds' end,
     ['archer'] = function() return '[fg]the arrow ricochets off walls [yellow]3[fg] times' end,
+    ['sniper'] = function() return '[fg]the arrow ricochets off walls [yellow]3[fg] times' end,
     ['scout'] = function() return '[yellow]+25%[fg] damage per chain and [yellow]+3[fg] chains' end,
     ['cleric'] = function() return '[fg]creates [yellow]4[fg] healing orbs every [yellow]8[fg] seconds' end,
     ['outlaw'] = function() return "[yellow]+50%[fg] outlaw attack speed and his knives seek enemies" end,
@@ -835,6 +799,7 @@ function init()
     ['wizard'] = function() return '[light_bg]the projectile chains 3 times' end,
     ['magician'] = function() return '[light_bg]+50% attack speed every 12 seconds for 6 seconds' end,
     ['archer'] = function() return '[light_bg]the arrow ricochets off walls 3 times' end,
+    ['sniper'] = function() return '[light_bg]the arrow ricochets off walls 3 times' end,
     ['scout'] = function() return '[light_bg]+25% damage per chain and +3 chains' end,
     ['cleric'] = function() return '[light_bg]creates 4 healing orbs' end,
     ['outlaw'] = function() return "[light_bg]+50% outlaw attack speed and his knives seek enemies" end,
@@ -895,6 +860,7 @@ function init()
     ['wizard'] = function(lvl) return get_character_stat_string('wizard', lvl) end, 
     ['magician'] = function(lvl) return get_character_stat_string('magician', lvl) end, 
     ['archer'] = function(lvl) return get_character_stat_string('archer', lvl) end, 
+    ['sniper'] = function(lvl) return get_character_stat_string('sniper', lvl) end, 
     ['scout'] = function(lvl) return get_character_stat_string('scout', lvl) end, 
     ['cleric'] = function(lvl) return get_character_stat_string('cleric', lvl) end, 
     ['outlaw'] = function(lvl) return get_character_stat_string('outlaw', lvl) end, 
@@ -1010,10 +976,30 @@ function init()
   }
 
   tier_to_characters = {
-    [1] = {'vagrant', 'swordsman', 'magician', 'archer', 'scout', 'cleric', 'arcanist', 'merchant'},
-    [2] = {'wizard', 'bomber', 'sage', 'squire', 'dual_gunner', 'sentry', 'chronomancer', 'barbarian', 'cryomancer', 'beastmaster', 'jester', 'carver', 'psychic', 'witch', 'silencer', 'outlaw', 'miner'},
-    [3] = {'elementor', 'stormweaver', 'spellblade', 'psykeeper', 'engineer', 'juggernaut', 'pyromancer', 'host', 'assassin', 'bane', 'barrager', 'infestor', 'flagellant', 'artificer', 'usurer', 'gambler'},
-    [4] = {'priest', 'highlander', 'psykino', 'fairy', 'blade', 'plague_doctor', 'cannoneer', 'vulcanist', 'warden', 'corruptor', 'thief'},
+    [1] = {'swordsman', 'archer', 'cleric'},
+    [2] = {'wizard'},
+    [3] = {'sniper'},
+    [4] = {'juggernaut'},
+  }
+
+  attack_ranges = {
+    ['melee'] = 10,
+    ['medium'] = 30,
+    ['medium-long'] = 50,
+    ['long'] = 80,
+  }
+
+  attack_speeds = {
+    ['fast'] = 1,
+    ['medium'] = 1.5,
+    ['medium-slow'] = 2.5,
+    ['slow'] = 4,
+  }
+
+  unit_size = {
+    ['small'] = 4,
+    ['medium'] = 6,
+    ['large'] = 8,
   }
 
   non_attacking_characters = {'cleric', 'stormweaver', 'squire', 'chronomancer', 'sage', 'psykeeper', 'bane', 'carver', 'fairy', 'priest', 'flagellant', 'merchant', 'miner'}
@@ -1041,6 +1027,7 @@ function init()
     ['sentry'] = 2,
     ['chronomancer'] = 2,
     ['spellblade'] = 3,
+    ['sniper'] = 3,
     ['psykeeper'] = 3,
     ['engineer'] = 3,
     ['plague_doctor'] = 4,
@@ -1170,7 +1157,7 @@ function init()
   get_classes = function(units)
     local classes = {}
     for _, unit in ipairs(units) do
-      table.insert(classes, table.copy(character_classes[unit.character]))
+      if character_classes[unit.character] then table.insert(classes, table.copy(character_classes[unit.character])) end
     end
     return table.unify(table.flatten(classes))
   end

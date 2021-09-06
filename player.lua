@@ -868,6 +868,7 @@ function Player:init(args)
     end, nil, nil, 'buff')
   end
 
+  if not self.classes or #self.classes == 0 then self.classes = {'warrior'} end
   self:calculate_stats(true)
 
   if self.leader then
@@ -1886,7 +1887,7 @@ function Player:shoot(r, mods)
   elseif self.character == 'dual_gunner' then
     dual_gunner1:play{pitch = random:float(0.95, 1.05), volume = 0.3}
     dual_gunner2:play{pitch = random:float(0.95, 1.05), volume = 0.3}
-  elseif self.character == 'archer' or self.character == 'hunter' or self.character == 'barrager' or self.character == 'corruptor' then
+  elseif self.character == 'archer' or self.character == 'hunter' or self.character == 'barrager' or self.character == 'corruptor' or self.character == 'sniper' then
     archer1:play{pitch = random:float(0.95, 1.05), volume = 0.35}
   elseif self.character == 'wizard' or self.character == 'lich' or self.character == 'arcanist' then
     wizard1:play{pitch = random:float(0.95, 1.05), volume = 0.15}
@@ -3029,6 +3030,62 @@ function ForceField:on_collision_enter(other, contact)
   end
 end
 
+Blizzard = Object:extend()
+Blizzard:implement(GameObject)
+Blizzard:implement(Physics)
+function Blizzard:init(args)
+  self:init_game_object(args)
+  if not self.group.world then self.dead = true; return end
+  if tostring(self.x) == tostring(0/0) or tostring(self.y) == tostring(0/0) then self.dead = true; return end
+  self:set_as_rectangle(9, 9, 'static', 'player')
+  self:set_restitution(0.5)
+  self.hfx:add('hit', 1)
+  self.color = blue[0]
+  self.attack_sensor = Circle(self.x, self.y, 256)
+
+  self.vr = 0
+  self.dvr = random:float(-math.pi/4, math.pi/4)
+
+  self.color = fg[0]
+  self.color_transparent = Color(args.color.r, args.color.g, args.color.b, 0.08)
+  self.rs = 0
+  self.hidden = false
+  self.t:tween(0.05, self, {rs = args.rs}, math.cubic_in_out, function() self.spring:pull(0.15) end)
+  self.t:after(0.2, function() self.color = args.color end)
+
+  frost1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+
+  self.t:every(0.5, function()
+    Area{group = main.current.effects, x=self.x, y=self.y, r=self.r, w = self.parent.area_size_m*72, r = random:float(0, 2*math.pi), color = self.color, dmg = self.parent.dmg,
+      character = self.parent.character, level = self.parent.level, parent = self}
+  end, 4)
+  self.t:after(4, function()
+    self.t:every_immediate(0.05, function() self.hidden = not self.hidden end, 7, function() self.dead = true end)
+  end)
+end
+
+function Blizzard:update(dt)
+  self:update_game_object(dt)
+  if self.dvr then self.vr = self.vr + self.dvr*dt end
+end
+
+function Blizzard:draw()
+  if self.hidden then return end
+  if not self.hfx.hit then return end
+
+  graphics.push(self.x, self.y, -math.pi/2, self.spring.x, self.spring.x)
+    graphics.triangle_equilateral(self.x, self.y, 1.5*self.shape.w, self.hfx.hit.f and fg[0] or self.color, 3)
+  graphics.pop()
+
+  graphics.push(self.x, self.y, self.r + (self.vr or 0), self.spring.x, self.spring.x)
+    -- graphics.circle(self.x, self.y, self.shape.rs + random:float(-1, 1), self.color, 2)
+    graphics.circle(self.x, self.y, 24, self.color_transparent)
+    local lw = 2
+    for i = 1, 4 do graphics.arc('open', self.x, self.y, 24, (i-1)*math.pi/2 + math.pi/4 - math.pi/8, (i-1)*math.pi/2 + math.pi/4 + math.pi/8, self.color, lw) end
+  graphics.pop()
+end
+
+
 
 
 Volcano = Object:extend()
@@ -3541,71 +3598,172 @@ Troop:implement(Unit)
 function Troop:init(args)
   self:init_game_object(args)
   self:init_unit()
-  self:set_as_rectangle(8, 8,'dynamic', 'player')
+  self:set_as_rectangle(4, 4,'dynamic', 'player')
   self:set_restitution(0.5)
 
-  self.color = character_colors.blade
-  self.character = 'blade'
-  self.classes = {'warrior', 'curser'}
+  self.color = character_colors[self.character]
+  self.classes = character_classes[self.character]
   self:calculate_stats(true)
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
 
-  self.attack_sensor = Circle(self.x, self.y, 96)
-  self.t:cooldown(2, function() local enemies = self:get_objects_in_shape(self.attack_sensor, main.current.enemies); return enemies and #enemies > 0 and input.m1.pressed ~= true end, function()
-    local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.enemies)
-    if closest_enemy then
-      turret1:play{pitch = random:float(0.95, 1.05), volume = 0.10}
-      turret2:play{pitch = random:float(0.95, 1.05), volume = 0.10}
-      wizard1:play{pitch = random:float(0.95, 1.05), volume = 0.10}
-      local r = self:angle_to_object(closest_enemy)
-      HitCircle{group = main.current.effects, x = self.x + 0.8*self.shape.w*math.cos(r), y = self.y + 0.8*self.shape.w*math.sin(r), rs = 6}
-      local t = {group = main.current.main, x = self.x + 1.6*self.shape.w*math.cos(r), y = self.y + 1.6*self.shape.w*math.sin(r), v = 250, r = r, color = self.color, dmg = self.dmg, character = 'artificer',
-      parent = self, level = self.level}
-      Projectile(table.merge(t, mods or {}))
-    end
-  end)
+  self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20)
+  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 100)
+  self:set_character()
+
+  self.state = unit_states['normal']
+
 end
 
 function Troop:update(dt)
   self:update_game_object(dt)
-
   self:calculate_stats()
-  
+
+  --[[
+  --steps should be:
+  -- rally priority
+  -- if target in range, wait
+  -- else, find closest target
+  -- if target out of range, move towards target
+
+  to get a proper stutter step, unit needs to pause while attacking
+  it's fine if attack is on its own timer, so long as it blocks movement for windup (and default movmeent for backswing baybeeee)
+
+  need a timer where unit doesn't initiate moves (windup)
+  and a timer where it doesn't move unless rallied (backswing)
+
+  states: normal, frozen, stopped
+
+
+  ]]--
   -- try to rally first
-  if input.m1.pressed then
+  if input.mouse_state["m1"] and (self.state == unit_states['normal'] or self.state == unit_states['stopped']) then
     self:seek_mouse()
     self:rotate_towards_velocity(1)
     self:steering_separate(32, {Troop})
     self:rotate_towards_velocity(1)
+    self.target = nil
   else
-    if not self.target then self.target = random:table(self.group:get_objects_by_classes(main.current.enemies)) end
-    if self.target and self.target.dead then self.target = random:table(self.group:get_objects_by_classes(main.current.enemies)) end
-    if not self.seek_f then return end
-    if not self.target then
-      self:seek_point(gw/2, gh/2)
-      self:wander(50, 200, 50)
-      self:rotate_towards_velocity(1)
-      self:steering_separate(32, {Seeker})
-    else
+    --find target
+    if self.target and self.target.dead then self.target = nil end
+    if not self.target then self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies) end
+    --if target not in attack range, close in
+    if self.target and self:distance_to_object(self.target) > self.attack_sensor.rs and self.state == unit_states['normal'] then 
       self:seek_point(self.target.x, self.target.y)
-      self:wander(50, 200, 50)
+      self:wander(1, 5, 1)
       self:rotate_towards_velocity(1)
-      self:steering_separate(32, {Seeker})
+    --otherwise target is in attack range or doesn't exist, stay still
+    else
+      self:move_nowhere()
     end
   end
-
-
   
   self.r = self:get_angle()
 
   self.attack_sensor:move_to(self.x, self.y)
+  self.aggro_sensor:move_to(self.x, self.y)
+end
+
+function Troop:move_nowhere()
+  self:seek_point(self.x + 0.01, self.y + 0.01)
+  self:wander(1, 5, 1)
+  self:rotate_towards_velocity(1)
 end
 
 
 function Troop:draw()
+  --graphics.circle(self.x, self.y, self.attack_sensor.rs, orange[0], 1)
   graphics.push(self.x, self.y, self.r, self.hfx.hit.x, self.hfx.hit.x)
-    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or self.color)
+  graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or self.color)
   graphics.pop()
+end
+
+
+function Troop:shoot(r, mods)
+  mods = mods or {}
+  camera:spring_shake(2, r)
+  self.hfx:use('shoot', 0.25)
+  self.state = unit_states['frozen']
+  self.t:after(0.25, function() self.state = unit_states['stopped'] end, 'stopped')
+  self.t:after(0.25 + .25, function() self.state = unit_states['normal'] end, 'normal')
+
+  local dmg_m = 1
+  local crit = false
+  HitCircle{group = main.current.effects, x = self.x + 0.8*self.shape.w*math.cos(r), y = self.y + 0.8*self.shape.w*math.sin(r), rs = 6}
+  local t = {group = main.current.main, x = self.x + 1.6*self.shape.w*math.cos(r), y = self.y + 1.6*self.shape.w*math.sin(r), v = 250, r = r, color = self.color, dmg = self.dmg*dmg_m, crit = crit, character = self.character,
+  parent = self, level = self.level}
+  Projectile(table.merge(t, mods or {}))
+end
+
+function Troop:attack(area, mods)
+  mods = mods or {}
+  local t = {group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(area or 64), color = self.color, dmg = self.area_dmg_m*self.dmg,
+    character = self.character, level = self.level, parent = self}
+  Area(table.merge(t, mods))
+
+  if self.character == 'swordsman'then
+    _G[random:table{'swordsman1', 'swordsman2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.75}
+  end
+
+  if self.character == 'juggernaut' then
+    elementor1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
+  end
+
+end
+
+
+function Troop:set_character()
+  if self.character == 'swordsman' then
+    self.attack_sensor = Circle(self.x, self.y, attack_ranges['melee'])
+    self.t:cooldown(attack_speeds['fast'], function() local enemies = self:get_objects_in_shape(self.attack_sensor, main.current.enemies); return enemies and #enemies > 0 end, function()
+      self:attack(10)
+    end, nil, nil, 'attack')
+
+  elseif self.character == 'archer' then
+    self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
+    self.t:cooldown(attack_speeds['medium'], function() local enemies = self:get_objects_in_shape(self.attack_sensor, main.current.enemies); return enemies and #enemies > 0 end, function()
+      local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.enemies)
+      if closest_enemy then
+        self:shoot(self:angle_to_object(closest_enemy))
+      end
+    end, nil, nil, 'shoot')
+
+  elseif self.character == 'sniper' then
+    self.attack_sensor = Circle(self.x, self.y, attack_ranges['long'])
+    self.dmg = self.dmg * 3
+    self.t:cooldown(attack_speeds['slow'], function() local enemies = self:get_objects_in_shape(self.attack_sensor, main.current.enemies); return enemies and #enemies > 0 end, function()
+      local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.enemies)
+      if closest_enemy then
+        self:shoot(self:angle_to_object(closest_enemy))
+      end
+    end, nil, nil, 'shoot')
+
+  elseif self.character == 'wizard' then
+    self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium-long'])
+    self.t:cooldown(attack_speeds['slow'], function() local enemies = self:get_objects_in_shape(self.attack_sensor, main.current.enemies); return enemies and #enemies > 0 end, function ()
+      local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.enemies)
+      if closest_enemy then
+        Blizzard{group = main.current.main, x = closest_enemy.x, y = closest_enemy.y, color = self.color, parent = self, rs = 24, level = self.level}
+      end
+    end, nil, nil, 'attack')
+
+  elseif self.character == 'cleric' then
+    self.t:every(attack_speeds['medium-slow'], function()
+      --[[
+      local all_units = self:get_all_units()
+      local unit_index = table.contains(all_units, function(v) return v.hp <= 0.5*v.max_hp end)
+      if unit_index then
+        local unit = all_units[unit_index]
+        self.last_heal_time = love.timer.getTime()
+        if self.level == 3 then
+          for _, unit in ipairs(all_units) do unit:heal(0.2*unit.max_hp*(self.heal_effect_m or 1)) end
+        else
+          unit:heal(0.2*unit.max_hp*(self.heal_effect_m or 1))
+        end
+        heal1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+      end
+      ]]--
+    end, nil, nil, 'heal')
+  end
 end
 
 

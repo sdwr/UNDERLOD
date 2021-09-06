@@ -14,7 +14,7 @@ function Physics:set_as_steerable(max_v, max_f, max_turn_rate, turn_multiplier)
   self.mass = 1
   self.max_v = max_v or 100
   self.max_f = max_f or 2000
-  self.max_turn_rate = max_turn_rate or 2*math.pi
+  self.max_turn_rate = max_turn_rate or (2*math.pi)
   self.turn_multiplier = turn_multiplier or 2
   self.seek_f = Vector()
   self.flee_f = Vector()

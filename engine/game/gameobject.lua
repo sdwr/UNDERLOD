@@ -38,7 +38,14 @@ function GameObject:init_game_object(args)
   return self
 end
 
+--[[
+  where to add halt on attack?
+  position is split into body + x/y
+  movement is split into forces and action 
+  forces need to be updated per frame, they don't get cleared
+  could set manual forces to 0 in attack, so long as attack happens after movement
 
+]]--
 function GameObject:update_game_object(dt)
   self.t:update(dt)
   self.springs:update(dt)

@@ -6,6 +6,15 @@ function Arena:init(name)
   self:init_game_object()
 end
 
+function Arena:add_troops()
+  for i, unit in ipairs(self.units) do
+    for j=0, 4 do
+      Troop{group = self.main, x=gw/2 + 10, y = gh/2 -10, level = unit.level, character = unit.character, passives = self.passives}
+    end
+  end
+end
+
+
 
 function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp, lock)
   self.hfx:add('condition1', 1)
@@ -97,13 +106,7 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
     end
   end
 
-  Troop{group = self.main, x=gw/2 + 10, y = gh/2 -10, level = 1, self.passives}
-  
-  Troop{group = self.main, x=gw/2 + 10, y = gh/2 -10, level = 1, self.passives}
-  
-  Troop{group = self.main, x=gw/2 + 10, y = gh/2 -10, level = 1, self.passives}
-  
-  Troop{group = self.main, x=gw/2 + 10, y = gh/2 -10, level = 1, self.passives}
+  self:add_troops()
 
   local units = self.player:get_all_units()
   for _, unit in ipairs(units) do
