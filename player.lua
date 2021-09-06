@@ -11,7 +11,7 @@ function Player:init(args)
   self.color = character_colors[self.character]
   self:set_as_rectangle(9, 9, 'dynamic', 'player')
   self.visual_shape = 'rectangle'
-  self.classes = character_classes[self.character]
+  self.class = character_classes[self.character]
   self.damage_dealt = 0
 
   if self.character == 'vagrant' then
@@ -868,7 +868,7 @@ function Player:init(args)
     end, nil, nil, 'buff')
   end
 
-  if not self.classes or #self.classes == 0 then self.classes = {'warrior'} end
+  if not self.class then self.class = 'warrior' end
   self:calculate_stats(true)
 
   if self.leader then
@@ -914,7 +914,7 @@ function Player:init(args)
   end
 
   if self.chronomancy then
-    if table.any(self.classes, function(v) return v == 'mage' end) then
+    if self.class == 'mage' then
       self.chronomancy_aspd_m = (self.chronomancy == 1 and 1.15) or (self.chronomancy == 2 and 1.25) or (self.chronomancy == 3 and 1.35)
     end
   end
@@ -924,7 +924,7 @@ function Player:init(args)
       local units = self:get_all_units()
       local mages = {}
       for _, unit in ipairs(units) do
-        if table.any(unit.classes, function(v) return v == 'mage' end) then
+        if self.class == 'mage' then
           table.insert(mages, unit)
         end
       end
@@ -943,7 +943,7 @@ function Player:init(args)
       local units = self:get_all_units()
       local mages = {}
       for _, unit in ipairs(units) do
-        if table.any(unit.classes, function(v) return v == 'mage' end) then
+        if self.class == 'mage' then
           table.insert(mages, unit)
         end
       end
@@ -961,7 +961,7 @@ function Player:init(args)
     end, nil, nil, 'divine_punishment')
   end
 
-  if self.unwavering_stance and table.any(self.classes, function(v) return v == 'warrior' end) then
+  if self.unwavering_stance and self.class == 'warrior' then
     self.unwavering_stance_def_m = 1
     self.t:every(5, function()
       self.unwavering_stance_def_m = self.unwavering_stance_def_m + ((self.unwavering_stance == 1 and 0.04) or (self.unwavering_stance == 2 and 0.08) or (self.unwavering_stance == 3 and 0.12))
@@ -972,7 +972,7 @@ function Player:init(args)
     self.magnify_area_size_m = (self.magnify == 1 and 1.2) or (self.magnify == 2 and 1.35) or (self.magnify == 3 and 1.5)
   end
 
-  if self.unleash and table.any(self.classes, function(v) return v == 'nuker' end) then
+  if self.unleash and self.class == 'nuker' then
     self.unleash_area_dmg_m = 1
     self.unleash_area_size_m = 1
     self.t:every(1, function()
@@ -989,7 +989,7 @@ function Player:init(args)
       local units = self:get_all_units()
       local any_enchanter = false
       for _, unit in ipairs(units) do
-        if table.any(unit.classes, function(v) return v == 'enchanter' end) then
+        if self.class == 'enchanter' then
           any_enchanter = true
           break
         end
@@ -1008,7 +1008,7 @@ function Player:init(args)
       local units = self:get_all_units()
       local enchanter_amount = 0
       for _, unit in ipairs(units) do
-        if table.any(unit.classes, function(v) return v == 'enchanter' end) then
+        if self.class == 'enchanter' then
           enchanter_amount = enchanter_amount + 1
         end
       end
@@ -1092,14 +1092,14 @@ function Player:init(args)
     self.t:after(1, function()
       local units = self:get_all_units()
       for _, unit in ipairs(units) do
-        if table.any(unit.classes, function(v) return v == 'psyker' end) then
+        if self.class == 'psyker' then
           Projectile{group = main.current.main, x = unit.x + 24*math.cos(unit.r), y = unit.y + 24*math.sin(unit.r), color = fg[0], v = 200, dmg = unit.dmg, character = 'psyker', parent = unit}
         end
       end
 
       local psykers = {}
       for _, unit in ipairs(units) do
-        if table.any(unit.classes, function(v) return v == 'psyker' end) then
+        if self.class == 'psyker' then
           table.insert(psykers, unit)
         end
       end
@@ -1198,13 +1198,13 @@ function Player:update(dt)
     self.outlaw_aspd_m = 1.5
   end
 
-  if table.any(self.classes, function(v) return v == 'ranger' end) then
+  if self.class == 'ranger' then
     if main.current.ranger_level == 2 then self.chance_to_barrage = 16
     elseif main.current.ranger_level == 1 then self.chance_to_barrage = 8
     elseif main.current.ranger_level == 0 then self.chance_to_barrage = 0 end
   end
 
-  if table.any(self.classes, function(v) return v == 'warrior' end) then
+  if self.class == 'warrior' then
     if main.current.warrior_level == 2 then self.warrior_def_a = 50
     elseif main.current.warrior_level == 1 then self.warrior_def_a = 25
     elseif main.current.warrior_level == 0 then self.warrior_def_a = 0 end
@@ -1213,7 +1213,7 @@ function Player:update(dt)
   self.heal_effect_m = 1
   if self.blessing then self.heal_effect_m = self.heal_effect_m*((self.blessing == 1 and 1.1) or (self.blessing == 2 and 1.2) or (self.blessing == 3 and 1.3)) end
 
-  if table.any(self.classes, function(v) return v == 'nuker' end) then
+  if self.class == 'nuker' then
     if main.current.nuker_level == 2 then self.nuker_area_size_m = 1.25; self.nuker_area_dmg_m = 1.25
     elseif main.current.nuker_level == 1 then self.nuker_area_size_m = 1.15; self.nuker_area_dmg_m = 1.15
     elseif main.current.nuker_level == 0 then self.nuker_area_size_m = 1; self.nuker_area_dmg_m = 1 end
@@ -1223,7 +1223,7 @@ function Player:update(dt)
   elseif main.current.conjurer_level == 1 then self.conjurer_buff_m = 1.25
   else self.conjurer_buff_m = 1 end
 
-  if table.any(self.classes, function(v) return v == 'rogue' end) then
+  if self.class == 'rogue' then
     if main.current.rogue_level == 2 then self.chance_to_crit = 30
     elseif main.current.rogue_level == 1 then self.chance_to_crit = 15
     elseif main.current.rogue_level == 0 then self.chance_to_crit = 0 end
@@ -1233,7 +1233,7 @@ function Player:update(dt)
   elseif main.current.enchanter_level == 1 then self.enchanter_dmg_m = 1.15
   else self.enchanter_dmg_m = 1 end
 
-  if table.any(self.classes, function(v) return v == 'explorer' end) then
+  if self.class == 'explorer' then
     local class_levels = get_class_levels(self:get_all_units())
     local number_of_active_sets = 0
     if class_levels.ranger >= 1 then number_of_active_sets = number_of_active_sets + 1 end
@@ -1262,7 +1262,7 @@ function Player:update(dt)
   if self.force_push then self.knockback_m = self.knockback_m*1.25 end
 
   self.dot_dmg_m = 1
-  if table.any(self.classes, function(v) return v == 'voider' end) then
+  if self.class == 'voider' then
     if main.current.voider_level == 2 then self.dot_dmg_m = 1.4
     elseif main.current.voider_level == 1 then self.dot_dmg_m = 1.2
     else self.dot_dmg_m = 1 end
@@ -1282,7 +1282,7 @@ function Player:update(dt)
     end
   end
 
-  if self.berserking and table.any(self.classes, function(v) return v == 'warrior' end) then
+  if self.berserking and self.class == 'warrior' then
     self.berserking_aspd_m = math.remap(self.hp/self.max_hp, 0, 1, (self.berserking == 1 and 1.5) or (self.berserking == 2 and 1.75) or (self.berserking == 3 and 2), 1)
   end
 
@@ -1319,7 +1319,7 @@ function Player:update(dt)
     self.last_stand_mvspd_m = 1.2
   end
 
-  if self.dividends and table.any(self.classes, function(v) return v == 'mercenary' end) then
+  if self.dividends and self.class == 'mercenary' then
     self.dividends_dmg_m = (1 + gold/100)
   end
 
@@ -1532,7 +1532,7 @@ function Player:hit(damage, from_undead)
   camera:shake(4, 0.5)
   main.current.damage_taken = main.current.damage_taken + actual_damage
 
-  if self.payback and table.any(self.classes, function(v) return v == 'enchanter' end) then
+  if self.payback and self.class == 'enchanter' then
     local units = self:get_all_units()
     for _, unit in ipairs(units) do
       if not unit.payback_dmg_m then unit.payback_dmg_m = 1 end
@@ -1540,7 +1540,7 @@ function Player:hit(damage, from_undead)
     end
   end
 
-  if self.unrelenting_stance and table.any(self.classes, function(v) return v == 'warrior' end) then
+  if self.unrelenting_stance and self.class == 'warrior' then
     local units = self:get_all_units()
     for _, unit in ipairs(units) do
       if not unit.unrelenting_stance_def_m then unit.unrelenting_stance_def_m = 1 end
@@ -1626,7 +1626,7 @@ function Player:hit(damage, from_undead)
         else self.parent:recalculate_followers() end
         if #main.current.player.followers == 0 and main.current.player.last_stand then
           heal1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-          buff1:play{pitch == random:float(0.9, 1.1), volume = 0.5}
+          buff1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
           main.current.player:heal(10000)
         end
       end
@@ -1661,7 +1661,7 @@ function Player:hit(damage, from_undead)
         end
       end
 
-      if self.annihilation and table.any(self.classes, function(v) return v == 'voider' end) then
+      if self.annihilation and self.class == 'voider' then
         local enemies = self.group:get_objects_by_classes({Seeker, EnemyCritter})
         for _, enemy in ipairs(enemies) do
           enemy:apply_dot(self.dmg*(self.dot_dmg_m or 1)*(main.current.chronomancer_dot or 1), 3)
@@ -1798,7 +1798,7 @@ function Player:shoot(r, mods)
   local crit = false
   if self.character == 'beastmaster' then crit = random:bool(10) end
   if self.chance_to_crit and random:bool(self.chance_to_crit) then dmg_m = ((self.assassination == 1 and 8) or (self.assassination == 2 and 10) or (self.assassination == 3 and 12) or 4); crit = true end
-  if self.assassination and table.any(self.classes, function(v) return v == 'rogue' end) then
+  if self.assassination and self.class == 'rogue' then
     if not crit then
       dmg_m = 0.5
     end
@@ -2069,7 +2069,7 @@ function Projectile:init(args)
     end
   end
 
-  if self.parent.divine_machine_arrow and table.any(self.parent.classes, function(v) return v == 'ranger' end) then
+  if self.parent.divine_machine_arrow and self.class == 'ranger' then
     if random:bool((self.parent.divine_machine_arrow == 1 and 10) or (self.parent.divine_machine_arrow == 2 and 20) or (self.parent.divine_machine_arrow == 3 and 30)) then
       self.homing = true
       self.pierce = self.parent.divine_machine_arrow or 0
@@ -2087,13 +2087,13 @@ function Projectile:init(args)
   self.distance_travelled = 0
   self.distance_dmg_m = 1
 
-  if self.parent.blunt_arrow and table.any(self.parent.classes, function(v) return v == 'ranger' end) then
+  if self.parent.blunt_arrow and self.class == 'ranger' then
     if random:bool((self.parent.blunt_arrow == 1 and 10) or (self.parent.blunt_arrow == 2 and 20) or (self.parent.blunt_arrow == 3 and 30)) then
       self.knockback = 10
     end
   end
 
-  if self.parent.flying_daggers and table.any(self.parent.classes, function(v) return v == 'rogue' end) then
+  if self.parent.flying_daggers and self.class == 'rogue' then
     self.chain = self.chain + ((self.parent.flying_daggers == 1 and 2) or (self.parent.flying_daggers == 2 and 3) or (self.parent.flying_daggers == 3 and 4))
   end
 end
@@ -2414,7 +2414,7 @@ function Projectile:on_trigger_enter(other, contact)
       other:push(self.knockback*(self.knockback_m or 1), self.r)
     end
 
-    if self.parent and self.parent.explosive_arrow and table.any(self.parent.classes, function(v) return v == 'ranger' end) then
+    if self.parent and self.parent.explosive_arrow and self.class == 'ranger' then
       if random:bool((self.parent.explosive_arrow == 1 and 10) or (self.parent.explosive_arrow == 2 and 20) or (self.parent.explosive_arrow == 3 and 30)) then
         _G[random:table{'cannoneer1', 'cannoneer2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
         Area{group = main.current.effects, x = self.x, y = self.y, r = self.r + random:float(0, 2*math.pi), w = self.parent.area_size_m*32, color = self.color, 
@@ -2423,7 +2423,7 @@ function Projectile:on_trigger_enter(other, contact)
       end
     end
 
-    if self.parent and self.parent.void_rift and table.any(self.parent.classes, function(v) return v == 'mage' or v == 'nuker' or v == 'voider' end) then
+    if self.parent and self.parent.void_rift and self.class == 'mage' then
       if random:bool(20) then
         DotArea{group = main.current.effects, x = self.x, y = self.y, rs = self.parent.area_size_m*24, color = self.color, dmg = self.parent.area_dmg_m*self.dmg*(self.parent.dot_dmg_m or 1), void_rift = true, duration = 1}
       end
@@ -2499,7 +2499,7 @@ function Area:init(args)
 
   if self.parent:is(Projectile) then
     local p = self.parent.parent
-    if p.void_rift and table.any(p.classes, function(v) return v == 'mage' or v == 'nuker' or v == 'voider' end) then
+    if p.void_rift and self.class == 'mage' then
       if random:bool(20) then
         DotArea{group = main.current.effects, x = self.x, y = self.y, rs = p.area_size_m*24, color = self.color, dmg = p.area_dmg_m*self.dmg*(p.dot_dmg_m or 1),
           void_rift = true, duration = 1, parent = p}
@@ -2515,7 +2515,7 @@ function Area:init(args)
       end
     end
   else
-    if self.parent.void_rift and table.any(self.parent.classes, function(v) return v == 'mage' or v == 'nuker' or v == 'voider' end) then
+    if self.parent.void_rift and self.class == 'mage' then
       if random:bool(20) then
         DotArea{group = main.current.effects, x = self.x, y = self.y, rs = self.parent.area_size_m*24, color = self.color, dmg = self.parent.area_dmg_m*self.dmg*(self.parent.dot_dmg_m or 1),
           void_rift = true, duration = 1, parent = self.parent}
@@ -3530,7 +3530,7 @@ function Saboteur:init(args)
   
   self.color = character_colors.saboteur
   self.character = 'saboteur'
-  self.classes = character_classes.saboteur
+  self.class = character_classes.saboteur
   self:calculate_stats(true)
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
 
@@ -3602,7 +3602,7 @@ function Troop:init(args)
   self:set_restitution(0.5)
 
   self.color = character_colors[self.character]
-  self.classes = character_classes[self.character]
+  self.class = character_classes[self.character]
   self:calculate_stats(true)
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
 
@@ -3636,7 +3636,7 @@ function Troop:update(dt)
 
   ]]--
   -- try to rally first
-  if input.mouse_state["m1"] and (self.state == unit_states['normal'] or self.state == unit_states['stopped']) then
+  if ((input.mouse_state["m1"] and main.selectedClass == self.class) or input.mouse_state["m2"]) and (self.state == unit_states['normal'] or self.state == unit_states['stopped']) then
     self:seek_mouse()
     self:rotate_towards_velocity(1)
     self:steering_separate(32, {Troop})
@@ -3647,7 +3647,7 @@ function Troop:update(dt)
     if self.target and self.target.dead then self.target = nil end
     if not self.target then self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies) end
     --if target not in attack range, close in
-    if self.target and self:distance_to_object(self.target) > self.attack_sensor.rs and self.state == unit_states['normal'] then 
+    if self.target and self:distance_to_object(self.target) > self.attack_sensor.rs and self.state == unit_states['normal'] then
       self:seek_point(self.target.x, self.target.y)
       self:wander(1, 5, 1)
       self:rotate_towards_velocity(1)
@@ -3780,7 +3780,7 @@ function Automaton:init(args)
   
   self.color = character_colors.artificer
   self.character = 'artificer'
-  self.classes = {'sorcerer', 'conjurer'}
+  self.class = 'sorcerer'
   self:calculate_stats(true)
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
 
@@ -4112,7 +4112,7 @@ function Critter:init(args)
   self:set_as_rectangle(7, 4, 'dynamic', 'player')
   self:set_restitution(0.5)
 
-  self.classes = {'enemy_critter'}
+  self.class = 'enemy_critter'
   self.color = orange[0]
   self:calculate_stats(true)
   self:set_as_steerable(self.v, 400, math.pi, 1)

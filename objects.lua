@@ -367,26 +367,26 @@ function Unit:calculate_stats(first_run)
     self.buff_mvspd_m = 1
   end
 
-  for _, class in ipairs(self.classes) do self.class_hp_m = self.class_hp_m*class_stat_multipliers[class].hp end
+  self.class_hp_m = self.class_hp_m*class_stat_multipliers[self.class].hp
   self.max_hp = (self.base_hp + self.class_hp_a + self.buff_hp_a)*self.class_hp_m*self.buff_hp_m
   if first_run then self.hp = self.max_hp end
 
-  for _, class in ipairs(self.classes) do self.class_dmg_m = self.class_dmg_m*class_stat_multipliers[class].dmg end
+  self.class_dmg_m = self.class_dmg_m*class_stat_multipliers[self.class].dmg
   self.dmg = (self.base_dmg + self.class_dmg_a + self.buff_dmg_a)*self.class_dmg_m*self.buff_dmg_m
 
-  for _, class in ipairs(self.classes) do self.class_aspd_m = self.class_aspd_m*class_stat_multipliers[class].aspd end
+  self.class_aspd_m = self.class_aspd_m*class_stat_multipliers[self.class].aspd
   self.aspd_m = 1/(self.base_aspd_m*self.class_aspd_m*self.buff_aspd_m)
 
-  for _, class in ipairs(self.classes) do self.class_area_dmg_m = self.class_area_dmg_m*class_stat_multipliers[class].area_dmg end
+  self.class_area_dmg_m = self.class_area_dmg_m*class_stat_multipliers[self.class].area_dmg
   self.area_dmg_m = self.base_area_dmg_m*self.class_area_dmg_m*self.buff_area_dmg_m
 
-  for _, class in ipairs(self.classes) do self.class_area_size_m = self.class_area_size_m*class_stat_multipliers[class].area_size end
+  self.class_area_size_m = self.class_area_size_m*class_stat_multipliers[self.class].area_size
   self.area_size_m = self.base_area_size_m*self.class_area_size_m*self.buff_area_size_m
 
-  for _, class in ipairs(self.classes) do self.class_def_m = self.class_def_m*class_stat_multipliers[class].def end
+  self.class_def_m = self.class_def_m*class_stat_multipliers[self.class].def
   self.def = (self.base_def + self.class_def_a + self.buff_def_a)*self.class_def_m*self.buff_def_m
 
-  for _, class in ipairs(self.classes) do self.class_mvspd_m = self.class_mvspd_m*class_stat_multipliers[class].mvspd end
+  self.class_mvspd_m = self.class_mvspd_m*class_stat_multipliers[self.class].mvspd
   self.max_v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m
   self.v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m
 end

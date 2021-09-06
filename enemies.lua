@@ -9,7 +9,7 @@ function Seeker:init(args)
   if self.boss then
     self:set_as_rectangle(18, 7, 'dynamic', 'enemy')
     self:set_restitution(0.5)
-    self.classes = {'mini_boss'}
+    self.class = 'mini_boss'
     self:calculate_stats(true)
     self:set_as_steerable(self.v, 1000, 2*math.pi, 2)
 
@@ -165,7 +165,7 @@ function Seeker:init(args)
     self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
     self:set_restitution(0.5)
     self.color = red[0]:clone()
-    self.classes = {'seeker'}
+    self.class = 'seeker'
     self:calculate_stats(true)
     self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
   end
@@ -853,7 +853,7 @@ function EnemyCritter:init(args)
   self:set_as_rectangle(7, 4, 'dynamic', 'enemy_projectile')
   self:set_restitution(0.5)
 
-  self.classes = {'enemy_critter'}
+  self.class = 'enemy_critter'
   self:calculate_stats(true)
   self:set_as_steerable(self.v, 400, math.pi, 1)
   self:push(args.v, args.r)
@@ -869,7 +869,7 @@ function EnemyCritter:update(dt)
   if self.slowed then self.slow_mvspd_m = self.slowed
   else self.slow_mvspd_m = 1 end
   self.buff_mvspd_m = (self.speed_boosting_mvspd_m or 1)*(self.slow_mvspd_m or 1)*(self.temporal_chains_mvspd_m or 1)
-  if not self.classes then return end
+  if not self.class then return end
   self:calculate_stats()
 
   if self.being_pushed then

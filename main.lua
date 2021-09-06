@@ -462,13 +462,13 @@ function init()
   }
 
   character_classes = {
-    ['swordsman'] = {'warrior'},
-    ['juggernaut'] = {'warrior'},
-    ['archer'] = {'ranger'},
-    ['sniper'] = {'ranger'},
-    ['wizard'] = {'mage'},
-    ['cleric'] = {'healer'},
-    ['bomber'] = {'nuker'},
+    ['swordsman'] = 'warrior',
+    ['juggernaut'] = 'warrior',
+    ['archer'] = 'ranger',
+    ['sniper'] = 'ranger',
+    ['wizard'] = 'mage',
+    ['cleric'] = 'healer',
+    ['bomber'] = 'nuker',
   }
 
   character_class_strings = {
@@ -1090,24 +1090,23 @@ function init()
     local mercenaries = 0
     local explorers = 0
     for _, unit in ipairs(units) do
-      for _, unit_class in ipairs(character_classes[unit.character]) do
-        if unit_class == 'ranger' then rangers = rangers + 1 end
-        if unit_class == 'warrior' then warriors = warriors + 1 end
-        if unit_class == 'healer' then healers = healers + 1 end
-        if unit_class == 'mage' then mages = mages + 1 end
-        if unit_class == 'nuker' then nukers = nukers + 1 end
-        if unit_class == 'conjurer' then conjurers = conjurers + 1 end
-        if unit_class == 'rogue' then rogues = rogues + 1 end
-        if unit_class == 'enchanter' then enchanters = enchanters + 1 end
-        if unit_class == 'psyker' then psykers = psykers + 1 end
-        if unit_class == 'curser' then cursers = cursers + 1 end
-        if unit_class == 'forcer' then forcers = forcers + 1 end
-        if unit_class == 'swarmer' then swarmers = swarmers + 1 end
-        if unit_class == 'voider' then voiders = voiders + 1 end
-        if unit_class == 'sorcerer' then sorcerers = sorcerers + 1 end
-        if unit_class == 'mercenary' then mercenaries = mercenaries + 1 end
-        if unit_class == 'explorer' then explorers = explorers + 1 end
-      end
+      local unit_class = character_classes[unit.character]
+      if unit_class == 'ranger' then rangers = rangers + 1 end
+      if unit_class == 'warrior' then warriors = warriors + 1 end
+      if unit_class == 'healer' then healers = healers + 1 end
+      if unit_class == 'mage' then mages = mages + 1 end
+      if unit_class == 'nuker' then nukers = nukers + 1 end
+      if unit_class == 'conjurer' then conjurers = conjurers + 1 end
+      if unit_class == 'rogue' then rogues = rogues + 1 end
+      if unit_class == 'enchanter' then enchanters = enchanters + 1 end
+      if unit_class == 'psyker' then psykers = psykers + 1 end
+      if unit_class == 'curser' then cursers = cursers + 1 end
+      if unit_class == 'forcer' then forcers = forcers + 1 end
+      if unit_class == 'swarmer' then swarmers = swarmers + 1 end
+      if unit_class == 'voider' then voiders = voiders + 1 end
+      if unit_class == 'sorcerer' then sorcerers = sorcerers + 1 end
+      if unit_class == 'mercenary' then mercenaries = mercenaries + 1 end
+      if unit_class == 'explorer' then explorers = explorers + 1 end
     end
     return {ranger = rangers, warrior = warriors, healer = healers, mage = mages, nuker = nukers, conjurer = conjurers, rogue = rogues,
       enchanter = enchanters, psyker = psykers, curser = cursers, forcer = forcers, swarmer = swarmers, voider = voiders, sorcerer = sorcerers, mercenary = mercenaries, explorer = explorers}
@@ -1157,7 +1156,7 @@ function init()
   get_classes = function(units)
     local classes = {}
     for _, unit in ipairs(units) do
-      if character_classes[unit.character] then table.insert(classes, table.copy(character_classes[unit.character])) end
+      if character_classes[unit.character] then table.insert(classes, character_classes[unit.character]) end
     end
     return table.unify(table.flatten(classes))
   end

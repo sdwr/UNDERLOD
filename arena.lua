@@ -14,6 +14,18 @@ function Arena:add_troops()
   end
 end
 
+function Arena:select_class(class)
+  if main.selectedClass then self.hotbar[main.selectedClass].unit_selected = false end
+  main.selectedClass = class
+  self.hotbar[class].unit_selected = true
+end
+
+function Arena:select_class_by_index(i)
+  if self.hotbar_by_index[i] then
+    self.hotbar_by_index[i]:action()
+  end
+end
+
 
 
 function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp, lock)
@@ -105,6 +117,17 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
       self.player:add_follower(Player{group = self.main, character = unit.character, level = unit.level, passives = self.passives, ii = i})
     end
   end
+  
+  --need to group units by class
+  main.selectedClass = nil
+  self.hotbar = {}
+  self.hotbar_by_index = {}
+  for i, class in ipairs(get_classes(units)) do
+    local b = HotbarButton{group = self.ui, x = gw/3 + ((i/#units)*(gw/3)) , y = gh - 20, force_update = true, button_text = class, fg_color = class_color_strings[class], bg_color = 'bg', action = function() self:select_class(class) end}
+    self.hotbar[class] = b
+    self.hotbar_by_index[i] = b
+  end
+
 
   self:add_troops()
 
@@ -366,6 +389,14 @@ function Arena:update(dt)
 
   if not self.paused and not self.died and not self.won then
     run_time = run_time + dt
+  end
+
+  if not self.paused then
+    for i = 1, 9 do
+      if input[tostring(i)].pressed then
+        self:select_class_by_index(i)
+      end
+    end
   end
 
   if self.shop_text then self.shop_text:update(dt) end
