@@ -990,10 +990,17 @@ function init()
   }
 
   attack_speeds = {
-    ['fast'] = 1,
-    ['medium'] = 1.5,
+    ['fast'] = 1.5,
+    ['medium'] = 2,
     ['medium-slow'] = 2.5,
-    ['slow'] = 4,
+    ['slow'] = 3.5,
+  }
+
+  move_speeds = {
+    ['ultrafast'] = 2.5,
+    ['fast'] = 1.7,
+    ['medium'] = 1.4,
+    ['regular'] = 1,
   }
 
   unit_size = {

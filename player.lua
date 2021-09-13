@@ -1614,22 +1614,6 @@ function Player:hit(damage, from_undead)
       slow(0.25, 1)
       for i = 1, random:int(4, 6) do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color} end
       HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 12}:scale_down(0.3):change_color(0.5, self.color)
-      if self.leader and #self.followers == 0 then
-        if main.current:die() then
-          self.dead = true
-        else
-          self.hp = 1
-        end
-      else
-        self.dead = true
-        if self.leader then self:recalculate_followers()
-        else self.parent:recalculate_followers() end
-        if #main.current.player.followers == 0 and main.current.player.last_stand then
-          heal1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-          buff1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
-          main.current.player:heal(10000)
-        end
-      end
 
       if self.kinetic_bomb then
         elementor1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
@@ -1788,8 +1772,9 @@ function Player:add_follower(unit)
   unit.follower_index = #self.followers
 end
 
-
 function Player:shoot(r, mods)
+  
+--[[
   mods = mods or {}
   camera:spring_shake(2, r)
   self.hfx:use('shoot', 0.25)
@@ -1912,10 +1897,15 @@ function Player:shoot(r, mods)
   if self.chance_to_barrage and random:bool(self.chance_to_barrage) then
     self:barrage(r, 3)
   end
+  
+]]--
 end
 
 
+
 function Player:attack(area, mods)
+  
+--[[
   mods = mods or {}
   camera:shake(2, 0.5)
   self.hfx:use('shoot', 0.25)
@@ -1936,10 +1926,12 @@ function Player:attack(area, mods)
   if self.character == 'juggernaut' then
     elementor1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
   end
+]]--
 end
 
 
 function Player:dot_attack(area, mods)
+  --[[
   mods = mods or {}
   camera:shake(2, 0.5)
   self.hfx:use('shoot', 0.25)
@@ -1952,6 +1944,7 @@ end
 
 
 function Player:barrage(r, n, pierce, ricochet, shoot_5, homing)
+  --[[
   n = n or 8
   for i = 1, n do
     self.t:after((i-1)*0.075, function()
@@ -1963,6 +1956,8 @@ function Player:barrage(r, n, pierce, ricochet, shoot_5, homing)
       Projectile(table.merge(t, mods or {}))
     end)
   end
+  
+]]--
 end
 
 
@@ -2439,97 +2434,24 @@ Area:implement(GameObject)
 function Area:init(args)
   self:init_game_object(args)
   self.shape = Rectangle(self.x, self.y, 1.5*self.w, 1.5*self.w, self.r)
-  local enemies = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
-  for _, enemy in ipairs(enemies) do
-    local resonance_dmg = 0
-    local resonance_m = (self.parent.resonance == 1 and 0.03) or (self.parent.resonance == 2 and 0.05) or (self.parent.resonance == 3 and 0.07) or 0
-    if self.character == 'elementor' then
-      if self.parent.resonance then resonance_dmg = 2*self.dmg*resonance_m*#enemies end
-      enemy:hit(2*self.dmg + resonance_dmg, self)
-      if self.level == 3 then
-        enemy:slow(0.4, 6)
-      end
-    elseif self.character == 'swordsman' then
-      if self.parent.resonance then resonance_dmg = (self.dmg + self.dmg*0.15*#enemies)*resonance_m*#enemies end
-      enemy:hit(self.dmg + self.dmg*0.15*#enemies + resonance_dmg, self)
-    elseif self.character == 'blade' and self.level == 3 then
-      if self.parent.resonance then resonance_dmg = (self.dmg + self.dmg*0.33*#enemies)*resonance_m*#enemies end
-      enemy:hit(self.dmg + self.dmg*0.33*#enemies + resonance_dmg, self)
-    elseif self.character == 'highlander' then
-      if self.parent.resonance then resonance_dmg = 6*self.dmg*resonance_m*#enemies end
-      enemy:hit(6*self.dmg + resonance_dmg, self)
-    elseif self.character == 'launcher' then
-      if self.parent.resonance then resonance_dmg = (self.level == 3 and 6*self.dmg*0.05*#enemies or 2*self.dmg*0.05*#enemies) end
-      enemy:curse('launcher', 4*(self.hex_duration_m or 1), (self.level == 3 and 6*self.dmg or 2*self.dmg) + resonance_dmg, self.parent)
-    elseif self.character == 'freezing_field' then
-      enemy:slow(0.5, 2)
-    else
-      if self.parent.resonance then resonance_dmg = self.dmg*resonance_m*#enemies end
-      enemy:hit(self.dmg + resonance_dmg, self)
-    end
-    HitCircle{group = main.current.effects, x = enemy.x, y = enemy.y, rs = 6, color = fg[0], duration = 0.1}
-    for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = self.color} end
-    for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = enemy.color} end
-    if self.character == 'wizard' or self.character == 'magician' or self.character == 'elementor' or self.character == 'psychic' then
-      magic_hit1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-    elseif self.character == 'swordsman' or self.character == 'barbarian' or self.character == 'juggernaut' or self.character == 'highlander' then
-      hit2:play{pitch = random:float(0.95, 1.05), volume = 0.35}
-    elseif self.character == 'blade' then
-      blade_hit1:play{pitch = random:float(0.9, 1.1), volume = 0.35}
-      hit2:play{pitch = random:float(0.95, 1.05), volume = 0.2}
-    elseif self.character == 'saboteur' or self.character == 'pyromancer' or self.character == 'bomber' then
-      if self.character == 'pyromancer' then pyro2:play{pitch = random:float(0.95, 1.05), volume = 0.4} end
-      _G[random:table{'saboteur_hit1', 'saboteur_hit2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.2}
-    elseif self.character == 'cannoneer' then
-      _G[random:table{'saboteur_hit1', 'saboteur_hit2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.075}
-    end
-
-    if self.stun then
-      enemy:slow(0.1, self.stun)
-      enemy.barbarian_stunned = true
-      enemy.t:after(self.stun, function() enemy.barbarian_stunned = false end)
-    end
-
-    if self.juggernaut_push then
-      local r = self.parent:angle_to_object(enemy)
-      enemy:push(random:float(75, 100)*(self.knockback_m or 1), r)
-      enemy.juggernaut_push = 3*self.dmg
-    end
-  end
-
-  if self.parent:is(Projectile) then
-    local p = self.parent.parent
-    if p.void_rift and self.class == 'mage' then
-      if random:bool(20) then
-        DotArea{group = main.current.effects, x = self.x, y = self.y, rs = p.area_size_m*24, color = self.color, dmg = p.area_dmg_m*self.dmg*(p.dot_dmg_m or 1),
-          void_rift = true, duration = 1, parent = p}
-      end
-    end
-    if p.echo_barrage and not self.echo_barrage_area then
-      if random:bool((p.echo_barrage == 1 and 10) or (p.echo_barrage == 2 and 20) or (p.echo_barrage == 3 and 30)) then
-        p.t:every(0.3, function()
-          _G[random:table{'cannoneer1', 'cannoneer2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-          Area{group = main.current.effects, x = self.x + random:float(-32, 32), y = self.y + random:float(-32, 32), r = self.r + random:float(0, 2*math.pi), w = p.area_size_m*48, color = p.color, 
-            dmg = 0.5*p.area_dmg_m*self.dmg, character = self.character, level = p.level, parent = p, echo_barrage_area = true}
-        end, p.echo_barrage)
-      end
-    end
+  local targets = {}
+  if self.team == "enemy" then 
+    targets = main.current.main:get_objects_in_shape(self.shape, {Troop})
   else
-    if self.parent.void_rift and self.class == 'mage' then
-      if random:bool(20) then
-        DotArea{group = main.current.effects, x = self.x, y = self.y, rs = self.parent.area_size_m*24, color = self.color, dmg = self.parent.area_dmg_m*self.dmg*(self.parent.dot_dmg_m or 1),
-          void_rift = true, duration = 1, parent = self.parent}
-      end
+    targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
+  end
+  for _, target in ipairs(targets) do
+    if self.character == 'freezing_field' then
+      --make slow for troops as well
+      target:slow(0.5, 2)
+    else
+      target:hit(self.dmg, self)
     end
-    if self.parent.echo_barrage and not self.echo_barrage_area then
-      if random:bool((self.parent.echo_barrage == 1 and 10) or (self.parent.echo_barrage == 2 and 20) or (self.parent.echo_barrage == 3 and 30)) then
-        self.parent.t:every(0.3, function()
-          _G[random:table{'cannoneer1', 'cannoneer2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-          Area{group = main.current.effects, x = self.x + random:float(-32, 32), y = self.y + random:float(-32, 32), r = self.r + random:float(0, 2*math.pi), w = self.parent.area_size_m*48, color = self.parent.color, 
-            dmg = 0.5*self.parent.area_dmg_m*(self.dmg or self.parent.dmg), character = self.character, level = self.parent.level, parent = self.parent, echo_barrage_area = true}
-        end, self.parent.echo_barrage)
-      end
-    end
+    HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
+    for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
+    for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
+    hit2:play{pitch = random:float(0.95, 1.05), volume = 0.35}
+
   end
 
   self.color = fg[0]
@@ -3030,6 +2952,7 @@ function ForceField:on_collision_enter(other, contact)
   end
 end
 
+--change to dotarea
 Blizzard = Object:extend()
 Blizzard:implement(GameObject)
 Blizzard:implement(Physics)
@@ -3638,22 +3561,28 @@ function Troop:update(dt)
   -- try to rally first
   if ((input.mouse_state["m1"] and main.selectedClass == self.class) or input.mouse_state["m2"]) and (self.state == unit_states['normal'] or self.state == unit_states['stopped']) then
     self:seek_mouse()
-    self:rotate_towards_velocity(1)
-    self:steering_separate(32, {Troop})
+    self:steering_separate(16, {Troop})
     self:rotate_towards_velocity(1)
     self.target = nil
   else
     --find target
     if self.target and self.target.dead then self.target = nil end
-    if not self.target then self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies) end
+    if self.character == "cleric" then
+      if self.target and self.target.hp == self.target.max_hp then self.target = nil end
+      if not self.target then self.target = self:get_hurt_ally(self.aggro_sensor) end
+    else
+      if not self.target then self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies) end
+    end
     --if target not in attack range, close in
     if self.target and self:distance_to_object(self.target) > self.attack_sensor.rs and self.state == unit_states['normal'] then
       self:seek_point(self.target.x, self.target.y)
       self:wander(1, 5, 1)
+      self:steering_separate(16, {Troop})
       self:rotate_towards_velocity(1)
     --otherwise target is in attack range or doesn't exist, stay still
     else
-      self:move_nowhere()
+      self:set_velocity(0,0)
+      self:steering_separate(16, {Troop})
     end
   end
   
@@ -3713,9 +3642,14 @@ end
 
 function Troop:set_character()
   if self.character == 'swordsman' then
+    self.dmg = self.dmg / 3;
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['melee'])
     self.t:cooldown(attack_speeds['fast'], function() local enemies = self:get_objects_in_shape(self.attack_sensor, main.current.enemies); return enemies and #enemies > 0 end, function()
-      self:attack(10)
+      local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.enemies)
+      if closest_enemy then
+        self:attack(10, {x = closest_enemy.x, y = closest_enemy.y})
+        
+      end
     end, nil, nil, 'attack')
 
   elseif self.character == 'archer' then
@@ -3747,23 +3681,76 @@ function Troop:set_character()
     end, nil, nil, 'attack')
 
   elseif self.character == 'cleric' then
-    self.t:every(attack_speeds['medium-slow'], function()
-      --[[
-      local all_units = self:get_all_units()
-      local unit_index = table.contains(all_units, function(v) return v.hp <= 0.5*v.max_hp end)
-      if unit_index then
-        local unit = all_units[unit_index]
-        self.last_heal_time = love.timer.getTime()
-        if self.level == 3 then
-          for _, unit in ipairs(all_units) do unit:heal(0.2*unit.max_hp*(self.heal_effect_m or 1)) end
-        else
-          unit:heal(0.2*unit.max_hp*(self.heal_effect_m or 1))
-        end
-        heal1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    self.attack_sensor = Circle(self.x, self.y, attack_ranges['melee'])
+    self.t:cooldown(attack_speeds['slow'], function() return self:get_hurt_ally(self.attack_sensor) end, function ()
+      local hurt_ally = self:get_hurt_ally(self.attack_sensor)
+      if hurt_ally then
+        hurt_ally:heal(30)
       end
-      ]]--
     end, nil, nil, 'heal')
   end
+end
+
+function Troop:hit(damage, from_undead)
+  if self.dead then return end
+  if self.magician_invulnerable then return end
+  if self.undead and not from_undead then return end
+  self.hfx:use('hit', 0.25, 200, 10)
+  self:show_hp()
+
+  local actual_damage = math.max(self:calculate_damage(damage), 0)
+  self.hp = self.hp - actual_damage
+  _G[random:table{'player_hit1', 'player_hit2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+  
+
+  --self.character_hp:change_hp()
+
+  if self.hp <= 0 then
+    hit4:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    for i = 1, random:int(4, 6) do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color} end
+    HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 12}:scale_down(0.3):change_color(0.5, self.color)
+
+    self.dead = true
+    if main.current:all_troops_dead() then
+      main.current:die()
+    end
+
+    if self.dot_area then self.dot_area.dead = true; self.dot_area = nil end
+  end
+end
+
+function Troop:on_collision_enter(other, contact)
+  local x, y = contact:getPositions()
+
+  if other:is(Wall) then
+      self:bounce(contact:getNormal())
+      local r = random:float(0.9, 1.1)
+      player_hit_wall1:play{pitch = r, volume = 0.1}
+      pop1:play{pitch = r, volume = 0.2}
+
+  elseif table.any({Troop}, function(v) return other:is(v) end) then
+    --self:set_position()
+    --other:push(random:float(25, 35)*(self.knockback_m or 1), self:angle_to_object(other))
+  end
+end
+
+
+function Troop:heal(amount)
+  local hp = self.hp
+  self.hfx:use('hit', 0.25, 200, 10)
+  self.hp = self.hp + amount
+  if self.hp > self.max_hp then self.hp = self.max_hp end
+end
+
+function Troop:get_hurt_ally(sensor)
+  local allies = self:get_objects_in_shape(sensor, {Troop})
+  if not allies or #allies == 0 then return false end
+  for _, ally in ipairs(allies) do
+    if ally.hp < ally.max_hp and self.id ~= ally.id then
+      return ally
+    end
+  end
+  return false
 end
 
 

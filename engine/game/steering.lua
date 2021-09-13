@@ -177,6 +177,22 @@ function Physics:steering_separate(rs, class_avoid_list, weight)
   self.separation_f:set(fx*(weight or 1), fy*(weight or 1))
 end
 
+function Physics:delta_split(rs, class_avoid_list)
+  if self:is_stacked(rs, class_avoid_list) then
+    self:set_position(self.x + random:float(-2, 2), self.y + random:float(-2,2))
+  end
+
+end
+
+function Physics:is_stacked(rs, class_avoid_list)
+  local objects = table.flatten(table.foreachn(class_avoid_list, function(v) return self.group:get_objects_by_class(v) end), true)
+  for _, object in ipairs(objects) do
+    if object.id ~= self.id and math.distance(object.x, object.y, self.x, self.y) < 2*rs then
+      return true
+    end
+  end
+end
+
 
 -- Wander steering behavior
 -- Makes the object move in a jittery manner, adding some randomness to its movement while keeping the overall direction

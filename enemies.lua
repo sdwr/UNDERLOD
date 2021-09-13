@@ -5,6 +5,15 @@ Seeker:implement(Unit)
 function Seeker:init(args)
   self:init_game_object(args)
   self:init_unit()
+  self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20)
+  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 100)
+  self.t:cooldown(attack_speeds['medium'], function() local targets = self:get_objects_in_shape(self.attack_sensor, {Troop}); return targets and #targets > 0 end, function()
+    local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, {Troop})
+    if closest_enemy then
+      self:attack(10, {x = closest_enemy.x, y = closest_enemy.y})
+      
+    end
+  end, nil, nil, 'attack')
 
   if self.boss then
     self:set_as_rectangle(18, 7, 'dynamic', 'enemy')
@@ -302,13 +311,14 @@ function Seeker:update(dt)
       self:set_angular_damping(0)
     end
   else
-    local target = main.current.player
-    if self.taunted then target = self.taunted end
-    if self.taunted and self.taunted.dead then target = main.current.player; self.taunted = nil end
-    if self.headbutt_charging or self.shooting then
-      self:set_damping(10)
-      self:rotate_towards_object(target, 0.5)
-    elseif not self.headbutting then
+    --target closest troop 
+    if self.target and self.target.dead then self.target = nil end
+    if not (self.target and self:distance_to_object(self.target) <= self.attack_sensor.rs) then
+      self.target = self:get_closest_object_in_shape(self.aggro_sensor, {Troop})
+    end
+    if self.target and self.target.dead then self.target = nil end
+  
+    if not self.headbutting then
       if self.boss then
         local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
         local x, y = 0, 0
@@ -320,13 +330,19 @@ function Seeker:update(dt)
           x = x/#enemies
           y = y/#enemies
         else
-          x, y = target.x, target.y
+          x, y = self.target.x, self.target.y
         end
         self:seek_point(x, y)
         self:wander(10, 250, 3)
       else
-        self:seek_point(target.x, target.y)
-        self:wander(50, 100, 20)
+        if self.target and self:distance_to_object(self.target) < self.attack_sensor.rs then
+          self:seek_point(self.x + 0.1, self.y + 0.1)
+        elseif self.target then
+          self:seek_point(self.target.x, self.target.y)
+        else
+          self:seek_point(self.x + 0.1, self.y + 0.1)
+        end
+        self:wander(1,5,1)
       end
       self:steering_separate(16, main.current.enemies)
       self:rotate_towards_velocity(0.5)
@@ -334,7 +350,21 @@ function Seeker:update(dt)
   end
   self.r = self:get_angle()
 
+
+  self.attack_sensor:move_to(self.x, self.y)
+  self.aggro_sensor:move_to(self.x, self.y)
+
   if self.area_sensor then self.area_sensor:move_to(self.x, self.y) end
+end
+
+function Seeker:attack(area, mods)
+  mods = mods or {}
+  local t = {team = "enemy", group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(area or 64), color = self.color, dmg = self.area_dmg_m*self.dmg,
+    character = self.character, level = self.level, parent = self}
+  Area(table.merge(t, mods))
+
+  _G[random:table{'swordsman1', 'swordsman2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.75}
+
 end
 
 
@@ -382,31 +412,6 @@ function Seeker:on_collision_enter(other, contact)
       hit2:play{pitch = random:float(0.95, 1.05), volume = 0.35}
     end
 
-    if main.current.player.heavy_impact then
-      if self.being_pushed then
-        self:hit(self.push_force, nil, nil, true)
-      end
-    end
-
-    if main.current.player.tremor then
-      if self.being_pushed then
-        camera:shake(2, 0.5)
-        earth1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-        Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = 0.75*self.push_force*(main.current.player.area_size_m or 1), color = yellow[0], dmg = self.push_force/2, parent = main.current.player}
-      end
-    end
-
-    if main.current.player.fracture then
-      if self.being_pushed then
-        trigger:after(0.01, function()
-          earth2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-          for i = 1, 6 do
-            Projectile{group = main.current.main, x = self.x, y = self.y, color = red[0], r = (i-1)*math.pi/3, v = 200, dmg = 30, parent = main.current.player, pierce = 1}
-          end
-        end)
-      end
-    end
-
     if self.headbutter and self.headbutting then
       self.headbutting = false
     end
@@ -445,72 +450,20 @@ function Seeker:hit(damage, projectile, dot, from_enemy)
   if self.push_invulnerable then return end
   self:show_hp()
 
-  local crit = 1
-  if main.current.player.critical_strike and not dot and not from_enemy then
-    if random:bool((main.current.player.critical_strike == 1 and 5) or (main.current.player.critical_strike == 2 and 10) or (main.current.player.critical_strike == 3 and 15)) then
-      crit = 2
-      camera:shake(2.5, 0.25)
-      rogue_crit1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-      rogue_crit2:play{pitch = random:float(0.95, 1.05), volume = 0.15}
-      for i = 1, 2 do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color, v = random:float(100, 400)} end
-      HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 12, color = fg[0], duration = 0.3}:scale_down():change_color(0.5, self.color)
-    end
-  end
-
-  if main.current.player.kinetic_strike and not dot and not from_enemy then
-    if random:bool((main.current.player.kinetic_strike == 1 and 10) or (main.current.player.kinetic_strike == 2 and 20) or (main.current.player.kinetic_strike == 3 and 30)) then
-      local units = main.current.player:get_all_units()
-      local cx, cy = 0, 0
-      for _, unit in ipairs(units) do
-        cx = cx + unit.x
-        cy = cy + unit.y
-      end
-      cx = cx/#units
-      cy = cy/#units
-      self:push(random:float(30, 60), projectile and projectile.r or self:angle_from_point(cx, cy))
-    end
-  end
-
-  if main.current.player.stunning_strike and not dot and not from_enemy then
-    if random:bool((main.current.player.stunning_strike == 1 and 8) or (main.current.player.stunning_strike == 2 and 16) or (main.current.player.stunning_strike == 3 and 24)) then
-      self:slow(0.1, 2)
-      self.barbarian_stunned = true
-      self.t:after(2, function() self.barbarian_stunned = false end)
-    end
-  end
-
-  if main.current.player.silencing_strike and not dot and not from_enemy then
-    if random:bool((main.current.player.silencing_strike == 1 and 8) or (main.current.player.silencing_strike == 2 and 16) or (main.current.player.silencing_strike == 3 and 24)) then
-      self.silenced = true
-      self.t:after(4, function() self.silenced = false end)
-    end
-  end
-
-  local actual_damage = math.max(self:calculate_damage(damage)*(self.stun_dmg_m or 1)*crit, 0)
+  local actual_damage = math.max(self:calculate_damage(damage)*(self.stun_dmg_m or 1), 0)
   if self.vulnerable then actual_damage = actual_damage*self.vulnerable end
   self.hp = self.hp - actual_damage
   if self.hp > self.max_hp then self.hp = self.max_hp end
   main.current.damage_dealt = main.current.damage_dealt + actual_damage
 
-  if main.current.player.noxious_strike and not dot and not from_enemy then
-    if random:bool((main.current.player.noxious_strike == 1 and 8) or (main.current.player.noxious_strike == 2 and 16) or (main.current.player.noxious_strike == 3 and 24)) then
-      self:apply_dot(0.6*actual_damage*(main.current.player.dot_dmg_m or 1)*(main.current.chronomancer_dot or 1), 3)
-    end
-  end
-
-  if main.current.player.burning_strike and not dot and not from_enemy then
-    if random:bool(15) then
-      self:apply_dot(0.6*actual_damage*(main.current.player.dot_dmg_m or 1)*(main.current.chronomancer_dot or 1), 3, red[0])
-    end
-  end
 
   if dot then
-    self.seeping_def_m = (main.current.player.seeping == 1 and 0.85) or (main.current.player.seeping == 2 and 0.75) or (main.current.player.seeping == 3 and 0.65) or 1
+    self.seeping_def_m = 1
     self.t:after(1, function()
       self.seeping_def_m = 1
     end, 'seeping')
 
-    self.deceleration_mvspd_m = (main.current.player.deceleration == 1 and 0.85) or (main.current.player.deceleration == 2 and 0.75) or (main.current.player.deceleration == 3 and 0.65) or 1
+    self.deceleration_mvspd_m =  1
     self.t:after(1, function()
       self.deceleration_mvspd_m = 1
     end, 'deceleration')
@@ -525,26 +478,12 @@ function Seeker:hit(damage, projectile, dot, from_enemy)
     end)
   end
 
-  if self.boss and main.current.player.culling_strike then
-    if self.hp <= self.max_hp*((main.current.player.culling_strike == 1 and 0.1) or (main.current.player.culling_strike == 2 and 0.2) or (main.current.player.culling_strike == 3 and 0.3)) then
-      self.hp = 0
-    end
-  end
 
   if self.hp <= 0 then
     self.dead = true
     for i = 1, random:int(4, 6) do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color} end
     HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 12}:scale_down(0.3):change_color(0.5, self.color)
     _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.5}
-
-    if main.current.mercenary_level > 0 then
-      if random:bool((main.current.mercenary_level == 2 and 16) or (main.current.mercenary_level == 1 and 8) or 0) then
-        trigger:after(0.01, function()
-          if not main.current.main.world then return end
-          Gold{group = main.current.main, x = self.x, y = self.y}
-        end)
-      end
-    end
 
     --[[
     if main.current.healer_level > 0 then
@@ -641,59 +580,6 @@ function Seeker:hit(damage, projectile, dot, from_enemy)
         DotArea{group = main.current.effects, x = self.x, y = self.y, rs = (self.bane_ref.level == 3 and 2 or 1)*self.bane_ref.area_size_m*27, color = purple[0],
           dmg = self.bane_ref.area_dmg_m*self.bane_ref.dmg*(self.bane_ref.dot_dmg_m or 1), void_rift = true, duration = 1}
       end)
-    end
-
-    if main.current.player.ceremonial_dagger and not from_enemy then
-      trigger:after(0.01, function()
-        if tostring(self.x) == tostring(0/0) or tostring(self.y) == tostring(0/0) then return end
-        if not main.current.main.world then return end
-        _G[random:table{'scout1', 'scout2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.35}
-        HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 6}
-        local r = random:float(0, 2*math.pi)
-        local t = {group = main.current.main, x = self.x + 8*math.cos(r), y = self.y + 8*math.sin(r), v = 250, r = r, color = red[0], dmg = self.max_hp,
-          homing = true, character = 'jester', parent = main.current.player}
-        Projectile(table.merge(t, mods or {}))
-      end)
-    end
-
-    if main.current.player.homing_barrage and not from_enemy then
-      trigger:after(0.01, function()
-        if not main.current.player then return end
-        if random:bool((main.current.player.homing_barrage == 1 and 8) or (main.current.player.homing_barrage == 2 and 16) or (main.current.player.homing_barrage == 3 and 24)) then
-          local target = main.current.player:get_closest_object_in_shape(Circle(main.current.player.x, main.current.player.y, 128), main.current.enemies)
-          main.current.player:barrage(target and main.current.player:angle_to_object(target) or main.current.player.r, 4, nil, nil, nil, true)
-        end
-      end)
-    end
-
-    if main.current.player.infesting_strike and not from_enemy then
-      trigger:after(0.01, function()
-        if not main.current.player then return end
-        if random:bool((main.current.player.infesting_strike == 1 and 10) or (main.current.player.infesting_strike == 2 and 20) or (main.current.player.infesting_strike == 3 and 30)) then
-          critter1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-          for i = 1, 2 do
-            Critter{group = main.current.main, x = self.x, y = self.y, color = orange[0], r = random:float(0, 2*math.pi), v = 5, dmg = main.current.player.dmg, parent = main.current.player}
-          end
-        end
-      end)
-    end
-
-    if main.current.player.lucky_strike and not from_enemy then
-      if random:bool(8) then
-        if not main.current.main.world then return end
-        trigger:after(0.01, function()
-          Gold{group = main.current.main, x = self.x, y = self.y}
-        end)
-      end
-    end
-
-    if main.current.player.healing_strike and not from_enemy then
-      if random:bool(8) then
-        if not main.current.main.world then return end
-        trigger:after(0.01, function()
-          HealingOrb{group = main.current.main, x = self.x, y = self.y}
-        end)
-      end
     end
   end
 end
@@ -1084,7 +970,7 @@ end
 
 
 function EnemyProjectile:on_trigger_enter(other, contact)
-  if other:is(Player) then
+  if other:is(Player) or other:is(Troop) then
     self:die(self.x, self.y, nil, random:int(2, 3))
     other:hit(self.dmg)
 

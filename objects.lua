@@ -174,6 +174,7 @@ end
 Unit = Object:extend()
 function Unit:init_unit()
   self.level = self.level or 1
+  self.target = nil
   self.hfx:add('hit', 1)
   self.hfx:add('shoot', 1)
   self.hp_bar = HPBar{group = main.current.effects, parent = self}
@@ -198,7 +199,11 @@ end
 function Unit:show_hp(n)
   self.hp_bar.hidden = false
   self.hp_bar.color = red[0]
-  self.t:after(n or 2, function() self.hp_bar.hidden = true end, 'hp_bar')
+  --self.t:after(n or 2, function() self.hp_bar.hidden = true end, 'hp_bar')
+end
+
+function Unit:hide_hp()
+  self.hp_bar.hidden = true
 end
 
 
@@ -225,118 +230,21 @@ end
 
 function Unit:calculate_stats(first_run)
   if self:is(Player) then
-    self.base_hp = 100*math.pow(2, self.level-1)
-    self.base_dmg = 10*math.pow(2, self.level-1)
+    self.base_hp = 100
+    self.base_dmg = 10
     self.base_mvspd = 75
   elseif self:is(Seeker) then
-    if current_new_game_plus == 0 then
-      if self.boss then
-        local x = self.level
-        local y = {0, 0, 3, 0, 0, 6, 0, 0, 9, 0, 0, 12, 0, 0, 18, 0, 0, 40, 0, 0, 32, 0, 0, 64, 90}
-        local y2 = {0, 0, 24, 0, 0, 28, 0, 0, 32, 0, 0, 36, 0, 0, 44, 0, 0, 64, 0, 0, 48, 0, 0, 80, 100}
-        local k = 1.07
-        for i = 26, 50 do y[i] = y2[i-25] end
-        for i = 51, 5000 do
-          local n = i % 25
-          if n == 0 then
-            n = 25
-            k = k + 0.07
-          end
-          y[i] = y2[n]*k
-        end
-        self.base_hp = 100 + (current_new_game_plus*5) + (90 + current_new_game_plus*10)*y[x]
-        self.base_dmg = (12 + current_new_game_plus*2) + (2 + current_new_game_plus)*y[x]
-        self.base_mvspd = math.min(35 + 1.5*y[x], 35 + 1.5*y[150])
-        if x % 25 == 0 then
-          self.base_dmg = (12 + current_new_game_plus*2) + (1.25 + current_new_game_plus)*y[x]
-          self.base_mvspd = math.min(35 + 1.1*y[x], 35 + 1.1*y[150])
-        end
-      else
-        local x = self.level
-        local y = {0, 1, 3, 3, 4, 6, 5, 6, 9, 7, 8, 12, 10, 11, 15, 12, 13, 18, 16, 17, 21, 17, 20, 24, 25}
-        local k = 1.07
-        for i = 26, 5000 do
-          local n = i % 25
-          if n == 0 then
-            n = 25
-            k = k + 0.07
-          end
-          y[i] = y[i-10]*k
-        end
-        self.base_hp = 25 + 16.5*y[x]
-        self.base_dmg = 4.5 + 2.5*y[x]
-        self.base_mvspd = math.min(70 + 3*y[x], 70 + 3*y[150])
-      end
-    else
-      if self.boss then
-        local x = self.level
-        local y = {0, 0, 3, 0, 0, 6, 0, 0, 9, 0, 0, 12, 0, 0, 18, 0, 0, 40, 0, 0, 32, 0, 0, 64, 90}
-        local y2 = {0, 0, 24, 0, 0, 28, 0, 0, 32, 0, 0, 36, 0, 0, 44, 0, 0, 64, 0, 0, 48, 0, 0, 80, 100}
-        local k = 1.07
-        for i = 26, 50 do y[i] = y2[i-25] end
-        for i = 51, 5000 do
-          local n = i % 25
-          if n == 0 then
-            n = 25
-            k = k + 0.07
-          end
-          y[i] = y2[n]*k
-        end
-        self.base_hp = 100 + (current_new_game_plus*5) + (90 + current_new_game_plus*10)*y[x]
-        self.base_dmg = (12 + current_new_game_plus*2) + (2 + current_new_game_plus)*y[x]
-        self.base_mvspd = math.min(35 + 1.5*y[x], 35 + 1.5*y[150])
-        if x % 25 == 0 then
-          self.base_dmg = (12 + current_new_game_plus*2) + (1.75 + 0.5*current_new_game_plus)*y[x]
-          self.base_mvspd = math.min(35 + 1.2*y[x], 35 + 1.2*y[150])
-        end
-      else
-        local x = self.level
-        local y = {0, 1, 3, 3, 4, 6, 5, 6, 9, 7, 8, 12, 10, 11, 15, 12, 13, 18, 16, 17, 21, 17, 20, 24, 25}
-        local k = 1.07
-        for i = 26, 5000 do
-          local n = i % 25
-          if n == 0 then
-            n = 25
-            k = k + 0.07
-          end
-          y[i] = y[i-10]*k
-        end
-        self.base_hp = 22 + (current_new_game_plus*3) + (15 + current_new_game_plus*2.7)*y[x]
-        self.base_dmg = (4 + current_new_game_plus*1.15) + (2 + current_new_game_plus*0.83)*y[x]
-        self.base_mvspd = math.min(70 + 3*y[x], 70 + 3*y[150])
-      end
-    end
-  elseif self:is(Saboteur) then
-    self.base_hp = 100*math.pow(2, self.level-1)
-    self.base_dmg = 10*math.pow(2, self.level-1)
-    self.base_mvspd = 75
+    self.base_hp = 100
+    self.base_dmg = 20
+    self.base_mvspd = 50
   elseif self:is(Troop) then
-    self.base_hp = 100*math.pow(2, self.level-1)
-    self.base_dmg = 10*math.pow(2, self.level-1)
+    self.base_hp = 50
+    self.base_dmg = 10
     self.base_mvspd = 75
-  elseif self:is(Automaton) then
-    self.base_hp = 100*math.pow(2, self.level-1)
-    self.base_dmg = 10*math.pow(2, self.level-1)
-    self.base_mvspd = 15
   elseif self:is(EnemyCritter) or self:is(Critter) then
-    local x = self.level
-    local y = {0, 1, 3, 3, 4, 6, 5, 6, 9, 7, 8, 12, 10, 11, 15, 12, 13, 18, 16, 17, 21, 17, 20, 24, 25}
-    local k = 1.2
-    for i = 26, 5000 do
-      local n = i % 25
-      if n == 0 then
-        n = 25
-        k = k + 0.2
-      end
-      y[i] = y[n]*k
-    end
-    self.base_hp = 25 + 30*(y[x] or 1)
-    self.base_dmg = 10 + 3*(y[x] or 1)
-    self.base_mvspd = 60 + 3*(y[x] or 1)
-  elseif self:is(Overlord) then
-    self.base_hp = 50*math.pow(2, self.level-1)
-    self.base_dmg = 10*math.pow(2, self.level-1)
-    self.base_mvspd = 40
+    self.base_hp = 25 
+    self.base_dmg = 10 
+    self.base_mvspd = 60 
   end
   self.base_aspd_m = 1
   self.base_area_dmg_m = 1
@@ -441,10 +349,12 @@ end
 function HPBar:draw()
   if self.hidden then return end
   local p = self.parent
-  graphics.push(p.x, p.y, 0, p.hfx.hit.x, p.hfx.hit.x)
-    graphics.line(p.x - 0.5*p.shape.w, p.y - p.shape.h, p.x + 0.5*p.shape.w, p.y - p.shape.h, bg[-3], 2)
-    local n = math.remap(p.hp, 0, p.max_hp, 0, 1)
-    graphics.line(p.x - 0.5*p.shape.w, p.y - p.shape.h, p.x - 0.5*p.shape.w + n*p.shape.w, p.y - p.shape.h,
-    p.hfx.hit.f and fg[0] or ((p:is(Player) and green[0]) or (table.any(main.current.enemies, function(v) return p:is(v) end) and red[0])), 2)
-  graphics.pop()
+  if p.hp < p.max_hp then
+    graphics.push(p.x, p.y, 0, p.hfx.hit.x, p.hfx.hit.x)
+      graphics.line(p.x - 0.5*p.shape.w, p.y - p.shape.h, p.x + 0.5*p.shape.w, p.y - p.shape.h, bg[-3], 2)
+      local n = math.remap(p.hp, 0, p.max_hp, 0, 1)
+      graphics.line(p.x - 0.5*p.shape.w, p.y - p.shape.h, p.x - 0.5*p.shape.w + n*p.shape.w, p.y - p.shape.h,
+      p.hfx.hit.f and fg[0] or (((p:is(Player) or p:is(Troop)) and green[0]) or (table.any(main.current.enemies, function(v) return p:is(v) end) and red[0])), 2)
+    graphics.pop()
+  end
 end

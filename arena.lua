@@ -9,7 +9,7 @@ end
 function Arena:add_troops()
   for i, unit in ipairs(self.units) do
     for j=0, 4 do
-      Troop{group = self.main, x=gw/2 + 10, y = gh/2 -10, level = unit.level, character = unit.character, passives = self.passives}
+      Troop{group = self.main, x=gw/2 + i*10, y = gh/2 -10*j, level = unit.level, character = unit.character, passives = self.passives}
     end
   end
 end
@@ -52,11 +52,13 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
   steam.friends.setRichPresence('text', 'Arena - Level ' .. self.level)
 
   self.floor = Group()
-  self.main = Group():set_as_physics_world(32, 0, 0, {'player', 'enemy', 'projectile', 'enemy_projectile', 'force_field', 'ghost'})
+  self.main = Group():set_as_physics_world(32, 0, 0, {'player', 'enemy', 'projectile', 'enemy_projectile', 'force_field', 'ghost', 'troop'})
   self.post_main = Group()
   self.effects = Group()
   self.ui = Group()
   self.credits = Group()
+  self.main:disable_collision_between('player', 'troop')
+  self.main:disable_collision_between('troop', 'projectile')
   self.main:disable_collision_between('player', 'player')
   self.main:disable_collision_between('player', 'projectile')
   self.main:disable_collision_between('player', 'enemy_projectile')
@@ -68,6 +70,7 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
   self.main:disable_collision_between('player', 'force_field')
   self.main:disable_collision_between('projectile', 'force_field')
   self.main:disable_collision_between('ghost', 'player')
+  self.main:disable_collision_between('ghost', 'troop')
   self.main:disable_collision_between('ghost', 'projectile')
   self.main:disable_collision_between('ghost', 'enemy')
   self.main:disable_collision_between('ghost', 'enemy_projectile')
@@ -85,6 +88,7 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
   self.damage_taken = 0
   self.main_slow_amount = 1
   self.enemies = {Seeker, EnemyCritter}
+  self.troop_list = {}
   self.color = self.color or fg[0]
 
   -- Spawn solids and player
@@ -109,14 +113,6 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
   WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x2, -40, gw + 40, gh + 40), color = bg[-1]}
   WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x1, -40, self.x2, self.y1), color = bg[-1]}
   WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x1, self.y2, self.x2, gh + 40), color = bg[-1]}
-
-  for i, unit in ipairs(units) do
-    if i == 1 then
-      self.player = Player{group = self.main, x = gw/2, y = gh/2 + 16, leader = true, character = unit.character, level = unit.level, passives = self.passives, ii = i}
-    else
-      self.player:add_follower(Player{group = self.main, character = unit.character, level = unit.level, passives = self.passives, ii = i})
-    end
-  end
   
   --need to group units by class
   main.selectedClass = nil
@@ -130,12 +126,6 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
 
 
   self:add_troops()
-
-  local units = self.player:get_all_units()
-  for _, unit in ipairs(units) do
-    local chp = CharacterHP{group = self.effects, x = self.x1 + 8 + (unit.ii-1)*22, y = self.y2 + 14, parent = unit}
-    unit.character_hp = chp
-  end
 
   if self.level == 1000 then
     self.level_1000_text = Text2{group = self.ui, x = gw/2, y = gh/2, lines = {{text = '[fg, wavy_mid]SNKRX', font = fat_font, alignment = 'center'}}}
@@ -294,25 +284,6 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
 
   -- Calculate class levels
   local units = {}
-  table.insert(units, self.player)
-  for _, f in ipairs(self.player.followers) do table.insert(units, f) end
-
-  local class_levels = get_class_levels(units)
-  self.ranger_level = class_levels.ranger
-  self.warrior_level = class_levels.warrior
-  self.mage_level = class_levels.mage
-  self.rogue_level = class_levels.rogue
-  self.nuker_level = class_levels.nuker
-  self.curser_level = class_levels.curser
-  self.forcer_level = class_levels.forcer
-  self.swarmer_level = class_levels.swarmer
-  self.voider_level = class_levels.voider
-  self.enchanter_level = class_levels.enchanter
-  self.healer_level = class_levels.healer
-  self.psyker_level = class_levels.psyker
-  self.conjurer_level = class_levels.conjurer
-  self.sorcerer_level = class_levels.sorcerer
-  self.mercenary_level = class_levels.mercenary
 
   self.t:every(0.375, function()
     local p = random:table(star_positions)
@@ -392,6 +363,7 @@ function Arena:update(dt)
   end
 
   if not self.paused then
+    self.troop_list = self.main:get_objects_by_class(Troop)
     for i = 1, 9 do
       if input[tostring(i)].pressed then
         self:select_class_by_index(i)
@@ -853,6 +825,16 @@ function Arena:draw()
 
   if self.in_credits then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent_2) end
   self.credits:draw()
+end
+
+function Arena:all_troops_dead()
+  local troops = self.main:get_objects_by_class(Troop)
+
+  if #troops == 0 then return true end
+  for _, troop in ipairs(troops) do
+    if troop.dead ~= true then return false end
+  end
+  return true
 end
 
 
