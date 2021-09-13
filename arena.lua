@@ -666,21 +666,6 @@ function Arena:quit()
         steam.userStats.setAchievement('LEVEL_2_WIN')
         steam.userStats.storeStats()
       end
-
-      local units = self.player:get_all_units()
-      local all_units_level_3 = true
-      for _, unit in ipairs(self.starting_units) do
-        if unit.level ~= 3 then
-          all_units_level_3 = false
-          break
-        end
-      end
-      if all_units_level_3 then
-        state.achievement_level_3_win = true
-        system.save_state()
-        steam.userStats.setAchievement('LEVEL_3_WIN')
-        steam.userStats.storeStats()
-      end
     end
 
   else
@@ -1000,7 +985,7 @@ function Arena:transition()
   self.transitioning = true
   if not self.lock then locked_state = nil end
   ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-  TransitionEffect{group = main.transitions, x = self.player.x, y = self.player.y, color = state.dark_transitions and bg[-2] or self.color, transition_action = function(t)
+  TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or self.color, transition_action = function(t)
     if self.level % 2 == 0 and self.shop_level < 5 then
       self.shop_xp = self.shop_xp + 1
       local max_xp = 0

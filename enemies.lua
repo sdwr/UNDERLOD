@@ -6,7 +6,7 @@ function Seeker:init(args)
   self:init_game_object(args)
   self:init_unit()
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20)
-  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 100)
+  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 1000)
   self.t:cooldown(attack_speeds['medium'], function() local targets = self:get_objects_in_shape(self.attack_sensor, {Troop}); return targets and #targets > 0 end, function()
     local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, {Troop})
     if closest_enemy then

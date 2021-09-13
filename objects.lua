@@ -239,7 +239,7 @@ function Unit:calculate_stats(first_run)
     self.base_mvspd = 50
   elseif self:is(Troop) then
     self.base_hp = 50
-    self.base_dmg = 10
+    self.base_dmg = 20
     self.base_mvspd = 75
   elseif self:is(EnemyCritter) or self:is(Critter) then
     self.base_hp = 25 

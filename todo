@@ -6,16 +6,19 @@ CODE:
 
 enemies
   add telegraphed melee stomp type
+  add homing missiler
   add ranged archer (shows up starting later?)
 
 allies
   - archer feels weird
   - blizzard wizard
-    * add slow, fix duration?
+    * make damage not stack
+      - turn into debuff on enemy instead of damage from area?
   - chain lightning
   - buff types
     * aspd aura
   - cannon
+  - leaping zergling
 
 tuning
   - movement
@@ -28,13 +31,14 @@ tuning
 
 
 debugger
-  - find/setup vscode debugger for when game hangs
+  - find/setup debugger for when game hangs
 
 ui
   - show nice cursor
   - add unit hotbar per class
     * ui bar
     * list of owned units
+  - show unit attack CD somehow
 
 controls
   - control by class is not fun

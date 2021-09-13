@@ -2454,11 +2454,13 @@ function Area:init(args)
 
   end
 
+  local flashFactor = self.dmg / 30
+
   self.color = fg[0]
   self.color_transparent = Color(args.color.r, args.color.g, args.color.b, 0.08)
   self.w = 0
   self.hidden = false
-  self.t:tween(0.05, self, {w = args.w}, math.cubic_in_out, function() self.spring:pull(0.15) end)
+  self.t:tween(0.05, self, {w = args.w}, math.cubic_in_out, function() self.spring:pull(0.15 * flashFactor) end)
   self.t:after(0.2, function()
     self.color = args.color
     self.t:every_immediate(0.05, function() self.hidden = not self.hidden end, 7, function() self.dead = true end)
@@ -2474,6 +2476,7 @@ end
 function Area:draw()
   if self.hidden then return end
   graphics.push(self.x, self.y, self.r, self.spring.x, self.spring.x)
+  local flashFactor = self.dmg / 30
   local w = self.w/2
   local w10 = self.w/10
   local x1, y1 = self.x - w, self.y - w
@@ -2484,6 +2487,7 @@ function Area:draw()
   graphics.polyline(self.color, lw, x2 - w10, y2, x2, y2, x2, y2 - w10)
   graphics.polyline(self.color, lw, x1, y2 - w10, x1, y2, x1 + w10, y2)
   graphics.rectangle((x1+x2)/2, (y1+y2)/2, x2-x1, y2-y1, nil, nil, self.color_transparent)
+  graphics.rectangle((x1+x2)/2, (y1+y2)/2, x2-x1, y2-y1, nil, nil, self.color, 1 * flashFactor)
   graphics.pop()
 end
 
@@ -2497,6 +2501,21 @@ function DotArea:init(args)
   self:init_game_object(args)
   self.shape = Circle(self.x, self.y, self.rs)
   self.closest_sensor = Circle(self.x, self.y, 128)
+
+  if self.character == 'wizard' then
+    frost1:play{pitch = random:float(0.8, 1.2), volume = 0.4}
+    self.t:every(0.2, function()
+    local enemies = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
+    if #enemies > 0 then self.spring:pull(0.05, 200, 10) end
+    for _, enemy in ipairs(enemies) do
+      enemy:hit(self.dmg/5, self, true)
+      enemy:slow(0.1, 1)
+      HitCircle{group = main.current.effects, x = enemy.x, y = enemy.y, rs = 6, color = fg[0], duration = 0.1}
+      for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = self.color} end
+      for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = enemy.color} end
+    end
+  end, nil, nil, 'dot')
+  end
 
   if self.character == 'plague_doctor' or self.character == 'pyromancer' or self.character == 'witch' or self.character == 'burning_field' then
     self.t:every(0.2, function()
@@ -3008,6 +3027,65 @@ function Blizzard:draw()
   graphics.pop()
 end
 
+ChainLightning = Object:extend()
+ChainLightning:implement(GameObject)
+ChainLightning:implement(Physics)
+function ChainLightning:init(args)
+  self:init_game_object(args)
+  if not self.group.world then self.dead = true; return end
+
+  self.attack_sensor = Circle(self.target.x, self.target.y, self.rs)
+  local total_targets = 2 + self.level
+
+  local target_classes = nil
+  if self.team == "enemy" then
+    target_classes = {Troop}
+  else
+    target_classes = main.current.enemies
+  end
+  
+  self.targets = {self.target}
+  self.i = 0
+
+  local bounce = function()
+    self.i = self.i + 1
+    if #self.targets >= self.i then
+      self.targets[self.i]:hit(self.dmg)
+      spark2:play{pitch = random:float(0.8, 1.2), volume = 0.7}
+    end
+  end
+
+
+  local targets_in_range = self:get_objects_in_shape(self.attack_sensor, target_classes)
+  for _, target in ipairs(targets_in_range) do
+    if target.id ~= self.target.id and #self.targets < total_targets then
+      table.insert(self.targets, target)
+    end
+  end
+
+  
+  bounce()
+  self.t:every(0.2, bounce, total_targets, function() self.dead = true end)
+  self.t:every(0.05, function() self.hidden = not self.hidden end, 100)
+
+end
+
+
+
+function ChainLightning:update(dt)
+  self:update_game_object(dt)
+end
+
+function ChainLightning:draw()
+  if self.hidden then return end
+  if #self.targets < self.i then return end
+  if self.i == 1 then return end
+  local lastTarget = self.targets[self.i-1]
+  local currentTarget = self.targets[self.i]
+  graphics.push(lastTarget.x, lastTarget.y, 0, self.spring.x, self.spring.x)
+  graphics.line(lastTarget.x, lastTarget.y, currentTarget.x, currentTarget.y, self.color, 1.5)
+  graphics.pop()
+end
 
 
 
@@ -3521,7 +3599,7 @@ Troop:implement(Unit)
 function Troop:init(args)
   self:init_game_object(args)
   self:init_unit()
-  self:set_as_rectangle(4, 4,'dynamic', 'player')
+  self:set_as_rectangle(8,8,'dynamic', 'troop')
   self:set_restitution(0.5)
 
   self.color = character_colors[self.character]
@@ -3529,8 +3607,8 @@ function Troop:init(args)
   self:calculate_stats(true)
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
 
-  self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20)
-  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 100)
+  self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 40)
+  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 60)
   self:set_character()
 
   self.state = unit_states['normal']
@@ -3561,7 +3639,8 @@ function Troop:update(dt)
   -- try to rally first
   if ((input.mouse_state["m1"] and main.selectedClass == self.class) or input.mouse_state["m2"]) and (self.state == unit_states['normal'] or self.state == unit_states['stopped']) then
     self:seek_mouse()
-    self:steering_separate(16, {Troop})
+    --self:steering_separate(16, {Troop})
+    self:wander(15,50,5)
     self:rotate_towards_velocity(1)
     self.target = nil
   else
@@ -3576,13 +3655,13 @@ function Troop:update(dt)
     --if target not in attack range, close in
     if self.target and self:distance_to_object(self.target) > self.attack_sensor.rs and self.state == unit_states['normal'] then
       self:seek_point(self.target.x, self.target.y)
-      self:wander(1, 5, 1)
-      self:steering_separate(16, {Troop})
+      self:wander(7, 30, 5)
+      --self:steering_separate(16, {Troop})
       self:rotate_towards_velocity(1)
     --otherwise target is in attack range or doesn't exist, stay still
     else
       self:set_velocity(0,0)
-      self:steering_separate(16, {Troop})
+      self:steering_separate(8, {Troop})
     end
   end
   
@@ -3592,17 +3671,11 @@ function Troop:update(dt)
   self.aggro_sensor:move_to(self.x, self.y)
 end
 
-function Troop:move_nowhere()
-  self:seek_point(self.x + 0.01, self.y + 0.01)
-  self:wander(1, 5, 1)
-  self:rotate_towards_velocity(1)
-end
-
 
 function Troop:draw()
   --graphics.circle(self.x, self.y, self.attack_sensor.rs, orange[0], 1)
   graphics.push(self.x, self.y, self.r, self.hfx.hit.x, self.hfx.hit.x)
-  graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or self.color)
+  graphics.rectangle(self.x, self.y, self.shape.w*.66, self.shape.h*.66, 3, 3, self.hfx.hit.f and fg[0] or self.color)
   graphics.pop()
 end
 
@@ -3676,12 +3749,22 @@ function Troop:set_character()
     self.t:cooldown(attack_speeds['slow'], function() local enemies = self:get_objects_in_shape(self.attack_sensor, main.current.enemies); return enemies and #enemies > 0 end, function ()
       local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.enemies)
       if closest_enemy then
-        Blizzard{group = main.current.main, x = closest_enemy.x, y = closest_enemy.y, color = self.color, parent = self, rs = 24, level = self.level}
+        self.t:after(0.01, function()
+          self.dot_area = DotArea{group = main.current.effects, x = closest_enemy.x, y = closest_enemy.y, rs = 24, color = self.color, dmg = 5, character = self.character, level = self.level, parent = self}
+        end)
       end
     end, nil, nil, 'attack')
 
+  elseif self.character == 'shaman' then
+    self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium-long'])
+    self.t:cooldown(attack_speeds['medium-slow'], function() local enemies = self:get_objects_in_shape(self.attack_sensor, main.current.enemies); return enemies and #enemies > 0 end, function ()
+      local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.enemies)
+      if closest_enemy then
+        ChainLightning{group = main.current.main, target = closest_enemy, rs = 50, dmg = 10, color = self.color, parent = self, level = self.level}
+      end
+    end, nil, nil, 'attack')
   elseif self.character == 'cleric' then
-    self.attack_sensor = Circle(self.x, self.y, attack_ranges['melee'])
+    self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
     self.t:cooldown(attack_speeds['slow'], function() return self:get_hurt_ally(self.attack_sensor) end, function ()
       local hurt_ally = self:get_hurt_ally(self.attack_sensor)
       if hurt_ally then
@@ -3689,6 +3772,8 @@ function Troop:set_character()
       end
     end, nil, nil, 'heal')
   end
+
+  self.aggro_sensor = Circle(self.x, self.y, math.max(self.attack_sensor.rs * 1.3, 60))
 end
 
 function Troop:hit(damage, from_undead)
