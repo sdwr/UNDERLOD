@@ -1922,7 +1922,7 @@ function open_options(self)
         if self.main_menu_button then self.main_menu_button.dead = true; self.main_menu_button = nil end
         system.save_state()
         if self:is(MainMenu) or self:is(BuyScreen) then input:set_mouse_visible(true)
-        elseif self:is(Arena) then input:set_mouse_visible(state.mouse_control or false) end
+        elseif self:is(Arena) then input:set_mouse_visible(true) end
       end, 'pause')
     end}
 
