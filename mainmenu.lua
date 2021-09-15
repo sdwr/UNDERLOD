@@ -80,7 +80,7 @@ function MainMenu:on_enter(from)
     end
   end
 
-  self.title_text = Text({{text = '[wavy_mid, fg]SNKRX', font = fat_font, alignment = 'center'}}, global_text_tags)
+  self.title_text = Text({{text = '[wavy_mid, fg]UNDERLOD', font = fat_font, alignment = 'center'}}, global_text_tags)
 
   self.arena_run_button = Button{group = self.main_ui, x = 55, y = gh/2 - 10, force_update = true, button_text = 'arena run', fg_color = 'bg10', bg_color = 'bg', action = function(b)
     ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}

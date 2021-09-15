@@ -15,6 +15,11 @@ https://user-images.githubusercontent.com/409773/119258159-ea982b00-bb9e-11eb-80
 
 Download this repository, `cd` into it and then run `engine/love/love.exe --console .`. You need to have Steam up to run it successfully.
 
+### Controls
+1-9 to select unit class
+LMB moves units of the selected class
+RMB moves all units
+
 ### LICENSE
 
 All assets have their specific licenses and they are linked to in the game's credits. All code is under the MIT license.

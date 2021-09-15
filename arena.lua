@@ -129,7 +129,7 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
   self:add_troops()
 
   if self.level == 1000 then
-    self.level_1000_text = Text2{group = self.ui, x = gw/2, y = gh/2, lines = {{text = '[fg, wavy_mid]SNKRX', font = fat_font, alignment = 'center'}}}
+    self.level_1000_text = Text2{group = self.ui, x = gw/2, y = gh/2, lines = {{text = '[fg, wavy_mid]UNDERLOD', font = fat_font, alignment = 'center'}}}
   
   elseif (self.level - (25*self.loop)) % 6 == 0 or self.level % 25 == 0 then
     self.boss_level = true
@@ -268,7 +268,7 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
     end)
 
     if self.level == 20 and self.trailer then
-      Text2{group = self.ui, x = gw/2, y = gh/2 - 24, lines = {{text = '[fg, wavy]SNKRX', font = fat_font, alignment = 'center'}}}
+      Text2{group = self.ui, x = gw/2, y = gh/2 - 24, lines = {{text = '[fg, wavy]UNDERLOD', font = fat_font, alignment = 'center'}}}
       Text2{group = self.ui, x = gw/2, y = gh/2, sx = 0.5, sy = 0.5, lines = {{text = '[fg, wavy_mid]play now!', font = fat_font, alignment = 'center'}}}
       Text2{group = self.ui, x = gw/2, y = gh/2 + 24, sx = 0.5, sy = 0.5, lines = {{text = '[light_bg, wavy_mid]music: kubbi - ember', font = fat_font, alignment = 'center'}}}
     end

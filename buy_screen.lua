@@ -82,7 +82,7 @@ function BuyScreen:on_enter(from, level, loop, units, passives, shop_level, shop
   LevelButton{group = self.main, x = gw/2, y = 18, parent = self}
   self.tutorial_button = Button{group = self.main, x = gw/2 + 129, y = 18, button_text = '?', fg_color = 'bg10', bg_color = 'bg', action = function()
     self.in_tutorial = true
-    self.title_text = Text2{group = self.tutorial, x = gw/2, y = 35, lines = {{text = '[fg]WELCOME TO SNKRX!', font = fat_font, alignment = 'center'}}}
+    self.title_text = Text2{group = self.tutorial, x = gw/2, y = 35, lines = {{text = '[fg]WELCOME TO UNDERLOD!', font = fat_font, alignment = 'center'}}}
     self.tutorial_text = Text2{group = self.tutorial, x = 228, y = 160, lines = {
       {text = '[fg]You control a snake of multiple heroes that auto-attack nearby enemies.', font = pixul_font, height_multiplier = 1.2},
       {text = '[fg]You can steer the snake left or right by pressing [yellow]A/D[fg] or [yellow]left/right arrows[fg].', font = pixul_font, height_multiplier = 2.2},
