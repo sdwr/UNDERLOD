@@ -5,7 +5,7 @@
 
 
 
-# SNKRX
+# UNDERLOD
 
 UNDERLOD is an arcade RTS roguelite where you control an army of units that automatically attack nearby enemies.
 Combine different heroes to unlock class bonuses and create unique builds, and steer your unstoppable party as they ravage through endless waves of enemies.
