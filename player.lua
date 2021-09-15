@@ -32,7 +32,7 @@ function Player:init(args)
   elseif self.character == 'wizard' then
     self.attack_sensor = Circle(self.x, self.y, 128)
     self.t:cooldown(2, function() local enemies = self:get_objects_in_shape(self.attack_sensor, main.current.enemies); return enemies and #enemies > 0 end, function()
-      local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.enemies)
+      local closest_enemy = self:get_random_object_in_shape(self.attack_sensor, main.current.enemies)
       if closest_enemy then
         self:shoot(self:angle_to_object(closest_enemy), {chain = (self.level == 3 and 2 or 0)})
       end
@@ -805,15 +805,6 @@ function Player:init(args)
 
   elseif self.character == 'priest' then
     if self.level == 3 then
-      self.t:after(0.01, function()
-        local all_units = self:get_all_units()
-        local unit_1 = random:table_remove(all_units)
-        local unit_2 = random:table_remove(all_units)
-        local unit_3 = random:table_remove(all_units)
-        if unit_1 then unit_1.divined = true end
-        if unit_2 then unit_2.divined = true end
-        if unit_3 then unit_3.divined = true end
-      end)
     end
 
     self.t:every(12, function()
@@ -3075,9 +3066,15 @@ end
 function ChainLightning:draw()
   if self.hidden then return end
   if #self.targets < self.i then return end
-  if self.i == 1 then return end
-  local lastTarget = self.targets[self.i-1]
-  local currentTarget = self.targets[self.i]
+  local lastTarget = nil
+  local currentTarget = nil
+  if self.i == 1 then
+    lastTarget = self.parent
+    currentTarget = self.targets[self.i]
+  else
+    lastTarget = self.targets[self.i-1]
+    currentTarget = self.targets[self.i]
+  end
   graphics.push(lastTarget.x, lastTarget.y, 0, self.spring.x, self.spring.x)
   graphics.line(lastTarget.x, lastTarget.y, currentTarget.x, currentTarget.y, self.color, 1.5)
   graphics.pop()
@@ -3714,6 +3711,14 @@ function Troop:update(dt)
     if self.character == "cleric" then
       if self.target and self.target.hp == self.target.max_hp then self.target = nil end
       if not self.target then self.target = self:get_hurt_ally(self.aggro_sensor) end
+    elseif self.character == "paladin" then
+      if self.target and self.target.bubbled then self.target = nil end
+      if self.target and (self.target.hp /self.target.max_hp) > 0.5 then self.target = nil end
+      if not self.target then self.target = self:get_most_hurt_ally(self.aggro_sensor) end
+    elseif self.character == "priest" then
+      if self.target and (self.target.bubbled or self.target.shielded) then self.target = nil end
+      if self.target and self.target.hp == self.target.max_hp then self.target = nil end
+      if not self.target then self.target = self:get_hurt_ally_without_shield(self.aggro_sensor) end
     elseif self.character == "necromancer" then
       if not self.target then self.target = self:get_closest_object_in_shape(self.aggro_sensor, {Corpse}) end
     else
@@ -3743,6 +3748,12 @@ function Troop:draw()
   --graphics.circle(self.x, self.y, self.attack_sensor.rs, orange[0], 1)
   graphics.push(self.x, self.y, self.r, self.hfx.hit.x, self.hfx.hit.x)
   graphics.rectangle(self.x, self.y, self.shape.w*.66, self.shape.h*.66, 3, 3, self.hfx.hit.f and fg[0] or self.color)
+  if self.bubbled then 
+    graphics.circle(self.x, self.y, self.shape.w, yellow_transparent_weak)
+  end
+  if self.shielded then
+    graphics.circle(self.x, self.y, self.shape.w*0.8, white_transparent_weak)
+  end
   graphics.pop()
 end
 
@@ -3757,13 +3768,12 @@ function Troop:shoot(r, mods)
   camera:spring_shake(2, r)
   self.hfx:use('shoot', 0.25)
   self.state = unit_states['frozen']
-  self.t:after(0.25, function() self.state = unit_states['stopped'] end, 'stopped')
-  self.t:after(0.25 + .25, function() self.state = unit_states['normal'] end, 'normal')
+  self.t:after(0.4, function() self.state = unit_states['stopped'] end, 'stopped')
+  self.t:after(0.4 + .4, function() self.state = unit_states['normal'] end, 'normal')
 
-  local dmg_m = 1
   local crit = false
   HitCircle{group = main.current.effects, x = self.x + 0.8*self.shape.w*math.cos(r), y = self.y + 0.8*self.shape.w*math.sin(r), rs = 6}
-  local t = {group = main.current.main, x = self.x + 1.6*self.shape.w*math.cos(r), y = self.y + 1.6*self.shape.w*math.sin(r), v = 250, r = r, color = self.color, dmg = self.dmg*dmg_m, crit = crit, character = self.character,
+  local t = {group = main.current.main, x = self.x + 1.6*self.shape.w*math.cos(r), y = self.y + 1.6*self.shape.w*math.sin(r), v = 250, r = r, color = self.color, dmg = self.dmg, crit = crit, character = self.character,
   parent = self, level = self.level}
   Projectile(table.merge(t, mods or {}))
 end
@@ -3782,6 +3792,17 @@ function Troop:attack(area, mods)
     elementor1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
   end
 
+end
+
+function Troop:bubble(duration)
+  self.bubbled = true
+  self.shielded = false
+  self.t:after(duration, function() self.bubbled = false end)
+end
+
+function Troop:shield(amount, duration)
+  self.shielded = amount
+  self.t:after(duration, function() self.shielded = false end)
 end
 
 function Troop:onDeath()
@@ -3840,19 +3861,29 @@ function Troop:set_character()
         ChainLightning{group = main.current.main, target = closest_enemy, rs = 50, dmg = 10, color = self.color, parent = self, level = self.level}
       end
     end, nil, nil, 'attack')
+
   elseif self.character == 'necromancer' then
     self.summons = 0
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['long'])
-    self.t:cooldown(attack_speeds['medium'], function() local corpses = self:get_objects_in_shape(self.attack_sensor, {Corpse}); return corpses and #corpses > 1 end, function ()
+    self.t:cooldown(attack_speeds['fast'], function() local corpses = self:get_objects_in_shape(self.attack_sensor, {Corpse}); return corpses and #corpses > 0 end, function ()
       local closest_corpse = self:get_closest_object_in_shape(self.attack_sensor, {Corpse})
       if closest_corpse and not closest_corpse.dug_up and self.summons < 3 then
         self.summons = self.summons + 1
         Critter{group = main.current.main, x = closest_corpse.x, y = closest_corpse.y, color = white[0], r = random:float(0, 2*math.pi), v = 10, parent = self}
         closest_corpse:kill()
         self.target = nil
-      
     end
   end, nil, nil, 'attack')
+
+  elseif self.character == 'paladin' then
+    self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium-long'])
+    self.t:cooldown(attack_speeds['slow'], function() local target = self:get_most_hurt_ally(self.attack_sensor); return target end, function ()
+      local hurt_ally = self:get_most_hurt_ally(self.attack_sensor)
+      if (hurt_ally.hp / hurt_ally.max_hp) < 0.5 then
+        hurt_ally:bubble(2)
+      end
+    end, nil, nil, 'bubble')
+
   elseif self.character == 'cleric' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
     self.t:cooldown(attack_speeds['slow'], function() return self:get_hurt_ally(self.attack_sensor) end, function ()
@@ -3861,17 +3892,37 @@ function Troop:set_character()
         hurt_ally:heal(30)
       end
     end, nil, nil, 'heal')
+  
+  elseif self.character =='priest' then
+    self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
+    self.t:cooldown(attack_speeds['slow'], function() return self:get_hurt_ally_without_shield(self.attack_sensor) end, function ()
+      local hurt_ally = self:get_hurt_ally_without_shield(self.attack_sensor)
+      if hurt_ally then
+        hurt_ally:shield(30, 3)
+      end
+    end, nil, nil, 'shield')
   end
 
   self.aggro_sensor = Circle(self.x, self.y, math.max(self.attack_sensor.rs * 1.3, 60))
 end
 
 function Troop:hit(damage, from_undead)
+  if self.bubbled then return end
   if self.dead then return end
   if self.magician_invulnerable then return end
   if self.undead and not from_undead then return end
   self.hfx:use('hit', 0.25, 200, 10)
   self:show_hp()
+
+  if self.shielded then
+    if self.shielded > damage then 
+      self.shielded = self.shielded - damage
+      damage = 0
+    else
+      damage = damage - self.shielded
+      self.shielded = false
+    end
+  end
 
   local actual_damage = math.max(self:calculate_damage(damage), 0)
   self.hp = self.hp - actual_damage
@@ -3927,6 +3978,35 @@ function Troop:get_hurt_ally(sensor)
   end
   return false
 end
+
+function Troop:get_most_hurt_ally(sensor)
+  local allies = self:get_objects_in_shape(sensor, {Troop})
+  if not allies or #allies == 0 then return false end
+  local pct = 1
+  local target = nil
+  for _, ally in ipairs(allies) do
+    if ally.hp < ally.max_hp and self.id ~= ally.id then
+      if ( ally.hp / ally.max_hp ) < pct and not ally.bubbled then
+        target = ally
+        pct = ally.hp / ally.max_hp
+      end
+    end
+  end
+  if target then return target end
+  return false
+end
+
+function Troop:get_hurt_ally_without_shield(sensor)
+  local allies = self:get_objects_in_shape(sensor, {Troop})
+  if not allies or #allies == 0 then return false end
+  for _, ally in ipairs(allies) do
+    if ally.hp < ally.max_hp and self.id ~= ally.id and not ally.shielded and not ally.bubbled then
+      return ally
+    end
+  end
+  return false
+end
+
 
 
 
@@ -4311,7 +4391,7 @@ function Critter:init(args)
   self.invulnerable = true
   self.t:after(0.5, function() self.invulnerable = false end)
 
-  self.t:cooldown(attack_speeds['medium'], function() return self.target and self:distance_to_object(self.target) < self.aggro_sensor.rs end, 
+  self.t:cooldown(attack_speeds['medium'], function() return self.target and self:distance_to_object(self.target) < self.attack_sensor.rs end, 
   function() self:attack() end, nil, nil, "attack")
 
 end
@@ -4334,11 +4414,11 @@ function Critter:update(dt)
   else
     if not self.target then self.target = random:table(self.group:get_objects_by_classes(main.current.enemies)) end
     if self.target and self.target.dead then self.target = random:table(self.group:get_objects_by_classes(main.current.enemies)) end
-    if not self.target then
+    if not self.target or self:distance_to_object(self.target) < self.attack_sensor.rs then
       self:set_velocity(0,0)
       self:rotate_towards_velocity(1)
       self:steering_separate(8, {Critter})
-    else
+    elseif self.target then
       self:seek_point(self.target.x, self.target.y)
       self:rotate_towards_velocity(1)
       self:steering_separate(8, {Critter})

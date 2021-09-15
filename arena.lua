@@ -1157,7 +1157,7 @@ function Arena:spawn_n_enemies(p, j, n, pass)
         Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'stomper', level = self.level,
           speed_booster = elite_type == 'speed_booster', exploder = elite_type == 'exploder', shooter = elite_type == 'shooter', headbutter = elite_type == 'headbutter', tank = elite_type == 'tank', spawner = elite_type == 'spawner'}
       else
-        Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'stomper', level = self.level}
+        Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'shooter', level = self.level}
       end
     end}
   end, n, nil, 'spawn_enemies_' .. j)

@@ -58,6 +58,11 @@ tuning
       - add "cooldown_immediate" type trigger, that works like cooldown trigger and also starts immediately
   - effects
     * create layers for spell effects, so danger zones are always visible
+  - spells
+    * should cast after slight delay, not immediately
+      * cast time? 
+      * what to do with overheal/multi-bubble/necromancer if multiple caster pick same target
+        * fizzle? go on cd?
 
 CODE CLEANUP:
   - create global list of friendly classes

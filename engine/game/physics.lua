@@ -264,6 +264,13 @@ function Physics:get_objects_in_shape(shape, object_types)
   return table.select(self.group:get_objects_in_shape(shape, object_types), function(v) return v.id ~= self.id end)
 end
 
+function Physics:get_random_object_in_shape(shape, object_types)
+  local objects = self.group:get_objects_in_shape(shape, object_types)
+  if #objects > 0 then
+    return objects[math.random(#objects)]
+  end
+end
+
 
 -- Returns the closest object to this object in the given shape, optionally excluding objects in the exclude list passed in.
 -- self:get_closest_object_in_shape(Circle(self.x, self.y, 100), {Enemy1, Enemy2, Enemy3}) -> closest object of class Enemy1, Enemy2 or Enemy3 in a circle of radius 100 around this object

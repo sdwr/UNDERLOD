@@ -16,12 +16,21 @@ function Seeker:init(args)
       end
     end, nil, nil, 'attack')
     
+  elseif self.type == 'shooter' then
+    self.attack_sensor = Circle(self.x, self.y, 100)
+    self.t:cooldown(attack_speeds['medium'], function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end, function ()
+      local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies)
+      if target then
+        self:rotate_towards_object(target, 1)
+        self:shoot(self:angle_to_object(target))
+      end
+    end, nil, nil, 'shoot')
   else
-    self.t:cooldown(attack_speeds['medium'], function() local targets = self:get_objects_in_shape(self.attack_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
+    self.t:cooldown(attack_speeds['fast'], function() local targets = self:get_objects_in_shape(self.attack_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
       local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.friendlies)
       if closest_enemy then
+        self:rotate_towards_object(closest_enemy, 1)
         self:attack(self.dmg, {x = closest_enemy.x, y = closest_enemy.y})
-        
       end
     end, nil, nil, 'attack')
 
@@ -388,15 +397,36 @@ function Seeker:attack(area, mods)
   mods = mods or {}
   local t = {team = "enemy", group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(area or 64), color = self.color, dmg = self.area_dmg_m*self.dmg,
     character = self.character, level = self.level, parent = self}
-  Area(table.merge(t, mods))
 
-  _G[random:table{'swordsman1', 'swordsman2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.75}
+  self.state = unit_states['frozen']
+
+  self.t:after(0.3, function() 
+    self.state = unit_states['stopped']
+    Area(table.merge(t, mods))
+    _G[random:table{'swordsman1', 'swordsman2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.75}
+  end, 'stopped')
+  self.t:after(0.4 + .4, function() self.state = unit_states['normal'] end, 'normal')
 
 end
 
 function Seeker:stomp(area, mods)
+  Stomp{group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = 25, color = self.color, dmg = 50, level = self.level, parent = self}
+end
+
+function Seeker:shoot(r, mods)
   mods = mods or {}
-  Stomp{group = main.current.main, team = 'enemy', x = self.x, y = self.y, rs = 20, color = self.color, dmg = 50, character = self.character, level = self.level, parent = self}
+  local t = {group = main.current.main, x = self.x, y = self.y, v = 175, r = r, color = self.color, dmg = self.dmg}
+  self.hfx:use('shoot', 0.25)
+  self.state = unit_states['frozen']
+
+  self.t:after(0.4, function()
+    self.state = unit_states['stopped']
+    HitCircle{group = main.current.effects, x = self.x , y = self.y, rs = 6, duration = 0.1}
+    EnemyProjectile(table.merge(t, mods or {}))
+    
+    end, 'stopped')
+  self.t:after(0.4 + .4, function() self.state = unit_states['normal'] end, 'normal')
+
 end
 
 
@@ -1011,10 +1041,8 @@ function EnemyProjectile:on_trigger_enter(other, contact)
     other:hit(self.dmg)
 
   elseif other:is(Critter) then
-    if main.current.player.meat_shield then
-      self:die(self.x, self.y, nil, random:int(2, 3))
-      other:hit(1000)
-    end
+    self:die(self.x, self.y, nil, random:int(2, 3))
+    other:hit(self.dmg)
 
   elseif other:is(Seeker) or other:is(EnemyCritter) then
     if self.source == 'shooter' then
