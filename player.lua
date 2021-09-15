@@ -2436,7 +2436,7 @@ function Area:init(args)
   self.shape = Rectangle(self.x, self.y, 1.5*self.w, 1.5*self.w, self.r)
   local targets = {}
   if self.team == "enemy" then 
-    targets = main.current.main:get_objects_in_shape(self.shape, {Troop})
+    targets = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
   else
     targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
   end
@@ -2509,15 +2509,14 @@ function DotArea:init(args)
     if #enemies > 0 then self.spring:pull(0.05, 200, 10) end
     for _, enemy in ipairs(enemies) do
       enemy:hit(self.dmg/5, self, true)
-      enemy:slow(0.1, 1)
+      enemy:slow(0.8, 1)
       HitCircle{group = main.current.effects, x = enemy.x, y = enemy.y, rs = 6, color = fg[0], duration = 0.1}
       for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = self.color} end
       for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = enemy.color} end
     end
   end, nil, nil, 'dot')
-  end
 
-  if self.character == 'plague_doctor' or self.character == 'pyromancer' or self.character == 'witch' or self.character == 'burning_field' then
+  elseif self.character == 'plague_doctor' or self.character == 'pyromancer' or self.character == 'witch' or self.character == 'burning_field' then
     self.t:every(0.2, function()
       local enemies = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
       if #enemies > 0 then self.spring:pull(0.05, 200, 10) end
@@ -2661,8 +2660,8 @@ function DotArea:draw()
   graphics.push(self.x, self.y, self.r + self.vr, self.spring.x, self.spring.x)
     -- graphics.circle(self.x, self.y, self.shape.rs + random:float(-1, 1), self.color, 2)
     graphics.circle(self.x, self.y, self.shape.rs, self.color_transparent)
-    local lw = math.remap(self.shape.rs, 32, 256, 2, 4)
-    for i = 1, 4 do graphics.arc('open', self.x, self.y, self.shape.rs, (i-1)*math.pi/2 + math.pi/4 - math.pi/8, (i-1)*math.pi/2 + math.pi/4 + math.pi/8, self.color, lw) end
+    --local lw = math.remap(self.shape.rs, 32, 256, 2, 4)
+    --for i = 1, 4 do graphics.arc('open', self.x, self.y, self.shape.rs, (i-1)*math.pi/2 + math.pi/4 - math.pi/8, (i-1)*math.pi/2 + math.pi/4 + math.pi/8, self.color, lw) end
   graphics.pop()
 end
 
@@ -2983,7 +2982,6 @@ function Blizzard:init(args)
   self:set_restitution(0.5)
   self.hfx:add('hit', 1)
   self.color = blue[0]
-  self.attack_sensor = Circle(self.x, self.y, 256)
 
   self.vr = 0
   self.dvr = random:float(-math.pi/4, math.pi/4)
@@ -2996,12 +2994,10 @@ function Blizzard:init(args)
   self.t:after(0.2, function() self.color = args.color end)
 
   frost1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+  self.dot_area = DotArea{group = main.current.effects, x=self.x, y=self.y, r=self.r, rs = 24, w = self.parent.area_size_m*72, color = self.color, dmg = self.parent.dmg,
+    character = self.parent.character, level = self.parent.level, parent = self, duration = 2}
 
-  self.t:every(0.5, function()
-    Area{group = main.current.effects, x=self.x, y=self.y, r=self.r, w = self.parent.area_size_m*72, r = random:float(0, 2*math.pi), color = self.color, dmg = self.parent.dmg,
-      character = self.parent.character, level = self.parent.level, parent = self}
-  end, 4)
-  self.t:after(4, function()
+  self.t:after(2, function()
     self.t:every_immediate(0.05, function() self.hidden = not self.hidden end, 7, function() self.dead = true end)
   end)
 end
@@ -3022,8 +3018,8 @@ function Blizzard:draw()
   graphics.push(self.x, self.y, self.r + (self.vr or 0), self.spring.x, self.spring.x)
     -- graphics.circle(self.x, self.y, self.shape.rs + random:float(-1, 1), self.color, 2)
     graphics.circle(self.x, self.y, 24, self.color_transparent)
-    local lw = 2
-    for i = 1, 4 do graphics.arc('open', self.x, self.y, 24, (i-1)*math.pi/2 + math.pi/4 - math.pi/8, (i-1)*math.pi/2 + math.pi/4 + math.pi/8, self.color, lw) end
+    --local lw = 2
+    --for i = 1, 4 do graphics.arc('open', self.x, self.y, 24, (i-1)*math.pi/2 + math.pi/4 - math.pi/8, (i-1)*math.pi/2 + math.pi/4 + math.pi/8, self.color, lw) end
   graphics.pop()
 end
 
@@ -3039,7 +3035,7 @@ function ChainLightning:init(args)
 
   local target_classes = nil
   if self.team == "enemy" then
-    target_classes = {Troop}
+    target_classes = main.current.friendlies
   else
     target_classes = main.current.enemies
   end
@@ -3085,6 +3081,70 @@ function ChainLightning:draw()
   graphics.push(lastTarget.x, lastTarget.y, 0, self.spring.x, self.spring.x)
   graphics.line(lastTarget.x, lastTarget.y, currentTarget.x, currentTarget.y, self.color, 1.5)
   graphics.pop()
+end
+
+Stomp = Object:extend()
+Stomp:implement(GameObject)
+Stomp:implement(Physics)
+function Stomp:init(args)
+  self:init_game_object(args)
+  self.attack_sensor = Circle(self.x, self.y, 20)
+  self.time = love.timer.getTime()
+  self.currentTime = love.timer.getTime()
+
+  self.state = "charging"
+
+  self.parent.state = 'frozen'
+  self.t:after(1, function() self:stomp() end)
+  self.t:after(1 + 0.25, function() self:recover() end)
+
+end
+
+function Stomp:update(dt)
+  self:update_game_object(dt)
+  self.attack_sensor:move_to(self.x, self.y)
+  self.currentTime = love.timer.getTime() - self.time
+  if self.parent.dead then self.dead = true end
+end
+
+function Stomp:stomp()
+  self.state = "recovering"
+
+  earth1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+
+  local targets = {}
+  if self.team == 'enemy' then
+    targets = main.current.main:get_objects_in_shape(self.attack_sensor, main.current.friendlies)
+  else
+    targets = main.current.main:get_objects_in_shape(self.attack_sensor, main.current.enemies)
+  end
+  if #targets > 0 then self.spring:pull(0.05, 200, 10) end
+  for _, target in ipairs(targets) do
+    target:hit(self.dmg, self, true)
+    target:slow(0.8, 1)
+    HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
+    for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
+    for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
+  end
+end
+
+function Stomp:recover()
+  if self.parent and not self.parent.dead then
+    self.parent.state = 'normal'
+  end
+  self.dead = true
+end
+
+function Stomp:draw()
+  if self.hidden then return end
+
+  if self.state == 'charging' then
+    graphics.push(self.x, self.y, self.r + (self.vr or 0), self.spring.x, self.spring.x)
+      -- graphics.circle(self.x, self.y, self.shape.rs + random:float(-1, 1), self.color, 2)
+      graphics.circle(self.x, self.y, self.attack_sensor.rs * math.min(self.currentTime, 1) , red_transparent)
+      graphics.circle(self.x, self.y, self.attack_sensor.rs, red[0], 1)
+    graphics.pop()
+  end
 end
 
 
@@ -3617,6 +3677,11 @@ end
 
 function Troop:update(dt)
   self:update_game_object(dt)
+  if self.slowed then 
+    self.buff_mvspd_m = self.slowed
+  else
+    self.buff_mvspd_m = 1 
+  end
   self:calculate_stats()
 
   --[[
@@ -3649,6 +3714,8 @@ function Troop:update(dt)
     if self.character == "cleric" then
       if self.target and self.target.hp == self.target.max_hp then self.target = nil end
       if not self.target then self.target = self:get_hurt_ally(self.aggro_sensor) end
+    elseif self.character == "necromancer" then
+      if not self.target then self.target = self:get_closest_object_in_shape(self.aggro_sensor, {Corpse}) end
     else
       if not self.target then self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies) end
     end
@@ -3677,6 +3744,11 @@ function Troop:draw()
   graphics.push(self.x, self.y, self.r, self.hfx.hit.x, self.hfx.hit.x)
   graphics.rectangle(self.x, self.y, self.shape.w*.66, self.shape.h*.66, 3, 3, self.hfx.hit.f and fg[0] or self.color)
   graphics.pop()
+end
+
+function Troop:slow(amount, duration)
+  self.slowed = amount
+  self.t:after(duration, function() self.slowed = false end, 'slow')
 end
 
 
@@ -3710,6 +3782,10 @@ function Troop:attack(area, mods)
     elementor1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
   end
 
+end
+
+function Troop:onDeath()
+  Corpse{group = main.current.main, x = self.x, y = self.y}
 end
 
 
@@ -3750,7 +3826,8 @@ function Troop:set_character()
       local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.enemies)
       if closest_enemy then
         self.t:after(0.01, function()
-          self.dot_area = DotArea{group = main.current.effects, x = closest_enemy.x, y = closest_enemy.y, rs = 24, color = self.color, dmg = 5, character = self.character, level = self.level, parent = self}
+          self.dot_area = DotArea{group = main.current.effects, x = closest_enemy.x, y = closest_enemy.y, rs = 24,
+          character = self.character, color = self.color, dmg = 5, level = self.level, parent = self, duration = 2}
         end)
       end
     end, nil, nil, 'attack')
@@ -3763,6 +3840,19 @@ function Troop:set_character()
         ChainLightning{group = main.current.main, target = closest_enemy, rs = 50, dmg = 10, color = self.color, parent = self, level = self.level}
       end
     end, nil, nil, 'attack')
+  elseif self.character == 'necromancer' then
+    self.summons = 0
+    self.attack_sensor = Circle(self.x, self.y, attack_ranges['long'])
+    self.t:cooldown(attack_speeds['medium'], function() local corpses = self:get_objects_in_shape(self.attack_sensor, {Corpse}); return corpses and #corpses > 1 end, function ()
+      local closest_corpse = self:get_closest_object_in_shape(self.attack_sensor, {Corpse})
+      if closest_corpse and not closest_corpse.dug_up and self.summons < 3 then
+        self.summons = self.summons + 1
+        Critter{group = main.current.main, x = closest_corpse.x, y = closest_corpse.y, color = white[0], r = random:float(0, 2*math.pi), v = 10, parent = self}
+        closest_corpse:kill()
+        self.target = nil
+      
+    end
+  end, nil, nil, 'attack')
   elseif self.character == 'cleric' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
     self.t:cooldown(attack_speeds['slow'], function() return self:get_hurt_ally(self.attack_sensor) end, function ()
@@ -3813,7 +3903,7 @@ function Troop:on_collision_enter(other, contact)
       player_hit_wall1:play{pitch = r, volume = 0.1}
       pop1:play{pitch = r, volume = 0.2}
 
-  elseif table.any({Troop}, function(v) return other:is(v) end) then
+  elseif table.any(main.current.friendlies, function(v) return other:is(v) end) then
     --self:set_position()
     --other:push(random:float(25, 35)*(self.knockback_m or 1), self:angle_to_object(other))
   end
@@ -4169,6 +4259,32 @@ function HealingOrb:on_trigger_enter(other, contact)
   end
 end
 
+Corpse = Object:extend()
+Corpse:implement(GameObject)
+Corpse:implement(Physics)
+function Corpse:init(args)
+  self:init_game_object(args)
+  self:set_as_rectangle(1,1, "static", "ghost")
+  self:set_restitution(0.5)
+  self.dug_up = false
+
+  self.t:after(30, function() self.dead = true end)
+end
+
+function Corpse:kill()
+  self.dug_up = true
+  self.dead = true
+end
+
+function Corpse:update(dt)
+  self:update_game_object(dt)
+end
+
+function Corpse:draw()
+  graphics.push(self.x, self.y, self.r)
+    graphics.rectangle(self.x, self.y, 4, 4, nil, nil, black[0])
+  graphics.pop()
+end
 
 
 
@@ -4179,26 +4295,33 @@ Critter:implement(Unit)
 function Critter:init(args)
   self:init_game_object(args)
   if tostring(self.x) == tostring(0/0) or tostring(self.y) == tostring(0/0) then self.dead = true; return end
-  if #self.group:get_objects_by_class(Critter) > 100 then self.dead = true; return end
   self:init_unit()
   self:set_as_rectangle(7, 4, 'dynamic', 'player')
   self:set_restitution(0.5)
 
+  self.aggro_sensor = Circle(self.x, self.y, 125)
+  self.attack_sensor = Circle(self.x, self.y, 20)
+  self.slowed = false
+
   self.class = 'enemy_critter'
-  self.color = orange[0]
+  self.color = args.color or white[0]
   self:calculate_stats(true)
   self:set_as_steerable(self.v, 400, math.pi, 1)
-  self:push(args.v, args.r)
+  --self:push(args.v, args.r)
   self.invulnerable = true
   self.t:after(0.5, function() self.invulnerable = false end)
 
-  self.dmg = args.dmg or self.parent.dmg
-  self.hp = 1 + ((main.current.swarmer_level == 2 and 3) or (main.current.swarmer_level == 1 and 1) or 0) + (self.parent.hive or 0)
-end
+  self.t:cooldown(attack_speeds['medium'], function() return self.target and self:distance_to_object(self.target) < self.aggro_sensor.rs end, 
+  function() self:attack() end, nil, nil, "attack")
 
+end
 
 function Critter:update(dt)
   self:update_game_object(dt)
+
+  if self.slowed then
+    self.slow_mvspd_m = self.slowed
+  end
 
   if self.being_pushed then
     local v = math.length(self:get_velocity())
@@ -4211,20 +4334,20 @@ function Critter:update(dt)
   else
     if not self.target then self.target = random:table(self.group:get_objects_by_classes(main.current.enemies)) end
     if self.target and self.target.dead then self.target = random:table(self.group:get_objects_by_classes(main.current.enemies)) end
-    if not self.seek_f then return end
     if not self.target then
-      self:seek_point(gw/2, gh/2)
-      self:wander(50, 200, 50)
+      self:set_velocity(0,0)
       self:rotate_towards_velocity(1)
       self:steering_separate(8, {Critter})
     else
       self:seek_point(self.target.x, self.target.y)
-      self:wander(50, 200, 50)
       self:rotate_towards_velocity(1)
       self:steering_separate(8, {Critter})
     end
   end
   self.r = self:get_angle()
+
+  self.aggro_sensor:move_to(self.x, self.y)
+  self.attack_sensor:move_to(self.x, self.y)
 end
 
 
@@ -4235,17 +4358,25 @@ function Critter:draw()
   graphics.pop()
 end
 
+function Critter:attack()
+  if self.target and not self.target.dead then
+    swordsman1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
+    self.target:hit(self.dmg)
+  end
+end
+
 
 function Critter:hit(damage)
   if self.dead or self.invulnerable then return end
   self.hfx:use('hit', 0.25, 200, 10)
-  self.hp = self.hp - 1
-  -- self:show_hp()
-  if main.current.player.baneling_burst then
-    self:die()
-  else
-    if self.hp <= 0 then self:die() end
-  end
+  self.hp = self.hp - damage
+  self:show_hp()
+  if self.hp <= 0 then self:die() end
+end
+
+function Critter:slow(amount, duration)
+  self.slowed = amount
+  self.t:after(duration, function() self.slowed = false end, 'slow')
 end
 
 
@@ -4261,6 +4392,8 @@ end
 
 
 function Critter:die(x, y, r, n)
+  if self.parent and self.parent.summons then
+    self.parent.summons = self.parent.summons - 1 end
   if self.dead then return end
   x = x or self.x
   y = y or self.y
@@ -4270,13 +4403,6 @@ function Critter:die(x, y, r, n)
   self.dead = true
   _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.5}
   critter2:play{pitch = random:float(0.95, 1.05), volume = 0.2}
-
-  if main.current.player.baneling_burst then
-    camera:shake(2, 0.5)
-    Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*24, color = self.color,
-      dmg = (main.current.player.baneling_burst == 1 and 50) or (main.current.player.baneling_burst == 2 and 100) or (main.current.player.baneling_burst == 3 and 150) or 0, parent = self.parent}
-    _G[random:table{'cannoneer1', 'cannoneer2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-  end
 end
 
 
@@ -4297,9 +4423,9 @@ end
 
 
 function Critter:on_trigger_enter(other, contact)
-  if other:is(Seeker) then
+  --[[if other:is(Seeker) then
     critter2:play{pitch = random:float(0.65, 0.85), volume = 0.1}
     self:hit(1)
     other:hit(self.dmg, self)
-  end
+  end]]--
 end

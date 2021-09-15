@@ -5,28 +5,66 @@ CODE:
 ------------------
 
 enemies
-  add telegraphed melee stomp type
+  a̶d̶d̶ ̶t̶e̶l̶e̶g̶r̶a̶p̶h̶e̶d̶ ̶m̶e̶l̶e̶e̶ ̶s̶t̶o̶m̶p̶ ̶t̶y̶p̶e̶
+  add leapers
   add homing missiler
   add ranged archer (shows up starting later?)
+
+  - change spawn logic
+    * fixed by level?
 
 allies
   - archer feels weird
   - blizzard wizard
+    *̶ ̶m̶a̶k̶e̶ ̶a̶r̶e̶a̶ ̶d̶i̶s̶a̶p̶p̶e̶a̶r̶ ̶a̶f̶t̶e̶r̶ ̶t̶i̶m̶e̶
     * make damage not stack
       - turn into debuff on enemy instead of damage from area?
-  - chain lightning
+  - c̶h̶a̶i̶n̶ ̶l̶i̶g̶h̶t̶n̶i̶n̶g̶
+
+  - healers
+    * disc priest (shield)
+    * rejuv (hot)
+    * 
+  - purple
+     * necromancer
+      - use critter class
+      - have to add corpses
+
+     * curse explosion (caustic finale)
   - buff types
     * aspd aura
+    * double spell
+    * bubble ally to prevent death
+    * bloodlust (+aspd, - armor, aoe?)
+  - rogues
+    * stealthed unti attacks
+    * leaps backline
+    * disengage on low hp?
+
+  
   - cannon
   - leaping zergling
 
 tuning
   - movement
-    * melee units should stop in attack range, and not push targets
+    * m̶e̶l̶e̶e̶ ̶u̶n̶i̶t̶s̶ ̶s̶h̶o̶u̶l̶d̶ ̶s̶t̶o̶p̶ ̶i̶n̶ ̶a̶t̶t̶a̶c̶k̶ ̶r̶a̶n̶g̶e̶,̶ ̶a̶n̶d̶ ̶n̶o̶t̶ ̶p̶u̶s̶h̶ ̶t̶a̶r̶g̶e̶t̶s̶
+    * units shouldn't move towards target when attack is on cooldown
+      - how?
     * units should only chase when attack is off cooldown, not preemptively
     * troops move too quickly, makes kiting feel weird
       * try adding turn time?
+  - triggers
     * enemies should be able to attack on spawn, instead of waiting full cd
+      - add "cooldown_immediate" type trigger, that works like cooldown trigger and also starts immediately
+  - effects
+    * create layers for spell effects, so danger zones are always visible
+
+CODE CLEANUP:
+  - create global list of friendly classes
+  - unify target selection, attack triggering
+    * need proper lambdas? delayed functions cant have params
+  
+    
 
 
 

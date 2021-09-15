@@ -5,15 +5,27 @@ Seeker:implement(Unit)
 function Seeker:init(args)
   self:init_game_object(args)
   self:init_unit()
+  self.state = 'normal'
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20)
   self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 1000)
-  self.t:cooldown(attack_speeds['medium'], function() local targets = self:get_objects_in_shape(self.attack_sensor, {Troop}); return targets and #targets > 0 end, function()
-    local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, {Troop})
-    if closest_enemy then
-      self:attack(10, {x = closest_enemy.x, y = closest_enemy.y})
-      
-    end
-  end, nil, nil, 'attack')
+  if self.type == 'stomper' then
+    self.t:cooldown(attack_speeds['slow'], function() local targets = self:get_objects_in_shape(self.attack_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
+      local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.friendlies)
+      if closest_enemy then
+        self:stomp(30)
+      end
+    end, nil, nil, 'attack')
+    
+  else
+    self.t:cooldown(attack_speeds['medium'], function() local targets = self:get_objects_in_shape(self.attack_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
+      local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.friendlies)
+      if closest_enemy then
+        self:attack(self.dmg, {x = closest_enemy.x, y = closest_enemy.y})
+        
+      end
+    end, nil, nil, 'attack')
+
+  end
 
   if self.boss then
     self:set_as_rectangle(18, 7, 'dynamic', 'enemy')
@@ -171,12 +183,20 @@ function Seeker:init(args)
     end
 
   else
-    self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
-    self:set_restitution(0.5)
-    self.color = red[0]:clone()
+    if self.type == 'stomper' then
+      self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
+      self:set_restitution(0.5)
+      self.color = red[0]:clone()
+      self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
+      
+    else
+      self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
+      self:set_restitution(0.5)
+      self.color = grey[0]:clone()
+      self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
+    end
     self.class = 'seeker'
     self:calculate_stats(true)
-    self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
   end
 
   if self.speed_booster then
@@ -190,7 +210,7 @@ function Seeker:init(args)
     self.color = orange[0]:clone()
     self.last_headbutt_time = 0
     local n = math.remap(current_new_game_plus, 0, 5, 1, 0.5)
-    self.t:every(function() return math.distance(self.x, self.y, main.current.player.x, main.current.player.y) < 76 and love.timer.getTime() - self.last_headbutt_time > 10*n end, function()
+   --[[ self.t:every(function() return math.distance(self.x, self.y, main.current.player.x, main.current.player.y) < 76 and love.timer.getTime() - self.last_headbutt_time > 10*n end, function()
       if self.silenced or self.barbarian_stunned then return end
       if self.headbutt_charging or self.headbutting then return end
       self.headbutt_charging = true
@@ -208,6 +228,7 @@ function Seeker:init(args)
         end)
       end)
     end)
+  ]]--
   elseif self.tank then
     self.color = yellow[0]:clone()
     self.buff_hp_m = 1.25 + (0.1*self.level) + (0.4*current_new_game_plus)
@@ -314,38 +335,44 @@ function Seeker:update(dt)
     --target closest troop 
     if self.target and self.target.dead then self.target = nil end
     if not (self.target and self:distance_to_object(self.target) <= self.attack_sensor.rs) then
-      self.target = self:get_closest_object_in_shape(self.aggro_sensor, {Troop})
+      self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.friendlies)
     end
     if self.target and self.target.dead then self.target = nil end
   
     if not self.headbutting then
-      if self.boss then
-        local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
-        local x, y = 0, 0
-        if #enemies > 1 then
-          for _, enemy in ipairs(enemies) do
-            x = x + enemy.x
-            y = y + enemy.y
+      if self.state == 'normal' then
+        if self.boss then
+          local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
+          local x, y = 0, 0
+          if #enemies > 1 then
+            for _, enemy in ipairs(enemies) do
+              x = x + enemy.x
+              y = y + enemy.y
+            end
+            x = x/#enemies
+            y = y/#enemies
+          else
+            x, y = self.target.x, self.target.y
           end
-          x = x/#enemies
-          y = y/#enemies
+          self:seek_point(x, y)
+          self:wander(10, 250, 3)
         else
-          x, y = self.target.x, self.target.y
+          if self.target and self:distance_to_object(self.target) < self.attack_sensor.rs then
+            self:seek_point(self.x + 0.1, self.y + 0.1)
+          elseif self.target then
+            self:seek_point(self.target.x, self.target.y)
+          else
+            self:seek_point(self.x + 0.1, self.y + 0.1)
+          end
+          self:wander(1,5,1)
         end
-        self:seek_point(x, y)
-        self:wander(10, 250, 3)
+        self:steering_separate(16, main.current.enemies)
+        self:rotate_towards_velocity(0.5)
       else
-        if self.target and self:distance_to_object(self.target) < self.attack_sensor.rs then
-          self:seek_point(self.x + 0.1, self.y + 0.1)
-        elseif self.target then
-          self:seek_point(self.target.x, self.target.y)
-        else
-          self:seek_point(self.x + 0.1, self.y + 0.1)
-        end
-        self:wander(1,5,1)
+        self:set_velocity(0,0)
+        self:rotate_towards_velocity(1)
       end
-      self:steering_separate(16, main.current.enemies)
-      self:rotate_towards_velocity(0.5)
+      
     end
   end
   self.r = self:get_angle()
@@ -365,6 +392,11 @@ function Seeker:attack(area, mods)
 
   _G[random:table{'swordsman1', 'swordsman2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.75}
 
+end
+
+function Seeker:stomp(area, mods)
+  mods = mods or {}
+  Stomp{group = main.current.main, team = 'enemy', x = self.x, y = self.y, rs = 20, color = self.color, dmg = 50, character = self.character, level = self.level, parent = self}
 end
 
 
@@ -610,6 +642,10 @@ end
 function Seeker:slow(amount, duration)
   self.slowed = amount
   self.t:after(duration, function() self.slowed = false end, 'slow')
+end
+
+function Seeker:onDeath()
+  Corpse{group = main.current.main, x = self.x, y = self.y}
 end
 
 

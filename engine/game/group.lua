@@ -72,6 +72,7 @@ function Group:update(dt)
 
   for i = #self.objects, 1, -1 do
     if self.objects[i].dead then
+      if self.objects[i].onDeath then self.objects[i]:onDeath() end
       if self.objects[i].destroy then self.objects[i]:destroy() end
       self.objects.by_id[self.objects[i].id] = nil
       table.delete(self.objects.by_class[getmetatable(self.objects[i])], function(v) return v.id == self.objects[i].id end)

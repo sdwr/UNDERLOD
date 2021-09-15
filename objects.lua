@@ -234,17 +234,17 @@ function Unit:calculate_stats(first_run)
     self.base_dmg = 10
     self.base_mvspd = 75
   elseif self:is(Seeker) then
-    self.base_hp = 100
+    self.base_hp = 300
     self.base_dmg = 20
     self.base_mvspd = 50
   elseif self:is(Troop) then
     self.base_hp = 50
-    self.base_dmg = 20
+    self.base_dmg = 10
     self.base_mvspd = 75
   elseif self:is(EnemyCritter) or self:is(Critter) then
     self.base_hp = 25 
-    self.base_dmg = 10 
-    self.base_mvspd = 60 
+    self.base_dmg = 5 
+    self.base_mvspd = 50
   end
   self.base_aspd_m = 1
   self.base_area_dmg_m = 1
@@ -299,7 +299,10 @@ function Unit:calculate_stats(first_run)
   self.v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m
 end
 
-
+function Unit:hasTarget(shape, classes)
+  local targets = self:get_objects_in_shape(shape, classes)
+  return targets and #targets > 0
+end
 
 
 EffectBar = Object:extend()
