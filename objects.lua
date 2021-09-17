@@ -261,19 +261,17 @@ function Unit:calculate_stats(first_run)
   self.class_area_size_m = 1
   self.class_def_m = 1
   self.class_mvspd_m = 1
-  if first_run then
-    self.buff_hp_a = 0
-    self.buff_dmg_a = 0
-    self.buff_def_a = 0
-    self.buff_mvspd_a = 0
-    self.buff_hp_m = 1
-    self.buff_dmg_m = 1
-    self.buff_aspd_m = 1
-    self.buff_area_dmg_m = 1
-    self.buff_area_size_m = 1
-    self.buff_def_m = 1
-    self.buff_mvspd_m = 1
-  end
+  self.buff_hp_a = 0
+  self.buff_dmg_a = 0
+  self.buff_def_a = 0
+  self.buff_mvspd_a = 0
+  self.buff_hp_m = 1
+  self.buff_dmg_m = 1
+  self.buff_aspd_m = 1
+  self.buff_area_dmg_m = 1
+  self.buff_area_size_m = 1
+  self.buff_def_m = 1
+  self.buff_mvspd_m = 1
 
   self.class_hp_m = self.class_hp_m*class_stat_multipliers[self.class].hp
   self.max_hp = (self.base_hp + self.class_hp_a + self.buff_hp_a)*self.class_hp_m*self.buff_hp_m

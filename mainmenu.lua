@@ -75,8 +75,6 @@ function MainMenu:on_enter(from)
   for i, unit in ipairs(self.units) do
     if i == 1 then
       self.player = Player{group = self.main, x = gw/2 + random:float(-48, 48), y = gh/2 + 16 + random:float(-48, 48), leader = true, character = unit.character, level = unit.level, passives = self.passives, ii = i}
-    else
-      self.player:add_follower(Player{group = self.main, character = unit.character, level = unit.level, passives = self.passives, ii = i})
     end
   end
 

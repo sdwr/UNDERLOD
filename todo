@@ -8,12 +8,21 @@ enemies
   a̶d̶d̶ ̶t̶e̶l̶e̶g̶r̶a̶p̶h̶e̶d̶ ̶m̶e̶l̶e̶e̶ ̶s̶t̶o̶m̶p̶ ̶t̶y̶p̶e̶
   add leapers
   add homing missiler
+  add summoner
+
   add ranged archer (shows up starting later?)
+
+  add bosses
+  ogre boss, big aoe stomp
+  snake boss, burrows into ground / charges?
+
 
   - change spawn logic
     * fixed by level?
+    * all at once or over time?
 
 allies
+  - 
   - archer feels weird
   - blizzard wizard
     *̶ ̶m̶a̶k̶e̶ ̶a̶r̶e̶a̶ ̶d̶i̶s̶a̶p̶p̶e̶a̶r̶ ̶a̶f̶t̶e̶r̶ ̶t̶i̶m̶e̶
@@ -22,27 +31,34 @@ allies
   - c̶h̶a̶i̶n̶ ̶l̶i̶g̶h̶t̶n̶i̶n̶g̶
 
   - healers
-    * disc priest (shield)
+    * d̶i̶s̶c̶ ̶p̶r̶i̶e̶s̶t̶ ̶(̶s̶h̶i̶e̶l̶d̶)̶
     * rejuv (hot)
     * 
+
   - purple
      * necromancer
-      - use critter class
-      - have to add corpses
+      - u̶s̶e̶ ̶c̶r̶i̶t̶t̶e̶r̶ ̶c̶l̶a̶s̶s̶
+      - h̶a̶v̶e̶ ̶t̶o̶ ̶a̶d̶d̶ ̶c̶o̶r̶p̶s̶e̶s̶
+      - add skeletons to control group?
 
      * curse explosion (caustic finale)
+     * curse dot
+
   - buff types
     * aspd aura
     * double spell
-    * bubble ally to prevent death
+    * ̶b̶u̶b̶b̶l̶e̶ ̶a̶l̶l̶y̶ ̶t̶o̶ ̶p̶r̶e̶v̶e̶n̶t̶ ̶d̶e̶a̶t̶h̶
     * bloodlust (+aspd, - armor, aoe?)
   - rogues
     * stealthed unti attacks
     * leaps backline
     * disengage on low hp?
 
-  
+  nuker (orange)
   - cannon
+  - flamethrower
+
+
   - leaping zergling
 
 tuning
@@ -82,6 +98,7 @@ ui
     * ui bar
     * list of owned units
   - show unit attack CD somehow
+  - a̶d̶d̶ ̶c̶a̶s̶t̶i̶n̶g̶ ̶a̶n̶i̶m̶a̶t̶i̶o̶n̶
 
 controls
   - control by class is not fun
@@ -95,10 +112,6 @@ units
     * see if attacking requires LoS angle
 
 combat
-  - melee attacks
-    * targeted or cone or first enemy hit by cone?
-    * needs animation
-  - add faster projectiles
   - attack timing quantized to beat?
     * classes can have different timings
     * troops within class can be on different sub-beats (1/2/3/4)
