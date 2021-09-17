@@ -2705,7 +2705,7 @@ function Troop:set_character()
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
     self.t:cooldown(attack_speeds['medium'], function() return self.target and not self.target.dead end, function()
       if self.target then
-        self:shoot(self:angle_to_object(self.target))
+        self:shootAnimation(self:angle_to_object(self.target))
       end
     end, nil, nil, 'shoot')
 
@@ -2817,6 +2817,20 @@ function Troop:on_collision_enter(other, contact)
     --self:set_position()
     --other:push(random:float(25, 35)*(self.knockback_m or 1), self:angle_to_object(other))
   end
+end
+
+function Troop:shootAnimation(angle)
+  self.startedCastingAt = love.timer.getTime()
+  local castTime = self.castTime
+  local backswing = self.backswing
+  self.casting = true
+  self.state = unit_states['frozen']
+  self.t:after(castTime, function() 
+    self.casting = false
+    self.state = unit_states['stopped']
+    self:shoot(angle)
+    self.t:after(backswing, function() self.state = unit_states['normal'] end, 'castAnimation')
+  end, 'castAnimation')
 end
 
 function Troop:castAnimation()

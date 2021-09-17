@@ -234,7 +234,7 @@ function Unit:calculate_stats(first_run)
     self.base_dmg = 10
     self.base_mvspd = 75
   elseif self:is(Seeker) then
-    self.base_hp = 300
+    self.base_hp = 150
     self.base_dmg = 20
     self.base_mvspd = 50
   elseif self:is(Troop) then
