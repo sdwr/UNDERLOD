@@ -1153,9 +1153,15 @@ function Arena:spawn_n_enemies(p, j, n, pass)
       end
 
       if random:bool(table.reduce(level_to_elite_spawn_weights[self.level], function(memo, v) return memo + v end)) then
-        local elite_type = level_to_elite_spawn_types[self.level][random:weighted_pick(unpack(level_to_elite_spawn_weights[self.level]))]
-        Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'stomper', level = self.level,
-          speed_booster = elite_type == 'speed_booster', exploder = elite_type == 'exploder', shooter = elite_type == 'shooter', headbutter = elite_type == 'headbutter', tank = elite_type == 'tank', spawner = elite_type == 'spawner'}
+        local elite_type = math.random(3)
+        if elite_type == 1 then
+          Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'stomper', level = self.level}
+        elseif elite_type == 2 then
+          Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'mortar', level = self.level}
+        elseif elite_type == 3 then
+          Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'summoner', level = self.level}
+        else
+        end
       else
         Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'shooter', level = self.level}
       end

@@ -1954,10 +1954,10 @@ function Stomp:init(args)
 end
 
 function Stomp:update(dt)
+  if self.parent and self.parent.dead then self.dead = true; return end
   self:update_game_object(dt)
   self.attack_sensor:move_to(self.x, self.y)
   self.currentTime = love.timer.getTime() - self.time
-  if self.parent.dead then self.dead = true end
 end
 
 function Stomp:stomp()
@@ -2000,6 +2000,104 @@ function Stomp:draw()
   end
 end
 
+Mortar = Object:extend()
+Mortar:implement(GameObject)
+Mortar:implement(Physics)
+function Mortar:init(args)
+  self:init_game_object(args)
+
+  self.state = "charging"
+
+  self.parent.state = 'frozen'
+  local fire_speed = 0.75
+  self.t:after(fire_speed, function() self:fire() end)
+  self.t:after(fire_speed * 2, function() self:fire() end)
+  self.t:after(fire_speed * 3, function() self:fire() end)
+  self.t:after(fire_speed * 3 + 1.1, function() self:recover() end)
+
+end
+
+function Mortar:update(dt)
+  self:update_game_object(dt)
+  if self.parent and self.parent.dead then self.dead = true end
+end
+
+function Mortar:fire()
+  cannoneer1:play{pitch = random:float(0.95, 1.05), volume = 0.8}
+  Stomp{group = main.current.main, team = self.team, x = self.target.x + math.random(-10, 10), y = self.target.y + math.random(-10, 10), rs = self.rs, color = self.color, dmg = self.dmg, level = self.level, parent = self}
+end
+
+function Mortar:recover()
+  if self.parent and not self.parent.dead then
+    self.parent.state = 'normal'
+  end
+  self.dead = true
+end
+
+function Mortar:draw()
+end
+
+Summon = Object:extend()
+Summon:implement(GameObject)
+Summon:implement(Physics)
+function Summon:init(args)
+  self:init_game_object(args)
+  self.attack_sensor = Circle(self.x, self.y, self.rs)
+  self.time = love.timer.getTime()
+  self.currentTime = love.timer.getTime()
+
+  self.state = "charging"
+
+  self.parent.state = 'frozen'
+
+  self.summonTime = 3
+  illusion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+  self.t:after(self.summonTime, function() self:spawn() end)
+
+end
+
+function Summon:update(dt)
+  if self.parent and self.parent.dead then self.dead = true; return end
+  self:update_game_object(dt)
+  self.x = self.parent.x
+  self.y = self.parent.y
+  self.currentTime = love.timer.getTime() - self.time
+end
+
+function Summon:spawn()
+  illusion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+  spawn1:play{pitch = random:float(0.8, 1.2), volume = 0.15}
+  if self.parent.summons < 4 then
+    self.parent.summons = self.parent.summons + 1
+    Seeker{group = main.current.main, x= self.x + 10, y = self.y, character = 'seeker', type = 'rager', level = self.level, parent = self.parent}
+  end
+  if self.parent.summons < 4 then
+    self.parent.summons = self.parent.summons + 1
+    Seeker{group = main.current.main, x= self.x + 10, y = self.y, character = 'seeker', type = 'rager', level = self.level, parent = self.parent}
+  end
+  self:recover()
+end
+
+function Summon:recover()
+  self.state = 'recovering'
+  if self.parent and not self.parent.dead then
+    self.parent.state = 'normal'
+  end
+  self.dead = true
+end
+
+function Summon:draw()
+  if self.hidden then return end
+
+  if self.state == 'charging' then
+    graphics.push(self.x, self.y, self.r + (self.vr or 0), self.spring.x, self.spring.x)
+      -- graphics.circle(self.x, self.y, self.shape.rs + random:float(-1, 1), self.color, 2)
+      graphics.circle(self.x, self.y, self.attack_sensor.rs * math.min(self.currentTime / 3, 1) , purple_transparent)
+      graphics.circle(self.x, self.y, self.attack_sensor.rs, purple[0], 1)
+    graphics.pop()
+  end
+
+end
 
 
 Volcano = Object:extend()
@@ -2695,7 +2793,7 @@ function Troop:set_character()
   if self.character == 'swordsman' then
     self.dmg = self.dmg / 3;
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['melee'])
-    self.t:cooldown(attack_speeds['fast'], function() return self.target and not self.target.dead end, function()
+    self.t:cooldown(attack_speeds['fast'], self:in_range(), function()
       if self.target then
         self:attack(10, {x = self.target.x, y = self.target.y})
       end
@@ -2703,7 +2801,7 @@ function Troop:set_character()
 
   elseif self.character == 'archer' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
-    self.t:cooldown(attack_speeds['medium'], function() return self.target and not self.target.dead end, function()
+    self.t:cooldown(attack_speeds['medium'], self:in_range(), function()
       if self.target then
         self:shootAnimation(self:angle_to_object(self.target))
       end
@@ -2712,7 +2810,7 @@ function Troop:set_character()
   elseif self.character == 'sniper' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['long'])
     self.dmg = self.dmg * 3
-    self.t:cooldown(attack_speeds['slow'], function() return self.target and not self.target.dead end, function()
+    self.t:cooldown(attack_speeds['slow'], self:in_range(), function()
       if self.target then
         self:shoot(self:angle_to_object(self.target))
       end
@@ -2720,26 +2818,26 @@ function Troop:set_character()
 
   elseif self.character == 'wizard' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium-long'])
-    self.t:cooldown(attack_speeds['slow'], function() return self.target and not self.target.dead end, function ()
+    self.t:cooldown(attack_speeds['slow'], self:in_range(), function ()
         self:castAnimation()
     end, nil, nil, 'cast')
 
   elseif self.character == 'shaman' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium-long'])
-    self.t:cooldown(attack_speeds['medium-slow'], function() return self.target and not self.target.dead end, function ()
+    self.t:cooldown(attack_speeds['medium-slow'], self:in_range(), function ()
       self:castAnimation()
     end, nil, nil, 'cast')
 
   elseif self.character == 'necromancer' then
     self.summons = 0
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['long'])
-    self.t:cooldown(attack_speeds['fast'], function() return self.target and not self.target.dead end, function ()
+    self.t:cooldown(attack_speeds['fast'], self:in_range(), function ()
       self:castAnimation()
   end, nil, nil, 'cast')
 
   elseif self.character == 'paladin' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium-long'])
-    self.t:cooldown(attack_speeds['slow'], function() return self.target and not self.target.dead and not self.target.beingHealed end, function ()
+    self.t:cooldown(attack_speeds['slow'], self:in_range(), function ()
       self.target.beingHealed = true
       self.target:removeHealFlag(self.castTime)
       self:castAnimation()
@@ -2747,7 +2845,7 @@ function Troop:set_character()
 
   elseif self.character == 'cleric' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
-    self.t:cooldown(attack_speeds['slow'], function() return self.target and not self.target.dead and not self.target.beingHealed end, function ()
+    self.t:cooldown(attack_speeds['slow'], self:in_range(), function ()
       self.target.beingHealed = true
       self.target:removeHealFlag(self.castTime)
       self:castAnimation()
@@ -2755,14 +2853,21 @@ function Troop:set_character()
   
   elseif self.character =='priest' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
-    self.t:cooldown(attack_speeds['slow'], function() return self.target and not self.target.dead and not self.target.beingHealed end, function ()
+    self.t:cooldown(attack_speeds['slow'], self:in_range(), function ()
       self.target.beingHealed = true
       self.target:removeHealFlag(self.castTime)
       self:castAnimation()
     end, nil, nil, 'cast')
   end
 
-  self.aggro_sensor = Circle(self.x, self.y, math.max(self.attack_sensor.rs * 1.3, 60))
+  self.aggro_sensor = Circle(self.x, self.y, math.max(1000, 60))
+end
+
+function Troop:in_range()
+  if extra_condition == nil then extra_condition = true end
+  return function()
+    return self.target and not self.target.dead and self:distance_to_object(self.target) < self.attack_sensor.rs
+  end
 end
 
 function Troop:hit(damage, from_undead)
@@ -3300,7 +3405,7 @@ function Critter:init(args)
   self:set_restitution(0.5)
 
   self.aggro_sensor = Circle(self.x, self.y, 125)
-  self.attack_sensor = Circle(self.x, self.y, 20)
+  self.attack_sensor = Circle(self.x, self.y, 25)
   self.slowed = false
 
   self.class = 'enemy_critter'

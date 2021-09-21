@@ -246,6 +246,10 @@ function Unit:calculate_stats(first_run)
     self.base_dmg = 5 
     self.base_mvspd = 50
   end
+  if self:is(Seeker) and self.type == 'rager' then
+    self.base_mvspd = 150
+    self.base_dmg = 10
+  end
   self.base_aspd_m = 1
   self.base_area_dmg_m = 1
   self.base_area_size_m = 1

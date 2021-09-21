@@ -25,12 +25,33 @@ function Seeker:init(args)
         self:shoot(self:angle_to_object(target))
       end
     end, nil, nil, 'shoot')
+  elseif self.type == 'mortar' then
+    self.t:cooldown(attack_speeds['slow'], function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end, function ()
+      local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
+      if target then
+        self:rotate_towards_object(target, 1)
+        self:mortar(target)
+      end
+  end, nil, nil, 'shoot')
+  elseif self.type == 'summoner' then
+    self.summons = 0
+    self.t:cooldown(attack_speeds['slow'], function() return self.state == 'normal' end, function()
+      self:summon()
+    end, nil, nil, 'cast')
+  elseif self.type == 'rager' then
+    self.t:cooldown(attack_speeds['fast'], function() local targets = self:get_objects_in_shape(self.attack_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
+      local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.friendlies)
+      if closest_enemy then
+        self:rotate_towards_object(closest_enemy, 1)
+        self:attack(20, {x = closest_enemy.x, y = closest_enemy.y})
+      end
+    end, nil, nil, 'attack')
   else
     self.t:cooldown(attack_speeds['fast'], function() local targets = self:get_objects_in_shape(self.attack_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
       local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.friendlies)
       if closest_enemy then
         self:rotate_towards_object(closest_enemy, 1)
-        self:attack(self.dmg, {x = closest_enemy.x, y = closest_enemy.y})
+        self:attack(20, {x = closest_enemy.x, y = closest_enemy.y})
       end
     end, nil, nil, 'attack')
 
@@ -193,6 +214,23 @@ function Seeker:init(args)
 
   else
     if self.type == 'stomper' then
+      self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
+      self:set_restitution(0.5)
+      self.color = red[0]:clone()
+      self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
+      
+    elseif self.type == 'mortar' then
+      self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
+      self:set_restitution(0.5)
+      self.color = orange[0]:clone()
+      self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
+
+    elseif self.type == 'summoner' then
+      self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
+      self:set_restitution(0.5)
+      self.color = purple[0]:clone()
+      self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
+    elseif self.type == 'rager' then
       self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
       self:set_restitution(0.5)
       self.color = red[0]:clone()
@@ -413,6 +451,14 @@ function Seeker:stomp(area, mods)
   Stomp{group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = 25, color = self.color, dmg = 50, level = self.level, parent = self}
 end
 
+function Seeker:mortar(target)
+  Mortar{group = main.current.main, team = "enemy", target = target, rs = 25, color = self.color, dmg = 30, level = self.level, parent = self}
+end
+
+function Seeker:summon()
+  Summon{group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = 25, color = self.color, level = self.level, parent = self}
+end
+
 function Seeker:shoot(r, mods)
   mods = mods or {}
   local t = {group = main.current.main, x = self.x, y = self.y, v = 175, r = r, color = self.color, dmg = self.dmg}
@@ -542,6 +588,7 @@ function Seeker:hit(damage, projectile, dot, from_enemy)
 
 
   if self.hp <= 0 then
+    self:die()
     self.dead = true
     for i = 1, random:int(4, 6) do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color} end
     HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 12}:scale_down(0.3):change_color(0.5, self.color)
@@ -643,6 +690,12 @@ function Seeker:hit(damage, projectile, dot, from_enemy)
           dmg = self.bane_ref.area_dmg_m*self.bane_ref.dmg*(self.bane_ref.dot_dmg_m or 1), void_rift = true, duration = 1}
       end)
     end
+  end
+end
+
+function Seeker:die()
+  if self.parent and self.parent.summons and self.parent.summons > 0 then
+    self.parent.summons = self.parent.summons - 1
   end
 end
 

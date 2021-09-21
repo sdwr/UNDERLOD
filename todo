@@ -107,6 +107,7 @@ controls
 
 units
   - collision? clustering?
+  - add safe unit create that checks for clipping/ finds new spawn
   - turn time
     * already in engine
     * see if attacking requires LoS angle
