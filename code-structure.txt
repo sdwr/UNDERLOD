@@ -1,0 +1,66 @@
+
+Game loop:
+    in main.lua, calls State:update() and State:draw() 
+    in battle that = Arena:update() and Arena:draw()
+    out of battle = BuyScreen:update() and BuyScreen:draw()
+
+Globals in main.lua
+    - colors
+    - sounds
+    - lookup tables
+    - global vars
+
+Units/Effects are GameObjects, have 
+    init()
+        called once on creation, should set stats
+    update()
+        called every frame, should update velocity/position with Physics:update_game_object(), also sets target, updates stats for temporary buffs
+    draw()
+        draws to screen every frame
+
+    Unit classes being used are 
+        - Troop for player units
+            .character is unit type
+        - Seeker for enemies
+            .type is enemy type
+        - Critter for necro skeletons
+
+        - implements Physics for movement and collision
+            collision handled by Group, all collidable objects are in main Group, set in Arena:on_enter()
+        - get cleaned up in global update when set to dead (self.dead = true)
+        - have aggro range and attack range
+
+Spells are stored in Player class
+    ex. ChainLightning, Stomp, Summon
+
+--------------
+TO ADD A UNIT:
+--------------
+    needs to be added to all the lookup tables in main.lua (or game crashes when they show up in the BuyScreen)
+    if you want custom movement, goes in :update()
+    add attack:
+        player unit: 
+            add elseif in Troop:set_character()
+        enemy unit:
+            add 2 elseifs in Seeker:init()
+            add to Arena:on_enter() to spawn
+                ( spawn_n_enemies() or spawn_n_rares() )
+
+
+Attacks and timers handled via Triggers
+    - duplicated for every unit type (target handling split between init and update)
+
+    -most attacks/spells are set as Trigger:cooldown() in unit's :init()
+    -uses unit.state property to stop units during cast-time + backswing
+        .state = 'normal', can move freely
+        .state = 'frozen', can't move, in casting animation
+        .state = 'stopped', doesn't move automatically, can be rallied (like backswing in RTS)
+
+    -some numbers hardcoded, they *should* be in globals in main.lua
+        ex. attack_speeds
+
+Enemy spawns are in Arena:on_enter()
+
+
+
+

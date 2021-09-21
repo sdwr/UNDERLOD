@@ -6,11 +6,11 @@ CODE:
 
 enemies
   a̶d̶d̶ ̶t̶e̶l̶e̶g̶r̶a̶p̶h̶e̶d̶ ̶m̶e̶l̶e̶e̶ ̶s̶t̶o̶m̶p̶ ̶t̶y̶p̶e̶
+ ̶ ̶a̶d̶d̶ ̶s̶u̶m̶m̶o̶n̶e̶r̶
+
   add leapers
   add homing missiler
-  add summoner
-
-  add ranged archer (shows up starting later?)
+  add ranged archer
 
   add bosses
   ogre boss, big aoe stomp
@@ -22,7 +22,6 @@ enemies
     * all at once or over time?
 
 allies
-  - 
   - archer feels weird
   - blizzard wizard
     *̶ ̶m̶a̶k̶e̶ ̶a̶r̶e̶a̶ ̶d̶i̶s̶a̶p̶p̶e̶a̶r̶ ̶a̶f̶t̶e̶r̶ ̶t̶i̶m̶e̶
@@ -71,12 +70,12 @@ tuning
       * try adding turn time?
   - triggers
     * enemies should be able to attack on spawn, instead of waiting full cd
-      - add "cooldown_immediate" type trigger, that works like cooldown trigger and also starts immediately
+      - add "cooldown_immediate" type trigger? works like cooldown trigger and also starts immediately?
   - effects
-    * create layers for spell effects, so danger zones are always visible
+    *̶ ̶c̶r̶e̶a̶t̶e̶ ̶l̶a̶y̶e̶r̶s̶ ̶f̶o̶r̶ ̶s̶p̶e̶l̶l̶ ̶e̶f̶f̶e̶c̶t̶s̶,̶ ̶s̶o̶ ̶d̶a̶n̶g̶e̶r̶ ̶z̶o̶n̶e̶s̶ ̶a̶r̶e̶ ̶a̶l̶w̶a̶y̶s̶ ̶v̶i̶s̶i̶b̶l̶e̶
   - spells
-    * should cast after slight delay, not immediately
-      * cast time? 
+    * s̶h̶o̶u̶l̶d̶ ̶c̶a̶s̶t̶ ̶a̶f̶t̶e̶r̶ ̶s̶l̶i̶g̶h̶t̶ ̶d̶e̶l̶a̶y̶,̶ ̶n̶o̶t̶ ̶i̶m̶m̶e̶d̶i̶a̶t̶e̶l̶y̶
+̶ ̶ ̶ ̶ ̶ ̶ ̶*̶ ̶c̶a̶s̶t̶ ̶t̶i̶m̶e̶?̶ 
       * what to do with overheal/multi-bubble/necromancer if multiple caster pick same target
         * fizzle? go on cd?
 
@@ -103,7 +102,7 @@ ui
 controls
   - control by class is not fun
     * units aggro too quickly, can't pull multiple classes off enemies simultaneously
-  - experiment with commander wasd vs free mouse
+    * try rally to location instead of rally while mouse pressed
 
 units
   - collision? clustering?
@@ -123,14 +122,6 @@ unit stats
   https://docs.google.com/spreadsheets/d/1HRqfD-rEdXdnwLKPiguDDNjRDQcnUGDvvm0q2Mh2z8E/edit#gid=0
   - add group size
   - change range, aggro range
-
-spell effects
-  - charge
-  - delayed hitbox
-  - faster projectiles (archer)
-
-shop
-  - can't be 
 
 
 ------------------
