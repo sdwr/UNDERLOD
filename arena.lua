@@ -9,7 +9,7 @@ end
 function Arena:add_troops()
   for i, unit in ipairs(self.units) do
     for j=0, 4 do
-      Troop{group = self.main, x=gw/2 + i*10, y = gh/2 -10*j, level = unit.level, character = unit.character, passives = self.passives}
+      Troop{group = self.main, x = (gh*0.2) + (i*20), y = gh/2- (10*j), level = unit.level, character = unit.character, passives = self.passives}
     end
   end
 end
@@ -100,8 +100,7 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
     {x = self.x1 + 32, y = self.y1 + 32, r = math.pi/4},
     {x = self.x1 + 32, y = self.y2 - 32, r = -math.pi/4},
     {x = self.x2 - 32, y = self.y1 + 32, r = 3*math.pi/4},
-    {x = self.x2 - 32, y = self.y2 - 32, r = -3*math.pi/4},
-    {x = gw/2, y = gh/2, r = random:float(0, 2*math.pi)}
+    {x = self.x2 - 32, y = self.y2 - 32, r = -3*math.pi/4}
   }
   self.spawn_offsets = {{x = -12, y = -12}, {x = 12, y = -12}, {x = 12, y = 12}, {x = -12, y = 12}, {x = 0, y = 0}}
   self.last_spawn_enemy_time = love.timer.getTime()
@@ -142,33 +141,14 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
       end, 3, function()
         alert1:play{pitch = 1.2, volume = 0.5}
         camera:shake(4, 0.25)
-        SpawnEffect{group = self.effects, x = gw/2, y = gh/2 - 48}
-        SpawnEffect{group = self.effects, x = gw/2, y = gh/2, action = function(x, y)
+        SpawnEffect{group = self.effects, x = gw/2 * 0.8, y = gh/2}
+        SpawnEffect{group = self.effects, x = gw/2 * 0.8, y = gh/2, action = function(x, y)
           spawn1:play{pitch = random:float(0.8, 1.2), volume = 0.15}
           SpawnMarker{group = self.effects, x = x, y = y}
           self.t:after(1.125, function()
             self.boss = Seeker{group = self.main, x = x, y = y, character = 'seeker', level = self.level, boss = level_to_boss[self.level]}
           end)
         end}
-        self.t:every(function()
-          if self.boss and not self.boss.dead then
-            return (#self.main:get_objects_by_classes(self.enemies) <= 1) and not self.spawning_enemies
-          elseif self.boss and self.boss.dead then
-            return (#self.main:get_objects_by_classes(self.enemies) <= 0) and not self.spawning_enemies
-          end
-        end, function()
-          self.hfx:use('condition1', 0.25, 200, 10)
-          self.hfx:pull('condition2', 0.0625)
-          self.t:after(0.5, function()
-            self.spawning_enemies = true
-            self.t:after((8 + math.floor(self.level/2))*0.1 + 0.5 + 0.75, function() self.spawning_enemies = false end, 'spawning_enemies')
-            local spawn_type = random:table{'left', 'middle', 'right'}
-            local spawn_points = {left = {x = self.x1 + 32, y = gh/2}, middle = {x = gw/2, y = gh/2}, right = {x = self.x2 - 32, y = gh/2}}
-            local p = spawn_points[spawn_type]
-            SpawnMarker{group = self.effects, x = p.x, y = p.y}
-            self.t:after(1.125, function() self:spawn_n_enemies(p, nil, 8 + math.floor(self.level/2)) end)
-          end)
-        end)
       end)
       self.t:every(function() return self.start_time <= 0 and (self.boss and self.boss.dead) and #self.main:get_objects_by_classes(self.enemies) <= 0 and not self.spawning_enemies and not self.quitting end, function()
         self:quit()
@@ -227,7 +207,7 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
       if n == 0 then n = 25 end
       self.level_to_distributed_enemies_chance[i] = self.level_to_distributed_enemies_chance[n]
     end
-    self.max_waves = self.level_to_max_waves[self.level]
+    self.max_waves = 1
     self.wave = 0
     self.start_time = 3
     self.t:after(1, function()
@@ -239,32 +219,15 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
         alert1:play{pitch = 1.2, volume = 0.5}
         camera:shake(4, 0.25)
         SpawnEffect{group = self.effects, x = gw/2, y = gh/2 - 48}
-        self.t:every(function() return #self.main:get_objects_by_classes(self.enemies) <= 0 and not self.spawning_enemies end, function()
-          self.wave = self.wave + 1
-          if self.wave > self.max_waves then return end
-          self.hfx:use('condition1', 0.25, 200, 10)
-          self.hfx:pull('condition2', 0.0625)
-          self.t:after(0.5, function()
-            if random:bool(self.level_to_distributed_enemies_chance[self.level]) then
-              local n = math.ceil((8 + (self.wave+math.min(self.loop*6, 60)-1)*2)/7)
-              for i = 1, n do
-                self.t:after((i-1)*2, function()
-                  self:spawn_distributed_enemies()
-                end)
-              end
-            else
-              self.spawning_enemies = true
-              self.t:after((8 + (self.wave-1)*2)*0.1 + 0.5 + 0.75, function() self.spawning_enemies = false end, 'spawning_enemies')
-              local spawn_type = random:table{'left', 'middle', 'right'}
-              local spawn_points = {left = {x = self.x1 + 32, y = gh/2}, middle = {x = gw/2, y = gh/2}, right = {x = self.x2 - 32, y = gh/2}}
-              local p = spawn_points[spawn_type]
-              SpawnMarker{group = self.effects, x = p.x, y = p.y}
-              self.t:after(1.125, function() self:spawn_n_enemies(p, nil, 8 + (self.wave+math.min(self.loop*12, 200)-1)*2) end)
-            end
-          end)
-        end, self.max_waves+1)
+        local x, y = gw * 0.7, gh/2
+        SpawnMarker{group = self.effects, x = x, y = y}
+        self.t:after(1.125, function() self:spawn_n_enemies({x = x, y = y}, nil, 2 + (self.level * 2)); self.wave = self.wave + 1 end)
+        local x, y = gw * 0.8, gh/2
+        self.t:after(2.5, function() self:spawn_n_rares({x = x, y = y}, nil, 0 + (self.level - 1)) end)
+
+
       end)
-      self.t:every(function() return #self.main:get_objects_by_classes(self.enemies) <= 0 and self.wave > self.max_waves and not self.quitting and not self.spawning_enemies end, function() self:quit() end)
+      self.t:every(function() return #self.main:get_objects_by_classes(self.enemies) <= 0 and self.wave >= self.max_waves and not self.quitting and not self.spawning_enemies end, function() self:quit() end)
     end)
 
     if self.level == 20 and self.trailer then
@@ -1131,6 +1094,7 @@ end
 
 
 function Arena:spawn_n_enemies(p, j, n, pass)
+  self.spawning_enemies = true
   if self.died then return end
   if self.arena_clear_text then return end
   if self.quitting then return end
@@ -1151,22 +1115,43 @@ function Arena:spawn_n_enemies(p, j, n, pass)
         local objects = self.main:get_objects_in_shape(check_circle, {Seeker, EnemyCritter, Critter, Player, Sentry, Automaton, Bomb, Volcano, Saboteur, Pet, Turret})
         if #objects > 0 then self.enemy_spawns_prevented = self.enemy_spawns_prevented + 1; return end
       end
+      Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'shooter', level = self.level}
+    end}
+  end, n, function() self.spawning_enemies = false end, 'spawn_enemies_' .. j)
+end
 
-      if random:bool(table.reduce(level_to_elite_spawn_weights[self.level], function(memo, v) return memo + v end)) then
-        local elite_type = math.random(3)
-        if elite_type == 1 then
-          Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'stomper', level = self.level}
-        elseif elite_type == 2 then
-          Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'mortar', level = self.level}
-        elseif elite_type == 3 then
-          Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'summoner', level = self.level}
-        else
-        end
+function Arena:spawn_n_rares(p, j, n, pass)
+  if self.died then return end
+  if self.arena_clear_text then return end
+  if self.quitting then return end
+  if self.won then return end
+  if self.choosing_passives then return end
+  if n and n <= 0 then return end
+  j = j or 1
+  n = n or 4
+
+  self.last_spawn_enemy_time = love.timer.getTime()
+  local check_circle = Circle(0, 0, 2)
+  self.t:every(0.1, function()
+    local o = self.spawn_offsets[(self.t:get_every_iteration('spawn_rares_' .. j) % 5) + 1]
+    SpawnEffect{group = self.effects, x = p.x + o.x, y = p.y + o.y, action = function(x, y)
+      spawn1:play{pitch = random:float(0.8, 1.2), volume = 0.15}
+      if not pass then
+        check_circle:move_to(x, y)
+        local objects = self.main:get_objects_in_shape(check_circle, {Seeker, EnemyCritter, Critter, Player, Sentry, Automaton, Bomb, Volcano, Saboteur, Pet, Turret})
+      end
+      local elite_type = math.random(3)
+      if elite_type == 1 then
+        Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'stomper', level = self.level}
+      elseif elite_type == 2 then
+        Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'mortar', level = self.level}
+      elseif elite_type == 3 then
+        Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'summoner', level = self.level}
       else
-        Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'shooter', level = self.level}
       end
     end}
-  end, n, nil, 'spawn_enemies_' .. j)
+  end, n, nil, 'spawn_rares_' .. j)
+
 end
 
 
