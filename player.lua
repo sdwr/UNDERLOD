@@ -2956,7 +2956,7 @@ function Troop:cast()
   if self.target and not self.target.dead then
     if self.character == 'wizard' then
       frost1:play{pitch = random:float(0.8, 1.2), volume = 0.4}
-      self.dot_area = DotArea{group = main.current.effects, x = self..x, y = self..y, rs = 24,
+      self.dot_area = DotArea{group = main.current.effects, x = self.target.x, y = self.target.y, rs = 24,
       character = self.character, color = self.color, dmg = 5, level = self.level, parent = self, duration = 2}
     elseif self.character == 'shaman' then
       ChainLightning{group = main.current.main, target = self.target, rs = 50, dmg = 10, color = self.color, parent = self, level = self.level}
