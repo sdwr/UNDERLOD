@@ -146,7 +146,7 @@ function engine_run(config)
 
     if love.timer then dt = love.timer.step() end
 
-    steam.runCallbacks()
+    --steam.runCallbacks()
     accumulator = accumulator + dt
     while accumulator >= fixed_dt do
       frame = frame + 1
