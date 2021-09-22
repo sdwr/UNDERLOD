@@ -229,6 +229,10 @@ end
 
 
 function Unit:calculate_stats(first_run)
+  local level = self.level or 1
+  local hpMod = 1 + ((level - 1) / 2)
+  local dmgMod = 1 + ((level - 1) / 2)
+  local spdMod = 1
   if self:is(Player) then
     self.base_hp = 100
     self.base_dmg = 10
@@ -238,13 +242,13 @@ function Unit:calculate_stats(first_run)
     self.base_dmg = 20
     self.base_mvspd = 50
   elseif self:is(Troop) then
-    self.base_hp = 50
-    self.base_dmg = 10
-    self.base_mvspd = 75
+    self.base_hp = 50 * hpMod
+    self.base_dmg = 10 * dmgMod
+    self.base_mvspd = 75 * spdMod
   elseif self:is(EnemyCritter) or self:is(Critter) then
-    self.base_hp = 25 
-    self.base_dmg = 5 
-    self.base_mvspd = 50
+    self.base_hp = 25 * hpMod
+    self.base_dmg = 5 * dmgMod
+    self.base_mvspd = 50 * spdMod
   end
   if self:is(Seeker) and self.type == 'rager' then
     self.base_mvspd = 150

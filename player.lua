@@ -2616,7 +2616,10 @@ function Troop:init(args)
   self.beingHealed = false
   self:init_game_object(args)
   self:init_unit()
-  self:set_as_rectangle(8,8,'dynamic', 'troop')
+  local level = self.level or 1
+  local scaleMod = 1 + ((level - 1) / 3)
+  local size = unit_size['medium'] * scaleMod
+  self:set_as_rectangle(size, size,'dynamic', 'troop')
   self:set_restitution(0.5)
 
   self.color = character_colors[self.character]

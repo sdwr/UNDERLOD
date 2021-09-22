@@ -1055,8 +1055,8 @@ function init()
 
   unit_size = {
     ['small'] = 4,
-    ['medium'] = 6,
-    ['large'] = 8,
+    ['medium'] = 8,
+    ['large'] = 14,
   }
 
   non_attacking_characters = {'cleric', 'stormweaver', 'squire', 'chronomancer', 'sage', 'psykeeper', 'bane', 'carver', 'fairy', 'priest', 'flagellant', 'merchant', 'miner'}
