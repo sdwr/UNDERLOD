@@ -1046,6 +1046,9 @@ function Projectile:die(x, y, r, n)
   if self.character == 'wizard' then
     Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*24, color = self.color, dmg = self.parent.area_dmg_m*self.dmg, character = self.character, level = self.level, parent = self,
       void_rift = self.parent.void_rift, echo_barrage = self.parent.echo_barrage}
+  elseif self.character == 'cannon' then
+    Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*32, color = self.color, dmg = self.parent.area_dmg_m*self.dmg, character = self.character, level = self.level, parent = self,
+      void_rift = self.parent.void_rift, echo_barrage = self.parent.echo_barrage}
   elseif self.character == 'blade' then
     Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*64, color = self.color, dmg = self.parent.area_dmg_m*self.dmg, character = self.character, level = self.level, parent = self,
       void_rift = self.parent.void_rift, echo_barrage = self.parent.echo_barrage}
@@ -2802,6 +2805,14 @@ function Troop:set_character()
   elseif self.character == 'archer' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
     self.t:cooldown(attack_speeds['medium'], self:in_range(), function()
+      if self.target then
+        self:shootAnimation(self:angle_to_object(self.target))
+      end
+    end, nil, nil, 'shoot')
+
+  elseif self.character == 'cannon' then
+    self.attack_sensor = Circle(self.x, self.y, attack_ranges['long'])
+    self.t:cooldown(attack_speeds['slow'], self:in_range(), function()
       if self.target then
         self:shootAnimation(self:angle_to_object(self.target))
       end

@@ -287,6 +287,7 @@ function init()
     ['wizard'] = 'Wizard',
     ['magician'] = 'Magician',
     ['archer'] = 'Archer',
+    ['cannon'] = 'Cannon',
     ['sniper'] = 'Sniper',
     ['scout'] = 'Scout',
     ['cleric'] = 'Cleric',
@@ -351,6 +352,7 @@ function init()
     ['wizard'] = blue[0],
     ['magician'] = blue[0],
     ['archer'] = green[0],
+    ['cannon'] = green[0],
     ['sniper'] = green[0],
     ['scout'] = red[0],
     ['cleric'] = green[0],
@@ -415,6 +417,7 @@ function init()
     ['wizard'] = 'blue',
     ['magician'] = 'blue',
     ['archer'] = 'green',
+    ['cannon'] = 'green',
     ['sniper'] = 'green',
     ['scout'] = 'red',
     ['cleric'] = 'green',
@@ -477,6 +480,7 @@ function init()
     ['swordsman'] = 'warrior',
     ['juggernaut'] = 'warrior',
     ['archer'] = 'ranger',
+    ['cannon'] = 'ranger',
     ['sniper'] = 'ranger',
     ['wizard'] = 'mage',
     ['shaman'] = 'mage',
@@ -493,6 +497,7 @@ function init()
     ['wizard'] = '[blue]Mage, [red]Nuker',
     ['magician'] = '[blue]Mage',
     ['archer'] = '[green]Ranger',
+    ['cannon'] = '[green]Ranger',
     ['sniper'] = '[green]Ranger',
     ['scout'] = '[red]Rogue',
     ['cleric'] = '[green]Healer',
@@ -573,6 +578,7 @@ function init()
     ['wizard'] = function(lvl) return '[fg]shoots a projectile that deals [yellow]' .. get_character_stat('wizard', lvl, 'dmg') .. ' AoE[fg] damage' end,
     ['magician'] = function(lvl) return '[fg]creates a small area that deals [yellow]' .. get_character_stat('magician', lvl, 'dmg') .. ' AoE[fg] damage' end,
     ['archer'] = function(lvl) return '[fg]shoots an arrow that deals [yellow]' .. get_character_stat('archer', lvl, 'dmg') .. '[fg] damage and pierces' end,
+    ['cannon'] = function(lvl) return '[fg]shoots a cannon ball that deals [yellow]' .. get_character_stat('cannon', lvl, 'dmg') .. '[fg] damage and explodes on impact' end,
     ['sniper'] = function(lvl) return 'sniper shootie' end,
     ['scout'] = function(lvl) return '[fg]throws a knife that deals [yellow]' .. get_character_stat('scout', lvl, 'dmg') .. '[fg] damage and chains [yellow]3[fg] times' end,
     ['cleric'] = function(lvl) return '[fg]creates [yellow]1[fg] healing orb every [yellow]8[fg] seconds' end,
@@ -639,6 +645,7 @@ function init()
     ['magician'] = '[blue]Quick Cast',
     ['archer'] = '[green]Bounce Shot',
     ['sniper'] = '[green]pew',
+    ['cannon'] = '[green]Cannon Ball',
     ['scout'] = '[red]Dagger Resonance',
     ['cleric'] = '[green]Mass Heal',
     ['shaman'] = '[blue]Chain Lightning',
@@ -702,6 +709,7 @@ function init()
     ['wizard'] = '[light_bg]Magic Missile',
     ['magician'] = '[light_bg]Quick Cast',
     ['archer'] = '[light_bg]Bounce Shot',
+    ['cannon'] = '[light_bg]Cannon Ball',
     ['sniper'] = '[light_bg]pew pwe',
     ['scout'] = '[light_bg]Dagger Resonance',
     ['cleric'] = '[light_bg]Mass Heal ',
@@ -767,6 +775,7 @@ function init()
     ['magician'] = function() return '[yellow]+50%[[fg] attack speed every [yellow]12[fg] seconds for [yellow]6[fg] seconds' end,
     ['archer'] = function() return '[fg]the arrow ricochets off walls [yellow]3[fg] times' end,
     ['sniper'] = function() return '[fg]the arrow ricochets off walls [yellow]3[fg] times' end,
+    ['cannon'] = function() return '[fg]teh cannon [yellow]shoots an [yellow]exploding cannon ball' end,
     ['scout'] = function() return '[yellow]+25%[fg] damage per chain and [yellow]+3[fg] chains' end,
     ['cleric'] = function() return '[fg]creates [yellow]4[fg] healing orbs every [yellow]8[fg] seconds' end,
     ['shaman'] = function() return '[fg]creates [yellow]1[fg] healing orb every [yellow]8[fg] seconds' end,
@@ -831,6 +840,7 @@ function init()
     ['magician'] = function() return '[light_bg]+50% attack speed every 12 seconds for 6 seconds' end,
     ['archer'] = function() return '[light_bg]the arrow ricochets off walls 3 times' end,
     ['sniper'] = function() return '[light_bg]the arrow ricochets off walls 3 times' end,
+    ['cannon'] = function() return '[light_bg]shoots an exploding cannon ball' end,
     ['scout'] = function() return '[light_bg]+25% damage per chain and +3 chains' end,
     ['cleric'] = function() return '[light_bg]creates 4 healing orbs' end,
     ['shaman'] = function() return '[light_bg]creates 4 healing orbs' end,
@@ -895,6 +905,7 @@ function init()
     ['magician'] = function(lvl) return get_character_stat_string('magician', lvl) end, 
     ['archer'] = function(lvl) return get_character_stat_string('archer', lvl) end, 
     ['sniper'] = function(lvl) return get_character_stat_string('sniper', lvl) end, 
+    ['cannon'] = function(lvl) return get_character_stat_string('cannon', lvl) end, 
     ['scout'] = function(lvl) return get_character_stat_string('scout', lvl) end, 
     ['cleric'] = function(lvl) return get_character_stat_string('cleric', lvl) end, 
     ['shaman'] = function(lvl) return get_character_stat_string('shaman', lvl) end, 
@@ -1016,7 +1027,7 @@ function init()
 
   tier_to_characters = {
     [1] = {'swordsman', 'archer', 'cleric'},
-    [2] = {'wizard', 'shaman', 'paladin', 'priest'},
+    [2] = {'wizard', 'shaman', 'paladin', 'priest', 'cannon'},
     [3] = {'sniper', 'necromancer'},
     [4] = {'juggernaut'},
   }
@@ -1056,6 +1067,7 @@ function init()
     ['swordsman'] = 1,
     ['magician'] = 1,
     ['archer'] = 1,
+    ['cannon'] = 2,
     ['scout'] = 1,
     ['cleric'] = 1,
     ['shaman'] = 2,
@@ -1116,7 +1128,7 @@ function init()
   }
 
   launches_projectiles = function(character)
-    local classes = {'vagrant', 'archer', 'scout', 'outlaw', 'blade', 'wizard', 'cannoneer', 'dual_gunner', 'hunter', 'spellblade', 'engineer', 'corruptor', 'beastmaster', 'jester', 'assassin', 'barrager', 
+    local classes = {'vagrant', 'archer', 'cannon', 'scout', 'outlaw', 'blade', 'wizard', 'cannoneer', 'dual_gunner', 'hunter', 'spellblade', 'engineer', 'corruptor', 'beastmaster', 'jester', 'assassin', 'barrager', 
       'arcanist', 'illusionist', 'artificer', 'miner', 'thief', 'sentry'}
     return table.any(classes, function(v) return v == character end)
   end
