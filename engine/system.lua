@@ -131,7 +131,8 @@ function system.load_state()
     os.rename(love.filesystem.getSaveDirectory() .. '/state', love.filesystem.getSaveDirectory() .. '/old_save_backup/state')
     system.save_state()
   end
-  local chunk = love.filesystem.load("state.txt")
+  local chunk = nil
+  if love.filesystem.getInfo("state.txt") then chunk = love.filesystem.load("state.txt") end
   if chunk then state = chunk()
   else state = {} end
 end
@@ -146,7 +147,8 @@ end
 
 
 function system.load_run()
-  local chunk = love.filesystem.load("run_v4.txt")
+  local chunk = nil
+  if love.filesystem.getInfo("run_v4.txt") then chunk = love.filesystem.load("run_v4.txt") end
   if chunk then return chunk()
   else return {} end
 end

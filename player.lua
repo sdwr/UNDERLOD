@@ -792,7 +792,6 @@ end
 
 
 function Player:barrage(r, n, pierce, ricochet, shoot_5, homing)
-  --[[
   n = n or 8
   for i = 1, n do
     self.t:after((i-1)*0.075, function()
