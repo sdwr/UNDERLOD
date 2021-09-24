@@ -75,6 +75,7 @@ function init()
   hit2 = Sound('Body Head (Headshot) 1.ogg', s)
   hit3 = Sound('Kick 16_1.ogg', s)
   hit4 = Sound('Kick 16_2.ogg', s)
+  sniper_load = Sound('sniper_load.ogg', s)
   proj_hit_wall1 = Sound('Player Takes Damage 2.ogg', s)
   enemy_die1 = Sound('Bloody punches 7.ogg', s)
   enemy_die2 = Sound('Bloody punches 10.ogg', s)
@@ -1037,6 +1038,7 @@ function init()
     ['medium'] = 40,
     ['medium-long'] = 60,
     ['long'] = 100,
+    ['ultra-long'] = 250,
   }
 
   attack_speeds = {

@@ -1820,7 +1820,54 @@ function ForceField:on_collision_enter(other, contact)
   end
 end
 
---change to dotarea
+Snipe = Object:extend()
+Snipe:implement(GameObject)
+Snipe:implement(Physics)
+function Snipe:init(args)
+  self:init_game_object(args)
+  if not self.group.world then self.recover() return end
+
+  self.color = red[0]:clone()
+  self.time = love.timer.getTime()
+  self.currentTime = love.timer.getTime()
+
+  self.state = "charging"
+  self.parent.state = 'frozen'
+  sniper_load:play({volume = 1})
+  self.t:after(1, function() self:fire() end)
+  self.t:after(1.25, function() self:recover() end)
+
+end
+
+function Snipe:update(dt)
+  if self.parent and self.parent.dead == true then self.recover() return end
+  if not self.target or self.target.dead == true then self:recover() return end
+  self:update_game_object(dt)
+  self.currentTime = love.timer.getTime() - self.time
+
+  self.color.a = math.min(self.currentTime, 1)
+
+end
+
+function Snipe:fire()
+  self.parent.state = 'stopped'
+  self.state = "recovering"
+  dual_gunner2:play({pitch = random:float(0.9, 1.1), volume = 0.7})
+  if self.target then self.target:hit(self.dmg) end
+end
+
+function Snipe:recover()
+  self.parent.state = 'normal'
+  self.dead = true
+
+end
+
+function Snipe:draw()
+  if self.state == 'charging' and self.parent and self.target then
+    graphics.line(self.parent.x, self.parent.y, self.target.x, self.target.y, self.color, 1)
+  end
+end
+
 Blizzard = Object:extend()
 Blizzard:implement(GameObject)
 Blizzard:implement(Physics)
@@ -2822,11 +2869,13 @@ function Troop:set_character()
     end, nil, nil, 'shoot')
 
   elseif self.character == 'sniper' then
-    self.attack_sensor = Circle(self.x, self.y, attack_ranges['long'])
-    self.dmg = self.dmg * 3
+    self.attack_sensor = Circle(self.x, self.y, attack_ranges['ultra-long'])
+    self.dmg = self.dmg * 4
+    self.castTime = 1
+    self.backswing = 0.25
     self.t:cooldown(attack_speeds['slow'], self:in_range(), function()
       if self.target then
-        self:shoot(self:angle_to_object(self.target))
+        Snipe{group = main.current.main, team = 'player', parent = self, target = self.target, dmg = self.dmg}
       end
     end, nil, nil, 'shoot')
 
