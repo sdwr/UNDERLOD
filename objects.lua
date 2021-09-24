@@ -281,6 +281,28 @@ function Unit:calculate_stats(first_run)
   self.buff_def_m = 1
   self.buff_mvspd_m = 1
 
+  if self.buffs and #self.buffs > 0 then
+    for i = 1, #self.buffs do
+      local buff = self.buffs[i]
+      local buffName = buff.name
+      if buffName == buff_types['dmg'] then
+        self.buff_dmg_m = self.buff_dmg_m + buff.amount
+      elseif buffName == buff_types['def'] then
+        self.buff_def_m = self.buff_dmg_m + buff.amount
+      elseif buffName == buff_types['mvspd'] then
+        self.buff_mvspd_m = self.buff_mvspd_m + buff.amount
+      elseif buffName == buff_types['aspd'] then
+        self.buff_aspd_m = self.buff_aspd_m + buff.amount
+      elseif buffName == buff_types['area_dmg'] then
+        self.buff_area_dmg_m = self.buff_area_dmg_m + buff.amount
+      elseif buffName == buff_types['area_size'] then
+        self.buff_area_size_m = self.buff_area_size_m + buff.amount
+      elseif buffName == buff_types['hp'] then
+        self.buff_hp_m = self.buff_hp_m + buff.amount
+      end
+    end
+  end
+
   self.class_hp_m = self.class_hp_m*class_stat_multipliers[self.class].hp
   self.max_hp = (self.base_hp + self.class_hp_a + self.buff_hp_a)*self.class_hp_m*self.buff_hp_m
   if first_run then self.hp = self.max_hp end

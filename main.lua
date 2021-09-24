@@ -1060,6 +1060,16 @@ function init()
     ['medium'] = 8,
     ['large'] = 14,
   }
+  
+  buff_types = {
+    ['dmg'] = 'dmg',
+    ['aspd'] = 'aspd',
+    ['def'] = 'def',
+    ['mvspd'] = 'mvspd',
+    ['area_dmg'] = 'area_dmg',
+    ['area_size'] = 'area_size',
+    ['hp'] = 'hp',
+  }
 
   non_attacking_characters = {'cleric', 'stormweaver', 'squire', 'chronomancer', 'sage', 'psykeeper', 'bane', 'carver', 'fairy', 'priest', 'flagellant', 'merchant', 'miner'}
   non_cooldown_characters = {'squire', 'chronomancer', 'psykeeper', 'merchant', 'miner'}

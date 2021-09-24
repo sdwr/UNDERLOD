@@ -1850,16 +1850,15 @@ function Snipe:update(dt)
 end
 
 function Snipe:fire()
-  self.parent.state = 'stopped'
-  self.state = "recovering"
+  if self then self.state = "recovering" else return end
+  if self.parent then self.parent.state = 'stopped' end
   dual_gunner2:play({pitch = random:float(0.9, 1.1), volume = 0.7})
   if self.target then self.target:hit(self.dmg) end
 end
 
 function Snipe:recover()
-  self.parent.state = 'normal'
-  self.dead = true
-
+  if self then self.dead = true else return end
+  if self.parent then self.parent.state = 'normal' end
 end
 
 function Snipe:draw()
@@ -2011,7 +2010,7 @@ function Stomp:update(dt)
 end
 
 function Stomp:stomp()
-  self.state = "recovering"
+  if self then self.state = "recovering" else return end
 
   earth1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
 
@@ -2032,10 +2031,8 @@ function Stomp:stomp()
 end
 
 function Stomp:recover()
-  if self.parent and not self.parent.dead then
-    self.parent.state = 'normal'
-  end
-  self.dead = true
+  if self then self.dead = true else return end
+  if self.parent then self.parent.state = 'normal' end
 end
 
 function Stomp:draw()
@@ -2078,10 +2075,8 @@ function Mortar:fire()
 end
 
 function Mortar:recover()
-  if self.parent and not self.parent.dead then
-    self.parent.state = 'normal'
-  end
-  self.dead = true
+  if self then self.dead = true else return end
+  if self.parent then self.parent.state = 'normal' end
 end
 
 function Mortar:draw()
@@ -2130,10 +2125,8 @@ end
 
 function Summon:recover()
   self.state = 'recovering'
-  if self.parent and not self.parent.dead then
-    self.parent.state = 'normal'
-  end
-  self.dead = true
+  if self and self.parent then self.parent.state = 'normal' end
+  if self then self.dead = true end
 end
 
 function Summon:draw()
@@ -2660,6 +2653,10 @@ Troop:implement(Unit)
 function Troop:init(args)
   self.castTime = 0.4
   self.backswing = 0.4
+  self.buffs = {}
+  --buff examples...
+  --self.buffs[1] = {name = buff_types['dmg'], amount = 0.2, color = red_transparent_weak}
+  --self.buffs[2] = {name = buff_types['aspd'], amount = 0.2, color = green_transparent_weak}
   self.beingHealed = false
   self:init_game_object(args)
   self:init_unit()
@@ -2763,6 +2760,13 @@ end
 function Troop:draw()
   --graphics.circle(self.x, self.y, self.attack_sensor.rs, orange[0], 1)
   graphics.push(self.x, self.y, self.r, self.hfx.hit.x, self.hfx.hit.x)
+  if #self.buffs > 0 then
+    local lw = 1
+    for i = 1, #self.buffs do
+      local buff = self.buffs[i]
+      graphics.circle(self.x, self.y, ((self.shape.w * 0.66) / 2) + (i), buff.color, lw)
+    end
+  end
   graphics.rectangle(self.x, self.y, self.shape.w*.66, self.shape.h*.66, 3, 3, self.hfx.hit.f and fg[0] or self.color)
   if self.casting then
     self:draw_cast_timer()
@@ -3016,6 +3020,7 @@ function Troop:castAnimation()
 end
 
 function Troop:cast()
+  if not self then return end
   if self.target and not self.target.dead then
     if self.character == 'wizard' then
       frost1:play{pitch = random:float(0.8, 1.2), volume = 0.4}
