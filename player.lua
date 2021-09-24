@@ -909,6 +909,9 @@ function Projectile:init(args)
     if self.level == 3 then
       self.pierce = 2
     end
+
+  elseif self.character == 'archer' then
+    self.dmg = self.dmg * 0.71
   end
 
   if self.parent.divine_machine_arrow and self.class == 'ranger' then
@@ -2858,7 +2861,6 @@ function Troop:set_character()
 
   elseif self.character == 'archer' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
-    self.dmg = self.dmg * 0.75
     self.t:cooldown(attack_speeds['ultrafast'], self:in_range(), function()
       if self.target then
         self:shootAnimation(self:angle_to_object(self.target))
