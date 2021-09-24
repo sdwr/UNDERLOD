@@ -1942,8 +1942,24 @@ function ChainLightning:init(args)
   local bounce = function()
     self.i = self.i + 1
     if #self.targets >= self.i then
-      self.targets[self.i]:hit(self.dmg)
+      local target = self.targets[self.i]
+      if not target then return end
+      target:hit(self.dmg)
       spark2:play{pitch = random:float(0.8, 1.2), volume = 0.7}
+
+      local lastTarget = nil
+      local currentTarget = nil
+      if self.i == 1 then
+        lastTarget = self.parent
+        currentTarget = self.targets[self.i]
+      else
+        lastTarget = self.targets[self.i-1]
+        currentTarget = self.targets[self.i]
+      end
+
+      if lastTarget and currentTarget then
+        LightningLine{group = main.current.effects, src = lastTarget, dst = currentTarget, color = self.color}
+      end
     end
   end
 
@@ -1958,7 +1974,6 @@ function ChainLightning:init(args)
   
   bounce()
   self.t:every(0.2, bounce, total_targets, function() self.dead = true end)
-  self.t:every(0.05, function() self.hidden = not self.hidden end, 100)
 
 end
 
@@ -1969,20 +1984,6 @@ function ChainLightning:update(dt)
 end
 
 function ChainLightning:draw()
-  if self.hidden then return end
-  if #self.targets < self.i then return end
-  local lastTarget = nil
-  local currentTarget = nil
-  if self.i == 1 then
-    lastTarget = self.parent
-    currentTarget = self.targets[self.i]
-  else
-    lastTarget = self.targets[self.i-1]
-    currentTarget = self.targets[self.i]
-  end
-  graphics.push(lastTarget.x, lastTarget.y, 0, self.spring.x, self.spring.x)
-  graphics.line(lastTarget.x, lastTarget.y, currentTarget.x, currentTarget.y, self.color, 1.5)
-  graphics.pop()
 end
 
 Stomp = Object:extend()
