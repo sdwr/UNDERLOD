@@ -2858,7 +2858,8 @@ function Troop:set_character()
 
   elseif self.character == 'archer' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
-    self.t:cooldown(attack_speeds['medium'], self:in_range(), function()
+    self.dmg = self.dmg * 0.75
+    self.t:cooldown(attack_speeds['ultrafast'], self:in_range(), function()
       if self.target then
         self:shootAnimation(self:angle_to_object(self.target))
       end
