@@ -2652,7 +2652,7 @@ Troop:implement(Physics)
 Troop:implement(Unit)
 function Troop:init(args)
   self.castTime = 0.4
-  self.backswing = 0.4
+  self.backswing = 0.2
   self.buffs = {}
   --buff examples...
   --self.buffs[1] = {name = buff_types['dmg'], amount = 0.2, color = red_transparent_weak}
@@ -2736,7 +2736,7 @@ function Troop:update(dt)
       if not self.target then self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies) end
     end
     --if target not in attack range, close in
-    if self.target and self:distance_to_object(self.target) > self.attack_sensor.rs and self.state == unit_states['normal'] then
+    if self.target and not self:in_range()() and self.state == unit_states['normal'] then
       self:seek_point(self.target.x, self.target.y)
       self:wander(7, 30, 5)
       --self:steering_separate(16, {Troop})
@@ -2928,13 +2928,6 @@ function Troop:set_character()
   end
 
   self.aggro_sensor = Circle(self.x, self.y, math.max(1000, 60))
-end
-
-function Troop:in_range()
-  if extra_condition == nil then extra_condition = true end
-  return function()
-    return self.target and not self.target.dead and self:distance_to_object(self.target) < self.attack_sensor.rs
-  end
 end
 
 function Troop:hit(damage, from_undead)

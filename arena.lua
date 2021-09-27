@@ -130,56 +130,6 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
   if self.level == 1000 then
     self.level_1000_text = Text2{group = self.ui, x = gw/2, y = gh/2, lines = {{text = '[fg, wavy_mid]UNDERLOD', font = fat_font, alignment = 'center'}}}
   
-  elseif (self.level - (25*self.loop)) % 6 == 0 or self.level % 25 == 0 then
-    self.boss_level = true
-    self.start_time = 3
-    self.t:after(1, function()
-      self.t:every(1, function()
-        if self.start_time > 1 then alert1:play{volume = 0.5} end
-        self.start_time = self.start_time - 1
-        self.hfx:use('condition1', 0.25, 200, 10)
-      end, 3, function()
-        alert1:play{pitch = 1.2, volume = 0.5}
-        camera:shake(4, 0.25)
-        SpawnEffect{group = self.effects, x = gw/2 * 0.8, y = gh/2}
-        SpawnEffect{group = self.effects, x = gw/2 * 0.8, y = gh/2, action = function(x, y)
-          spawn1:play{pitch = random:float(0.8, 1.2), volume = 0.15}
-          SpawnMarker{group = self.effects, x = x, y = y}
-          self.t:after(1.125, function()
-            self.boss = Seeker{group = self.main, x = x, y = y, character = 'seeker', level = self.level, boss = level_to_boss[self.level]}
-          end)
-        end}
-      end)
-      self.t:every(function() return self.start_time <= 0 and (self.boss and self.boss.dead) and #self.main:get_objects_by_classes(self.enemies) <= 0 and not self.spawning_enemies and not self.quitting end, function()
-        self:quit()
-        if self.level == 6 then
-          state.achievement_speed_booster = true
-          system.save_state()
-          --steam.userStats.setAchievement('SPEED_BOOSTER')
-          --steam.userStats.storeStats()
-        elseif self.level == 12 then
-          state.achievement_exploder = true
-          system.save_state()
-          --steam.userStats.setAchievement('EXPLODER')
-          --steam.userStats.storeStats()
-        elseif self.level == 18 then
-          state.achievement_swarmer = true
-          system.save_state()
-          --steam.userStats.setAchievement('SWARMER')
-          --steam.userStats.storeStats()
-        elseif self.level == 24 then
-          state.achievement_forcer = true
-          system.save_state()
-          --steam.userStats.setAchievement('FORCER')
-          --steam.userStats.storeStats()
-        elseif self.level == 25 then
-          state.achievement_cluster = true
-          system.save_state()
-          --steam.userStats.setAchievement('CLUSTER')
-          --steam.userStats.storeStats()
-        end
-      end)
-    end)
   else
     -- Set win condition and enemy spawns
     self.win_condition = 'wave'
@@ -218,12 +168,17 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
       end, 3, function()
         alert1:play{pitch = 1.2, volume = 0.5}
         camera:shake(4, 0.25)
-        SpawnEffect{group = self.effects, x = gw/2, y = gh/2 - 48}
+        SpawnEffect{group = self.effects, x = gw * 0.7, y = gh/2 - 48}
         local x, y = gw * 0.7, gh/2
-        SpawnMarker{group = self.effects, x = x, y = y}
-        self.t:after(1.125, function() self:spawn_n_enemies({x = x, y = y}, nil, 2 + (self.level * 2)); self.wave = self.wave + 1 end)
-        local x, y = gw * 0.8, gh/2
-        self.t:after(2.5, function() self:spawn_n_rares({x = x, y = y}, nil, 0 + (self.level - 1)) end)
+        if self.level == 6 or self.level == 11 or self.level == 16 or self.level == 21 or self.level == 25 then
+          SpawnMarker{group = self.effects, x = x, y = y}
+          self.t:after(1.5, function() self:spawn_boss({x = x, y = y}) end)
+        else
+          SpawnMarker{group = self.effects, x = x, y = y}
+          self.t:after(1.125, function() self:spawn_n_enemies({x = x, y = y}, nil, 2 + (self.level * 2)); self.wave = self.wave + 1 end)
+          local x, y = gw * 0.8, gh/2
+          self.t:after(2.5, function() self:spawn_n_rares({x = x, y = y}, nil, 0 + (self.level - 1)) end)
+        end
 
 
       end)
@@ -1152,6 +1107,11 @@ function Arena:spawn_n_rares(p, j, n, pass)
     end}
   end, n, nil, 'spawn_rares_' .. j)
 
+end
+
+function Arena:spawn_boss(p)
+  local x, y = p.x, p.y
+  Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'boss', level = self.level}
 end
 
 

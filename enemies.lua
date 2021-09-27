@@ -5,213 +5,14 @@ Seeker:implement(Unit)
 function Seeker:init(args)
   self:init_game_object(args)
   self:init_unit()
-  self.state = 'normal'
-  self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20)
-  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 1000)
-  if self.type == 'stomper' then
-    self.t:cooldown(attack_speeds['slow'], function() local targets = self:get_objects_in_shape(self.attack_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
-      local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.friendlies)
-      if closest_enemy then
-        self:stomp(30)
-      end
-    end, nil, nil, 'attack')
-    
-  elseif self.type == 'shooter' then
-    self.attack_sensor = Circle(self.x, self.y, 100)
-    self.t:cooldown(attack_speeds['medium'], function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end, function ()
-      local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies)
-      if target then
-        self:rotate_towards_object(target, 1)
-        self:shoot(self:angle_to_object(target))
-      end
-    end, nil, nil, 'shoot')
-  elseif self.type == 'mortar' then
-    self.t:cooldown(attack_speeds['slow'], function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end, function ()
-      local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
-      if target then
-        self:rotate_towards_object(target, 1)
-        self:mortar(target)
-      end
-  end, nil, nil, 'shoot')
-  elseif self.type == 'summoner' then
-    self.summons = 0
-    self.t:cooldown(attack_speeds['slow'], function() return self.state == 'normal' end, function()
-      self:summon()
-    end, nil, nil, 'cast')
-  elseif self.type == 'rager' then
-    self.t:cooldown(attack_speeds['fast'], function() local targets = self:get_objects_in_shape(self.attack_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
-      local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.friendlies)
-      if closest_enemy then
-        self:rotate_towards_object(closest_enemy, 1)
-        self:attack(20, {x = closest_enemy.x, y = closest_enemy.y})
-      end
-    end, nil, nil, 'attack')
-  else
-    self.t:cooldown(attack_speeds['fast'], function() local targets = self:get_objects_in_shape(self.attack_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
-      local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.friendlies)
-      if closest_enemy then
-        self:rotate_towards_object(closest_enemy, 1)
-        self:attack(20, {x = closest_enemy.x, y = closest_enemy.y})
-      end
-    end, nil, nil, 'attack')
 
-  end
-
-  if self.boss then
-    self:set_as_rectangle(18, 7, 'dynamic', 'enemy')
-    self:set_restitution(0.5)
-    self.class = 'mini_boss'
+  if self.type == 'boss' then
+    self:set_as_rectangle(70, 70, 'dynamic', 'enemy')
+    self.color = grey[0]
+    self:set_restitution(0.1)
+    self.class = 'boss'
     self:calculate_stats(true)
     self:set_as_steerable(self.v, 1000, 2*math.pi, 2)
-
-    local level = self.level % 25
-    if level == 0 then self.level = 25*math.floor(self.level/25) end
-
-    if self.boss == 'speed_booster' then
-      self.color = green[0]:clone()
-      self.t:every(8, function()
-        if self.silenced or self.barbarian_stunned then return end
-        local enemies = table.head(self:get_objects_in_shape(Circle(self.x, self.y, 128), main.current.enemies), 4)
-        if #enemies > 0 then
-          buff1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-          HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 6, color = green[0], duration = 0.1}
-          for _, enemy in ipairs(enemies) do
-            LightningLine{group = main.current.effects, src = self, dst = enemy, color = green[0]}
-            enemy:speed_boost(3 + self.level*0.015 + current_new_game_plus*0.1)
-          end
-        end
-      end, nil, nil, 'boss_attack')
-
-    elseif self.boss == 'forcer' then
-      self.color = yellow[0]:clone()
-      self.t:every(6, function()
-        if self.silenced or self.barbarian_stunned then return end
-        local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
-        local x, y = 0, 0
-        if #enemies > 0 then
-          for _, enemy in ipairs(enemies) do
-            x = x + enemy.x
-            y = y + enemy.y
-          end
-          x = x/#enemies
-          y = y/#enemies
-        else
-          x, y = player.x, player.y
-        end
-        self.px, self.py = x + random:float(-16, 16), y + random:float(-16, 16)
-        self.pull_sensor = Circle(self.px, self.py, 160)
-        self.prs = 0
-        self.t:tween(0.05, self, {prs = 4}, math.cubic_in_out, function() self.spring:pull(0.15) end)
-        self.t:after(2 - 0.05*7, function()
-          self.t:every_immediate(0.05, function() self.phidden = not self.phidden end, 7)
-        end)
-        self.color_transparent = Color(yellow[0].r, yellow[0].g, yellow[0].b, 0.08)
-        self.t:every(0.08, function() HitParticle{group = main.current.effects, x = self.px, y = self.py, color = yellow[0]} end, math.floor(2/0.08))
-        self.vr = 0
-        self.dvr = random:float(-math.pi/4, math.pi/4)
-
-        force1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-        self.t:during(2, function(dt)
-          local enemies = self:get_objects_in_shape(self.pull_sensor, main.current.enemies)
-          for _, enemy in ipairs(enemies) do
-            enemy:apply_steering_force(math.remap(enemy:distance_to_point(self.px, self.py), 0, 160, 400, 200), enemy:angle_to_point(self.px, self.py))
-          end
-          self.vr = self.vr + self.dvr*dt
-        end, function()
-          wizard1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-          local enemies = self:get_objects_in_shape(self.pull_sensor, main.current.enemies)
-          HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 6, color = yellow[0], duration = 0.1}
-          for _, enemy in ipairs(enemies) do
-            LightningLine{group = main.current.effects, src = self, dst = enemy, color = yellow[0]}
-            enemy:push(random:float(40, 80), enemy:angle_to_object(main.current.player), true)
-          end
-          self.px, self.py = nil, nil
-        end)
-      end, nil, nil, 'boss_attack')
-
-    elseif self.boss == 'swarmer' then
-      self.color = purple[0]:clone()
-      self.t:every(4, function()
-        if self.silenced or self.barbarian_stunned then return end
-        local enemies = table.select(main.current.main:get_objects_by_classes(main.current.enemies), function(v) return v.id ~= self.id and v:is(Seeker) end)
-        local enemy = random:table(enemies)
-        if enemy then
-          HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 6, color = purple[0], duration = 0.1}
-          LightningLine{group = main.current.effects, src = self, dst = enemy, color = purple[0]}
-          enemy:hit(10000)
-          critter1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-          critter3:play{pitch = random:float(0.95, 1.05), volume = 0.6}
-          for i = 1, random:int(4, 6) do EnemyCritter{group = main.current.main, x = enemy.x, y = enemy.y, color = purple[0], r = random:float(0, 2*math.pi), v = 8 + 0.1*enemy.level, dmg = 2*enemy.dmg} end
-        end
-      end, nil, nil, 'boss_attack')
-
-    elseif self.boss == 'exploder' then
-      self.color = blue[0]:clone()
-      self.t:every(4, function()
-        if self.silenced or self.barbarian_stunned then return end
-        local enemies = table.select(main.current.main:get_objects_by_classes(main.current.enemies), function(v) return v.id ~= self.id and v:is(Seeker) end)
-        local enemy = random:table(enemies)
-        if enemy then
-          HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 6, color = blue[0], duration = 0.1}
-          LightningLine{group = main.current.effects, src = self, dst = enemy, color = blue[0]}
-          enemy:hit(10000)
-          mine1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-          ExploderMine{group = main.current.main, x = enemy.x, y = enemy.y, color = blue[0], parent = enemy}
-        end
-      end, nil, nil, 'boss_attack')
-
-    elseif self.boss == 'randomizer' then
-      self.t:every_immediate(0.07, function() self.color = _G[random:table{'green', 'purple', 'yellow', 'blue'}][0]:clone() end)
-      self.t:every(6, function()
-        if self.silenced or self.barbarian_stunned then return end
-        local attack = random:table{'explode', 'swarm', 'force', 'speed_boost'}
-        if attack == 'explode' then
-          local enemies = self:get_objects_in_shape(Circle(self.x, self.y, 128), {Seeker})
-          local enemy = random:table(enemies)
-          if enemy then
-            HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 6, color = blue[0], duration = 0.1}
-            LightningLine{group = main.current.effects, src = self, dst = enemy, color = blue[0]}
-            enemy:hit(10000)
-            shoot1:play{pitch = random:float(0.95, 1.05), volume = 0.4}
-            local n = 8 + current_new_game_plus*2
-            for i = 1, n do EnemyProjectile{group = main.current.main, x = enemy.x, y = enemy.y, color = blue[0], r = (i-1)*math.pi/(n/2), v = 125 + 5*enemy.level, dmg = (1 + 0.15*current_new_game_plus)*enemy.dmg} end
-          end
-        elseif attack == 'swarm' then
-          local enemies = self:get_objects_in_shape(Circle(self.x, self.y, 128), {Seeker})
-          local enemy = random:table(enemies)
-          if enemy then
-            HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 6, color = purple[0], duration = 0.1}
-            LightningLine{group = main.current.effects, src = self, dst = enemy, color = purple[0]}
-            enemy:hit(10000)
-            critter1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-            critter3:play{pitch = random:float(0.95, 1.05), volume = 0.6}
-            for i = 1, random:int(4, 6) do EnemyCritter{group = main.current.main, x = enemy.x, y = enemy.y, color = purple[0], r = random:float(0, 2*math.pi), v = 8 + 0.1*enemy.level, dmg = 2*enemy.dmg} end
-          end
-        elseif attack == 'force' then
-          local enemies = self:get_objects_in_shape(Circle(self.x, self.y, 64), {Seeker})
-          if #enemies > 0 then
-            wizard1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-            HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 6, color = yellow[0], duration = 0.1}
-            for _, enemy in ipairs(enemies) do
-              LightningLine{group = main.current.effects, src = self, dst = enemy, color = yellow[0]}
-              enemy:push(random:float(40, 80), enemy:angle_to_object(main.current.player), true)
-            end
-          end
-
-        elseif attack == 'speed_boost' then
-          local enemies = self:get_objects_in_shape(Circle(self.x, self.y, 128), {Seeker})
-          if #enemies > 0 then
-            buff1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-            HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 6, color = green[0], duration = 0.1}
-            for _, enemy in ipairs(enemies) do
-              LightningLine{group = main.current.effects, src = self, dst = enemy, color = green[0]}
-              enemy:speed_boost(3 + self.level*0.015 + current_new_game_plus*0.1)
-            end
-          end
-        end
-      end, nil, nil, 'boss_attack')
-    end
-
   else
     if self.type == 'stomper' then
       self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
@@ -244,6 +45,78 @@ function Seeker:init(args)
     end
     self.class = 'seeker'
     self:calculate_stats(true)
+  end
+  
+  self.state = 'normal'
+  self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20)
+  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 1000)
+  if self.type == 'stomper' then
+    self.t:cooldown(attack_speeds['slow'], function() local target = self:get_closest_target(self.attack_sensor, main.current.friendlies); return target end, function()
+      local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.friendlies)
+      if closest_enemy then
+        self:stomp(30)
+      end
+    end, nil, nil, 'attack')
+    
+  elseif self.type == 'shooter' then
+    self.attack_sensor = Circle(self.x, self.y, 100)
+    self.t:cooldown(attack_speeds['medium'], function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end, function ()
+      local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies)
+      if target then
+        self:rotate_towards_object(target, 1)
+        self:shoot(self:angle_to_object(target))
+      end
+    end, nil, nil, 'shoot')
+  elseif self.type == 'mortar' then
+    self.t:cooldown(attack_speeds['slow'], function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end, function ()
+      local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
+      if target then
+        self:rotate_towards_object(target, 1)
+        self:mortar(target)
+      end
+    end, nil, nil, 'shoot')
+  elseif self.type == 'summoner' then
+    self.summons = 0
+    self.t:cooldown(attack_speeds['slow'], function() return self.state == 'normal' end, function()
+      self:summon()
+    end, nil, nil, 'cast')
+  elseif self.type == 'rager' then
+    self.t:cooldown(attack_speeds['fast'], function() local targets = self:get_objects_in_shape(self.attack_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
+      local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.friendlies)
+      if closest_enemy then
+        self:rotate_towards_object(closest_enemy, 1)
+        self:attack(20, {x = closest_enemy.x, y = closest_enemy.y})
+      end
+    end, nil, nil, 'attack')
+  elseif self.type == 'boss' then
+    self.t:cooldown(attack_speeds['ultra-slow'], function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end, function ()
+      local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
+      if target then
+        self:rotate_towards_object(target, 1)
+        self:mortar(target)
+      end
+    end, nil, nil, 'shoot')
+    self.t:cooldown(attack_speeds['medium'], function() local targets = self:get_objects_in_shape(self.aggro_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
+      local closest_enemy = self:get_closest_object_in_shape(self.aggro_sensor, main.current.friendlies)
+      local target = self.target
+      self.target = closest_enemy
+
+      if self:in_range()() then
+        self:rotate_towards_object(closest_enemy, 1)
+        self:attack(20, {x = closest_enemy.x, y = closest_enemy.y})
+      end
+      self.target = target
+    end, nil, nil, 'attack')
+
+  else
+    self.t:cooldown(attack_speeds['fast'], function() local targets = self:get_objects_in_shape(self.attack_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
+      local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.friendlies)
+      if closest_enemy then
+        self:rotate_towards_object(closest_enemy, 1)
+        self:attack(30, {x = closest_enemy.x, y = closest_enemy.y})
+      end
+    end, nil, nil, 'attack')
+
   end
 
   if self.speed_booster then
@@ -381,7 +254,7 @@ function Seeker:update(dt)
   else
     --target closest troop 
     if self.target and self.target.dead then self.target = nil end
-    if not (self.target and self:distance_to_object(self.target) <= self.attack_sensor.rs) then
+    if not self:in_range()() then
       self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.friendlies)
     end
     if self.target and self.target.dead then self.target = nil end
@@ -404,7 +277,7 @@ function Seeker:update(dt)
           self:seek_point(x, y)
           self:wander(10, 250, 3)
         else
-          if self.target and self:distance_to_object(self.target) < self.attack_sensor.rs then
+          if self:in_range()() then
             self:seek_point(self.x + 0.1, self.y + 0.1)
           elseif self.target then
             self:seek_point(self.target.x, self.target.y)
@@ -448,15 +321,15 @@ function Seeker:attack(area, mods)
 end
 
 function Seeker:stomp(area, mods)
-  Stomp{group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = 25, color = self.color, dmg = 50, level = self.level, parent = self}
+  Stomp{group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = 25, color = red[0], dmg = 50, level = self.level, parent = self}
 end
 
 function Seeker:mortar(target)
-  Mortar{group = main.current.main, team = "enemy", target = target, rs = 25, color = self.color, dmg = 30, level = self.level, parent = self}
+  Mortar{group = main.current.main, team = "enemy", target = target, rs = 25, color = red[0], dmg = 30, level = self.level, parent = self}
 end
 
 function Seeker:summon()
-  Summon{group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = 25, color = self.color, level = self.level, parent = self}
+  Summon{group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = 25, color = purple[0], level = self.level, parent = self}
 end
 
 function Seeker:shoot(r, mods)
@@ -478,8 +351,8 @@ end
 
 function Seeker:draw()
   graphics.push(self.x, self.y, self.r, self.hfx.hit.x, self.hfx.hit.x)
-    if self.boss then
-      graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+    if self.type == 'boss' then
+      graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 10, 10, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
     else
       graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
     end
@@ -502,7 +375,6 @@ function Seeker:draw()
     graphics.pop()
   end
 end
-
 
 function Seeker:on_collision_enter(other, contact)
   local x, y = contact:getPositions()
@@ -554,7 +426,11 @@ function Seeker:hit(damage, projectile, dot, from_enemy)
   local pyrod = self.pyrod
   self.pyrod = false
   if self.dead then return end
-  self.hfx:use('hit', 0.25, 200, 10)
+  if self.type == 'boss' then
+    self.hfx:use('hit', 0.005, 200, 20)
+  else
+    self.hfx:use('hit', 0.25, 200, 10)
+  end
   if self.push_invulnerable then return end
   self:show_hp()
 
@@ -604,7 +480,7 @@ function Seeker:hit(damage, projectile, dot, from_enemy)
     end
     ]]--
 
-    if self.boss then
+    if self.type == 'boss' then
       slow(0.25, 1)
       magic_die1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     end

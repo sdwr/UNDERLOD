@@ -254,6 +254,11 @@ function Unit:calculate_stats(first_run)
     self.base_mvspd = 150
     self.base_dmg = 10
   end
+  if self:is(Seeker) and self.type == 'boss' then
+    self.base_hp = 1500
+    self.base_dmg = 30
+    self.base_mvspd = 40
+  end
   self.base_aspd_m = 1
   self.base_area_dmg_m = 1
   self.base_area_size_m = 1
@@ -327,9 +332,32 @@ function Unit:calculate_stats(first_run)
   self.v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m
 end
 
-function Unit:hasTarget(shape, classes)
+function Unit:get_closest_target(shape, classes)
+  local target = self:get_closest_object_in_shape(shape, classes)
+  if target then
+    return target
+  end
+end
+
+function Unit:get_random_target(shape, classes)
   local targets = self:get_objects_in_shape(shape, classes)
-  return targets and #targets > 0
+  if targets and #targets > 0 then
+    return targets[math.random(#targets)]
+  end
+end
+
+function Unit:get_closest_hurt_target(shape, classes)
+  local targets = self:get_objects_in_shape(shape, classes)
+  if targets and #targets > 0 then
+    return targets[math.random(#targets)]
+  end
+
+end
+
+function Unit:in_range()
+  return function()
+    return self.target and not self.target.dead and self:distance_to_object(self.target) - self.target.shape.w/2 - self.shape.w/2 < self.attack_sensor.rs
+  end
 end
 
 
