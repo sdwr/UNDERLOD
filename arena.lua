@@ -172,7 +172,7 @@ function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp,
         local x, y = gw * 0.7, gh/2
         if self.level == 6 or self.level == 11 or self.level == 16 or self.level == 21 or self.level == 25 then
           SpawnMarker{group = self.effects, x = x, y = y}
-          self.t:after(1.5, function() self:spawn_boss({x = x, y = y}) end)
+          self.t:after(1.5, function() self:spawn_boss({x = x, y = y}); self.wave = self.wave + 1 end)
         else
           SpawnMarker{group = self.effects, x = x, y = y}
           self.t:after(1.125, function() self:spawn_n_enemies({x = x, y = y}, nil, 2 + (self.level * 2)); self.wave = self.wave + 1 end)

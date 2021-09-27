@@ -136,6 +136,7 @@ function init()
   ranger = Image('ranger')
   healer = Image('healer')
   mage = Image('mage')
+  buffer = Image('mage')
   rogue = Image('rogue')
   nuker = Image('nuker')
   conjurer = Image('conjurer')
@@ -260,6 +261,7 @@ function init()
     ['sorcerer'] = blue2[0],
     ['mercenary'] = yellow2[0],
     ['explorer'] = fg[0],
+    ['buffer'] = brown[0],
   }
 
   class_color_strings = {
@@ -280,6 +282,7 @@ function init()
     ['mercenary'] = 'yellow2',
     ['explorer'] = 'fg',
     ['cursed'] = 'purple',
+    ['buffer'] = 'brown'
   }
 
   character_names = {
@@ -293,8 +296,10 @@ function init()
     ['scout'] = 'Scout',
     ['cleric'] = 'Cleric',
     ['shaman'] = 'Shaman',
+    ['druid'] = 'Druid',
     ['necromancer'] = 'Necromancer',
     ['paladin'] = 'Paladin',
+    ['bard'] = 'Bard',
     ['outlaw'] = 'Outlaw',
     ['blade'] = 'Blade',
     ['elementor'] = 'Elementor',
@@ -358,7 +363,9 @@ function init()
     ['scout'] = red[0],
     ['cleric'] = green[0],
     ['shaman'] = blue[0],
+    ['druid'] = green[0],
     ['paladin'] = yellow[0],
+    ['bard'] = brown[0],
     ['necromancer'] = purple[0],
     ['outlaw'] = red[0],
     ['blade'] = yellow[0],
@@ -423,8 +430,10 @@ function init()
     ['scout'] = 'red',
     ['cleric'] = 'green',
     ['shaman'] = 'blue',
+    ['druid'] = 'green',
     ['necromancer'] = 'purple',
     ['paladin'] = 'yellow',
+    ['bard'] = 'orange',
     ['outlaw'] = 'red',
     ['blade'] = 'yellow',
     ['elementor'] = 'blue',
@@ -485,6 +494,8 @@ function init()
     ['sniper'] = 'ranger',
     ['wizard'] = 'mage',
     ['shaman'] = 'mage',
+    ['druid'] = 'healer',
+    ['bard'] = 'buffer',
     ['paladin'] = 'warrior',
     ['necromancer'] = 'cursed',
     ['cleric'] = 'healer',
@@ -503,7 +514,9 @@ function init()
     ['scout'] = '[red]Rogue',
     ['cleric'] = '[green]Healer',
     ['shaman'] = '[blue]Mage',
+    ['druid'] = '[green]Healer',
     ['paladin'] = '[yellow]Warrior',
+    ['bard'] = '[brown]Buffer',
     ['necromancer'] = '[purple]Cursed',
     ['outlaw'] = '[yellow]Warrior, [red]Rogue',
     ['blade'] = '[yellow]Warrior, [red]Nuker',
@@ -584,6 +597,8 @@ function init()
     ['scout'] = function(lvl) return '[fg]throws a knife that deals [yellow]' .. get_character_stat('scout', lvl, 'dmg') .. '[fg] damage and chains [yellow]3[fg] times' end,
     ['cleric'] = function(lvl) return '[fg]creates [yellow]1[fg] healing orb every [yellow]8[fg] seconds' end,
     ['shaman'] = function(lvl) return '[fg]creates [yellow]1[fg] healing orb every [yellow]8[fg] seconds' end,
+    ['druid'] = function(lvl) return '[fg]casts a heal over time spell on allies' end,
+    ['bard'] = function(lvl) return '[fg]dunno yet, buffs something' end,
     ['necromancer'] = function(lvl) return '[fg]creates up to [yellow]3[fg] skeletons' end,
     ['paladin'] = function(lvl) return '[fg]protects hurt allies with an invulnerable bubble' end,
     ['outlaw'] = function(lvl) return '[fg]throws a fan of [yellow]5[fg] knives, each dealing [yellow]' .. get_character_stat('outlaw', lvl, 'dmg') .. '[fg] damage' end,
@@ -650,6 +665,8 @@ function init()
     ['scout'] = '[red]Dagger Resonance',
     ['cleric'] = '[green]Mass Heal',
     ['shaman'] = '[blue]Chain Lightning',
+    ['druid'] = '[green]Regrowth',
+    ['bard'] = '[brown]Attack Speed buff',
     ['necromancer'] = '[purple]Reanimate Dead',
     ['paladin'] = '[yellow]Divine Protection',
     ['outlaw'] = '[red]Flying Daggers',
@@ -714,7 +731,9 @@ function init()
     ['sniper'] = '[light_bg]pew pwe',
     ['scout'] = '[light_bg]Dagger Resonance',
     ['cleric'] = '[light_bg]Mass Heal ',
-    ['shaman'] = '[light_bgChain Lightning',
+    ['shaman'] = '[light_bg]Chain Lightning',
+    ['druid'] = '[light_bg]Regrowth',
+    ['bard'] = '[light_bg]]Attack Speed buff',
     ['paladin'] = '[light_bgDiving Protection',
     ['necromancer'] = '[light_bg]Reanimate Dead',
     ['outlaw'] = '[light_bg]Flying Daggers',
@@ -780,6 +799,8 @@ function init()
     ['scout'] = function() return '[yellow]+25%[fg] damage per chain and [yellow]+3[fg] chains' end,
     ['cleric'] = function() return '[fg]creates [yellow]4[fg] healing orbs every [yellow]8[fg] seconds' end,
     ['shaman'] = function() return '[fg]creates [yellow]1[fg] healing orb every [yellow]8[fg] seconds' end,
+    ['druid'] = function() return '[fg]casts a heal over time spell on allies' end,
+    ['bard'] = function() return '[fg] attack speed buff' end,
     ['necromancer'] = function() return '[fg]summons up to [yellow]3[fg] skeletons' end,
     ['paladin'] = function() return 'protects hurt allies with divine bubble' end,
     ['outlaw'] = function() return "[yellow]+50%[fg] outlaw attack speed and his knives seek enemies" end,
@@ -845,6 +866,8 @@ function init()
     ['scout'] = function() return '[light_bg]+25% damage per chain and +3 chains' end,
     ['cleric'] = function() return '[light_bg]creates 4 healing orbs' end,
     ['shaman'] = function() return '[light_bg]creates 4 healing orbs' end,
+    ['druid'] = function() return '[light_bg]casts a heal over time spell on allies' end,
+    ['bard'] = function() return '[light_bg] attack speed buff' end,
     ['necromancer'] = function() return '[light_bg]summons up to 3 skeletons' end,
     ['paladin'] = function() return '[light_bg]protects allies' end,
     ['outlaw'] = function() return "[light_bg]+50% outlaw attack speed and his knives seek enemies" end,
@@ -910,6 +933,8 @@ function init()
     ['scout'] = function(lvl) return get_character_stat_string('scout', lvl) end, 
     ['cleric'] = function(lvl) return get_character_stat_string('cleric', lvl) end, 
     ['shaman'] = function(lvl) return get_character_stat_string('shaman', lvl) end, 
+    ['druid'] = function(lvl) return get_character_stat_string('druid', lvl) end, 
+    ['bard'] = function(lvl) return get_character_stat_string('bard', lvl) end, 
     ['paladin'] = function(lvl) return get_character_stat_string('paladin', lvl) end,
     ['necromancer'] = function(lvl) return get_character_stat_string('necromancer', lvl) end, 
     ['outlaw'] = function(lvl) return get_character_stat_string('outlaw', lvl) end, 
@@ -986,6 +1011,7 @@ function init()
     ['boss'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1},
     ['enemy_critter'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 0.5},
     ['saboteur'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1.4},
+    ['buffer'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1},
   }
 
   local ylb1 = function(lvl)
@@ -1024,24 +1050,26 @@ function init()
     end,
     ['mercenary'] = function(lvl) return '[' .. ylb1(lvl) .. ']2[light_bg]/[' .. ylb2(lvl) .. ']4 [fg]- [' .. ylb1(lvl) .. ']+8%[light_bg]/[' .. ylb2(lvl) .. ']+16% [fg]chance for enemies to drop gold on death' end,
     ['explorer'] = function(lvl) return '[yellow]+15%[fg] attack speed and damage per active class to allied explorers' end,
+    ['buffer'] = function(lvl) return 'buff stuff yo' end,
   }
 
   tier_to_characters = {
     [1] = {'swordsman', 'archer', 'cleric'},
     [2] = {'wizard', 'shaman', 'paladin', 'priest', 'cannon'},
-    [3] = {'sniper', 'necromancer'},
+    [3] = {'sniper', 'necromancer', 'bard', 'druid'},
     [4] = {'juggernaut'},
   }
 
   attack_ranges = {
     ['melee'] = 20,
-    ['medium'] = 40,
-    ['medium-long'] = 60,
-    ['long'] = 100,
+    ['medium'] = 60,
+    ['medium-long'] = 100,
+    ['long'] = 150,
     ['ultra-long'] = 250,
   }
 
   attack_speeds = {
+    ['buff'] = 0.5,
     ['ultrafast'] = 0.78,
     ['fast'] = 1.5,
     ['medium'] = 2,
@@ -1085,6 +1113,8 @@ function init()
     ['scout'] = 1,
     ['cleric'] = 1,
     ['shaman'] = 2,
+    ['druid'] = 3,
+    ['bard'] = 3,
     ['paladin'] = 2,
     ['necromancer'] = 3,
     ['outlaw'] = 2,
@@ -1165,6 +1195,7 @@ function init()
     local mercenaries = 0
     local explorers = 0
     local cursed = 0
+    local buffers = 0
     for _, unit in ipairs(units) do
       local unit_class = character_classes[unit.character]
       if unit_class == 'ranger' then rangers = rangers + 1 end
@@ -1184,9 +1215,10 @@ function init()
       if unit_class == 'mercenary' then mercenaries = mercenaries + 1 end
       if unit_class == 'explorer' then explorers = explorers + 1 end
       if unit_class == 'cursed' then explorers = explorers + 1 end
+      if unit_class == 'buffer' then buffers = buffers + 1 end
     end
     return {ranger = rangers, warrior = warriors, healer = healers, mage = mages, nuker = nukers, conjurer = conjurers, rogue = rogues,
-      enchanter = enchanters, psyker = psykers, curser = cursers, cursed = cursed, forcer = forcers, swarmer = swarmers, voider = voiders, sorcerer = sorcerers, mercenary = mercenaries, explorer = explorers}
+      enchanter = enchanters, psyker = psykers, curser = cursers, cursed = cursed, forcer = forcers, swarmer = swarmers, voider = voiders, sorcerer = sorcerers, mercenary = mercenaries, explorer = explorers, buffer = buffers}
   end
 
   get_class_levels = function(units)
@@ -1196,7 +1228,7 @@ function init()
         if number_of_units >= 6 then return 2
         elseif number_of_units >= 3 then return 1
         else return 0 end
-      elseif class == 'healer' or class == 'conjurer' or class == 'enchanter' or class == 'curser' or class == 'forcer' or class == 'swarmer' or class == 'voider' or class == 'mercenary' or class == 'psyker' or class == 'cursed' then
+      elseif class == 'healer' or class == 'conjurer' or class == 'enchanter' or class == 'curser' or class == 'forcer' or class == 'swarmer' or class == 'voider' or class == 'mercenary' or class == 'psyker' or class == 'cursed' or class == 'buffer' then
         if number_of_units >= 4 then return 2
         elseif number_of_units >= 2 then return 1
         else return 0 end
@@ -1228,6 +1260,7 @@ function init()
       mercenary = units_to_class_level(units_per_class.mercenary, 'mercenary'),
       explorer = units_to_class_level(units_per_class.explorer, 'explorer'),
       cursed = units_to_class_level(units_per_class.cursed, 'cursed'),
+      buffer = units_to_class_level(units_to_class_level, 'buffer'),
     }
   end
 
@@ -1257,6 +1290,7 @@ function init()
     ['mercenary'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).mercenary end,
     ['explorer'] = function(units) return 1, 1, nil, get_number_of_units_per_class(units).explorer end,
     ['cursed'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).cursed end,
+    ['buffer'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).buffer end,
   }
 
   passive_names = {

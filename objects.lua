@@ -168,6 +168,29 @@ function WallArrow:draw()
   graphics.pop()
 end
 
+Buff = Object:extend()
+function Buff:init(name, duration, color)
+  self.name = name
+  self.duration = duration
+  self.color = color
+  self.stats = {}
+end
+
+function Create_buff_dmg(duration)
+  local name = "dmg/0.2"
+  local buff = Buff(name, duration, red_transparent_weak)
+  buff.stats[buff_types['dmg']] = 0.2
+  return buff
+end
+
+function Create_buff_druid_hot(duration)
+  local name = 'druid_hot'
+  local buff = Buff(name, duration, green_transparent_weak)
+  buff.heal_per_s = 5
+  return buff
+end
+
+
 
 
 
@@ -175,6 +198,7 @@ Unit = Object:extend()
 function Unit:init_unit()
   self.level = self.level or 1
   self.target = nil
+  self.buffs = {}
   self.hfx:add('hit', 1)
   self.hfx:add('shoot', 1)
   self.hp_bar = HPBar{group = main.current.effects, parent = self}
@@ -225,6 +249,30 @@ function Unit:calculate_damage(dmg)
   if self.def >= 0 then dmg = dmg*(100/(100+self.def))
   else dmg = dmg*(2 - 100/(100+self.def)) end
   return dmg
+end
+
+function Unit:add_buff(buff)
+  local existing_buff = self.buffs[buff.name]
+  if existing_buff then
+    self.buffs[buff.name].duration = math.max(existing_buff.duration, buff.duration)
+  else
+    self.buffs[buff.name] = buff
+  end
+end
+
+function Unit:update_buffs(dt)
+  for k, v in pairs(self.buffs) do
+    if v.name == 'druid_hot' then
+      self.hp = self.hp + (dt * v.heal_per_s)
+      if self.hp > self.max_hp then self.hp = self.max_hp end
+    end
+
+
+    v.duration = v.duration - dt
+    if v.duration < 0 then
+      self.buffs[k] = nil
+    end
+  end
 end
 
 
@@ -287,23 +335,26 @@ function Unit:calculate_stats(first_run)
   self.buff_mvspd_m = 1
 
   if self.buffs and #self.buffs > 0 then
-    for i = 1, #self.buffs do
-      local buff = self.buffs[i]
-      local buffName = buff.name
-      if buffName == buff_types['dmg'] then
-        self.buff_dmg_m = self.buff_dmg_m + buff.amount
-      elseif buffName == buff_types['def'] then
-        self.buff_def_m = self.buff_dmg_m + buff.amount
-      elseif buffName == buff_types['mvspd'] then
-        self.buff_mvspd_m = self.buff_mvspd_m + buff.amount
-      elseif buffName == buff_types['aspd'] then
-        self.buff_aspd_m = self.buff_aspd_m + buff.amount
-      elseif buffName == buff_types['area_dmg'] then
-        self.buff_area_dmg_m = self.buff_area_dmg_m + buff.amount
-      elseif buffName == buff_types['area_size'] then
-        self.buff_area_size_m = self.buff_area_size_m + buff.amount
-      elseif buffName == buff_types['hp'] then
-        self.buff_hp_m = self.buff_hp_m + buff.amount
+    for k,v in self.buffs do
+      local buff = v
+      if buff.stats then
+        for stat, amt in buff.stats do
+          if stat == buff_types['dmg'] then
+            self.buff_dmg_m = self.buff_dmg_m + amt
+          elseif stat == buff_types['def'] then
+            self.buff_def_m = self.buff_dmg_m + amt
+          elseif stat == buff_types['mvspd'] then
+            self.buff_mvspd_m = self.buff_mvspd_m + amt
+          elseif stat == buff_types['aspd'] then
+            self.buff_aspd_m = self.buff_aspd_m + amt
+          elseif stat == buff_types['area_dmg'] then
+            self.buff_area_dmg_m = self.buff_area_dmg_m + amt
+          elseif stat == buff_types['area_size'] then
+            self.buff_area_size_m = self.buff_area_size_m + amt
+          elseif stat == buff_types['hp'] then
+            self.buff_hp_m = self.buff_hp_m + amt
+          end
+        end
       end
     end
   end

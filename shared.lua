@@ -12,6 +12,7 @@ function shared_init()
     green = ColorRamp(Color'#8bbf40', 0.025),
     red = ColorRamp(Color'#e91d39', 0.025),
     purple = ColorRamp(Color'#8e559e', 0.025),
+    brown = ColorRamp(Color'#735440', 0.025),
     blue2 = ColorRamp(Color'#4778ba', 0.025),
     yellow2 = ColorRamp(Color'#f59f10', 0.025),
     grey = ColorRamp(Color'#808080', 0.025),

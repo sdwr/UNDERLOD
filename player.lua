@@ -2656,7 +2656,6 @@ Troop:implement(Unit)
 function Troop:init(args)
   self.castTime = 0.4
   self.backswing = 0.2
-  self.buffs = {}
   --buff examples...
   --self.buffs[1] = {name = buff_types['dmg'], amount = 0.2, color = red_transparent_weak}
   --self.buffs[2] = {name = buff_types['aspd'], amount = 0.2, color = green_transparent_weak}
@@ -2684,6 +2683,7 @@ end
 
 function Troop:update(dt)
   self:update_game_object(dt)
+  self:update_buffs(dt)
   if self.slowed then 
     self.buff_mvspd_m = self.slowed
   else
@@ -2733,6 +2733,10 @@ function Troop:update(dt)
       if self.target and (self.target.bubbled or self.target.shielded) then self.target = nil end
       if self.target and self.target.hp == self.target.max_hp then self.target = nil end
       if not self.target then self.target = self:get_hurt_ally_without_shield(self.aggro_sensor) end
+    elseif self.character == 'druid' then
+      if self.target and self.target.buffs['druid_hot'] then self.target = nil end
+      if self.target and self.target.hp == self.target.max_hp then self.target = nil end
+      if not self.target then self.target = self:get_hurt_ally(self.aggro_sensor) end
     elseif self.character == "necromancer" then
       if not self.target then self.target = self:get_closest_object_in_shape(self.aggro_sensor, {Corpse}) end
     else
@@ -2763,12 +2767,10 @@ end
 function Troop:draw()
   --graphics.circle(self.x, self.y, self.attack_sensor.rs, orange[0], 1)
   graphics.push(self.x, self.y, self.r, self.hfx.hit.x, self.hfx.hit.x)
-  if #self.buffs > 0 then
-    local lw = 1
-    for i = 1, #self.buffs do
-      local buff = self.buffs[i]
-      graphics.circle(self.x, self.y, ((self.shape.w * 0.66) / 2) + (i), buff.color, lw)
-    end
+  local i = 1
+  for _ , buff in pairs(self.buffs) do
+    graphics.circle(self.x, self.y, ((self.shape.w * 0.66) / 2) + (i), buff.color, 1)
+    i = i + 1
   end
   graphics.rectangle(self.x, self.y, self.shape.w*.66, self.shape.h*.66, 3, 3, self.hfx.hit.f and fg[0] or self.color)
   if self.casting then
@@ -2928,6 +2930,21 @@ function Troop:set_character()
       self.target:removeHealFlag(self.castTime)
       self:castAnimation()
     end, nil, nil, 'cast')
+
+  elseif self.character == 'bard' then
+    self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
+    self.t:cooldown(attack_speeds['buff'], function() return true end, function() 
+      local targets = self:get_objects_in_shape(self.attack_sensor, main.current.friendlies)
+      for i, t in ipairs(targets) do
+        t:add_buff(Create_buff_dmg(2))
+      end
+    end, nil, nil, 'buff')
+  elseif self.character == 'druid' then
+    self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
+    self.t:cooldown(attack_speeds['slow'], self:in_range(), function()
+      self:castAnimation()
+    end, nil, nil, 'cast')
+
   end
 
   self.aggro_sensor = Circle(self.x, self.y, math.max(1000, 60))
@@ -3041,6 +3058,9 @@ function Troop:cast()
     elseif self.character == 'priest' then
       buff1:play({pitch = random:float(0.8,1.2), volume = 0.5})
         self.target:shield(30, 3)
+    elseif self.character == 'druid' then
+      buff1:play({pitch = random:float(0.8, 1.2), volume = 0.5})
+      self.target:add_buff(Create_buff_druid_hot(5))
     end
   end
 end
