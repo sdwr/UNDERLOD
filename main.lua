@@ -1042,6 +1042,7 @@ function init()
   }
 
   attack_speeds = {
+    ['ultrafast'] = 0.78,
     ['fast'] = 1.5,
     ['medium'] = 2,
     ['medium-slow'] = 2.5,
