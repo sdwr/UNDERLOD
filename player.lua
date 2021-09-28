@@ -1864,7 +1864,7 @@ function Snipe:recover()
 end
 
 function Snipe:draw()
-  if self.state == 'charging' and self.parent and self.target then
+  if self.state == 'charging' and self.parent and not self.parent.dead and self.target then
     graphics.line(self.parent.x, self.parent.y, self.target.x, self.target.y, self.color, 1)
   end
 end
@@ -2144,6 +2144,64 @@ function Summon:draw()
   end
 
 end
+
+
+
+Vanish = Object:extend()
+Vanish:implement(GameObject)
+Vanish:implement(Physics)
+function Vanish:init(args)
+  self:init_game_object(args)
+  self.time = love.timer.getTime()
+  self.currentTime = love.timer.getTime()
+
+  self.state = "charging"
+
+  self.parent.state = 'frozen'
+
+  self.invulnTime = 0.25
+  self.vanishTime = 0.5
+  illusion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+  self.t:after(self.invulnTime, function() self.parent.invulnerable = true end)
+  self.t:after(self.vanishTime, function() self:teleport() end)
+
+end
+
+function Vanish:update(dt)
+  if self.parent and self.parent.dead then self.dead = true; return end
+  self:update_game_object(dt)
+  self.x = self.parent.x
+  self.y = self.parent.y
+  self.currentTime = love.timer.getTime() - self.time
+
+  self.parent.alpha = 1 - math.max(self.currentTime / self.vanishTime, 1)
+end
+
+function Vanish:teleport()
+  illusion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+  self.state = "over"
+  self.parent.state = 'normal'
+  self.parent.invulnerable = false
+  self.parent.alpha = 1
+  self.parent:set_position(self.target.x - 5, self.target.y)
+  self.parent:set_velocity(0, 0)
+  
+  self.t:after(1.5, function() self.dead = true end)
+end
+
+function Vanish:draw()
+  if self.state == 'charging' then
+    graphics.push(self.x, self.y, self.r + (self.vr or 0), self.spring.x, self.spring.x)
+      -- graphics.circle(self.x, self.y, self.shape.rs + random:float(-1, 1), self.color, 2)
+      graphics.circle(self.x, self.y, math.min((self.currentTime / self.vanishTime), 1) * (self.parent.shape.w / 2 ), white_transparent)
+    graphics.pop()
+
+  elseif self.state == 'over' then
+  end
+
+  
+end
+
 
 
 Volcano = Object:extend()
@@ -2654,7 +2712,7 @@ Troop:implement(GameObject)
 Troop:implement(Physics)
 Troop:implement(Unit)
 function Troop:init(args)
-  self.castTime = 0.4
+  self.castTime = 0.3
   self.backswing = 0.2
   --buff examples...
   --self.buffs[1] = {name = buff_types['dmg'], amount = 0.2, color = red_transparent_weak}
@@ -2736,7 +2794,7 @@ function Troop:update(dt)
     elseif self.character == 'druid' then
       if self.target and self.target.buffs['druid_hot'] then self.target = nil end
       if self.target and self.target.hp == self.target.max_hp then self.target = nil end
-      if not self.target then self.target = self:get_hurt_ally(self.aggro_sensor) end
+      if not self.target then self.target = self:get_most_hurt_ally(self.aggro_sensor) end
     elseif self.character == "necromancer" then
       if not self.target then self.target = self:get_closest_object_in_shape(self.aggro_sensor, {Corpse}) end
     else
@@ -2808,9 +2866,6 @@ function Troop:shoot(r, mods)
   mods = mods or {}
   camera:spring_shake(2, r)
   self.hfx:use('shoot', 0.25)
-  self.state = unit_states['frozen']
-  self.t:after(0.4, function() self.state = unit_states['stopped'] end, 'stopped')
-  self.t:after(0.4 + .4, function() self.state = unit_states['normal'] end, 'normal')
 
   local crit = false
   HitCircle{group = main.current.effects, x = self.x + 0.8*self.shape.w*math.cos(r), y = self.y + 0.8*self.shape.w*math.sin(r), rs = 6}
@@ -3059,7 +3114,7 @@ function Troop:cast()
       buff1:play({pitch = random:float(0.8,1.2), volume = 0.5})
         self.target:shield(30, 3)
     elseif self.character == 'druid' then
-      buff1:play({pitch = random:float(0.8, 1.2), volume = 0.5})
+      buff1:play({pitch = random:float(0.8, 1.2), volume = 0.7})
       self.target:add_buff(Create_buff_druid_hot(5))
     end
   end

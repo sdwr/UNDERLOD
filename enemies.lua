@@ -36,7 +36,11 @@ function Seeker:init(args)
       self:set_restitution(0.5)
       self.color = red[0]:clone()
       self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
-      
+    elseif self.type == 'assassin' then
+      self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
+      self:set_restitution(0.5)
+      self.color = black[0]:clone()
+      self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
     else
       self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
       self:set_restitution(0.5)
@@ -77,7 +81,7 @@ function Seeker:init(args)
     end, nil, nil, 'shoot')
   elseif self.type == 'summoner' then
     self.summons = 0
-    self.t:cooldown(attack_speeds['slow'], function() return self.state == 'normal' end, function()
+    self.t:cooldown(attack_speeds['slow'], function() return self.state == 'normal' and self.summons < 4 end, function()
       self:summon()
     end, nil, nil, 'cast')
   elseif self.type == 'rager' then
@@ -86,6 +90,22 @@ function Seeker:init(args)
       if closest_enemy then
         self:rotate_towards_object(closest_enemy, 1)
         self:attack(20, {x = closest_enemy.x, y = closest_enemy.y})
+      end
+    end, nil, nil, 'attack')
+  elseif self.type == 'assassin' then
+    self.spawn_pos = {x = self.x, y = self.y}
+    self.t:cooldown(attack_speeds['ultra-slow'], function() local targets = self:get_objects_in_shape(self.aggro_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
+      local furthest_enemy = self:get_furthest_object_to_point(self.aggro_sensor, main.current.friendlies, {x = self.x, y = self.y})
+      if furthest_enemy then
+        self:vanish(furthest_enemy)
+      end
+    end, nil, nil, 'vanish')
+
+    self.t:cooldown(attack_speeds['fast'], function() local targets = self:get_objects_in_shape(self.attack_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
+      local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.friendlies)
+      if closest_enemy then
+        self:rotate_towards_object(closest_enemy, 1)
+        self:attack(20, {x = closest_enemy.x, y = closest_enemy.y}, yellow[0])
       end
     end, nil, nil, 'attack')
   elseif self.type == 'boss' then
@@ -304,9 +324,9 @@ function Seeker:update(dt)
   if self.area_sensor then self.area_sensor:move_to(self.x, self.y) end
 end
 
-function Seeker:attack(area, mods)
+function Seeker:attack(area, mods, color)
   mods = mods or {}
-  local t = {team = "enemy", group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(area or 64), color = self.color, dmg = self.area_dmg_m*self.dmg,
+  local t = {team = "enemy", group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(area or 64), color = color or self.color, dmg = self.area_dmg_m*self.dmg,
     character = self.character, level = self.level, parent = self}
 
   self.state = unit_states['frozen']
@@ -330,6 +350,10 @@ end
 
 function Seeker:summon()
   Summon{group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = 25, color = purple[0], level = self.level, parent = self}
+end
+
+function Seeker:vanish(target)
+  Vanish{group = main.current.main, team = "enemy", x = self.x, y = self.y, target = target, level = self.level, parent = self}
 end
 
 function Seeker:shoot(r, mods)
@@ -423,6 +447,7 @@ end
 
 
 function Seeker:hit(damage, projectile, dot, from_enemy)
+  if self.invulnerable then return end
   local pyrod = self.pyrod
   self.pyrod = false
   if self.dead then return end

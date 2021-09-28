@@ -291,6 +291,20 @@ function Physics:get_closest_object_in_shape(shape, object_types, exclude_list)
   if i ~= 0 then return objects[min_i] end
 end
 
+function Physics:get_furthest_object_to_point(shape, object_types, point)
+  local objects = self:get_objects_in_shape(shape, object_types)
+  local max_d, max_i = 0, 0
+  for i, object in ipairs(objects) do
+    local d = math.distance(point.x, point.y, object.x, object.y)
+    if d > max_d then
+      max_d = d
+      max_i = i
+    end
+  end
+  if i ~= 0 then return objects[max_i] end
+
+end
+
 
 -- Returns a random object in the given shape, excluding this object and also optionally excluding objects in the exclude list passed in.
 -- self:get_random_object_in_shape(Circle(self.x, self.y, 100), {Enemy1, Enemy2, Enemy3}) -> random object of class Enemy1, Enemy2 or Enemy3 in a circle of radius 100 around this object

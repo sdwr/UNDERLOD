@@ -1096,14 +1096,15 @@ function Arena:spawn_n_rares(p, j, n, pass)
         check_circle:move_to(x, y)
         local objects = self.main:get_objects_in_shape(check_circle, {Seeker, EnemyCritter, Critter, Player, Sentry, Automaton, Bomb, Volcano, Saboteur, Pet, Turret})
       end
-      local elite_type = math.random(3)
+      local elite_type = math.random(4)
       if elite_type == 1 then
         Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'stomper', level = self.level}
       elseif elite_type == 2 then
         Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'mortar', level = self.level}
       elseif elite_type == 3 then
         Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'summoner', level = self.level}
-      else
+      elseif elite_type == 4 then
+        Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'assassin', level = self.level}
       end
     end}
   end, n, nil, 'spawn_rares_' .. j)

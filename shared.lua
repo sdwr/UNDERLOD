@@ -21,6 +21,7 @@ function shared_init()
     _G[name] = color
     _G[name .. '_transparent'] = Color(color[0].r, color[0].g, color[0].b, 0.5)
     _G[name .. '_transparent_weak'] = Color(color[0].r, color[0].g, color[0].b, 0.25)
+    _G[name .. '_fade'] = ColorFade(color[0])
   end
   modal_transparent = Color(0.1, 0.1, 0.1, 0.6)
   modal_transparent_2 = Color(0.1, 0.1, 0.1, 0.9)
@@ -675,6 +676,15 @@ function ColorRamp:init(color, step)
     else
       self[i] = self.color:clone()
     end
+  end
+end
+
+ColorFade = Object:extend()
+function ColorFade:init(color)
+  self.color = color
+  for i = 1, 10 do
+    self[i] = self.color:clone()
+    self[i] = self[i]:fade(.1)
   end
 end
 
