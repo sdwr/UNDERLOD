@@ -28,6 +28,12 @@ function Object:implement(...)
   end
 end
 
+function Object:import(...)
+  for key, prop in pairs({...}) do
+    self[key] = prop
+  end
+end
+
 
 function Object:is(T)
   local mt = getmetatable(self)

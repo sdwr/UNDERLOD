@@ -1835,7 +1835,7 @@ function Snipe:init(args)
 
   self.state = "charging"
   self.parent.state = 'frozen'
-  sniper_load:play({volume = 1})
+  sniper_load:play({volume = 0.5})
   self.t:after(1, function() self:fire() end)
   self.t:after(1.25, function() self:recover() end)
 

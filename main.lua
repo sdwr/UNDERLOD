@@ -1555,6 +1555,13 @@ function init()
     ['hardening'] = function(lvl) return '[yellow]+150%[fg] defense to all allies for [yellow]3[fg] seconds after an ally dies' end,
   }
 
+  max_units_to_cost = {
+    [3] = 5,
+    [4] = 10,
+    [5] = 20,
+    [6] = 40,
+  }
+
   level_to_tier_weights = {
     [1] = {90, 10, 0, 0},
     [2] = {80, 15, 5, 0},
@@ -1800,7 +1807,7 @@ function init()
   if not state.new_game_plus then state.new_game_plus = new_game_plus end
   current_new_game_plus = state.current_new_game_plus or new_game_plus
   if not state.current_new_game_plus then state.current_new_game_plus = current_new_game_plus end
-  max_units = math.clamp(7 + current_new_game_plus, 7, 12)
+  max_units = 3
 
   main_song_instance = _G[random:table{'song1', 'song2', 'song3', 'song4', 'song5'}]:play{volume = 0.5}
   main = Main()
@@ -2008,11 +2015,11 @@ function open_options(self)
             'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
             'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
           }
-          max_units = math.clamp(7 + current_new_game_plus, 7, 12)
+          max_units = 3
           main:add(BuyScreen'buy_screen')
           locked_state = nil
           system.save_run()
-          main:go_to('buy_screen', 1, 0, {}, passives, 1, 0)
+          main:go_to('buy_screen', 1, 0, {}, max_units, passives, 1, 0, max_units)
         end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
       end}
     end
@@ -2163,7 +2170,7 @@ function open_options(self)
         current_new_game_plus = math.clamp(current_new_game_plus - 1, 0, 5)
         state.current_new_game_plus = current_new_game_plus
         self.ng_t.text:set_text({{text = '[bg10]current: ' .. current_new_game_plus, font = pixul_font, alignment = 'center'}})
-        max_units = 7 + current_new_game_plus
+        max_units = 3
         system.save_run()
       end}
 
@@ -2174,7 +2181,7 @@ function open_options(self)
         current_new_game_plus = math.clamp(current_new_game_plus + 1, 0, new_game_plus)
         state.current_new_game_plus = current_new_game_plus
         self.ng_t.text:set_text({{text = '[bg10]current: ' .. current_new_game_plus, font = pixul_font, alignment = 'center'}})
-        max_units = 7 + current_new_game_plus
+        max_units = 3
         system.save_run()
       end}
     end

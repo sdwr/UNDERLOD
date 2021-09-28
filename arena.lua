@@ -28,12 +28,13 @@ end
 
 
 
-function Arena:on_enter(from, level, loop, units, passives, shop_level, shop_xp, lock)
+function Arena:on_enter(from, level, loop, units, max_units, passives, shop_level, shop_xp, lock)
   self.hfx:add('condition1', 1)
   self.hfx:add('condition2', 1)
   self.level = level or 1
   self.loop = loop or 0
   self.units = units
+  self.max_units = max_units or 3
   self.passives = passives
   self.shop_level = shop_level or 1
   self.shop_xp = shop_xp or 0
@@ -322,11 +323,11 @@ function Arena:update(dt)
           'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
           'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
         }
-        max_units = math.clamp(7 + current_new_game_plus + self.loop, 7, 12)
+        max_units = 3
         main:add(BuyScreen'buy_screen')
         locked_state = nil
         system.save_run()
-        main:go_to('buy_screen', 1, 0, {}, passives, 1, 0)
+        main:go_to('buy_screen', 1, 0, {}, max_units, passives, 1, 0)
       end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
     end
 
@@ -790,10 +791,10 @@ function Arena:die()
             'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
             'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
           }
-          max_units = math.clamp(7 + current_new_game_plus, 7, 12)
+          max_units = 3
           main:add(BuyScreen'buy_screen')
           system.save_run()
-          main:go_to('buy_screen', 1, 0, {}, passives, 1, 0)
+          main:go_to('buy_screen', 1, 0, {}, max_units, passives, 1, 0)
         end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
       end}
     end)
@@ -922,8 +923,8 @@ function Arena:transition()
     slow_amount = 1
     music_slow_amount = 1
     main:add(BuyScreen'buy_screen')
-    system.save_run(self.level+1, self.loop, gold, self.units, self.passives, self.shop_level, self.shop_xp, run_passive_pool, locked_state)
-    main:go_to('buy_screen', self.level+1, self.loop, self.units, self.passives, self.shop_level, self.shop_xp)
+    system.save_run(self.level+1, self.loop, gold, self.units, self.max_units, self.passives, self.shop_level, self.shop_xp, run_passive_pool, locked_state)
+    main:go_to('buy_screen', self.level+1, self.loop, self.units, self.max_units, self.passives, self.shop_level, self.shop_xp)
     t.t:after(0.1, function()
       t.text:set_text({
         {text = '[nudge_down, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']gold gained: ' .. tostring(self.gold_gained or 0) .. ' + ' .. tostring(self.gold_picked_up or 0), font = pixul_font, 
