@@ -1250,7 +1250,7 @@ function Projectile:on_trigger_enter(other, contact)
     end
 
     if self.crit then
-      camera:shake(5, 0.25)
+      --camera:shake(5, 0.25)
       rogue_crit1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
       rogue_crit2:play{pitch = random:float(0.95, 1.05), volume = 0.15}
       for i = 1, 3 do HitParticle{group = main.current.effects, x = other.x, y = other.y, color = self.color, v = random:float(100, 400)} end
@@ -1830,8 +1830,7 @@ function Snipe:init(args)
   if not self.group.world then self.recover() return end
 
   self.color = red[0]:clone()
-  self.time = love.timer.getTime()
-  self.currentTime = love.timer.getTime()
+  self.currentTime = 0
 
   self.state = "charging"
   self.parent.state = 'frozen'
@@ -1845,7 +1844,7 @@ function Snipe:update(dt)
   if self.parent and self.parent.dead == true then self.recover() return end
   if not self.target or self.target.dead == true then self:recover() return end
   self:update_game_object(dt)
-  self.currentTime = love.timer.getTime() - self.time
+  self.currentTime = self.currentTime + dt
 
   self.color.a = math.min(self.currentTime, 1)
 
@@ -1994,8 +1993,7 @@ Stomp:implement(Physics)
 function Stomp:init(args)
   self:init_game_object(args)
   self.attack_sensor = Circle(self.x, self.y, 20)
-  self.time = love.timer.getTime()
-  self.currentTime = love.timer.getTime()
+  self.currentTime = 0
 
   self.state = "charging"
 
@@ -2009,7 +2007,7 @@ function Stomp:update(dt)
   if self.parent and self.parent.dead then self.dead = true; return end
   self:update_game_object(dt)
   self.attack_sensor:move_to(self.x, self.y)
-  self.currentTime = love.timer.getTime() - self.time
+  self.currentTime = self.currentTime + dt
 end
 
 function Stomp:stomp()
@@ -2091,8 +2089,7 @@ Summon:implement(Physics)
 function Summon:init(args)
   self:init_game_object(args)
   self.attack_sensor = Circle(self.x, self.y, self.rs)
-  self.time = love.timer.getTime()
-  self.currentTime = love.timer.getTime()
+  self.currentTime = 0
 
   self.state = "charging"
 
@@ -2109,7 +2106,7 @@ function Summon:update(dt)
   self:update_game_object(dt)
   self.x = self.parent.x
   self.y = self.parent.y
-  self.currentTime = love.timer.getTime() - self.time
+  self.currentTime = self.currentTime + dt
 end
 
 function Summon:spawn()
@@ -2152,8 +2149,7 @@ Vanish:implement(GameObject)
 Vanish:implement(Physics)
 function Vanish:init(args)
   self:init_game_object(args)
-  self.time = love.timer.getTime()
-  self.currentTime = love.timer.getTime()
+  self.currentTime = 0
 
   self.state = "charging"
 
@@ -2172,8 +2168,7 @@ function Vanish:update(dt)
   self:update_game_object(dt)
   self.x = self.parent.x
   self.y = self.parent.y
-  self.currentTime = love.timer.getTime() - self.time
-
+  self.currentTime = self.currentTime + dt
   self.parent.alpha = 1 - math.max(self.currentTime / self.vanishTime, 1)
 end
 
@@ -2864,8 +2859,6 @@ end
 
 function Troop:shoot(r, mods)
   mods = mods or {}
-  camera:spring_shake(2, r)
-  self.hfx:use('shoot', 0.25)
 
   local crit = false
   HitCircle{group = main.current.effects, x = self.x + 0.8*self.shape.w*math.cos(r), y = self.y + 0.8*self.shape.w*math.sin(r), rs = 6}
@@ -2918,7 +2911,7 @@ function Troop:set_character()
 
   elseif self.character == 'archer' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
-    self.t:cooldown(attack_speeds['ultrafast'], self:in_range(), function()
+    self.t:cooldown(attack_speeds['ultra-fast'], self:in_range(), function()
       if self.target then
         self:shootAnimation(self:angle_to_object(self.target))
       end
@@ -3010,6 +3003,7 @@ function Troop:hit(damage, from_undead)
   if self.dead then return end
   if self.magician_invulnerable then return end
   if self.undead and not from_undead then return end
+
   self.hfx:use('hit', 0.25, 200, 10)
   self:show_hp()
 
@@ -3025,12 +3019,12 @@ function Troop:hit(damage, from_undead)
 
   local actual_damage = math.max(self:calculate_damage(damage), 0)
   self.hp = self.hp - actual_damage
-  _G[random:table{'player_hit1', 'player_hit2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-  
 
-  --self.character_hp:change_hp()
+  camera:shake(2, 0.5)
 
-  if self.hp <= 0 then
+  if self.hp > 0 then
+    _G[random:table{'player_hit1', 'player_hit2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+  else
     hit4:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     for i = 1, random:int(4, 6) do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color} end
     HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 12}:scale_down(0.3):change_color(0.5, self.color)
@@ -3095,10 +3089,11 @@ function Troop:cast()
       self.dot_area = DotArea{group = main.current.effects, x = self.target.x, y = self.target.y, rs = 24,
       character = self.character, color = self.color, dmg = 5, level = self.level, parent = self, duration = 2}
     elseif self.character == 'shaman' then
-      ChainLightning{group = main.current.main, target = self.target, rs = 50, dmg = 10, color = self.color, parent = self, level = self.level}
+      ChainLightning{group = main.current.main, target = self.target, rs = 50, dmg = self.dmg, color = self.color, parent = self, level = self.level}
     elseif self.character == 'cleric' then
       heal1:play({pitch = random:float(0.9,1.1), volume = 0.3})
       self.target:heal(30)
+      LightningLine{group = main.current.effects, duration = 0.2, src = self, dst = self.target, color = green_transparent_weak}
     elseif self.character == 'necromancer' then
       if not self.target.dug_up and self.summons < 3 then
         critter3:play({pitch = random:float(0.8,1.2), volume = 0.5})
@@ -3110,12 +3105,15 @@ function Troop:cast()
     elseif self.character == 'paladin' then
       buff1:play({pitch = random:float(0.8,1.2), volume = 0.5})
         self.target:bubble(2)
+        LightningLine{group = main.current.effects, duration = 0.2, src = self, dst = self.target, color = yellow_transparent_weak}
     elseif self.character == 'priest' then
       buff1:play({pitch = random:float(0.8,1.2), volume = 0.5})
         self.target:shield(30, 3)
+        LightningLine{group = main.current.effects, duration = 0.2, src = self, dst = self.target, color = white_transparent_weak}
     elseif self.character == 'druid' then
       buff1:play({pitch = random:float(0.8, 1.2), volume = 0.7})
       self.target:add_buff(Create_buff_druid_hot(5))
+      LightningLine{group = main.current.effects, duration = 0.2, src = self, dst = self.target, color = green_transparent_weak}
     end
   end
 end

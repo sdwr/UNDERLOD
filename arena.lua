@@ -87,7 +87,7 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
   self.gold_picked_up = 0
   self.damage_dealt = 0
   self.damage_taken = 0
-  self.main_slow_amount = 1
+  self.main_slow_amount = .67
   self.enemies = {Seeker, EnemyCritter}
   self.friendlies = {Troop, Critter}
   self.troop_list = {}

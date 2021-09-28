@@ -89,7 +89,7 @@ function Seeker:init(args)
       local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.friendlies)
       if closest_enemy then
         self:rotate_towards_object(closest_enemy, 1)
-        self:attack(20, {x = closest_enemy.x, y = closest_enemy.y})
+        self:attack(10, {x = closest_enemy.x, y = closest_enemy.y})
       end
     end, nil, nil, 'attack')
   elseif self.type == 'assassin' then
@@ -101,11 +101,11 @@ function Seeker:init(args)
       end
     end, nil, nil, 'vanish')
 
-    self.t:cooldown(attack_speeds['fast'], function() local targets = self:get_objects_in_shape(self.attack_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
+    self.t:cooldown(attack_speeds['ultra-fast'], function() local targets = self:get_objects_in_shape(self.attack_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
       local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.friendlies)
       if closest_enemy then
         self:rotate_towards_object(closest_enemy, 1)
-        self:attack(20, {x = closest_enemy.x, y = closest_enemy.y}, yellow[0])
+        self:attack(10, {x = closest_enemy.x, y = closest_enemy.y}, yellow[0])
       end
     end, nil, nil, 'attack')
   elseif self.type == 'boss' then

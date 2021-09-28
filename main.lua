@@ -1070,7 +1070,7 @@ function init()
 
   attack_speeds = {
     ['buff'] = 0.5,
-    ['ultrafast'] = 0.78,
+    ['ultra-fast'] = 0.78,
     ['fast'] = 1.5,
     ['medium'] = 2,
     ['medium-slow'] = 2.5,
@@ -1079,7 +1079,7 @@ function init()
   }
 
   move_speeds = {
-    ['ultrafast'] = 2.5,
+    ['ultra-fast'] = 2.5,
     ['fast'] = 1.7,
     ['medium'] = 1.4,
     ['regular'] = 1,
