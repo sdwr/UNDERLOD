@@ -13,7 +13,7 @@ https://user-images.githubusercontent.com/22898519/134641583-11ba18c1-c698-47c0-
 
 ### Running
 
-Download this repository, `cd` into it and then run `engine/love/love.exe --console .`. You need to have Steam up to run it successfully.
+Download this repository, `cd` into it and then run `engine/love/love.exe --console .`.
 
 ### Controls
 1-9 to select unit class
