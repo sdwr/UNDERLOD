@@ -241,6 +241,8 @@ function init()
     ['normal'] = 'normal',
     ['frozen'] = 'frozen',
     ['stopped'] = 'stopped',
+    ['rallying'] = 'rallying',
+    ['following'] = 'following,'
   }
 
   class_colors = {

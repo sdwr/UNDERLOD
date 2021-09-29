@@ -93,6 +93,8 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
   self.troop_list = {}
   self.color = self.color or fg[0]
 
+  self.rallyEffect = RallyCircle{group = main.current.effects, camera = camera, x = 0, y = 0, hidden = true}
+
   -- Spawn solids and player
   self.x1, self.y1 = gw/2 - 0.8*gw/2, gh/2 - 0.8*gh/2
   self.x2, self.y2 = gw/2 + 0.8*gw/2, gh/2 + 0.8*gh/2

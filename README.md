@@ -18,9 +18,11 @@ Download this repository, `cd` into it and then run `engine/love/love.exe --cons
 ### Controls
 1-9 to select unit class
 
+RMB rallies units of the selected class
+
 LMB moves units of the selected class
 
-RMB moves all units
+SPACE moves all units
 
 ### LICENSE
 

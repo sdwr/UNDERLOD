@@ -407,8 +407,16 @@ end
 
 function Unit:in_range()
   return function()
-    return self.target and not self.target.dead and self:distance_to_object(self.target) - self.target.shape.w/2 - self.shape.w/2 < self.attack_sensor.rs
+    return self.target and not self.target.dead and self.state == unit_states['normal'] and self:distance_to_object(self.target) - self.target.shape.w/2 - self.shape.w/2 < self.attack_sensor.rs
   end
+end
+
+function Unit:should_follow()
+  local input = (input.mouse_state["m1"] and main.selectedClass == self.class) or input['space'].down
+  local canMove = (self.state == unit_states['normal'] or self.state == unit_states['stopped'] or self.state == unit_states['rallying'] or self.state == unit_states['following'])
+
+  return input and canMove
+
 end
 
 

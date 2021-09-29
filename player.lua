@@ -2198,6 +2198,56 @@ function Vanish:draw()
 end
 
 
+RallyEffect = Object:extend()
+RallyEffect:implement(GameObject)
+function RallyEffect:init(args)
+  self:init_game_object(args)
+
+  self.max_rs = 4
+  self.duration = 0.15
+  self.currentTime = 0
+
+end
+
+function RallyEffect:update(dt)
+  self:update_game_object(dt)
+  self.currentTime = self.currentTime + dt
+  if self.currentTime > self.duration then
+    self.dead = true
+  end
+
+end
+
+function RallyEffect:draw()
+  graphics.push(self.x, self.y)
+  graphics.circle(self.x, self.y, math.min((self.currentTime / self.duration), 1) * self.max_rs, yellow[0], 1)
+  graphics.pop()
+end
+
+RallyCircle = Object:extend()
+RallyCircle:implement(GameObject)
+function RallyCircle:init(args)
+  self:init_game_object(args)
+  self.rs = 2
+
+end
+
+function RallyCircle:update(dt)
+  self:update_game_object(dt)
+  local mx, my = self.camera:get_mouse_position()
+  self.x = mx
+  self.y = my
+end
+
+function RallyCircle:draw()
+  if not self.hidden then
+    graphics.push(self.x, self.y)
+    graphics.circle(self.x, self.y, self.rs, yellow[0])
+    graphics.pop()
+  end
+  self.hidden = true
+end
+
 
 Volcano = Object:extend()
 Volcano:implement(GameObject)
@@ -2707,6 +2757,7 @@ Troop:implement(GameObject)
 Troop:implement(Physics)
 Troop:implement(Unit)
 function Troop:init(args)
+  self.target_rally = nil
   self.castTime = 0.3
   self.backswing = 0.2
   --buff examples...
@@ -2761,14 +2812,54 @@ function Troop:update(dt)
 
 
   ]]--
-  -- try to rally first
-  if ((input.mouse_state["m1"] and main.selectedClass == self.class) or input.mouse_state["m2"]) and (self.state == unit_states['normal'] or self.state == unit_states['stopped']) then
-    self.state = unit_states['normal']
+
+
+  -- deal with mouse input first, set rally/follow
+  if self:should_follow() then
+    main.current.rallyEffect.hidden = false
+    self.state = unit_states['following']
+
+    self.target = nil
+    self.target_pos = nil
+  elseif (input["m2"].pressed and main.selectedClass == self.class) and (self.state == unit_states['normal'] or self.state == unit_states['stopped'] or self.state == unit_states['rallying'] or self.state == unit_states['following']) then
+    self.state = unit_states['rallying']
+    local mx, my = self.group.camera:get_mouse_position()
+    RallyEffect{group = main.current.effects, x = mx, y = my}
+
+    self:seek_mouse()
+    self:wander(15,50,5)
+    self:rotate_towards_velocity(1)
+
+    self.target = nil
+    local tx, ty = self.group.camera:get_mouse_position()
+    self.target_pos = {x = tx, y = ty}
+  end
+
+  --cancel follow if no longer pressing button
+  if self.state == unit_states['following'] then
+    if not self:should_follow() then
+      self.state = unit_states['normal']
+    end
+  end
+
+  -- then do movement if rally/following
+  if self.state == unit_states['following'] then
     self:seek_mouse()
     --self:steering_separate(16, {Troop})
     self:wander(15,50,5)
     self:rotate_towards_velocity(1)
-    self.target = nil
+
+  elseif self.state == unit_states['rallying'] then
+    if self:distance_to_point(self.target_pos.x, self.target_pos.y) < 20 then
+      self.target_pos = nil
+      self.state = unit_states['normal']
+    else
+      self:seek_point(self.target_pos.x, self.target_pos.y)
+      self:wander(15,50,5)
+      self:rotate_towards_velocity(1)
+    end
+
+  --then find target if not already moving
   elseif self.state == unit_states['normal'] then
     --find target
     if self.target and self.target.dead then self.target = nil end
@@ -3063,7 +3154,7 @@ function Troop:shootAnimation(angle)
     self.casting = false
     self.state = unit_states['stopped']
     self:shoot(angle)
-    self.t:after(backswing, function() self.state = unit_states['normal'] end, 'castAnimation')
+    self.t:after(backswing, function() self.state = unit_states['normal'] end, 'castAnimationEnd')
   end, 'castAnimation')
 end
 
@@ -3077,7 +3168,7 @@ function Troop:castAnimation()
       self.casting = false
       self.state = unit_states['stopped']
       self:cast()
-      self.t:after(backswing, function() self.state = unit_states['normal'] end, 'castAnimation')
+      self.t:after(backswing, function() self.state = unit_states['normal'] end, 'castAnimationEnd')
     end, 'castAnimation')
 end
 
