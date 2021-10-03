@@ -45,8 +45,7 @@ end
 
 function BuyScreen:set_level_text()
   local get_elite_str = function(lvl)
-    if (lvl-(25*self.loop)) % 6 == 0 or lvl % 25 == 0 then return ' (elite)'
-    elseif (lvl-(25*self.loop)) % 3 == 0 then return ' (hard)'
+    if (lvl == 6 or lvl == 11 or lvl == 16) then return ' (boss)'
     else return '' end
   end
   if not self.level_text then
@@ -197,7 +196,7 @@ end
 
 
 function BuyScreen:update(dt)
-  if main_song_instance:isStopped() then
+  if main_song_instance and main_song_instance:isStopped() then
     main_song_instance = _G[random:table{'song1', 'song2', 'song3', 'song4', 'song5'}]:play{volume = 0.2}
   end
 
@@ -1332,7 +1331,7 @@ function MaxUnitButton:update(dt)
       ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
       self.parent.max_units = self.parent.max_units + 1
       self.spring:pull(0.2, 200, 10)
-      gold = gold - 5
+      gold = gold - self.cost
       self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
       system.save_run(self.parent.level, self.parent.loop, gold, self.parent.units, self.parent.max_units, self.parent.passives, self.parent.shop_level, self.parent.shop_xp, run_passive_pool, locked_state)
       self.parent:set_party_and_sets()

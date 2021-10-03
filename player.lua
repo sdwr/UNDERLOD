@@ -1882,6 +1882,7 @@ function BreatheFire:init(args)
     group = main.current.effects, x = self.x, y = self.y, rs = self.rs, caster = self.parent, parent = self, dmg = self.dmg, duration = self.duration,
     color = self.color}
   self.parent.state =  unit_states['channeling']
+  pyro1:play{volume=0.9}
 end
 
 function BreatheFire:update(dt)

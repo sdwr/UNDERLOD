@@ -17,6 +17,7 @@ function init()
   input:bind('enter', {'space', 'return', 'fleft', 'fdown', 'fright'})
 
   local s = {tags = {sfx}}
+  local s_loop = {loop = true, tags = {sfx}}
   artificer1 = Sound('458586__inspectorj__ui-mechanical-notification-01-fx.ogg', s)
   explosion1 = Sound('Explosion Grenade_04.ogg', s)
   mine1 = Sound('Weapon Swap 2.ogg', s)
@@ -42,6 +43,7 @@ function init()
   frost1 = Sound('Frost Bolt 20.ogg', s)
   arcane1 = Sound('Magical Impact 26.ogg', s)
   pyro1 = Sound('Fire bolt 5.ogg', s)
+  pyro1_loop = Sound('Fire bolt 5.ogg', s_loop)
   pyro2 = Sound('Explosion Fireworks_01.ogg', s)
   dot1 = Sound('Magical Swoosh 18.ogg', s)
   gun_kata1 = Sound('Pistol Shot_07.ogg', s)
