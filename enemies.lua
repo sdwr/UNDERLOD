@@ -418,11 +418,11 @@ function Seeker:draw()
         graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 10, 10, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
       elseif self.name == 'dragon' then
         local points = self:make_regular_polygon(3, self.shape.w / 2, self:get_angle())
-        graphics.polygon(self.shape.vertices, self.color, 1)
         graphics.polygon(points, self.color)
         --debug
         --local facing = self:angle_to_point(self:get_angle(), 50)
         --graphics.line(self.x, self.y, facing.x, facing.y, green[0], 5)
+        --graphics.polygon(self.shape.vertices, self.color, 1)
       else
         error("boss name " .. self.name .. " not found")
       end
