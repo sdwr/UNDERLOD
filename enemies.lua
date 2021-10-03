@@ -159,7 +159,6 @@ function Seeker:init(args)
         end
       end, nil, nil, 'channel')
       self.t:cooldown(attack_speeds["ultra-slow"], function() return true end, function()
-        print(self.summons)
         self:spawn_whelps(self, math.min(10 - self.summons, 4))
       end, nil, nil, 'summon')
     elseif self.name == "heigan" then

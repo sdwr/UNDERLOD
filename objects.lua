@@ -286,8 +286,8 @@ function Unit:calculate_stats(first_run)
     self.base_dmg = 10
     self.base_mvspd = 75
   elseif self:is(Seeker) then
-    self.base_hp = 150 * (math.pow(1.15, level))
-    self.base_dmg = 20  * (math.pow(1.15, level))
+    self.base_hp = 150 * (math.pow(1.05, level))
+    self.base_dmg = 20  * (math.pow(1.05, level))
     self.base_mvspd = 50
   elseif self:is(Troop) then
     self.base_hp = 50 * hpMod

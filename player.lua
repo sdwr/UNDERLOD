@@ -2102,10 +2102,10 @@ function Summon:spawn()
     self.parent.summons = self.parent.summons + 1
     Seeker{group = main.current.main, x= self.x + 10, y = self.y, character = 'seeker', type = 'rager', level = self.level, parent = self.parent}
   end
-  if self.parent.summons < 4 then
+  --[[if self.parent.summons < 4 then
     self.parent.summons = self.parent.summons + 1
     Seeker{group = main.current.main, x= self.x - 10, y = self.y, character = 'seeker', type = 'rager', level = self.level, parent = self.parent}
-  end
+  end]]--
   self:recover()
 end
 

@@ -96,8 +96,8 @@ function BuyScreen:on_enter(from, level, loop, units, max_units, passives, shop_
   self:set_level_text()
 
   RerollButton{group = self.main, x = 150, y = 18, parent = self}
-  ArenaLevelButton{group = self.main, x = 225, y = gh - 20, parent = self}
-  ArenaLevelButton{group = self.main, x = 305, y = gh - 20, up = true, parent = self}
+  --ArenaLevelButton{group = self.main, x = 225, y = gh - 20, parent = self}
+  --ArenaLevelButton{group = self.main, x = 305, y = gh - 20, up = true, parent = self}
   GoButton{group = self.main, x = gw - 90, y = gh - 20, parent = self}
   LevelButton{group = self.main, x = gw/2, y = 18, parent = self}
   self.tutorial_button = Button{group = self.main, x = gw/2 + 129, y = 18, button_text = '?', fg_color = 'bg10', bg_color = 'bg', action = function()
