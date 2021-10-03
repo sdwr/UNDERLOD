@@ -594,14 +594,14 @@ function init()
     ['vagrant'] = function(lvl) return '[fg]shoots a projectile that deals [yellow]' .. get_character_stat('vagrant', lvl, 'dmg') .. '[fg] damage' end,
     ['swordsman'] = function(lvl) return '[fg]deals [yellow]' .. get_character_stat('swordsman', lvl, 'dmg') .. '[fg] damage in an area, deals extra [yellow]' ..
       math.round(get_character_stat('swordsman', lvl, 'dmg')*0.15, 2) .. '[fg] damage per unit hit' end,
-    ['wizard'] = function(lvl) return '[fg]shoots a projectile that deals [yellow]' .. get_character_stat('wizard', lvl, 'dmg') .. ' AoE[fg] damage' end,
+    ['wizard'] = function(lvl) return '[fg]casts Blizzard' end,
     ['magician'] = function(lvl) return '[fg]creates a small area that deals [yellow]' .. get_character_stat('magician', lvl, 'dmg') .. ' AoE[fg] damage' end,
     ['archer'] = function(lvl) return '[fg]shoots an arrow that deals [yellow]' .. get_character_stat('archer', lvl, 'dmg') .. '[fg] damage and pierces' end,
     ['cannon'] = function(lvl) return '[fg]shoots a cannon ball that deals [yellow]' .. get_character_stat('cannon', lvl, 'dmg') .. '[fg] damage and explodes on impact' end,
     ['sniper'] = function(lvl) return 'sniper shootie' end,
     ['scout'] = function(lvl) return '[fg]throws a knife that deals [yellow]' .. get_character_stat('scout', lvl, 'dmg') .. '[fg] damage and chains [yellow]3[fg] times' end,
-    ['cleric'] = function(lvl) return '[fg]creates [yellow]1[fg] healing orb every [yellow]8[fg] seconds' end,
-    ['shaman'] = function(lvl) return '[fg]creates [yellow]1[fg] healing orb every [yellow]8[fg] seconds' end,
+    ['cleric'] = function(lvl) return '[fg]heals allied units' end,
+    ['shaman'] = function(lvl) return '[fg]casts chain lightning' end,
     ['druid'] = function(lvl) return '[fg]casts a heal over time spell on allies' end,
     ['bard'] = function(lvl) return '[fg]dunno yet, buffs something' end,
     ['necromancer'] = function(lvl) return '[fg]creates up to [yellow]3[fg] skeletons' end,
@@ -662,16 +662,16 @@ function init()
   character_effect_names = {
     ['vagrant'] = '[fg]Experience',
     ['swordsman'] = '[yellow]Cleave',
-    ['wizard'] = '[blue]Magic Missile',
+    ['wizard'] = '[blue]Blizzard',
     ['magician'] = '[blue]Quick Cast',
     ['archer'] = '[green]Bounce Shot',
-    ['sniper'] = '[green]pew',
+    ['sniper'] = '[green]Snipe',
     ['cannon'] = '[green]Cannon Ball',
     ['scout'] = '[red]Dagger Resonance',
-    ['cleric'] = '[green]Mass Heal',
+    ['cleric'] = '[green]Heal',
     ['shaman'] = '[blue]Chain Lightning',
     ['druid'] = '[green]Regrowth',
-    ['bard'] = '[brown]Attack Speed buff',
+    ['bard'] = '[brown]Attack Dmg buff',
     ['necromancer'] = '[purple]Reanimate Dead',
     ['paladin'] = '[yellow]Divine Protection',
     ['outlaw'] = '[red]Flying Daggers',
@@ -729,16 +729,16 @@ function init()
   character_effect_names_gray = {
     ['vagrant'] = '[light_bg]Experience',
     ['swordsman'] = '[light_bg]Cleave',
-    ['wizard'] = '[light_bg]Magic Missile',
+    ['wizard'] = '[light_bg]Blizzard',
     ['magician'] = '[light_bg]Quick Cast',
     ['archer'] = '[light_bg]Bounce Shot',
     ['cannon'] = '[light_bg]Cannon Ball',
-    ['sniper'] = '[light_bg]pew pwe',
+    ['sniper'] = '[light_bg]Snipe',
     ['scout'] = '[light_bg]Dagger Resonance',
     ['cleric'] = '[light_bg]Mass Heal ',
     ['shaman'] = '[light_bg]Chain Lightning',
     ['druid'] = '[light_bg]Regrowth',
-    ['bard'] = '[light_bg]]Attack Speed buff',
+    ['bard'] = '[light_bg]]Attack Dmg buff',
     ['paladin'] = '[light_bgDiving Protection',
     ['necromancer'] = '[light_bg]Reanimate Dead',
     ['outlaw'] = '[light_bg]Flying Daggers',
@@ -1065,6 +1065,12 @@ function init()
     [4] = {'juggernaut'},
   }
 
+  first_run_tier_to_characters = {
+    [1] = {'swordsman', 'archer'},
+    [2] = {'wizard', 'shaman', 'cannon'},
+    [3] = {'sniper'},
+  }
+
   attack_ranges = {
     ['melee'] = 20,
     ['medium'] = 60,
@@ -1106,7 +1112,7 @@ function init()
     ['hp'] = 'hp',
   }
 
-  non_attacking_characters = {'cleric', 'stormweaver', 'squire', 'chronomancer', 'sage', 'psykeeper', 'bane', 'carver', 'fairy', 'priest', 'flagellant', 'merchant', 'miner'}
+  non_attacking_characters = {'cleric', 'stormweaver', 'squire', 'chronomancer', 'sage', 'psykeeper', 'bane', 'carver', 'fairy', 'priest', 'paladin', 'necromancer', 'bard', 'druid', 'flagellant', 'merchant', 'miner'}
   non_cooldown_characters = {'squire', 'chronomancer', 'psykeeper', 'merchant', 'miner'}
 
   character_tiers = {

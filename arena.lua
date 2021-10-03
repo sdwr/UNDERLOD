@@ -406,7 +406,7 @@ function Arena:quit()
   if self.died then return end
 
   self.quitting = true
-  if self.level % 25 == 0 then
+  if self.level % 15 == 0 then
     self:gain_gold()
     if not self.win_text and not self.win_text2 then
       input:set_mouse_visible(true)

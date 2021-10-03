@@ -355,12 +355,14 @@ end
 
 
 function BuyScreen:gain_gold(amount)
-  gold = gold + amount or 0
+  gold = (gold + amount) or 0
   self.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
 end
 
 
 function BuyScreen:set_cards(shop_level, dont_spawn_effect, first_call)
+  local first_run = nil
+  if not self.cards or #self.cards == 0 then first_run = true end
   if self.cards then for i = 1, 3 do if self.cards[i] then self.cards[i]:die(dont_spawn_effect) end end end
   self.cards = {}
   local all_units = {}
@@ -369,12 +371,20 @@ function BuyScreen:set_cards(shop_level, dont_spawn_effect, first_call)
   local unit_3
   local shop_level = shop_level or 1
   local tier_weights = level_to_shop_odds[shop_level]
-  repeat 
-    unit_1 = random:table(tier_to_characters[random:weighted_pick(unpack(tier_weights))])
-    unit_2 = random:table(tier_to_characters[random:weighted_pick(unpack(tier_weights))])
-    unit_3 = random:table(tier_to_characters[random:weighted_pick(unpack(tier_weights))])
+  if first_run then
+    unit_1 = random:table(first_run_tier_to_characters[random:weighted_pick(unpack(tier_weights))])
+    unit_2 = random:table(first_run_tier_to_characters[random:weighted_pick(unpack(tier_weights))])
+    unit_3 = random:table(first_run_tier_to_characters[random:weighted_pick(unpack(tier_weights))])
     all_units = {unit_1, unit_2, unit_3}
-  until not table.all(all_units, function(v) return table.any(non_attacking_characters, function(u) return v == u end) end)
+
+  else
+    repeat 
+      unit_1 = random:table(tier_to_characters[random:weighted_pick(unpack(tier_weights))])
+      unit_2 = random:table(tier_to_characters[random:weighted_pick(unpack(tier_weights))])
+      unit_3 = random:table(tier_to_characters[random:weighted_pick(unpack(tier_weights))])
+      all_units = {unit_1, unit_2, unit_3}
+    until not table.all(all_units, function(v) return table.any(non_attacking_characters, function(u) return v == u end) end)
+  end
   if first_call and locked_state then
     if locked_state.cards[1] then self.cards[1] = ShopCard{group = self.main, x = 60, y = 75, w = 80, h = 90, unit = locked_state.cards[1], parent = self, i = 1} end
     if locked_state.cards[2] then self.cards[2] = ShopCard{group = self.main, x = 140, y = 75, w = 80, h = 90, unit = locked_state.cards[2], parent = self, i = 2} end
