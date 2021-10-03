@@ -240,6 +240,7 @@ function init()
   unit_states = {
     ['normal'] = 'normal',
     ['frozen'] = 'frozen',
+    ['channeling'] = 'channeling',
     ['stopped'] = 'stopped',
     ['rallying'] = 'rallying',
     ['following'] = 'following,'

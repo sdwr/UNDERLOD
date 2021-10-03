@@ -43,6 +43,18 @@ function BuyScreen:on_exit()
   self.level_button = nil
 end
 
+function BuyScreen:set_level_text()
+  local get_elite_str = function(lvl)
+    if (lvl-(25*self.loop)) % 6 == 0 or lvl % 25 == 0 then return ' (elite)'
+    elseif (lvl-(25*self.loop)) % 3 == 0 then return ' (hard)'
+    else return '' end
+  end
+  if not self.level_text then
+    self.level_text = Text({{text = '[fg]Lv.' .. tostring(self.level) .. get_elite_str(self.level), font = pixul_font, alignment = 'center'}}, global_text_tags)
+  else
+    self.level_text:set_text({{text = '[fg]Lv.' .. tostring(self.level) .. get_elite_str(self.level), font = pixul_font, alignment = 'center'}})
+  end
+end
 
 function BuyScreen:on_enter(from, level, loop, units, max_units, passives, shop_level, shop_xp)
   self.gameState = GameState({level = level, loop = loop, units = units, max_units = max_units, passives = passives, shop_level = shop_level, shop_xp = shop_xp})
@@ -82,9 +94,11 @@ function BuyScreen:on_enter(from, level, loop, units, max_units, passives, shop_
     elseif (lvl-(25*self.loop)) % 3 == 0 then return ' (hard)'
     else return '' end
   end
-  self.level_text = Text({{text = '[fg]Lv.' .. tostring(self.level) .. get_elite_str(self.level), font = pixul_font, alignment = 'center'}}, global_text_tags)
+  self:set_level_text()
 
   RerollButton{group = self.main, x = 150, y = 18, parent = self}
+  ArenaLevelButton{group = self.main, x = 225, y = gh - 20, parent = self}
+  ArenaLevelButton{group = self.main, x = 305, y = gh - 20, up = true, parent = self}
   GoButton{group = self.main, x = gw - 90, y = gh - 20, parent = self}
   LevelButton{group = self.main, x = gw/2, y = 18, parent = self}
   self.tutorial_button = Button{group = self.main, x = gw/2 + 129, y = 18, button_text = '?', fg_color = 'bg10', bg_color = 'bg', action = function()
@@ -522,6 +536,62 @@ function WishlistButton:on_mouse_exit()
   end
   self.selected = false
 end
+
+ArenaLevelButton = Object:extend()
+ArenaLevelButton:implement(GameObject)
+function ArenaLevelButton:init(args)
+  self:init_game_object(args)
+  local text = '-'
+  if self.up then
+    text = "+"
+  end
+  self.shape = Rectangle(self.x, self.y, pixul_font:get_text_width(text) + 2, pixul_font.h + 4)
+  self.interact_with_mouse = true
+  self.text = Text({{text = text, font = pixul_font, alignment = 'center'}}, global_text_tags)
+end
+
+
+function ArenaLevelButton:update(dt)
+  if main.current.in_credits then return end
+  self:update_game_object(dt)
+
+  if self.selected and input.m1.pressed then
+    if self.up then
+      self.parent.level = self.parent.level + 1
+    else
+      if self.parent.level > 1 then
+        self.parent.level = self.parent.level -1
+      end
+    end
+    self.parent:set_level_text()
+    system.save_state()
+    system.save_run()
+  end
+end
+
+
+function ArenaLevelButton:draw()
+  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
+    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, self.selected and fg[0] or bg[1])
+    self.text:draw(self.x, self.y + 1, 0, 1, 1)
+  graphics.pop()
+end
+
+
+function ArenaLevelButton:on_mouse_enter()
+  if main.current.in_credits then return end
+  ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
+  pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+  self.selected = true
+  self.spring:pull(0.2, 200, 10)
+end
+
+
+function ArenaLevelButton:on_mouse_exit()
+  if main.current.in_credits then return end
+  self.selected = false
+end
+
 
 
 

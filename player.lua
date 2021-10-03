@@ -1352,10 +1352,27 @@ DotArea:implement(GameObject)
 DotArea:implement(Physics)
 function DotArea:init(args)
   self:init_game_object(args)
-  self.shape = Circle(self.x, self.y, self.rs)
+  self:make_shape()
+
   self.closest_sensor = Circle(self.x, self.y, 128)
 
-  if self.character == 'wizard' then
+  if not self.character or self.character == 'base' then
+    self.t:every(0.2, function()
+      local targets = {}
+      if self.team == 'enemy' then
+        targets = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
+      else
+        targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
+      end
+      for _, target in ipairs(targets) do
+        target:hit(self.dmg/5, self, true)
+        HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
+        for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
+        for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
+      end
+    end, nil, nil, 'dot')
+  
+  elseif self.character == 'wizard' then
     self.t:every(0.2, function()
     local enemies = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
     if #enemies > 0 then self.spring:pull(0.05, 200, 10) end
@@ -1366,102 +1383,11 @@ function DotArea:init(args)
       for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = self.color} end
       for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = enemy.color} end
     end
-  end, nil, nil, 'dot')
-
-  elseif self.character == 'plague_doctor' or self.character == 'pyromancer' or self.character == 'witch' or self.character == 'burning_field' then
-    self.t:every(0.2, function()
-      local enemies = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
-      if #enemies > 0 then self.spring:pull(0.05, 200, 10) end
-      for _, enemy in ipairs(enemies) do
-        hit2:play{pitch = random:float(0.8, 1.2), volume = 0.2}
-        if self.character == 'pyromancer' then
-          pyro1:play{pitch = random:float(1.5, 1.8), volume = 0.1}
-          if self.level == 3 then
-            enemy.pyrod = self
-          end
-        end
-        enemy:hit((self.dot_dmg_m or 1)*self.dmg/5, self, true)
-        HitCircle{group = main.current.effects, x = enemy.x, y = enemy.y, rs = 6, color = fg[0], duration = 0.1}
-        for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = self.color} end
-        for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = enemy.color} end
-      end
     end, nil, nil, 'dot')
-
-  elseif self.character == 'cryomancer' then
-    self.t:every(1, function()
-      local enemies = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
-      if #enemies > 0 then
-        self.spring:pull(0.15, 200, 10)
-        frost1:play{pitch = random:float(0.8, 1.2), volume = 0.4}
-      end
-      for _, enemy in ipairs(enemies) do
-        if self.level == 3 then
-          enemy:slow(0.4, 4)
-        end
-        enemy:hit((self.dot_dmg_m or 1)*2*self.dmg, self, true)
-        HitCircle{group = main.current.effects, x = enemy.x, y = enemy.y, rs = 6, color = fg[0], duration = 0.1}
-        for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = self.color} end
-        for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = enemy.color} end
-      end
-    end, nil, nil, 'dot')
-
-  --[[
-  elseif self.character == 'bane' then
-    if self.level == 3 then
-      self.t:every(0.5, function()
-        local enemies = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
-        if #enemies > 0 then
-          self.spring:pull(0.05, 200, 10)
-          buff1:play{pitch = random:float(0.8, 1.2), volume = 0.1}
-        end
-        for _, enemy in ipairs(enemies) do
-          enemy:curse('bane', 0.5*(self.hex_duration_m or 1), self.level == 3, self)
-          if self.level == 3 then
-            enemy:slow(0.5, 0.5)
-            enemy:hit((self.dot_dmg_m or 1)*self.dmg/2)
-            HitCircle{group = main.current.effects, x = enemy.x, y = enemy.y, rs = 6, color = fg[0], duration = 0.1}
-            for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = self.color} end
-            for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = enemy.color} end
-          end
-        end
-      end, nil, nil, 'dot')
-    end
-    ]]--
-
-  elseif self.void_rift then
-    self.t:every(0.2, function()
-      local enemies = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
-      if #enemies > 0 then self.spring:pull(0.05, 200, 10) end
-      for _, enemy in ipairs(enemies) do
-        hit2:play{pitch = random:float(0.8, 1.2), volume = 0.2}
-        enemy:hit((self.dot_dmg_m or 1)*self.dmg/5, self, true)
-        HitCircle{group = main.current.effects, x = enemy.x, y = enemy.y, rs = 6, color = fg[0], duration = 0.1}
-        for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = self.color} end
-        for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = enemy.color} end
-      end
-    end, nil, nil, 'dot')
-  end
-
-  if self.character == 'witch' then
-    self.v = random:float(40, 80)
-    self.r = random:table{math.pi/4, 3*math.pi/4, -math.pi/4, -3*math.pi/4}
-    if self.level == 3 then
-      self.t:every(1, function()
-        local enemies = main.current.main:get_objects_in_shape(self.closest_sensor, main.current.enemies)
-        if enemies and #enemies > 0 then
-          local r = self:angle_to_object(enemies[1])
-          HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 6}
-          local t = {group = main.current.main, x = self.x, y = self.y, v = 250, r = r, color = self.parent.color, dmg = self.parent.dmg, character = 'witch', parent = self.parent, level = self.parent.level}
-          Projectile(table.merge(t, mods or {}))
-          _G[random:table{'scout1', 'scout2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.35}
-          wizard1:play{pitch = random:float(0.95, 1.05), volume = 0.15}
-        end
-      end)
-    end
-  end
+end
 
   self.color = fg[0]
-  self.color_transparent = Color(args.color.r, args.color.g, args.color.b, 0.08)
+  self.color_transparent = Color(args.color.r, args.color.g, args.color.b, 0.18)
   self.rs = 0
   self.hidden = false
   self.t:tween(0.05, self, {rs = args.rs}, math.cubic_in_out, function() self.spring:pull(0.15) end)
@@ -1480,9 +1406,26 @@ function DotArea:init(args)
   end
 end
 
+function DotArea:make_shape()
+  if self.area_type == 'circle' then
+    self.shape = Circle(self.x, self.y, self.rs)
+  elseif self.area_type == 'triangle' then
+    self.shape = Polygon(self.caster:make_triangle_from_origin(math.pi / 4, self.rs))
+    self.shape:move_to(((self.shape.x2 - self.shape.x1) / 2) + self.shape.x1, ((self.shape.y2 - self.shape.y1) / 2) + self.shape.y1)
+    self.x, self.y = self.shape.x, self.shape.y
+  else
+    error('dot area shape type ' .. self.area_type .. ' not found')
+  end
+end
+
 
 function DotArea:update(dt)
   self:update_game_object(dt)
+
+  if self.caster and self.follows_caster then
+    self:make_shape()
+  end
+
   self.t:set_every_multiplier('dot', (main.current.chronomancer_dot or 1))
   self.vr = self.vr + self.dvr*dt
 
@@ -1509,12 +1452,18 @@ end
 function DotArea:draw()
   if self.hidden then return end
 
-  graphics.push(self.x, self.y, self.r + self.vr, self.spring.x, self.spring.x)
+  --graphics.push(self.x, self.y, 0, self.spring.x, self.spring.x)
     -- graphics.circle(self.x, self.y, self.shape.rs + random:float(-1, 1), self.color, 2)
-    graphics.circle(self.x, self.y, self.shape.rs, self.color_transparent)
+    if self.area_type == 'circle' then
+      graphics.circle(self.x, self.y, self.shape.rs, self.color_transparent)
+    elseif self.area_type == 'triangle' then
+      graphics.polygon(self.shape.vertices, self.color_transparent)
+    else
+      error('dot area shape ' .. self.area_type .. 'not found')
+    end
     --local lw = math.remap(self.shape.rs, 32, 256, 2, 4)
     --for i = 1, 4 do graphics.arc('open', self.x, self.y, self.shape.rs, (i-1)*math.pi/2 + math.pi/4 - math.pi/8, (i-1)*math.pi/2 + math.pi/4 + math.pi/8, self.color, lw) end
-  graphics.pop()
+  --graphics.pop()
 end
 
 
@@ -1550,7 +1499,7 @@ function ForceArea:init(args)
       local enemies = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
       local t = self.t:get_during_elapsed_time('psykino')
       for _, enemy in ipairs(enemies) do
-        enemy:apply_steering_force(600*(1-t), enemy:angle_to_point(self.x, self.y))
+        enemy:apply_steering_force(600*(1-t), enemy:point_to_angle(self.x, self.y))
       end
     end, nil, 'psykino')
     self.t:after(2 - 0.35, function()
@@ -1573,7 +1522,7 @@ function ForceArea:init(args)
       local enemies = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
       local t = self.t:get_during_elapsed_time('gravity_field')
       for _, enemy in ipairs(enemies) do
-        enemy:apply_steering_force(400*(1-t), enemy:angle_to_point(self.x, self.y))
+        enemy:apply_steering_force(400*(1-t), enemy:point_to_angle(self.x, self.y))
       end
     end, nil, 'gravity_field')
     self.t:after(1 - 0.35, function()
@@ -1919,6 +1868,39 @@ function Blizzard:draw()
     --for i = 1, 4 do graphics.arc('open', self.x, self.y, 24, (i-1)*math.pi/2 + math.pi/4 - math.pi/8, (i-1)*math.pi/2 + math.pi/4 + math.pi/8, self.color, lw) end
   graphics.pop()
 end
+
+BreatheFire = Object:extend()
+BreatheFire:implement(GameObject)
+BreatheFire:implement(Physics)
+function BreatheFire:init(args)
+  self:init_game_object(args)
+  if not self.group.world then self.dead = true; return end
+
+
+  self.currentTime = 0
+  self.dot_area = DotArea{follows_caster = true, area_type = 'triangle', team = self.team,
+    group = main.current.effects, x = self.x, y = self.y, rs = self.rs, caster = self.parent, parent = self, dmg = self.dmg, duration = self.duration,
+    color = self.color}
+  self.parent.state =  unit_states['channeling']
+end
+
+function BreatheFire:update(dt)
+  if not self.parent or self.parent.dead then self.dead = true end
+  self.currentTime = self.currentTime + dt
+  if self.currentTime > self.duration then
+    self:recover()
+  end
+end
+
+function BreatheFire:recover()
+  self.parent.state = unit_states['normal']
+  self.dead = true
+end
+
+function BreatheFire:draw()
+  --happens in dotArea
+end
+
 
 ChainLightning = Object:extend()
 ChainLightning:implement(GameObject)
@@ -2935,11 +2917,9 @@ function Troop:draw_cast_timer()
   local pct = time / self.castTime
   local bodySize = self.shape.rs or self.shape.w/2 or 5
   local rs = pct * bodySize
-
-  graphics.circle(self.x, self.y, rs, white_transparent)
-end
-
-function Troop:draw_cast_animation()
+  if pct < 1 then
+    graphics.circle(self.x, self.y, rs, white_transparent)
+  end
 end
 
 function Troop:slow(amount, duration)
@@ -3418,7 +3398,7 @@ function Gold:update(dt)
     end
     x = x/#players
     y = y/#players
-    local r = self:angle_to_point(x, y)
+    local r = self:point_to_angle(x, y)
     self:apply_force(20*math.cos(r), 20*math.sin(r))
   end
   if self.magnet_sensor then self.magnet_sensor:move_to(self.x, self.y) end
@@ -3533,7 +3513,7 @@ function HealingOrb:update(dt)
     end
     x = x/#players
     y = y/#players
-    local r = self:angle_to_point(x, y)
+    local r = self:point_to_angle(x, y)
     self:apply_force(20*math.cos(r), 20*math.sin(r))
   end
   if self.magnet_sensor then self.magnet_sensor:move_to(self.x, self.y) end

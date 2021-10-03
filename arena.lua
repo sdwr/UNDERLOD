@@ -174,8 +174,16 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
         SpawnEffect{group = self.effects, x = gw * 0.7, y = gh/2 - 48}
         local x, y = gw * 0.7, gh/2
         if self.level == 6 or self.level == 11 or self.level == 16 or self.level == 21 or self.level == 25 then
+          local boss_name = nil
           SpawnMarker{group = self.effects, x = x, y = y}
-          self.t:after(1.5, function() self:spawn_boss({x = x, y = y}); self.wave = self.wave + 1 end)
+          if self.level == 6 then
+            boss_name = 'stompy'
+          elseif self.level == 11 then
+            boss_name = 'dragon'
+          elseif self.level == 16 then
+            boss_name = 'heigan'
+          end
+          self.t:after(1.5, function() self:spawn_boss({x = x, y = y, name = boss_name}); self.wave = self.wave + 1 end)
         else
           SpawnMarker{group = self.effects, x = x, y = y}
           self.t:after(1.125, function() self:spawn_n_enemies({x = x, y = y}, nil, 2 + (self.level * 2)); self.wave = self.wave + 1 end)
@@ -1115,7 +1123,7 @@ end
 
 function Arena:spawn_boss(p)
   local x, y = p.x, p.y
-  Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'boss', level = self.level}
+  Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'boss', name = p.name, level = self.level}
 end
 
 

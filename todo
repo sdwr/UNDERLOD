@@ -1,7 +1,21 @@
 turn game into rts :o
 
+-------------
+BUGS:
+--------------
+LUDUM DARE?
+can push bosses
+boss movement 
+
+web build (take out sound?)
+
+
+
+no safety checking on unit spawn
+
+
 ------------------
-CODE:
+ADDITIONS:
 ------------------
 
 enemies

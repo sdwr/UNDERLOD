@@ -188,7 +188,7 @@ end
 -- Returns the angle from this object to another object
 -- r = self:angle_to_object(player) -> angle from this object to the player
 function Physics:angle_to_object(object)
-  return self:angle_to_point(object.x, object.y)
+  return self:point_to_angle(object.x, object.y)
 end
 
 
@@ -536,7 +536,7 @@ end
 -- self:move_towards_object(player, nil, 2) -> moves towards the player with speed such that it would reach him in 2 seconds if he never moved
 function Physics:move_towards_object(object, speed, max_time)
   if max_time then speed = self:distance_to_point(object.x, object.y)/max_time end
-  local r = self:angle_to_point(object.x, object.y)
+  local r = self:point_to_angle(object.x, object.y)
   self:set_velocity(speed*math.cos(r), speed*math.sin(r))
   return self
 end
@@ -546,7 +546,7 @@ end
 -- self:move_towards_point(player.x, player.y, 40)
 function Physics:move_towards_point(x, y, speed, max_time)
   if max_time then speed = self:distance_to_point(x, y)/max_time end
-  local r = self:angle_to_point(x, y)
+  local r = self:point_to_angle(x, y)
   self:set_velocity(speed*math.cos(r), speed*math.sin(r))
   return self
 end
@@ -596,7 +596,7 @@ end
 -- Higher values will rotate the object faster, lower values will make the turn have a smooth delay to it
 -- self:rotate_towards_object(player, 0.2)
 function Physics:rotate_towards_object(object, lerp_value)
-  self:set_angle(math.lerp_angle(lerp_value, self:get_angle(), self:angle_to_point(object.x, object.y)))
+  self:set_angle(math.lerp_angle(lerp_value, self:get_angle(), self:point_to_angle(object.x, object.y)))
   return self
 end
 
@@ -604,7 +604,7 @@ end
 -- Same as rotate_towards_object except towards a point
 -- self:rotate_towards_point(player.x, player.y, 0.2)
 function Physics:rotate_towards_point(x, y, lerp_value)
-  self:set_angle(math.lerp_angle(lerp_value, self:get_angle(), self:angle_to_point(x, y)))
+  self:set_angle(math.lerp_angle(lerp_value, self:get_angle(), self:point_to_angle(x, y)))
   return self
 end
 
@@ -622,7 +622,7 @@ end
 -- self:rotate_towards_velocity(0.2)
 function Physics:rotate_towards_velocity(lerp_value)
   local vx, vy = self:get_velocity()
-  self:set_angle(math.lerp_angle(lerp_value, self:get_angle(), self:angle_to_point(self.x + vx, self.y + vy)))
+  self:set_angle(math.lerp_angle(lerp_value, self:get_angle(), self:point_to_angle(self.x + vx, self.y + vy)))
   return self
 end
 
@@ -683,9 +683,37 @@ end
 
 
 -- Returns the angle from this object to a point
--- r = self:angle_to_point(player.x, player.y) -> angle from this object to the player
-function Physics:angle_to_point(x, y)
+-- r = self:point_to_angle(player.x, player.y) -> angle from this object to the player
+function Physics:point_to_angle(x, y)
   return math.atan2(y - self.y, x - self.x)
+end
+
+-- expects radians
+function Physics:angle_to_point(angle, dist)
+  return {x = math.cos(angle) * dist + self.x, y = self.y + (math.sin(angle) * dist)}
+end
+
+-- expects radians
+function Physics:make_regular_polygon(sides, radius, angle)
+  local vs = {}
+  local angle_seperation = (2 * math.pi) / sides
+  local current_angle = angle - math.pi
+  if sides % 2 == 1 then
+    current_angle = current_angle + (angle_seperation / 2)
+  end
+  for i = 1, sides do
+    local point = self:angle_to_point(current_angle, radius)
+    vs[2*i - 1], vs[2*i] = point.x, point.y
+    current_angle = current_angle + angle_seperation
+  end
+  return vs
+end
+
+function Physics:make_triangle_from_origin(arc, dist)
+  local p1 = self:angle_to_point(self:get_angle() - (arc/2), dist)
+  local p2 = self:angle_to_point(self:get_angle() + (arc/2), dist)
+  local vs = {self.x, self.y, p1.x, p1.y, p2.x, p2.y}
+  return vs
 end
 
 

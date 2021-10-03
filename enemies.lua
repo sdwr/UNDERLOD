@@ -7,12 +7,30 @@ function Seeker:init(args)
   self:init_unit()
 
   if self.type == 'boss' then
-    self:set_as_rectangle(70, 70, 'dynamic', 'enemy')
-    self.color = grey[0]
-    self:set_restitution(0.1)
-    self.class = 'boss'
-    self:calculate_stats(true)
-    self:set_as_steerable(self.v, 1000, 2*math.pi, 2)
+    if self.name == 'stompy' then
+      self:set_as_rectangle(60, 60, 'dynamic', 'enemy')
+      self.color = grey[0]
+      self:set_restitution(0.1)
+      self.class = 'boss'
+      self:calculate_stats(true)
+      self:set_as_steerable(self.v, 1000, 2*math.pi, 2)
+    elseif self.name == 'dragon' then
+      self:set_as_rectangle(70, 70, 'dynamic', 'enemy')
+      self.color = red[-2]
+      self:set_restitution(0.1)
+      self.class = 'boss'
+      self:calculate_stats(true)
+      self:set_as_steerable(self.v, 1000, 2*math.pi, 2)
+    elseif self.name == 'heigan' then 
+      self:set_as_rectangle(40, 60, 'dynamic', 'enemy')
+      self.color = orange[-2]
+      self:set_restitution(0.1)
+      self.class = 'boss'
+      self:calculate_stats(true)
+      self:set_as_steerable(self.v, 1000, 2*math.pi, 2)
+    else
+      error("boss name " .. self.name .. " not found")
+    end
   else
     if self.type == 'stomper' then
       self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
@@ -52,7 +70,7 @@ function Seeker:init(args)
   end
   
   self.state = 'normal'
-  self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20)
+  self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20 + self.shape.w / 2)
   self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 1000)
   if self.type == 'stomper' then
     self.t:cooldown(attack_speeds['slow'], function() local target = self:get_closest_target(self.attack_sensor, main.current.friendlies); return target end, function()
@@ -109,24 +127,44 @@ function Seeker:init(args)
       end
     end, nil, nil, 'attack')
   elseif self.type == 'boss' then
-    self.t:cooldown(attack_speeds['ultra-slow'], function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end, function ()
-      local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
-      if target then
-        self:rotate_towards_object(target, 1)
-        self:mortar(target)
-      end
-    end, nil, nil, 'shoot')
-    self.t:cooldown(attack_speeds['medium'], function() local targets = self:get_objects_in_shape(self.aggro_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
-      local closest_enemy = self:get_closest_object_in_shape(self.aggro_sensor, main.current.friendlies)
-      local target = self.target
-      self.target = closest_enemy
+    if self.name == "stompy" then
+      self.t:cooldown(attack_speeds['ultra-slow'], function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end, function ()
+        local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
+        if target then
+          self:rotate_towards_object(target, 1)
+          self:mortar(target)
+        end
+      end, nil, nil, 'shoot')
+      self.t:cooldown(attack_speeds['medium'], function() local targets = self:get_objects_in_shape(self.aggro_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
+        local closest_enemy = self:get_closest_object_in_shape(self.aggro_sensor, main.current.friendlies)
+        local target = self.target
+        self.target = closest_enemy
 
-      if self:in_range()() then
-        self:rotate_towards_object(closest_enemy, 1)
-        self:attack(20, {x = closest_enemy.x, y = closest_enemy.y})
-      end
-      self.target = target
-    end, nil, nil, 'attack')
+        if self:in_range()() then
+          self:rotate_towards_object(closest_enemy, 1)
+          self:attack(20, {x = closest_enemy.x, y = closest_enemy.y})
+        end
+        self.target = target
+      end, nil, nil, 'attack')
+    elseif self.name == "dragon" then
+      self.summons = 0
+      self.t:cooldown(attack_speeds['slow'], function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end, function()
+        local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies);
+        self.target = target
+
+        if self:in_range()() then
+          self:breathe_fire(2)
+        end
+      end, nil, nil, 'channel')
+      self.t:cooldown(attack_speeds["ultra-slow"], function() return true end, function()
+        self:spawn_whelps(10)
+      end, nil, nil, 'summon')
+    elseif self.name == "heigan" then
+      self.cycle_index = 0
+      self.t:cooldown(attack_speeds['slow'], function() return true end, function()
+        self:safety_dance()
+      end, nil, nil, 'cast')
+    end
 
   else
     self.t:cooldown(attack_speeds['fast'], function() local targets = self:get_objects_in_shape(self.attack_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
@@ -261,6 +299,7 @@ function Seeker:update(dt)
   end
 
   if self.being_pushed then
+    --[[
     local v = math.length(self:get_velocity())
     if v < 25 then
       if self.push_invulnerable then self.push_invulnerable = false end
@@ -271,46 +310,36 @@ function Seeker:update(dt)
       self:set_damping(0)
       self:set_angular_damping(0)
     end
+      ]]--
   else
-    --target closest troop 
+    --get target / rotate to target
     if self.target and self.target.dead then self.target = nil end
-    if not self:in_range()() then
-      self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.friendlies)
+    if self.state == unit_states['normal'] then
+      if not self:in_range()() then
+        self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.friendlies)
+      end
+      if self.target and self.target.dead then self.target = nil end
+      if self.target then
+        self:rotate_towards_object(self.target, 0.5)
+      end
+    elseif self.state == unit_states['stopped'] or self.state == unit_states['channeling'] then
+      if self.target and not self.target.dead then
+        self:rotate_towards_object(self.target, 1)
+      end
     end
-    if self.target and self.target.dead then self.target = nil end
   
     if not self.headbutting then
       if self.state == 'normal' then
-        if self.boss then
-          local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
-          local x, y = 0, 0
-          if #enemies > 1 then
-            for _, enemy in ipairs(enemies) do
-              x = x + enemy.x
-              y = y + enemy.y
-            end
-            x = x/#enemies
-            y = y/#enemies
-          else
-            x, y = self.target.x, self.target.y
-          end
-          self:seek_point(x, y)
-          self:wander(10, 250, 3)
+        if self:in_range()() then
+          -- dont need to move
+        elseif self.target then
+          self:seek_point(self.target.x, self.target.y)
+          self:rotate_towards_velocity(0.5)
         else
-          if self:in_range()() then
-            self:seek_point(self.x + 0.1, self.y + 0.1)
-          elseif self.target then
-            self:seek_point(self.target.x, self.target.y)
-          else
-            self:seek_point(self.x + 0.1, self.y + 0.1)
-          end
-          self:wander(1,5,1)
+          -- dont need to move
         end
-        self:steering_separate(16, main.current.enemies)
-        self:rotate_towards_velocity(0.5)
       else
         self:set_velocity(0,0)
-        self:rotate_towards_velocity(1)
       end
       
     end
@@ -348,8 +377,17 @@ function Seeker:mortar(target)
   Mortar{group = main.current.main, team = "enemy", target = target, rs = 25, color = red[0], dmg = 30, level = self.level, parent = self}
 end
 
+function Seeker:breathe_fire(duration)
+  BreatheFire{origin_offset = true, follows_caster = true, area_type = 'triangle',
+    group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = 80, color = red[3], dmg = 20, duration = duration, level = self.level, parent = self}
+end
+
 function Seeker:summon()
   Summon{group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = 25, color = purple[0], level = self.level, parent = self}
+end
+
+function Seeker:spawn_whelps(amount)
+
 end
 
 function Seeker:vanish(target)
@@ -374,9 +412,20 @@ end
 
 
 function Seeker:draw()
-  graphics.push(self.x, self.y, self.r, self.hfx.hit.x, self.hfx.hit.x)
+  graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
     if self.type == 'boss' then
-      graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 10, 10, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+      if self.name == 'stompy' or self.name == 'heigan' then
+        graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 10, 10, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+      elseif self.name == 'dragon' then
+        local points = self:make_regular_polygon(3, self.shape.w / 2, self:get_angle())
+        graphics.polygon(self.shape.vertices, self.color, 1)
+        graphics.polygon(points, self.color)
+        --debug
+        --local facing = self:angle_to_point(self:get_angle(), 50)
+        --graphics.line(self.x, self.y, facing.x, facing.y, green[0], 5)
+      else
+        error("boss name " .. self.name .. " not found")
+      end
     else
       graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
     end
