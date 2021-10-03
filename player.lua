@@ -1975,12 +1975,15 @@ Stomp:implement(GameObject)
 Stomp:implement(Physics)
 function Stomp:init(args)
   self:init_game_object(args)
-  self.attack_sensor = Circle(self.x, self.y, 20)
+  self.attack_sensor = Circle(self.x, self.y, self.rs)
   self.currentTime = 0
 
   self.state = "charging"
 
   self.parent.state = 'frozen'
+
+  orb1:play({volume = 0.5})
+
   self.t:after(1, function() self:stomp() end)
   self.t:after(1 + 0.25, function() self:recover() end)
 
@@ -1996,7 +1999,7 @@ end
 function Stomp:stomp()
   if self then self.state = "recovering" else return end
 
-  earth1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+  usurer1:play{pitch = random:float(0.95, 1.05), volume = 0.9}
 
   local targets = {}
   if self.team == 'enemy' then
@@ -2040,7 +2043,7 @@ function Mortar:init(args)
   self.state = "charging"
 
   self.parent.state = 'frozen'
-  local fire_speed = 0.75
+  local fire_speed = 0.70
   self.t:after(fire_speed, function() self:fire() end)
   self.t:after(fire_speed * 2, function() self:fire() end)
   self.t:after(fire_speed * 3, function() self:fire() end)
@@ -2054,7 +2057,7 @@ function Mortar:update(dt)
 end
 
 function Mortar:fire()
-  cannoneer1:play{pitch = random:float(0.95, 1.05), volume = 0.8}
+  cannoneer1:play{pitch = random:float(0.95, 1.05), volume = 0.9}
   Stomp{group = main.current.main, team = self.team, x = self.target.x + math.random(-10, 10), y = self.target.y + math.random(-10, 10), rs = self.rs, color = self.color, dmg = self.dmg, level = self.level, parent = self}
 end
 

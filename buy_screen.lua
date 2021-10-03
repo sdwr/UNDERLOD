@@ -564,7 +564,8 @@ function ArenaLevelButton:update(dt)
     end
     self.parent:set_level_text()
     system.save_state()
-    system.save_run()
+    system.save_run(self.parent.level, self.parent.loop, gold, self.parent.units, self.max_units, self.parent.passives, self.parent.shop_level, self.parent.shop_xp, run_passive_pool, locked_state)
+
   end
 end
 
@@ -1333,6 +1334,7 @@ function MaxUnitButton:update(dt)
       self.spring:pull(0.2, 200, 10)
       gold = gold - self.cost
       self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
+      self.parent.party_text:set_text({{text = '[wavy_mid, fg]party ' .. tostring(#self.parent.units) .. '/' .. tostring(self.parent.max_units), font = pixul_font, alignment = 'center'}})
       system.save_run(self.parent.level, self.parent.loop, gold, self.parent.units, self.parent.max_units, self.parent.passives, self.parent.shop_level, self.parent.shop_xp, run_passive_pool, locked_state)
       self.parent:set_party_and_sets()
     end

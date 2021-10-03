@@ -155,6 +155,16 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
       25, 25, 25, 25, 25, 30,
       20, 25, 30, 35, 40, 45, 50,
     }
+    self.level_to_num_rares = {
+      0, 1, 2, 3, 3, 0, 
+      3, 4, 5, 5, 0, 
+      2, 3, 3, 4, 0,
+    }
+    self.level_to_num_enemies = {
+      4, 6, 6, 8, 8, 0,
+      8, 8, 8, 8, 0,
+      8, 8, 8, 6, 0
+    }
     for i = 26, 5000 do
       local n = i % 25
       if n == 0 then n = 25 end
@@ -186,9 +196,9 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
           self.t:after(1.5, function() self:spawn_boss({x = x, y = y, name = boss_name}); self.wave = self.wave + 1 end)
         else
           SpawnMarker{group = self.effects, x = x, y = y}
-          self.t:after(1.125, function() self:spawn_n_enemies({x = x, y = y}, nil, 2 + (self.level * 2)); self.wave = self.wave + 1 end)
+          self.t:after(1.125, function() self:spawn_n_enemies({x = x, y = y}, nil, self.level_to_num_enemies[self.level]); self.wave = self.wave + 1 end)
           local x, y = gw * 0.8, gh/2
-          self.t:after(2.5, function() self:spawn_n_rares({x = x, y = y}, nil, 0 + (self.level - 1)) end)
+          self.t:after(2.5, function() self:spawn_n_rares({x = x, y = y}, nil, self.level_to_num_rares[self.level]) end)
         end
 
 
@@ -256,6 +266,31 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
     self.t:after(1.125 + math.floor(n/4)*0.25, function() self.spawning_enemies = false end, 'spawning_enemies')
     self.enemy_spawns_prevented = 0
   end)
+end
+
+function Arena:spawn_critters(parent, n)
+  if self.died then return end
+  if self.arena_clear_text then return end
+  if self.quitting then return end
+  if self.spawning_enemies then return end
+  if self.won then return end
+  if self.choosing_passives then return end
+
+  if math.floor(n/2) <= 0 then return end
+  self.spawning_enemies = true
+  local spawn_points = table.copy(self.spawn_points)
+  self.t:after({0, 0.2}, function()
+    local p = spawn_points[3]
+    SpawnMarker{group = self.effects, x = p.x, y = p.y}
+    self.t:after(1.125, function() self:spawn_n_critters(p, 1, math.floor(n/2), true, parent) end)
+  end)
+  self.t:after({0, 0.2}, function()
+    local p = spawn_points[4]
+    SpawnMarker{group = self.effects, x = p.x, y = p.y}
+    self.t:after(1.125, function() self:spawn_n_critters(p, 2, math.floor(n/2), true, parent) end)
+  end)
+  self.t:after(1.125 + math.floor(n/4)*0.25, function() self.spawning_enemies = false end, 'spawning_enemies')
+  self.enemy_spawns_prevented = 0
 end
 
 
@@ -605,8 +640,8 @@ function Arena:quit()
       self.slow_transitioning = true
       self.t:tween(0.7, self, {main_slow_amount = 0}, math.linear, function() self.main_slow_amount = 0 end)
     end)
-    self.t:after(3, function()
-      if (self.level-(25*self.loop)) % 3 == 0 and #self.passives < 8 then
+      self.t:after(3, function()
+      --[[if (self.level-(25*self.loop)) % 3 == 0 and #self.passives < 8 then
         input:set_mouse_visible(true)
         self.arena_clear_text.dead = true
         trigger:tween(1, _G, {slow_amount = 0}, math.linear, function() slow_amount = 0 end, 'slow_amount')
@@ -626,9 +661,8 @@ function Arena:quit()
         for i, passive in ipairs(self.passives) do
           ItemCard{group = self.ui, x = 120 + (i-1)*30, y = gh - 30, w = 30, h = 45, sx = 0.75, sy = 0.75, force_update = true, passive = passive.passive , level = passive.level, xp = passive.xp, parent = self}
         end
-      else
-        self:transition()
-      end
+        ]]--
+      self:transition()
     end, 'transition')
   end
 end
@@ -1058,6 +1092,34 @@ function Arena:spawn_distributed_enemies()
   end
 end
 
+function Arena:spawn_n_critters(p, j, n, pass, parent)
+  self.spawning_enemies = true
+  if self.died then return end
+  if self.arena_clear_text then return end
+  if self.quitting then return end
+  if self.won then return end
+  if self.choosing_passives then return end
+  if n and n <= 0 then return end
+
+  j = j or 1
+  n = n or 4
+  self.last_spawn_enemy_time = love.timer.getTime()
+  local check_circle = Circle(0, 0, 2)
+  self.t:every(0.1, function()
+    local o = self.spawn_offsets[(self.t:get_every_iteration('spawn_enemies_' .. j) % 5) + 1]
+    SpawnEffect{group = self.effects, x = p.x + o.x, y = p.y + o.y, action = function(x, y)
+      if not pass then
+        check_circle:move_to(x, y)
+        local objects = self.main:get_objects_in_shape(check_circle, {Seeker, EnemyCritter, Critter, Player, Sentry, Automaton, Bomb, Volcano, Saboteur, Pet, Turret})
+        if #objects > 0 then self.enemy_spawns_prevented = self.enemy_spawns_prevented + 1; return end
+      end
+      critter3:play{pitch = random:float(0.8, 1.2), volume = 0.8}
+      parent.summons = parent.summons + 1
+      EnemyCritter{group = self.main, x = x, y = y, color = grey[0], r = random:float(0, 2*math.pi), v = 10, parent = parent}
+
+    end}
+  end, n, function() self.spawning_enemies = false end, 'spawn_enemies_' .. j)
+end
 
 function Arena:spawn_n_enemies(p, j, n, pass)
   self.spawning_enemies = true

@@ -286,8 +286,8 @@ function Unit:calculate_stats(first_run)
     self.base_dmg = 10
     self.base_mvspd = 75
   elseif self:is(Seeker) then
-    self.base_hp = 150
-    self.base_dmg = 20
+    self.base_hp = 150 * (math.pow(1.15, level))
+    self.base_dmg = 20  * (math.pow(1.15, level))
     self.base_mvspd = 50
   elseif self:is(Troop) then
     self.base_hp = 50 * hpMod
@@ -303,9 +303,9 @@ function Unit:calculate_stats(first_run)
     self.base_dmg = 10
   end
   if self:is(Seeker) and self.type == 'boss' then
-    self.base_hp = 1500
+    self.base_hp = 1500 * (1 + ((level / 6) * 0.25))
     self.base_dmg = 30
-    self.base_mvspd = 40
+    self.base_mvspd = 50
   end
   self.base_aspd_m = 1
   self.base_area_dmg_m = 1
@@ -407,7 +407,7 @@ end
 
 function Unit:in_range()
   return function()
-    return self.target and not self.target.dead and self.state == unit_states['normal'] and self:distance_to_object(self.target) - self.target.shape.w/2 - self.shape.w/2 < self.attack_sensor.rs
+    return self.target and not self.target.dead and self.state == unit_states['normal'] and self:distance_to_object(self.target) - self.target.shape.w/2 < self.attack_sensor.rs
   end
 end
 

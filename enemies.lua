@@ -128,36 +128,39 @@ function Seeker:init(args)
     end, nil, nil, 'attack')
   elseif self.type == 'boss' then
     if self.name == "stompy" then
-      self.t:cooldown(attack_speeds['ultra-slow'], function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end, function ()
+      self.t:cooldown(attack_speeds['ultra-slow'], function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target and self.state == unit_states['normal'] end, function ()
         local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
         if target then
           self:rotate_towards_object(target, 1)
           self:mortar(target)
         end
       end, nil, nil, 'shoot')
-      self.t:cooldown(attack_speeds['medium'], function() local targets = self:get_objects_in_shape(self.aggro_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
+      self.t:cooldown(attack_speeds['slow'], function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target and self.state == unit_states['normal'] end, function()
+        self:stomp(self.attack_sensor.rs)
+      end, nil, nil, 'stomp')
+      self.t:cooldown(attack_speeds['fast'], function() local targets = self:get_objects_in_shape(self.aggro_sensor, main.current.friendlies); return targets and #targets > 0 and self.state == unit_states['normal'] end, function()
         local closest_enemy = self:get_closest_object_in_shape(self.aggro_sensor, main.current.friendlies)
-        local target = self.target
         self.target = closest_enemy
 
         if self:in_range()() then
           self:rotate_towards_object(closest_enemy, 1)
           self:attack(20, {x = closest_enemy.x, y = closest_enemy.y})
         end
-        self.target = target
       end, nil, nil, 'attack')
     elseif self.name == "dragon" then
+      self.attack_sensor.rs = self.attack_sensor.rs + 20
       self.summons = 0
       self.t:cooldown(attack_speeds['slow'], function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end, function()
         local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies);
         self.target = target
 
         if self:in_range()() then
-          self:breathe_fire(2)
+          self:breathe_fire(2, self.attack_sensor.rs + 5)
         end
       end, nil, nil, 'channel')
       self.t:cooldown(attack_speeds["ultra-slow"], function() return true end, function()
-        self:spawn_whelps(10)
+        print(self.summons)
+        self:spawn_whelps(self, math.min(10 - self.summons, 4))
       end, nil, nil, 'summon')
     elseif self.name == "heigan" then
       self.cycle_index = 0
@@ -370,23 +373,24 @@ function Seeker:attack(area, mods, color)
 end
 
 function Seeker:stomp(area, mods)
-  Stomp{group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = 25, color = red[0], dmg = 50, level = self.level, parent = self}
+  Stomp{group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = area or 25, color = red[0], dmg = 50, level = self.level, parent = self}
 end
 
 function Seeker:mortar(target)
   Mortar{group = main.current.main, team = "enemy", target = target, rs = 25, color = red[0], dmg = 30, level = self.level, parent = self}
 end
 
-function Seeker:breathe_fire(duration)
+function Seeker:breathe_fire(duration, rs)
   BreatheFire{origin_offset = true, follows_caster = true, area_type = 'triangle',
-    group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = 80, color = red[3], dmg = 20, duration = duration, level = self.level, parent = self}
+    group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = rs, color = red[3], dmg = 20, duration = duration, level = self.level, parent = self}
 end
 
 function Seeker:summon()
   Summon{group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = 25, color = purple[0], level = self.level, parent = self}
 end
 
-function Seeker:spawn_whelps(amount)
+function Seeker:spawn_whelps(parent, amount)
+  main.current:spawn_critters(parent, amount)
 
 end
 
@@ -805,27 +809,29 @@ function EnemyCritter:init(args)
   self:init_game_object(args)
   if tostring(self.x) == tostring(0/0) or tostring(self.y) == tostring(0/0) then self.dead = true; return end
   self:init_unit()
-  self:set_as_rectangle(7, 4, 'dynamic', 'enemy_projectile')
+  self:set_as_rectangle(7, 4, 'dynamic', 'enemy')
   self:set_restitution(0.5)
 
+  self.aggro_sensor = Circle(self.x, self.y, 1000)
+  self.attack_sensor = Circle(self.x, self.y, 25)
+  self.slowed = false
+
   self.class = 'enemy_critter'
+  self.color = args.color or grey[0]
   self:calculate_stats(true)
   self:set_as_steerable(self.v, 400, math.pi, 1)
-  self:push(args.v, args.r)
-  self.invulnerable_to = args.projectile
-  self.t:after(0.5, function() self.invulnerable_to = false end)
-  self.usurer_count = 0
+  --self:push(args.v, args.r) 
+  self.t:cooldown(attack_speeds['medium'], function() return self.target and self:distance_to_object(self.target) < self.attack_sensor.rs end, 
+  function() self:attack() end, nil, nil, "attack")
 end
 
 
 function EnemyCritter:update(dt)
   self:update_game_object(dt)
 
-  if self.slowed then self.slow_mvspd_m = self.slowed
-  else self.slow_mvspd_m = 1 end
-  self.buff_mvspd_m = (self.speed_boosting_mvspd_m or 1)*(self.slow_mvspd_m or 1)*(self.temporal_chains_mvspd_m or 1)
-  if not self.class then return end
-  self:calculate_stats()
+  if self.slowed then
+    self.slow_mvspd_m = self.slowed
+  end
 
   if self.being_pushed then
     local v = math.length(self:get_velocity())
@@ -836,32 +842,52 @@ function EnemyCritter:update(dt)
       self:set_angular_damping(0)
     end
   else
-    local player = main.current.player
-    self:seek_point(player.x, player.y)
-    self:wander(50, 200, 50)
-    self:steering_separate(8, main.current.enemies)
-    self:rotate_towards_velocity(1)
+    if not self.target then self.target = random:table(self.group:get_objects_by_classes(main.current.friendlies)) end
+    if self.target and self.target.dead then self.target = random:table(self.group:get_objects_by_classes(main.current.friendlies)) end
+    if not self.target or self:distance_to_object(self.target) < self.attack_sensor.rs then
+      self:set_velocity(0,0)
+      self:rotate_towards_velocity(1)
+      self:steering_separate(8, {EnemyCritter})
+    elseif self.target then
+      self:seek_point(self.target.x, self.target.y)
+      self:rotate_towards_velocity(1)
+      self:steering_separate(8, {EnemyCritter})
+    end
   end
   self.r = self:get_angle()
+
+  self.aggro_sensor:move_to(self.x, self.y)
+  self.attack_sensor:move_to(self.x, self.y)
 end
 
 
 function EnemyCritter:draw()
+  if not self.hfx.hit then return end
   graphics.push(self.x, self.y, self.r, self.hfx.hit.x, self.hfx.hit.x)
     graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 2, 2, self.hfx.hit.f and fg[0] or self.color)
   graphics.pop()
 end
 
+function EnemyCritter:attack()
+  if self.target and not self.target.dead then
+    swordsman1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
+    self.target:hit(self.dmg)
+  end
+end
 
 function EnemyCritter:hit(damage, projectile)
-  if self.dead then return end
-  -- print(projectile == self.invulnerable_to)
-  if projectile == self.invulnerable_to then return end
+  if self.dead or self.invulnerable then return end
   self.hfx:use('hit', 0.25, 200, 10)
-  self.hp = self.hp - math.max(damage, 0)
+  self.hp = self.hp - damage
   self:show_hp()
   if self.hp <= 0 then self:die() end
 end
+
+function EnemyCritter:slow(amount, duration)
+  self.slowed = amount
+  self.t:after(duration, function() self.slowed = false end, 'slow')
+end
+
 
 
 function EnemyCritter:push(f, r)
@@ -876,6 +902,8 @@ end
 
 
 function EnemyCritter:die(x, y, r, n)
+  if self.parent and self.parent.summons then
+    self.parent.summons = self.parent.summons - 1 end
   if self.dead then return end
   x = x or self.x
   y = y or self.y
@@ -905,85 +933,11 @@ end
 
 
 function EnemyCritter:on_trigger_enter(other, contact)
-  if other:is(Player) then
+  --[[if other:is(Player) then
     self:die(self.x, self.y, nil, random:int(2, 3))
     other:hit(self.dmg, nil, nil, true)
-  end
+  end]]--
 end
-
-
-function EnemyCritter:speed_boost(duration)
-  self.speed_boosting = love.timer.getTime()
-  self.t:after(duration, function() self.speed_boosting = false end, 'speed_boost')
-end
-
-
-function EnemyCritter:slow(amount, duration)
-  self.slowed = amount
-  self.t:after(duration, function() self.slowed = false end, 'slow')
-end
-
-
-function EnemyCritter:curse(curse, duration, arg1, arg2, arg3)
-  if main.current.player.whispers_of_doom then
-    if not self.doom then self.doom = 0 end
-    self.doom = self.doom + 1
-    if self.doom == 4 then
-      self.doom = 0
-      self:hit(200)
-      buff1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-      ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-    end
-  end
-
-  if curse == 'launcher' then
-    self.t:after(duration, function()
-      self.launcher_push = arg1
-      self.launcher = arg2
-      self:push(random:float(50, 75)*self.launcher.knockback_m, random:table{0, math.pi, math.pi/2, -math.pi/2})
-    end, 'launcher_curse')
-  elseif curse == 'jester' then
-    self.jester_cursed = true
-    self.jester_lvl3 = arg1
-    self.jester_ref = arg2
-    self.t:after(duration, function() self.jester_cursed = false end, 'jester_curse')
-  elseif curse == 'bane' then
-    self.bane_cursed = true
-    self.bane_lvl3 = arg1
-    self.bane_ref = arg2
-    self.t:after(duration, function() self.bane_cursed = false end, 'bane_curse')
-  elseif curse == 'infestor' then
-    self.infested = arg1
-    self.infested_dmg = arg2
-    self.infested_ref = arg3
-    self.t:after(duration, function() self.infested = false end, 'infestor_curse')
-  elseif curse == 'silencer' then
-    self.silenced = true
-    self.t:after(duration, function() self.silenced = false end, 'silencer_curse')
-  elseif curse == 'usurer' then
-    if arg1 then
-      self.usurer_count = self.usurer_count + 1
-      if self.usurer_count == 3 then
-        self.usurer_count = 0
-        self:hit(10*arg2.dmg)
-      end
-    end
-  end
-end
-
-
-function EnemyCritter:apply_dot(dmg, duration)
-  self.t:every(0.25, function()
-    hit2:play{pitch = random:float(0.8, 1.2), volume = 0.2}
-    self:hit(dmg/4)
-    HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 6, color = fg[0], duration = 0.1}
-    for i = 1, 1 do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color} end
-    for i = 1, 1 do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = purple[0]} end
-  end, math.floor(duration/0.2))
-end
-
-
-
 
 
 EnemyProjectile = Object:extend()
