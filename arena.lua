@@ -47,7 +47,7 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
   --end
   input:set_mouse_visible(true)
 
-  trigger:tween(2, main_song_instance, {volume = 0.5, pitch = 1}, math.linear)
+  --trigger:tween(2, main_song_instance, {volume = 0.5, pitch = 1}, math.linear)
 
   --steam.friends.setRichPresence('steam_display', '#StatusFull')
   --steam.friends.setRichPresence('text', 'Arena - Level ' .. self.level)
@@ -284,7 +284,7 @@ end
 
 
 function Arena:update(dt)
-  if main_song_instance:isStopped() then
+  if main_song_instance and main_song_instance:isStopped() then
     main_song_instance = _G[random:table{'song1', 'song2', 'song3', 'song4', 'song5'}]:play{volume = 0.5}
   end
 
@@ -323,7 +323,7 @@ function Arena:update(dt)
         run_time = 0
         gold = 3
         passives = {}
-        main_song_instance:stop()
+        --main_song_instance:stop()
         run_passive_pool = {
           'centipede', 'ouroboros_technique_r', 'ouroboros_technique_l', 'amplify', 'resonance', 'ballista', 'call_of_the_void', 'crucio', 'speed_3', 'damage_4', 'shoot_5', 'death_6', 'lasting_7',
           'defensive_stance', 'offensive_stance', 'kinetic_bomb', 'porcupine_technique', 'last_stand', 'seeping', 'deceleration', 'annihilation', 'malediction', 'hextouch', 'whispers_of_doom',
@@ -352,7 +352,7 @@ function Arena:update(dt)
   end
 
   self:update_game_object(dt*slow_amount)
-  main_song_instance.pitch = math.clamp(slow_amount*music_slow_amount, 0.05, 1)
+  --main_song_instance.pitch = math.clamp(slow_amount*music_slow_amount, 0.05, 1)
 
   star_group:update(dt*slow_amount)
   self.floor:update(dt*slow_amount)
@@ -791,7 +791,7 @@ function Arena:die()
           run_time = 0
           gold = 3
           passives = {}
-          main_song_instance:stop()
+          --main_song_instance:stop()
           run_passive_pool = {
             'centipede', 'ouroboros_technique_r', 'ouroboros_technique_l', 'amplify', 'resonance', 'ballista', 'call_of_the_void', 'crucio', 'speed_3', 'damage_4', 'shoot_5', 'death_6', 'lasting_7',
             'defensive_stance', 'offensive_stance', 'kinetic_bomb', 'porcupine_technique', 'last_stand', 'seeping', 'deceleration', 'annihilation', 'malediction', 'hextouch', 'whispers_of_doom',

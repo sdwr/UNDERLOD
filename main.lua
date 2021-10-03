@@ -1811,7 +1811,7 @@ function init()
   if not state.current_new_game_plus then state.current_new_game_plus = current_new_game_plus end
   max_units = 3
 
-  main_song_instance = _G[random:table{'song1', 'song2', 'song3', 'song4', 'song5'}]:play{volume = 0.5}
+  --main_song_instance = _G[random:table{'song1', 'song2', 'song3', 'song4', 'song5'}]:play{volume = 0.5}
   main = Main()
 
   main:add(MainMenu'mainmenu')
@@ -2007,7 +2007,7 @@ function open_options(self)
           run_time = 0
           gold = 3
           passives = {}
-          main_song_instance:stop()
+          --main_song_instance:stop()
           run_passive_pool = {
             'centipede', 'ouroboros_technique_r', 'ouroboros_technique_l', 'amplify', 'resonance', 'ballista', 'call_of_the_void', 'crucio', 'speed_3', 'damage_4', 'shoot_5', 'death_6', 'lasting_7',
             'defensive_stance', 'offensive_stance', 'kinetic_bomb', 'porcupine_technique', 'last_stand', 'seeping', 'deceleration', 'annihilation', 'malediction', 'hextouch', 'whispers_of_doom',

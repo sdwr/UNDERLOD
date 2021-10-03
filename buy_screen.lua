@@ -161,7 +161,7 @@ function BuyScreen:on_enter(from, level, loop, units, max_units, passives, shop_
       run_time = 0
       gold = 3
       passives = {}
-      main_song_instance:stop()
+      --main_song_instance:stop()
       run_passive_pool = {
         'centipede', 'ouroboros_technique_r', 'ouroboros_technique_l', 'amplify', 'resonance', 'ballista', 'call_of_the_void', 'crucio', 'speed_3', 'damage_4', 'shoot_5', 'death_6', 'lasting_7',
         'defensive_stance', 'offensive_stance', 'kinetic_bomb', 'porcupine_technique', 'last_stand', 'seeping', 'deceleration', 'annihilation', 'malediction', 'hextouch', 'whispers_of_doom',
@@ -189,7 +189,7 @@ function BuyScreen:on_enter(from, level, loop, units, max_units, passives, shop_
     b.info_text = nil
   end}
 
-  trigger:tween(1, main_song_instance, {volume = 0.2, pitch = 1}, math.linear)
+  --trigger:tween(1, main_song_instance, {volume = 0.2, pitch = 1}, math.linear)
 
   locked_state = {locked = self.locked, cards = {self.cards[1] and self.cards[1].unit, self.cards[2] and self.cards[2].unit, self.cards[3] and self.cards[3].unit}} 
   system.save_run(self.level, self.loop, gold, self.units, self.max_units, self.passives, self.shop_level, self.shop_xp, run_passive_pool, locked_state)
@@ -197,8 +197,8 @@ end
 
 
 function BuyScreen:update(dt)
-  if main_song_instance:isStopped() then
-    main_song_instance = _G[random:table{'song1', 'song2', 'song3', 'song4', 'song5'}]:play{volume = 0.2}
+  if main_song_instance and main_song_instance:isStopped() then
+    --main_song_instance = _G[random:table{'song1', 'song2', 'song3', 'song4', 'song5'}]:play{volume = 0.2}
   end
 
   if not self.paused then
@@ -621,7 +621,7 @@ function RestartButton:update(dt)
       run_time = 0
       gold = 3
       passives = {}
-      main_song_instance:stop()
+      --main_song_instance:stop()
       run_passive_pool = {
         'centipede', 'ouroboros_technique_r', 'ouroboros_technique_l', 'amplify', 'resonance', 'ballista', 'call_of_the_void', 'crucio', 'speed_3', 'damage_4', 'shoot_5', 'death_6', 'lasting_7',
         'defensive_stance', 'offensive_stance', 'kinetic_bomb', 'porcupine_technique', 'last_stand', 'seeping', 'deceleration', 'annihilation', 'malediction', 'hextouch', 'whispers_of_doom',

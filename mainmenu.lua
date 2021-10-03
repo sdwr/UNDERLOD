@@ -9,7 +9,7 @@ end
 
 function MainMenu:on_enter(from)
   slow_amount = 1
-  trigger:tween(2, main_song_instance, {volume = 0.5, pitch = 1}, math.linear)
+  --trigger:tween(2, main_song_instance, {volume = 0.5, pitch = 1}, math.linear)
 
   --steam.friends.setRichPresence('steam_display', '#StatusFull')
   --steam.friends.setRichPresence('text', 'Main Menu')
@@ -134,6 +134,27 @@ function MainMenu:on_enter(from)
     ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     system.open_url('https://discord.gg/Yjk2Q5gDqA')
   end}
+
+  self.transitioning = true
+      slow_amount = 1
+      local run = system.load_run()
+      run_passive_pool = run.run_passive_pool or {
+        'centipede', 'ouroboros_technique_r', 'ouroboros_technique_l', 'amplify', 'resonance', 'ballista', 'call_of_the_void', 'crucio', 'speed_3', 'damage_4', 'shoot_5', 'death_6', 'lasting_7',
+        'defensive_stance', 'offensive_stance', 'kinetic_bomb', 'porcupine_technique', 'last_stand', 'seeping', 'deceleration', 'annihilation', 'malediction', 'hextouch', 'whispers_of_doom',
+        'tremor', 'heavy_impact', 'fracture', 'meat_shield', 'hive', 'baneling_burst', 'blunt_arrow', 'explosive_arrow', 'divine_machine_arrow', 'chronomancy', 'awakening', 'divine_punishment',
+        'assassination', 'flying_daggers', 'ultimatum', 'magnify', 'echo_barrage', 'unleash', 'reinforce', 'payback', 'enchanted', 'freezing_field', 'burning_field', 'gravity_field', 'magnetism',
+        'insurance', 'dividends', 'berserking', 'unwavering_stance', 'unrelenting_stance', 'blessing', 'haste', 'divine_barrage', 'orbitism', 'psyker_orbs', 'psychosink', 'rearm', 'taunt', 'construct_instability',
+        'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
+        'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
+      }
+      run_time = run.time or 0
+      gold = run.gold or 3
+      passives = run.passives or {}
+      locked_state = run.locked_state
+      current_new_game_plus = run.current_new_game_plus or current_new_game_plus or 0
+      system.save_state()
+      main:add(BuyScreen'buy_screen')
+      main:go_to('buy_screen', run.level or 1, run.loop or 0, run.units or {}, run.max_units or 3, passives, run.shop_level or 1, run.shop_xp or 0)
 end
 
 
@@ -161,7 +182,7 @@ end
 
 
 function MainMenu:update(dt)
-  if main_song_instance:isStopped() then
+  if main_song_instance and main_song_instance:isStopped() then
     main_song_instance = _G[random:table{'song1', 'song2', 'song3', 'song4', 'song5'}]:play{volume = 0.5}
   end
 
