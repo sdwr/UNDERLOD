@@ -26,6 +26,7 @@ function init()
   gambler1 = Sound('Collect 5.ogg', s)
   usurer1 = Sound('Shadow Punch 2.ogg', s)
   orb1 = Sound('Collect 2.ogg', s)
+  silence = Sound('Silence.ogg', s)
   gold1 = Sound('Collect 5.ogg', s)
   gold2 = Sound('Coins - Gears - Slot.ogg', s)
   psychic1 = Sound('Magical Impact 13.ogg', s)
@@ -662,7 +663,7 @@ function init()
   character_effect_names = {
     ['vagrant'] = '[fg]Experience',
     ['swordsman'] = '[yellow]Cleave',
-    ['wizard'] = '[blue]Blizzard',
+    ['wizard'] = '[blue]',
     ['magician'] = '[blue]Quick Cast',
     ['archer'] = '[green]Bounce Shot',
     ['sniper'] = '[green]Snipe',
@@ -1819,7 +1820,7 @@ function init()
   if not state.current_new_game_plus then state.current_new_game_plus = current_new_game_plus end
   max_units = 3
 
-  main_song_instance = _G[random:table{'song1', 'song2', 'song3', 'song4', 'song5'}]:play{volume = 0.5}
+  main_song_instance = silence:play{volume = 0.5}
   main = Main()
 
   main:add(MainMenu'mainmenu')

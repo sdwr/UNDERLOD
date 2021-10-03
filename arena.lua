@@ -323,7 +323,7 @@ end
 
 function Arena:update(dt)
   if main_song_instance:isStopped() then
-    main_song_instance = _G[random:table{'song1', 'song2', 'song3', 'song4', 'song5'}]:play{volume = 0.5}
+    main_song_instance = silence:play{volume = 0.5}
   end
 
   if not self.paused and not self.died and not self.won then
@@ -1171,7 +1171,12 @@ function Arena:spawn_n_rares(p, j, n, pass)
         check_circle:move_to(x, y)
         local objects = self.main:get_objects_in_shape(check_circle, {Seeker, EnemyCritter, Critter, Player, Sentry, Automaton, Bomb, Volcano, Saboteur, Pet, Turret})
       end
-      local elite_type = math.random(4)
+      local elite_type = 1
+      if self.level < 6 then
+        elite_type = math.random(2)
+      else
+        elite_type = math.random(4)
+      end
       if elite_type == 1 then
         Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'stomper', level = self.level}
       elseif elite_type == 2 then

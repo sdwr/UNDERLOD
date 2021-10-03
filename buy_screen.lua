@@ -197,7 +197,7 @@ end
 
 function BuyScreen:update(dt)
   if main_song_instance and main_song_instance:isStopped() then
-    main_song_instance = _G[random:table{'song1', 'song2', 'song3', 'song4', 'song5'}]:play{volume = 0.2}
+    main_song_instance = silence:play{volume = 0.5}
   end
 
   if not self.paused then

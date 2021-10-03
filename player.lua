@@ -1407,7 +1407,7 @@ end
 end
 
 function DotArea:make_shape()
-  if self.area_type == 'circle' then
+  if self.area_type == 'circle' or not self.area_type then
     self.shape = Circle(self.x, self.y, self.rs)
   elseif self.area_type == 'triangle' then
     self.shape = Polygon(self.caster:make_triangle_from_origin(math.pi / 4, self.rs))
@@ -1454,7 +1454,7 @@ function DotArea:draw()
 
   --graphics.push(self.x, self.y, 0, self.spring.x, self.spring.x)
     -- graphics.circle(self.x, self.y, self.shape.rs + random:float(-1, 1), self.color, 2)
-    if self.area_type == 'circle' then
+    if self.area_type == 'circle' or not self.area_type then
       graphics.circle(self.x, self.y, self.shape.rs, self.color_transparent)
     elseif self.area_type == 'triangle' then
       graphics.polygon(self.shape.vertices, self.color_transparent)
