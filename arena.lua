@@ -318,6 +318,8 @@ function Arena:on_exit()
   self.springs = nil
   self.flashes = nil
   self.hfx = nil
+
+  helper_release()
 end
 
 
@@ -399,6 +401,9 @@ function Arena:update(dt)
   self.effects:update(dt*slow_amount)
   self.ui:update(dt*slow_amount)
   self.credits:update(dt)
+
+
+  helper_update()
 end
 
 
@@ -770,6 +775,13 @@ function Arena:draw()
 
 
   if self.level == 20 and self.trailer then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
+
+
+
+  helper_draw()
+
+
+
   if self.choosing_passives or self.won or self.paused or self.died then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
   self.ui:draw()
 

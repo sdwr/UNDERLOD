@@ -7,6 +7,7 @@ require 'objects'
 require 'player'
 require 'enemies'
 require 'media'
+require 'helper/helper'
 
 
 function init()

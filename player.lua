@@ -2974,6 +2974,7 @@ function Troop:onDeath()
 end
 
 
+
 function Troop:set_character()
   if self.character == 'swordsman' then
     self.dmg = self.dmg / 3;
@@ -2984,11 +2985,20 @@ function Troop:set_character()
       end
     end, nil, nil, 'attack')
 
+  -- elseif self.character == 'archer' then
+  --   self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
+  --   self.t:cooldown(attack_speeds['ultra-fast'], self:in_range(), function()
+  --     if self.target then
+  --       self:shootAnimation(self:angle_to_object(self.target))
+  --     end
+  --   end, nil, nil, 'shoot')
+
   elseif self.character == 'archer' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
-    self.t:cooldown(attack_speeds['ultra-fast'], self:in_range(), function()
+    self.t:cooldown(attack_speeds['medium'], self:in_range(), function()
       if self.target then
-        self:shootAnimation(self:angle_to_object(self.target))
+        pyro1:play{volume=0.9}
+        create_flame(self.x, self.y, self.target.x, self.target.y)
       end
     end, nil, nil, 'shoot')
 
