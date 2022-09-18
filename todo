@@ -3,20 +3,69 @@ turn game into rts :o
 -------------
 BUGS:
 --------------
-LUDUM DARE?
+items dont move with character
+cant move items between slots consistently
+saving/enter arena with item on cursor?
+items too big coming from shop
+
 can push bosses
 boss movement 
 
 web build (take out sound?)
 
-
-
 no safety checking on unit spawn
 
+
+-------------
+GAMEPLAY TUNING:
+--------------
+enemy summoners are too good, either kill them right away or lose to the summons
+rounds are too fast? 
+
+think about build variety:
+  tanky melee
+  squishy ranged
+  aoe vs single target
+  summoner
 
 ------------------
 ADDITIONS:
 ------------------
+
+items:
+  cost 1/3/5 or 2/5/10
+  can have some # on each squad
+  new UI for items, move squads to center of buy screen?
+  think about taking out character rolling, move to popup card on certain levels
+
+  how will items combo? need to have value, can't be too degenerate (stack dmg on sniper)
+
+
+  damage:
+    flat dmg 
+    %dmg
+    %aspd
+  
+  survival:
+    vamp
+    shield
+    armor/hp?
+
+  utility:
+    move speed
+    ghost through units
+    basher
+    slow/freeze
+    aura
+
+  special:
+    revive after death for 5s
+    thorns
+    heal over time
+    stim pack
+
+
+
 
 enemies
   a̶d̶d̶ ̶t̶e̶l̶e̶g̶r̶a̶p̶h̶e̶d̶ ̶m̶e̶l̶e̶e̶ ̶s̶t̶o̶m̶p̶ ̶t̶y̶p̶e̶
@@ -99,9 +148,6 @@ CODE CLEANUP:
   - unify target selection, attack triggering
     * need proper lambdas? delayed functions cant have params
   
-    
-
-
 
 debugger
   - find/setup debugger for when game hangs
@@ -153,10 +199,6 @@ unit types:
   mage
   healer
   support
-
-
-
-
 
 
 

@@ -9,7 +9,7 @@ end
 function Arena:add_troops()
   for i, unit in ipairs(self.units) do
     for j=0, 4 do
-      Troop{group = self.main, x = (gh*0.2) + (i*20), y = gh/2- (10*j), level = unit.level, character = unit.character, passives = self.passives}
+      Troop{group = self.main, x = (gh*0.2) + (i*20), y = gh/2- (10*j), level = unit.level, character = unit.character, items = unit.items, passives = self.passives}
     end
   end
 end
@@ -39,6 +39,9 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
   self.shop_level = shop_level or 1
   self.shop_xp = shop_xp or 0
   self.lock = lock
+
+  
+  main_song_instance:stop()
 
   self.starting_units = table.copy(units)
 
@@ -323,7 +326,7 @@ end
 
 function Arena:update(dt)
   if main_song_instance:isStopped() then
-    main_song_instance = silence:play{volume = 0.5}
+    main_song_instance = _G[random:table{'song1', 'song2'}]:play{volume = 0.5}
   end
 
   if not self.paused and not self.died and not self.won then

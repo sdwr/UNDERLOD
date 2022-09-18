@@ -359,6 +359,31 @@ function Unit:calculate_stats(first_run)
     end
   end
 
+  if self.items and #self.items > 0 then
+    for k,v in ipairs(self.items) do
+      local item = v
+      if item_stat_multipliers[item] then
+        for stat, amt in pairs(item_stat_multipliers[item]) do
+          if stat == buff_types['dmg'] then
+            self.buff_dmg_m = self.buff_dmg_m + amt
+          elseif stat == buff_types['def'] then
+            self.buff_def_m = self.buff_dmg_m + amt
+          elseif stat == buff_types['mvspd'] then
+            self.buff_mvspd_m = self.buff_mvspd_m + amt
+          elseif stat == buff_types['aspd'] then
+            self.buff_aspd_m = self.buff_aspd_m + amt
+          elseif stat == buff_types['area_dmg'] then
+            self.buff_area_dmg_m = self.buff_area_dmg_m + amt
+          elseif stat == buff_types['area_size'] then
+            self.buff_area_size_m = self.buff_area_size_m + amt
+          elseif stat == buff_types['hp'] then
+            self.buff_hp_m = self.buff_hp_m + amt
+          end
+        end
+      end
+    end
+  end
+
   self.class_hp_m = self.class_hp_m*class_stat_multipliers[self.class].hp
   self.max_hp = (self.base_hp + self.class_hp_a + self.buff_hp_a)*self.class_hp_m*self.buff_hp_m
   if first_run then self.hp = self.max_hp end

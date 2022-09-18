@@ -2768,7 +2768,6 @@ function Troop:init(args)
   self:set_character()
 
   self.state = unit_states['normal']
-
 end
 
 function Troop:update(dt)

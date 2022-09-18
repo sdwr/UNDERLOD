@@ -121,9 +121,9 @@ function init()
   turret_deploy = Sound('321215__hybrid-v__sci-fi-weapons-deploy.ogg', s)
   rogue_crit1 = Sound('Dagger Stab (Flesh) 4.ogg', s)
   rogue_crit2 = Sound('Sword hits another sword 6.ogg', s)
-
-  song1 = Sound('Kubbi - Ember - 01 Pathfinder.ogg', {tags = {music}})
-  song2 = Sound('Kubbi - Ember - 02 Ember.ogg', {tags = {music}})
+  
+  song1 = Sound('gunnar-1.mp3', {tags = {music}})
+  song2 = Sound('gunnar-2-wail.mp3', {tags = {music}})
   song3 = Sound('Kubbi - Ember - 03 Firelight.ogg', {tags = {music}})
   song4 = Sound('Kubbi - Ember - 04 Cascade.ogg', {tags = {music}})
   song5 = Sound('Kubbi - Ember - 05 Compass.ogg', {tags = {music}})
@@ -1070,6 +1070,38 @@ function init()
     [1] = {'swordsman', 'archer'},
     [2] = {'wizard', 'shaman', 'cannon'},
     [3] = {'sniper'},
+    [4] = {'sniper'}
+  }
+
+  item_images = {
+    ['smallsword'] = warrior,
+    ['medsword'] = warrior,
+    ['largesword'] = warrior,
+  }
+
+  item_costs = {
+    ['smallsword'] = 2,
+    ['medsword'] = 5,
+    ['largesword'] = 10,
+  }
+
+  item_stat_multipliers = {
+    ['smallsword'] = {dmg = 1.25},
+    ['medsword'] = {dmg = 1.5},
+    ['largesword'] = {dmg = 1.75},
+
+  }
+
+  item_text = {
+    ['smallsword'] = "A tiny sword",
+    ['medsword'] = "A medium sword",
+    ['largesword'] = "A large sword!",
+  }
+
+  tier_to_items = {
+    [1] = {'smallsword'},
+    [2] = {'medsword'},
+    [3] = {'largesword'},
   }
 
   attack_ranges = {
@@ -1751,6 +1783,14 @@ function init()
     [3] = {25, 45, 20, 10},
     [4] = {10, 25, 45, 20},
     [5] = {5, 15, 30, 50},
+  }
+
+  level_to_item_odds = {
+    [1] = {100, 0, 0, 0},
+    [2] = {55, 30, 15, 0},
+    [3] = {35, 40, 20, 5},
+    [4] = {10, 25, 45, 20},
+    [5] = {0, 20, 40, 40},
   }
 
   get_shop_odds = function(lvl, tier)
