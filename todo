@@ -3,17 +3,19 @@ turn game into rts :o
 -------------
 BUGS:
 --------------
-items dont move with character
-cant move items between slots consistently
-saving/enter arena with item on cursor?
+combat:
+shouldn't be able to push bosses with units
+should be able to hit enemies without needing to hit the exact center (mainly problem with bosses)
+
+items:
+can't move items between inv slots
+inv doesn't move with units when changing order in list
 items too big coming from shop
+saving/enter arena with item on cursor?
 
-can push bosses
-boss movement 
 
+no safety checking on unit spawn (fixed? can have units on top of boss when spawns, no crash)
 web build (take out sound?)
-
-no safety checking on unit spawn
 
 
 -------------
@@ -31,6 +33,11 @@ think about build variety:
 ------------------
 ADDITIONS:
 ------------------
+
+tooling:
+  debug mode
+    go to level from buy screen
+    free gold
 
 items:
   cost 1/3/5 or 2/5/10
@@ -83,6 +90,10 @@ enemies
   - change spawn logic
     * fixed by level?
     * all at once or over time?
+
+items
+
+
 
 allies
   - archer feels weird
@@ -148,6 +159,9 @@ CODE CLEANUP:
   - unify target selection, attack triggering
     * need proper lambdas? delayed functions cant have params
   
+    
+
+
 
 debugger
   - find/setup debugger for when game hangs
@@ -199,6 +213,10 @@ unit types:
   mage
   healer
   support
+
+
+
+
 
 
 
