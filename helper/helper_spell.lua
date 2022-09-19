@@ -1,3 +1,23 @@
+function get_nearest_target(x, y)
+    local targetx = -10000
+    local targety = -10000
+    local distancemin = 100000000
+
+    local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
+    for _, enemy in ipairs(enemies) do
+        if distance(x, y, enemy.x, enemy.y) < distancemin then
+            distancemin = distance(x, y, enemy.x, enemy.y)
+            targetx = enemy.x
+            targety = enemy.y
+            found_target = true
+        end
+    end
+
+    return targetx, targety
+end
+
+
+
 flamewidth = 30
 flameheight = 50
 flameduration = 3
@@ -34,6 +54,16 @@ function damage_enemy_in_flames()
                 for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = blue[0]} end
                 for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = enemy.color} end
             end
+        end
+    end
+end
+
+function update_flame_target_location()
+    local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
+
+    if #enemies ~= 0 then
+        for __, flame in ipairs(flames) do
+            flame.enemyx, flame.enemyy = get_nearest_target(flame.parent.x, flame.parent.y)
         end
     end
 end
@@ -151,7 +181,7 @@ function damage_enemies_inside_damage_circles()
             local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
             for _, enemy in ipairs(enemies) do
                 if distance(damage_circle.x, damage_circle.y, enemy.x, enemy.y) < damage_circle_radius then
-                    enemy:hit(10)
+                    enemy:hit(30)
                     HitCircle{group = main.current.effects, x = enemy.x, y = enemy.y, rs = 6, color = fg[0], duration = 0.1}
                     for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = blue[0]} end
                     for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = enemy.color} end

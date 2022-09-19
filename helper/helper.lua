@@ -44,6 +44,7 @@ function helper_update()
 
     run_intervals()
     
+    update_flame_target_location()
     end_flame()
     update_missile_pos()
     missile_explode()

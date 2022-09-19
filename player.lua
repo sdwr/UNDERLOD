@@ -2997,10 +2997,10 @@ function Troop:set_character()
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['ultra-long'])
     self.t:cooldown(attack_speeds['medium'], self:in_range(), function()
       if self.target then
-        shoot1:play{volume=0.9}
-        create_missile(self.x, self.y, random_in_radius(self.target.x, self.target.y, 30))
-        -- fire1:play{volume=0.9}
-        -- create_flame(self, self.x, self.y, self.target.x, self.target.y)
+        -- shoot1:play{volume=0.9}
+        -- create_missile(self.x, self.y, random_in_radius(self.target.x, self.target.y, 30))
+        fire1:play{volume=0.9}
+        create_flame(self, self.x, self.y, self.target.x, self.target.y)
       end
     end, nil, nil, 'shoot')
 
