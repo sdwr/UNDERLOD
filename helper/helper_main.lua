@@ -24,6 +24,10 @@ function helper_draw()
     draw_flames()
     draw_missiles()
     draw_damage_circles()
+    draw_laser_aims()
+    draw_damage_lines()
+
+    draw_enemy_damage_circles()
 end
 
 
@@ -43,13 +47,35 @@ function helper_update()
     past_time = love.timer.getTime()
 
     run_intervals()
-    
+    run_waits()
+    get_last_target_location()
+
+
+
     update_flame_target_location()
     end_flame()
+
     update_missile_pos()
     missile_explode()
+    
     damage_enemies_inside_damage_circles()
     delete_damage_circles()
+
+    shoot_lasers()
+
+    damage_enemies_inside_damage_lines()
+    delete_damage_lines()
+
+
+
+    local mousex, mousey = love.mouse.getPosition()
+    mousex = mousex / sx
+    mousey = mousey / sx
+    if love.keyboard.isDown( "d" ) then
+        create_enemy_damage_circle(mousex, mousey)
+    end   
+    damage_enemies_inside_enemy_damage_circles()
+    delete_enemy_damage_circles()
 end
 
 

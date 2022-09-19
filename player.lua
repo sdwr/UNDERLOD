@@ -2995,12 +2995,19 @@ function Troop:set_character()
 
   elseif self.character == 'archer' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['ultra-long'])
-    self.t:cooldown(attack_speeds['medium'], self:in_range(), function()
+    self.t:cooldown(3, self:in_range(), function()
       if self.target then
         -- shoot1:play{volume=0.9}
         -- create_missile(self.x, self.y, random_in_radius(self.target.x, self.target.y, 30))
-        fire1:play{volume=0.9}
-        create_flame(self, self.x, self.y, self.target.x, self.target.y)
+
+        -- fire1:play{volume=0.9}
+        -- create_flame(self, self.x, self.y, self.target.x, self.target.y)
+
+        sniper_load:play{volume=0.9}
+        create_laser(1, 100, self)
+
+        -- sniper_load:play{volume=0.9}
+        -- spread_laser(self)
       end
     end, nil, nil, 'shoot')
 

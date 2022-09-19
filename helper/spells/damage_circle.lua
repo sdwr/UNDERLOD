@@ -1,5 +1,5 @@
 damage_circle_radius = 20
-damage_circle_duration = 3
+damage_circle_duration = 0.5
 damage_circles = {}
 
 function create_damage_circle(x, y)
@@ -25,7 +25,7 @@ function damage_enemies_inside_damage_circles()
             local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
             for _, enemy in ipairs(enemies) do
                 if distance(damage_circle.x, damage_circle.y, enemy.x, enemy.y) < damage_circle_radius then
-                    enemy:hit(30)
+                    enemy:hit(50)
                     HitCircle{group = main.current.effects, x = enemy.x, y = enemy.y, rs = 6, color = fg[0], duration = 0.1}
                     for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = blue[0]} end
                     for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = enemy.color} end

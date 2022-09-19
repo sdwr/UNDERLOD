@@ -70,6 +70,7 @@ function missile_explode()
         if distance(missile.x, missile.y, missile.targetx, missile.targety) < missile_explode_range then
             create_damage_circle(missile.targetx, missile.targety)
             table.remove(missiles, i)
+            shoot1:play{volume=0.9}
         end
     end
 end

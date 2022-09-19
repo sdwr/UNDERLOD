@@ -39,12 +39,8 @@ function damage_enemy_in_flames()
 end
 
 function update_flame_target_location()
-    local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
-
-    if #enemies ~= 0 then
-        for __, flame in ipairs(flames) do
-            flame.enemyx, flame.enemyy = get_nearest_target(flame.parent.x, flame.parent.y)
-        end
+    for __, flame in ipairs(flames) do
+        flame.enemyx, flame.enemyy = get_nearest_target_location(flame.parent.x, flame.parent.y)
     end
 end
 

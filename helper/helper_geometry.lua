@@ -84,3 +84,78 @@ function random_in_radius(x, y, radius)
 
     return newx, newy
 end
+
+
+
+function distance_from_line(x, y, linex1, liney1, linex2, liney2)
+    local a = (liney2 - liney1) / (linex2 - linex1)
+    local b = -1
+    local c = -a * linex1 + liney1
+
+    return math.abs(a*x + b*y + c) / math.sqrt(a^2 + b^2)
+end
+
+function get_point_on_line(x, y, linex1, liney1, linex2, liney2)
+    local a = (liney2 - liney1) / (linex2 - linex1)
+    local b = -1
+    local c = -a * linex1 + liney1
+
+    return (b^2*x - a*b*y - a*c) / (a^2 + b^2), (a^2*y - a*b*x - b*c) / (a^2 + b^2)
+end
+
+function point_on_line_is_part_of_line(x, y, linex1, liney1, linex2, liney2)
+    local pointx = 0
+    local pointy = 0
+    pointx, pointy = get_point_on_line(x, y, linex1, liney1, linex2, liney2)
+
+    return is_inside_rectangle(pointx, pointy, linex1, liney1, linex2, liney2)
+end
+
+function is_on_line(x, y, linex1, liney1, linex2, liney2, line_width)
+    if distance_from_line(x, y, linex1, liney1, linex2, liney2) < line_width / 2
+    and point_on_line_is_part_of_line(x, y, linex1, liney1, linex2, liney2) then
+        return true
+    else
+        return false
+    end
+end
+
+
+
+function is_inside_rectangle(x, y, pointx1, pointy1, pointx2, pointy2)
+    local result = true
+
+    if pointx1 > pointx2 then
+        if x > pointx1 or x < pointx2 then
+            result = false
+        end
+    else
+        if x < pointx1 or x > pointx2 then
+            result = false
+        end
+    end
+
+    if pointy1 > pointy2 then
+        if y > pointy1 or y < pointy2 then
+            result = false
+        end
+    else
+        if y < pointy1 or y > pointy2 then
+            result = false
+        end
+    end
+
+    return result
+end
+
+
+
+function rotate_point(x, y, centerx, centery, angle)
+    angle = math.rad(angle)
+    x = x - centerx
+    y = y - centery
+    local rotatedx = x * math.cos(angle) - y * math.sin(angle) + centerx
+    local rotatedy = x * math.sin(angle) + y * math.cos(angle) + centery
+
+    return rotatedx, rotatedy
+end
