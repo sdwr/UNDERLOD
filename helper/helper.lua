@@ -20,7 +20,7 @@ end
 
 
 function helper_draw()
-    love.graphics.setColor(255 / 255, 82 / 255, 76 / 255, 0.5)
+    love.graphics.setColor(51 / 255, 153 / 255, 255 / 255, 0.5)
     draw_flames()
     draw_missiles()
     draw_damage_circles()

@@ -34,12 +34,12 @@ function draw_triangle_from_height_and_width(x, y, xh, yh, height, width)
     love.graphics.polygon( 'fill', x1, y1, x2, y2, x3, y3)
 end
 
-function is_insile_triangle(x0, y0, x1, y1, x2, y2, x3, y3)
+function is_inside_triangle(x0, y0, x1, y1, x2, y2, x3, y3)
     local function sign (p1, p2, p3)
         return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
     end
 
-    local function is_insile_triangle(pt, v1, v2, v3)
+    local function is_inside_triangle(pt, v1, v2, v3)
         local d1, d2, d3;
         local has_neg, has_pos;
 
@@ -62,7 +62,7 @@ function is_insile_triangle(x0, y0, x1, y1, x2, y2, x3, y3)
         return result
     end
 
-    return is_insile_triangle({x = x0, y = y0}, {x = x1, y = y1}, {x = x2, y = y2}, {x = x3, y = y3})
+    return is_inside_triangle({x = x0, y = y0}, {x = x1, y = y1}, {x = x2, y = y2}, {x = x3, y = y3})
 end
 
 
