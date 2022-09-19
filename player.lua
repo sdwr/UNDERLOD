@@ -2997,8 +2997,8 @@ function Troop:set_character()
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
     self.t:cooldown(attack_speeds['medium'], self:in_range(), function()
       if self.target then
-        pyro1:play{volume=0.9}
-        create_flame(self.x, self.y, self.target.x, self.target.y)
+        fire1:play{volume=0.9}
+        create_flame(self, self.x, self.y, self.target.x, self.target.y)
       end
     end, nil, nil, 'shoot')
 
