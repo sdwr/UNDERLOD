@@ -1,3 +1,5 @@
+past_time = 0
+delta_time = 0
 intervals = {}
 
 function set_interval(delay, intervalfunction)

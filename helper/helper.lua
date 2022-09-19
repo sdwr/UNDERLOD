@@ -9,6 +9,9 @@ helper_initialized = false
 
 
 function helper_init()
+    past_time = love.timer.getTime()
+    math.randomseed(love.timer.getTime())
+
     set_interval(0.5, function() 
         damage_enemy_in_flames() 
     end)
@@ -19,6 +22,8 @@ end
 function helper_draw()
     love.graphics.setColor(255 / 255, 82 / 255, 76 / 255, 0.5)
     draw_flames()
+    draw_missiles()
+    draw_damage_circles()
 end
 
 
@@ -34,9 +39,16 @@ function helper_update()
         helper_initialized = true
     end
 
+    delta_time = love.timer.getTime() - past_time
+    past_time = love.timer.getTime()
+
     run_intervals()
     
     end_flame()
+    update_missile_pos()
+    missile_explode()
+    damage_enemies_inside_damage_circles()
+    delete_damage_circles()
 end
 
 

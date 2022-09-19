@@ -29,14 +29,10 @@ function get_triangle_from_height_and_width(x, y, xh, yh, height, width)
     return x, y, x2, y2, x3, y3
 end
 
-
-
 function draw_triangle_from_height_and_width(x, y, xh, yh, height, width)
     local x1, y1, x2, y2, x3, y3 = get_triangle_from_height_and_width(x, y, xh, yh, height, width)
     love.graphics.polygon( 'fill', x1, y1, x2, y2, x3, y3)
 end
-
-
 
 function is_insile_triangle(x0, y0, x1, y1, x2, y2, x3, y3)
     local function sign (p1, p2, p3)
@@ -67,4 +63,24 @@ function is_insile_triangle(x0, y0, x1, y1, x2, y2, x3, y3)
     end
 
     return is_insile_triangle({x = x0, y = y0}, {x = x1, y = y1}, {x = x2, y = y2}, {x = x3, y = y3})
+end
+
+
+
+function distance(x1, y1, x2, y2)
+    return math.sqrt((x1 - x2)^2 + (y1 - y2)^2)
+end
+
+
+
+function random_in_radius(x, y, radius)
+    local newx = -10000
+    local newy = -10000
+
+    while distance(x, y, newx, newy) > radius do
+        newx = math.random(x - radius, x + radius)
+        newy = math.random(y - radius, y + radius)
+    end
+
+    return newx, newy
 end
