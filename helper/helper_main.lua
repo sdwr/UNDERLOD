@@ -1,5 +1,5 @@
 require 'helper/helper_geometry'
-require 'helper/helper_spell'
+require 'helper/spells/helper_spell_main'
 require 'helper/helper_time'
 
 
