@@ -22,13 +22,17 @@ web build (take out sound?)
 GAMEPLAY TUNING:
 --------------
 enemy summoners are too good, either kill them right away or lose to the summons
-rounds are too fast? 
+rounds are too fast, multiple waves? 
 
 think about build variety:
   tanky melee
   squishy ranged
   aoe vs single target
   summoner
+
+make table of enemy hp vs unit damage 
+don't go blind into balancing
+make sure later waves have enough threats to be able to cast a few spells (can't kill every enemy at start)
 
 ------------------
 ADDITIONS:
