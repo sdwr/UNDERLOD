@@ -7,6 +7,7 @@ require 'objects'
 require 'player'
 require 'enemies'
 require 'media'
+require 'spawnmanager'
 
 
 function init()
@@ -122,12 +123,16 @@ function init()
   rogue_crit1 = Sound('Dagger Stab (Flesh) 4.ogg', s)
   rogue_crit2 = Sound('Sword hits another sword 6.ogg', s)
   
-  song1 = Sound('gunnar-1.mp3', {tags = {music}})
-  song2 = Sound('gunnar-2-wail.mp3', {tags = {music}})
-  song3 = Sound('Kubbi - Ember - 03 Firelight.ogg', {tags = {music}})
-  song4 = Sound('Kubbi - Ember - 04 Cascade.ogg', {tags = {music}})
-  song5 = Sound('Kubbi - Ember - 05 Compass.ogg', {tags = {music}})
-  death_song = Sound('Kubbi - Ember - 09 Formed by Glaciers.ogg', {tags = {music}})
+  song1 = Sound('gunnar - 26 hours and I feel Fine.mp3', {tags = {music}})
+  song2 = Sound('gunnar - Back On Track.mp3', {tags = {music}})
+  song3 = Sound('gunnar - Chrysalis.mp3', {tags = {music}})
+  song4 = Sound('gunnar - Fingers.mp3', {tags = {music}})
+  song5 = Sound('gunnar - Jam 32 Melancholy.mp3', {tags = {music}})
+  song6 = Sound('gunnar - Make It Rain.mp3', {tags = {music}})
+  song7 = Sound('gunnar - Mammon.mp3', {tags = {music}})
+  song8 = Sound('gunnar - Up To The Brink.mp3', {tags = {music}})
+  death_song = nil
+
 
   lock_image = Image('lock')
   speed_booster_elite = Image('speed_booster_elite')
@@ -1102,6 +1107,7 @@ function init()
     [1] = {'smallsword'},
     [2] = {'medsword'},
     [3] = {'largesword'},
+    [4] = {'largesword'},
   }
 
   attack_ranges = {

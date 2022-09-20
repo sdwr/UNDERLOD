@@ -6,6 +6,7 @@ BUGS:
 combat:
 shouldn't be able to push bosses with units
 should be able to hit enemies without needing to hit the exact center (mainly problem with bosses)
+necromancers (+healers?) all target same corpse/unit
 
 items:
 no item tooltip when hovering in inv
@@ -76,6 +77,11 @@ items:
 enemies
   a̶d̶d̶ ̶t̶e̶l̶e̶g̶r̶a̶p̶h̶e̶d̶ ̶m̶e̶l̶e̶e̶ ̶s̶t̶o̶m̶p̶ ̶t̶y̶p̶e̶
  ̶ ̶a̶d̶d̶ ̶s̶u̶m̶m̶o̶n̶e̶r̶
+
+  add laser enemy
+  add star projectile enemy (shoots projectiles in 6 directions at same time)
+  add annoying flyers (circle around the arena, tiny projectiles that do not too much damage, small hitbox?, don't collide with objects)
+  add horde-type summoner (lots of little fast summons)
 
   add leapers
   add homing missiler

@@ -136,142 +136,7 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
 
   self:add_troops()
 
-  if self.level == 1000 then
-    self.level_1000_text = Text2{group = self.ui, x = gw/2, y = gh/2, lines = {{text = '[fg, wavy_mid]UNDERLOD', font = fat_font, alignment = 'center'}}}
-  
-  else
-    -- Set win condition and enemy spawns
-    self.win_condition = 'wave'
-    self.level_to_max_waves = {
-      2, 3, 4,
-      3, 4, 4, 5,
-      5, 5, 5, 5, 7,
-      6, 6, 7, 7, 8, 10,
-      8, 8, 10, 12, 14, 16, 25,
-    }
-    for i = 26, 5000 do
-      local n = i % 25
-      if n == 0 then n = 25 end
-      self.level_to_max_waves[i] = self.level_to_max_waves[n]
-    end
-    self.level_to_distributed_enemies_chance = {
-      0, 5, 10,
-      10, 15, 15, 20,
-      20, 20, 20, 20, 25,
-      25, 25, 25, 25, 25, 30,
-      20, 25, 30, 35, 40, 45, 50,
-    }
-    self.level_to_num_rares = {
-      0, 1, 2, 3, 3, 0, 
-      3, 4, 5, 5, 0, 
-      2, 3, 3, 4, 0,
-    }
-    self.level_to_num_enemies = {
-      4, 6, 6, 8, 8, 0,
-      8, 8, 8, 8, 0,
-      8, 8, 8, 6, 0
-    }
-    for i = 26, 5000 do
-      local n = i % 25
-      if n == 0 then n = 25 end
-      self.level_to_distributed_enemies_chance[i] = self.level_to_distributed_enemies_chance[n]
-    end
-    self.max_waves = 1
-    self.wave = 0
-    self.start_time = 3
-    self.t:after(1, function()
-      self.t:every(1, function()
-        if self.start_time > 1 then alert1:play{volume = 0.5} end
-        self.start_time = self.start_time - 1
-        self.hfx:use('condition1', 0.25, 200, 10)
-      end, 3, function()
-        alert1:play{pitch = 1.2, volume = 0.5}
-        camera:shake(4, 0.25)
-        SpawnEffect{group = self.effects, x = gw * 0.7, y = gh/2 - 48}
-        local x, y = gw * 0.7, gh/2
-        if self.level == 6 or self.level == 11 or self.level == 16 or self.level == 21 or self.level == 25 then
-          local boss_name = nil
-          SpawnMarker{group = self.effects, x = x, y = y}
-          if self.level == 6 then
-            boss_name = 'stompy'
-          elseif self.level == 11 then
-            boss_name = 'dragon'
-          elseif self.level == 16 then
-            boss_name = 'heigan'
-          end
-          self.t:after(1.5, function() self:spawn_boss({x = x, y = y, name = boss_name}); self.wave = self.wave + 1 end)
-        else
-          SpawnMarker{group = self.effects, x = x, y = y}
-          self.t:after(1.125, function() self:spawn_n_enemies({x = x, y = y}, nil, self.level_to_num_enemies[self.level]); self.wave = self.wave + 1 end)
-          local x, y = gw * 0.8, gh/2
-          self.t:after(2.5, function() self:spawn_n_rares({x = x, y = y}, nil, self.level_to_num_rares[self.level]) end)
-        end
-
-
-      end)
-      self.t:every(function() return #self.main:get_objects_by_classes(self.enemies) <= 0 and self.wave >= self.max_waves and not self.quitting and not self.spawning_enemies end, function() self:quit() end)
-    end)
-
-    if self.level == 20 and self.trailer then
-      Text2{group = self.ui, x = gw/2, y = gh/2 - 24, lines = {{text = '[fg, wavy]UNDERLOD', font = fat_font, alignment = 'center'}}}
-      Text2{group = self.ui, x = gw/2, y = gh/2, sx = 0.5, sy = 0.5, lines = {{text = '[fg, wavy_mid]play now!', font = fat_font, alignment = 'center'}}}
-      Text2{group = self.ui, x = gw/2, y = gh/2 + 24, sx = 0.5, sy = 0.5, lines = {{text = '[light_bg, wavy_mid]music: kubbi - ember', font = fat_font, alignment = 'center'}}}
-    end
-  end
-
-  if self.level == 1 then
-    local t1 = Text2{group = self.floor, x = gw/2, y = gh/2 + 2, sx = 0.6, sy = 0.6, lines = {{text = '[light_bg]LMB - move selected units', font = fat_font, alignment = 'center'}}}
-    local t2 = Text2{group = self.floor, x = gw/2, y = gh/2 + 18, lines = {{text = '[light_bg]RMB - rally selected units', font = pixul_font, alignment = 'center'}}}
-    local t3 = Text2{group = self.floor, x = gw/2, y = gh/2 + 46, sx = 0.6, sy = 0.6, lines = {{text = '[light_bg]SPACE - move all units', font = fat_font, alignment = 'center'}}}
-    t1.t:after(8, function() t1.t:tween(0.2, t1, {sy = 0}, math.linear, function() t1.sy = 0 end) end)
-    t2.t:after(8, function() t2.t:tween(0.2, t2, {sy = 0}, math.linear, function() t2.sy = 0 end) end)
-    t3.t:after(8, function() t3.t:tween(0.2, t3, {sy = 0}, math.linear, function() t3.sy = 0 end) end)
-  end
-
-  -- Calculate class levels
-  local units = {}
-
-  self.t:every(0.375, function()
-    local p = random:table(star_positions)
-    Star{group = star_group, x = p.x, y = p.y}
-  end)
-
-  self.enemy_spawns_prevented = 0
-  self.t:every(8, function()
-    if self.died then return end
-    if self.arena_clear_text then return end
-    if self.quitting then return end
-    if self.spawning_enemies then return end
-    if self.won then return end
-    if self.choosing_passives then return end
-
-    local n = self.enemy_spawns_prevented
-    if math.floor(n/4) <= 0 then return end
-    self.spawning_enemies = true
-    local spawn_points = table.copy(self.spawn_points)
-    self.t:after({0, 0.2}, function()
-      local p = random:table_remove(spawn_points)
-      SpawnMarker{group = self.effects, x = p.x, y = p.y}
-      self.t:after(1.125, function() self:spawn_n_enemies(p, 1, math.floor(n/4), true) end)
-    end)
-    self.t:after({0, 0.2}, function()
-      local p = random:table_remove(spawn_points)
-      SpawnMarker{group = self.effects, x = p.x, y = p.y}
-      self.t:after(1.125, function() self:spawn_n_enemies(p, 2, math.floor(n/4), true) end)
-    end)
-    self.t:after({0, 0.2}, function()
-      local p = random:table_remove(spawn_points)
-      SpawnMarker{group = self.effects, x = p.x, y = p.y}
-      self.t:after(1.125, function() self:spawn_n_enemies(p, 3, math.floor(n/4), true) end)
-    end)
-    self.t:after({0, 0.2}, function()
-      local p = random:table_remove(spawn_points)
-      SpawnMarker{group = self.effects, x = p.x, y = p.y}
-      self.t:after(1.125, function() self:spawn_n_enemies(p, 4, math.floor(n/4), true) end)
-    end)
-    self.t:after(1.125 + math.floor(n/4)*0.25, function() self.spawning_enemies = false end, 'spawning_enemies')
-    self.enemy_spawns_prevented = 0
-  end)
+  manage_spawns(self)
 end
 
 function Arena:spawn_critters(parent, n)
@@ -326,7 +191,7 @@ end
 
 function Arena:update(dt)
   if main_song_instance:isStopped() then
-    main_song_instance = _G[random:table{'song1', 'song2'}]:play{volume = 0.5}
+    main_song_instance = _G[random:table{'song1', 'song2', 'song3', 'song4', 'song5', 'song6', 'song7', 'song8'}]:play{volume = 0.5}
   end
 
   if not self.paused and not self.died and not self.won then

@@ -4,13 +4,17 @@ function GameState:init(...)
 end
 
 
+buyScreen = nil
+
 BuyScreen = Object:extend()
 BuyScreen:implement(State)
 BuyScreen:implement(GameObject)
 function BuyScreen:init(name)
   self:init_state(name)
   self:init_game_object()
+  buyScreen = self
 end
+
 
 
 function BuyScreen:on_exit()
@@ -190,7 +194,7 @@ function BuyScreen:on_enter(from, level, loop, units, max_units, passives, shop_
   trigger:tween(1, main_song_instance, {volume = 0.2, pitch = 1}, math.linear)
 
   locked_state = {locked = self.locked, cards = {self.cards[1] and self.cards[1].unit, self.cards[2] and self.cards[2].unit, self.cards[3] and self.cards[3].unit}} 
-  self:save_run()
+  buyScreen:save_run()
 end
 
 
@@ -580,7 +584,7 @@ function ArenaLevelButton:update(dt)
     end
     self.parent:set_level_text()
     system.save_state()
-    self.parent:save_run()
+    buyScreen:save_run()
   end
 end
 
@@ -885,7 +889,7 @@ function GoButton:update(dt)
       ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
       ui_transition1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
       self.transitioning = true
-      self.parent:save_run()
+      buyScreen:save_run()
       TransitionEffect{group = main.transitions, x = self.x, y = self.y, color = state.dark_transitions and bg[-2] or character_colors[random:table(self.parent.units).character], transition_action = function()
         main:add(Arena'arena')
         main:go_to('arena', self.parent.level, self.parent.loop, self.parent.units, self.parent.max_units, self.parent.passives, self.parent.shop_level, self.parent.shop_xp, self.parent.locked)
@@ -941,7 +945,7 @@ function LockButton:update(dt)
     if not self.parent.locked then locked_state = nil end
     if self.parent.locked then
       locked_state = {locked = true, cards = {self.parent.cards[1] and self.parent.cards[1].unit, self.parent.cards[2] and self.parent.cards[2].unit, self.parent.cards[3] and self.parent.cards[3].unit}}
-      self.parent:save_run()
+      buyScreen:save_run()
     end
     ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     self.selected = true
@@ -1022,7 +1026,7 @@ function LevelButton:update(dt)
       gold = gold - 5
       self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
       self.text = Text({{text = '[bg10]' .. tostring(self.parent.shop_level), font = pixul_font, alignment = 'center'}}, global_text_tags)
-      self.parent:save_run()
+      buyScreen:save_run()
     end
   end
 
@@ -1052,7 +1056,7 @@ function LevelButton:update(dt)
       gold = gold - 10
       self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
       self.text = Text({{text = '[bg10]' .. tostring(self.parent.shop_level), font = pixul_font, alignment = 'center'}}, global_text_tags)
-      self.parent:save_run()
+      buyScreen:save_run()
     end
   end
 end
@@ -1189,7 +1193,7 @@ function RerollButton:update(dt)
         self.spring:pull(0.2, 200, 10)
         gold = gold - 2
         self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
-        self.parent:save_run()
+        buyScreen:save_run()
       end
     elseif self.parent:is(Arena) then
       if gold < 5 and not self.free_reroll then
@@ -1351,7 +1355,7 @@ function MaxUnitButton:update(dt)
       gold = gold - self.cost
       self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
       self.parent.party_text:set_text({{text = '[wavy_mid, fg]party ' .. tostring(#self.parent.units) .. '/' .. tostring(self.parent.max_units), font = pixul_font, alignment = 'center'}})
-      self.parent:save_run()
+      buyScreen:save_run()
       self.parent:set_party()
     end
   end
@@ -1472,13 +1476,13 @@ function ItemPart:update(dt)
         active:addItem(self:getItem())
         self:removeItem()
       end
-      self.parent.parent:save_run()
+      buyScreen:save_run()
     end
   end
 
   if input.m2.released and not self.itemGrabbed and self:isActiveInvSlot() and self:hasItem() then
     self:removeItem()
-    self.parent.parent:save_run()
+    buyScreen:save_run()
   end
 
   if self.cant_click then return end
@@ -1662,14 +1666,14 @@ function CharacterPart:update(dt)
       self.parent:set_party()
       self.parent:refresh_cards()
       self.parent.party_text:set_text({{text = '[wavy_mid, fg]party ' .. tostring(#self.parent.units) .. '/' .. tostring(self.parent.max_units), font = pixul_font, alignment = 'center'}})
-      self.parent.parent:save_run()
+      buyScreen:save_run()
     else
       self.parent.parent:gain_gold(self:get_sale_price())
       self.parent.parent.units[self.i].reserve[self.level] = self.parent.parent.units[self.i].reserve[self.level] - 1
       self:die()
       self.parent.parent:set_party()
       self.parent.parent:refresh_cards()
-      self.parent.parent:save_run()
+      buyScreen:save_run()
     end
   end
 
@@ -1901,7 +1905,7 @@ function ItemCard:update(dt)
       self.parent.active_inventory_slot:addItem(self.item)
       gold = gold - self.cost
       self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
-      system.save_run(self.parent.level, self.parent.loop, gold, self.parent.units, self.parent.max_units, self.parent.passives, self.parent.shop_level, self.parent.shop_xp, run_passive_pool, locked_state)
+      buyScreen:save_run()
       self:die()
     else
       self.x = self.origX
@@ -2030,7 +2034,7 @@ function ShopCard:update(dt)
       self.parent:refresh_cards()
       self.parent.party_text:set_text({{text = '[wavy_mid, fg]party ' .. tostring(#self.parent.units) .. '/' .. tostring(self.parent.max_units), font = pixul_font, alignment = 'center'}})
       locked_state = {locked = self.parent.locked, cards = {self.parent.cards[1] and self.parent.cards[1].unit, self.parent.cards[2] and self.parent.cards[2].unit, self.parent.cards[3] and self.parent.cards[3].unit}} 
-      system.save_run(self.parent.level, self.parent.loop, gold, self.parent.units, self.parent.max_units, self.parent.passives, self.parent.shop_level, self.parent.shop_xp, run_passive_pool, locked_state)
+      buyScreen:save_run()
     else
       error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
       self.spring:pull(0.2, 200, 10)
