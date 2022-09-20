@@ -8,8 +8,7 @@ shouldn't be able to push bosses with units
 should be able to hit enemies without needing to hit the exact center (mainly problem with bosses)
 
 items:
-can't move items between inv slots
-inv doesn't move with units when changing order in list
+no item tooltip when hovering in inv
 items too big coming from shop
 saving/enter arena with item on cursor?
 

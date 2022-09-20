@@ -1387,6 +1387,29 @@ function MaxUnitButton:die()
   end
 end
 
+LooseItem = Object:extend()
+LooseItem:implement(GameObject)
+function LooseItem:init(args)
+  self:init_game_object(args)
+  self.shape = Rectangle(self.x, self.y, self.sx * 20, self.sy * 20)
+  self.interact_with_mouse = false
+end
+
+function LooseItem:update(dt)
+  self:update_game_object(dt)
+  self.x, self.y = camera:get_mouse_position()
+  self.shape:move_to(self.x, self.y)
+end
+
+function LooseItem:draw()
+  item_images[self.item]:draw(self.x, self.y, 0, 0.2, 0.2)
+
+end
+
+function LooseItem:die()
+  self.dead = true
+end
+
 ItemPart = Object:extend()
 ItemPart:implement(GameObject)
 function ItemPart:init(args)
@@ -1394,6 +1417,7 @@ function ItemPart:init(args)
   self.shape = Rectangle(self.x, self.y, self.sx * 20, self.sy * 20)
   self.interact_with_mouse = true
   self.itemGrabbed = false
+  self.looseItem = nil
 
   self.spring:pull(0.2, 200, 10)
   self.just_created = true
@@ -1423,29 +1447,33 @@ end
 function ItemPart:update(dt)
   self:update_game_object(dt)
 
-  if input.m1.pressed and self.colliding_with_mouse and self:hasItem() then
-    self.itemGrabbed = true
+  if self.colliding_with_mouse then
+    self.parent.parent.active_inventory_slot = self
+  elseif self.parent.parent.active_inventory_slot == self then
+    self.parent.parent.active_inventory_slot = nil
   end
 
-  if input.m1.released and self.itemGrabbed and self.parent.parent.active_inventory_slot and not self:isActiveInvSlot() and self:hasItem() then
-    local active = self.parent.parent.active_inventory_slot
-    if active:hasItem() then
-      local temp = active:getItem()
-      active:addItem(self:getItem())
-      self:addItem(temp)
-      self.parent.parent:save_run()
-    else
-      active:addItem(self:getItem())
-      self:removeItem()
-      self.parent.parent:save_run()
-    end
-    print("moved item and saved!")
-
+  if input.m1.pressed and self.colliding_with_mouse and self:hasItem() then
+    self.itemGrabbed = true
+    self.looseItem = LooseItem{group = self.parent.parent.main, item = self:getItem(), parent = self}
   end
 
   if self.itemGrabbed and input.m1.released then
-    print("release")
-    self.grabbed = false
+    self.itemGrabbed = false
+    self.looseItem:die()
+    self.looseItem = nil
+    local active = self.parent.parent.active_inventory_slot
+    if active and not self:isActiveInvSlot() then
+      if active:hasItem() then
+        local temp = active:getItem()
+        active:addItem(self:getItem())
+        self:addItem(temp)
+      else
+        active:addItem(self:getItem())
+        self:removeItem()
+      end
+      self.parent.parent:save_run()
+    end
   end
 
   if input.m2.released and not self.itemGrabbed and self:isActiveInvSlot() and self:hasItem() then
@@ -1463,19 +1491,16 @@ function ItemPart:draw(y)
     print("what is y doing here!?")
     print(y)
   end
-  graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
-  local item = self.parent.unit.items[self.i]
-  graphics.rectangle(self.x, self.y, 14, 14, 3, 3, bg[3])
-  graphics.rectangle(self.x, self.y, 10, 10, 3, 3, bg[5])
-  if item then
-    if self.itemGrabbed then
-      local x, y = camera:get_mouse_position()
-      item_images[item]:draw(x, y, 0, 0.2, 0.2)
-    else
+  if not self.parent.grabbed then
+    graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
+    local item = self.parent.unit.items[self.i]
+    graphics.rectangle(self.x, self.y, 14, 14, 3, 3, bg[3])
+    graphics.rectangle(self.x, self.y, 10, 10, 3, 3, bg[5])
+    if item and not self.itemGrabbed then
       item_images[item]:draw(self.x, self.y, 0, 0.2, 0.2)
     end
+    graphics.pop()
   end
-  graphics.pop()
 end
 
 function ItemPart:die()
@@ -1493,7 +1518,6 @@ end
 function ItemPart:on_mouse_enter()
   ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
   self.selected = true
-  self.parent.parent.active_inventory_slot = self
   self.spring:pull(0.2, 200, 10)
   --[[
   self.info_text = InfoText{group = main.current.ui, force_update = self.force_update}
@@ -1510,9 +1534,9 @@ function ItemPart:on_mouse_enter()
   ]]--
 end
 
+--BUG: calls as soon as entered sometimes
 function ItemPart:on_mouse_exit()
   self.selected = false
-  self.parent.parent.active_inventory_slot = nil
   if self.info_text then
     self.info_text:deactivate()
     self.info_text.dead = true
@@ -1574,6 +1598,12 @@ function CharacterPart:init(args)
   self.t:after(0.1, function() self.just_created = false end)
 end
 
+function CharacterPart:close_info_text()
+  self.info_text:deactivate()
+  self.info_text.dead = true
+  self.info_text = nil
+end
+
 
 function CharacterPart:update(dt)
   self:update_game_object(dt)
@@ -1584,6 +1614,7 @@ function CharacterPart:update(dt)
     if input.m1.pressed and self.colliding_with_mouse then
       self.grabbed = true
       self.parent.unit_grabbed = self
+      self:close_info_text()
     end
 
     if self.grabbed and input.m1.released then
@@ -1675,17 +1706,19 @@ function CharacterPart:on_mouse_enter()
   ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
   self.selected = true
   self.spring:pull(0.2, 200, 10)
-  self.info_text = InfoText{group = main.current.ui, force_update = self.force_update}
-  self.info_text:activate({
-    {text = '[' .. character_color_strings[self.character] .. ']' .. self.character:capitalize() .. '[fg] - [yellow]Lv.' .. self.level .. '[fg], tier [yellow]' .. character_tiers[self.character] .. '[fg] - sells for [yellow]' ..
-      self:get_sale_price(), font = pixul_font, alignment = 'center', height_multiplier = 1.25},
-    {text = '[fg]Classes: ' .. character_class_strings[self.character], font = pixul_font, alignment = 'center', height_multiplier = 1.25},
-    {text = character_descriptions[self.character](self.level), font = pixul_font, alignment = 'center', height_multiplier = 2},
-    {text = '[' .. (self.level == 3 and 'yellow' or 'light_bg') .. ']Lv.3 [' .. (self.level == 3 and 'fg' or 'light_bg') .. ']Effect - ' .. 
-      (self.level == 3 and character_effect_names[self.character] or character_effect_names_gray[self.character]), font = pixul_font, alignment = 'center', height_multiplier = 1.25},
-    {text = (self.level == 3 and character_effect_descriptions[self.character]() or character_effect_descriptions_gray[self.character]()), font = pixul_font, alignment = 'center'},
-  }, nil, nil, nil, nil, 16, 4, nil, 2)
-  self.info_text.x, self.info_text.y = gw/2, gh/2 + 10
+  if not self.parent.unit_grabbed then
+    self.info_text = InfoText{group = main.current.ui, force_update = self.force_update}
+    self.info_text:activate({
+      {text = '[' .. character_color_strings[self.character] .. ']' .. self.character:capitalize() .. '[fg] - [yellow]Lv.' .. self.level .. '[fg], tier [yellow]' .. character_tiers[self.character] .. '[fg] - sells for [yellow]' ..
+        self:get_sale_price(), font = pixul_font, alignment = 'center', height_multiplier = 1.25},
+      {text = '[fg]Classes: ' .. character_class_strings[self.character], font = pixul_font, alignment = 'center', height_multiplier = 1.25},
+      {text = character_descriptions[self.character](self.level), font = pixul_font, alignment = 'center', height_multiplier = 2},
+      {text = '[' .. (self.level == 3 and 'yellow' or 'light_bg') .. ']Lv.3 [' .. (self.level == 3 and 'fg' or 'light_bg') .. ']Effect - ' .. 
+        (self.level == 3 and character_effect_names[self.character] or character_effect_names_gray[self.character]), font = pixul_font, alignment = 'center', height_multiplier = 1.25},
+      {text = (self.level == 3 and character_effect_descriptions[self.character]() or character_effect_descriptions_gray[self.character]()), font = pixul_font, alignment = 'center'},
+    }, nil, nil, nil, nil, 16, 4, nil, 2)
+    self.info_text.x, self.info_text.y = gw/2, gh/2 + 10
+  end
 
   --[[
   if self.parent:is(BuyScreen) then
@@ -1714,10 +1747,8 @@ end
 function CharacterPart:on_mouse_exit()
   self.selected = false
   if self.info_text then
-    self.info_text:deactivate()
-    self.info_text.dead = true
+    self:close_info_text()
   end
-  self.info_text = nil
 
   --[[
   if self.parent:is(BuyScreen) then
