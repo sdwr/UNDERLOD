@@ -1014,7 +1014,8 @@ function Arena:spawn_n_enemies(p, j, n, pass)
         local objects = self.main:get_objects_in_shape(check_circle, {Seeker, EnemyCritter, Critter, Player, Sentry, Automaton, Bomb, Volcano, Saboteur, Pet, Turret})
         if #objects > 0 then self.enemy_spawns_prevented = self.enemy_spawns_prevented + 1; return end
       end
-      Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'shooter', level = self.level}
+      local args = {group = self.main, x = x, y = y, level = self.level}
+      Spawn_Enemy('shooter', nil, args)
     end}
   end, n, function() self.spawning_enemies = false end, 'spawn_enemies_' .. j)
 end
@@ -1045,14 +1046,15 @@ function Arena:spawn_n_rares(p, j, n, pass)
       else
         elite_type = math.random(4)
       end
+      local args  = {group = self.main, x = x, y = y, level = self.level}
       if elite_type == 1 then
-        Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'stomper', level = self.level}
+        Spawn_Enemy('stomper', nil, args)
       elseif elite_type == 2 then
-        Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'mortar', level = self.level}
+        Spawn_Enemy('mortar', nil, args)
       elseif elite_type == 3 then
-        Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'summoner', level = self.level}
+        Spawn_Enemy('summoner', nil, args)
       elseif elite_type == 4 then
-        Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'assassin', level = self.level}
+        Spawn_Enemy('assassin', nil, args)
       end
     end}
   end, n, nil, 'spawn_rares_' .. j)
@@ -1061,7 +1063,8 @@ end
 
 function Arena:spawn_boss(p)
   local x, y = p.x, p.y
-  Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'boss', name = p.name, level = self.level}
+  local args = {group = self.main, x = x, y = y, level = self.level}
+  Spawn_Enemy('boss', p.name, args)
 end
 
 

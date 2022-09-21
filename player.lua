@@ -2100,12 +2100,9 @@ function Summon:spawn()
   spawn1:play{pitch = random:float(0.8, 1.2), volume = 0.15}
   if self.parent.summons < 4 then
     self.parent.summons = self.parent.summons + 1
-    Seeker{group = main.current.main, x= self.x + 10, y = self.y, character = 'seeker', type = 'rager', level = self.level, parent = self.parent}
+    local args ={group = main.current.main, x= self.x + 10, y = self.y, level = self.level, parent = self.parent}
+    Spawn_Enemy('rager', nil, args)
   end
-  --[[if self.parent.summons < 4 then
-    self.parent.summons = self.parent.summons + 1
-    Seeker{group = main.current.main, x= self.x - 10, y = self.y, character = 'seeker', type = 'rager', level = self.level, parent = self.parent}
-  end]]--
   self:recover()
 end
 
