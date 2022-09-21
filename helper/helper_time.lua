@@ -1,14 +1,16 @@
-past_time = 0
-delta_time = 0
+Helper.Time = {}
+
+Helper.Time.past_time = 0
+Helper.Time.delta_time = 0
 
 
 
-intervals = {}
+Helper.Time.intervals = {}
 
-function set_interval(delay, intervalfunction)
+function Helper.Time.set_interval(delay, intervalfunction)
     local id = -1
 
-    for _, interval in ipairs(intervals) do
+    for _, interval in ipairs(Helper.Time.intervals) do
         if interval.stopped then
             id = _
             break
@@ -16,7 +18,7 @@ function set_interval(delay, intervalfunction)
     end
 
     if id == -1 then
-        id = #intervals + 1
+        id = #Helper.Time.intervals + 1
     end
     
     local interval = {
@@ -27,17 +29,17 @@ function set_interval(delay, intervalfunction)
         stopped = false
     }
 
-    intervals[id] = interval
+    Helper.Time.intervals[id] = interval
 
     return id
 end
 
-function stop_interval(id)
-    intervals[id].stopped = true
+function Helper.Time.stop_interval(id)
+    Helper.Time.intervals[id].stopped = true
 end
 
-function run_intervals()
-    for _, interval in ipairs(intervals) do
+function Helper.Time.run_intervals()
+    for _, interval in ipairs(Helper.Time.intervals) do
         if love.timer.getTime() - interval.startat > interval.delay * interval.looped and not interval.stopped then
             interval.intervalfunction()
             interval.looped = interval.looped + 1
@@ -47,12 +49,12 @@ end
 
 
 
-waits = {}
+Helper.Time.waits = {}
 
-function wait(delay, waitfunction)
+function Helper.Time.wait(delay, waitfunction)
     local id = -1
 
-    for _, wait in ipairs(waits) do
+    for _, wait in ipairs(Helper.Time.waits) do
         if wait.finished then
             id = _
             break
@@ -60,7 +62,7 @@ function wait(delay, waitfunction)
     end
 
     if id == -1 then
-        id = #waits + 1
+        id = #Helper.Time.waits + 1
     end
     
     local wait = {
@@ -70,11 +72,11 @@ function wait(delay, waitfunction)
         finished = false
     }
 
-    waits[id] = wait
+    Helper.Time.waits[id] = wait
 end
 
-function run_waits()
-    for _, wait in ipairs(waits) do
+function Helper.Time.run_waits()
+    for _, wait in ipairs(Helper.Time.waits) do
         if love.timer.getTime() - wait.startat > wait.delay and not wait.finished then
             wait.waitfunction()
             wait.finished = true

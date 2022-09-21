@@ -1,35 +1,37 @@
-laser_aims_duration = 2
-lasers = {}
+Helper.Spell.Laser = {}
 
-function create_laser(laser_aim_width, damage, parent)
-    local laser = {
-        parent = parent,
-        start_aim_time = love.timer.getTime(),
-        directionx = 0,
-        directiony = 0,
-        direction_lock = false,
-        laser_aim_width = laser_aim_width,
-        damage = damage
-    }
+Helper.Spell.Laser.aims_duration = 2
+Helper.Spell.Laser.list = {}
 
-    table.insert(lasers, laser)
+function Helper.Spell.Laser.create(direction_lock, laser_aim_width, damage, parent, direction_targetx, direction_targety)
+    local laser = {}
+    
+    if not direction_lock then
+        laser = {
+            parent = parent,
+            start_aim_time = love.timer.getTime(),
+            direction_targetx = 0,
+            direction_targety = 0,
+            direction_lock = direction_lock,
+            laser_aim_width = laser_aim_width,
+            damage = damage
+        }
+    else
+        laser = {
+            parent = parent,
+            start_aim_time = love.timer.getTime(),
+            direction_targetx = direction_targetx - parent.x,
+            direction_targety = direction_targety - parent.y,
+            direction_lock = direction_lock,
+            laser_aim_width = laser_aim_width,
+            damage = damage
+        }
+    end
+
+    table.insert(Helper.Spell.Laser.list, laser)
 end
 
-function create_direction_lock_laser(laser_aim_width, damage, parent, targetx, targety)
-    local laser = {
-        parent = parent,
-        start_aim_time = love.timer.getTime(),
-        directionx = targetx - parent.x,
-        directiony = targety - parent.y,
-        direction_lock = true,
-        laser_aim_width = laser_aim_width,
-        damage = damage
-    }
-
-    table.insert(lasers, laser)
-end
-
-function get_laser_end_location(x, y, targetx, targety)
+function Helper.Spell.Laser.get_end_location(x, y, targetx, targety)
     local deltax = math.abs(targetx - x)
     local deltay = math.abs(targety - y)
     local length_to_window_width = 0
@@ -97,27 +99,27 @@ function get_laser_end_location(x, y, targetx, targety)
     return endx, endy
 end
 
-function draw_laser_aims()
-    for i, laser in ipairs(lasers) do
+function Helper.Spell.Laser.draw_aims()
+    for i, laser in ipairs(Helper.Spell.Laser.list) do
         love.graphics.setLineWidth(laser.laser_aim_width)
         if laser.direction_lock then
-            love.graphics.line(laser.parent.x, laser.parent.y, get_laser_end_location(laser.parent.x, laser.parent.y, laser.parent.x + laser.directionx, laser.parent.y + laser.directiony))
+            love.graphics.line(laser.parent.x, laser.parent.y, Helper.Spell.Laser.get_end_location(laser.parent.x, laser.parent.y, laser.parent.x + laser.direction_targetx, laser.parent.y + laser.direction_targety))
         else
-            love.graphics.line(laser.parent.x, laser.parent.y, get_laser_end_location(laser.parent.x, laser.parent.y, get_nearest_target_location(laser.parent.x, laser.parent.y)))
+            love.graphics.line(laser.parent.x, laser.parent.y, Helper.Spell.Laser.get_end_location(laser.parent.x, laser.parent.y, Helper.Spell.get_nearest_target_location(laser.parent.x, laser.parent.y)))
         end
         love.graphics.setLineWidth(1)
     end
 end
 
-function shoot_lasers()
-    for i, laser in ipairs(lasers) do
-        if love.timer.getTime() - laser.start_aim_time > laser_aims_duration then
+function Helper.Spell.Laser.shoot()
+    for i, laser in ipairs(Helper.Spell.Laser.list) do
+        if love.timer.getTime() - laser.start_aim_time > Helper.Spell.Laser.aims_duration then
             if laser.direction_lock then
-                create_damage_line(laser.laser_aim_width * 3, laser.damage, laser.parent.x, laser.parent.y, get_laser_end_location(laser.parent.x, laser.parent.y, laser.parent.x + laser.directionx, laser.parent.y + laser.directiony))
+                Helper.Spell.DamageLine.create(laser.laser_aim_width * 3, laser.damage, laser.parent.x, laser.parent.y, Helper.Spell.Laser.get_end_location(laser.parent.x, laser.parent.y, laser.parent.x + laser.direction_targetx, laser.parent.y + laser.direction_targety))
             else
-                create_damage_line(laser.laser_aim_width * 3, laser.damage, laser.parent.x, laser.parent.y, get_laser_end_location(laser.parent.x, laser.parent.y, get_nearest_target_location(laser.parent.x, laser.parent.y)))
+                Helper.Spell.DamageLine.create(laser.laser_aim_width * 3, laser.damage, laser.parent.x, laser.parent.y, Helper.Spell.Laser.get_end_location(laser.parent.x, laser.parent.y, Helper.Spell.get_nearest_target_location(laser.parent.x, laser.parent.y)))
             end
-            table.remove(lasers, i)
+            table.remove(Helper.Spell.Laser.list, i)
             shoot1:play{volume=0.9}
         end
     end

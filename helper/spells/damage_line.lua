@@ -1,6 +1,8 @@
-damage_lines = {}
+Helper.Spell.DamageLine = {}
 
-function create_damage_line(linewidth, damage, x1, y1, x2, y2)
+Helper.Spell.DamageLine.list = {}
+
+function Helper.Spell.DamageLine.create(linewidth, damage, x1, y1, x2, y2)
     local damage_line = {
         x1 = x1,
         y1 = y1,
@@ -12,11 +14,11 @@ function create_damage_line(linewidth, damage, x1, y1, x2, y2)
         damage = damage
     }
 
-    table.insert(damage_lines, damage_line)
+    table.insert(Helper.Spell.DamageLine.list, damage_line)
 end
 
-function draw_damage_lines()
-    for i, damage_line in ipairs(damage_lines) do
+function Helper.Spell.DamageLine.draw()
+    for i, damage_line in ipairs(Helper.Spell.DamageLine.list) do
         if love.timer.getTime() - damage_line.start_time < 0.05 then
             love.graphics.setLineWidth(damage_line.linewidth)
         elseif love.timer.getTime() - damage_line.start_time >= 0.025 and love.timer.getTime() - damage_line.start_time < 0.05 then
@@ -45,12 +47,12 @@ function draw_damage_lines()
     end
 end
 
-function damage_enemies_inside_damage_lines()
-    for i, damage_line in ipairs(damage_lines) do
+function Helper.Spell.DamageLine.damage()
+    for i, damage_line in ipairs(Helper.Spell.DamageLine.list) do
         if not damage_line.damage_dealt then
             local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
             for _, enemy in ipairs(enemies) do
-                if is_on_line(enemy.x, enemy.y, damage_line.x1, damage_line.y1, damage_line.x2, damage_line.y2, damage_line.linewidth) then
+                if Helper.Geometry.is_on_line(enemy.x, enemy.y, damage_line.x1, damage_line.y1, damage_line.x2, damage_line.y2, damage_line.linewidth) then
                     enemy:hit(damage_line.damage)
                     HitCircle{group = main.current.effects, x = enemy.x, y = enemy.y, rs = 6, color = fg[0], duration = 0.1}
                     for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = blue[0]} end
@@ -63,10 +65,10 @@ function damage_enemies_inside_damage_lines()
     end
 end
 
-function delete_damage_lines()
-    for i, damage_line in ipairs(damage_lines) do
+function Helper.Spell.DamageLine.delete()
+    for i, damage_line in ipairs(Helper.Spell.DamageLine.list) do
         if love.timer.getTime() - damage_line.start_time > 0.25 then
-            table.remove(damage_lines, i)
+            table.remove(Helper.Spell.DamageLine.list, i)
         end
     end
 end

@@ -1,4 +1,6 @@
-function get_triangle_from_height_and_width(x, y, xh, yh, height, width)
+Helper.Geometry = {}
+
+function Helper.Geometry.get_triangle_from_height_and_width(x, y, xh, yh, height, width)
     local a = math.atan(math.abs(xh - x) / math.abs(yh - y))
     if xh > x and yh > y then
     elseif xh > x and yh < y then a = math.rad(90) - a + math.rad(90)
@@ -29,12 +31,12 @@ function get_triangle_from_height_and_width(x, y, xh, yh, height, width)
     return x, y, x2, y2, x3, y3
 end
 
-function draw_triangle_from_height_and_width(x, y, xh, yh, height, width)
-    local x1, y1, x2, y2, x3, y3 = get_triangle_from_height_and_width(x, y, xh, yh, height, width)
+function Helper.Geometry.draw_triangle_from_height_and_width(x, y, xh, yh, height, width)
+    local x1, y1, x2, y2, x3, y3 = Helper.Geometry.get_triangle_from_height_and_width(x, y, xh, yh, height, width)
     love.graphics.polygon( 'fill', x1, y1, x2, y2, x3, y3)
 end
 
-function is_inside_triangle(x0, y0, x1, y1, x2, y2, x3, y3)
+function Helper.Geometry.is_inside_triangle(x0, y0, x1, y1, x2, y2, x3, y3)
     local function sign (p1, p2, p3)
         return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
     end
@@ -62,22 +64,22 @@ function is_inside_triangle(x0, y0, x1, y1, x2, y2, x3, y3)
         return result
     end
 
-    return is_inside_triangle({x = x0, y = y0}, {x = x1, y = y1}, {x = x2, y = y2}, {x = x3, y = y3})
+    return Helper.Geometry.is_inside_triangle({x = x0, y = y0}, {x = x1, y = y1}, {x = x2, y = y2}, {x = x3, y = y3})
 end
 
 
 
-function distance(x1, y1, x2, y2)
+function Helper.Geometry.distance(x1, y1, x2, y2)
     return math.sqrt((x1 - x2)^2 + (y1 - y2)^2)
 end
 
 
 
-function random_in_radius(x, y, radius)
+function Helper.Geometry.random_in_radius(x, y, radius)
     local newx = -10000
     local newy = -10000
 
-    while distance(x, y, newx, newy) > radius do
+    while Helper.Geometry.distance(x, y, newx, newy) > radius do
         newx = math.random(x - radius, x + radius)
         newy = math.random(y - radius, y + radius)
     end
@@ -87,7 +89,7 @@ end
 
 
 
-function distance_from_line(x, y, linex1, liney1, linex2, liney2)
+function Helper.Geometry.distance_from_line(x, y, linex1, liney1, linex2, liney2)
     local a = (liney2 - liney1) / (linex2 - linex1)
     local b = -1
     local c = -a * linex1 + liney1
@@ -95,7 +97,7 @@ function distance_from_line(x, y, linex1, liney1, linex2, liney2)
     return math.abs(a*x + b*y + c) / math.sqrt(a^2 + b^2)
 end
 
-function get_point_on_line(x, y, linex1, liney1, linex2, liney2)
+function Helper.Geometry.get_point_on_line(x, y, linex1, liney1, linex2, liney2)
     local a = (liney2 - liney1) / (linex2 - linex1)
     local b = -1
     local c = -a * linex1 + liney1
@@ -106,13 +108,13 @@ end
 function point_on_line_is_part_of_line(x, y, linex1, liney1, linex2, liney2)
     local pointx = 0
     local pointy = 0
-    pointx, pointy = get_point_on_line(x, y, linex1, liney1, linex2, liney2)
+    pointx, pointy = Helper.Geometry.get_point_on_line(x, y, linex1, liney1, linex2, liney2)
 
-    return is_inside_rectangle(pointx, pointy, linex1, liney1, linex2, liney2)
+    return Helper.Geometry.is_inside_rectangle(pointx, pointy, linex1, liney1, linex2, liney2)
 end
 
-function is_on_line(x, y, linex1, liney1, linex2, liney2, line_width)
-    if distance_from_line(x, y, linex1, liney1, linex2, liney2) < line_width / 2
+function Helper.Geometry.is_on_line(x, y, linex1, liney1, linex2, liney2, line_width)
+    if Helper.Geometry.distance_from_line(x, y, linex1, liney1, linex2, liney2) < line_width / 2
     and point_on_line_is_part_of_line(x, y, linex1, liney1, linex2, liney2) then
         return true
     else
@@ -122,7 +124,7 @@ end
 
 
 
-function is_inside_rectangle(x, y, pointx1, pointy1, pointx2, pointy2)
+function Helper.Geometry.is_inside_rectangle(x, y, pointx1, pointy1, pointx2, pointy2)
     local result = true
 
     if pointx1 > pointx2 then
@@ -150,7 +152,7 @@ end
 
 
 
-function rotate_point(x, y, centerx, centery, angle)
+function Helper.Geometry.rotate_point(x, y, centerx, centery, angle)
     angle = math.rad(angle)
     x = x - centerx
     y = y - centery

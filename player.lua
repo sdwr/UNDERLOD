@@ -2998,16 +2998,16 @@ function Troop:set_character()
     self.t:cooldown(3, self:in_range(), function()
       if self.target then
         -- shoot1:play{volume=0.9}
-        -- create_missile(self.x, self.y, random_in_radius(self.target.x, self.target.y, 30))
+        -- Helper.Spell.Missile.create(self.x, self.y, Helper.Geometry.random_in_radius(self.target.x, self.target.y, 30))
 
         -- fire1:play{volume=0.9}
-        -- create_flame(self, self.x, self.y, self.target.x, self.target.y)
-
-        sniper_load:play{volume=0.9}
-        create_laser(1, 100, self)
+        -- Helper.Spell.Flame.create(self, self.x, self.y, self.target.x, self.target.y)
 
         -- sniper_load:play{volume=0.9}
-        -- spread_laser(self)
+        -- Helper.Spell.Laser.create(false, 1, 100, self)
+
+        sniper_load:play{volume=0.9}
+        Helper.Spell.SpreadLaser.create(self)
       end
     end, nil, nil, 'shoot')
 

@@ -319,7 +319,7 @@ function Arena:on_exit()
   self.flashes = nil
   self.hfx = nil
 
-  helper_release()
+  Helper.release()
 end
 
 
@@ -403,7 +403,7 @@ function Arena:update(dt)
   self.credits:update(dt)
 
 
-  helper_update()
+  Helper.update()
 end
 
 
@@ -778,7 +778,7 @@ function Arena:draw()
 
 
 
-  helper_draw()
+  Helper.draw()
 
 
 
