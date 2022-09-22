@@ -1,5 +1,9 @@
 Helper = {}
 Helper.initialized = false
+Helper.mousex = 0
+Helper.mousey = 0
+Helper.window_width = 0
+Helper.window_height = 0
 
 require 'helper/helper_geometry'
 require 'helper/spells/helper_spell_main'
@@ -25,6 +29,7 @@ function Helper.draw()
     Helper.Spell.DamageCircle.draw()
     Helper.Spell.Laser.draw_aims()
     Helper.Spell.DamageLine.draw()
+    Helper.Spell.SpreadMissile.draw_aims()
 end
 
 
@@ -58,14 +63,19 @@ function Helper.update()
     Helper.Spell.DamageLine.damage()
     Helper.Spell.DamageLine.delete()
 
+    Helper.Spell.SpreadMissile.shoot_missiles()
 
 
-    local mousex, mousey = love.mouse.getPosition()
-    mousex = mousex / sx
-    mousey = mousey / sx
+
+    Helper.mousex, Helper.mousey = love.mouse.getPosition()
+    Helper.mousex = Helper.mousex / sx
+    Helper.mousey = Helper.mousey / sx
     if love.keyboard.isDown( "d" ) then
-        Helper.Spell.DamageCircle.create(true, mousex, mousey)
-    end   
+        Helper.Spell.DamageCircle.create(true, Helper.mousex, Helper.mousey)
+    end  
+    
+    Helper.window_width = love.graphics.getWidth() / sx
+    Helper.window_height = love.graphics.getHeight() / sx
 end
 
 

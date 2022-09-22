@@ -6,6 +6,7 @@ require 'helper/spells/damage_circle'
 require 'helper/spells/laser_spell'
 require 'helper/spells/damage_line'
 require 'helper/spells/spread_laser_spell'
+require 'helper/spells/spread_missile_spell'
 
 Helper.Spell.last_target_location_x = 0
 Helper.Spell.last_target_location_y = 0

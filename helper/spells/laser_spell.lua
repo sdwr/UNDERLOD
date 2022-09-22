@@ -4,29 +4,15 @@ Helper.Spell.Laser.aims_duration = 2
 Helper.Spell.Laser.list = {}
 
 function Helper.Spell.Laser.create(direction_lock, laser_aim_width, damage, parent, direction_targetx, direction_targety)
-    local laser = {}
-    
-    if not direction_lock then
-        laser = {
-            parent = parent,
-            start_aim_time = love.timer.getTime(),
-            direction_targetx = 0,
-            direction_targety = 0,
-            direction_lock = direction_lock,
-            laser_aim_width = laser_aim_width,
-            damage = damage
-        }
-    else
-        laser = {
-            parent = parent,
-            start_aim_time = love.timer.getTime(),
-            direction_targetx = direction_targetx - parent.x,
-            direction_targety = direction_targety - parent.y,
-            direction_lock = direction_lock,
-            laser_aim_width = laser_aim_width,
-            damage = damage
-        }
-    end
+    local laser = {
+        parent = parent,
+        start_aim_time = love.timer.getTime(),
+        direction_targetx = direction_targetx - parent.x,
+        direction_targety = direction_targety - parent.y,
+        direction_lock = direction_lock,
+        laser_aim_width = laser_aim_width,
+        damage = damage
+    }
 
     table.insert(Helper.Spell.Laser.list, laser)
 end
@@ -40,26 +26,26 @@ function Helper.Spell.Laser.get_end_location(x, y, targetx, targety)
     local endy = 0
 
     if targetx - x > 0 and targety - y > 0 then
-        length_to_window_width = love.graphics.getWidth() / sx - x
-        length_to_window_height = love.graphics.getHeight() / sx - y
+        length_to_window_width = Helper.window_width - x
+        length_to_window_height = Helper.window_height - y
 
         if length_to_window_height ~= 0 and deltay ~= 0 then
             if length_to_window_width / length_to_window_height > deltax / deltay then
-                endy = love.graphics.getHeight() / sx
+                endy = Helper.window_height
                 endx = x + length_to_window_height * (deltax / deltay)
             else
-                endx = love.graphics.getWidth() / sx
+                endx = Helper.window_width
                 endy = y + length_to_window_width * (deltay / deltax)
             end
         end
 
     elseif targetx - x < 0 and targety - y > 0 then
         length_to_window_width = x
-        length_to_window_height = love.graphics.getHeight() / sx - y
+        length_to_window_height = Helper.window_height - y
 
         if length_to_window_height ~= 0 and deltay ~= 0 then
             if length_to_window_width / length_to_window_height > deltax / deltay then
-                endy = love.graphics.getHeight() / sx
+                endy = Helper.window_height
                 endx = x - length_to_window_height * (deltax / deltay)
             else
                 endx = 0
@@ -82,7 +68,7 @@ function Helper.Spell.Laser.get_end_location(x, y, targetx, targety)
         end
 
     elseif targetx - x > 0 and targety - y < 0 then
-        length_to_window_width = love.graphics.getWidth() / sx - x
+        length_to_window_width = Helper.window_width - x
         length_to_window_height = y
 
         if length_to_window_height ~= 0 and deltay ~= 0 then
@@ -90,7 +76,7 @@ function Helper.Spell.Laser.get_end_location(x, y, targetx, targety)
                 endy = 0
                 endx = x + length_to_window_height * (deltax / deltay)
             else
-                endx = love.graphics.getWidth() / sx
+                endx = Helper.window_width
                 endy = y - length_to_window_width * (deltay / deltax)
             end
         end
