@@ -79,14 +79,19 @@ function Helper.Spell.Missile.explode()
         else
             local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
             for _, enemy in ipairs(enemies) do
-                if Helper.Geometry.distance(missile.x, missile.y, enemy.x, enemy.y) < Helper.Spell.Missile.explode_range 
-                or Helper.window_width - missile.x < Helper.Spell.Missile.explode_range or missile.x <= Helper.Spell.Missile.explode_range 
-                or Helper.window_height - missile.y < Helper.Spell.Missile.explode_range or missile.y <= Helper.Spell.Missile.explode_range then
+                if Helper.Geometry.distance(missile.x, missile.y, enemy.x, enemy.y) < Helper.Spell.Missile.explode_range then
                     Helper.Spell.DamageCircle.create(false, missile.x, missile.y)
                     table.remove(Helper.Spell.Missile.list, i)
                     shoot1:play{volume=0.9}
                     break
                 end 
+            end
+
+            if Helper.window_width - missile.x < Helper.Spell.Missile.explode_range or missile.x <= Helper.Spell.Missile.explode_range 
+            or Helper.window_height - missile.y < Helper.Spell.Missile.explode_range or missile.y <= Helper.Spell.Missile.explode_range then
+                Helper.Spell.DamageCircle.create(false, missile.x, missile.y)
+                table.remove(Helper.Spell.Missile.list, i)
+                shoot1:play{volume=0.9}
             end
         end
     end

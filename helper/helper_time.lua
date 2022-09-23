@@ -38,6 +38,12 @@ function Helper.Time.stop_interval(id)
     Helper.Time.intervals[id].stopped = true
 end
 
+function Helper.Time.stop_all_intervals()
+    for i, interval in ipairs(Helper.Time.intervals) do
+        Helper.Time.intervals[i].stopped = true
+    end
+end
+
 function Helper.Time.run_intervals()
     for _, interval in ipairs(Helper.Time.intervals) do
         if love.timer.getTime() - interval.startat > interval.delay * interval.looped and not interval.stopped then
@@ -81,5 +87,11 @@ function Helper.Time.run_waits()
             wait.waitfunction()
             wait.finished = true
         end
+    end
+end
+
+function Helper.Time.stop_all_waits()
+    for i, wait in ipairs(Helper.Time.waits) do
+        Helper.Time.waits[i].finished = true
     end
 end

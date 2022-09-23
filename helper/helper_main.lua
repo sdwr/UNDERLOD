@@ -82,4 +82,7 @@ end
 
 function Helper.release()
     Helper.initialized = false
+
+    Helper.Time.stop_all_intervals()
+    Helper.Time.stop_all_waits()
 end
