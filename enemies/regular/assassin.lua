@@ -7,18 +7,11 @@ function Assassin:init(args)
     self:init_game_object(args)
     self:init_unit()
 
-    self:create_unit()
+    self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
+    self:create_regular(black[0])
     self:calculate_stats(true)
 
     self:set_attacks()
-end
-
-function Assassin:create_unit()
-    self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
-    self:set_restitution(0.5)
-    self.color = black[0]:clone()
-    self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
-    self.class = 'assassin'
 end
 
 function Assassin:set_attacks()

@@ -1,4 +1,48 @@
 Enemy = Object:extend()
+Enemy:implement(GameObject)
+Enemy:implement(Physics)
+Enemy:implement(Unit)
+function Enemy:init(type, name, args)
+  self.type = type
+  self.name = name
+  self:init_game_object(args)
+  self:init_unit()
+
+  self:calculate_stats(true)
+
+  self:set_attacks()
+  self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
+  self:create_regular(black[0])
+
+end
+
+function Enemy:create_regular(color)
+  self:set_restitution(0.5)
+  self.color = color:clone()
+  self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
+  self.class = 'regular_enemy'
+
+  self.state = 'normal'
+  self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20 + self.shape.w / 2)
+  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 1000)
+end
+
+function Enemy:create_boss(color)
+  --implement
+end
+
+function Enemy:make_unit()
+  if self.type == 'boss' then 
+
+
+  elseif self.type == 'assassin' then
+    self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
+    self:create_regular(black[0])
+    
+  end
+
+end
+
 function Enemy:update(dt)
     self:update_game_object(dt)
 
@@ -103,6 +147,7 @@ function Enemy:die()
     if self.parent and self.parent.summons and self.parent.summons > 0 then
       self.parent.summons = self.parent.summons - 1
     end
+    self:onDeath()
 end
 
 function Enemy:push(f, r, push_invulnerable)
@@ -118,5 +163,13 @@ function Enemy:push(f, r, push_invulnerable)
     self:apply_angular_impulse(random:table{random:float(-12*math.pi, -4*math.pi), random:float(4*math.pi, 12*math.pi)})
     self:set_damping(1.5*(1/n))
     self:set_angular_damping(1.5*(1/n))
+end
 
+function Enemy:slow(amount, duration)
+  self.slowed = amount
+  self.t:after(duration, function() self.slowed = false end, 'slow')
+end
+
+function Enemy:onDeath()
+  Corpse{group = main.current.main, x = self.x, y = self.y}
 end

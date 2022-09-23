@@ -19,6 +19,10 @@ function Stompy:create_unit()
     self:set_restitution(0.1)
     self.class = 'boss'
     self:set_as_steerable(self.v, 1000, 2*math.pi, 2)
+    
+    self.state = 'normal'
+    self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20 + self.shape.w / 2)
+    self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 1000)
 end
 
 function Stompy:set_attacks()

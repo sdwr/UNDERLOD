@@ -4,25 +4,14 @@ Shooter:implement(Physics)
 Shooter:implement(Unit)
 Shooter:implement(Enemy)
 function Shooter:init(args)
-    print("args!")
-    for i,v in pairs(args) do
-        print(i, v)
-    end
     self:init_game_object(args)
     self:init_unit()
 
-    self:create_unit()
+    self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
+    self:create_regular(grey[0])
     self:calculate_stats(true)
 
     self:set_attacks()
-end
-
-function Shooter:create_unit()
-    self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
-    self:set_restitution(0.5)
-    self.color = grey[0]:clone()
-    self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
-    self.class = 'shooter'
 end
 
 function Shooter:set_attacks()
@@ -118,7 +107,7 @@ function EnemyProjectile:on_trigger_enter(other, contact)
     self:die(self.x, self.y, nil, random:int(2, 3))
     other:hit(self.dmg)
 
-  elseif other:is(Seeker) or other:is(EnemyCritter) then
+  elseif other:is(Enemy) or other:is(EnemyCritter) then
     if self.source == 'shooter' then
       self:die(self.x, self.y, nil, random:int(2, 3))
       other:hit(0.5*self.dmg, nil, nil, true)

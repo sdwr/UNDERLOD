@@ -7,18 +7,12 @@ function Stomper:init(args)
     self:init_game_object(args)
     self:init_unit()
 
-    self:create_unit()
+    
+    self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
+    self:create_regular(red[0])
     self:calculate_stats(true)
 
     self:set_attacks()
-end
-
-function Stomper:create_unit()
-    self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
-    self:set_restitution(0.5)
-    self.color = red[0]:clone()
-    self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
-    self.class = 'stomper'
 end
 
 function Stomper:set_attacks()

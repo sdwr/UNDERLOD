@@ -20,6 +20,10 @@ function Heigan:create_unit()
     self.class = 'boss'
     self:calculate_stats(true)
     self:set_as_steerable(self.v, 1000, 2*math.pi, 2)
+    
+    self.state = 'normal'
+    self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20 + self.shape.w / 2)
+    self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 1000)
 end
 
 function Heigan:set_attacks()

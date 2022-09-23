@@ -14,12 +14,16 @@ function Dragon:init(args)
 end
 
 function Dragon:create_unit()
-    enemy:set_as_rectangle(70, 70, 'dynamic', 'enemy')
-    enemy.color = red[-2]
-    enemy:set_restitution(0.1)
-    enemy.class = 'boss'
-    enemy:calculate_stats(true)
-    enemy:set_as_steerable(enemy.v, 1000, 2*math.pi, 2)
+    self:set_as_rectangle(70, 70, 'dynamic', 'self')
+    self.color = red[-2]
+    self:set_restitution(0.1)
+    self.class = 'boss'
+    self:calculate_stats(true)
+    self:set_as_steerable(self.v, 1000, 2*math.pi, 2)
+    
+  self.state = 'normal'
+  self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20 + self.shape.w / 2)
+  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 1000)
 end
 
 function Dragon:set_attacks()
@@ -51,7 +55,7 @@ end
 
 function Dragon:breathe_fire(duration, rs)
     BreatheFire{origin_offset = true, follows_caster = true, area_type = 'triangle',
-      group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = rs, color = red[3], dmg = 20, duration = duration, level = self.level, parent = self}
+      group = main.current.main, team = "self", x = self.x, y = self.y, rs = rs, color = red[3], dmg = 20, duration = duration, level = self.level, parent = self}
 end
 
 function Dragon:spawn_whelps(parent, amount)

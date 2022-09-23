@@ -8,7 +8,7 @@ require 'player'
 require 'enemies'
 require 'media'
 require 'spawnmanager'
-require 'enemies/enemy_helper'
+require 'enemies.enemy_helper'
 
 
 function init()
