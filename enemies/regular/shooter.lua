@@ -1,49 +1,50 @@
-Shooter = Object:extend()
-Shooter:implement(GameObject)
-Shooter:implement(Physics)
-Shooter:implement(Unit)
-Shooter:implement(Enemy)
-function Shooter:init(args)
-    self:init_game_object(args)
-    self:init_unit()
 
-    self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
-    self:create_regular(grey[0])
-    self:calculate_stats(true)
 
-    self:set_attacks()
+local fns = {}
+
+fns['shoot'] = function(self, r, mods)
+  mods = mods or {}
+  local t = {group = main.current.main, x = self.x, y = self.y, v = 175, r = r, color = self.color, dmg = self.dmg}
+  self.hfx:use('shoot', 0.25)
+  self.state = unit_states['frozen']
+
+  self.t:after(0.4, function()
+    self.state = unit_states['stopped']
+    HitCircle{group = main.current.effects, x = self.x , y = self.y, rs = 6, duration = 0.1}
+    EnemyProjectile(table.merge(t, mods or {}))
+    
+    end, 'stopped')
+  self.t:after(0.4 + .4, function() self.state = unit_states['normal'] end, 'normal')
+
 end
 
-function Shooter:set_attacks()
+fns['init_enemy'] = function(self)
+
+  --create shape
+  self.color = grey[0]:clone()
+  self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
+  
+  --set physics 
+  self:set_restitution(0.5)
+  self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
+  self.class = 'regular_enemy'
+
+  --set attacks
     self.attack_sensor = Circle(self.x, self.y, 100)
     self.t:cooldown(attack_speeds['medium'], function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end, function ()
       local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies)
       if target then
         self:rotate_towards_object(target, 1)
-        self:shoot(self:angle_to_object(target))
+        fns['shoot'](self, self:angle_to_object(target))
       end
     end, nil, nil, 'shoot')
 end
 
-function Shooter:shoot(r, mods)
-    mods = mods or {}
-    local t = {group = main.current.main, x = self.x, y = self.y, v = 175, r = r, color = self.color, dmg = self.dmg}
-    self.hfx:use('shoot', 0.25)
-    self.state = unit_states['frozen']
-  
-    self.t:after(0.4, function()
-      self.state = unit_states['stopped']
-      HitCircle{group = main.current.effects, x = self.x , y = self.y, rs = 6, duration = 0.1}
-      EnemyProjectile(table.merge(t, mods or {}))
-      
-      end, 'stopped')
-    self.t:after(0.4 + .4, function() self.state = unit_states['normal'] end, 'normal')
-  
-  end
-
-function Shooter:draw()
-    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+fns['draw_enemy'] = function(self)   
+  graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
 end
+
+enemy_to_class['shooter'] = fns
 
 
 EnemyProjectile = Object:extend()

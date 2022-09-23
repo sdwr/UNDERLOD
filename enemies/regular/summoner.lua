@@ -1,30 +1,27 @@
-Summoner = Object:extend()
-Summoner:implement(GameObject)
-Summoner:implement(Physics)
-Summoner:implement(Unit)
-Summoner:implement(Enemy)
-function Summoner:init(args)
-    self:init_game_object(args)
-    self:init_unit()
 
-    self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
-    self:create_regular(purple[0])
-    self:calculate_stats(true)
 
-    self:set_attacks()
-end
+local fns = {}
 
-function Summoner:set_attacks()
+fns['init_enemy'] = function(self)
+
+  --create shape
+  self.color = purple[0]:clone()
+  self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
+  
+  --set physics 
+  self:set_restitution(0.5)
+  self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
+  self.class = 'regular_enemy'
+
+  --set attacks
     self.summons = 0
     self.t:cooldown(attack_speeds['slow'], function() return self.state == 'normal' and self.summons < 4 end, function()
-      self:summon()
+        Summon{group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = 25, color = purple[0], level = self.level, parent = self}
     end, nil, nil, 'cast')
 end
 
-function Summoner:summon()
-    Summon{group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = 25, color = purple[0], level = self.level, parent = self}
-  end
-
-function Summoner:draw()
-    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+fns['draw_enemy'] = function(self)   
+  graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
 end
+
+enemy_to_class['summoner'] = fns

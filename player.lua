@@ -2101,7 +2101,7 @@ function Summon:spawn()
   if self.parent.summons < 4 then
     self.parent.summons = self.parent.summons + 1
     local args ={group = main.current.main, x= self.x + 10, y = self.y, level = self.level, parent = self.parent}
-    Spawn_Enemy('rager', nil, args)
+    Enemy{type = 'rager', group = main.current.main, x= self.x + 10, y = self.y, level = self.level, parent = self.parent}
   end
   self:recover()
 end
