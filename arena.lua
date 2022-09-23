@@ -895,7 +895,7 @@ function Arena:spawn_n_enemies(p, j, n, pass)
         local objects = self.main:get_objects_in_shape(check_circle, {Enemy, EnemyCritter, Critter, Player, Sentry, Automaton, Bomb, Volcano, Saboteur, Pet, Turret})
         if #objects > 0 then self.enemy_spawns_prevented = self.enemy_spawns_prevented + 1; return end
       end
-      Enemy{type = 'seeker', group = self.main, x = x, y = y, level = self.level}
+      Enemy{type = 'shooter', group = self.main, x = x, y = y, level = self.level}
     end}
   end, n, function() self.spawning_enemies = false end, 'spawn_enemies_' .. j)
 end

@@ -298,7 +298,7 @@ function Unit:calculate_stats(first_run)
     self.base_dmg = 20  * (math.pow(1.05, level))
     self.base_mvspd = 50
   end
-  if self.class == 'regular_enemy' and self:is(Rager) then
+  if self.class == 'regular_enemy' and self.type == 'rager' then
     self.base_mvspd = 150
     self.base_dmg = 10
   end
