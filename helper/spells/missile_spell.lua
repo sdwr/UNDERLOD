@@ -1,18 +1,21 @@
 Helper.Spell.Missile = {}
 
 Helper.Spell.Missile.speed = 300
-Helper.Spell.Missile.length = 10
-Helper.Spell.Missile.width = 3
-Helper.Spell.Missile.explode_range = 3
 Helper.Spell.Missile.list = {}
 
-function Helper.Spell.Missile.create(fly_infinitely, x, y, targetx, targety)
+function Helper.Spell.Missile.create(color, missile_length, damage_troops, damage, fly_infinitely, explode_radius, x, y, targetx, targety)
     local missile = {
         x = x,
         y = y,
         targetx = targetx,
         targety = targety,
-        fly_infinitely = fly_infinitely
+        fly_infinitely = fly_infinitely,
+        color = color,
+        missile_length = missile_length,
+        missile_width = missile_length / 3,
+        explode_radius = explode_radius,
+        damage_troops = damage_troops,
+        damage = damage
     }
 
     table.insert(Helper.Spell.Missile.list, missile)
@@ -25,16 +28,16 @@ function Helper.Spell.Missile.draw()
         local deltay = 0
         if missile.targety - missile.y ~= 0 then
             xdivy = (missile.targetx - missile.x) / (missile.targety - missile.y)
-            deltay = math.sqrt(((Helper.Spell.Missile.length/2)^2) / (xdivy^2 + 1))
+            deltay = math.sqrt(((missile.missile_length/2)^2) / (xdivy^2 + 1))
             deltax = deltay * xdivy
         else
             deltay = 0
-            deltax = Helper.Spell.Missile.length / 2
+            deltax = missile.missile_length / 2
         end
     
-        love.graphics.setLineWidth(Helper.Spell.Missile.width)
+        love.graphics.setLineWidth(missile.missile_width)
+        love.graphics.setColor(missile.color.r, missile.color.g, missile.color.b, missile.color.a)
         love.graphics.line(missile.x - deltax, missile.y - deltay, missile.x + deltax, missile.y + deltay)
-        love.graphics.setLineWidth(1)
     end
 end
 
@@ -71,25 +74,25 @@ end
 function Helper.Spell.Missile.explode()
     for i, missile in ipairs(Helper.Spell.Missile.list) do
         if not missile.fly_infinitely then
-            if Helper.Geometry.distance(missile.x, missile.y, missile.targetx, missile.targety) < Helper.Spell.Missile.explode_range then
-                Helper.Spell.DamageCircle.create(false, missile.x, missile.y)
+            if Helper.Geometry.distance(missile.x, missile.y, missile.targetx, missile.targety) < missile.missile_length / 3 then
+                Helper.Spell.DamageCircle.create(missile.color, missile.damage_troops, missile.damage, missile.explode_radius, missile.x, missile.y)
                 table.remove(Helper.Spell.Missile.list, i)
                 shoot1:play{volume=0.9}
             end
         else
             local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
             for _, enemy in ipairs(enemies) do
-                if Helper.Geometry.distance(missile.x, missile.y, enemy.x, enemy.y) < Helper.Spell.Missile.explode_range then
-                    Helper.Spell.DamageCircle.create(false, missile.x, missile.y)
+                if Helper.Geometry.distance(missile.x, missile.y, enemy.x, enemy.y) < missile.missile_length / 3 then
+                    Helper.Spell.DamageCircle.create(missile.color, missile.damage_troops, missile.damage, missile.explode_radius, missile.x, missile.y)
                     table.remove(Helper.Spell.Missile.list, i)
                     shoot1:play{volume=0.9}
                     break
                 end 
             end
 
-            if Helper.window_width - missile.x < Helper.Spell.Missile.explode_range or missile.x <= Helper.Spell.Missile.explode_range 
-            or Helper.window_height - missile.y < Helper.Spell.Missile.explode_range or missile.y <= Helper.Spell.Missile.explode_range then
-                Helper.Spell.DamageCircle.create(false, missile.x, missile.y)
+            if Helper.window_width - missile.x < missile.missile_length / 3 or missile.x <= missile.missile_length / 3 
+            or Helper.window_height - missile.y < missile.missile_length / 3 or missile.y <= missile.missile_length / 3 then
+                Helper.Spell.DamageCircle.create(missile.color, missile.damage_troops, missile.damage, missile.explode_radius, missile.x, missile.y)
                 table.remove(Helper.Spell.Missile.list, i)
                 shoot1:play{volume=0.9}
             end

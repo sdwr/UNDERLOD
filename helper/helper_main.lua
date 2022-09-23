@@ -8,6 +8,7 @@ Helper.window_height = 0
 require 'helper/helper_geometry'
 require 'helper/spells/helper_spell_main'
 require 'helper/helper_time'
+require 'helper/helper_color'
 
 
 
@@ -23,7 +24,6 @@ end
 
 
 function Helper.draw()
-    love.graphics.setColor(51 / 255, 153 / 255, 255 / 255, 0.5)
     Helper.Spell.Flame.draw()
     Helper.Spell.Missile.draw()
     Helper.Spell.DamageCircle.draw()
@@ -71,7 +71,7 @@ function Helper.update()
     Helper.mousex = Helper.mousex / sx
     Helper.mousey = Helper.mousey / sx
     if love.keyboard.isDown( "d" ) then
-        Helper.Spell.DamageCircle.create(true, Helper.mousex, Helper.mousey)
+        Helper.Spell.DamageCircle.create(Helper.Color.blue, true, 50, 10, Helper.mousex, Helper.mousey)
     end  
     
     Helper.window_width = love.graphics.getWidth() / sx

@@ -164,7 +164,7 @@ end
 
 
 
-function Helper.Geometry.draw_dashed_line(line_width, dash_length, dash_margin, dash_offset_percentage, x1, y1, x2, y2)
+function Helper.Geometry.draw_dashed_line(color, line_width, dash_length, dash_margin, dash_offset_percentage, x1, y1, x2, y2)
     local function line_end_check(drawx, drawy, x1, y1, x2, y2)
         if x2 == x1 and y2 == y1 then
             return true
@@ -216,6 +216,7 @@ function Helper.Geometry.draw_dashed_line(line_width, dash_length, dash_margin, 
     end
 
     love.graphics.setLineWidth(line_width)
+    love.graphics.setColor(color.r, color.g, color.b, color.a)
 
     if x2 < x1 then 
         dash_lengthx = -dash_lengthx 
