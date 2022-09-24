@@ -6,14 +6,6 @@ function Arena:init(name)
   self:init_game_object()
 end
 
-function Arena:add_troops()
-  for i, unit in ipairs(self.units) do
-    for j=0, 4 do
-      Troop{group = self.main, x = (gh*0.2) + (i*20), y = gh/2- (10*j), level = unit.level, character = unit.character, items = unit.items, passives = self.passives}
-    end
-  end
-end
-
 function Arena:select_class(class)
   if main.selectedClass then self.hotbar[main.selectedClass].unit_selected = false end
   main.selectedClass = class
@@ -98,17 +90,11 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
 
   self.rallyEffect = RallyCircle{group = main.current.effects, camera = camera, x = 0, y = 0, hidden = true}
 
-  -- Spawn solids and player
+  -- Spawn solids
   self.x1, self.y1 = gw/2 - 0.8*gw/2, gh/2 - 0.8*gh/2
   self.x2, self.y2 = gw/2 + 0.8*gw/2, gh/2 + 0.8*gh/2
   self.w, self.h = self.x2 - self.x1, self.y2 - self.y1
-  self.spawn_points = {
-    {x = self.x1 + 32, y = self.y1 + 32, r = math.pi/4},
-    {x = self.x1 + 32, y = self.y2 - 32, r = -math.pi/4},
-    {x = self.x2 - 32, y = self.y1 + 32, r = 3*math.pi/4},
-    {x = self.x2 - 32, y = self.y2 - 32, r = -3*math.pi/4}
-  }
-  self.spawn_offsets = {{x = -12, y = -12}, {x = 12, y = -12}, {x = 12, y = 12}, {x = -12, y = 12}, {x = 0, y = 0}}
+
   self.last_spawn_enemy_time = love.timer.getTime()
 
   Wall{group = self.main, vertices = math.to_rectangle_vertices(-40, -40, self.x1, gh + 40), color = bg[-1]}
@@ -134,9 +120,12 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
   end
 
 
-  self:add_troops()
+  Spawn_Troops(self)
+
+  self.start_time = 3
 
   Manage_Spawns(self)
+  
 end
 
 function Arena:spawn_critters(parent, n)
@@ -149,6 +138,7 @@ function Arena:spawn_critters(parent, n)
 
   if math.floor(n/2) <= 0 then return end
   self.spawning_enemies = true
+  self.enemy_spawns_prevented = 0
   local spawn_points = table.copy(self.spawn_points)
   self.t:after({0, 0.2}, function()
     local p = spawn_points[3]
@@ -191,7 +181,7 @@ end
 
 function Arena:update(dt)
   if main_song_instance:isStopped() then
-    main_song_instance = _G[random:table{'song1', 'song2', 'song3', 'song4', 'song5', 'song6', 'song7', 'song8'}]:play{volume = 0.5}
+    main_song_instance = _G[random:table{'song1', 'song2', 'song3', 'song4', 'song5', 'song6', 'song7', 'song8'}]:play{volume = 0.4}
   end
 
   if not self.paused and not self.died and not self.won then
@@ -467,22 +457,17 @@ function Arena:restore_passives_to_pool(j)
   end
 end
 
+function Arena:draw_spawn_markers()
+  for i = 1, #self.spawn_markers do
+    local location = self.spawn_markers[i]
+    graphics.push(location.x, location.y)
+    graphics.circle(location.x, location.y, 4, yellow[0], 1)
+    graphics.pop()
+  end
 
-function Arena:draw()
-  self.floor:draw()
-  self.main:draw()
-  self.post_main:draw()
-  self.effects:draw()
+end
 
-  graphics.draw_with_mask(function()
-    star_canvas:draw(0, 0, 0, 1, 1)
-  end, function()
-    camera:attach()
-    graphics.rectangle(gw/2, gh/2, self.w, self.h, nil, nil, fg[0])
-    camera:detach()
-  end, true)
-
-  camera:attach()
+function Arena:display_text()
   if self.start_time and self.start_time > 0 and not self.choosing_passives then
     graphics.push(gw/2, gh/2 - 48, 0, self.hfx.condition1.x, self.hfx.condition1.x)
       graphics.print_centered(tostring(self.start_time), fat_font, gw/2, gh/2 - 48, 0, 1, 1, nil, nil, self.hfx.condition1.f and fg[0] or red[0])
@@ -515,6 +500,28 @@ function Arena:draw()
   if state.run_timer then
     graphics.print_centered(math.round(run_time, 0), fat_font, self.x2 - 12, self.y2 + 16, 0, 0.6, 0.6, nil, nil, fg[0])
   end
+
+end
+
+
+function Arena:draw()
+  self.floor:draw()
+  self.main:draw()
+  self.post_main:draw()
+  self.effects:draw()
+
+  --self:draw_spawn_markers()
+
+  graphics.draw_with_mask(function()
+    star_canvas:draw(0, 0, 0, 1, 1)
+  end, function()
+    camera:attach()
+    graphics.rectangle(gw/2, gh/2, self.w, self.h, nil, nil, fg[0])
+    camera:detach()
+  end, true)
+
+  camera:attach()
+  --self:display_text()
   camera:detach()
 
 
@@ -555,7 +562,7 @@ function Arena:die()
     self.t:after(2, function()
       self.build_text = Text2{group = self.ui, x = 40, y = 20, force_update = true, lines = {{text = "[wavy_mid, fg]your build", font = pixul_font, alignment = 'center'}}}
       for i, unit in ipairs(self.units) do
-        CharacterPart{group = self.ui, x = 20, y = 40 + (i-1)*19, character = unit.character, level = unit.level, force_update = true, cant_click = true, parent = self}
+        CharacterPart{group = self.ui, x = 20, y = 40 + (i-1)*19, character = unit.character, unit = unit, level = unit.level, force_update = true, cant_click = true, parent = self}
         Text2{group = self.ui, x = 20 + 14 + pixul_font:get_text_width(unit.character)/2, y = 40 + (i-1)*19, force_update = true, lines = {
           {text = '[' .. character_color_strings[unit.character] .. ']' .. unit.character, font = pixul_font, alignment = 'left'}
         }}
@@ -755,95 +762,6 @@ function Arena:transition()
   }, global_text_tags)}
 end
 
-
-function Arena:spawn_distributed_enemies()
-  self.spawning_enemies = true
-
-  local t = {'4', '4+4', '4+4+4', '2x4', '3x4', '4x2'}
-  local spawn_type = t[random:weighted_pick(20, 20, 10, 15, 10, 15)]
-  local spawn_points = table.copy(self.spawn_points)
-  if spawn_type == '4' then
-    local p = random:table_remove(spawn_points)
-    SpawnMarker{group = self.effects, x = p.x, y = p.y}
-    self.t:after(1.125, function()
-      self:spawn_n_enemies(p)
-    end)
-    self.t:after(2.25, function() self.spawning_enemies = false end, 'spawning_enemies')
-  elseif spawn_type == '4+4' then
-    local p = random:table_remove(spawn_points)
-    SpawnMarker{group = self.effects, x = p.x, y = p.y}
-    self.t:after(1.125, function()
-      self:spawn_n_enemies(p)
-      self.t:after(2, function() self:spawn_n_enemies(p) end)
-    end)
-    self.t:after(4.25, function() self.spawning_enemies = false end, 'spawning_enemies')
-  elseif spawn_type == '4+4+4' then
-    local p = random:table_remove(spawn_points)
-    SpawnMarker{group = self.effects, x = p.x, y = p.y}
-    self.t:after(1.125, function()
-      self:spawn_n_enemies(p)
-      self.t:after(1, function()
-        self:spawn_n_enemies(p)
-        self.t:after(1, function()
-          self:spawn_n_enemies(p)
-        end)
-      end)
-    end)
-    self.t:after(4.25, function() self.spawning_enemies = false end, 'spawning_enemies')
-  elseif spawn_type == '2x4' then
-    self.t:after({0, 0.2}, function()
-      local p = random:table_remove(spawn_points)
-      SpawnMarker{group = self.effects, x = p.x, y = p.y}
-      self.t:after(1.125, function() self:spawn_n_enemies(p, 1) end)
-    end)
-    self.t:after({0, 0.2}, function()
-      local p = random:table_remove(spawn_points)
-      SpawnMarker{group = self.effects, x = p.x, y = p.y}
-      self.t:after(1.125, function() self:spawn_n_enemies(p, 2) end)
-    end)
-    self.t:after(2.25, function() self.spawning_enemies = false end, 'spawning_enemies')
-  elseif spawn_type == '3x4' then
-    self.t:after({0, 0.2}, function()
-      local p = random:table_remove(spawn_points)
-      SpawnMarker{group = self.effects, x = p.x, y = p.y}
-      self.t:after(1.125, function() self:spawn_n_enemies(p, 1) end)
-    end)
-    self.t:after({0, 0.2}, function()
-      local p = random:table_remove(spawn_points)
-      SpawnMarker{group = self.effects, x = p.x, y = p.y}
-      self.t:after(1.125, function() self:spawn_n_enemies(p, 2) end)
-    end)
-    self.t:after({0, 0.2}, function()
-      local p = random:table_remove(spawn_points)
-      SpawnMarker{group = self.effects, x = p.x, y = p.y}
-      self.t:after(1.125, function() self:spawn_n_enemies(p, 3) end)
-    end)
-    self.t:after(2.25, function() self.spawning_enemies = false end, 'spawning_enemies')
-  elseif spawn_type == '4x2' then
-    self.t:after({0, 0.2}, function()
-      local p = random:table_remove(spawn_points)
-      SpawnMarker{group = self.effects, x = p.x, y = p.y}
-      self.t:after(1.125, function() self:spawn_n_enemies(p, 1, 2) end)
-    end)
-    self.t:after({0, 0.2}, function()
-      local p = random:table_remove(spawn_points)
-      SpawnMarker{group = self.effects, x = p.x, y = p.y}
-      self.t:after(1.125, function() self:spawn_n_enemies(p, 2, 2) end)
-    end)
-    self.t:after({0, 0.2}, function()
-      local p = random:table_remove(spawn_points)
-      SpawnMarker{group = self.effects, x = p.x, y = p.y}
-      self.t:after(1.125, function() self:spawn_n_enemies(p, 3, 2) end)
-    end)
-    self.t:after({0, 0.2}, function()
-      local p = random:table_remove(spawn_points)
-      SpawnMarker{group = self.effects, x = p.x, y = p.y}
-      self.t:after(1.125, function() self:spawn_n_enemies(p, 4, 2) end)
-    end)
-    self.t:after(2.25, function() self.spawning_enemies = false end, 'spawning_enemies')
-  end
-end
-
 function Arena:spawn_n_critters(p, j, n, pass, parent)
   self.spawning_enemies = true
   if self.died then return end
@@ -895,7 +813,7 @@ function Arena:spawn_n_enemies(p, j, n, pass)
         local objects = self.main:get_objects_in_shape(check_circle, {Enemy, EnemyCritter, Critter, Player, Sentry, Automaton, Bomb, Volcano, Saboteur, Pet, Turret})
         if #objects > 0 then self.enemy_spawns_prevented = self.enemy_spawns_prevented + 1; return end
       end
-      Enemy{type = 'shooter', group = self.main, x = x, y = y, level = self.level}
+      Enemy{type = 'seeker', group = self.main, x = x, y = y, level = self.level}
     end}
   end, n, function() self.spawning_enemies = false end, 'spawn_enemies_' .. j)
 end
@@ -943,7 +861,7 @@ end
 function Arena:spawn_boss(p)
   local x, y = p.x, p.y
   local args = {group = self.main, x = x, y = y, level = self.level}
-  Enemy{type = p.name, group = self.main, x = x, y = y, level = self.level}
+  Enemy{type = p.name, name = p.name, group = self.main, x = x, y = y, level = self.level}
 end
 
 
