@@ -94,7 +94,7 @@ function Helper.Spell.Laser.draw_aims()
         if laser.direction_lock then
             love.graphics.line(laser.parent.x, laser.parent.y, Helper.Spell.Laser.get_end_location(laser.parent.x, laser.parent.y, laser.parent.x + laser.direction_targetx, laser.parent.y + laser.direction_targety))
         else
-            love.graphics.line(laser.parent.x, laser.parent.y, Helper.Spell.Laser.get_end_location(laser.parent.x, laser.parent.y, Helper.Spell.get_nearest_target_location(laser.parent.x, laser.parent.y)))
+            love.graphics.line(laser.parent.x, laser.parent.y, Helper.Spell.Laser.get_end_location(laser.parent.x, laser.parent.y, Helper.Spell.get_nearest_target_location(laser.parent.x, laser.parent.y, laser.damage_troops)))
         end
     end
 end
@@ -105,7 +105,7 @@ function Helper.Spell.Laser.shoot()
             if laser.direction_lock then
                 Helper.Spell.DamageLine.create(laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.parent.x, laser.parent.y, Helper.Spell.Laser.get_end_location(laser.parent.x, laser.parent.y, laser.parent.x + laser.direction_targetx, laser.parent.y + laser.direction_targety))
             else
-                Helper.Spell.DamageLine.create(laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.parent.x, laser.parent.y, Helper.Spell.Laser.get_end_location(laser.parent.x, laser.parent.y, Helper.Spell.get_nearest_target_location(laser.parent.x, laser.parent.y)))
+                Helper.Spell.DamageLine.create(laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.parent.x, laser.parent.y, Helper.Spell.Laser.get_end_location(laser.parent.x, laser.parent.y, Helper.Spell.get_nearest_target_location(laser.parent.x, laser.parent.y, laser.damage_troops)))
             end
             table.remove(Helper.Spell.Laser.list, i)
             shoot1:play{volume=0.9}

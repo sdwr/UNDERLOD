@@ -42,7 +42,7 @@ end
 
 function Helper.Spell.Flame.update_target_location()
     for __, flame in ipairs(flames) do
-        flame.enemyx, flame.enemyy = Helper.Spell.get_nearest_target_location(flame.parent.x, flame.parent.y)
+        flame.enemyx, flame.enemyy = Helper.Spell.get_nearest_target_location(flame.parent.x, flame.parent.y, false)
     end
 end
 
