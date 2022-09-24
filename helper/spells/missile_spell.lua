@@ -80,9 +80,14 @@ function Helper.Spell.Missile.explode()
                 shoot1:play{volume=0.9}
             end
         else
-            local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
-            for _, enemy in ipairs(enemies) do
-                if Helper.Geometry.distance(missile.x, missile.y, enemy.x, enemy.y) < missile.missile_length / 3 then
+            local entities = {}
+            if not missile.damage_troops then
+                entities = main.current.main:get_objects_by_classes(main.current.enemies)
+            else
+                entities = main.current.main:get_objects_by_class(Troop)
+            end
+            for _, entity in ipairs(entities) do
+                if Helper.Geometry.distance(missile.x, missile.y, entity.x, entity.y) < missile.missile_length / 3 then
                     Helper.Spell.DamageCircle.create(missile.color, missile.damage_troops, missile.damage, missile.explode_radius, missile.x, missile.y)
                     table.remove(Helper.Spell.Missile.list, i)
                     shoot1:play{volume=0.9}

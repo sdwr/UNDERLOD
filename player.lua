@@ -3001,7 +3001,7 @@ function Troop:set_character()
         -- Helper.Spell.Missile.create(Helper.Color.blue, 10, false, 50, false, 20, self.x, self.y, Helper.Geometry.random_in_radius(self.target.x, self.target.y, 25))
 
         sniper_load:play{volume=0.9}
-        Helper.Spell.SpreadMissile.create(Helper.Color.green, 20, false, 100, 40, self)
+        Helper.Spell.SpreadMissile.create(Helper.Color.green, 20, false, 100, 30, self)
 
         -- sniper_load:play{volume=0.9}
         -- Helper.Spell.Laser.create(Helper.Color.orange, 1, false, false, 100, self, 0, 0)
