@@ -1,8 +1,8 @@
-Seeker = Object:extend()
-Seeker:implement(GameObject)
-Seeker:implement(Physics)
-Seeker:implement(Unit)
-function Seeker:init(args)
+OldEnemy = Object:extend()
+OldEnemy:implement(GameObject)
+OldEnemy:implement(Physics)
+OldEnemy:implement(Unit)
+function OldEnemy:init(args)
   self:init_game_object(args)
   self:init_unit()
 
@@ -268,23 +268,9 @@ function Seeker:init(args)
 end
 
 
-function Seeker:update(dt)
+function OldEnemy:update(dt)
   self:update_game_object(dt)
 
-  if main.current.mage_level == 2 then self.buff_def_a = -30
-  elseif main.current.mage_level == 1 then self.buff_def_a = -15
-  else self.buff_def_a = 0 end
-  if self.headbutt_charging or self.headbutting then self.buff_def_m = 3 end
-
-  if self.speed_boosting then
-    local n = math.remap(love.timer.getTime() - self.speed_boosting, 0, (3 + 0.015*self.level + current_new_game_plus*0.1), 1, 0.5)
-    self.speed_boosting_mvspd_m = (3 + 0.015*self.level + 0.1*current_new_game_plus)*n
-    if not self.speed_booster and not self.exploder and not self.headbutter and not self.tank and not self.shooter and not self.spawner then
-      self.color.r = math.remap(n, 1, 0.5, green[0].r, red[0].r)
-      self.color.g = math.remap(n, 1, 0.5, green[0].g, red[0].g)
-      self.color.b = math.remap(n, 1, 0.5, green[0].b, red[0].b)
-    end
-  else self.speed_boosting_mvspd_m = 1 end
 
   if self.slowed then self.slow_mvspd_m = self.slowed
   else self.slow_mvspd_m = 1 end
@@ -296,55 +282,36 @@ function Seeker:update(dt)
 
   self.stun_dmg_m = (self.barbarian_stunned and 2 or 1)
 
-  if self.shooter then
-    self.t:set_every_multiplier('shooter', (1 - math.min(self.level*0.02, 0.25)))
+  --get target / rotate to target
+  if self.target and self.target.dead then self.target = nil end
+  if self.state == unit_states['normal'] then
+    if not self:in_range()() then
+      self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.friendlies)
+    end
+    if self.target and self.target.dead then self.target = nil end
+    if self.target then
+      self:rotate_towards_object(self.target, 0.5)
+    end
+  elseif self.state == unit_states['stopped'] or self.state == unit_states['channeling'] then
+    if self.target and not self.target.dead then
+      self:rotate_towards_object(self.target, 1)
+    end
   end
 
-  if self.being_pushed then
-    --[[
-    local v = math.length(self:get_velocity())
-    if v < 25 then
-      if self.push_invulnerable then self.push_invulnerable = false end
-      self.being_pushed = false
-      self.steering_enabled = true
-      self.juggernaut_push = false
-      self.launcher_push = false
-      self:set_damping(0)
-      self:set_angular_damping(0)
-    end
-      ]]--
-  else
-    --get target / rotate to target
-    if self.target and self.target.dead then self.target = nil end
-    if self.state == unit_states['normal'] then
-      if not self:in_range()() then
-        self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.friendlies)
-      end
-      if self.target and self.target.dead then self.target = nil end
-      if self.target then
-        self:rotate_towards_object(self.target, 0.5)
-      end
-    elseif self.state == unit_states['stopped'] or self.state == unit_states['channeling'] then
-      if self.target and not self.target.dead then
-        self:rotate_towards_object(self.target, 1)
-      end
-    end
-  
-    if not self.headbutting then
-      if self.state == 'normal' then
-        if self:in_range()() then
-          -- dont need to move
-        elseif self.target then
-          self:seek_point(self.target.x, self.target.y)
-          self:rotate_towards_velocity(0.5)
-        else
-          -- dont need to move
-        end
+  if not self.headbutting then
+    if self.state == 'normal' then
+      if self:in_range()() then
+        -- dont need to move
+      elseif self.target then
+        self:seek_point(self.target.x, self.target.y)
+        self:rotate_towards_velocity(0.5)
       else
-        self:set_velocity(0,0)
+        -- dont need to move
       end
-      
+    else
+      self:set_velocity(0,0)
     end
+    
   end
   self.r = self:get_angle()
 
@@ -355,7 +322,7 @@ function Seeker:update(dt)
   if self.area_sensor then self.area_sensor:move_to(self.x, self.y) end
 end
 
-function Seeker:attack(area, mods, color)
+function OldEnemy:attack(area, mods, color)
   mods = mods or {}
   local t = {team = "enemy", group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(area or 64), color = color or self.color, dmg = self.area_dmg_m*self.dmg,
     character = self.character, level = self.level, parent = self}
@@ -371,33 +338,32 @@ function Seeker:attack(area, mods, color)
 
 end
 
-function Seeker:stomp(area, mods)
+function OldEnemy:stomp(area, mods)
   Stomp{group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = area or 25, color = red[0], dmg = 50, level = self.level, parent = self}
 end
 
-function Seeker:mortar(target)
+function OldEnemy:mortar(target)
   Mortar{group = main.current.main, team = "enemy", target = target, rs = 25, color = red[0], dmg = 30, level = self.level, parent = self}
 end
 
-function Seeker:breathe_fire(duration, rs)
+function OldEnemy:breathe_fire(duration, rs)
   BreatheFire{origin_offset = true, follows_caster = true, area_type = 'triangle',
     group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = rs, color = red[3], dmg = 20, duration = duration, level = self.level, parent = self}
 end
 
-function Seeker:summon()
+function OldEnemy:summon()
   Summon{group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = 25, color = purple[0], level = self.level, parent = self}
 end
 
-function Seeker:spawn_whelps(parent, amount)
+function OldEnemy:spawn_whelps(parent, amount)
   main.current:spawn_critters(parent, amount)
-
 end
 
-function Seeker:vanish(target)
+function OldEnemy:vanish(target)
   Vanish{group = main.current.main, team = "enemy", x = self.x, y = self.y, target = target, level = self.level, parent = self}
 end
 
-function Seeker:shoot(r, mods)
+function OldEnemy:shoot(r, mods)
   mods = mods or {}
   local t = {group = main.current.main, x = self.x, y = self.y, v = 175, r = r, color = self.color, dmg = self.dmg}
   self.hfx:use('shoot', 0.25)
@@ -414,7 +380,7 @@ function Seeker:shoot(r, mods)
 end
 
 
-function Seeker:draw()
+function OldEnemy:draw()
   graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
     if self.type == 'boss' then
       if self.name == 'stompy' or self.name == 'heigan' then
@@ -452,7 +418,7 @@ function Seeker:draw()
   end
 end
 
-function Seeker:on_collision_enter(other, contact)
+function OldEnemy:on_collision_enter(other, contact)
   local x, y = contact:getPositions()
 
   if other:is(Wall) then
@@ -486,7 +452,7 @@ function Seeker:on_collision_enter(other, contact)
       HitCircle{group = main.current.effects, x = x, y = y, rs = 6, color = fg[0], duration = 0.1}
       for i = 1, 2 do HitParticle{group = main.current.effects, x = x, y = y, color = self.color} end
       hit2:play{pitch = random:float(0.95, 1.05), volume = 0.35}
-      if other:is(Seeker) or other:is(Player) then self.headbutting = false end
+      if other:is(OldEnemy) or other:is(Player) then self.headbutting = false end
     end
   
   elseif other:is(Turret) then
@@ -498,7 +464,7 @@ function Seeker:on_collision_enter(other, contact)
 end
 
 
-function Seeker:hit(damage, projectile, dot, from_enemy)
+function OldEnemy:hit(damage, projectile, dot, from_enemy)
   if self.invulnerable then return end
   local pyrod = self.pyrod
   self.pyrod = false
@@ -646,14 +612,14 @@ function Seeker:hit(damage, projectile, dot, from_enemy)
   end
 end
 
-function Seeker:die()
+function OldEnemy:die()
   if self.parent and self.parent.summons and self.parent.summons > 0 then
     self.parent.summons = self.parent.summons - 1
   end
 end
 
 
-function Seeker:push(f, r, push_invulnerable)
+function OldEnemy:push(f, r, push_invulnerable)
   local n = 1
   if self.tank then n = 0.7 end
   if self.boss then n = 0.2 end
@@ -669,23 +635,23 @@ function Seeker:push(f, r, push_invulnerable)
 end
 
 
-function Seeker:speed_boost(duration)
+function OldEnemy:speed_boost(duration)
   self.speed_boosting = love.timer.getTime()
   self.t:after(duration, function() self.speed_boosting = false end, 'speed_boost')
 end
 
 
-function Seeker:slow(amount, duration)
+function OldEnemy:slow(amount, duration)
   self.slowed = amount
   self.t:after(duration, function() self.slowed = false end, 'slow')
 end
 
-function Seeker:onDeath()
+function OldEnemy:onDeath()
   Corpse{group = main.current.main, x = self.x, y = self.y}
 end
 
 
-function Seeker:curse(curse, duration, arg1, arg2, arg3)
+function OldEnemy:curse(curse, duration, arg1, arg2, arg3)
   buff1:play{pitch = random:float(0.65, 0.75), volume = 0.25}
   if curse == 'launcher' then
     self.t:after(duration, function()
@@ -743,7 +709,7 @@ function Seeker:curse(curse, duration, arg1, arg2, arg3)
 end
 
 
-function Seeker:apply_dot(dmg, duration, color)
+function OldEnemy:apply_dot(dmg, duration, color)
   self.t:every(0.25, function()
     hit2:play{pitch = random:float(0.8, 1.2), volume = 0.2}
     self:hit(dmg/4, nil, true)
@@ -1000,7 +966,7 @@ function EnemyProjectile:on_trigger_enter(other, contact)
     self:die(self.x, self.y, nil, random:int(2, 3))
     other:hit(self.dmg)
 
-  elseif other:is(Seeker) or other:is(EnemyCritter) then
+  elseif other:is(OldEnemy) or other:is(EnemyCritter) then
     if self.source == 'shooter' then
       self:die(self.x, self.y, nil, random:int(2, 3))
       other:hit(0.5*self.dmg, nil, nil, true)

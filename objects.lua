@@ -285,10 +285,6 @@ function Unit:calculate_stats(first_run)
     self.base_hp = 100
     self.base_dmg = 10
     self.base_mvspd = 75
-  elseif self:is(Seeker) then
-    self.base_hp = 150 * (math.pow(1.05, level))
-    self.base_dmg = 20  * (math.pow(1.05, level))
-    self.base_mvspd = 50
   elseif self:is(Troop) then
     self.base_hp = 50 * hpMod
     self.base_dmg = 10 * dmgMod
@@ -297,12 +293,16 @@ function Unit:calculate_stats(first_run)
     self.base_hp = 25 * hpMod
     self.base_dmg = 5 * dmgMod
     self.base_mvspd = 50 * spdMod
+  elseif self.class == 'regular_enemy' then
+    self.base_hp = 150 * (math.pow(1.05, level))
+    self.base_dmg = 20  * (math.pow(1.05, level))
+    self.base_mvspd = 50
   end
-  if self:is(Seeker) and self.type == 'rager' then
+  if self.class == 'regular_enemy' and self.type == 'rager' then
     self.base_mvspd = 150
     self.base_dmg = 10
   end
-  if self:is(Seeker) and self.type == 'boss' then
+  if  self.class == 'boss' then
     self.base_hp = 1500 * (1 + ((level / 6) * 0.25))
     self.base_dmg = 30
     self.base_mvspd = 50

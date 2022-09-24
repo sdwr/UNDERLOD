@@ -91,7 +91,7 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
   self.damage_dealt = 0
   self.damage_taken = 0
   self.main_slow_amount = .67
-  self.enemies = {Seeker, EnemyCritter}
+  self.enemies = {Enemy, EnemyCritter}
   self.friendlies = {Troop, Critter}
   self.troop_list = {}
   self.color = self.color or fg[0]
@@ -136,7 +136,7 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
 
   self:add_troops()
 
-  manage_spawns(self)
+  Manage_Spawns(self)
 end
 
 function Arena:spawn_critters(parent, n)
@@ -381,125 +381,6 @@ function Arena:quit()
         state.achievement_new_game_5 = true
         system.save_state()
         --steam.userStats.setAchievement('GAME_COMPLETE')
-        --steam.userStats.storeStats()
-      end
-
-      if self.ranger_level >= 2 then
-        state.achievement_rangers_win = true
-        system.save_state()
-        --steam.userStats.setAchievement('RANGERS_WIN')
-        --steam.userStats.storeStats()
-      end
-
-      if self.warrior_level >= 2 then
-        state.achievement_warriors_win = true
-        system.save_state()
-        --steam.userStats.setAchievement('WARRIORS_WIN')
-        --steam.userStats.storeStats()
-      end
-
-      if self.mage_level >= 2 then
-        state.achievement_mages_win = true
-        system.save_state()
-        --steam.userStats.setAchievement('MAGES_WIN')
-        --steam.userStats.storeStats()
-      end
-
-      if self.rogue_level >= 2 then
-        state.achievement_rogues_win = true
-        system.save_state()
-        --steam.userStats.setAchievement('ROGUES_WIN')
-        --steam.userStats.storeStats()
-      end
-
-      if self.healer_level >= 2 then
-        state.achievement_healers_win = true
-        system.save_state()
-        --steam.userStats.setAchievement('HEALERS_WIN')
-        --steam.userStats.storeStats()
-      end
-
-      if self.enchanter_level >= 2 then
-        state.achievement_enchanters_win = true
-        system.save_state()
-        --steam.userStats.setAchievement('ENCHANTERS_WIN')
-        --steam.userStats.storeStats()
-      end
-
-      if self.nuker_level >= 2 then
-        state.achievement_nukers_win = true
-        system.save_state()
-        --steam.userStats.setAchievement('NUKERS_WIN')
-        --steam.userStats.storeStats()
-      end
-
-      if self.conjurer_level >= 2 then
-        state.achievement_conjurers_win = true
-        system.save_state()
-        --steam.userStats.setAchievement('CONJURERS_WIN')
-        --steam.userStats.storeStats()
-      end
-
-      if self.psyker_level >= 2 then
-        state.achievement_psykers_win = true
-        system.save_state()
-        --steam.userStats.setAchievement('PSYKERS_WIN')
-        --steam.userStats.storeStats()
-      end
-
-      if self.curser_level >= 2 then
-        state.achievement_cursers_win = true
-        system.save_state()
-        --steam.userStats.setAchievement('CURSERS_WIN')
-        --steam.userStats.storeStats()
-      end
-
-      if self.forcer_level >= 2 then
-        state.achievement_forcers_win = true
-        system.save_state()
-        --steam.userStats.setAchievement('FORCERS_WIN')
-        --steam.userStats.storeStats()
-      end
-
-      if self.swarmer_level >= 2 then
-        state.achievement_swarmers_win = true
-        system.save_state()
-        --steam.userStats.setAchievement('SWARMERS_WIN')
-        --steam.userStats.storeStats()
-      end
-
-      if self.voider_level >= 2 then
-        state.achievement_voiders_win = true
-        system.save_state()
-        --steam.userStats.setAchievement('VOIDERS_WIN')
-        --steam.userStats.storeStats()
-      end
-
-      if self.sorcerer_level >= 3 then
-        state.achievement_sorcerers_win = true
-        system.save_state()
-        --steam.userStats.setAchievement('SORCERERS_WIN')
-        --steam.userStats.storeStats()
-      end
-
-      if self.mercenary_level >= 2 then
-        state.achievement_mercenaries_win = true
-        system.save_state()
-        --steam.userStats.setAchievement('MERCENARIES_WIN')
-        --steam.userStats.storeStats()
-      end
-
-      local all_units_level_2 = true
-      for _, unit in ipairs(self.starting_units) do
-        if unit.level ~= 2 then
-          all_units_level_2 = false
-          break
-        end
-      end
-      if all_units_level_2 then
-        state.achievement_level_2_win = true
-        system.save_state()
-        --steam.userStats.setAchievement('LEVEL_2_WIN')
         --steam.userStats.storeStats()
       end
     end
@@ -981,7 +862,7 @@ function Arena:spawn_n_critters(p, j, n, pass, parent)
     SpawnEffect{group = self.effects, x = p.x + o.x, y = p.y + o.y, action = function(x, y)
       if not pass then
         check_circle:move_to(x, y)
-        local objects = self.main:get_objects_in_shape(check_circle, {Seeker, EnemyCritter, Critter, Player, Sentry, Automaton, Bomb, Volcano, Saboteur, Pet, Turret})
+        local objects = self.main:get_objects_in_shape(check_circle, {Enemy, EnemyCritter, Critter, Player, Sentry, Automaton, Bomb, Volcano, Saboteur, Pet, Turret})
         if #objects > 0 then self.enemy_spawns_prevented = self.enemy_spawns_prevented + 1; return end
       end
       critter3:play{pitch = random:float(0.8, 1.2), volume = 0.8}
@@ -1011,10 +892,10 @@ function Arena:spawn_n_enemies(p, j, n, pass)
       spawn1:play{pitch = random:float(0.8, 1.2), volume = 0.15}
       if not pass then
         check_circle:move_to(x, y)
-        local objects = self.main:get_objects_in_shape(check_circle, {Seeker, EnemyCritter, Critter, Player, Sentry, Automaton, Bomb, Volcano, Saboteur, Pet, Turret})
+        local objects = self.main:get_objects_in_shape(check_circle, {Enemy, EnemyCritter, Critter, Player, Sentry, Automaton, Bomb, Volcano, Saboteur, Pet, Turret})
         if #objects > 0 then self.enemy_spawns_prevented = self.enemy_spawns_prevented + 1; return end
       end
-      Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'shooter', level = self.level}
+      Enemy{type = 'shooter', group = self.main, x = x, y = y, level = self.level}
     end}
   end, n, function() self.spawning_enemies = false end, 'spawn_enemies_' .. j)
 end
@@ -1037,7 +918,7 @@ function Arena:spawn_n_rares(p, j, n, pass)
       spawn1:play{pitch = random:float(0.8, 1.2), volume = 0.15}
       if not pass then
         check_circle:move_to(x, y)
-        local objects = self.main:get_objects_in_shape(check_circle, {Seeker, EnemyCritter, Critter, Player, Sentry, Automaton, Bomb, Volcano, Saboteur, Pet, Turret})
+        local objects = self.main:get_objects_in_shape(check_circle, {Enemy, EnemyCritter, Critter, Player, Sentry, Automaton, Bomb, Volcano, Saboteur, Pet, Turret})
       end
       local elite_type = 1
       if self.level < 6 then
@@ -1046,13 +927,13 @@ function Arena:spawn_n_rares(p, j, n, pass)
         elite_type = math.random(4)
       end
       if elite_type == 1 then
-        Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'stomper', level = self.level}
+        Enemy{type = 'mortar', group = self.main, x = x, y = y, level = self.level}
       elseif elite_type == 2 then
-        Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'mortar', level = self.level}
+        Enemy{type = 'stomper', group = self.main, x = x, y = y, level = self.level}
       elseif elite_type == 3 then
-        Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'summoner', level = self.level}
+        Enemy{type = 'summoner', group = self.main, x = x, y = y, level = self.level}
       elseif elite_type == 4 then
-        Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'assassin', level = self.level}
+        Enemy{type = 'assassin', group = self.main, x = x, y = y, level = self.level}
       end
     end}
   end, n, nil, 'spawn_rares_' .. j)
@@ -1061,7 +942,8 @@ end
 
 function Arena:spawn_boss(p)
   local x, y = p.x, p.y
-  Seeker{group = self.main, x = x, y = y, character = 'seeker', type = 'boss', name = p.name, level = self.level}
+  local args = {group = self.main, x = x, y = y, level = self.level}
+  Enemy{type = p.name, group = self.main, x = x, y = y, level = self.level}
 end
 
 

@@ -1,5 +1,5 @@
 
-function manage_spawns(arena)
+function Manage_Spawns(arena)
     if arena.level == 1000 then
         arena.level_1000_text = Text2{group = arena.ui, x = gw/2, y = gh/2, lines = {{text = '[fg, wavy_mid]UNDERLOD', font = fat_font, alignment = 'center'}}}
       
@@ -73,7 +73,8 @@ function manage_spawns(arena)
     
     
           end)
-          arena.t:every(function() return #arena.main:get_objects_by_classes(arena.enemies) <= 0 and arena.wave >= arena.max_waves and not arena.quitting and not arena.spawning_enemies end, function() arena:quit() end)
+          arena.t:every(function()
+            return #arena.main:get_objects_by_classes(arena.enemies) <= 0 and arena.wave >= arena.max_waves and not arena.quitting and not arena.spawning_enemies end, function() arena:quit() end)
         end)
     
         if arena.level == 20 and arena.trailer then
