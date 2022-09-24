@@ -3,24 +3,89 @@ turn game into rts :o
 -------------
 BUGS:
 --------------
-LUDUM DARE?
-can push bosses
-boss movement 
+combat:
+shouldn't be able to push bosses with units
+should be able to hit enemies without needing to hit the exact center (mainly problem with bosses)
+necromancers (+healers?) all target same corpse/unit
 
+items:
+no item tooltip when hovering in inv
+items too big coming from shop
+saving/enter arena with item on cursor?
+
+
+no safety checking on unit spawn (fixed? can have units on top of boss when spawns, no crash)
 web build (take out sound?)
 
 
+-------------
+GAMEPLAY TUNING:
+--------------
+enemy summoners are too good, either kill them right away or lose to the summons
+rounds are too fast, multiple waves? 
 
-no safety checking on unit spawn
+think about build variety:
+  tanky melee
+  squishy ranged
+  aoe vs single target
+  summoner
 
+make table of enemy hp vs unit damage 
+don't go blind into balancing
+make sure later waves have enough threats to be able to cast a few spells (can't kill every enemy at start)
 
 ------------------
 ADDITIONS:
 ------------------
 
+tooling:
+  debug mode
+    go to level from buy screen
+    free gold
+
+items:
+  cost 1/3/5 or 2/5/10
+  can have some # on each squad
+  new UI for items, move squads to center of buy screen?
+  think about taking out character rolling, move to popup card on certain levels
+
+  how will items combo? need to have value, can't be too degenerate (stack dmg on sniper)
+
+
+  damage:
+    flat dmg 
+    %dmg
+    %aspd
+  
+  survival:
+    vamp
+    shield
+    armor/hp?
+
+  utility:
+    move speed
+    ghost through units
+    basher
+    slow/freeze
+    aura
+
+  special:
+    revive after death for 5s
+    thorns
+    heal over time
+    stim pack
+
+
+
+
 enemies
   a̶d̶d̶ ̶t̶e̶l̶e̶g̶r̶a̶p̶h̶e̶d̶ ̶m̶e̶l̶e̶e̶ ̶s̶t̶o̶m̶p̶ ̶t̶y̶p̶e̶
  ̶ ̶a̶d̶d̶ ̶s̶u̶m̶m̶o̶n̶e̶r̶
+
+  add laser enemy
+  add star projectile enemy (shoots projectiles in 6 directions at same time)
+  add annoying flyers (circle around the arena, tiny projectiles that do not too much damage, small hitbox?, don't collide with objects)
+  add horde-type summoner (lots of little fast summons)
 
   add leapers
   add homing missiler
@@ -34,6 +99,10 @@ enemies
   - change spawn logic
     * fixed by level?
     * all at once or over time?
+
+items
+
+
 
 allies
   - archer feels weird

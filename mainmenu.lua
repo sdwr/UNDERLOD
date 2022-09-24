@@ -42,7 +42,7 @@ function MainMenu:on_enter(from)
   self.main:enable_trigger_between('enemy_projectile', 'enemy')
   self.main:enable_trigger_between('player', 'ghost')
 
-  self.enemies = {Seeker, EnemyCritter}
+  self.enemies = {Enemy, EnemyCritter}
 
   -- Spawn solids and player
   self.x1, self.y1 = gw/2 - 0.8*gw/2, gh/2 - 0.8*gh/2
@@ -80,15 +80,45 @@ function MainMenu:on_enter(from)
 
   self.title_text = Text({{text = '[wavy_mid, fg]UNDERLOD', font = fat_font, alignment = 'center'}}, global_text_tags)
 
-  self.arena_run_button = Button{group = self.main_ui, x = 55, y = gh/2 - 10, force_update = true, button_text = 'arena run', fg_color = 'bg10', bg_color = 'bg', action = function(b)
+  local run = system.load_run()
+
+  if(run and not not next(run)) then
+    self.arena_continue_button = Button{group = self.main_ui, x = 52, y = gh/2 - 10, force_update = true, button_text = 'continue',  fg_color = 'bg10', bg_color = 'bg', action = function(b)
+      ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+      ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+      ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+      TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
+        self.transitioning = true
+        slow_amount = 1
+        run_passive_pool = run.run_passive_pool or {
+          'centipede', 'ouroboros_technique_r', 'ouroboros_technique_l', 'amplify', 'resonance', 'ballista', 'call_of_the_void', 'crucio', 'speed_3', 'damage_4', 'shoot_5', 'death_6', 'lasting_7',
+          'defensive_stance', 'offensive_stance', 'kinetic_bomb', 'porcupine_technique', 'last_stand', 'seeping', 'deceleration', 'annihilation', 'malediction', 'hextouch', 'whispers_of_doom',
+          'tremor', 'heavy_impact', 'fracture', 'meat_shield', 'hive', 'baneling_burst', 'blunt_arrow', 'explosive_arrow', 'divine_machine_arrow', 'chronomancy', 'awakening', 'divine_punishment',
+          'assassination', 'flying_daggers', 'ultimatum', 'magnify', 'echo_barrage', 'unleash', 'reinforce', 'payback', 'enchanted', 'freezing_field', 'burning_field', 'gravity_field', 'magnetism',
+          'insurance', 'dividends', 'berserking', 'unwavering_stance', 'unrelenting_stance', 'blessing', 'haste', 'divine_barrage', 'orbitism', 'psyker_orbs', 'psychosink', 'rearm', 'taunt', 'construct_instability',
+          'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
+          'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
+        }
+        run_time = run.time or 0
+        gold = run.gold or 3
+        passives = run.passives or {}
+        locked_state = run.locked_state
+        current_new_game_plus = run.current_new_game_plus or current_new_game_plus or 0
+        system.save_state()
+        main:add(BuyScreen'buy_screen')
+        main:go_to('buy_screen', run.level or 1, run.loop or 0, run.units or {}, run.max_units or 3, passives, run.shop_level or 1, run.shop_xp or 0)
+      end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
+    end}
+  end
+  
+  self.arena_run_button = Button{group = self.main_ui, x = 49, y = gh/2 + 12, force_update = true, button_text = 'new run', fg_color = 'bg10', bg_color = 'bg', action = function(b)
     ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
       self.transitioning = true
       slow_amount = 1
-      local run = system.load_run()
-      run_passive_pool = run.run_passive_pool or {
+      run_passive_pool = {
         'centipede', 'ouroboros_technique_r', 'ouroboros_technique_l', 'amplify', 'resonance', 'ballista', 'call_of_the_void', 'crucio', 'speed_3', 'damage_4', 'shoot_5', 'death_6', 'lasting_7',
         'defensive_stance', 'offensive_stance', 'kinetic_bomb', 'porcupine_technique', 'last_stand', 'seeping', 'deceleration', 'annihilation', 'malediction', 'hextouch', 'whispers_of_doom',
         'tremor', 'heavy_impact', 'fracture', 'meat_shield', 'hive', 'baneling_burst', 'blunt_arrow', 'explosive_arrow', 'divine_machine_arrow', 'chronomancy', 'awakening', 'divine_punishment',
@@ -97,24 +127,24 @@ function MainMenu:on_enter(from)
         'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
         'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
       }
-      run_time = run.time or 0
-      gold = run.gold or 3
-      passives = run.passives or {}
+      run_time = 0
+      gold = 3
+      passives = {}
       locked_state = run.locked_state
-      current_new_game_plus = run.current_new_game_plus or current_new_game_plus or 0
+      current_new_game_plus = current_new_game_plus or 0
       system.save_state()
       main:add(BuyScreen'buy_screen')
-      main:go_to('buy_screen', run.level or 1, run.loop or 0, run.units or {}, run.max_units or 3, passives, run.shop_level or 1, run.shop_xp or 0)
+      main:go_to('buy_screen', 1, 0, {}, 3, passives, 1, 0)
     end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
   end}
-  self.options_button = Button{group = self.main_ui, x = 47, y = gh/2 + 12, force_update = true, button_text = 'options', fg_color = 'bg10', bg_color = 'bg', action = function(b)
+  self.options_button = Button{group = self.main_ui, x = 47, y = gh/2 + 34, force_update = true, button_text = 'options', fg_color = 'bg10', bg_color = 'bg', action = function(b)
     if not self.paused then
       open_options(self)
     else
       close_options(self)
     end
   end}
-  self.quit_button = Button{group = self.main_ui, x = 37, y = gh/2 + 34, force_update = true, button_text = 'quit', fg_color = 'bg10', bg_color = 'bg', action = function(b)
+  self.quit_button = Button{group = self.main_ui, x = 37, y = gh/2 + 56, force_update = true, button_text = 'quit', fg_color = 'bg10', bg_color = 'bg', action = function(b)
     system.save_state()
     --steam.shutdown()
     love.event.quit()

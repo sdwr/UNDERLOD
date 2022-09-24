@@ -8,6 +8,9 @@ require 'player'
 require 'enemies'
 require 'media'
 require 'helper/helper_main'
+require 'spawnmanager'
+require 'enemies.enemy_helper'
+
 
 
 function init()
@@ -122,13 +125,17 @@ function init()
   turret_deploy = Sound('321215__hybrid-v__sci-fi-weapons-deploy.ogg', s)
   rogue_crit1 = Sound('Dagger Stab (Flesh) 4.ogg', s)
   rogue_crit2 = Sound('Sword hits another sword 6.ogg', s)
+  
+  song1 = Sound('gunnar - 26 hours and I feel Fine.mp3', {tags = {music}})
+  song2 = Sound('gunnar - Back On Track.mp3', {tags = {music}})
+  song3 = Sound('gunnar - Chrysalis.mp3', {tags = {music}})
+  song4 = Sound('gunnar - Fingers.mp3', {tags = {music}})
+  song5 = Sound('gunnar - Jam 32 Melancholy.mp3', {tags = {music}})
+  song6 = Sound('gunnar - Make It Rain.mp3', {tags = {music}})
+  song7 = Sound('gunnar - Mammon.mp3', {tags = {music}})
+  song8 = Sound('gunnar - Up To The Brink.mp3', {tags = {music}})
+  death_song = nil
 
-  song1 = Sound('Kubbi - Ember - 01 Pathfinder.ogg', {tags = {music}})
-  song2 = Sound('Kubbi - Ember - 02 Ember.ogg', {tags = {music}})
-  song3 = Sound('Kubbi - Ember - 03 Firelight.ogg', {tags = {music}})
-  song4 = Sound('Kubbi - Ember - 04 Cascade.ogg', {tags = {music}})
-  song5 = Sound('Kubbi - Ember - 05 Compass.ogg', {tags = {music}})
-  death_song = Sound('Kubbi - Ember - 09 Formed by Glaciers.ogg', {tags = {music}})
 
   lock_image = Image('lock')
   speed_booster_elite = Image('speed_booster_elite')
@@ -1014,7 +1021,7 @@ function init()
     ['sorcerer'] = {hp = 0.8, dmg = 1.3, aspd = 1, area_dmg = 1.2, area_size = 1, def = 0.8, mvspd = 1},
     ['mercenary'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1},
     ['explorer'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1.25},
-    ['seeker'] = {hp = 0.5, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 0.3},
+    ['regular_enemy'] = {hp = 0.5, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 0.3},
     ['boss'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1},
     ['enemy_critter'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 0.5},
     ['saboteur'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1.4},
@@ -1071,6 +1078,39 @@ function init()
     [1] = {'swordsman', 'archer'},
     [2] = {'wizard', 'shaman', 'cannon'},
     [3] = {'sniper'},
+    [4] = {'sniper'}
+  }
+
+  item_images = {
+    ['smallsword'] = warrior,
+    ['medsword'] = warrior,
+    ['largesword'] = warrior,
+  }
+
+  item_costs = {
+    ['smallsword'] = 2,
+    ['medsword'] = 5,
+    ['largesword'] = 10,
+  }
+
+  item_stat_multipliers = {
+    ['smallsword'] = {dmg = 1.25},
+    ['medsword'] = {dmg = 1.5},
+    ['largesword'] = {dmg = 1.75},
+
+  }
+
+  item_text = {
+    ['smallsword'] = "A tiny sword",
+    ['medsword'] = "A medium sword",
+    ['largesword'] = "A large sword!",
+  }
+
+  tier_to_items = {
+    [1] = {'smallsword'},
+    [2] = {'medsword'},
+    [3] = {'largesword'},
+    [4] = {'largesword'},
   }
 
   attack_ranges = {
@@ -1752,6 +1792,14 @@ function init()
     [3] = {25, 45, 20, 10},
     [4] = {10, 25, 45, 20},
     [5] = {5, 15, 30, 50},
+  }
+
+  level_to_item_odds = {
+    [1] = {100, 0, 0, 0},
+    [2] = {55, 30, 15, 0},
+    [3] = {35, 40, 20, 5},
+    [4] = {10, 25, 45, 20},
+    [5] = {0, 20, 40, 40},
   }
 
   get_shop_odds = function(lvl, tier)

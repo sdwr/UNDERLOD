@@ -418,15 +418,15 @@ function Player:hit(damage, from_undead)
     if self.stored_heal > (0.25*self.max_hp) then
       self.stored_heal = 0
       local check_circle = Circle(random:float(main.current.x1 + 16, main.current.x2 - 16), random:float(main.current.y1 + 16, main.current.y2 - 16), 2)
-      local objects = main.current.main:get_objects_in_shape(check_circle, {Seeker, EnemyCritter, Critter, Volcano, Saboteur, Bomb, Pet, Turret, Sentry, Automaton})
+      local objects = main.current.main:get_objects_in_shape(check_circle, {Enemy, EnemyCritter, Critter, Volcano, Saboteur, Bomb, Pet, Turret, Sentry, Automaton})
       while #objects > 0 do
         check_circle:move_to(random:float(main.current.x1 + 16, main.current.x2 - 16), random:float(main.current.y1 + 16, main.current.y2 - 16))
-        objects = main.current.main:get_objects_in_shape(check_circle, {Seeker, EnemyCritter, Critter, Volcano, Saboteur, Bomb, Pet, Turret, Sentry, Automaton})
+        objects = main.current.main:get_objects_in_shape(check_circle, {Enemy, EnemyCritter, Critter, Volcano, Saboteur, Bomb, Pet, Turret, Sentry, Automaton})
       end
       for i = 1, 3 do
         SpawnEffect{group = main.current.effects, x = check_circle.x, y = check_circle.y, color = green[0], action = function(x, y)
           local check_circle = Circle(x, y, 2)
-          local objects = main.current.main:get_objects_in_shape(check_circle, {Seeker, EnemyCritter, Critter, Sentry, Volcano, Saboteur, Bomb, Pet, Turret, Automaton})
+          local objects = main.current.main:get_objects_in_shape(check_circle, {Enemy, EnemyCritter, Critter, Sentry, Volcano, Saboteur, Bomb, Pet, Turret, Automaton})
           if #objects == 0 then
             HealingOrb{group = main.current.main, x = x, y = y}
           end
@@ -494,7 +494,7 @@ function Player:hit(damage, from_undead)
       end
 
       if self.annihilation and self.class == 'voider' then
-        local enemies = self.group:get_objects_by_classes({Seeker, EnemyCritter})
+        local enemies = self.group:get_objects_by_classes({Enemy, EnemyCritter})
         for _, enemy in ipairs(enemies) do
           enemy:apply_dot(self.dmg*(self.dot_dmg_m or 1)*(main.current.chronomancer_dot or 1), 3)
         end
@@ -896,7 +896,7 @@ function Projectile:init(args)
         local t = {group = main.current.main, x = self.x + 8*math.cos(r), y = self.y + 8*math.sin(r), v = 250, r = r, color = self.parent.color, dmg = self.parent.dmg, pierce = 2, character = 'arcanist_projectile',
         parent = self.parent, level = self.parent.level}
         local check_circle = Circle(t.x, t.y, 2)
-        local objects = main.current.main:get_objects_in_shape(check_circle, {Player, Seeker, EnemyCritter, Critter, Sentry, Volcano, Saboteur, Bomb, Pet, Turret, Automaton})
+        local objects = main.current.main:get_objects_in_shape(check_circle, {Player, Enemy, EnemyCritter, Critter, Sentry, Volcano, Saboteur, Bomb, Pet, Turret, Automaton})
         if #objects == 0 then Projectile(table.merge(t, mods or {})) end
       end
     end)
@@ -2100,12 +2100,9 @@ function Summon:spawn()
   spawn1:play{pitch = random:float(0.8, 1.2), volume = 0.15}
   if self.parent.summons < 4 then
     self.parent.summons = self.parent.summons + 1
-    Seeker{group = main.current.main, x= self.x + 10, y = self.y, character = 'seeker', type = 'rager', level = self.level, parent = self.parent}
+    local args ={group = main.current.main, x= self.x + 10, y = self.y, level = self.level, parent = self.parent}
+    Enemy{type = 'rager', group = main.current.main, x= self.x + 10, y = self.y, level = self.level, parent = self.parent}
   end
-  --[[if self.parent.summons < 4 then
-    self.parent.summons = self.parent.summons + 1
-    Seeker{group = main.current.main, x= self.x - 10, y = self.y, character = 'seeker', type = 'rager', level = self.level, parent = self.parent}
-  end]]--
   self:recover()
 end
 
@@ -2768,7 +2765,6 @@ function Troop:init(args)
   self:set_character()
 
   self.state = unit_states['normal']
-
 end
 
 function Troop:update(dt)
@@ -3359,12 +3355,12 @@ function Automaton:update(dt)
     self:seek_point(gw/2, gh/2)
     self:wander(50, 200, 50)
     self:rotate_towards_velocity(1)
-    self:steering_separate(32, {Seeker})
+    self:steering_separate(32, {Enemy})
   else
     self:seek_point(self.target.x, self.target.y)
     self:wander(50, 200, 50)
     self:rotate_towards_velocity(1)
-    self:steering_separate(32, {Seeker})
+    self:steering_separate(32, {Enemy})
   end
   self.r = self:get_angle()
 
@@ -3759,7 +3755,7 @@ end
 
 
 function Critter:on_trigger_enter(other, contact)
-  --[[if other:is(Seeker) then
+  --[[if other:is(Enemy) then
     critter2:play{pitch = random:float(0.65, 0.85), volume = 0.1}
     self:hit(1)
     other:hit(self.dmg, self)

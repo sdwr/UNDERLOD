@@ -285,10 +285,6 @@ function Unit:calculate_stats(first_run)
     self.base_hp = 100
     self.base_dmg = 10
     self.base_mvspd = 75
-  elseif self:is(Seeker) then
-    self.base_hp = 150 * (math.pow(1.05, level))
-    self.base_dmg = 20  * (math.pow(1.05, level))
-    self.base_mvspd = 50
   elseif self:is(Troop) then
     self.base_hp = 50 * hpMod
     self.base_dmg = 10 * dmgMod
@@ -297,12 +293,16 @@ function Unit:calculate_stats(first_run)
     self.base_hp = 25 * hpMod
     self.base_dmg = 5 * dmgMod
     self.base_mvspd = 50 * spdMod
+  elseif self.class == 'regular_enemy' then
+    self.base_hp = 150 * (math.pow(1.05, level))
+    self.base_dmg = 20  * (math.pow(1.05, level))
+    self.base_mvspd = 50
   end
-  if self:is(Seeker) and self.type == 'rager' then
+  if self.class == 'regular_enemy' and self.type == 'rager' then
     self.base_mvspd = 150
     self.base_dmg = 10
   end
-  if self:is(Seeker) and self.type == 'boss' then
+  if  self.class == 'boss' then
     self.base_hp = 1500 * (1 + ((level / 6) * 0.25))
     self.base_dmg = 30
     self.base_mvspd = 50
@@ -339,6 +339,31 @@ function Unit:calculate_stats(first_run)
       local buff = v
       if buff.stats then
         for stat, amt in buff.stats do
+          if stat == buff_types['dmg'] then
+            self.buff_dmg_m = self.buff_dmg_m + amt
+          elseif stat == buff_types['def'] then
+            self.buff_def_m = self.buff_dmg_m + amt
+          elseif stat == buff_types['mvspd'] then
+            self.buff_mvspd_m = self.buff_mvspd_m + amt
+          elseif stat == buff_types['aspd'] then
+            self.buff_aspd_m = self.buff_aspd_m + amt
+          elseif stat == buff_types['area_dmg'] then
+            self.buff_area_dmg_m = self.buff_area_dmg_m + amt
+          elseif stat == buff_types['area_size'] then
+            self.buff_area_size_m = self.buff_area_size_m + amt
+          elseif stat == buff_types['hp'] then
+            self.buff_hp_m = self.buff_hp_m + amt
+          end
+        end
+      end
+    end
+  end
+
+  if self.items and #self.items > 0 then
+    for k,v in ipairs(self.items) do
+      local item = v
+      if item_stat_multipliers[item] then
+        for stat, amt in pairs(item_stat_multipliers[item]) do
           if stat == buff_types['dmg'] then
             self.buff_dmg_m = self.buff_dmg_m + amt
           elseif stat == buff_types['def'] then
