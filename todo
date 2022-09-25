@@ -4,6 +4,9 @@ turn game into rts :o
 BUGS:
 --------------
 combat:
+new spells still aim/cast when dead
+
+
 shouldn't be able to push bosses with units
 should be able to hit enemies without needing to hit the exact center (mainly problem with bosses)
 necromancers (+healers?) all target same corpse/unit

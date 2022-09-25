@@ -2970,6 +2970,7 @@ function Troop:onDeath()
 end
 
 
+
 function Troop:set_character()
   if self.character == 'swordsman' then
     self.dmg = self.dmg / 3;
@@ -2987,6 +2988,26 @@ function Troop:set_character()
         self:shootAnimation(self:angle_to_object(self.target))
       end
     end, nil, nil, 'shoot')
+
+
+  --spell tests
+  --elseif self.character == 'archer' then
+    --self.attack_sensor = Circle(self.x, self.y, attack_ranges['ultra-long'])
+    --self.t:cooldown(3, self:in_range(), function()
+      --if self.target then
+        -- shoot1:play{volume=0.9}
+        -- Helper.Spell.Missile.create(Helper.Color.blue, 10, false, 50, false, 20, self.x, self.y, Helper.Geometry.random_in_radius(self.target.x, self.target.y, 25))
+
+        -- sniper_load:play{volume=0.9}
+        -- Helper.Spell.SpreadMissile.create(Helper.Color.green, 20, false, 100, 30, self)
+
+        --sniper_load:play{volume=0.9}
+        --Helper.Spell.Laser.create(Helper.Color.blue, 1, false, false, 100, self, 0, 0)
+
+        -- sniper_load:play{volume=0.9}
+        -- Helper.Spell.SpreadLaser.create(Helper.Color.red, 5, false, 300, self)
+      --end
+    --end, nil, nil, 'shoot')
 
   elseif self.character == 'cannon' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['long'])

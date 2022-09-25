@@ -7,8 +7,10 @@ require 'objects'
 require 'player'
 require 'enemies'
 require 'media'
+require 'helper/helper_main'
 require 'spawnmanager'
 require 'enemies.enemy_helper'
+
 
 
 function init()

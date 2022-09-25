@@ -56,8 +56,10 @@ function Enemy:update(dt)
         self:rotate_towards_object(self.target, 1)
       end
     end
-  
-    if self.state == 'normal' then
+
+
+    --move
+    if self.state == unit_states['normal'] then
         if self:in_range()() then
             -- dont need to move
         elseif self.target then
@@ -66,6 +68,8 @@ function Enemy:update(dt)
         else
             -- dont need to move
         end
+    elseif self.state == unit_states['frozen'] or unit_states['channeling'] then
+      self:set_velocity(0,0)
     end
 
     self.r = self:get_angle()
