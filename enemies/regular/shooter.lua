@@ -10,11 +10,12 @@ fns['shoot'] = function(self, r, mods)
 
   self.t:after(0.4, function()
     self.state = unit_states['stopped']
-    -- HitCircle{group = main.current.effects, x = self.x , y = self.y, rs = 6, duration = 0.1}
-    -- EnemyProjectile(table.merge(t, mods or {}))
+    HitCircle{group = main.current.effects, x = self.x , y = self.y, rs = 6, duration = 0.1}
+    EnemyProjectile(table.merge(t, mods or {}))
 
 
 
+    -- spell tests
     -- if self.target then
     --   shoot1:play{volume=0.9}
     --   Helper.Spell.Missile.create(Helper.Color.blue, 10, true, 20, false, 20, self.x, self.y, Helper.Geometry.random_in_radius(self.target.x, self.target.y, 25))
@@ -23,8 +24,8 @@ fns['shoot'] = function(self, r, mods)
     -- sniper_load:play{volume=0.9}
     -- Helper.Spell.SpreadMissile.create(Helper.Color.green, 20, true, 100, 30, self)
 
-    sniper_load:play{volume=0.9}
-    Helper.Spell.Laser.create(Helper.Color.red, 1, true, false, 100, self, 0, 0)
+    --sniper_load:play{volume=0.9}
+    --Helper.Spell.Laser.create(Helper.Color.red, 1, true, false, 100, self, 0, 0)
 
     -- sniper_load:play{volume=0.9}
     -- Helper.Spell.SpreadLaser.create(Helper.Color.red, 5, true, 300, self)
