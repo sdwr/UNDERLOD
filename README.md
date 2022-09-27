@@ -40,7 +40,9 @@ SPACE moves all units
 
 DEBUG:
 ctrl+a shows fps
+
 ctrl+g gives 100 gold
+
 d makes damage circle
 
 ### Dev notes at
