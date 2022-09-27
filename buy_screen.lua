@@ -59,6 +59,7 @@ function BuyScreen:set_level_text()
   end
 end
 
+
 function BuyScreen:on_enter(from, level, loop, units, max_units, passives, shop_level, shop_xp)
   self.gameState = GameState({level = level, loop = loop, units = units, max_units = max_units, passives = passives, shop_level = shop_level, shop_xp = shop_xp})
   self.level = level

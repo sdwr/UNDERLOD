@@ -112,7 +112,8 @@ function Manage_Spawns(arena)
         --spawns new group every delay, doesn't wait for group before to finish
         --make sure time_between_spawns * spawns_in_group < time_between_spawn_groups
         if current_group <= num_rares then
-          Spawn_Enemies(arena, current_group, {'stomper', 'mortar', 'assassin', 'summoner'})
+          Spawn_Enemies(arena, current_group, {'mortar', 'laser', 'spread'})
+          -- Spawn_Enemies(arena, current_group, {'stomper', 'mortar', 'assassin', 'summoner', 'laser'})
         else
           Spawn_Enemies(arena, current_group, {'shooter', 'seeker'})
         end
