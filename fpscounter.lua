@@ -14,7 +14,7 @@ function FPSCounter:update(dt)
     self.text:update(dt)
 
     if input['lctrl'].down or input['rctrl'].down then
-        if input['d'].pressed then
+        if input['a'].pressed then
             self:toggleShow()
         end
     end

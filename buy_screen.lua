@@ -368,6 +368,9 @@ end
 function BuyScreen:set_cards(shop_level, dont_spawn_effect, first_call)
   local first_run = nil
   if not self.cards or #self.cards == 0 then first_run = true end
+  if first_run then
+    locked_state = nil
+  end
   if self.cards then for i = 1, 3 do if self.cards[i] then self.cards[i]:die(dont_spawn_effect) end end end
   self.cards = {}
   local all_units = {}
@@ -381,7 +384,6 @@ function BuyScreen:set_cards(shop_level, dont_spawn_effect, first_call)
     unit_2 = random:table(first_run_tier_to_characters[random:weighted_pick(unpack(tier_weights))])
     unit_3 = random:table(first_run_tier_to_characters[random:weighted_pick(unpack(tier_weights))])
     all_units = {unit_1, unit_2, unit_3}
-
   else
     repeat 
       unit_1 = random:table(tier_to_characters[random:weighted_pick(unpack(tier_weights))])

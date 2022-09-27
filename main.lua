@@ -1068,16 +1068,18 @@ function init()
     ['buffer'] = function(lvl) return 'buff stuff yo' end,
   }
 
+
+  --wizard sucks right now, stacks blizzard and takes too long to cast
   tier_to_characters = {
     [1] = {'swordsman', 'archer', 'cleric'},
-    [2] = {'wizard', 'shaman', 'paladin', 'priest', 'cannon'},
+    [2] = {'shaman', 'paladin', 'priest', 'cannon'},
     [3] = {'sniper', 'necromancer', 'bard', 'druid'},
     [4] = {'juggernaut'},
   }
 
   first_run_tier_to_characters = {
     [1] = {'swordsman', 'archer'},
-    [2] = {'wizard', 'shaman', 'cannon'},
+    [2] = {'shaman', 'cannon'},
     [3] = {'sniper'},
     [4] = {'sniper'}
   }
