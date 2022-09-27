@@ -15,7 +15,7 @@ fns['init_enemy'] = function(self)
 
   --set attacks
     self.summons = 0
-    self.t:cooldown(attack_speeds['slow'], function() return self.state == 'normal' and self.summons < 4 end, function()
+    self.t:cooldown(attack_speeds['slow'], function() return self.state == 'normal' and self.summons < 3 end, function()
         Summon{group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = 25, color = purple[0], level = self.level, parent = self}
     end, nil, nil, 'cast')
 end

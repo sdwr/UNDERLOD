@@ -5,7 +5,7 @@ BUGS:
 --------------
 combat:
 new spells still aim/cast when dead
-
+rally doesn't work while shooting/about to shoot
 
 shouldn't be able to push bosses with units
 should be able to hit enemies without needing to hit the exact center (mainly problem with bosses)
@@ -17,7 +17,8 @@ items too big coming from shop
 saving/enter arena with item on cursor?
 
 crash when spawning units inside each other (fixed for boss though?)
-web build (take out sound?)
+
+--check global GameState references - had a bug trying to set the rallyEffect in the main menu
 
 
 -------------

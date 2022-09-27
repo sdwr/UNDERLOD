@@ -15,34 +15,32 @@ function MainMenu:on_enter(from)
   --steam.friends.setRichPresence('text', 'Main Menu')
 
   self.floor = Group()
-  self.main = Group():set_as_physics_world(32, 0, 0, {'player', 'enemy', 'projectile', 'enemy_projectile', 'force_field', 'ghost'})
+  self.main = Group():set_as_physics_world(32, 0, 0, {'troop', 'enemy', 'projectile', 'enemy_projectile', 'force_field', 'ghost'})
   self.post_main = Group()
   self.effects = Group()
   self.main_ui = Group():no_camera()
   self.ui = Group():no_camera()
-  self.main:disable_collision_between('player', 'player')
-  self.main:disable_collision_between('player', 'projectile')
-  self.main:disable_collision_between('player', 'enemy_projectile')
+  self.main:disable_collision_between('troop', 'projectile')
   self.main:disable_collision_between('projectile', 'projectile')
   self.main:disable_collision_between('projectile', 'enemy_projectile')
   self.main:disable_collision_between('projectile', 'enemy')
   self.main:disable_collision_between('enemy_projectile', 'enemy')
   self.main:disable_collision_between('enemy_projectile', 'enemy_projectile')
-  self.main:disable_collision_between('player', 'force_field')
+  self.main:disable_collision_between('troop', 'force_field')
   self.main:disable_collision_between('projectile', 'force_field')
-  self.main:disable_collision_between('ghost', 'player')
+  self.main:disable_collision_between('ghost', 'troop')
   self.main:disable_collision_between('ghost', 'projectile')
   self.main:disable_collision_between('ghost', 'enemy')
   self.main:disable_collision_between('ghost', 'enemy_projectile')
   self.main:disable_collision_between('ghost', 'ghost')
   self.main:disable_collision_between('ghost', 'force_field')
   self.main:enable_trigger_between('projectile', 'enemy')
-  self.main:enable_trigger_between('enemy_projectile', 'player')
-  self.main:enable_trigger_between('player', 'enemy_projectile')
+  self.main:enable_trigger_between('troop', 'enemy_projectile')
   self.main:enable_trigger_between('enemy_projectile', 'enemy')
-  self.main:enable_trigger_between('player', 'ghost')
+  self.main:enable_trigger_between('troop', 'ghost')
 
   self.enemies = {Enemy, EnemyCritter}
+  self.friendlies = {Troop, Critter}
 
   -- Spawn solids and player
   self.x1, self.y1 = gw/2 - 0.8*gw/2, gh/2 - 0.8*gh/2
@@ -63,18 +61,14 @@ function MainMenu:on_enter(from)
   end)
 
   self.units = {
-    {character = 'psykino', level = 1},
-    {character = 'magician', level = 1},
-    {character = 'bane', level = 1},
-    {character = 'scout', level = 1},
-    {character = 'cannoneer', level = 1},
     {character = 'swordsman', level = 1},
     {character = 'archer', level = 1},
+    {character = 'shaman', level = 1},
   }
 
   for i, unit in ipairs(self.units) do
-    if i == 1 then
-      self.player = Player{group = self.main, x = gw/2 + random:float(-48, 48), y = gh/2 + 16 + random:float(-48, 48), leader = true, character = unit.character, level = unit.level, passives = self.passives, ii = i}
+    for j=0,4 do
+      Troop{group = self.main, x = gw/2 + random:float(-48, 48), y = gh/2 + 16 + random:float(-48, 48), character = unit.character, level = unit.level}
     end
   end
 

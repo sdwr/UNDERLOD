@@ -288,7 +288,7 @@ function Unit:calculate_stats(first_run)
   elseif self:is(Troop) then
     self.base_hp = 50 * hpMod
     self.base_dmg = 10 * dmgMod
-    self.base_mvspd = 75 * spdMod
+    self.base_mvspd = 100 * spdMod
   elseif self:is(EnemyCritter) or self:is(Critter) then
     self.base_hp = 25 * hpMod
     self.base_dmg = 5 * dmgMod
@@ -437,7 +437,7 @@ function Unit:in_range()
 end
 
 function Unit:should_follow()
-  local input = (input.mouse_state["m1"] and main.selectedClass == self.class) or input['space'].down
+  local input = (input.mouse_state["m1"] and main.selectedCharacter == self.character) or input['space'].down
   local canMove = (self.state == unit_states['normal'] or self.state == unit_states['stopped'] or self.state == unit_states['rallying'] or self.state == unit_states['following'])
 
   return input and canMove

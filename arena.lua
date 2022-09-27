@@ -6,13 +6,13 @@ function Arena:init(name)
   self:init_game_object()
 end
 
-function Arena:select_class(class)
-  if main.selectedClass then self.hotbar[main.selectedClass].unit_selected = false end
-  main.selectedClass = class
-  self.hotbar[class].unit_selected = true
+function Arena:select_character(character)
+  if main.selectedCharacter then self.hotbar[main.selectedCharacter].unit_selected = false end
+  main.selectedCharacter = character
+  self.hotbar[character].unit_selected = true
 end
 
-function Arena:select_class_by_index(i)
+function Arena:select_character_by_index(i)
   if self.hotbar_by_index[i] then
     self.hotbar_by_index[i]:action()
   end
@@ -48,24 +48,18 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
   --steam.friends.setRichPresence('text', 'Arena - Level ' .. self.level)
 
   self.floor = Group()
-  self.main = Group():set_as_physics_world(32, 0, 0, {'player', 'enemy', 'projectile', 'enemy_projectile', 'force_field', 'ghost', 'troop'})
+  self.main = Group():set_as_physics_world(32, 0, 0, {'troop', 'enemy', 'projectile', 'enemy_projectile', 'force_field', 'ghost',})
   self.post_main = Group()
   self.effects = Group()
   self.ui = Group()
   self.credits = Group()
-  self.main:disable_collision_between('player', 'troop')
   self.main:disable_collision_between('troop', 'projectile')
-  self.main:disable_collision_between('player', 'player')
-  self.main:disable_collision_between('player', 'projectile')
-  self.main:disable_collision_between('player', 'enemy_projectile')
   self.main:disable_collision_between('projectile', 'projectile')
   self.main:disable_collision_between('projectile', 'enemy_projectile')
   self.main:disable_collision_between('projectile', 'enemy')
   self.main:disable_collision_between('enemy_projectile', 'enemy')
   self.main:disable_collision_between('enemy_projectile', 'enemy_projectile')
-  self.main:disable_collision_between('player', 'force_field')
   self.main:disable_collision_between('projectile', 'force_field')
-  self.main:disable_collision_between('ghost', 'player')
   self.main:disable_collision_between('ghost', 'troop')
   self.main:disable_collision_between('ghost', 'projectile')
   self.main:disable_collision_between('ghost', 'enemy')
@@ -73,11 +67,9 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
   self.main:disable_collision_between('ghost', 'ghost')
   self.main:disable_collision_between('ghost', 'force_field')
   self.main:enable_trigger_between('projectile', 'enemy')
-  self.main:enable_trigger_between('enemy_projectile', 'player')
-  self.main:enable_trigger_between('player', 'enemy_projectile')
+  self.main:enable_trigger_between('troop', 'enemy_projectile')
   self.main:enable_trigger_between('enemy_projectile', 'enemy')
-  self.main:enable_trigger_between('player', 'ghost')
-  self.main:enable_trigger_between('ghost', 'player')
+  self.main:enable_trigger_between('ghost', 'troop')
 
   self.gold_picked_up = 0
   self.damage_dealt = 0
@@ -106,16 +98,18 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
   WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x1, -40, self.x2, self.y1), color = bg[-1]}
   WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x1, self.y2, self.x2, gh + 40), color = bg[-1]}
   
-  --need to group units by class
-  main.selectedClass = nil
+  --need to group units by character
+  main.selectedCharacter = nil
   self.hotbar = {}
   self.hotbar_by_index = {}
-  for i, class in ipairs(get_classes(units)) do
-    local b = HotbarButton{group = self.ui, x = gw/3 + ((i/#units)*(gw/3)) , y = gh - 20, force_update = true, button_text = class, fg_color = class_color_strings[class], bg_color = 'bg', action = function() self:select_class(class) end}
-    self.hotbar[class] = b
+  for i, unit in ipairs(units) do
+    local character = unit.character
+    local type = character_types[character]
+    local b = HotbarButton{group = self.ui, x = gw/3 + ((i/#units)*(gw/3)) , y = gh - 20, force_update = true, button_text = character, fg_color = type_color_strings[type], bg_color = 'bg', action = function() self:select_character(character) end}
+    self.hotbar[character] = b
     self.hotbar_by_index[i] = b
     if i == 1 then
-      self:select_class(class)
+      self:select_character(character)
     end
   end
 
@@ -177,6 +171,8 @@ function Arena:on_exit()
   self.flashes = nil
   self.hfx = nil
 
+  main.selectedCharacter = nil
+
   Helper.release()
 end
 
@@ -194,7 +190,7 @@ function Arena:update(dt)
     self.troop_list = self.main:get_objects_by_class(Troop)
     for i = 1, 9 do
       if input[tostring(i)].pressed then
-        self:select_class_by_index(i)
+        self:select_character_by_index(i)
       end
     end
   end

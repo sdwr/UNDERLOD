@@ -42,6 +42,13 @@ DEBUG:
 ctrl+a shows fps
 d makes damage circle
 
+### Dev notes at
+design doc:
+https://docs.google.com/document/d/1h1HBBKpgfyQK8WC4L8NUQqK6oAXedDW6Qe8LG5zbEEI/edit
+
+unit balance:
+https://docs.google.com/spreadsheets/d/1QvwsmUMpfQ2xgpiHGV0wy-ooc-nnkyhdeTN2CoGGme8/edit#gid=0
+
 ### LICENSE
 
 All assets have their specific licenses and they are linked to in the game's credits. All code is under the MIT license.

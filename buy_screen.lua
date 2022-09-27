@@ -1303,7 +1303,7 @@ function TutorialCharacterPart:on_mouse_enter()
   self.info_text:activate({
     {text = '[' .. character_color_strings[self.character] .. ']' .. self.character:capitalize() .. '[fg] - [yellow]Lv.' .. self.level,
     font = pixul_font, alignment = 'center', height_multiplier = 1.25},
-    {text = '[fg]Classes: ' .. character_class_strings[self.character], font = pixul_font, alignment = 'center', height_multiplier = 1.25},
+    {text = '[fg]Classes: ' .. character_type_strings[self.character], font = pixul_font, alignment = 'center', height_multiplier = 1.25},
     {text = character_descriptions[self.character](self.level), font = pixul_font, alignment = 'center', height_multiplier = 2},
     {text = '[' .. (self.level == 3 and 'yellow' or 'light_bg') .. ']Lv.3 [' .. (self.level == 3 and 'fg' or 'light_bg') .. ']Effect - ' .. 
       (self.level == 3 and character_effect_names[self.character] or character_effect_names_gray[self.character]), font = pixul_font, alignment = 'center', height_multiplier = 1.25},
@@ -1525,19 +1525,6 @@ function ItemPart:on_mouse_enter()
   ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
   self.selected = true
   self.spring:pull(0.2, 200, 10)
-  --[[
-  self.info_text = InfoText{group = main.current.ui, force_update = self.force_update}
-  self.info_text:activate({
-    {text = '[' .. character_color_strings[self.character] .. ']' .. self.character:capitalize() .. '[fg] - [yellow]Lv.' .. self.level .. '[fg], tier [yellow]' .. character_tiers[self.character] .. '[fg] - sells for [yellow]' ..
-      self:get_sale_price(), font = pixul_font, alignment = 'center', height_multiplier = 1.25},
-    {text = '[fg]Classes: ' .. character_class_strings[self.character], font = pixul_font, alignment = 'center', height_multiplier = 1.25},
-    {text = character_descriptions[self.character](self.level), font = pixul_font, alignment = 'center', height_multiplier = 2},
-    {text = '[' .. (self.level == 3 and 'yellow' or 'light_bg') .. ']Lv.3 [' .. (self.level == 3 and 'fg' or 'light_bg') .. ']Effect - ' .. 
-      (self.level == 3 and character_effect_names[self.character] or character_effect_names_gray[self.character]), font = pixul_font, alignment = 'center', height_multiplier = 1.25},
-    {text = (self.level == 3 and character_effect_descriptions[self.character]() or character_effect_descriptions_gray[self.character]()), font = pixul_font, alignment = 'center'},
-  }, nil, nil, nil, nil, 16, 4, nil, 2)
-  self.info_text.x, self.info_text.y = gw/2, gh/2 + 10
-  ]]--
 end
 
 --BUG: calls as soon as entered sometimes
@@ -1717,7 +1704,7 @@ function CharacterPart:on_mouse_enter()
     self.info_text:activate({
       {text = '[' .. character_color_strings[self.character] .. ']' .. self.character:capitalize() .. '[fg] - [yellow]Lv.' .. self.level .. '[fg], tier [yellow]' .. character_tiers[self.character] .. '[fg] - sells for [yellow]' ..
         self:get_sale_price(), font = pixul_font, alignment = 'center', height_multiplier = 1.25},
-      {text = '[fg]Classes: ' .. character_class_strings[self.character], font = pixul_font, alignment = 'center', height_multiplier = 1.25},
+      {text = '[fg]Classes: ' .. character_type_strings[self.character], font = pixul_font, alignment = 'center', height_multiplier = 1.25},
       {text = character_descriptions[self.character](self.level), font = pixul_font, alignment = 'center', height_multiplier = 2},
       {text = '[' .. (self.level == 3 and 'yellow' or 'light_bg') .. ']Lv.3 [' .. (self.level == 3 and 'fg' or 'light_bg') .. ']Effect - ' .. 
         (self.level == 3 and character_effect_names[self.character] or character_effect_names_gray[self.character]), font = pixul_font, alignment = 'center', height_multiplier = 1.25},
@@ -1725,16 +1712,6 @@ function CharacterPart:on_mouse_enter()
     }, nil, nil, nil, nil, 16, 4, nil, 2)
     self.info_text.x, self.info_text.y = gw/2, gh/2 + 10
   end
-
-  --[[
-  if self.parent:is(BuyScreen) then
-    for _, set in ipairs(self.parent.sets) do
-      if table.any(character_classes[self.character], function(v) return v == set.class end) then
-        set:highlight()
-      end
-    end
-  end
-  ]]--
 end
 
 
@@ -1755,16 +1732,6 @@ function CharacterPart:on_mouse_exit()
   if self.info_text then
     self:close_info_text()
   end
-
-  --[[
-  if self.parent:is(BuyScreen) then
-    for _, set in ipairs(self.parent.sets) do
-      if table.any(character_classes[self.character], function(v) return v == set.class end) then
-        set:unhighlight()
-      end
-    end
-  end
-  ]]--
 end
 
 
@@ -1777,16 +1744,6 @@ function CharacterPart:die()
     self.info_text.dead = true
     self.info_text = nil
   end
-
-  --[[
-  if self.selected and self.parent:is(BuyScreen) then
-    for _, set in ipairs(self.parent.sets) do
-      if table.any(character_classes[self.character], function(v) return v == set.class end) then
-        set:unhighlight()
-      end
-    end
-  end
-  ]]--
 end
 
 
@@ -1996,10 +1953,10 @@ function ShopCard:init(args)
   self.shape = Rectangle(self.x, self.y, self.w, self.h)
   self.interact_with_mouse = true
   self.character_icon = CharacterIcon{group = main.current.effects, x = self.x, y = self.y - 26, character = self.unit, parent = self}
-  self.class_icons = {}
-  local class = character_classes[self.unit]
+  self.type_icons = {}
+  local type = character_types[self.unit]
   local x = self.x
-  table.insert(self.class_icons, ClassIcon{group = main.current.effects, x = x + (0-1)*20, y = self.y + 6, class = class, character = self.unit, units = self.parent.units, parent = self})
+  table.insert(self.type_icons, TypeIcon{group = main.current.effects, x = x + (0-1)*20, y = self.y + 6, type = type, character = self.unit, units = self.parent.units, parent = self})
 
   self.cost = character_tiers[self.unit]
   self.spring:pull(0.2, 200, 10)
@@ -2041,7 +1998,7 @@ function ShopCard:update(dt)
       error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
       self.spring:pull(0.2, 200, 10)
       self.character_icon.spring:pull(0.2, 200, 10)
-      for _, ci in ipairs(self.class_icons) do ci.spring:pull(0.2, 200, 10) end
+      for _, ci in ipairs(self.type_icons) do ci.spring:pull(0.2, 200, 10) end
     end
   end
 end
@@ -2114,23 +2071,23 @@ function ShopCard:on_mouse_enter()
   self.selected = true
   self.spring:pull(0.1)
   self.character_icon.spring:pull(0.1, 200, 10)
-  for _, class_icon in ipairs(self.class_icons) do
-    class_icon.selected = true
-    class_icon.spring:pull(0.1, 200, 10)
+  for _, type_icon in ipairs(self.type_icons) do
+    type_icon.selected = true
+    type_icon.spring:pull(0.1, 200, 10)
   end
 end
 
 
 function ShopCard:on_mouse_exit()
   self.selected = false
-  for _, class_icon in ipairs(self.class_icons) do class_icon.selected = false end
+  for _, type_icon in ipairs(self.type_icons) do type_icon.selected = false end
 end
 
 
 function ShopCard:die(dont_spawn_effect)
   self.dead = true
   self.character_icon:die(dont_spawn_effect)
-  for _, class_icon in ipairs(self.class_icons) do class_icon:die(dont_spawn_effect) end
+  for _, type_icon in ipairs(self.type_icons) do type_icon:die(dont_spawn_effect) end
   if self.info_text then
     self.info_text:deactivate()
     self.info_text.dead = true
@@ -2172,7 +2129,7 @@ function CharacterIcon:on_mouse_enter()
   self.info_text = InfoText{group = main.current.ui}
   self.info_text:activate({
     {text = '[' .. character_color_strings[self.character] .. ']' .. self.character:capitalize() .. '[fg] - cost: [yellow]' .. self.parent.cost, font = pixul_font, alignment = 'center', height_multiplier = 1.25},
-    {text = '[fg]Classes: ' .. character_class_strings[self.character], font = pixul_font, alignment = 'center', height_multiplier = 1.25},
+    {text = '[fg]Types: ' .. character_type_strings[self.character], font = pixul_font, alignment = 'center', height_multiplier = 1.25},
     {text = character_descriptions[self.character](1), font = pixul_font, alignment = 'center', height_multiplier = 2},
     {text = '[' .. (self.level == 3 and 'yellow' or 'light_bg') .. ']Lv.3 [' .. (self.level == 3 and 'fg' or 'light_bg') .. ']Effect - ' .. 
       (self.level == 3 and character_effect_names[self.character] or character_effect_names_gray[self.character]), font = pixul_font, alignment = 'center', height_multiplier = 1.25},
@@ -2221,40 +2178,6 @@ end
 
 function TutorialClassIcon:draw()
   graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
-    local i, j, k, n = class_set_numbers[self.class](self.units)
-
-    graphics.rectangle(self.x, self.y, 16, 24, 4, 4, self.highlighted and fg[0] or ((n >= i) and class_colors[self.class] or bg[3]))
-    _G[self.class]:draw(self.x, self.y, 0, 0.3, 0.3, 0, 0, self.highlighted and fg[-5] or ((n >= i) and _G[class_color_strings[self.class]][-5] or bg[10]))
-    graphics.rectangle(self.x, self.y + 26, 16, 16, 3, 3, self.highlighted and fg[0] or bg[3])
-    if i == 2 and not k then
-      if self.highlighted then
-        graphics.line(self.x - 3, self.y + 20, self.x - 3, self.y + 25, (n >= 1) and fg[-5] or fg[-10], 3)
-        graphics.line(self.x - 3, self.y + 27, self.x - 3, self.y + 32, (n >= 2) and fg[-5] or fg[-10], 3)
-        graphics.line(self.x + 4, self.y + 20, self.x + 4, self.y + 25, (n >= 3) and fg[-5] or fg[-10], 3)
-        graphics.line(self.x + 4, self.y + 27, self.x + 4, self.y + 32, (n >= 4) and fg[-5] or fg[-10], 3)
-      else
-        graphics.line(self.x - 3, self.y + 20, self.x - 3, self.y + 25, (n >= 1) and class_colors[self.class] or bg[10], 3)
-        graphics.line(self.x - 3, self.y + 27, self.x - 3, self.y + 32, (n >= 2) and class_colors[self.class] or bg[10], 3)
-        graphics.line(self.x + 4, self.y + 20, self.x + 4, self.y + 25, (n >= 3) and class_colors[self.class] or bg[10], 3)
-        graphics.line(self.x + 4, self.y + 27, self.x + 4, self.y + 32, (n >= 4) and class_colors[self.class] or bg[10], 3)
-      end
-    elseif i == 3 then
-      if self.highlighted then
-        graphics.line(self.x - 3, self.y + 19, self.x - 3, self.y + 22, (n >= 1) and fg[-5] or fg[-10], 3)
-        graphics.line(self.x - 3, self.y + 24, self.x - 3, self.y + 27, (n >= 2) and fg[-5] or fg[-10], 3)
-        graphics.line(self.x - 3, self.y + 29, self.x - 3, self.y + 32, (n >= 3) and fg[-5] or fg[-10], 3)
-        graphics.line(self.x + 4, self.y + 19, self.x + 4, self.y + 22, (n >= 4) and fg[-5] or fg[-10], 3)
-        graphics.line(self.x + 4, self.y + 24, self.x + 4, self.y + 27, (n >= 5) and fg[-5] or fg[-10], 3)
-        graphics.line(self.x + 4, self.y + 29, self.x + 4, self.y + 32, (n >= 6) and fg[-5] or fg[-10], 3)
-      else
-        graphics.line(self.x - 3, self.y + 19, self.x - 3, self.y + 22, (n >= 1) and class_colors[self.class] or bg[10], 3)
-        graphics.line(self.x - 3, self.y + 24, self.x - 3, self.y + 27, (n >= 2) and class_colors[self.class] or bg[10], 3)
-        graphics.line(self.x - 3, self.y + 29, self.x - 3, self.y + 32, (n >= 3) and class_colors[self.class] or bg[10], 3)
-        graphics.line(self.x + 4, self.y + 19, self.x + 4, self.y + 22, (n >= 4) and class_colors[self.class] or bg[10], 3)
-        graphics.line(self.x + 4, self.y + 24, self.x + 4, self.y + 27, (n >= 5) and class_colors[self.class] or bg[10], 3)
-        graphics.line(self.x + 4, self.y + 29, self.x + 4, self.y + 32, (n >= 6) and class_colors[self.class] or bg[10], 3)
-      end
-    end
   graphics.pop()
 end
 
@@ -2262,13 +2185,6 @@ end
 function TutorialClassIcon:on_mouse_enter()
   ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
   self.spring:pull(0.2, 200, 10)
-  local i, j, k, owned = class_set_numbers[self.class](self.units)
-  self.info_text = InfoText{group = main.current.tutorial}
-  self.info_text:activate({
-    {text = '[' .. class_color_strings[self.class] .. ']' .. self.class:capitalize() .. '[fg] - owned: [yellow]' .. owned, font = pixul_font, alignment = 'center', height_multiplier = 1.25},
-    {text = class_descriptions[self.class]((owned >= j and 2) or (owned >= i and 1) or 0), font = pixul_font, alignment = 'center'},
-  }, nil, nil, nil, nil, 16, 4, nil, 2)
-  self.info_text.x, self.info_text.y = gw/2 - 25, gh/2 + 25
 end
 
 
@@ -2283,9 +2199,9 @@ end
 
 
 
-ClassIcon = Object:extend()
-ClassIcon:implement(GameObject)
-function ClassIcon:init(args)
+TypeIcon = Object:extend()
+TypeIcon:implement(GameObject)
+function TypeIcon:init(args)
   self:init_game_object(args)
   self.shape = Rectangle(self.x, self.y + 11, 20, 40)
   self.interact_with_mouse = true
@@ -2294,156 +2210,24 @@ function ClassIcon:init(args)
 end
 
 
-function ClassIcon:update(dt)
+function TypeIcon:update(dt)
   self:update_game_object(dt)
 end
 
 
-function ClassIcon:draw()
+function TypeIcon:draw()
   graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
-    local i, j, k, n = class_set_numbers[self.class](self.units)
-    local next_n
-    if self.parent:is(ShopCard) then
-      next_n = n+1
-      if k then
-        if next_n > k then next_n = nil end
-      else
-        if next_n > j then next_n = nil end
-      end
-      if table.any(self.units, function(v) return v.character == self.character end) then next_n = nil end
-    end
-
-    graphics.rectangle(self.x, self.y, 16, 24, 4, 4, self.highlighted and fg[0] or ((n >= i) and class_colors[self.class] or bg[3]))
-    _G[self.class]:draw(self.x, self.y, 0, 0.3, 0.3, 0, 0, self.highlighted and fg[-5] or ((n >= i) and _G[class_color_strings[self.class]][-5] or bg[10]))
-    graphics.rectangle(self.x, self.y + 26, 16, 16, 3, 3, self.highlighted and fg[0] or bg[3])
-    if i == 1 then
-      if self.highlighted then
-        graphics.rectangle(self.x, self.y + 26, 3, 9, nil, nil, (n >= 1) and fg[-5] or fg[-10])
-      else
-        graphics.rectangle(self.x, self.y + 26, 3, 9, nil, nil, (n >= 1) and class_colors[self.class] or bg[10])
-      end
-      if next_n then
-        if next_n == 1 then
-          graphics.rectangle(self.x, self.y + 26, 3, 9, nil, nil, self.flash and class_colors[self.class] or bg[10])
-        end
-      end
-
-    elseif i == 2 and not k then
-      if self.highlighted then
-        graphics.line(self.x - 3, self.y + 20, self.x - 3, self.y + 25, (n >= 1) and fg[-5] or fg[-10], 3)
-        graphics.line(self.x - 3, self.y + 27, self.x - 3, self.y + 32, (n >= 2) and fg[-5] or fg[-10], 3)
-        graphics.line(self.x + 4, self.y + 20, self.x + 4, self.y + 25, (n >= 3) and fg[-5] or fg[-10], 3)
-        graphics.line(self.x + 4, self.y + 27, self.x + 4, self.y + 32, (n >= 4) and fg[-5] or fg[-10], 3)
-      else
-        graphics.line(self.x - 3, self.y + 20, self.x - 3, self.y + 25, (n >= 1) and class_colors[self.class] or bg[10], 3)
-        graphics.line(self.x - 3, self.y + 27, self.x - 3, self.y + 32, (n >= 2) and class_colors[self.class] or bg[10], 3)
-        graphics.line(self.x + 4, self.y + 20, self.x + 4, self.y + 25, (n >= 3) and class_colors[self.class] or bg[10], 3)
-        graphics.line(self.x + 4, self.y + 27, self.x + 4, self.y + 32, (n >= 4) and class_colors[self.class] or bg[10], 3)
-      end
-      if next_n then
-        if next_n == 1 then
-          graphics.line(self.x - 3, self.y + 20, self.x - 3, self.y + 25, self.flash and class_colors[self.class] or bg[10], 3)
-        elseif next_n == 2 then
-          graphics.line(self.x - 3, self.y + 27, self.x - 3, self.y + 32, self.flash and class_colors[self.class] or bg[10], 3)
-        elseif next_n == 3 then
-          graphics.line(self.x + 4, self.y + 20, self.x + 4, self.y + 25, self.flash and class_colors[self.class] or bg[10], 3)
-        elseif next_n == 4 then
-          graphics.line(self.x + 4, self.y + 27, self.x + 4, self.y + 32, self.flash and class_colors[self.class] or bg[10], 3)
-        end
-      end
-    elseif i == 2 and k == 6 then
-      if self.highlighted then
-        graphics.line(self.x - 5, self.y + 21, self.x - 5, self.y + 24, (n >= 1) and fg[-5] or fg[-10], 3)
-        graphics.line(self.x - 5, self.y + 28, self.x - 5, self.y + 31, (n >= 2) and fg[-5] or fg[-10], 3)
-        graphics.line(self.x + 0, self.y + 21, self.x + 0, self.y + 24, (n >= 3) and fg[-5] or fg[-10], 3)
-        graphics.line(self.x + 0, self.y + 28, self.x + 0, self.y + 31, (n >= 4) and fg[-5] or fg[-10], 3)
-        graphics.line(self.x + 5, self.y + 21, self.x + 5, self.y + 24, (n >= 5) and fg[-5] or fg[-10], 3)
-        graphics.line(self.x + 5, self.y + 28, self.x + 5, self.y + 31, (n >= 6) and fg[-5] or fg[-10], 3)
-      else
-        graphics.line(self.x - 5, self.y + 21, self.x - 5, self.y + 24, (n >= 1) and class_colors[self.class] or bg[10], 3)
-        graphics.line(self.x - 5, self.y + 28, self.x - 5, self.y + 31, (n >= 2) and class_colors[self.class] or bg[10], 3)
-        graphics.line(self.x + 0, self.y + 21, self.x + 0, self.y + 24, (n >= 3) and class_colors[self.class] or bg[10], 3)
-        graphics.line(self.x + 0, self.y + 28, self.x + 0, self.y + 31, (n >= 4) and class_colors[self.class] or bg[10], 3)
-        graphics.line(self.x + 5, self.y + 21, self.x + 5, self.y + 24, (n >= 5) and class_colors[self.class] or bg[10], 3)
-        graphics.line(self.x + 5, self.y + 28, self.x + 5, self.y + 31, (n >= 6) and class_colors[self.class] or bg[10], 3)
-      end
-      if next_n then
-        if next_n == 1 then
-          graphics.line(self.x - 5, self.y + 21, self.x - 5, self.y + 24, self.flash and class_colors[self.class] or bg[10], 3)
-        elseif next_n == 2 then
-          graphics.line(self.x - 5, self.y + 28, self.x - 5, self.y + 31, self.flash and class_colors[self.class] or bg[10], 3)
-        elseif next_n == 3 then
-          graphics.line(self.x + 0, self.y + 21, self.x + 0, self.y + 24, self.flash and class_colors[self.class] or bg[10], 3)
-        elseif next_n == 4 then
-          graphics.line(self.x + 0, self.y + 28, self.x + 0, self.y + 31, self.flash and class_colors[self.class] or bg[10], 3)
-        elseif next_n == 5 then
-          graphics.line(self.x + 5, self.y + 21, self.x + 5, self.y + 24, self.flash and class_colors[self.class] or bg[10], 3)
-        elseif next_n == 6 then
-          graphics.line(self.x + 5, self.y + 28, self.x + 5, self.y + 31, self.flash and class_colors[self.class] or bg[10], 3)
-        end
-      end
-
-    elseif i == 3 then
-      if self.highlighted then
-        graphics.line(self.x - 3, self.y + 19, self.x - 3, self.y + 22, (n >= 1) and fg[-5] or fg[-10], 3)
-        graphics.line(self.x - 3, self.y + 24, self.x - 3, self.y + 27, (n >= 2) and fg[-5] or fg[-10], 3)
-        graphics.line(self.x - 3, self.y + 29, self.x - 3, self.y + 32, (n >= 3) and fg[-5] or fg[-10], 3)
-        graphics.line(self.x + 4, self.y + 19, self.x + 4, self.y + 22, (n >= 4) and fg[-5] or fg[-10], 3)
-        graphics.line(self.x + 4, self.y + 24, self.x + 4, self.y + 27, (n >= 5) and fg[-5] or fg[-10], 3)
-        graphics.line(self.x + 4, self.y + 29, self.x + 4, self.y + 32, (n >= 6) and fg[-5] or fg[-10], 3)
-      else
-        graphics.line(self.x - 3, self.y + 19, self.x - 3, self.y + 22, (n >= 1) and class_colors[self.class] or bg[10], 3)
-        graphics.line(self.x - 3, self.y + 24, self.x - 3, self.y + 27, (n >= 2) and class_colors[self.class] or bg[10], 3)
-        graphics.line(self.x - 3, self.y + 29, self.x - 3, self.y + 32, (n >= 3) and class_colors[self.class] or bg[10], 3)
-        graphics.line(self.x + 4, self.y + 19, self.x + 4, self.y + 22, (n >= 4) and class_colors[self.class] or bg[10], 3)
-        graphics.line(self.x + 4, self.y + 24, self.x + 4, self.y + 27, (n >= 5) and class_colors[self.class] or bg[10], 3)
-        graphics.line(self.x + 4, self.y + 29, self.x + 4, self.y + 32, (n >= 6) and class_colors[self.class] or bg[10], 3)
-      end
-      if next_n then
-        if next_n == 1 then
-          graphics.line(self.x - 3, self.y + 19, self.x - 3, self.y + 22, self.flash and class_colors[self.class] or bg[10], 3)
-        elseif next_n == 2 then
-          graphics.line(self.x - 3, self.y + 24, self.x - 3, self.y + 27, self.flash and class_colors[self.class] or bg[10], 3)
-        elseif next_n == 3 then
-          graphics.line(self.x - 3, self.y + 29, self.x - 3, self.y + 32, self.flash and class_colors[self.class] or bg[10], 3)
-        elseif next_n == 4 then
-          graphics.line(self.x + 4, self.y + 19, self.x + 4, self.y + 22, self.flash and class_colors[self.class] or bg[10], 3)
-        elseif next_n == 5 then
-          graphics.line(self.x + 4, self.y + 24, self.x + 4, self.y + 27, self.flash and class_colors[self.class] or bg[10], 3)
-        elseif next_n == 6 then
-          graphics.line(self.x + 4, self.y + 29, self.x + 4, self.y + 32, self.flash and class_colors[self.class] or bg[10], 3)
-        end
-      end
-    end
   graphics.pop()
 end
 
 
-function ClassIcon:on_mouse_enter()
+function TypeIcon:on_mouse_enter()
   ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
   self.spring:pull(0.2, 200, 10)
-  local i, j, k, owned = class_set_numbers[self.class](self.units)
-  self.info_text = InfoText{group = main.current.ui}
-  self.info_text:activate({
-    {text = '[' .. class_color_strings[self.class] .. ']' .. (self.class == 'conjurer' and 'Builder' or self.class:capitalize()) .. '[fg] - owned: [yellow]' .. owned, font = pixul_font, alignment = 'center', height_multiplier = 1.25},
-    {text = class_descriptions[self.class]((k and (owned >= k and 3)) or (owned >= j and 2) or (owned >= i and 1) or 0), font = pixul_font, alignment = 'center'},
-  }, nil, nil, nil, nil, 16, 4, nil, 2)
-  self.info_text.x, self.info_text.y = gw/2, gh/2 + 10
-
-  if not self.parent:is(ShopCard) then
-    for _, character in ipairs(self.parent.characters) do
-      if character_classes[character.character]== self.class then
-        character:highlight()
-        for _, c in ipairs(character.parts) do
-          c:highlight()
-        end
-      end
-    end
-  end
 end
 
 
-function ClassIcon:on_mouse_exit()
+function TypeIcon:on_mouse_exit()
   if self.info_text then
     self.info_text:deactivate()
     self.info_text.dead = true
@@ -2452,7 +2236,7 @@ function ClassIcon:on_mouse_exit()
 
   if not self.parent:is(ShopCard) then
     for _, character in ipairs(self.parent.characters) do
-      if character_classes[character.character]== self.class then
+      if character_types[character.character]== self.type then
         character:unhighlight()
         for _, c in ipairs(character.parts) do
           c:unhighlight()
@@ -2463,10 +2247,8 @@ function ClassIcon:on_mouse_exit()
 end
 
 
-function ClassIcon:die(dont_spawn_effect)
+function TypeIcon:die(dont_spawn_effect)
   self.dead = true
-  local i, j, k, n = class_set_numbers[self.class](self.units)
-  if not dont_spawn_effect then SpawnEffect{group = main.current.effects, x = self.x, y = self.y + 4, color = (n >= i) and class_colors[self.class] or bg[3]} end
   if self.info_text then
     self.info_text:deactivate()
     self.info_text.dead = true
@@ -2475,7 +2257,7 @@ function ClassIcon:die(dont_spawn_effect)
 
   if self.selected and not self.parent:is(ShopCard) then
     for _, character in ipairs(self.parent.characters) do
-      if character.class == self.class then
+      if character.type == self.type then
         character:highlight()
       end
     end
@@ -2483,13 +2265,13 @@ function ClassIcon:die(dont_spawn_effect)
 end
 
 
-function ClassIcon:highlight()
+function TypeIcon:highlight()
   self.highlighted = true
   self.spring:pull(0.2, 200, 10)
 end
 
 
-function ClassIcon:unhighlight()
+function TypeIcon:unhighlight()
   self.highlighted = false
   self.spring:pull(0.05, 200, 10)
 end

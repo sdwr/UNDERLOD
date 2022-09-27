@@ -11,7 +11,7 @@ function Player:init(args)
   self.color = character_colors[self.character]
   self:set_as_rectangle(9, 9, 'dynamic', 'player')
   self.visual_shape = 'rectangle'
-  self.class = character_classes[self.character]
+  self.class = character_types[self.character]
   self.damage_dealt = 0
 
   self.mouse_control_v_buffer = {}
@@ -25,174 +25,6 @@ end
 
 function Player:update(dt)
   self:update_game_object(dt)
-
-  if self.character == 'squire' then
-    local all_units = self:get_all_units()
-    for _, unit in ipairs(all_units) do
-      unit.squire_dmg_m = 1.2
-      unit.squire_def_m = 1.2
-      if self.level == 3 then
-        unit.squire_dmg_m = 1.5
-        unit.squire_def_m = 1.5
-        unit.squire_aspd_m = 1.3
-        unit.squire_mvspd_m = 1.3
-      end
-    end
-  elseif self.character == 'chronomancer' then
-    local all_units = self:get_all_units()
-    for _, unit in ipairs(all_units) do
-      unit.chronomancer_aspd_m = 1.2
-    end
-  end
-
-  if self.character == 'vagrant' and self.level == 3 then
-    local class_levels = get_class_levels(self:get_all_units())
-    local number_of_active_sets = 0
-    if class_levels.ranger >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.warrior >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.mage >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.rogue >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.healer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.conjurer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.enchanter >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.psyker >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.nuker >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.curser >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.forcer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.swarmer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.voider >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.sorcerer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.mercenary >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.explorer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    self.vagrant_dmg_m = 1 + 0.1*number_of_active_sets
-    self.vagrant_aspd_m = 1 + 0.1*number_of_active_sets
-  end
-
-  if self.character == 'swordsman' and self.level == 3 then
-    self.swordsman_dmg_m = 2
-  end
-
-  if self.character == 'outlaw' and self.level == 3 then
-    self.outlaw_aspd_m = 1.5
-  end
-
-  if self.class == 'ranger' then
-    if main.current.ranger_level == 2 then self.chance_to_barrage = 16
-    elseif main.current.ranger_level == 1 then self.chance_to_barrage = 8
-    elseif main.current.ranger_level == 0 then self.chance_to_barrage = 0 end
-  end
-
-  if self.class == 'warrior' then
-    if main.current.warrior_level == 2 then self.warrior_def_a = 50
-    elseif main.current.warrior_level == 1 then self.warrior_def_a = 25
-    elseif main.current.warrior_level == 0 then self.warrior_def_a = 0 end
-  end
-
-  self.heal_effect_m = 1
-  if self.blessing then self.heal_effect_m = self.heal_effect_m*((self.blessing == 1 and 1.1) or (self.blessing == 2 and 1.2) or (self.blessing == 3 and 1.3)) end
-
-  if self.class == 'nuker' then
-    if main.current.nuker_level == 2 then self.nuker_area_size_m = 1.25; self.nuker_area_dmg_m = 1.25
-    elseif main.current.nuker_level == 1 then self.nuker_area_size_m = 1.15; self.nuker_area_dmg_m = 1.15
-    elseif main.current.nuker_level == 0 then self.nuker_area_size_m = 1; self.nuker_area_dmg_m = 1 end
-  end
-
-  if main.current.conjurer_level == 2 then self.conjurer_buff_m = 1.5
-  elseif main.current.conjurer_level == 1 then self.conjurer_buff_m = 1.25
-  else self.conjurer_buff_m = 1 end
-
-  if self.class == 'rogue' then
-    if main.current.rogue_level == 2 then self.chance_to_crit = 30
-    elseif main.current.rogue_level == 1 then self.chance_to_crit = 15
-    elseif main.current.rogue_level == 0 then self.chance_to_crit = 0 end
-  end
-
-  if main.current.enchanter_level == 2 then self.enchanter_dmg_m = 1.25
-  elseif main.current.enchanter_level == 1 then self.enchanter_dmg_m = 1.15
-  else self.enchanter_dmg_m = 1 end
-
-  if self.class == 'explorer' then
-    local class_levels = get_class_levels(self:get_all_units())
-    local number_of_active_sets = 0
-    if class_levels.ranger >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.warrior >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.mage >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.rogue >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.healer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.conjurer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.enchanter >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.psyker >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.nuker >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.curser >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.forcer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.swarmer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.voider >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.sorcerer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.mercenary >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    if class_levels.explorer >= 1 then number_of_active_sets = number_of_active_sets + 1 end
-    self.explorer_dmg_m = 1 + 0.15*number_of_active_sets
-    self.explorer_aspd_m = 1 + 0.15*number_of_active_sets
-  end
-
-  if main.current.forcer_level == 2 then self.knockback_m = 1.5
-  elseif main.current.forcer_level == 1 then self.knockback_m = 1.25
-  else self.knockback_m = 1 end
-  if self.force_push then self.knockback_m = self.knockback_m*1.25 end
-
-  self.dot_dmg_m = 1
-  if self.class == 'voider' then
-    if main.current.voider_level == 2 then self.dot_dmg_m = 1.4
-    elseif main.current.voider_level == 1 then self.dot_dmg_m = 1.2
-    else self.dot_dmg_m = 1 end
-  end
-  if self.call_of_the_void then self.dot_dmg_m = (self.dot_dmg_m or 1)*((self.call_of_the_void == 1 and 1.3) or (self.call_of_the_void == 2 and 1.6) or (self.call_of_the_void == 3 and 1.9) or 1) end
-
-  if self.ouroboros_technique_l and self.leader then
-    local units = self:get_all_units()
-    if (state.mouse_control and table.all(self.mouse_control_v_buffer, function(v) return v <= -0.5 end)) or (self.move_left_pressed and love.timer.getTime() - self.move_left_pressed > 1) then
-      for _, unit in ipairs(units) do
-        unit.ouroboros_def_m = (self.ouroboros_technique_l == 1 and 1.15) or (self.ouroboros_technique_l == 2 and 1.25) or (self.ouroboros_technique_l == 3 and 1.35)
-      end
-    else
-      for _, unit in ipairs(units) do
-        unit.ouroboros_def_m = 1
-      end
-    end
-  end
-
-  if self.berserking and self.class == 'warrior' then
-    self.berserking_aspd_m = math.remap(self.hp/self.max_hp, 0, 1, (self.berserking == 1 and 1.5) or (self.berserking == 2 and 1.75) or (self.berserking == 3 and 2), 1)
-  end
-
-  if self.speed_3 and self.follower_index == 2 then
-    self.speed_3_aspd_m = 1.5
-  end
-
-  if self.damage_4 and self.follower_index == 3 then
-    self.damage_4_dmg_m = 1.3
-  end
-
-  if self.defensive_stance and self.leader then
-    self.defensive_stance_def_m = (self.defensive_stance == 1 and 1.1) or (self.defensive_stance == 2 and 1.2) or (self.defensive_stance == 3 and 1.3)
-  end
-
-  if self.offensive_stance and self.leader then
-    self.offensive_stance_dmg_m = (self.offensive_stance == 1 and 1.1) or (self.offensive_stance == 2 and 1.2) or (self.offensive_stance == 3 and 1.3)
-  end
-
-  if self.dividends and self.class == 'mercenary' then
-    self.dividends_dmg_m = (1 + gold/100)
-  end
-
-  if self.character == 'flagellant' and self.level == 3 then
-    self.flagellant_hp_m = 2
-  end
-
-  if self.haste then
-    if self.hasted then
-      self.haste_mvspd_m = math.clamp(math.remap(love.timer.getTime() - self.hasted, 0, 4, 1.5, 1), 1, 1.5)
-    else self.haste_mvspd_m = 1 end
-  end
 
   self.buff_def_a = (self.warrior_def_a or 0)
   self.buff_aspd_m = (self.chronomancer_aspd_m or 1)*(self.vagrant_aspd_m or 1)*(self.outlaw_aspd_m or 1)*(self.fairy_aspd_m or 1)*(self.psyker_aspd_m or 1)*(self.chronomancy_aspd_m or 1)*(self.awakening_aspd_m or 1)*(self.berserking_aspd_m or 1)*(self.reinforce_aspd_m or 1)*(self.squire_aspd_m or 1)*(self.speed_3_aspd_m or 1)*(self.last_stand_aspd_m or 1)*(self.enchanted_aspd_m or 1)*(self.explorer_aspd_m or 1)*(self.magician_aspd_m or 1)
@@ -2674,7 +2506,7 @@ function Saboteur:init(args)
   
   self.color = character_colors.saboteur
   self.character = 'saboteur'
-  self.class = character_classes.saboteur
+  self.class = character_types.saboteur
   self:calculate_stats(true)
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
 
@@ -2756,7 +2588,8 @@ function Troop:init(args)
   self:set_restitution(0.5)
 
   self.color = character_colors[self.character]
-  self.class = character_classes[self.character]
+  self.class = 'troop'
+  self.type = character_types[self.character]
   self:calculate_stats(true)
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
 
@@ -2795,15 +2628,16 @@ function Troop:update(dt)
 
   ]]--
 
-
   -- deal with mouse input first, set rally/follow
   if self:should_follow() then
-    main.current.rallyEffect.hidden = false
+    if main.current and main.current.rallyEffect then
+      main.current.rallyEffect.hidden = false
+    end
     self.state = unit_states['following']
 
     self.target = nil
     self.target_pos = nil
-  elseif (input["m2"].pressed and main.selectedClass == self.class) and (self.state == unit_states['normal'] or self.state == unit_states['stopped'] or self.state == unit_states['rallying'] or self.state == unit_states['following']) then
+  elseif (input["m2"].pressed and main.selectedCharacter == self.character) and (self.state == unit_states['normal'] or self.state == unit_states['stopped'] or self.state == unit_states['rallying'] or self.state == unit_states['following']) then
     self.state = unit_states['rallying']
     local mx, my = self.group.camera:get_mouse_position()
     RallyEffect{group = main.current.effects, x = mx, y = my}
@@ -2973,7 +2807,7 @@ end
 
 function Troop:set_character()
   if self.character == 'swordsman' then
-    self.dmg = self.dmg / 3;
+    self.dmg = self.dmg;
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['melee'])
     self.t:cooldown(attack_speeds['fast'], self:in_range(), function()
       if self.target then

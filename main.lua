@@ -258,7 +258,7 @@ function init()
     ['following'] = 'following,'
   }
 
-  class_colors = {
+  type_colors = {
     ['warrior'] = yellow[0],
     ['ranger'] = green[0],
     ['healer'] = green[0],
@@ -279,7 +279,7 @@ function init()
     ['buffer'] = brown[0],
   }
 
-  class_color_strings = {
+  type_color_strings = {
     ['warrior'] = 'yellow',
     ['ranger'] = 'green',
     ['healer'] = 'green',
@@ -501,7 +501,7 @@ function init()
     ['thief'] = 'red',
   }
 
-  character_classes = {
+  character_types = {
     ['swordsman'] = 'warrior',
     ['juggernaut'] = 'warrior',
     ['archer'] = 'ranger',
@@ -518,7 +518,7 @@ function init()
     ['bomber'] = 'nuker',
   }
 
-  character_class_strings = {
+  character_type_strings = {
     ['vagrant'] = '[fg]Explorer, Psyker',
     ['swordsman'] = '[yellow]Warrior',
     ['wizard'] = '[blue]Mage, [red]Nuker',
@@ -586,18 +586,18 @@ function init()
   }
 
   get_character_stat_string = function(character, level)
-    local group = Group():set_as_physics_world(32, 0, 0, {'player', 'enemy', 'projectile', 'enemy_projectile'})
-    local player = Player{group = group, leader = true, character = character, level = level, follower_index = 1}
-    player:update(0)
-    return '[red]HP: [red]' .. player.max_hp .. '[fg], [red]DMG: [red]' .. player.dmg .. '[fg], [green]ASPD: [green]' .. math.round(player.aspd_m, 2) .. 'x[fg], [blue]AREA: [blue]' ..
-    math.round(player.area_dmg_m*player.area_size_m, 2) ..  'x[fg], [yellow]DEF: [yellow]' .. math.round(player.def, 2) .. '[fg], [green]MVSPD: [green]' .. math.round(player.v, 2) .. '[fg]'
+    local group = Group():set_as_physics_world(32, 0, 0, {'troop', 'enemy', 'projectile', 'enemy_projectile'})
+    local troop = Troop{group = group, leader = true, character = character, level = level, follower_index = 1}
+    troop:update(0)
+    return '[red]HP: [red]' .. troop.max_hp .. '[fg], [red]DMG: [red]' .. troop.dmg .. '[fg], [green]ASPD: [green]' .. math.round(troop.aspd_m, 2) .. 'x[fg], [blue]AREA: [blue]' ..
+    math.round(troop.area_dmg_m*troop.area_size_m, 2) ..  'x[fg], [yellow]DEF: [yellow]' .. math.round(troop.def, 2) .. '[fg], [green]MVSPD: [green]' .. math.round(troop.v, 2) .. '[fg]'
   end
 
   get_character_stat = function(character, level, stat)
-    local group = Group():set_as_physics_world(32, 0, 0, {'player', 'enemy', 'projectile', 'enemy_projectile'})
-    local player = Player{group = group, leader = true, character = character, level = level, follower_index = 1}
-    player:update(0)
-    return math.round(player[stat], 2)
+    local group = Group():set_as_physics_world(32, 0, 0, {'troop', 'enemy', 'projectile', 'enemy_projectile'})
+    local troop = Troop{group = group, leader = true, character = character, level = level, follower_index = 1}
+    troop:update(0)
+    return math.round(troop[stat], 2)
   end
 
   character_descriptions = {
@@ -1005,28 +1005,10 @@ function init()
   }
 
   class_stat_multipliers = {
-    ['ranger'] = {hp = 1, dmg = 1.2, aspd = 1.5, area_dmg = 1, area_size = 1, def = 0.9, mvspd = 1.2},
-    ['warrior'] = {hp = 1.4, dmg = 1.1, aspd = 0.9, area_dmg = 1, area_size = 1, def = 1.25, mvspd = 0.9},
-    ['mage'] = {hp = 0.6, dmg = 1.4, aspd = 1, area_dmg = 1.25, area_size = 1.2, def = 0.75, mvspd = 1},
-    ['rogue'] = {hp = 0.8, dmg = 1.3, aspd = 1.1, area_dmg = 0.6, area_size = 0.6, def = 0.8, mvspd = 1.4},
-    ['healer'] = {hp = 1.2, dmg = 1, aspd = 0.5, area_dmg = 1, area_size = 1, def = 1.2, mvspd = 1},
-    ['enchanter'] = {hp = 1.2, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1.2, mvspd = 1.2},
-    ['nuker'] = {hp = 0.9, dmg = 1, aspd = 0.75, area_dmg = 1.5, area_size = 1.5, def = 1, mvspd = 1},
-    ['conjurer'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1},
-    ['psyker'] = {hp = 1.5, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 0.5, mvspd = 1},
-    ['curser'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 0.75, mvspd = 1},
-    ['cursed'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 0.75, mvspd = 1},
-    ['forcer'] = {hp = 1.25, dmg = 1.1, aspd = 0.9, area_dmg = 0.75, area_size = 0.75, def = 1.2, mvspd = 1},
-    ['swarmer'] = {hp = 1.2, dmg = 1, aspd = 1.25, area_dmg = 1, area_size = 1, def = 0.75, mvspd = 0.75},
-    ['voider'] = {hp = 0.75, dmg = 1.3, aspd = 1, area_dmg = 0.8, area_size = 0.75, def = 0.6, mvspd = 0.8},
-    ['sorcerer'] = {hp = 0.8, dmg = 1.3, aspd = 1, area_dmg = 1.2, area_size = 1, def = 0.8, mvspd = 1},
-    ['mercenary'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1},
-    ['explorer'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1.25},
+    ['troop'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1},
     ['regular_enemy'] = {hp = 0.5, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 0.3},
     ['boss'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1},
     ['enemy_critter'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 0.5},
-    ['saboteur'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1.4},
-    ['buffer'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1},
   }
 
   local ylb1 = function(lvl)
@@ -1127,8 +1109,8 @@ function init()
   attack_speeds = {
     ['buff'] = 0.5,
     ['ultra-fast'] = 0.78,
-    ['fast'] = 1.5,
-    ['medium'] = 2,
+    ['fast'] = 1,
+    ['medium'] = 1.75,
     ['medium-slow'] = 2.5,
     ['slow'] = 3.5,
     ['ultra-slow'] = 6
@@ -1233,121 +1215,6 @@ function init()
     return table.any(classes, function(v) return v == character end)
   end
 
-  get_number_of_units_per_class = function(units)
-    local rangers = 0
-    local warriors = 0
-    local healers = 0
-    local mages = 0
-    local nukers = 0
-    local conjurers = 0
-    local rogues = 0
-    local enchanters = 0
-    local psykers = 0
-    local cursers = 0
-    local forcers = 0
-    local swarmers = 0
-    local voiders = 0
-    local sorcerers = 0
-    local mercenaries = 0
-    local explorers = 0
-    local cursed = 0
-    local buffers = 0
-    for _, unit in ipairs(units) do
-      local unit_class = character_classes[unit.character]
-      if unit_class == 'ranger' then rangers = rangers + 1 end
-      if unit_class == 'warrior' then warriors = warriors + 1 end
-      if unit_class == 'healer' then healers = healers + 1 end
-      if unit_class == 'mage' then mages = mages + 1 end
-      if unit_class == 'nuker' then nukers = nukers + 1 end
-      if unit_class == 'conjurer' then conjurers = conjurers + 1 end
-      if unit_class == 'rogue' then rogues = rogues + 1 end
-      if unit_class == 'enchanter' then enchanters = enchanters + 1 end
-      if unit_class == 'psyker' then psykers = psykers + 1 end
-      if unit_class == 'curser' then cursers = cursers + 1 end
-      if unit_class == 'forcer' then forcers = forcers + 1 end
-      if unit_class == 'swarmer' then swarmers = swarmers + 1 end
-      if unit_class == 'voider' then voiders = voiders + 1 end
-      if unit_class == 'sorcerer' then sorcerers = sorcerers + 1 end
-      if unit_class == 'mercenary' then mercenaries = mercenaries + 1 end
-      if unit_class == 'explorer' then explorers = explorers + 1 end
-      if unit_class == 'cursed' then explorers = explorers + 1 end
-      if unit_class == 'buffer' then buffers = buffers + 1 end
-    end
-    return {ranger = rangers, warrior = warriors, healer = healers, mage = mages, nuker = nukers, conjurer = conjurers, rogue = rogues,
-      enchanter = enchanters, psyker = psykers, curser = cursers, cursed = cursed, forcer = forcers, swarmer = swarmers, voider = voiders, sorcerer = sorcerers, mercenary = mercenaries, explorer = explorers, buffer = buffers}
-  end
-
-  get_class_levels = function(units)
-    local units_per_class = get_number_of_units_per_class(units)
-    local units_to_class_level = function(number_of_units, class)
-      if class == 'ranger' or class == 'warrior' or class == 'mage' or class == 'nuker' or class == 'rogue' then
-        if number_of_units >= 6 then return 2
-        elseif number_of_units >= 3 then return 1
-        else return 0 end
-      elseif class == 'healer' or class == 'conjurer' or class == 'enchanter' or class == 'curser' or class == 'forcer' or class == 'swarmer' or class == 'voider' or class == 'mercenary' or class == 'psyker' or class == 'cursed' or class == 'buffer' then
-        if number_of_units >= 4 then return 2
-        elseif number_of_units >= 2 then return 1
-        else return 0 end
-      elseif class == 'sorcerer' then
-        if number_of_units >= 6 then return 3
-        elseif number_of_units >= 4 then return 2
-        elseif number_of_units >= 2 then return 1
-        else return 0 end
-      elseif class == 'explorer' then
-        if number_of_units >= 1 then return 1
-        else return 0 end
-      end
-    end
-    return {
-      ranger = units_to_class_level(units_per_class.ranger, 'ranger'),
-      warrior = units_to_class_level(units_per_class.warrior, 'warrior'),
-      mage = units_to_class_level(units_per_class.mage, 'mage'),
-      nuker = units_to_class_level(units_per_class.nuker, 'nuker'),
-      rogue = units_to_class_level(units_per_class.rogue, 'rogue'),
-      healer = units_to_class_level(units_per_class.healer, 'healer'),
-      conjurer = units_to_class_level(units_per_class.conjurer, 'conjurer'),
-      enchanter = units_to_class_level(units_per_class.enchanter, 'enchanter'),
-      psyker = units_to_class_level(units_per_class.psyker, 'psyker'),
-      curser = units_to_class_level(units_per_class.curser, 'curser'),
-      forcer = units_to_class_level(units_per_class.forcer, 'forcer'),
-      swarmer = units_to_class_level(units_per_class.swarmer, 'swarmer'),
-      voider = units_to_class_level(units_per_class.voider, 'voider'),
-      sorcerer = units_to_class_level(units_per_class.sorcerer, 'sorcerer'),
-      mercenary = units_to_class_level(units_per_class.mercenary, 'mercenary'),
-      explorer = units_to_class_level(units_per_class.explorer, 'explorer'),
-      cursed = units_to_class_level(units_per_class.cursed, 'cursed'),
-      buffer = units_to_class_level(units_to_class_level, 'buffer'),
-    }
-  end
-
-  get_classes = function(units)
-    local classes = {}
-    for _, unit in ipairs(units) do
-      if character_classes[unit.character] then table.insert(classes, character_classes[unit.character]) end
-    end
-    return table.unify(table.flatten(classes))
-  end
-
-  class_set_numbers = {
-    ['ranger'] = function(units) return 3, 6, nil, get_number_of_units_per_class(units).ranger end,
-    ['warrior'] = function(units) return 3, 6, nil, get_number_of_units_per_class(units).warrior end,
-    ['mage'] = function(units) return 3, 6, nil, get_number_of_units_per_class(units).mage end,
-    ['nuker'] = function(units) return 3, 6, nil, get_number_of_units_per_class(units).nuker end,
-    ['rogue'] = function(units) return 3, 6, nil, get_number_of_units_per_class(units).rogue end,
-    ['healer'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).healer end,
-    ['conjurer'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).conjurer end,
-    ['enchanter'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).enchanter end,
-    ['psyker'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).psyker end,
-    ['curser'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).curser end,
-    ['forcer'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).forcer end,
-    ['swarmer'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).swarmer end,
-    ['voider'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).voider end,
-    ['sorcerer'] = function(units) return 2, 4, 6, get_number_of_units_per_class(units).sorcerer end,
-    ['mercenary'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).mercenary end,
-    ['explorer'] = function(units) return 1, 1, nil, get_number_of_units_per_class(units).explorer end,
-    ['cursed'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).cursed end,
-    ['buffer'] = function(units) return 2, 4, nil, get_number_of_units_per_class(units).buffer end,
-  }
 
   passive_names = {
     ['centipede'] = 'Centipede',
@@ -1790,11 +1657,11 @@ function init()
   end
 
   level_to_shop_odds = {
-    [1] = {70, 20, 10, 0},
-    [2] = {50, 30, 15, 5},
-    [3] = {25, 45, 20, 10},
-    [4] = {10, 25, 45, 20},
-    [5] = {5, 15, 30, 50},
+    [1] = {100, 0, 0, 0},
+    [2] = {70, 30, 0 ,0},
+    [3] = {50, 30, 15, 5},
+    [4] = {25, 45, 20, 10},
+    [5] = {10, 25, 45, 20},
   }
 
   level_to_item_odds = {
