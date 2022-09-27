@@ -741,9 +741,6 @@ function Projectile:init(args)
     if self.level == 3 then
       self.pierce = 2
     end
-
-  elseif self.character == 'archer' then
-    self.dmg = self.dmg * 0.71
   end
 
   if self.parent.divine_machine_arrow and self.class == 'ranger' then
@@ -2820,6 +2817,15 @@ function Troop:set_character()
     self.t:cooldown(attack_speeds['ultra-fast'], self:in_range(), function()
       if self.target then
         self:shootAnimation(self:angle_to_object(self.target))
+      end
+    end, nil, nil, 'shoot')
+  
+  elseif self.character == 'laser' then
+    self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium-long'])
+    self.t:cooldown(attack_speeds['medium'], self:in_range(), function()
+      if self.target then
+        sniper_load:play{volume=0.9}
+        Helper.Spell.Laser.create(Helper.Color.blue, 1, false, false, 20, self, 0, 0)
       end
     end, nil, nil, 'shoot')
 

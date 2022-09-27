@@ -227,6 +227,13 @@ function BuyScreen:update(dt)
     self:quit_tutorial()
   end
 
+  if input['lctrl'].down or input['rctrl'].down then
+    if input['g'].pressed then
+      gold = gold + 100
+      self.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
+    end
+  end
+
   if input.escape.pressed and not self.transitioning and not self.in_tutorial then
     if not self.paused then
       open_options(self)
@@ -1767,15 +1774,12 @@ function PassiveCard:init(args)
   self:init_game_object(args)
   self.shape = Rectangle(self.x, self.y, self.w, self.h)
   self.interact_with_mouse = true
-  self.passive_name =  Text({{text = '[fg, wavy_mid]' .. passive_names[self.passive], font = pixul_font, alignment = 'center'}}, global_text_tags)
-  self.passive_description = passive_descriptions[self.passive]
   self.spring:pull(0.2, 200, 10)
 end
 
 
 function PassiveCard:update(dt)
   self:update_game_object(dt)
-  self.passive_name:update(dt)
 
   if ((self.selected and input.m1.pressed) or input[tostring(self.card_i)].pressed) and self.arena.choosing_passives then
     self.arena.choosing_passives = false
@@ -1794,7 +1798,6 @@ end
 
 function PassiveCard:draw()
   graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
-    self.passive_name:draw(self.x, self.y - 20)
     _G[self.passive]:draw(self.x, self.y + 24, 0, 1, 1, 0, 0, fg[0])
   graphics.pop()
 end
@@ -1804,29 +1807,16 @@ function PassiveCard:on_mouse_enter()
   self.selected = true
   ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
   self.spring:pull(0.2, 200, 10)
-  self.info_text = InfoText{group = main.current.ui, force_update = true}
-  self.info_text:activate({
-    {text = self.passive_description, font = pixul_font, alignment = 'center', height_multiplier = 1.25},
-  }, nil, nil, nil, nil, 16, 4, nil, 2)
-  self.info_text.x, self.info_text.y = gw/2, gh/2 + gh/4 - 6
 end
 
 
 function PassiveCard:on_mouse_exit()
   self.selected = false
-  self.info_text:deactivate()
-  self.info_text.dead = true
-  self.info_text = nil
 end
 
 
 function PassiveCard:die()
   self.dead = true
-  if self.info_text then
-    self.info_text:deactivate()
-    self.info_text.dead = true
-    self.info_text = nil
-  end
 end
 
 
