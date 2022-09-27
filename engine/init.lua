@@ -8,6 +8,7 @@ if not path:find("init") then
   require(path .. ".system")
   require(path .. ".datastructures.graph")
   require(path .. ".datastructures.grid")
+  require(path .. ".datastructures.stack")
   require(path .. ".game.gameobject")
   require(path .. ".game.group")
   require(path .. ".game.state")

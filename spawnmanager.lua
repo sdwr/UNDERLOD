@@ -79,8 +79,9 @@ function Manage_Spawns(arena)
   arena.time_between_spawns = 0.2
 
   arena.start_time = 3
+  arena.spawning_enemies = true
   arena.t:after(arena.entry_delay, function()
-
+    arena.wave = arena.wave + 1
     --spawn boss
     if arena.level == 6 or arena.level == 11 or arena.level == 16 or arena.level == 21 or arena.level == 25 then
       local boss_name = nil
@@ -119,6 +120,8 @@ function Manage_Spawns(arena)
       end, num_groups, function()
 
         arena.t:every(function()
+          
+
           return #arena.main:get_objects_by_classes(arena.enemies) <= 0 and arena.wave >= arena.max_waves 
           and not arena.quitting and not arena.spawning_enemies end, function() arena:quit() end)
         --delay before start
@@ -159,6 +162,7 @@ end
 function Spawn_Boss(arena, name)
   Spawn_Effect(arena, arena.boss_spawn_point)
   Enemy{type = name, name = name, group = arena.main, x = arena.boss_spawn_point.x, y = arena.boss_spawn_point.y, level = arena.level}
+  SetSpawning(arena, false)
 end
 
 function Spawn_Enemies(arena, group_index, enemies)
@@ -177,7 +181,7 @@ function Spawn_Enemies(arena, group_index, enemies)
     Enemy{type = type, group = arena.main, x = spawn_x, y = spawn_y, level = arena.level}
 
     index = index+1
-  end, arena.spawns_in_group)
+  end, arena.spawns_in_group, function() SetSpawning(arena, false) end)
 
 end
 
@@ -187,4 +191,8 @@ function Spawn_Effect(arena, location)
   camera:shake(4, 0.25)
   SpawnEffect{group = arena.effects, x = location.x, y = location.y}
 
+end
+
+function SetSpawning(arena, b)
+  arena.spawning_enemies = b
 end

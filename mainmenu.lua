@@ -79,7 +79,6 @@ function MainMenu:on_enter(from)
   end
 
   self.title_text = Text({{text = '[wavy_mid, fg]UNDERLOD', font = fat_font, alignment = 'center'}}, global_text_tags)
-
   local run = system.load_run()
 
   if(run and not not next(run)) then

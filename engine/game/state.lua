@@ -60,6 +60,7 @@ function Main:init(name)
   self:init_state(name)
   self.states = {}
   self.transitions = Group():no_camera()
+  self.fps = FPSCounter()
 end
 
 
@@ -70,6 +71,7 @@ function Main:update(dt)
     end
   end
   self.transitions:update(dt)
+  self.fps:update(dt)
 end
 
 
@@ -80,6 +82,7 @@ function Main:draw()
     end
   end
   self.transitions:draw()
+  self.fps:draw()
 end
 
 
