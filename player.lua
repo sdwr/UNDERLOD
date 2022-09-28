@@ -2825,7 +2825,7 @@ function Troop:set_character()
     self.t:cooldown(attack_speeds['medium'], self:in_range(), function()
       if self.target then
         sniper_load:play{volume=0.9}
-        Helper.Spell.Laser.create(Helper.Color.blue, 1, false, 20, Helper.Unit.get_troop_unit(self), 0, 0)
+        Helper.Spell.Laser.create(Helper.Color.blue, 1, false, 20, Helper.Unit.get_troop_unit(self))
       end
     end, nil, nil, 'shoot')
 

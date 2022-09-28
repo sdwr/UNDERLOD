@@ -9,8 +9,8 @@ function Helper.Spell.Laser.create(color, laser_aim_width, direction_lock, damag
             unit = unit,
             parent = unit.object,
             start_aim_time = love.timer.getTime(),
-            direction_targetx = direction_targetx - unit.object.x,
-            direction_targety = direction_targety - unit.object.y,
+            direction_targetx = -1,
+            direction_targety = -1,
             direction_lock = direction_lock,
             laser_aim_width = laser_aim_width,
             color = color,
@@ -19,6 +19,16 @@ function Helper.Spell.Laser.create(color, laser_aim_width, direction_lock, damag
         }
 
         Helper.Unit.claim_target(unit, Helper.Spell.get_nearest_least_targeted(unit))
+
+        local local_direction_targetx = direction_targetx or -1
+        local local_direction_targety = direction_targety or -1 
+        if direction_lock and local_direction_targetx == -1 and local_direction_targety == -1 then
+            laser.direction_targetx = unit.target.object.x - unit.object.x
+            laser.direction_targety = unit.target.object.y - unit.object.y
+        elseif direction_lock and local_direction_targetx ~= -1 and local_direction_targety ~= -1 then
+            laser.direction_targetx = local_direction_targetx - unit.object.x
+            laser.direction_targety = local_direction_targety - unit.object.y
+        end
 
         table.insert(Helper.Spell.Laser.list, laser)
     end
