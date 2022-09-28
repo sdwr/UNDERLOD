@@ -80,8 +80,8 @@ function Helper.Geometry.random_in_radius(x, y, radius)
     local newy = -10000
 
     while Helper.Geometry.distance(x, y, newx, newy) > radius do
-        newx = math.random(x - radius, x + radius)
-        newy = math.random(y - radius, y + radius)
+        newx = get_random(x - radius, x + radius)
+        newy = get_random(y - radius, y + radius)
     end
 
     return newx, newy

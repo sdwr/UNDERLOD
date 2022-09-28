@@ -2822,12 +2822,27 @@ function Troop:set_character()
   
   elseif self.character == 'laser' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium-long'])
-    self.t:cooldown(attack_speeds['medium'], self:in_range(), function()
-      if self.target then
-        sniper_load:play{volume=0.9}
-        Helper.Spell.Laser.create(Helper.Color.blue, 1, false, 20, Helper.Unit.get_troop_unit(self))
+    -- self.t:cooldown(attack_speeds['medium'], self:in_range(), function()
+    --   if self.target then
+    --     Helper.Time.wait(get_random(0, 0.4), function()
+    --       sniper_load:play{volume=0.9}
+    --       Helper.Spell.Laser.create(Helper.Color.blue, 1, false, 20, Helper.Unit.get_troop_unit(self))
+    --     end)
+    --   end
+    -- end, nil, nil, 'shoot')
+    Helper.run_at_init(function()
+      local unit = Helper.Unit.get_troop_unit(self)
+      unit.state_always_run_functions['normal'] = function()
+        if not unit.have_target and Helper.Spell.there_is_target_in_range(unit, attack_ranges['medium-long']) 
+        and love.timer.getTime() - unit.last_attack_at > 2.5 then
+          unit.last_attack_at = love.timer.getTime()
+          Helper.Time.wait(get_random(0, 0.4), function()
+            sniper_load:play{volume=0.9}
+            Helper.Spell.Laser.create(Helper.Color.blue, 1, false, 20, Helper.Unit.get_troop_unit(self))
+          end)
+        end
       end
-    end, nil, nil, 'shoot')
+    end)
 
   elseif self.character == 'cannon' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['long'])

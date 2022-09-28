@@ -41,3 +41,21 @@ function Helper.Spell.get_nearest_least_targeted(unit)
 
     return Helper.Spell.get_nearest_target(unit, least_targeted_units)
 end
+
+function Helper.Spell.claimed_target_is_in_range(unit, range)
+    if unit.have_target and Helper.Geometry.distance(unit.object.x, unit.object.y, unit.target.object.x, unit.target.object.y) < range then
+        return true
+    end
+
+    return false
+end
+
+function Helper.Spell.there_is_target_in_range(unit, range)
+    for i, target in ipairs(Helper.Unit.get_list(not unit.is_troop)) do
+        if Helper.Geometry.distance(unit.object.x, unit.object.y, target.object.x, target.object.y) < range then
+            return true
+        end
+    end
+
+    return false
+end

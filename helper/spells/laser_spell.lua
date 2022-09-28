@@ -1,6 +1,6 @@
 Helper.Spell.Laser = {}
 
-Helper.Spell.Laser.aims_duration = 2
+Helper.Spell.Laser.aims_duration = 1.5
 Helper.Spell.Laser.list = {}
 
 function Helper.Spell.Laser.create(color, laser_aim_width, direction_lock, damage, unit, direction_targetx, direction_targety)
@@ -127,5 +127,13 @@ function Helper.Spell.Laser.shoot()
 
             Helper.Unit.unclaim_target(laser.unit)
         end
+    end
+end
+
+function Helper.Spell.Laser.stop_aiming(unit)
+    local i, laser = find_in_list(Helper.Spell.Laser.list, unit, function(value) return value.unit end)
+    if i ~= -1 then
+        table.remove(Helper.Spell.Laser.list, i)
+        Helper.Unit.unclaim_target(laser.unit)
     end
 end

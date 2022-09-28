@@ -6,7 +6,7 @@ function Helper.Spell.SpreadMissile.create(color, missile_length, damage_troops,
     local spread_missile = {
         parent = parent,
         creation_time = love.timer.getTime(),
-        offset_angle = math.random(0, 360),
+        offset_angle = get_random(0, 360),
         missile_length = missile_length,
         color = color,
         explode_radius = explode_radius,
