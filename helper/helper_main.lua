@@ -9,6 +9,8 @@ require 'helper/helper_geometry'
 require 'helper/spells/helper_spell_main'
 require 'helper/helper_time'
 require 'helper/helper_color'
+require 'helper/helper_lua'
+require 'helper/helper_unit'
 
 
 
@@ -16,15 +18,15 @@ function Helper.init()
     Helper.Time.past_time = love.timer.getTime()
     math.randomseed(love.timer.getTime())
 
-    Helper.Time.set_interval(0.5, function() 
-        Helper.Spell.Flame.damage() 
-    end)
+    -- Helper.Time.set_interval(0.5, function() 
+    --     Helper.Spell.Flame.damage() 
+    -- end)
 end
 
 
 
 function Helper.draw()
-    Helper.Spell.Flame.draw()
+    -- Helper.Spell.Flame.draw()
     Helper.Spell.Missile.draw()
     Helper.Spell.DamageCircle.draw()
     Helper.Spell.Laser.draw_aims()
@@ -45,12 +47,12 @@ function Helper.update()
 
     Helper.Time.run_intervals()
     Helper.Time.run_waits()
-    Helper.Spell.get_last_target_location()
+    Helper.Unit.update_unit_lists()
 
 
 
-    Helper.Spell.Flame.update_target_location()
-    Helper.Spell.Flame.end_flame()
+    -- Helper.Spell.Flame.update_target_location()
+    -- Helper.Spell.Flame.end_flame()
 
     Helper.Spell.Missile.update_position()
     Helper.Spell.Missile.explode()
