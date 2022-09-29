@@ -1081,18 +1081,30 @@ function init()
     ['smallsword'] = warrior,
     ['medsword'] = warrior,
     ['largesword'] = warrior,
+
+    ['smallboots'] = rogue,
+    ['medboots'] = rogue,
+    ['largeboots'] = rogue,
   }
 
   item_costs = {
-    ['smallsword'] = 2,
+    ['smallsword'] = 3,
     ['medsword'] = 5,
     ['largesword'] = 10,
+
+    ['smallboots'] = 3,
+    ['medboots'] = 5,
+    ['largeboots'] = 10,
   }
 
   item_stat_multipliers = {
-    ['smallsword'] = {dmg = 1.25},
-    ['medsword'] = {dmg = 1.5},
-    ['largesword'] = {dmg = 1.75},
+    ['smallsword'] = {dmg = 0.25},
+    ['medsword'] = {dmg = 0.5},
+    ['largesword'] = {dmg = 0.75},
+
+    ['smallboots'] = {mvspd = 0.1},
+    ['medboots'] = {mvspd = 0.2},
+    ['largeboots'] = {mvspd = 0.3},
 
   }
 
@@ -1100,14 +1112,33 @@ function init()
     ['smallsword'] = "A tiny sword",
     ['medsword'] = "A medium sword",
     ['largesword'] = "A large sword!",
+
+    ['smallboots'] = "Small boots",
+    ['medboots'] = "Medium boots",
+    ['largeboots'] = "Large boots!",
   }
 
   tier_to_items = {
-    [1] = {'smallsword'},
-    [2] = {'medsword'},
-    [3] = {'largesword'},
+    [1] = {'smallsword', 'smallboots'},
+    [2] = {'medsword', 'medboots'},
+    [3] = {'largesword', 'largeboots'},
     [4] = {'largesword'},
   }
+  
+  item_to_color = function(item)
+    local cost = item_costs[item]
+    local color = grey[0]
+    if cost then
+      if cost <= 3 then
+        color = grey[0]
+      elseif cost <= 6 then
+        color = yellow[5]
+      else 
+        color = orange[3]
+      end
+    end
+    return color
+  end
 
   attack_ranges = {
     ['melee'] = 20,

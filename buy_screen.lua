@@ -1509,7 +1509,7 @@ function ItemPart:draw(y)
   if not self.parent.grabbed then
     graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
     local item = self.parent.unit.items[self.i]
-    graphics.rectangle(self.x, self.y, 14, 14, 3, 3, bg[3])
+    graphics.rectangle(self.x, self.y, 14, 14, 3, 3, item_to_color(self:getItem()))
     graphics.rectangle(self.x, self.y, 10, 10, 3, 3, bg[5])
     if item and not self.itemGrabbed then
       item_images[item]:draw(self.x, self.y, 0, 0.2, 0.2)
@@ -1837,8 +1837,18 @@ function ItemCard:init(args)
 
   self.cost = item_costs[self.item]
   self.image = item_images[self.item]
+  self.tier_color = item_to_color(self.item)
   self.text = item_text[self.item]
   self.stats = item_stat_multipliers[self.item]
+
+  
+  if self.cost <= 3 then
+    self.tier_color = grey[0]
+  elseif self.cost <= 6 then
+    self.tier_color = yellow[5]
+  else
+    self.tier_color = orange[3]
+  end
   
 end
 
@@ -1878,7 +1888,9 @@ function ItemCard:draw()
   if self.item then
     graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
     graphics.rectangle(self.x, self.y, self.w, self.h, 6,6, bg[5])
+    graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, self.tier_color, 3)
     self.image:draw(self.x, self.y)
+
     graphics.pop()
   end
 end
