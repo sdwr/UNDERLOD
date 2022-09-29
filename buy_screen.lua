@@ -97,11 +97,12 @@ function BuyScreen:on_enter(from, level, loop, units, max_units, passives, shop_
     elseif (lvl-(25*self.loop)) % 3 == 0 then return ' (hard)'
     else return '' end
   end
+
   self:set_level_text()
 
   RerollButton{group = self.main, x = 150, y = 18, parent = self}
-  --ArenaLevelButton{group = self.main, x = 225, y = gh - 20, parent = self}
-  --ArenaLevelButton{group = self.main, x = 305, y = gh - 20, up = true, parent = self}
+  ArenaLevelButton{group = self.main, x = 225, y = gh - 20, parent = self}
+  ArenaLevelButton{group = self.main, x = 305, y = gh - 20, up = true, parent = self}
   GoButton{group = self.main, x = gw - 90, y = gh - 20, parent = self}
   LevelButton{group = self.main, x = gw/2, y = 18, parent = self}
   self.tutorial_button = Button{group = self.main, x = gw/2 + 129, y = 18, button_text = '?', fg_color = 'bg10', bg_color = 'bg', action = function()
@@ -1600,9 +1601,11 @@ function CharacterPart:init(args)
 end
 
 function CharacterPart:close_info_text()
-  self.info_text:deactivate()
-  self.info_text.dead = true
-  self.info_text = nil
+  if self.info_text then
+    self.info_text:deactivate()
+    self.info_text.dead = true
+    self.info_text = nil
+  end
 end
 
 

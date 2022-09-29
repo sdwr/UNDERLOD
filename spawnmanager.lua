@@ -85,7 +85,7 @@ function Manage_Spawns(arena)
     --spawn boss
     if arena.level == 6 or arena.level == 11 or arena.level == 16 or arena.level == 21 or arena.level == 25 then
       local boss_name = nil
-      SpawnMarker{group = arena.effects, x = x, y = y}
+      SpawnMarker{group = arena.effects, x = arena.boss_spawn_point.x, y = arena.boss_spawn_point.y}
       if arena.level == 6 then
         boss_name = 'stompy'
       elseif arena.level == 11 then
@@ -118,17 +118,13 @@ function Manage_Spawns(arena)
           Spawn_Enemies(arena, current_group, {'shooter', 'seeker'})
         end
         current_group = current_group + 1
-      end, num_groups, function()
-
-        arena.t:every(function()
-          
-
-          return #arena.main:get_objects_by_classes(arena.enemies) <= 0 and arena.wave >= arena.max_waves 
-          and not arena.quitting and not arena.spawning_enemies end, function() arena:quit() end)
-        --delay before start
-        --Countdown(arena)
-      end)
+      end, num_groups)
     end
+
+    --check for level end
+    arena.t:every(function()
+      return #arena.main:get_objects_by_classes(arena.enemies) <= 0 and arena.wave >= arena.max_waves 
+      and not arena.quitting and not arena.spawning_enemies end, function() arena:quit() end)
 
   end)
     
@@ -162,7 +158,7 @@ end
 
 function Spawn_Boss(arena, name)
   Spawn_Effect(arena, arena.boss_spawn_point)
-  Enemy{type = name, name = name, group = arena.main, x = arena.boss_spawn_point.x, y = arena.boss_spawn_point.y, level = arena.level}
+  Enemy{type = name, isBoss = true, group = arena.main, x = arena.boss_spawn_point.x, y = arena.boss_spawn_point.y, level = arena.level}
   SetSpawning(arena, false)
 end
 

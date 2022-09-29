@@ -107,7 +107,7 @@ end
 function Enemy:hit(damage)
     if self.invulnerable then return end
     if self.dead then return end
-    if self.type == 'boss' then
+    if self.isBoss then
       self.hfx:use('hit', 0.005, 200, 20)
     else
       self.hfx:use('hit', 0.25, 200, 10)
@@ -127,7 +127,7 @@ function Enemy:hit(damage)
       HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 12}:scale_down(0.3):change_color(0.5, self.color)
       magic_hit1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
   
-      if self.type == 'boss' then
+      if self.isBoss then
         slow(0.25, 1)
         magic_die1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
       end
