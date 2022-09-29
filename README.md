@@ -43,6 +43,8 @@ ctrl+a shows fps
 
 ctrl+g gives 100 gold
 
+ctrl+u toggles level select buttons
+
 d makes damage circle
 
 ### Dev notes at

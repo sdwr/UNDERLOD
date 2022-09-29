@@ -88,6 +88,8 @@ function BuyScreen:on_enter(from, level, loop, units, max_units, passives, shop_
   self:set_party()
   self:set_items(self.shop_level)
 
+  self.show_level_buttons = false
+
   self.shop_text = Text({{text = '[wavy_mid, fg]shop [fg]- gold: [yellow]' .. gold, font = pixul_font, alignment = 'center'}}, global_text_tags)
   self.party_text = Text({{text = '[wavy_mid, fg]party ' .. tostring(#units) .. '/' .. tostring(self.max_units), font = pixul_font, alignment = 'center'}}, global_text_tags)
   self.items_text = Text({{text = '[wavy_mid, fg]items', font = pixul_font, alignment = 'center'}}, global_text_tags)
@@ -233,6 +235,9 @@ function BuyScreen:update(dt)
     if input['g'].pressed then
       gold = gold + 100
       self.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
+    end
+    if input['u'].pressed then
+      self.show_level_buttons = not self.show_level_buttons
     end
   end
 
@@ -585,26 +590,30 @@ function ArenaLevelButton:update(dt)
   if main.current.in_credits then return end
   self:update_game_object(dt)
 
-  if self.selected and input.m1.pressed then
-    if self.up then
-      self.parent.level = self.parent.level + 1
-    else
-      if self.parent.level > 1 then
-        self.parent.level = self.parent.level -1
+  if buyScreen.show_level_buttons then
+    if self.selected and input.m1.pressed then
+      if self.up then
+        self.parent.level = self.parent.level + 1
+      else
+        if self.parent.level > 1 then
+          self.parent.level = self.parent.level -1
+        end
       end
+      self.parent:set_level_text()
+      system.save_state()
+      buyScreen:save_run()
     end
-    self.parent:set_level_text()
-    system.save_state()
-    buyScreen:save_run()
   end
 end
 
 
 function ArenaLevelButton:draw()
-  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
-    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, self.selected and fg[0] or bg[1])
-    self.text:draw(self.x, self.y + 1, 0, 1, 1)
-  graphics.pop()
+  if buyScreen.show_level_buttons then
+    graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
+      graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, self.selected and fg[0] or bg[1])
+      self.text:draw(self.x, self.y + 1, 0, 1, 1)
+    graphics.pop()
+  end
 end
 
 

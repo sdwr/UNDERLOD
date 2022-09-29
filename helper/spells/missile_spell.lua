@@ -77,7 +77,7 @@ function Helper.Spell.Missile.explode()
             if Helper.Geometry.distance(missile.x, missile.y, missile.targetx, missile.targety) < missile.missile_length / 3 then
                 Helper.Spell.DamageCircle.create(missile.color, missile.damage_troops, missile.damage, missile.explode_radius, missile.x, missile.y)
                 table.remove(Helper.Spell.Missile.list, i)
-                shoot1:play{volume=0.9}
+                shoot1:play{volume=0.7}
             end
         else
             local entities = {}
@@ -90,7 +90,7 @@ function Helper.Spell.Missile.explode()
                 if Helper.Geometry.distance(missile.x, missile.y, entity.x, entity.y) < missile.missile_length / 3 then
                     Helper.Spell.DamageCircle.create(missile.color, missile.damage_troops, missile.damage, missile.explode_radius, missile.x, missile.y)
                     table.remove(Helper.Spell.Missile.list, i)
-                    shoot1:play{volume=0.9}
+                    shoot1:play{volume=0.7}
                     break
                 end 
             end
@@ -99,7 +99,7 @@ function Helper.Spell.Missile.explode()
             or Helper.window_height - missile.y < missile.missile_length / 3 or missile.y <= missile.missile_length / 3 then
                 Helper.Spell.DamageCircle.create(missile.color, missile.damage_troops, missile.damage, missile.explode_radius, missile.x, missile.y)
                 table.remove(Helper.Spell.Missile.list, i)
-                shoot1:play{volume=0.9}
+                shoot1:play{volume=0.7}
             end
         end
     end
