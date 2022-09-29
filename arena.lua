@@ -179,7 +179,7 @@ end
 
 function Arena:update(dt)
   if main_song_instance:isStopped() then
-    main_song_instance = _G[random:table{'song1', 'song2', 'song3', 'song4', 'song5', 'song6', 'song7', 'song8'}]:play{volume = 0.4}
+    main_song_instance = _G[random:table{'song1', 'song2', 'song3', 'song4', 'song5', 'song6', 'song7', 'song8'}]:play{volume = 1.0}
   end
 
   if not self.paused and not self.died and not self.won then
