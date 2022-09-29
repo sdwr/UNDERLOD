@@ -59,17 +59,17 @@ items:
 
 
   damage:
-    flat dmg 
+    f̶l̶a̶t̶ ̶d̶m̶g̶ ̶
     %dmg
     %aspd
   
   survival:
     vamp
     shield
-    armor/hp?
+    a̶r̶m̶o̶r̶/̶h̶p̶
 
   utility:
-    move speed
+    m̶o̶v̶e̶ ̶s̶p̶e̶e̶d̶
     ghost through units
     basher
     slow/freeze
@@ -80,6 +80,11 @@ items:
     thorns
     heal over time
     stim pack
+
+  after death:
+    heal allies
+    drop bomb
+    enrage allies
 
 
 

@@ -1513,6 +1513,7 @@ function ItemPart:draw(y)
     graphics.rectangle(self.x, self.y, 10, 10, 3, 3, bg[5])
     if item and not self.itemGrabbed then
       item_images[item]:draw(self.x, self.y, 0, 0.2, 0.2)
+
     end
     graphics.pop()
   end

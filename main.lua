@@ -1085,6 +1085,22 @@ function init()
     ['smallboots'] = rogue,
     ['medboots'] = rogue,
     ['largeboots'] = rogue,
+
+    ['smallbow'] = berserking,
+    ['medbow'] = berserking,
+    ['largebow'] = berserking,
+
+    ['smallvest'] = amplify,
+    ['medvest'] = amplify,
+    ['largevest'] = amplify,
+
+    ['smallshield'] = curser,
+    ['medshield'] = curser,
+    ['largeshield'] = curser,
+
+    ['smallbomb'] = magnify,
+    ['medbomb'] = magnify,
+    ['largebomb'] = magnify,
   }
 
   item_costs = {
@@ -1095,6 +1111,22 @@ function init()
     ['smallboots'] = 3,
     ['medboots'] = 5,
     ['largeboots'] = 10,
+
+    ['smallbow'] = 3,
+    ['medbow'] = 5,
+    ['largebow'] = 10,
+
+    ['smallvest'] = 3,
+    ['medvest'] = 5,
+    ['largevest'] = 10,
+
+    ['smallshield'] = 3,
+    ['medshield'] = 5,
+    ['largeshield'] = 10,
+
+    ['smallbomb'] = 3,
+    ['medbomb'] = 5,
+    ['largebomb'] = 10,
   }
 
   item_stat_multipliers = {
@@ -1106,6 +1138,22 @@ function init()
     ['medboots'] = {mvspd = 0.2},
     ['largeboots'] = {mvspd = 0.3},
 
+    ['smallbow'] = {aspd = 0.2},
+    ['medbow'] = {aspd = 0.3},
+    ['largebow'] = {aspd = 0.4},
+
+    ['smallvest'] = {hp = 0.2},
+    ['medvest'] = {hp = 0.35},
+    ['largevest'] = {hp = 0.5},
+
+    ['smallshield'] = {def = 0.2},
+    ['medshield'] = {def = 0.35},
+    ['largeshield'] = {def = 0.5},
+
+    ['smallbomb'] = {area_size = 0.2},
+    ['medbomb'] = {area_size = 0.3},
+    ['largebomb'] = {area_size = 0.4},
+
   }
 
   item_text = {
@@ -1116,12 +1164,31 @@ function init()
     ['smallboots'] = "Small boots",
     ['medboots'] = "Medium boots",
     ['largeboots'] = "Large boots!",
+
+    ['smallbow'] = "Small bow",
+    ['medbow'] = "Medium bow",
+    ['largebow'] = "Large bow!",
+
+    ['smallvest'] = "Small vest",
+    ['medvest'] = "Medium vest",
+    ['largevest'] = "Large vest!",
+
+    ['smallshield'] = "Small shield",
+    ['medshield'] = "Medium shield",
+    ['largeshield'] = "Large shield!",
+
+    ['smallbomb'] = "Small bomb",
+    ['medbomb'] = "Medium bomb",
+    ['largebomb'] = "Large bomb",
   }
 
   tier_to_items = {
-    [1] = {'smallsword', 'smallboots'},
-    [2] = {'medsword', 'medboots'},
-    [3] = {'largesword', 'largeboots'},
+    [1] = {'smallsword', 'smallboots', 'smallbow', 'smallvest', 'smallshield',
+           'smallbomb'},
+    [2] = {'medsword', 'medboots', 'medbow', 'medvest', 'medshield',
+           'medbomb'},
+    [3] = {'largesword', 'largeboots', 'largebow', 'largevest', 'largeshield',
+           'largebomb'},
     [4] = {'largesword'},
   }
   

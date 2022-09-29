@@ -244,7 +244,6 @@ function Unit:show_infused(n)
   self.t:after(n or 4, function() self.effect_bar.hidden = true end, 'effect_bar')
 end
 
-
 function Unit:calculate_damage(dmg)
   if self.def >= 0 then dmg = dmg*(100/(100+self.def))
   else dmg = dmg*(2 - 100/(100+self.def)) end
