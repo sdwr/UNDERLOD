@@ -4,7 +4,6 @@ Helper.mousex = 0
 Helper.mousey = 0
 Helper.window_width = 0
 Helper.window_height = 0
-Helper.init_functions = {}
 
 require 'helper/helper_geometry'
 require 'helper/spells/helper_spell_main'
@@ -18,19 +17,11 @@ require 'helper/helper_unit'
 function Helper.init()
     Helper.Time.past_time = love.timer.getTime()
     math.randomseed(love.timer.getTime())
-
-    -- Helper.Time.set_interval(0.5, function() 
-    --     Helper.Spell.Flame.damage() 
-    -- end)
-
-    Helper.Unit.update_unit_lists()
-    Helper.run_init_functions()
 end
 
 
 
 function Helper.draw()
-    -- Helper.Spell.Flame.draw()
     Helper.Spell.Missile.draw()
     Helper.Spell.DamageCircle.draw()
     Helper.Spell.Laser.draw_aims()
@@ -51,14 +42,10 @@ function Helper.update()
 
     Helper.Time.run_intervals()
     Helper.Time.run_waits()
-    Helper.Unit.update_unit_lists()
     Helper.Unit.run_state_change_functions()
     Helper.Unit.run_state_always_run_functions()
 
 
-
-    -- Helper.Spell.Flame.update_target_location()
-    -- Helper.Spell.Flame.end_flame()
 
     Helper.Spell.Missile.update_position()
     Helper.Spell.Missile.explode()
@@ -94,16 +81,4 @@ function Helper.release()
 
     Helper.Time.stop_all_intervals()
     Helper.Time.stop_all_waits()
-end
-
-
-
-function Helper.run_at_init(init_function)
-    table.insert(Helper.init_functions, init_function)
-end
-
-function Helper.run_init_functions()
-    for i, init_function in ipairs(Helper.init_functions) do
-        init_function()
-    end
 end

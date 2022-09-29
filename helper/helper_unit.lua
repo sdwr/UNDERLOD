@@ -1,109 +1,45 @@
 Helper.Unit = {}
 
-Helper.Unit.enemy_unit_list = {}
-Helper.Unit.troop_unit_list = {}
-
-
-
-function Helper.Unit.get_troop_unit(object)
-    return Helper.Unit.get_unit(object, true)
-end
-
-function Helper.Unit.get_enemy_unit(object)
-    return Helper.Unit.get_unit(object, false)
-end
-
-function Helper.Unit.get_unit(object, unit_is_troop)
-    if unit_is_troop then
-        for i, unit in ipairs(Helper.Unit.troop_unit_list) do
-            if unit.object == object then
-                return unit
-            end
-        end
+function Helper.Unit.get_list(troop_list)
+    if troop_list then
+        return main.current.main:get_objects_by_class(Troop)
     else
-        for i, unit in ipairs(Helper.Unit.enemy_unit_list) do
-            if unit.object == object then
-                return unit
-            end
-        end
+        return main.current.main:get_objects_by_classes(main.current.enemies)
     end
+end
 
-    local unit = {
-        previous_state = '',
+function Helper.Unit.add_custom_variables_to_unit(unit)
+    unit.previous_state = ''
 
-        is_troop = true,
-        object = object,
-        targeted_by = 0,
-        target = {},
-        have_target = false,
-        is_in_unit_list = false,
-        state_change_functions = {},
-        state_always_run_functions = {},
-        last_attack_at = -999999,
-    }
+    unit.is_troop = true
+    unit.targeted_by = 0
+    unit.claimed_target = {}
+    unit.have_target = false
+    unit.state_change_functions = {}
+    unit.state_always_run_functions = {}
+    unit.last_attack_at = -999999
+    unit.ignore_cooldown = false
+
     Helper.Unit.add_default_state_change_functions(unit)
     Helper.Unit.add_default_state_always_run_functions(unit)
 
-    if not unit_is_troop then 
+    if is_in_list(Helper.Unit.get_list(true), unit) then
+        unit.is_troop = true
+    else
         unit.is_troop = false
     end
-
-    return unit
 end
-
-function Helper.Unit.update_unit_lists()
-    local troops = main.current.main:get_objects_by_class(Troop)
-    local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
-
-    for i, troop in ipairs(troops) do
-        local unit = Helper.Unit.get_troop_unit(troop)
-        if not unit.is_in_unit_list then
-            unit.is_in_unit_list = true
-            table.insert(Helper.Unit.troop_unit_list, unit)
-        end
-    end
-    for i, unit in ipairs(Helper.Unit.troop_unit_list) do
-        if not is_in_list(troops, unit.object) then
-            table.remove(Helper.Unit.troop_unit_list, i)
-        end
-    end
-
-    for i, enemy in ipairs(enemies) do
-        local unit = Helper.Unit.get_enemy_unit(enemy)
-        if not unit.is_in_unit_list then
-            unit.is_in_unit_list = true
-            table.insert(Helper.Unit.enemy_unit_list, unit)
-        end
-    end
-    for i, unit in ipairs(Helper.Unit.enemy_unit_list) do
-        if not is_in_list(enemies, unit.object) then
-            table.remove(Helper.Unit.enemy_unit_list, i)
-        end
-    end
-end
-
-function Helper.Unit.get_list(troop_list)
-    if troop_list then
-        return Helper.Unit.troop_unit_list
-    else
-        return Helper.Unit.enemy_unit_list
-    end
-end
-
-
 
 function Helper.Unit.claim_target(unit, target)
-    unit.target = target
-    unit.target.targeted_by = unit.target.targeted_by + 1
+    unit.claimed_target = target
+    unit.claimed_target.targeted_by = unit.claimed_target.targeted_by + 1
     unit.have_target = true
 end
 
 function Helper.Unit.unclaim_target(unit)
-    unit.target.targeted_by = unit.target.targeted_by - 1
+    unit.claimed_target.targeted_by = unit.claimed_target.targeted_by - 1
     unit.have_target = false
 end
-
-
 
 function Helper.Unit.add_default_state_change_functions(unit)
     local function default_normal()
@@ -148,18 +84,21 @@ function Helper.Unit.add_default_state_always_run_functions(unit)
     local function default_following()
         if unit.have_target then
             Helper.Spell.Laser.stop_aiming(unit)
+            unit.ignore_cooldown = true
         end
     end
 
     local function default_rallying()
         if unit.have_target then
             Helper.Spell.Laser.stop_aiming(unit)
+            unit.ignore_cooldown = true
         end
     end
 
     local function default_always_run()
         if unit.have_target and not Helper.Spell.claimed_target_is_in_range(unit, attack_ranges['medium-long'] + 20) then
             Helper.Spell.Laser.stop_aiming(unit)
+            unit.ignore_cooldown = true
         end
     end
 
@@ -174,17 +113,17 @@ function Helper.Unit.add_default_state_always_run_functions(unit)
 end
 
 function Helper.Unit.run_state_change_functions()
-    for i, unit in ipairs(Helper.Unit.troop_unit_list) do
-        if unit.previous_state ~= unit.object.state then
-            unit.state_change_functions[unit.object.state]()
+    for i, unit in ipairs(Helper.Unit.get_list(true)) do
+        if unit.previous_state ~= unit.state then
+            unit.state_change_functions[unit.state]()
         end
-        unit.previous_state = unit.object.state
+        unit.previous_state = unit.state
     end
 end
 
 function Helper.Unit.run_state_always_run_functions()
-    for i, unit in ipairs(Helper.Unit.troop_unit_list) do
-        unit.state_always_run_functions[unit.object.state]()
+    for i, unit in ipairs(Helper.Unit.get_list(true)) do
+        unit.state_always_run_functions[unit.state]()
         unit.state_always_run_functions['always_run']()
     end
 end

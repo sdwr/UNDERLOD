@@ -203,6 +203,8 @@ function Unit:init_unit()
   self.hfx:add('shoot', 1)
   self.hp_bar = HPBar{group = main.current.effects, parent = self}
   self.effect_bar = EffectBar{group = main.current.effects, parent = self}
+
+  Helper.Unit.add_custom_variables_to_unit(self)
 end
 
 

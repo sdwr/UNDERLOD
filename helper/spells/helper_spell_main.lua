@@ -9,12 +9,13 @@ require 'helper/spells/spread_laser_spell'
 require 'helper/spells/spread_missile_spell'
 
 function Helper.Spell.get_nearest_target(unit, include_list)
-    if #Helper.Unit.get_list(not unit.is_troop) > 0 then
+    local unit_list = Helper.Unit.get_list(not unit.is_troop)
+    if #unit_list > 0 then
         local target = {}
         local distancemin = 100000000
-        for _, value in ipairs(Helper.Unit.get_list(not unit.is_troop)) do
-            if Helper.Geometry.distance(unit.object.x, unit.object.y, value.object.x, value.object.y) < distancemin and (#include_list == 0 or is_in_list(include_list, value)) then
-                distancemin = Helper.Geometry.distance(unit.object.x, unit.object.y, value.object.x, value.object.y)
+        for _, value in ipairs(unit_list) do
+            if Helper.Geometry.distance(unit.x, unit.y, value.x, value.y) < distancemin and (#include_list == 0 or is_in_list(include_list, value)) then
+                distancemin = Helper.Geometry.distance(unit.x, unit.y, value.x, value.y)
                 target = value
             end
         end
@@ -25,15 +26,17 @@ function Helper.Spell.get_nearest_target(unit, include_list)
 end
 
 function Helper.Spell.get_nearest_least_targeted(unit)
+    local unit_list = Helper.Unit.get_list(not unit.is_troop)
+
     local targeted_min = 9999
-    for i, value in ipairs(Helper.Unit.get_list(not unit.is_troop)) do
+    for i, value in ipairs(unit_list) do
         if value.targeted_by < targeted_min then
             targeted_min = value.targeted_by
         end
     end
 
     local least_targeted_units = {}
-    for i, value in ipairs(Helper.Unit.get_list(not unit.is_troop)) do
+    for i, value in ipairs(unit_list) do
         if value.targeted_by == targeted_min then
             table.insert(least_targeted_units, value)
         end
@@ -43,7 +46,7 @@ function Helper.Spell.get_nearest_least_targeted(unit)
 end
 
 function Helper.Spell.claimed_target_is_in_range(unit, range)
-    if unit.have_target and Helper.Geometry.distance(unit.object.x, unit.object.y, unit.target.object.x, unit.target.object.y) < range then
+    if unit.have_target and Helper.Geometry.distance(unit.x, unit.y, unit.claimed_target.x, unit.claimed_target.y) < range then
         return true
     end
 
@@ -52,7 +55,7 @@ end
 
 function Helper.Spell.there_is_target_in_range(unit, range)
     for i, target in ipairs(Helper.Unit.get_list(not unit.is_troop)) do
-        if Helper.Geometry.distance(unit.object.x, unit.object.y, target.object.x, target.object.y) < range then
+        if Helper.Geometry.distance(unit.x, unit.y, target.x, target.y) < range then
             return true
         end
     end
