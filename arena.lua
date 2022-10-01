@@ -122,30 +122,8 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
   
 end
 
-function Arena:spawn_critters(parent, n)
-  if self.died then return end
-  if self.arena_clear_text then return end
-  if self.quitting then return end
-  if self.spawning_enemies then return end
-  if self.won then return end
-  if self.choosing_passives then return end
-
-  if math.floor(n/2) <= 0 then return end
-  self.spawning_enemies = true
-  self.enemy_spawns_prevented = 0
-  local spawn_points = table.copy(self.spawn_points)
-  self.t:after({0, 0.2}, function()
-    local p = spawn_points[3]
-    SpawnMarker{group = self.effects, x = p.x, y = p.y}
-    self.t:after(1.125, function() self:spawn_n_critters(p, 1, math.floor(n/2), true, parent) end)
-  end)
-  self.t:after({0, 0.2}, function()
-    local p = spawn_points[4]
-    SpawnMarker{group = self.effects, x = p.x, y = p.y}
-    self.t:after(1.125, function() self:spawn_n_critters(p, 2, math.floor(n/2), true, parent) end)
-  end)
-  self.t:after(1.125 + math.floor(n/4)*0.25, function() self.spawning_enemies = false end, 'spawning_enemies')
-  self.enemy_spawns_prevented = 0
+function Arena:spawn_critters(spawn_point, amount)
+  Spawn_Critters(self, spawn_point, amount)
 end
 
 

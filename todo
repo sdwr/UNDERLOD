@@ -50,11 +50,13 @@ tooling:
     free gold
 
 items:
-  cost 1/3/5 or 2/5/10
-  can have some # on each squad
-  new UI for items, move squads to center of buy screen?
-  think about taking out character rolling, move to popup card on certain levels
+ ̶ ̶c̶o̶s̶t̶ ̶1̶/̶3̶/̶5̶ ̶o̶r̶ ̶2̶/̶5̶/̶1̶0̶
+̶ ̶ ̶c̶a̶n̶ ̶h̶a̶v̶e̶ ̶s̶o̶m̶e̶ ̶#̶ ̶o̶n̶ ̶e̶a̶c̶h̶ ̶s̶q̶u̶a̶d̶
+ ̶ ̶n̶e̶w̶ ̶U̶I̶ ̶f̶o̶r̶ ̶i̶t̶e̶m̶s̶,̶ ̶m̶o̶v̶e̶ ̶s̶q̶u̶a̶d̶s̶ ̶t̶o̶ ̶c̶e̶n̶t̶e̶r̶ ̶o̶f̶ ̶b̶u̶y̶ ̶s̶c̶r̶e̶e̶n̶?̶
+ i̶t̶e̶m̶s̶ ̶s̶h̶o̶u̶l̶d̶ ̶s̶h̶o̶w̶ ̶h̶o̶v̶e̶r̶t̶e̶x̶t̶ ̶i̶n̶ ̶i̶n̶v̶e̶n̶t̶o̶r̶y̶ ̶(̶w̶h̶e̶n̶ ̶b̶o̶u̶g̶h̶t̶)̶ ̶(̶b̶u̶t̶ ̶n̶o̶t̶ ̶w̶h̶e̶n̶ ̶d̶r̶a̶g̶g̶i̶n̶g̶ ̶b̶e̶t̶w̶e̶e̶n̶ ̶s̶l̶o̶t̶s̶)̶
 
+
+  think about taking out character rolling, move to popup card on certain levels
   how will items combo? need to have value, can't be too degenerate (stack dmg on sniper)
 
 

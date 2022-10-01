@@ -36,6 +36,7 @@ function BuyScreen:on_exit()
   self.info_text = nil
   self.units = nil
   self.active_inventory_slot = nil
+  self.loose_inventory_item = nil
   self.passives = nil
   self.player = nil
   self.t = nil
@@ -1417,6 +1418,10 @@ function LooseItem:init(args)
   self:init_game_object(args)
   self.shape = Rectangle(self.x, self.y, self.sx * 20, self.sy * 20)
   self.interact_with_mouse = false
+
+  if buyScreen then
+    buyScreen.loose_inventory_item = self
+  end
 end
 
 function LooseItem:update(dt)
@@ -1432,6 +1437,9 @@ end
 
 function LooseItem:die()
   self.dead = true
+  if buyScreen then
+    buyScreen.loose_inventory_item = nil
+  end
 end
 
 ItemPart = Object:extend()
@@ -1442,6 +1450,7 @@ function ItemPart:init(args)
   self.interact_with_mouse = true
   self.itemGrabbed = false
   self.looseItem = nil
+  self.info_text = nil
 
   self.spring:pull(0.2, 200, 10)
   self.just_created = true
@@ -1522,9 +1531,36 @@ function ItemPart:draw(y)
     graphics.rectangle(self.x, self.y, 10, 10, 3, 3, bg[5])
     if item and not self.itemGrabbed then
       item_images[item]:draw(self.x, self.y, 0, 0.2, 0.2)
-
+    end
+    if self.colliding_with_mouse and buyScreen and not buyScreen.loose_inventory_item then
+      if not self.info_text then
+        self:create_info_text()
+      end
+    else
+      if self.info_text then
+        self.info_text:deactivate()
+        self.info_text.dead = true
+      end
     end
     graphics.pop()
+  end
+end
+
+function ItemPart:create_info_text()
+  if self.info_text then
+    self.info_text:deactivate()
+    self.info_text.dead = true
+  end
+  self.info_text = nil
+  if self:hasItem() then
+    local item = self:getItem()
+    self.info_text = InfoText{group = main.current.ui, force_update = true}
+    self.info_text:activate({
+      {text = '[fg]' .. item_text[item] .. ', costs: ' .. item_costs[item], font = pixul_font, alignment = 'center',
+        height_multiplier = 1.25},
+      {text = "Item stat text here", font = pixul_font, alignment = 'center', height_multiplier = 1.25},
+    }, nil, nil, nil, nil, 16, 4, nil, 2)
+    self.info_text.x, self.info_text.y = self.x + 70, self.y +20
   end
 end
 

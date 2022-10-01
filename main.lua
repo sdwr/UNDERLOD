@@ -10,7 +10,7 @@ require 'media'
 require 'helper/helper_main'
 require 'spawnmanager'
 require 'enemies.enemy_helper'
-require 'util/fpscounter'
+require 'ui/fpscounter'
 
 
 

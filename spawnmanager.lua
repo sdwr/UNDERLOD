@@ -33,6 +33,8 @@ function Manage_Spawns(arena)
   local right_x = gw/2 + 0.6*gw/2
   local mid_y = gh/2
   local y_offset = 35
+
+  local y_corner_offset = 50
   
   arena.spawn_markers = {
     {x = right_x, y = mid_y},
@@ -46,8 +48,13 @@ function Manage_Spawns(arena)
     {x = left_x, y = mid_y + y_offset},
     {x = left_x, y = mid_y - 2*y_offset},
     {x = left_x, y = mid_y + 2*y_offset},
+  }
 
-
+  arena.corner_spawns = {
+    {x = left_x, y = y_corner_offset},
+    {x = left_x, y = gh - y_corner_offset},
+    {x = right_x, y = y_corner_offset},
+    {x = right_x, y = gh - y_corner_offset},
   }
 
   arena.spawn_offsets = {{x = -12, y = -12}, {x = 12, y = -12}, {x = 12, y = 12}, {x = -12, y = 12}, {x = 0, y = 0}}
@@ -157,12 +164,17 @@ function Countdown(arena)
 end
 
 function Spawn_Boss(arena, name)
+  --set twice because of initial delay
+  arena.spawning_enemies = true
+  
   Spawn_Effect(arena, arena.boss_spawn_point)
   Enemy{type = name, isBoss = true, group = arena.main, x = arena.boss_spawn_point.x, y = arena.boss_spawn_point.y, level = arena.level}
   SetSpawning(arena, false)
 end
 
 function Spawn_Enemies(arena, group_index, enemies)
+  --set twice because of initial delay
+  arena.spawning_enemies = true
 
   local spawn_marker = arena.spawn_markers[group_index]
   Spawn_Effect(arena, spawn_marker)
@@ -179,6 +191,24 @@ function Spawn_Enemies(arena, group_index, enemies)
 
     index = index+1
   end, arena.spawns_in_group, function() SetSpawning(arena, false) end)
+
+end
+
+function Spawn_Critters(arena, group_index, amount)
+  --set twice because of initial delay
+  arena.spawning_enemies = true
+  
+  local spawn_marker = arena.corner_spawns[group_index]
+  Spawn_Effect(arena, spawn_marker)
+  local index = 1
+  arena.t:every(arena.time_between_spawns, function()
+    alert1:play{pitch = 1, volume = 0.5}
+
+    local offset = arena.spawn_offsets[index]
+    local spawn_x, spawn_y = spawn_marker.x + offset.x, spawn_marker.y + offset.y
+    EnemyCritter{group = arena.main, x = spawn_x, y = spawn_y, color = grey[0], v = 10}
+  end, amount, function() SetSpawning(arena, false) end)
+
 
 end
 
