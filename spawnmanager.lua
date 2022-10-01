@@ -75,6 +75,12 @@ function Manage_Spawns(arena)
     3, 3, 4, 4, 0,
   }
 
+  arena.level_to_minibosses = {
+    0, 0, 0, 0, 0, 0,
+    1, 0, 0, 1, 0,
+    0, 1, 1, 1, 0,
+  }
+
   arena.spawns_in_group = 4
 
   arena.max_waves = 1
@@ -88,6 +94,10 @@ function Manage_Spawns(arena)
   arena.start_time = 3
   arena.spawning_enemies = true
   arena.t:after(arena.entry_delay, function()
+    --spawn miniboss
+    if arena.level_to_minibosses[arena.level] == 1 then
+      Spawn_Enemy(arena, {'bigstomper'}, arena.spawn_markers[6])
+    end
     arena.wave = arena.wave + 1
     --spawn boss
     if arena.level == 6 or arena.level == 11 or arena.level == 16 or arena.level == 21 or arena.level == 25 then
@@ -170,6 +180,14 @@ function Spawn_Boss(arena, name)
   Spawn_Effect(arena, arena.boss_spawn_point)
   Enemy{type = name, isBoss = true, group = arena.main, x = arena.boss_spawn_point.x, y = arena.boss_spawn_point.y, level = arena.level}
   SetSpawning(arena, false)
+end
+
+function Spawn_Enemy(arena, enemies, location)
+  Spawn_Effect(arena, location)
+  alert1:play{pitch = 1, volume = 0.8}
+  local type = random:table(enemies)
+  Enemy{type = type, group = arena.main, x = location.x, y = location.y, level = arena.level}
+
 end
 
 function Spawn_Enemies(arena, group_index, enemies)

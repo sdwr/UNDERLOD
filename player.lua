@@ -1813,8 +1813,12 @@ function Stomp:init(args)
 
   orb1:play({volume = 0.5})
 
-  self.t:after(1, function() self:stomp() end)
-  self.t:after(1 + 0.25, function() self:recover() end)
+  self.recoveryTime = self.chargeTime or 1
+  self.recoveryTime = self.recoveryTime + 0.25
+  
+
+  self.t:after(self.chargeTime or 1, function() self:stomp() end)
+  self.t:after(self.recoveryTime, function() self:recover() end)
 
 end
 
@@ -1857,7 +1861,7 @@ function Stomp:draw()
   if self.state == 'charging' then
     graphics.push(self.x, self.y, self.r + (self.vr or 0), self.spring.x, self.spring.x)
       -- graphics.circle(self.x, self.y, self.shape.rs + random:float(-1, 1), self.color, 2)
-      graphics.circle(self.x, self.y, self.attack_sensor.rs * math.min(self.currentTime, 1) , red_transparent)
+      graphics.circle(self.x, self.y, self.attack_sensor.rs * math.min(self.currentTime / (self.chargeTime or 1), 1) , red_transparent)
       graphics.circle(self.x, self.y, self.attack_sensor.rs, red[0], 1)
     graphics.pop()
   end

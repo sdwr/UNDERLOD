@@ -10,8 +10,8 @@ function Enemy:init(args)
 
   self:init_unit()
   self:setExtraFunctions()
-  self.init_enemy(self)
 
+  self.init_enemy(self)
   self:calculate_stats(true)
   
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20 + self.shape.w / 2)

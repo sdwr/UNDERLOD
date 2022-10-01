@@ -296,6 +296,10 @@ function Unit:calculate_stats(first_run)
     self.base_hp = 150 * (math.pow(1.05, level))
     self.base_dmg = 20  * (math.pow(1.05, level))
     self.base_mvspd = 50
+  elseif self.class == 'miniboss' then
+    self.base_hp = 500 * (math.pow(1.05, level))
+    self.base_dmg = 20  * (math.pow(1.05, level))
+    self.base_mvspd = 80
   end
   if self.class == 'regular_enemy' and self.type == 'rager' then
     self.base_mvspd = 150
