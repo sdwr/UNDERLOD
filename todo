@@ -37,6 +37,47 @@ make table of enemy hp vs unit damage
 don't go blind into balancing
 make sure later waves have enough threats to be able to cast a few spells (can't kill every enemy at start)
 
+how to make fun? 
+what does SNKRX do:
+
+  instant control - only two buttons
+  constant threat - lose a few units and the rest of the round is harder/impossible
+  difficulty scaling - starts easy, NG+
+  scaling within a game - first few levels are easy, difficulty spikes that require buying out
+
+  enemy variety
+    green infectors
+    white turrets
+    blue bombers
+  
+  have to react differently to enemy types
+
+  eye candy - lots of player effects
+    AoEs
+    critter spawns
+    chain attacks
+    homing missile
+
+  lots of player attacks happening in rhythms, enemy attacks are "burstier"
+
+  buy screen:
+    always something to look for (matching sets)
+    units start off simple, scale into "god units" (tier 4)
+    units combos (aura +attack speed, match damage types, global buffs)
+  
+to replicate in RTS game:
+
+  start out with slower units, slower paced fights
+  introduce special enemies gradually, have tiers of special units
+  multiple waves in round, increase tension/healing/setup
+
+  right click target? focus down with snipers
+
+
+
+
+
+
 ------------------
 ADDITIONS:
 ------------------
@@ -95,8 +136,9 @@ enemies
   a̶d̶d̶ ̶t̶e̶l̶e̶g̶r̶a̶p̶h̶e̶d̶ ̶m̶e̶l̶e̶e̶ ̶s̶t̶o̶m̶p̶ ̶t̶y̶p̶e̶
  ̶ ̶a̶d̶d̶ ̶s̶u̶m̶m̶o̶n̶e̶r̶
 
-  add laser enemy
-  add star projectile enemy (shoots projectiles in 6 directions at same time)
+  ̶a̶d̶d̶ ̶l̶a̶s̶e̶r̶ ̶e̶n̶e̶m̶y̶
+̶
+̶ ̶ ̶a̶d̶d̶ ̶s̶t̶a̶r̶ ̶p̶r̶o̶j̶e̶c̶t̶i̶l̶e̶ ̶e̶n̶e̶m̶y̶ ̶(̶s̶h̶o̶o̶t̶s̶ ̶p̶r̶o̶j̶e̶c̶t̶i̶l̶e̶s̶ ̶i̶n̶ ̶6̶ ̶d̶i̶r̶e̶c̶t̶i̶o̶n̶s̶ ̶a̶t̶ ̶s̶a̶m̶e̶ ̶t̶i̶m̶e̶)̶
   add annoying flyers (circle around the arena, tiny projectiles that do not too much damage, small hitbox?, don't collide with objects)
   add horde-type summoner (lots of little fast summons)
 

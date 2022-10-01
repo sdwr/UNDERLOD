@@ -11,12 +11,12 @@ fns['init_enemy'] = function(self)
   self.class = 'regular_enemy'
 
   --set attacks
-    self.t:cooldown(attack_speeds['medium'], function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end, function ()
+    self.t:cooldown(attack_speeds['medium-slow'], function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end, function ()
       local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
       if target then
         self:rotate_towards_object(target, 1)
         sniper_load:play{volume=0.9}
-        Helper.Spell.SpreadMissile.create(Helper.Color.blue, 20, true, 20, 30, false, self) 
+        Helper.Spell.SpreadMissile.create(Helper.Color.blue, 10, true, 20, 15, false, self) 
         end
     end, nil, nil, 'shoot')
 end

@@ -1,8 +1,9 @@
 
 local fns = {}
-fns['attack'] = function(self, area, mods, color)
+fns['attack'] = function(self, mods, color)
   mods = mods or {}
-  local t = {team = "enemy", group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(area or 64), color = color or self.color, dmg = self.area_dmg_m*self.dmg,
+  self.dmg = 10
+  local t = {team = "enemy", group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(20), color = color or self.color, dmg = self.area_dmg_m*self.dmg,
     character = self.character, level = self.level, parent = self}
 
   self.state = unit_states['frozen']
@@ -30,7 +31,7 @@ fns['init_enemy'] = function(self)
       local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.friendlies)
       if closest_enemy then
         self:rotate_towards_object(closest_enemy, 1)
-        fns['attack'](self, 30, {x = closest_enemy.x, y = closest_enemy.y})
+        fns['attack'](self, {x = closest_enemy.x, y = closest_enemy.y})
       end
     end, nil, nil, 'attack')
 end
