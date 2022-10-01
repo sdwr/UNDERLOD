@@ -257,6 +257,8 @@ function Arena:update(dt)
   self.credits:update(dt)
 
 
+
+  Helper.Time.delta_time = dt*slow_amount
   Helper.update()
 end
 

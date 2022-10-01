@@ -8,7 +8,7 @@ function Helper.Spell.DamageLine.create(color, linewidth, damage_troops, damage,
         y1 = y1,
         x2 = x2,
         y2 = y2,
-        start_time = love.timer.getTime(),
+        start_time = Helper.Time.time,
         damage_dealt = false,
         linewidth = linewidth,
         color = color,
@@ -21,25 +21,25 @@ end
 
 function Helper.Spell.DamageLine.draw()
     for i, damage_line in ipairs(Helper.Spell.DamageLine.list) do
-        if love.timer.getTime() - damage_line.start_time < 0.05 then
+        if Helper.Time.time - damage_line.start_time < 0.05 then
             love.graphics.setLineWidth(damage_line.linewidth)
-        elseif love.timer.getTime() - damage_line.start_time >= 0.025 and love.timer.getTime() - damage_line.start_time < 0.05 then
+        elseif Helper.Time.time - damage_line.start_time >= 0.025 and Helper.Time.time - damage_line.start_time < 0.05 then
             love.graphics.setLineWidth(damage_line.linewidth * 7 / 6)
-        elseif love.timer.getTime() - damage_line.start_time >= 0.05 and love.timer.getTime() - damage_line.start_time < 0.075 then
+        elseif Helper.Time.time - damage_line.start_time >= 0.05 and Helper.Time.time - damage_line.start_time < 0.075 then
             love.graphics.setLineWidth(damage_line.linewidth * 8 / 6)
-        elseif love.timer.getTime() - damage_line.start_time >= 0.075 and love.timer.getTime() - damage_line.start_time < 0.1 then
+        elseif Helper.Time.time - damage_line.start_time >= 0.075 and Helper.Time.time - damage_line.start_time < 0.1 then
             love.graphics.setLineWidth(damage_line.linewidth * 7 / 6)
-        elseif love.timer.getTime() - damage_line.start_time >= 0.1 and love.timer.getTime() - damage_line.start_time < 0.125 then
+        elseif Helper.Time.time - damage_line.start_time >= 0.1 and Helper.Time.time - damage_line.start_time < 0.125 then
             love.graphics.setLineWidth(damage_line.linewidth * 6 / 6)
-        elseif love.timer.getTime() - damage_line.start_time >= 0.125 and love.timer.getTime() - damage_line.start_time < 0.15 then
+        elseif Helper.Time.time - damage_line.start_time >= 0.125 and Helper.Time.time - damage_line.start_time < 0.15 then
             love.graphics.setLineWidth(damage_line.linewidth / 5 / 6)
-        elseif love.timer.getTime() - damage_line.start_time >= 0.15 and love.timer.getTime() - damage_line.start_time < 0.175 then
+        elseif Helper.Time.time - damage_line.start_time >= 0.15 and Helper.Time.time - damage_line.start_time < 0.175 then
             love.graphics.setLineWidth(damage_line.linewidth * 4 / 6)
-        elseif love.timer.getTime() - damage_line.start_time >= 0.175 and love.timer.getTime() - damage_line.start_time < 0.2 then
+        elseif Helper.Time.time - damage_line.start_time >= 0.175 and Helper.Time.time - damage_line.start_time < 0.2 then
             love.graphics.setLineWidth(damage_line.linewidth * 3 / 6)
-        elseif love.timer.getTime() - damage_line.start_time >= 0.2 and love.timer.getTime() - damage_line.start_time < 0.225 then
+        elseif Helper.Time.time - damage_line.start_time >= 0.2 and Helper.Time.time - damage_line.start_time < 0.225 then
             love.graphics.setLineWidth(damage_line.linewidth * 2 / 6)
-        elseif love.timer.getTime() - damage_line.start_time >= 0.225 and love.timer.getTime() - damage_line.start_time < 0.25 then
+        elseif Helper.Time.time - damage_line.start_time >= 0.225 and Helper.Time.time - damage_line.start_time < 0.25 then
             love.graphics.setLineWidth(damage_line.linewidth * 1 / 6)
         end
 
@@ -81,7 +81,7 @@ end
 
 function Helper.Spell.DamageLine.delete()
     for i, damage_line in ipairs(Helper.Spell.DamageLine.list) do
-        if love.timer.getTime() - damage_line.start_time > 0.25 then
+        if Helper.Time.time - damage_line.start_time > 0.25 then
             table.remove(Helper.Spell.DamageLine.list, i)
         end
     end

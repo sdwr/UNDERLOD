@@ -8,7 +8,7 @@ function Helper.Spell.Laser.create(color, laser_aim_width, direction_lock, damag
         local laser = {
             unit = unit,
             parent = unit,
-            start_aim_time = love.timer.getTime(),
+            start_aim_time = Helper.Time.time,
             direction_targetx = -1,
             direction_targety = -1,
             direction_lock = direction_lock,
@@ -116,7 +116,7 @@ end
 
 function Helper.Spell.Laser.shoot()
     for i, laser in ipairs(Helper.Spell.Laser.list) do
-        if love.timer.getTime() - laser.start_aim_time > Helper.Spell.Laser.aims_duration then
+        if Helper.Time.time - laser.start_aim_time > Helper.Spell.Laser.aims_duration then
             if laser.direction_lock then
                 Helper.Spell.DamageLine.create(laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.parent.x, laser.parent.y, Helper.Spell.Laser.get_end_location(laser.parent.x, laser.parent.y, laser.parent.x + laser.direction_targetx, laser.parent.y + laser.direction_targety))
             else

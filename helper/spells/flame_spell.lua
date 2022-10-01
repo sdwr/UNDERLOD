@@ -12,7 +12,7 @@
 --         y = y,
 --         enemyx = enemyx,
 --         enemyy = enemyy,
---         flame_start_at = love.timer.getTime()
+--         flame_start_at = Helper.Time.time
 --     }
 
 --     table.insert(flames, flame)
@@ -20,7 +20,7 @@
 
 -- function Helper.Spell.Flame.end_flame()
 --     for __, flame in ipairs(flames) do
---         if love.timer.getTime() - flame.flame_start_at > flameduration then
+--         if Helper.Time.time - flame.flame_start_at > flameduration then
 --             table.remove(flames, __)
 --         end
 --     end

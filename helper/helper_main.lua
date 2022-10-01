@@ -15,8 +15,8 @@ require 'helper/helper_unit'
 
 
 function Helper.init()
-    Helper.Time.past_time = love.timer.getTime()
-    math.randomseed(love.timer.getTime())
+    Helper.Time.time = 0
+    math.randomseed(Helper.Time.time)
 end
 
 
@@ -37,8 +37,7 @@ function Helper.update()
         Helper.initialized = true
     end
 
-    Helper.Time.delta_time = love.timer.getTime() - Helper.Time.past_time
-    Helper.Time.past_time = love.timer.getTime()
+    Helper.Time.time = Helper.Time.time + Helper.Time.delta_time
 
     Helper.Time.run_intervals()
     Helper.Time.run_waits()

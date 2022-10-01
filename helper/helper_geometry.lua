@@ -296,8 +296,8 @@ function Helper.Geometry.draw_dashed_line(color, line_width, dash_length, dash_m
 end
 
 function Helper.Geometry.draw_dashed_rectangle(x1, y1, x2, y2)
-    Helper.Geometry.draw_dashed_line(3, 10, 5, love.timer.getTime() * 80, x1, y1, x2, y1)
-    Helper.Geometry.draw_dashed_line(3, 10, 5, love.timer.getTime() * 80, x2, y1, x2, y2)
-    Helper.Geometry.draw_dashed_line(3, 10, 5, love.timer.getTime() * 80, x2, y2, x1, y2)
-    Helper.Geometry.draw_dashed_line(3, 10, 5, love.timer.getTime() * 80, x1, y2, x1, y1)
+    Helper.Geometry.draw_dashed_line(3, 10, 5, Helper.Time.time * 80, x1, y1, x2, y1)
+    Helper.Geometry.draw_dashed_line(3, 10, 5, Helper.Time.time * 80, x2, y1, x2, y2)
+    Helper.Geometry.draw_dashed_line(3, 10, 5, Helper.Time.time * 80, x2, y2, x1, y2)
+    Helper.Geometry.draw_dashed_line(3, 10, 5, Helper.Time.time * 80, x1, y2, x1, y1)
 end
