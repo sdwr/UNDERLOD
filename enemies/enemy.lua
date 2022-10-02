@@ -134,6 +134,10 @@ function Enemy:hit(damage)
     end
 end
 
+function Enemy:onDeath()
+  Corpse{group = main.current.main, x = self.x, y = self.y}
+end
+
 function Enemy:die()
     self.dead = true
     if self.parent and self.parent.summons and self.parent.summons > 0 then
