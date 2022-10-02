@@ -12,7 +12,7 @@ function Helper.Spell.DamageCircle.create(color, damage_troops, damage, radius, 
         damage_troops = damage_troops,
         color = color,
         radius = radius,
-        line_width = radius / 15,
+        -- line_width = radius / 15,
         damage = damage
     }
 
@@ -22,7 +22,7 @@ end
 function Helper.Spell.DamageCircle.draw()
     for i, damage_circle in ipairs(Helper.Spell.DamageCircle.list) do
         love.graphics.setColor(damage_circle.color.r, damage_circle.color.g, damage_circle.color.b, damage_circle.color.a)
-        love.graphics.setLineWidth(damage_circle.line_width)
+        love.graphics.setLineWidth(1)
         love.graphics.circle( 'line', damage_circle.x, damage_circle.y, damage_circle.radius )
     end
 end

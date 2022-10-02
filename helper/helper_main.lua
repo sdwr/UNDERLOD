@@ -67,7 +67,7 @@ function Helper.update()
     if love.keyboard.isDown( "d" ) then
         Helper.Spell.DamageCircle.create(Helper.Color.blue, true, 50, 10, Helper.mousex, Helper.mousey)
         Helper.Spell.DamageCircle.create(Helper.Color.blue, false, 50, 10, Helper.mousex, Helper.mousey)
-    end  
+    end
     
     Helper.window_width = love.graphics.getWidth() / sx
     Helper.window_height = love.graphics.getHeight() / sx

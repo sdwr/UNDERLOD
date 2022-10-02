@@ -18,6 +18,7 @@ function Helper.Unit.add_custom_variables_to_unit(unit)
     unit.state_change_functions = {}
     unit.state_always_run_functions = {}
     unit.last_attack_at = -999999
+    unit.last_finished_attack_at = -999999
     unit.ignore_cooldown = false
 
     Helper.Unit.add_default_state_change_functions(unit)
@@ -31,14 +32,19 @@ function Helper.Unit.add_custom_variables_to_unit(unit)
 end
 
 function Helper.Unit.claim_target(unit, target)
+    if unit.have_target then
+        unit.claimed_target.targeted_by = unit.claimed_target.targeted_by - 1
+    end
     unit.claimed_target = target
     unit.claimed_target.targeted_by = unit.claimed_target.targeted_by + 1
     unit.have_target = true
 end
 
 function Helper.Unit.unclaim_target(unit)
-    unit.claimed_target.targeted_by = unit.claimed_target.targeted_by - 1
-    unit.have_target = false
+    if unit.have_target then
+        unit.claimed_target.targeted_by = unit.claimed_target.targeted_by - 1
+        unit.have_target = false
+    end
 end
 
 function Helper.Unit.add_default_state_change_functions(unit)
@@ -55,9 +61,17 @@ function Helper.Unit.add_default_state_change_functions(unit)
     end
 
     local function default_following()
+        unit.state_change_functions['following_or_rallying']()
     end
 
     local function default_rallying()
+        unit.state_change_functions['following_or_rallying']()
+    end
+
+    local function default_following_and_rallying()
+    end
+
+    local function default_death()
     end
 
     unit.state_change_functions['normal'] = default_normal
@@ -66,6 +80,9 @@ function Helper.Unit.add_default_state_change_functions(unit)
     unit.state_change_functions['stopped'] = default_stopped
     unit.state_change_functions['following'] = default_following
     unit.state_change_functions['rallying'] = default_rallying
+    
+    unit.state_change_functions['following_or_rallying'] = default_following_and_rallying
+    unit.state_change_functions['death'] = default_death
 end
 
 function Helper.Unit.add_default_state_always_run_functions(unit)
@@ -82,24 +99,17 @@ function Helper.Unit.add_default_state_always_run_functions(unit)
     end
 
     local function default_following()
-        if unit.have_target then
-            Helper.Spell.Laser.stop_aiming(unit)
-            unit.ignore_cooldown = true
-        end
+        unit.state_always_run_functions['following_or_rallying']()
     end
 
     local function default_rallying()
-        if unit.have_target then
-            Helper.Spell.Laser.stop_aiming(unit)
-            unit.ignore_cooldown = true
-        end
+        unit.state_always_run_functions['following_or_rallying']()
+    end
+
+    local function default_following_and_rallying()
     end
 
     local function default_always_run()
-        if unit.have_target and not Helper.Spell.claimed_target_is_in_range(unit, attack_ranges['medium-long'] + 20) then
-            Helper.Spell.Laser.stop_aiming(unit)
-            unit.ignore_cooldown = true
-        end
     end
 
     unit.state_always_run_functions['normal'] = default_normal
@@ -109,6 +119,7 @@ function Helper.Unit.add_default_state_always_run_functions(unit)
     unit.state_always_run_functions['following'] = default_following
     unit.state_always_run_functions['rallying'] = default_rallying
 
+    unit.state_always_run_functions['following_or_rallying'] = default_following_and_rallying
     unit.state_always_run_functions['always_run'] = default_always_run
 end
 
