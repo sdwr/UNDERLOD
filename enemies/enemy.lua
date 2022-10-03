@@ -135,6 +135,9 @@ function Enemy:hit(damage)
 end
 
 function Enemy:onDeath()
+  if self.parent and self.parent.summons then
+    self.parent.summons = self.parent.summons - 1
+  end
   Corpse{group = main.current.main, x = self.x, y = self.y}
 end
 

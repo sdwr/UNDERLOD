@@ -1,3 +1,53 @@
+SpawnGlobals = {}
+
+function SpawnGlobals.Init()
+
+  local left_x = gw/2 - 0.6*gw/2
+  local right_x = gw/2 + 0.6*gw/2
+  local mid_y = gh/2
+  local y_offset = 35
+  
+  local y_corner_offset = 50
+  
+  SpawnGlobals.spawn_markers = {
+    {x = right_x, y = mid_y},
+    {x = right_x, y = mid_y - y_offset},
+    {x = right_x, y = mid_y + y_offset},
+    {x = right_x, y = mid_y - 2*y_offset},
+    {x = right_x, y = mid_y + 2*y_offset},
+  
+    {x = left_x, y = mid_y},
+    {x = left_x, y = mid_y - y_offset},
+    {x = left_x, y = mid_y + y_offset},
+    {x = left_x, y = mid_y - 2*y_offset},
+    {x = left_x, y = mid_y + 2*y_offset},
+  }
+  
+  SpawnGlobals.spawn_offsets = {{x = -12, y = -12}, {x = 12, y = -12}, {x = 12, y = 12}, {x = -12, y = 12}, {x = 0, y = 0}}
+  
+  
+  SpawnGlobals.corner_spawns = {
+    {x = left_x, y = y_corner_offset},
+    {x = left_x, y = gh - y_corner_offset},
+    {x = right_x, y = y_corner_offset},
+    {x = right_x, y = gh - y_corner_offset},
+  }
+
+  SpawnGlobals.boss_spawn_point = {x = right_x, y = mid_y}
+
+end
+
+function Can_Spawn(rs, location)
+  local check_circle = Circle(0,0, rs)
+  check_circle:move_to(location.x, location.y)
+  local objects = main.current.main:get_objects_in_shape(check_circle, {Enemy, EnemyCritter, Critter, Troop})
+  if #objects > 0 then
+    return false
+  else
+    return true
+  end
+end
+
 
 --spawns troops in centre of arena, two rows if over 4 units
 function Spawn_Troops(arena)
@@ -28,38 +78,9 @@ function Spawn_Troops(arena)
 end
 
 function Manage_Spawns(arena)
-  -- spawn points around the edge of the map
-  local left_x = gw/2 - 0.6*gw/2
-  local right_x = gw/2 + 0.6*gw/2
-  local mid_y = gh/2
-  local y_offset = 35
-
-  local y_corner_offset = 50
   
-  arena.spawn_markers = {
-    {x = right_x, y = mid_y},
-    {x = right_x, y = mid_y - y_offset},
-    {x = right_x, y = mid_y + y_offset},
-    {x = right_x, y = mid_y - 2*y_offset},
-    {x = right_x, y = mid_y + 2*y_offset},
 
-    {x = left_x, y = mid_y},
-    {x = left_x, y = mid_y - y_offset},
-    {x = left_x, y = mid_y + y_offset},
-    {x = left_x, y = mid_y - 2*y_offset},
-    {x = left_x, y = mid_y + 2*y_offset},
-  }
 
-  arena.corner_spawns = {
-    {x = left_x, y = y_corner_offset},
-    {x = left_x, y = gh - y_corner_offset},
-    {x = right_x, y = y_corner_offset},
-    {x = right_x, y = gh - y_corner_offset},
-  }
-
-  arena.spawn_offsets = {{x = -12, y = -12}, {x = 12, y = -12}, {x = 12, y = 12}, {x = -12, y = 12}, {x = 0, y = 0}}
-
-  arena.boss_spawn_point = {x = right_x, y = mid_y}
 
   -- Set win condition and enemy spawns
   arena.win_condition = 'wave'
@@ -96,13 +117,13 @@ function Manage_Spawns(arena)
   arena.t:after(arena.entry_delay, function()
     --spawn miniboss
     if arena.level_to_minibosses[arena.level] == 1 then
-      Spawn_Enemy(arena, {'bigstomper'}, arena.spawn_markers[6])
+      Spawn_Enemy(arena, {'bigstomper'}, SpawnGlobals.spawn_markers[6])
     end
     arena.wave = arena.wave + 1
     --spawn boss
     if arena.level == 6 or arena.level == 11 or arena.level == 16 or arena.level == 21 or arena.level == 25 then
       local boss_name = nil
-      SpawnMarker{group = arena.effects, x = arena.boss_spawn_point.x, y = arena.boss_spawn_point.y}
+      SpawnMarker{group = arena.effects, x = SpawnGlobals.boss_spawn_point.x, y = SpawnGlobals.boss_spawn_point.y}
       if arena.level == 6 then
         boss_name = 'stompy'
       elseif arena.level == 11 then
@@ -125,12 +146,13 @@ function Manage_Spawns(arena)
       
       local current_group = 1
       arena.t:every(arena.time_between_spawn_groups, function()
-        current_group = current_group % #arena.spawn_markers
+        current_group = current_group % #SpawnGlobals.spawn_markers
         --spawns new group every delay, doesn't wait for group before to finish
         --make sure time_between_spawns * spawns_in_group < time_between_spawn_groups
         if current_group <= num_rares then
-          Spawn_Enemies(arena, current_group, {'mortar', 'laser', 'spread'})
-          -- Spawn_Enemies(arena, current_group, {'stomper', 'mortar', 'assassin', 'summoner', 'laser'})
+          --Spawn_Enemies(arena, current_group, {'summoner', 'spawner'})
+          --Spawn_Enemies(arena, current_group, {'mortar', 'laser', 'spread'})
+          Spawn_Enemies(arena, current_group, {'stomper', 'mortar', 'assassin', 'summoner', 'laser', 'spawner'})
         else
           Spawn_Enemies(arena, current_group, {'shooter', 'seeker'})
         end
@@ -177,8 +199,8 @@ function Spawn_Boss(arena, name)
   --set twice because of initial delay
   arena.spawning_enemies = true
   
-  Spawn_Effect(arena, arena.boss_spawn_point)
-  Enemy{type = name, isBoss = true, group = arena.main, x = arena.boss_spawn_point.x, y = arena.boss_spawn_point.y, level = arena.level}
+  Spawn_Effect(arena, SpawnGlobals.boss_spawn_point)
+  Enemy{type = name, isBoss = true, group = arena.main, x = SpawnGlobals.boss_spawn_point.x, y = SpawnGlobals.boss_spawn_point.y, level = arena.level}
   SetSpawning(arena, false)
 end
 
@@ -186,7 +208,9 @@ function Spawn_Enemy(arena, enemies, location)
   Spawn_Effect(arena, location)
   alert1:play{pitch = 1, volume = 0.8}
   local type = random:table(enemies)
-  Enemy{type = type, group = arena.main, x = location.x, y = location.y, level = arena.level}
+  if Can_Spawn(6, location) then
+    Enemy{type = type, group = arena.main, x = location.x, y = location.y, level = arena.level}
+  end
 
 end
 
@@ -194,18 +218,15 @@ function Spawn_Enemies(arena, group_index, enemies)
   --set twice because of initial delay
   arena.spawning_enemies = true
 
-  local spawn_marker = arena.spawn_markers[group_index]
+  local spawn_marker = SpawnGlobals.spawn_markers[group_index]
   Spawn_Effect(arena, spawn_marker)
   local index = 1
   arena.t:every(arena.time_between_spawns, function()
 
-    alert1:play{pitch = 1, volume = 0.8}
-
-    local offset = arena.spawn_offsets[index]
-    local type = random:table(enemies)
+    local offset = SpawnGlobals.spawn_offsets[index]
     local spawn_x, spawn_y = spawn_marker.x + offset.x, spawn_marker.y + offset.y
 
-    Enemy{type = type, group = arena.main, x = spawn_x, y = spawn_y, level = arena.level}
+    Spawn_Enemy(arena, enemies, {x = spawn_x, y = spawn_y})
 
     index = index+1
   end, arena.spawns_in_group, function() SetSpawning(arena, false) end)
@@ -216,13 +237,13 @@ function Spawn_Critters(arena, group_index, amount)
   --set twice because of initial delay
   arena.spawning_enemies = true
   
-  local spawn_marker = arena.corner_spawns[group_index]
+  local spawn_marker = SpawnGlobals.corner_spawns[group_index]
   Spawn_Effect(arena, spawn_marker)
   local index = 1
   arena.t:every(arena.time_between_spawns, function()
     alert1:play{pitch = 1, volume = 0.5}
 
-    local offset = arena.spawn_offsets[index]
+    local offset = SpawnGlobals.spawn_offsets[index]
     local spawn_x, spawn_y = spawn_marker.x + offset.x, spawn_marker.y + offset.y
     EnemyCritter{group = arena.main, x = spawn_x, y = spawn_y, color = grey[0], v = 10}
   end, amount, function() SetSpawning(arena, false) end)

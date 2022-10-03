@@ -157,7 +157,13 @@ end
 
 function Arena:update(dt)
   if main_song_instance:isStopped() then
-    main_song_instance = _G[random:table{'song1', 'song2', 'song3', 'song4', 'song5', 'song6', 'song7', 'song8'}]:play{volume = 0.7}
+    if self.level <= 6 then
+      --zone 1, gunnar
+      main_song_instance = _G[random:table{'song1', 'song2', 'song3', 'song4', 'song5', 'song6', 'song7', 'song8'}]:play{volume = 0.7}
+    else
+      --zone 3, derp
+      main_song_instance = _G[random:table{'derp1'}]:play{volume = 0.5}
+    end
   end
 
   if not self.paused and not self.died and not self.won then
@@ -437,8 +443,8 @@ function Arena:restore_passives_to_pool(j)
 end
 
 function Arena:draw_spawn_markers()
-  for i = 1, #self.spawn_markers do
-    local location = self.spawn_markers[i]
+  for i = 1, #SpawnGlobals.spawn_markers do
+    local location = SpawnGlobals.spawn_markers[i]
     graphics.push(location.x, location.y)
     graphics.circle(location.x, location.y, 4, yellow[0], 1)
     graphics.pop()

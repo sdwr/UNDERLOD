@@ -1832,7 +1832,7 @@ end
 function Stomp:stomp()
   if self then self.state = "recovering" else return end
 
-  usurer1:play{pitch = random:float(0.95, 1.05), volume = 0.9}
+  usurer1:play{pitch = random:float(0.95, 1.05), volume = 1.6}
 
   local targets = {}
   if self.team == 'enemy' then
@@ -1901,64 +1901,6 @@ end
 
 function Mortar:draw()
 end
-
-Summon = Object:extend()
-Summon:implement(GameObject)
-Summon:implement(Physics)
-function Summon:init(args)
-  self:init_game_object(args)
-  self.attack_sensor = Circle(self.x, self.y, self.rs)
-  self.currentTime = 0
-
-  self.state = "charging"
-
-  self.parent.state = 'frozen'
-
-  self.summonTime = 3
-  illusion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
-  self.t:after(self.summonTime, function() self:spawn() end)
-
-end
-
-function Summon:update(dt)
-  if self.parent and self.parent.dead then self.dead = true; return end
-  self:update_game_object(dt)
-  self.x = self.parent.x
-  self.y = self.parent.y
-  self.currentTime = self.currentTime + dt
-end
-
-function Summon:spawn()
-  illusion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
-  spawn1:play{pitch = random:float(0.8, 1.2), volume = 0.15}
-  if self.parent.summons < 4 then
-    self.parent.summons = self.parent.summons + 1
-    local args ={group = main.current.main, x= self.x + 10, y = self.y, level = self.level, parent = self.parent}
-    Enemy{type = 'rager', group = main.current.main, x= self.x + 10, y = self.y, level = self.level, parent = self.parent}
-  end
-  self:recover()
-end
-
-function Summon:recover()
-  self.state = 'recovering'
-  if self and self.parent then self.parent.state = 'normal' end
-  if self then self.dead = true end
-end
-
-function Summon:draw()
-  if self.hidden then return end
-
-  if self.state == 'charging' then
-    graphics.push(self.x, self.y, self.r + (self.vr or 0), self.spring.x, self.spring.x)
-      -- graphics.circle(self.x, self.y, self.shape.rs + random:float(-1, 1), self.color, 2)
-      graphics.circle(self.x, self.y, self.attack_sensor.rs * math.min(self.currentTime / 3, 1) , purple_transparent)
-      graphics.circle(self.x, self.y, self.attack_sensor.rs, purple[0], 1)
-    graphics.pop()
-  end
-
-end
-
-
 
 Vanish = Object:extend()
 Vanish:implement(GameObject)
@@ -2810,7 +2752,7 @@ function Troop:set_character()
   if self.character == 'swordsman' then
     self.dmg = self.dmg;
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['melee'])
-    self.t:cooldown(attack_speeds['fast'], self:in_range(), function()
+    self.t:cooldown(attack_speeds['medium-fast'], self:in_range(), function()
       if self.target then
         self:attack(10, {x = self.target.x, y = self.target.y})
       end

@@ -291,7 +291,7 @@ function Unit:calculate_stats(first_run)
   elseif self:is(EnemyCritter) or self:is(Critter) then
     self.base_hp = 25 * hpMod
     self.base_dmg = 5 * dmgMod
-    self.base_mvspd = 50 * spdMod
+    self.base_mvspd = 150 * spdMod
   elseif self.class == 'regular_enemy' then
     self.base_hp = 150 * (math.pow(1.05, level))
     self.base_dmg = 20  * (math.pow(1.05, level))

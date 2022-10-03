@@ -2,7 +2,7 @@
 local fns = {}
 fns['attack'] = function(self, mods, color)
   mods = mods or {}
-  self.dmg = 10
+  self.dmg = 5
   local t = {team = "enemy", group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(20), color = color or self.color, dmg = self.area_dmg_m*self.dmg,
     character = self.character, level = self.level, parent = self}
 

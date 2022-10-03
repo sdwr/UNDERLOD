@@ -16,6 +16,7 @@ require 'ui/fpscounter'
 
 function init()
   shared_init()
+  SpawnGlobals.Init()
 
   input:bind('move_left', {'a', 'left', 'dpleft', 'm1'})
   input:bind('move_right', {'d', 'e', 's', 'right', 'dpright', 'm2'})
@@ -135,6 +136,8 @@ function init()
   song6 = Sound('gunnar - Make It Rain.mp3', {tags = {music}})
   song7 = Sound('gunnar - Mammon.mp3', {tags = {music}})
   song8 = Sound('gunnar - Up To The Brink.mp3', {tags = {music}})
+
+  derp1 = Sound('derp - Negative Space.mp3')
   death_song = nil
 
 
@@ -1220,6 +1223,7 @@ function init()
     ['buff'] = 0.5,
     ['ultra-fast'] = 0.78,
     ['fast'] = 1,
+    ['medium-fast'] = 1.35,
     ['medium'] = 1.75,
     ['medium-slow'] = 2.5,
     ['slow'] = 3.5,
