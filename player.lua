@@ -2800,6 +2800,7 @@ function Troop:onDeath()
   Corpse{group = main.current.main, x = self.x, y = self.y}
   
   self.state_change_functions['death']()
+  self.death_function()
 end
 
 
@@ -2826,19 +2827,7 @@ function Troop:set_character()
 
   elseif self.character == 'laser' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium-long'])
-
-    -- self.state_always_run_functions['normal'] = function()
-    --   if not self.have_target and Helper.Spell.there_is_target_in_range(self, attack_ranges['medium-long'] + 5) 
-    --   and Helper.Time.time - self.last_finished_attack_at > 1
-    --   and Helper.Time.time - self.last_attack_at > 2.5 then
-    --     Helper.Unit.claim_target(self, Helper.Spell.get_nearest_least_targeted(self, attack_ranges['medium-long'] + 20))
-    --     Helper.Time.wait(get_random(0, 0.4), function()
-    --       self.last_attack_at = Helper.Time.time 
-    --       sniper_load:play{volume=0.9}
-    --       Helper.Spell.Laser.create(Helper.Color.blue, 1, false, 20, self)
-    --     end)
-    --   end
-    -- end
+    self.range = attack_ranges['medium-long']
 
     self.state_always_run_functions['following_or_rallying'] = function()
       if self.have_target then
@@ -2865,13 +2854,11 @@ function Troop:set_character()
       end
       
       if self.have_target and not Helper.Spell.claimed_target_is_in_range(self, attack_ranges['medium-long'] + 30) then
-        Helper.Unit.unclaim_target(self)
         Helper.Spell.Laser.stop_aiming(self)
       end
     end
 
     self.state_change_functions['death'] = function()
-      Helper.Unit.unclaim_target(self)
       Helper.Spell.Laser.stop_aiming(self)
     end
 

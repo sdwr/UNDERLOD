@@ -20,6 +20,15 @@ function Helper.Unit.add_custom_variables_to_unit(unit)
     unit.last_attack_at = -999999
     unit.last_finished_attack_at = -999999
     unit.ignore_cooldown = false
+    unit.range = 999999
+    unit.update_function = function() 
+        if unit.have_target and not Helper.Spell.claimed_target_is_in_range(unit, attack_ranges['medium-long'] + 30) then
+            Helper.Unit.unclaim_target(unit)
+        end
+    end
+    unit.death_function = function()
+        Helper.Unit.unclaim_target(unit)
+    end
 
     Helper.Unit.add_default_state_change_functions(unit)
     Helper.Unit.add_default_state_always_run_functions(unit)
@@ -136,5 +145,6 @@ function Helper.Unit.run_state_always_run_functions()
     for i, unit in ipairs(Helper.Unit.get_list(true)) do
         unit.state_always_run_functions[unit.state]()
         unit.state_always_run_functions['always_run']()
+        unit.update_function()
     end
 end
