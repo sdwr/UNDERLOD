@@ -5,7 +5,7 @@ local fns = {}
 fns['init_enemy'] = function(self)
 
   --create shape
-  self.color = purple[0]:clone()
+  self.color = purple[5]:clone()
   self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
   
   --set physics 
@@ -13,10 +13,15 @@ fns['init_enemy'] = function(self)
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
   self.class = 'regular_enemy'
 
-  --set attacks
+  --set special attrs
+    self.maxSummons = 2
     self.summons = 0
-    self.t:cooldown(attack_speeds['slow'], function() return self.state == 'normal' and self.summons < 3 end, function()
-        Summon{group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = 25, color = purple[0], level = self.level, parent = self}
+    self.aggro_sensor = Circle(self.x, self.y, 1)
+
+  --set attacks
+    self.t:cooldown(attack_speeds['slow'], function() return self.state == 'normal' and self.summons < self.maxSummons end, function()
+        Summon{group = main.current.main, team = "enemy", type = 'rager', amount = 1, castTime = 1.5,
+        x = self.x, y = self.y, rs = 15, color = purple[3], level = self.level, parent = self}
     end, nil, nil, 'cast')
 end
 

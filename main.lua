@@ -10,12 +10,13 @@ require 'media'
 require 'helper/helper_main'
 require 'spawnmanager'
 require 'enemies.enemy_helper'
-require 'util/fpscounter'
+require 'ui/fpscounter'
 
 
 
 function init()
   shared_init()
+  SpawnGlobals.Init()
 
   input:bind('move_left', {'a', 'left', 'dpleft', 'm1'})
   input:bind('move_right', {'d', 'e', 's', 'right', 'dpright', 'm2'})
@@ -135,6 +136,8 @@ function init()
   song6 = Sound('gunnar - Make It Rain.mp3', {tags = {music}})
   song7 = Sound('gunnar - Mammon.mp3', {tags = {music}})
   song8 = Sound('gunnar - Up To The Brink.mp3', {tags = {music}})
+
+  derp1 = Sound('derp - Negative Space.mp3')
   death_song = nil
 
 
@@ -1017,7 +1020,8 @@ function init()
 
   class_stat_multipliers = {
     ['troop'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1},
-    ['regular_enemy'] = {hp = 0.5, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 0.3},
+    ['regular_enemy'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1},
+    ['miniboss'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1},
     ['boss'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1},
     ['enemy_critter'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 0.5},
   }
@@ -1081,18 +1085,78 @@ function init()
     ['smallsword'] = warrior,
     ['medsword'] = warrior,
     ['largesword'] = warrior,
+
+    ['smallboots'] = rogue,
+    ['medboots'] = rogue,
+    ['largeboots'] = rogue,
+
+    ['smallbow'] = berserking,
+    ['medbow'] = berserking,
+    ['largebow'] = berserking,
+
+    ['smallvest'] = amplify,
+    ['medvest'] = amplify,
+    ['largevest'] = amplify,
+
+    ['smallshield'] = curser,
+    ['medshield'] = curser,
+    ['largeshield'] = curser,
+
+    ['smallbomb'] = magnify,
+    ['medbomb'] = magnify,
+    ['largebomb'] = magnify,
   }
 
   item_costs = {
-    ['smallsword'] = 2,
+    ['smallsword'] = 3,
     ['medsword'] = 5,
     ['largesword'] = 10,
+
+    ['smallboots'] = 3,
+    ['medboots'] = 5,
+    ['largeboots'] = 10,
+
+    ['smallbow'] = 3,
+    ['medbow'] = 5,
+    ['largebow'] = 10,
+
+    ['smallvest'] = 3,
+    ['medvest'] = 5,
+    ['largevest'] = 10,
+
+    ['smallshield'] = 3,
+    ['medshield'] = 5,
+    ['largeshield'] = 10,
+
+    ['smallbomb'] = 3,
+    ['medbomb'] = 5,
+    ['largebomb'] = 10,
   }
 
   item_stat_multipliers = {
-    ['smallsword'] = {dmg = 1.25},
-    ['medsword'] = {dmg = 1.5},
-    ['largesword'] = {dmg = 1.75},
+    ['smallsword'] = {dmg = 0.25},
+    ['medsword'] = {dmg = 0.5},
+    ['largesword'] = {dmg = 0.75},
+
+    ['smallboots'] = {mvspd = 0.1},
+    ['medboots'] = {mvspd = 0.2},
+    ['largeboots'] = {mvspd = 0.3},
+
+    ['smallbow'] = {aspd = 0.2},
+    ['medbow'] = {aspd = 0.3},
+    ['largebow'] = {aspd = 0.4},
+
+    ['smallvest'] = {hp = 0.2},
+    ['medvest'] = {hp = 0.35},
+    ['largevest'] = {hp = 0.5},
+
+    ['smallshield'] = {def = 0.2},
+    ['medshield'] = {def = 0.35},
+    ['largeshield'] = {def = 0.5},
+
+    ['smallbomb'] = {area_size = 0.2},
+    ['medbomb'] = {area_size = 0.3},
+    ['largebomb'] = {area_size = 0.4},
 
   }
 
@@ -1100,14 +1164,52 @@ function init()
     ['smallsword'] = "A tiny sword",
     ['medsword'] = "A medium sword",
     ['largesword'] = "A large sword!",
+
+    ['smallboots'] = "Small boots",
+    ['medboots'] = "Medium boots",
+    ['largeboots'] = "Large boots!",
+
+    ['smallbow'] = "Small bow",
+    ['medbow'] = "Medium bow",
+    ['largebow'] = "Large bow!",
+
+    ['smallvest'] = "Small vest",
+    ['medvest'] = "Medium vest",
+    ['largevest'] = "Large vest!",
+
+    ['smallshield'] = "Small shield",
+    ['medshield'] = "Medium shield",
+    ['largeshield'] = "Large shield!",
+
+    ['smallbomb'] = "Small bomb",
+    ['medbomb'] = "Medium bomb",
+    ['largebomb'] = "Large bomb",
   }
 
   tier_to_items = {
-    [1] = {'smallsword'},
-    [2] = {'medsword'},
-    [3] = {'largesword'},
+    [1] = {'smallsword', 'smallboots', 'smallbow', 'smallvest', 'smallshield',
+           'smallbomb'},
+    [2] = {'medsword', 'medboots', 'medbow', 'medvest', 'medshield',
+           'medbomb'},
+    [3] = {'largesword', 'largeboots', 'largebow', 'largevest', 'largeshield',
+           'largebomb'},
     [4] = {'largesword'},
   }
+  
+  item_to_color = function(item)
+    local cost = item_costs[item]
+    local color = grey[0]
+    if cost then
+      if cost <= 3 then
+        color = grey[0]
+      elseif cost <= 6 then
+        color = yellow[5]
+      else 
+        color = orange[3]
+      end
+    end
+    return color
+  end
 
   attack_ranges = {
     ['melee'] = 20,
@@ -1121,6 +1223,7 @@ function init()
     ['buff'] = 0.5,
     ['ultra-fast'] = 0.78,
     ['fast'] = 1,
+    ['medium-fast'] = 1.35,
     ['medium'] = 1.75,
     ['medium-slow'] = 2.5,
     ['slow'] = 3.5,

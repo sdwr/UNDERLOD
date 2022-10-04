@@ -246,7 +246,6 @@ function Unit:show_infused(n)
   self.t:after(n or 4, function() self.effect_bar.hidden = true end, 'effect_bar')
 end
 
-
 function Unit:calculate_damage(dmg)
   if self.def >= 0 then dmg = dmg*(100/(100+self.def))
   else dmg = dmg*(2 - 100/(100+self.def)) end
@@ -288,17 +287,21 @@ function Unit:calculate_stats(first_run)
     self.base_dmg = 10
     self.base_mvspd = 75
   elseif self:is(Troop) then
-    self.base_hp = 50 * hpMod
+    self.base_hp = 100 * hpMod
     self.base_dmg = 10 * dmgMod
     self.base_mvspd = 100 * spdMod
   elseif self:is(EnemyCritter) or self:is(Critter) then
     self.base_hp = 25 * hpMod
     self.base_dmg = 5 * dmgMod
-    self.base_mvspd = 50 * spdMod
+    self.base_mvspd = 150 * spdMod
   elseif self.class == 'regular_enemy' then
     self.base_hp = 150 * (math.pow(1.05, level))
     self.base_dmg = 20  * (math.pow(1.05, level))
     self.base_mvspd = 50
+  elseif self.class == 'miniboss' then
+    self.base_hp = 500 * (math.pow(1.05, level))
+    self.base_dmg = 20  * (math.pow(1.05, level))
+    self.base_mvspd = 80
   end
   if self.class == 'regular_enemy' and self.type == 'rager' then
     self.base_mvspd = 150

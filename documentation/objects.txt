@@ -1,0 +1,54 @@
+----------------
+Object creation
+-----------------
+
+Objects are the core building block of the game, a new object type is defined with 
+
+Troop = Object:extend(),
+
+and whatever :init() function is defined will be called on object creation
+the core object code is in engine/game/object.lua
+
+most objects implement GameObject, and have:
+:init()
+:update(dt) //dt is delta time since last game tick
+:draw()
+
+functions, which are called on creation, game loop update, and game loop draw.
+The update + draw functions are automatically called, but only after the object is added to a 
+Group by setting group = <main.current.ui, main.current.main, etc> in the creation params
+
+An object is created with the form
+
+Troop{group = main.current.main, x = 100, y = 100, ...etc}
+
+params passed in are set as object params in GameObject:init_game_object(args),
+(which also adds the object to its group)
+so any :init() function needs to set call that function ex:
+
+function Troop:init(args)
+    self:init_game_object(args)
+end
+
+
+---------------
+Object deletion
+---------------
+
+Objects are deleted by setting self.dead = true
+Then they will be removed and :onDeath(), :destroy() hooks are called from
+Group:update()
+on the next game tick
+
+-------------------
+Multiple inheritance
+-------------------
+
+Objects support multiple inheritance:
+
+Troop:implement(GameObject)
+Troop:implement(Physics)
+
+any params and functions on the inherited class will be added to the new class
+If the same function is defined in multiple inherited classes (don't do this!), the first one created
+takes priority

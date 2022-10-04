@@ -36,6 +36,7 @@ function BuyScreen:on_exit()
   self.info_text = nil
   self.units = nil
   self.active_inventory_slot = nil
+  self.loose_inventory_item = nil
   self.passives = nil
   self.player = nil
   self.t = nil
@@ -88,6 +89,8 @@ function BuyScreen:on_enter(from, level, loop, units, max_units, passives, shop_
   self:set_party()
   self:set_items(self.shop_level)
 
+  self.show_level_buttons = false
+
   self.shop_text = Text({{text = '[wavy_mid, fg]shop [fg]- gold: [yellow]' .. gold, font = pixul_font, alignment = 'center'}}, global_text_tags)
   self.party_text = Text({{text = '[wavy_mid, fg]party ' .. tostring(#units) .. '/' .. tostring(self.max_units), font = pixul_font, alignment = 'center'}}, global_text_tags)
   self.items_text = Text({{text = '[wavy_mid, fg]items', font = pixul_font, alignment = 'center'}}, global_text_tags)
@@ -97,11 +100,12 @@ function BuyScreen:on_enter(from, level, loop, units, max_units, passives, shop_
     elseif (lvl-(25*self.loop)) % 3 == 0 then return ' (hard)'
     else return '' end
   end
+
   self:set_level_text()
 
   RerollButton{group = self.main, x = 150, y = 18, parent = self}
-  --ArenaLevelButton{group = self.main, x = 225, y = gh - 20, parent = self}
-  --ArenaLevelButton{group = self.main, x = 305, y = gh - 20, up = true, parent = self}
+  ArenaLevelButton{group = self.main, x = 225, y = gh - 20, parent = self}
+  ArenaLevelButton{group = self.main, x = 305, y = gh - 20, up = true, parent = self}
   GoButton{group = self.main, x = gw - 90, y = gh - 20, parent = self}
   LevelButton{group = self.main, x = gw/2, y = 18, parent = self}
   self.tutorial_button = Button{group = self.main, x = gw/2 + 129, y = 18, button_text = '?', fg_color = 'bg10', bg_color = 'bg', action = function()
@@ -232,6 +236,9 @@ function BuyScreen:update(dt)
     if input['g'].pressed then
       gold = gold + 100
       self.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
+    end
+    if input['u'].pressed then
+      self.show_level_buttons = not self.show_level_buttons
     end
   end
 
@@ -584,26 +591,30 @@ function ArenaLevelButton:update(dt)
   if main.current.in_credits then return end
   self:update_game_object(dt)
 
-  if self.selected and input.m1.pressed then
-    if self.up then
-      self.parent.level = self.parent.level + 1
-    else
-      if self.parent.level > 1 then
-        self.parent.level = self.parent.level -1
+  if buyScreen.show_level_buttons then
+    if self.selected and input.m1.pressed then
+      if self.up then
+        self.parent.level = self.parent.level + 1
+      else
+        if self.parent.level > 1 then
+          self.parent.level = self.parent.level -1
+        end
       end
+      self.parent:set_level_text()
+      system.save_state()
+      buyScreen:save_run()
     end
-    self.parent:set_level_text()
-    system.save_state()
-    buyScreen:save_run()
   end
 end
 
 
 function ArenaLevelButton:draw()
-  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
-    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, self.selected and fg[0] or bg[1])
-    self.text:draw(self.x, self.y + 1, 0, 1, 1)
-  graphics.pop()
+  if buyScreen.show_level_buttons then
+    graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
+      graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, self.selected and fg[0] or bg[1])
+      self.text:draw(self.x, self.y + 1, 0, 1, 1)
+    graphics.pop()
+  end
 end
 
 
@@ -1407,6 +1418,10 @@ function LooseItem:init(args)
   self:init_game_object(args)
   self.shape = Rectangle(self.x, self.y, self.sx * 20, self.sy * 20)
   self.interact_with_mouse = false
+
+  if buyScreen then
+    buyScreen.loose_inventory_item = self
+  end
 end
 
 function LooseItem:update(dt)
@@ -1422,6 +1437,9 @@ end
 
 function LooseItem:die()
   self.dead = true
+  if buyScreen then
+    buyScreen.loose_inventory_item = nil
+  end
 end
 
 ItemPart = Object:extend()
@@ -1432,6 +1450,7 @@ function ItemPart:init(args)
   self.interact_with_mouse = true
   self.itemGrabbed = false
   self.looseItem = nil
+  self.info_text = nil
 
   self.spring:pull(0.2, 200, 10)
   self.just_created = true
@@ -1508,12 +1527,40 @@ function ItemPart:draw(y)
   if not self.parent.grabbed then
     graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
     local item = self.parent.unit.items[self.i]
-    graphics.rectangle(self.x, self.y, 14, 14, 3, 3, bg[3])
+    graphics.rectangle(self.x, self.y, 14, 14, 3, 3, item_to_color(self:getItem()))
     graphics.rectangle(self.x, self.y, 10, 10, 3, 3, bg[5])
     if item and not self.itemGrabbed then
       item_images[item]:draw(self.x, self.y, 0, 0.2, 0.2)
     end
+    if self.colliding_with_mouse and buyScreen and not buyScreen.loose_inventory_item then
+      if not self.info_text then
+        self:create_info_text()
+      end
+    else
+      if self.info_text then
+        self.info_text:deactivate()
+        self.info_text.dead = true
+      end
+    end
     graphics.pop()
+  end
+end
+
+function ItemPart:create_info_text()
+  if self.info_text then
+    self.info_text:deactivate()
+    self.info_text.dead = true
+  end
+  self.info_text = nil
+  if self:hasItem() then
+    local item = self:getItem()
+    self.info_text = InfoText{group = main.current.ui, force_update = true}
+    self.info_text:activate({
+      {text = '[fg]' .. item_text[item] .. ', costs: ' .. item_costs[item], font = pixul_font, alignment = 'center',
+        height_multiplier = 1.25},
+      {text = "Item stat text here", font = pixul_font, alignment = 'center', height_multiplier = 1.25},
+    }, nil, nil, nil, nil, 16, 4, nil, 2)
+    self.info_text.x, self.info_text.y = self.x + 70, self.y +20
   end
 end
 
@@ -1600,9 +1647,11 @@ function CharacterPart:init(args)
 end
 
 function CharacterPart:close_info_text()
-  self.info_text:deactivate()
-  self.info_text.dead = true
-  self.info_text = nil
+  if self.info_text then
+    self.info_text:deactivate()
+    self.info_text.dead = true
+    self.info_text = nil
+  end
 end
 
 
@@ -1834,8 +1883,18 @@ function ItemCard:init(args)
 
   self.cost = item_costs[self.item]
   self.image = item_images[self.item]
+  self.tier_color = item_to_color(self.item)
   self.text = item_text[self.item]
   self.stats = item_stat_multipliers[self.item]
+
+  
+  if self.cost <= 3 then
+    self.tier_color = grey[0]
+  elseif self.cost <= 6 then
+    self.tier_color = yellow[5]
+  else
+    self.tier_color = orange[3]
+  end
   
 end
 
@@ -1875,7 +1934,9 @@ function ItemCard:draw()
   if self.item then
     graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
     graphics.rectangle(self.x, self.y, self.w, self.h, 6,6, bg[5])
+    graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, self.tier_color, 3)
     self.image:draw(self.x, self.y)
+
     graphics.pop()
   end
 end

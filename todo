@@ -3,6 +3,11 @@ turn game into rts :o
 -------------
 BUGS:
 --------------
+spawn:
+  spawning units on top of each other slows/freezes the game
+  checks and cancels spawn now, no respawn though
+  fps counter still shows max though??
+
 combat:
 new spells still aim/cast when dead
 rally doesn't work while shooting/about to shoot
@@ -37,6 +42,47 @@ make table of enemy hp vs unit damage
 don't go blind into balancing
 make sure later waves have enough threats to be able to cast a few spells (can't kill every enemy at start)
 
+how to make fun? 
+what does SNKRX do:
+
+  instant control - only two buttons
+  constant threat - lose a few units and the rest of the round is harder/impossible
+  difficulty scaling - starts easy, NG+
+  scaling within a game - first few levels are easy, difficulty spikes that require buying out
+
+  enemy variety
+    green infectors
+    white turrets
+    blue bombers
+  
+  have to react differently to enemy types
+
+  eye candy - lots of player effects
+    AoEs
+    critter spawns
+    chain attacks
+    homing missile
+
+  lots of player attacks happening in rhythms, enemy attacks are "burstier"
+
+  buy screen:
+    always something to look for (matching sets)
+    units start off simple, scale into "god units" (tier 4)
+    units combos (aura +attack speed, match damage types, global buffs)
+  
+to replicate in RTS game:
+
+  start out with slower units, slower paced fights
+  introduce special enemies gradually, have tiers of special units
+  multiple waves in round, increase tension/healing/setup
+
+  right click target? focus down with snipers
+
+
+
+
+
+
 ------------------
 ADDITIONS:
 ------------------
@@ -50,26 +96,28 @@ tooling:
     free gold
 
 items:
-  cost 1/3/5 or 2/5/10
-  can have some # on each squad
-  new UI for items, move squads to center of buy screen?
-  think about taking out character rolling, move to popup card on certain levels
+ ̶ ̶c̶o̶s̶t̶ ̶1̶/̶3̶/̶5̶ ̶o̶r̶ ̶2̶/̶5̶/̶1̶0̶
+̶ ̶ ̶c̶a̶n̶ ̶h̶a̶v̶e̶ ̶s̶o̶m̶e̶ ̶#̶ ̶o̶n̶ ̶e̶a̶c̶h̶ ̶s̶q̶u̶a̶d̶
+ ̶ ̶n̶e̶w̶ ̶U̶I̶ ̶f̶o̶r̶ ̶i̶t̶e̶m̶s̶,̶ ̶m̶o̶v̶e̶ ̶s̶q̶u̶a̶d̶s̶ ̶t̶o̶ ̶c̶e̶n̶t̶e̶r̶ ̶o̶f̶ ̶b̶u̶y̶ ̶s̶c̶r̶e̶e̶n̶?̶
+ i̶t̶e̶m̶s̶ ̶s̶h̶o̶u̶l̶d̶ ̶s̶h̶o̶w̶ ̶h̶o̶v̶e̶r̶t̶e̶x̶t̶ ̶i̶n̶ ̶i̶n̶v̶e̶n̶t̶o̶r̶y̶ ̶(̶w̶h̶e̶n̶ ̶b̶o̶u̶g̶h̶t̶)̶ ̶(̶b̶u̶t̶ ̶n̶o̶t̶ ̶w̶h̶e̶n̶ ̶d̶r̶a̶g̶g̶i̶n̶g̶ ̶b̶e̶t̶w̶e̶e̶n̶ ̶s̶l̶o̶t̶s̶)̶
 
+
+  think about taking out character rolling, move to popup card on certain levels
   how will items combo? need to have value, can't be too degenerate (stack dmg on sniper)
 
 
   damage:
-    flat dmg 
+    f̶l̶a̶t̶ ̶d̶m̶g̶ ̶
     %dmg
     %aspd
   
   survival:
     vamp
     shield
-    armor/hp?
+    a̶r̶m̶o̶r̶/̶h̶p̶
 
   utility:
-    move speed
+    m̶o̶v̶e̶ ̶s̶p̶e̶e̶d̶
     ghost through units
     basher
     slow/freeze
@@ -81,6 +129,11 @@ items:
     heal over time
     stim pack
 
+  after death:
+    heal allies
+    drop bomb
+    enrage allies
+
 
 
 
@@ -88,8 +141,9 @@ enemies
   a̶d̶d̶ ̶t̶e̶l̶e̶g̶r̶a̶p̶h̶e̶d̶ ̶m̶e̶l̶e̶e̶ ̶s̶t̶o̶m̶p̶ ̶t̶y̶p̶e̶
  ̶ ̶a̶d̶d̶ ̶s̶u̶m̶m̶o̶n̶e̶r̶
 
-  add laser enemy
-  add star projectile enemy (shoots projectiles in 6 directions at same time)
+  ̶a̶d̶d̶ ̶l̶a̶s̶e̶r̶ ̶e̶n̶e̶m̶y̶
+̶
+̶ ̶ ̶a̶d̶d̶ ̶s̶t̶a̶r̶ ̶p̶r̶o̶j̶e̶c̶t̶i̶l̶e̶ ̶e̶n̶e̶m̶y̶ ̶(̶s̶h̶o̶o̶t̶s̶ ̶p̶r̶o̶j̶e̶c̶t̶i̶l̶e̶s̶ ̶i̶n̶ ̶6̶ ̶d̶i̶r̶e̶c̶t̶i̶o̶n̶s̶ ̶a̶t̶ ̶s̶a̶m̶e̶ ̶t̶i̶m̶e̶)̶
   add annoying flyers (circle around the arena, tiny projectiles that do not too much damage, small hitbox?, don't collide with objects)
   add horde-type summoner (lots of little fast summons)
 
