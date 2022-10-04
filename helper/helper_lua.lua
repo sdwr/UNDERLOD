@@ -29,5 +29,5 @@ function find_in_list(list, element, findfunction)
 end
 
 function get_random(lower, upper)
-    return math.random() * (upper - lower) - lower
+    return math.random() * (upper - lower) + lower
 end

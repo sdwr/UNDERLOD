@@ -1,9 +1,4 @@
 Helper = {}
-Helper.initialized = false
-Helper.mousex = 0
-Helper.mousey = 0
-Helper.window_width = 0
-Helper.window_height = 0
 
 require 'helper/helper_geometry'
 require 'helper/spells/helper_spell_main'
@@ -11,12 +6,23 @@ require 'helper/helper_time'
 require 'helper/helper_color'
 require 'helper/helper_lua'
 require 'helper/helper_unit'
+require 'helper/helper_graphics'
+
+Helper.initialized = false
+Helper.mousex = 0
+Helper.mousey = 0
+Helper.window_width = 0
+Helper.window_height = 0
 
 
 
 function Helper.init()
     Helper.Time.time = 0
     math.randomseed(Helper.Time.time)
+
+    Helper.Time.set_interval(1, function()
+        Helper.Spell.Flame.damage()
+    end)
 end
 
 
@@ -27,6 +33,9 @@ function Helper.draw()
     Helper.Spell.Laser.draw_aims()
     Helper.Spell.DamageLine.draw()
     Helper.Spell.SpreadMissile.draw_aims()
+    Helper.Spell.Flame.draw_hitbox()
+
+    Helper.Graphics.draw_particles()
 end
 
 
@@ -59,6 +68,13 @@ function Helper.update()
 
     Helper.Spell.SpreadMissile.shoot_missiles()
 
+    Helper.Spell.Flame.update_direction()
+    Helper.Spell.Flame.end_flames()
+
+
+
+    Helper.Graphics.update_particles()
+
 
 
     Helper.mousex, Helper.mousey = love.mouse.getPosition()
@@ -80,4 +96,7 @@ function Helper.release()
 
     Helper.Time.stop_all_intervals()
     Helper.Time.stop_all_waits()
+
+    Helper.Spell.Flame.end_all_flames()
+    Helper.Spell.Laser.clear_all()
 end

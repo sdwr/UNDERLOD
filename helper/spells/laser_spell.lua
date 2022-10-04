@@ -4,7 +4,7 @@ Helper.Spell.Laser.aims_duration = 1.5
 Helper.Spell.Laser.list = {}
 
 function Helper.Spell.Laser.create(color, laser_aim_width, direction_lock, damage, unit, direction_targetx, direction_targety)
-    if #Helper.Unit.get_list(not unit.is_troop) > 0 and unit.have_target then
+    if unit.have_target then
         local laser = {
             unit = unit,
             start_aim_time = Helper.Time.time,
@@ -128,6 +128,14 @@ function Helper.Spell.Laser.shoot()
         end
     end
 end
+
+function Helper.Spell.Laser.clear_all()
+    for i, laser in ipairs(Helper.Spell.Laser.list) do
+        table.remove(Helper.Spell.Laser.list, i)
+    end
+end
+
+
 
 function Helper.Spell.Laser.hold_fire(unit)
     local i, laser = find_in_list(Helper.Spell.Laser.list, unit, function(value) return value.unit end)

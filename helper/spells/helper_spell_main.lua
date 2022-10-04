@@ -9,6 +9,8 @@ require 'helper/spells/spread_laser_spell'
 require 'helper/spells/spread_missile_spell'
 
 function Helper.Spell.get_nearest_target(unit, include_list)
+    include_list = include_list or {}
+
     local unit_list = Helper.Unit.get_list(not unit.is_troop)
     if #unit_list > 0 then
         local target = {}
@@ -26,7 +28,7 @@ function Helper.Spell.get_nearest_target(unit, include_list)
 end
 
 function Helper.Spell.get_nearest_least_targeted(unit, range)
-    range = range or 999999
+    range = range or unit.range + 20
 
     local target_list = {}
     for i, value in ipairs(Helper.Unit.get_list(not unit.is_troop)) do
@@ -53,6 +55,7 @@ function Helper.Spell.get_nearest_least_targeted(unit, range)
 end
 
 function Helper.Spell.claimed_target_is_in_range(unit, range)
+    range = range or unit.range + 30
     if unit.have_target and Helper.Geometry.distance(unit.x, unit.y, unit.claimed_target.x, unit.claimed_target.y) <= range then
         return true
     end
@@ -61,6 +64,7 @@ function Helper.Spell.claimed_target_is_in_range(unit, range)
 end
 
 function Helper.Spell.there_is_target_in_range(unit, range)
+    range = range or unit.range + 5
     for i, target in ipairs(Helper.Unit.get_list(not unit.is_troop)) do
         if Helper.Geometry.distance(unit.x, unit.y, target.x, target.y) < range then
             return true
