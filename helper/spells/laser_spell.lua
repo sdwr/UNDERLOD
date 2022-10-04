@@ -113,7 +113,8 @@ function Helper.Spell.Laser.draw_aims()
 end
 
 function Helper.Spell.Laser.shoot()
-    for i, laser in ipairs(Helper.Spell.Laser.list) do
+    for i = #Helper.Spell.Laser.list, 1, -1 do
+        local laser = Helper.Spell.Laser.list[i]
         if Helper.Time.time - laser.start_aim_time > Helper.Spell.Laser.aims_duration and not laser.holding_fire then
             if laser.direction_lock then
                 Helper.Spell.DamageLine.create(laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.unit.x, laser.unit.y, Helper.Spell.Laser.get_end_location(laser.unit.x, laser.unit.y, laser.unit.x + laser.direction_targetx, laser.unit.y + laser.direction_targety))
@@ -130,7 +131,7 @@ function Helper.Spell.Laser.shoot()
 end
 
 function Helper.Spell.Laser.clear_all()
-    for i, laser in ipairs(Helper.Spell.Laser.list) do
+    for i = #Helper.Spell.Laser.list, 1, -1 do
         table.remove(Helper.Spell.Laser.list, i)
     end
 end

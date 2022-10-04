@@ -20,7 +20,7 @@ function Helper.init()
     Helper.Time.time = 0
     math.randomseed(Helper.Time.time)
 
-    Helper.Time.set_interval(1, function()
+    Helper.Time.set_interval(0.75, function()
         Helper.Spell.Flame.damage()
     end)
 end

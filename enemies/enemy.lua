@@ -139,6 +139,9 @@ function Enemy:onDeath()
     self.parent.summons = self.parent.summons - 1
   end
   Corpse{group = main.current.main, x = self.x, y = self.y}
+
+  self.state_change_functions['death']()
+  self.death_function()
 end
 
 function Enemy:die()

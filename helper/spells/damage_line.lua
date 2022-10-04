@@ -80,8 +80,8 @@ function Helper.Spell.DamageLine.damage()
 end
 
 function Helper.Spell.DamageLine.delete()
-    for i, damage_line in ipairs(Helper.Spell.DamageLine.list) do
-        if Helper.Time.time - damage_line.start_time > 0.25 then
+    for i = #Helper.Spell.DamageLine.list, 1, -1 do
+        if Helper.Time.time - Helper.Spell.DamageLine.list[i].start_time > 0.25 then
             table.remove(Helper.Spell.DamageLine.list, i)
         end
     end

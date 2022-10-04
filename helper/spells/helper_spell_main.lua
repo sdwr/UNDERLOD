@@ -28,8 +28,6 @@ function Helper.Spell.get_nearest_target(unit, include_list)
 end
 
 function Helper.Spell.get_nearest_least_targeted(unit, range)
-    range = range or unit.range + 20
-
     local target_list = {}
     for i, value in ipairs(Helper.Unit.get_list(not unit.is_troop)) do
         if Helper.Geometry.distance(unit.x, unit.y, value.x, value.y) <= range then
@@ -39,14 +37,14 @@ function Helper.Spell.get_nearest_least_targeted(unit, range)
 
     local targeted_min = 9999
     for i, value in ipairs(target_list) do
-        if value.targeted_by < targeted_min then
-            targeted_min = value.targeted_by
+        if #value.targeted_by < targeted_min then
+            targeted_min = #value.targeted_by
         end
     end
 
     local least_targeted_units = {}
     for i, value in ipairs(target_list) do
-        if value.targeted_by == targeted_min then
+        if #value.targeted_by == targeted_min then
             table.insert(least_targeted_units, value)
         end
     end
@@ -55,7 +53,6 @@ function Helper.Spell.get_nearest_least_targeted(unit, range)
 end
 
 function Helper.Spell.claimed_target_is_in_range(unit, range)
-    range = range or unit.range + 30
     if unit.have_target and Helper.Geometry.distance(unit.x, unit.y, unit.claimed_target.x, unit.claimed_target.y) <= range then
         return true
     end
@@ -64,7 +61,6 @@ function Helper.Spell.claimed_target_is_in_range(unit, range)
 end
 
 function Helper.Spell.there_is_target_in_range(unit, range)
-    range = range or unit.range + 5
     for i, target in ipairs(Helper.Unit.get_list(not unit.is_troop)) do
         if Helper.Geometry.distance(unit.x, unit.y, target.x, target.y) < range then
             return true

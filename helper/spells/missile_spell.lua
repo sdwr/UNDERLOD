@@ -72,7 +72,8 @@ function Helper.Spell.Missile.update_position()
 end
 
 function Helper.Spell.Missile.explode()
-    for i, missile in ipairs(Helper.Spell.Missile.list) do
+    for i = #Helper.Spell.Missile.list, 1, -1 do
+        local missile = Helper.Spell.Missile.list[i]
         if not missile.fly_infinitely then
             if Helper.Geometry.distance(missile.x, missile.y, missile.targetx, missile.targety) < missile.missile_length / 3 then
                 Helper.Spell.DamageCircle.create(missile.color, missile.damage_troops, missile.damage, missile.explode_radius, missile.x, missile.y)

@@ -32,7 +32,8 @@ function Helper.Spell.SpreadMissile.draw_aims()
 end
 
 function Helper.Spell.SpreadMissile.shoot_missiles()
-    for i, spread_missile in ipairs(Helper.Spell.SpreadMissile.list) do
+    for i = #Helper.Spell.SpreadMissile.list, 1, -1 do
+        local spread_missile = Helper.Spell.SpreadMissile.list[i]
         if Helper.Time.time - spread_missile.creation_time > Helper.Spell.SpreadMissile.aims_duration then
             Helper.Spell.Missile.create(spread_missile.color, spread_missile.missile_length, spread_missile.damage_troops, spread_missile.damage, true, spread_missile.explode_radius, spread_missile.parent.x, spread_missile.parent.y, Helper.Spell.Laser.get_end_location(spread_missile.parent.x, spread_missile.parent.y, Helper.Geometry.rotate_point(spread_missile.parent.x + 100, spread_missile.parent.y, spread_missile.parent.x, spread_missile.parent.y, spread_missile.offset_angle)))
             Helper.Spell.Missile.create(spread_missile.color, spread_missile.missile_length, spread_missile.damage_troops, spread_missile.damage, true, spread_missile.explode_radius, spread_missile.parent.x, spread_missile.parent.y, Helper.Spell.Laser.get_end_location(spread_missile.parent.x, spread_missile.parent.y, Helper.Geometry.rotate_point(spread_missile.parent.x + 100, spread_missile.parent.y, spread_missile.parent.x, spread_missile.parent.y, spread_missile.offset_angle + 60)))

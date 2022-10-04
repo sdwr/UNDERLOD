@@ -2746,6 +2746,7 @@ function Troop:onDeath()
   Corpse{group = main.current.main, x = self.x, y = self.y}
   
   self.state_change_functions['death']()
+  self.death_function()
 end
 
 
@@ -2763,32 +2764,33 @@ function Troop:set_character()
 
 
   elseif self.character == 'archer' then
-    self.attack_sensor = Circle(self.x, self.y, 50)
+    self.attack_sensor = Circle(self.x, self.y, 60)
     -- self.t:cooldown(attack_speeds['ultra-fast'], self:in_range(), function()
     --   if self.target then
     --     self:shootAnimation(self:angle_to_object(self.target))
     --   end
     -- end, nil, nil, 'shoot')
-    self.range = 50
 
     self.state_always_run_functions['always_run'] = function()
-      if Helper.Spell.there_is_target_in_range(self, 60) 
-      and Helper.Time.time - self.last_finished_attack_at > 1
-      and Helper.Time.time - self.last_attack_at > 2.5 then
+      if Helper.Spell.there_is_target_in_range(self, 70) 
+      and Helper.Time.time - self.last_finished_attack_at > 1 then
         if self.have_target then
           Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
         else
           Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
-          self.last_attack_at = Helper.Time.time 
-          pyro1:play{volume=0.9}
-          Helper.Spell.Flame.create(Helper.Color.orange, 50, 60, 5, self)
+          Helper.Spell.Flame.create(Helper.Color.orange, 60, 70, 10, self)
         end
       end
 
-      if self.have_target and not Helper.Spell.claimed_target_is_in_range(self) then
-        Helper.Spell.Flame.end_flame_after(self, 0.5)
+      if self.have_target and not Helper.Spell.claimed_target_is_in_range(self, 70) then
+        Helper.Spell.Flame.end_flame_after(self, 1)
         Helper.Unit.unclaim_target(self)
       end
+    end
+
+    self.state_change_functions['target_death'] = function()
+      Helper.Spell.Flame.end_flame_after(self, 1)
+      Helper.Unit.unclaim_target(self)
     end
 
     self.state_change_functions['death'] = function()
@@ -2799,8 +2801,26 @@ function Troop:set_character()
 
 
   elseif self.character == 'laser' then
-    self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium-long'])
-    self.range = attack_ranges['medium-long']
+    self.attack_sensor = Circle(self.x, self.y, 100)
+
+    self.state_always_run_functions['always_run'] = function()
+      if not self.have_target and Helper.Spell.there_is_target_in_range(self, 105) 
+      and Helper.Time.time - self.last_finished_attack_at > 1
+      and Helper.Time.time - self.last_attack_at > 2.5 then
+        Helper.Unit.claim_target(self, Helper.Spell.get_nearest_least_targeted(self, 130))
+        self.last_attack_at = Helper.Time.time 
+        Helper.Time.wait(get_random(0, 0.4), function()
+          self.last_attack_at = Helper.Time.time 
+          sniper_load:play{volume=0.9}
+          Helper.Spell.Laser.create(Helper.Color.blue, 1, false, 20, self)
+        end)
+      end
+      
+      if self.have_target and not Helper.Spell.claimed_target_is_in_range(self, 140) then
+        Helper.Spell.Laser.stop_aiming(self)
+        Helper.Unit.unclaim_target(self)
+      end
+    end
 
     self.state_always_run_functions['following_or_rallying'] = function()
       if self.have_target then
@@ -2811,24 +2831,6 @@ function Troop:set_character()
     self.state_change_functions['normal'] = function()
       if self.have_target then
         Helper.Spell.Laser.continue_fire(self)
-      end
-    end
-
-    self.state_always_run_functions['always_run'] = function()
-      if not self.have_target and Helper.Spell.there_is_target_in_range(self) 
-      and Helper.Time.time - self.last_finished_attack_at > 1
-      and Helper.Time.time - self.last_attack_at > 2.5 then
-        Helper.Unit.claim_target(self, Helper.Spell.get_nearest_least_targeted(self))
-        Helper.Time.wait(get_random(0, 0.4), function()
-          self.last_attack_at = Helper.Time.time 
-          sniper_load:play{volume=0.9}
-          Helper.Spell.Laser.create(Helper.Color.blue, 1, false, 20, self)
-        end)
-      end
-      
-      if self.have_target and not Helper.Spell.claimed_target_is_in_range(self) then
-        Helper.Spell.Laser.stop_aiming(self)
-        Helper.Unit.unclaim_target(self)
       end
     end
 

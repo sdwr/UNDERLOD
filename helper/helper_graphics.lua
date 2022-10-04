@@ -171,7 +171,8 @@ function Helper.Graphics.create_particle(color, size, x, y, speed, travel_time, 
 end
 
 function Helper.Graphics.update_particles()
-    for i, particle in ipairs(Helper.Graphics.particles) do
+    for i = #Helper.Graphics.particles, 1, -1 do
+        local particle = Helper.Graphics.particles[i]
         if Helper.Time.time - particle.creation_time > particle.travel_time then
             table.remove(Helper.Graphics.particles, i)
         end

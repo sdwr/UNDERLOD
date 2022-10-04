@@ -59,8 +59,8 @@ function Helper.Spell.DamageCircle.damage()
 end
 
 function Helper.Spell.DamageCircle.delete()
-    for i, damage_circle in ipairs(Helper.Spell.DamageCircle.list) do
-        if Helper.Time.time - damage_circle.creation_time > Helper.Spell.DamageCircle.duration then
+    for i = #Helper.Spell.DamageCircle.list, 1, -1 do
+        if Helper.Time.time - Helper.Spell.DamageCircle.list[i].creation_time > Helper.Spell.DamageCircle.duration then
             table.remove(Helper.Spell.DamageCircle.list, i)
         end
     end

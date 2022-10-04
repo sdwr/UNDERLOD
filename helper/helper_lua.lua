@@ -19,6 +19,10 @@ function find_in_list(list, element)
 end
 
 function find_in_list(list, element, findfunction)
+    findfunction = findfunction or function(value)
+        return value
+    end
+
     for i, value in ipairs(list) do
         if element == findfunction(value) then
             return i, value

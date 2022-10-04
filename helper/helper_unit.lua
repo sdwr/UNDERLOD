@@ -12,7 +12,7 @@ function Helper.Unit.add_custom_variables_to_unit(unit)
     unit.previous_state = ''
 
     unit.is_troop = true
-    unit.targeted_by = 0
+    unit.targeted_by = {}
     unit.claimed_target = {}
     unit.have_target = false
     unit.state_change_functions = {}
@@ -20,7 +20,11 @@ function Helper.Unit.add_custom_variables_to_unit(unit)
     unit.last_attack_at = -999999
     unit.last_finished_attack_at = -999999
     unit.ignore_cooldown = false
-    unit.range = 999999
+    unit.death_function = function()  
+        for i = #unit.targeted_by, 1, -1 do
+            unit.targeted_by[i].state_change_functions['target_death']()
+        end   
+    end
 
     Helper.Unit.add_default_state_change_functions(unit)
     Helper.Unit.add_default_state_always_run_functions(unit)
@@ -34,19 +38,19 @@ end
 
 function Helper.Unit.claim_target(unit, target)
     if unit.have_target then
-        if unit.target == target then
+        if unit.claimed_target == target then
             return
         end
-        unit.claimed_target.targeted_by = unit.claimed_target.targeted_by - 1
+        table.remove(unit.claimed_target.targeted_by, find_in_list(unit.claimed_target.targeted_by, unit))
     end
     unit.claimed_target = target
-    unit.claimed_target.targeted_by = unit.claimed_target.targeted_by + 1
+    table.insert(unit.claimed_target.targeted_by, unit)
     unit.have_target = true
 end
 
 function Helper.Unit.unclaim_target(unit)
     if unit.have_target then
-        unit.claimed_target.targeted_by = unit.claimed_target.targeted_by - 1
+        table.remove(unit.claimed_target.targeted_by, find_in_list(unit.claimed_target.targeted_by, unit))
         unit.have_target = false
     end
 end
@@ -87,6 +91,7 @@ function Helper.Unit.add_default_state_change_functions(unit)
     
     unit.state_change_functions['following_or_rallying'] = default_following_and_rallying
     unit.state_change_functions['death'] = default_death
+    unit.state_change_functions['target_death'] = function() end
 end
 
 function Helper.Unit.add_default_state_always_run_functions(unit)
