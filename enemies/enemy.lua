@@ -111,7 +111,7 @@ function Enemy:hit(damage)
       self.hfx:use('hit', 0.005, 200, 20)
     else
       --scale hit effect to damage
-      --no damage won't grow model, up to max effect at 0.3x max hp
+      --no damage won't grow model, up to max effect at 0.5x max hp
       local hitStrength = (damage * 1.0) / self.max_hp
       hitStrength = math.min(hitStrength, 0.5)
       hitStrength = math.remap(hitStrength, 0, 0.5, 0, 1)
