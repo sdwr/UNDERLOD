@@ -1,12 +1,12 @@
 Helper.Spell.Laser = {}
 Helper.Spell.Laser.list = {}
 
-function Helper.Spell.Laser.create(color, laser_aim_width, direction_lock, damage, unit, direction_targetx, direction_targety, cast_time)
+function Helper.Spell.Laser.create(color, laser_aim_width, direction_lock, damage, unit, direction_targetx, direction_targety)
     if unit.have_target then
         local laser = {
             unit = unit,
             start_aim_time = Helper.Time.time,
-            cast_time = cast_time or 0.5,
+            cast_time = unit.castTime or 0.5,
             direction_targetx = -1,
             direction_targety = -1,
             direction_lock = direction_lock,

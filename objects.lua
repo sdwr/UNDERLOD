@@ -401,6 +401,13 @@ function Unit:calculate_stats(first_run)
   self.class_aspd_m = self.class_aspd_m*class_stat_multipliers[self.class].aspd
   self.aspd_m = 1/(self.base_aspd_m*self.class_aspd_m*self.buff_aspd_m)
 
+  if self.baseCooldown then
+    self.cooldownTime = self.baseCooldown * self.aspd_m
+  end
+  if self.baseCast then
+    self.castTime = self.baseCast * self.aspd_m
+  end
+
   self.class_area_dmg_m = self.class_area_dmg_m*class_stat_multipliers[self.class].area_dmg
   self.area_dmg_m = self.base_area_dmg_m*self.class_area_dmg_m*self.buff_area_dmg_m
 

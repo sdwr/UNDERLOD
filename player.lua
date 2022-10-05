@@ -2767,58 +2767,33 @@ end
 
 function Troop:set_character()
   if self.character == 'swordsman' then
-    self.dmg = self.dmg;
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['melee'])
+
+    --cooldowns
+    self.baseCooldown = attack_speeds['medium-fast']
+    self.cooldownTime = self.baseCooldown
+
+    self.state_always_run_functions['always_run'] = function()
+      if Helper.Unit.can_cast(self) then
+        self:attack(self.dmg, {x = self.target.x, y = self.target.y})
+        self.last_attack_finished = Helper.Time.time
+      end
+    end
+
     self.t:cooldown(attack_speeds['medium-fast'], self:in_range(), function()
       if self.target then
         self:attack(10, {x = self.target.x, y = self.target.y})
       end
     end, nil, nil, 'attack')
 
-
-
-  elseif self.character == 'archer' then
-    self.attack_sensor = Circle(self.x, self.y, 60)
-    -- self.t:cooldown(attack_speeds['ultra-fast'], self:in_range(), function()
-    --   if self.target then
-    --     self:shootAnimation(self:angle_to_object(self.target))
-    --   end
-    -- end, nil, nil, 'shoot')
-
-    self.state_always_run_functions['always_run'] = function()
-      if Helper.Spell.there_is_target_in_range(self, 70) 
-      and Helper.Time.time - self.last_attack_finished > 1 then
-        if self.have_target then
-          Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
-        else
-          Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
-          Helper.Spell.Flame.create(Helper.Color.orange, 60, 70, 3, self)
-        end
-      end
-
-      if self.have_target and not Helper.Spell.claimed_target_is_in_range(self, 70) then
-        Helper.Spell.Flame.end_flame_after(self, 1)
-        Helper.Unit.unclaim_target(self)
-      end
-    end
-
-    self.state_change_functions['target_death'] = function()
-      Helper.Spell.Flame.end_flame_after(self, 1)
-      Helper.Unit.unclaim_target(self)
-    end
-
-    self.state_change_functions['death'] = function()
-      Helper.Spell.Flame.end_flame_after(self, 0)
-      Helper.Unit.unclaim_target(self)
-    end
-  
-
-
   elseif self.character == 'laser' then
     self.attack_sensor = Circle(self.x, self.y, 100)
+
     --total cooldown is cooldownTime + castTime
-    self.cooldownTime = attack_speeds['fast']
-    self.castTime = attack_speeds['buff']
+    self.baseCooldown = attack_speeds['fast']
+    self.cooldownTime = self.cooldown
+    self.baseCast = attack_speeds['buff']
+    self.castTime = self.baseCast
 
     self.state_always_run_functions['always_run'] = function()
       if Helper.Unit.can_cast(self) then
@@ -2848,6 +2823,45 @@ function Troop:set_character()
       Helper.Spell.Laser.stop_aiming(self)
       Helper.Unit.unclaim_target(self)
     end
+
+
+
+  elseif self.character == 'archer' then
+    self.attack_sensor = Circle(self.x, self.y, 60)
+    -- self.t:cooldown(attack_speeds['ultra-fast'], self:in_range(), function()
+    --   if self.target then
+    --     self:shootAnimation(self:angle_to_object(self.target))
+    --   end
+    -- end, nil, nil, 'shoot')
+
+    self.state_always_run_functions['always_run'] = function()
+      if Helper.Spell.there_is_target_in_range(self, 70) 
+      and Helper.Time.time - self.last_attack_finished > 1 then
+        if self.have_target then
+          Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
+        else
+          Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
+          Helper.Spell.Flame.create(Helper.Color.orange, 60, 70, 3, self)
+        end
+      end
+
+      if self.have_target and not Helper.Spell.claimed_target_is_in_range(self, 70) then
+        Helper.Spell.Flame.end_flame_after(self, 0.25)
+        Helper.Unit.unclaim_target(self)
+      end
+    end
+
+    self.state_change_functions['target_death'] = function()
+      Helper.Spell.Flame.end_flame_after(self, 0.25)
+      Helper.Unit.unclaim_target(self)
+    end
+
+    self.state_change_functions['death'] = function()
+      Helper.Spell.Flame.end_flame_after(self, 0)
+      Helper.Unit.unclaim_target(self)
+    end
+  
+
 
 
 
