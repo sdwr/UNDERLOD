@@ -89,7 +89,7 @@ function Helper.Spell.Flame.end_flames()
     for i = #Helper.Spell.Flame.list, 1, -1 do
         if Helper.Spell.Flame.list[i].set_to_end then
             if Helper.Time.time - Helper.Spell.Flame.list[i].start_ending_at > Helper.Spell.Flame.list[i].end_after then
-                Helper.Spell.Flame.list[i].unit.last_finished_attack_at = Helper.Time.time
+                Helper.Spell.Flame.list[i].unit.last_attack_finished = Helper.Time.time
                 Helper.Time.stop_interval(Helper.Spell.Flame.list[i].particle_interval_id)
                 table.remove(Helper.Spell.Flame.list, i)
             end

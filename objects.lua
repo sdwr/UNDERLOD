@@ -204,6 +204,8 @@ function Unit:init_unit()
   self.hp_bar = HPBar{group = main.current.effects, parent = self}
   self.effect_bar = EffectBar{group = main.current.effects, parent = self}
 
+  self.state = unit_states['normal']
+
   Helper.Unit.add_custom_variables_to_unit(self)
 end
 
@@ -443,7 +445,7 @@ end
 
 function Unit:should_follow()
   local input = (input.mouse_state["m1"] and main.selectedCharacter == self.character) or input['space'].down
-  local canMove = (self.state == unit_states['normal'] or self.state == unit_states['stopped'] or self.state == unit_states['rallying'] or self.state == unit_states['following'])
+  local canMove = (self.state == unit_states['normal'] or self.state == unit_states['stopped'] or self.state == unit_states['rallying'] or self.state == unit_states['following'] or self.state == unit_states['casting'])
 
   return input and canMove
 

@@ -1,13 +1,12 @@
 Helper.Spell.Laser = {}
-
-Helper.Spell.Laser.aims_duration = 1.5
 Helper.Spell.Laser.list = {}
 
-function Helper.Spell.Laser.create(color, laser_aim_width, direction_lock, damage, unit, direction_targetx, direction_targety)
+function Helper.Spell.Laser.create(color, laser_aim_width, direction_lock, damage, unit, direction_targetx, direction_targety, cast_time)
     if unit.have_target then
         local laser = {
             unit = unit,
             start_aim_time = Helper.Time.time,
+            cast_time = cast_time or 0.5,
             direction_targetx = -1,
             direction_targety = -1,
             direction_lock = direction_lock,
@@ -28,6 +27,7 @@ function Helper.Spell.Laser.create(color, laser_aim_width, direction_lock, damag
             laser.direction_targety = local_direction_targety - unit.y
         end
 
+        Helper.Unit.start_casting(unit)
         table.insert(Helper.Spell.Laser.list, laser)
     end
 end
@@ -115,17 +115,17 @@ end
 function Helper.Spell.Laser.shoot()
     for i = #Helper.Spell.Laser.list, 1, -1 do
         local laser = Helper.Spell.Laser.list[i]
-        if Helper.Time.time - laser.start_aim_time > Helper.Spell.Laser.aims_duration and not laser.holding_fire then
+        if Helper.Time.time - laser.start_aim_time > laser.cast_time and not laser.holding_fire then
             if laser.direction_lock then
                 Helper.Spell.DamageLine.create(laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.unit.x, laser.unit.y, Helper.Spell.Laser.get_end_location(laser.unit.x, laser.unit.y, laser.unit.x + laser.direction_targetx, laser.unit.y + laser.direction_targety))
             else
                 Helper.Spell.DamageLine.create(laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.unit.x, laser.unit.y, Helper.Spell.Laser.get_end_location(laser.unit.x, laser.unit.y, laser.unit.claimed_target.x, laser.unit.claimed_target.y))
             end
-            laser.unit.last_finished_attack_at = Helper.Time.time
             table.remove(Helper.Spell.Laser.list, i)
             shoot1:play{volume=0.9}
 
             Helper.Unit.unclaim_target(laser.unit)
+            Helper.Unit.finish_casting(laser.unit)
         end
     end
 end
@@ -156,6 +156,7 @@ end
 function Helper.Spell.Laser.stop_aiming(unit)
     local i, laser = find_in_list(Helper.Spell.Laser.list, unit, function(value) return value.unit end)
     if i ~= -1 then
+        unit.have_target = false
         table.remove(Helper.Spell.Laser.list, i)
     end
 end

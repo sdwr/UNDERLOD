@@ -2676,8 +2676,10 @@ function Troop:draw()
     i = i + 1
   end
   graphics.rectangle(self.x, self.y, self.shape.w*.66, self.shape.h*.66, 3, 3, self.hfx.hit.f and fg[0] or self.color)
-  if self.casting then
+  if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
     self:draw_cast_timer()
+  elseif Helper.Unit.is_attack_on_cooldown(self) then
+    self:draw_cooldown_timer()
   end
   if self.bubbled then 
     graphics.circle(self.x, self.y, self.shape.w, yellow_transparent_weak)
@@ -2690,13 +2692,25 @@ end
 
 function Troop:draw_cast_timer()
   local currentTime = love.timer.getTime()
-  local time = currentTime - self.startedCastingAt
+  local time = currentTime - self.last_attack_started
   local pct = time / self.castTime
   local bodySize = self.shape.rs or self.shape.w/2 or 5
   local rs = pct * bodySize
   if pct < 1 then
     graphics.circle(self.x, self.y, rs, white_transparent)
   end
+end
+
+function Troop:draw_cooldown_timer()
+  local currentTime = love.timer.getTime()
+  local time = currentTime - self.last_attack_finished
+  local pct = 1 - (time / self.cooldownTime)
+  local bodySize = self.shape.rs or self.shape.w/2 or 5
+  local rs = pct * bodySize
+  if pct > 0 then
+    graphics.circle(self.x, self.y, rs, white_transparent)
+  end
+
 end
 
 function Troop:slow(amount, duration)
@@ -2773,7 +2787,7 @@ function Troop:set_character()
 
     self.state_always_run_functions['always_run'] = function()
       if Helper.Spell.there_is_target_in_range(self, 70) 
-      and Helper.Time.time - self.last_finished_attack_at > 1 then
+      and Helper.Time.time - self.last_attack_finished > 1 then
         if self.have_target then
           Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
         else
@@ -2802,16 +2816,16 @@ function Troop:set_character()
 
   elseif self.character == 'laser' then
     self.attack_sensor = Circle(self.x, self.y, 100)
+    --total cooldown is cooldownTime + castTime
+    self.cooldownTime = attack_speeds['fast']
+    self.castTime = attack_speeds['buff']
 
     self.state_always_run_functions['always_run'] = function()
-      if not self.have_target and Helper.Spell.there_is_target_in_range(self, 105) 
-      and Helper.Time.time - self.last_finished_attack_at > 1
-      and Helper.Time.time - self.last_attack_at > 2.5 then
+      if Helper.Unit.can_cast(self) then
         Helper.Unit.claim_target(self, Helper.Spell.get_nearest_least_targeted(self, 130))
-        self.last_attack_at = Helper.Time.time 
-        Helper.Time.wait(get_random(0, 0.4), function()
-          self.last_attack_at = Helper.Time.time 
-          sniper_load:play{volume=0.9}
+        Helper.Time.wait(get_random(0, 0.1), function()
+          
+          sniper_load:play{volume=0.8}
           Helper.Spell.Laser.create(Helper.Color.blue, 1, false, 20, self)
         end)
       end
@@ -2824,15 +2838,11 @@ function Troop:set_character()
 
     self.state_always_run_functions['following_or_rallying'] = function()
       if self.have_target then
-        Helper.Spell.Laser.hold_fire(self)
+        Helper.Spell.Laser.stop_aiming(self)
       end
     end
 
-    self.state_change_functions['normal'] = function()
-      if self.have_target then
-        Helper.Spell.Laser.continue_fire(self)
-      end
-    end
+    self.state_change_functions['normal'] = function() end
 
     self.state_change_functions['death'] = function()
       Helper.Spell.Laser.stop_aiming(self)

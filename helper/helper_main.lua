@@ -17,7 +17,7 @@ Helper.window_height = 0
 
 
 function Helper.init()
-    Helper.Time.time = 0
+    Helper.Time.time = love.timer.getTime()
     math.randomseed(Helper.Time.time)
 
     Helper.Time.set_interval(0.25, function()
@@ -40,21 +40,23 @@ end
 
 
 
-function Helper.update()
+function Helper.update(dt)
     if not Helper.initialized then
         Helper.init()
         Helper.initialized = true
     end
 
-    Helper.Time.time = Helper.Time.time + Helper.Time.delta_time
+    Helper.Time.time = love.timer.getTime()
+    Helper.Time.delta_time = dt
 
+    --update timers, run state functions
     Helper.Time.run_intervals()
     Helper.Time.run_waits()
     Helper.Unit.run_state_change_functions()
     Helper.Unit.run_state_always_run_functions()
 
 
-
+    --update spells
     Helper.Spell.Missile.update_position()
     Helper.Spell.Missile.explode()
     
@@ -72,7 +74,7 @@ function Helper.update()
     Helper.Spell.Flame.end_flames()
 
 
-
+    --particles
     Helper.Graphics.update_particles()
 
 

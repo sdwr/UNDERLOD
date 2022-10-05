@@ -255,6 +255,7 @@ function init()
   unit_states = {
     ['normal'] = 'normal',
     ['frozen'] = 'frozen',
+    ['casting'] = 'casting',
     ['channeling'] = 'channeling',
     ['stopped'] = 'stopped',
     ['rallying'] = 'rallying',
@@ -1076,7 +1077,7 @@ function init()
 
   first_run_tier_to_characters = {
     [1] = {'swordsman', 'archer', 'laser'},
-    [2] = {'shaman', 'cannon'},
+    [2] = {'shaman', 'cannon', 'laser'},
     [3] = {'sniper'},
     [4] = {'sniper'}
   }

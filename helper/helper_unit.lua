@@ -17,8 +17,8 @@ function Helper.Unit.add_custom_variables_to_unit(unit)
     unit.have_target = false
     unit.state_change_functions = {}
     unit.state_always_run_functions = {}
-    unit.last_attack_at = -999999
-    unit.last_finished_attack_at = -999999
+    unit.last_attack_started = -999999
+    unit.last_attack_finished = -999999
     unit.ignore_cooldown = false
     unit.death_function = function()  
         for i = #unit.targeted_by, 1, -1 do
@@ -55,11 +55,42 @@ function Helper.Unit.unclaim_target(unit)
     end
 end
 
+function Helper.Unit.can_cast(unit)
+    return unit.state == unit_states['normal'] and not unit.have_target
+    and Helper.Time.time - unit.last_attack_finished > unit.cooldownTime
+    and Helper.Spell.there_is_target_in_range(unit, unit.attack_sensor.rs)
+end
+
+function Helper.Unit.start_casting(unit)
+    unit.state = unit_states['casting']
+    unit.last_attack_started = Helper.Time.time
+end
+
+function Helper.Unit.cancel_casting(unit)
+
+end
+
+function Helper.Unit.finish_casting(unit)
+    unit.last_attack_finished = Helper.Time.time
+    unit.state = unit_states['normal']
+end
+
+function Helper.Unit.is_attack_on_cooldown(unit)
+    local time_since_cast = Helper.Time.time - (unit.last_attack_finished or 0)
+    if unit.cooldownTime and time_since_cast < unit.cooldownTime then
+        return true
+    end
+    return false
+end
+
 function Helper.Unit.add_default_state_change_functions(unit)
     local function default_normal()
     end
 
     local function default_frozen()
+    end
+
+    local function default_casting()
     end
 
     local function default_channeling()
@@ -84,6 +115,7 @@ function Helper.Unit.add_default_state_change_functions(unit)
 
     unit.state_change_functions['normal'] = default_normal
     unit.state_change_functions['frozen'] = default_frozen
+    unit.state_change_functions['casting'] = default_casting
     unit.state_change_functions['channeling'] = default_channeling
     unit.state_change_functions['stopped'] = default_stopped
     unit.state_change_functions['following'] = default_following
@@ -99,6 +131,9 @@ function Helper.Unit.add_default_state_always_run_functions(unit)
     end
 
     local function default_frozen()
+    end
+
+    local function default_casting()
     end
 
     local function default_channeling()
@@ -123,6 +158,7 @@ function Helper.Unit.add_default_state_always_run_functions(unit)
 
     unit.state_always_run_functions['normal'] = default_normal
     unit.state_always_run_functions['frozen'] = default_frozen
+    unit.state_always_run_functions['casting'] = default_casting
     unit.state_always_run_functions['channeling'] = default_channeling
     unit.state_always_run_functions['stopped'] = default_stopped
     unit.state_always_run_functions['following'] = default_following

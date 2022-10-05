@@ -1,7 +1,8 @@
 Helper.Time = {}
 
 Helper.Time.delta_time = 0
-Helper.Time.time = 0
+
+Helper.Time.time = love.timer.getTime()
 
 
 
