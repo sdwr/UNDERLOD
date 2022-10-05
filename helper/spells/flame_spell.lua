@@ -33,14 +33,14 @@ function Helper.Spell.Flame.create(color, flamewidth, flameheight, damage, unit)
                             y = get_random(unit.y - flameheight/5, unit.y + flameheight/5)
                         end
                         Helper.Graphics.create_particle(color, get_random(0.5, 1.5), x, y, get_random(150, 180), 
-                                                            get_random(0.4 * flameheight / 60, 0.65 * flameheight / 60), 
+                                                            get_random(0.4 * flameheight / 60, 0.5 * flameheight / 60), 
                                                             x - unit.x, y - unit.y, 20)
                     end
                 end)
             end
 
             table.insert(Helper.Spell.Flame.list, flame)
-            pyro1:play{volume=0.9}
+            pyro1:play{volume=0.5}
         else
             flame.set_to_end = false
         end
@@ -66,7 +66,7 @@ function Helper.Spell.Flame.update_direction()
         if flame.unit.have_target then
             local x = flame.unit.x + flame.directionx
             local y = flame.unit.y + flame.directiony
-            x, y = Helper.Geometry.rotate_to(flame.unit.x, flame.unit.y, x, y, flame.unit.claimed_target.x, flame.unit.claimed_target.y, 150)
+            x, y = Helper.Geometry.rotate_to(flame.unit.x, flame.unit.y, x, y, flame.unit.claimed_target.x, flame.unit.claimed_target.y, 300)
             flame.directionx = x - flame.unit.x
             flame.directiony = y - flame.unit.y
         end

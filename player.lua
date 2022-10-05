@@ -2778,7 +2778,7 @@ function Troop:set_character()
           Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
         else
           Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
-          Helper.Spell.Flame.create(Helper.Color.orange, 60, 70, 10, self)
+          Helper.Spell.Flame.create(Helper.Color.orange, 60, 70, 3, self)
         end
       end
 
