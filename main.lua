@@ -1160,6 +1160,29 @@ function init()
 
   }
 
+  item_stat_lookup = {
+    ['dmg'] = 'damage',
+    ['mvspd'] = 'move speed',
+    ['aspd'] = 'attack speed',
+    ['hp'] = 'hp',
+    ['def'] = 'defense',
+    ['area_size'] = 'area size',
+  }
+
+  build_item_text = function(item)
+    local out = {}
+    table.insert(out, {text = '[fg]' .. item_text[item] .. ', costs: ' .. item_costs[item], font = pixul_font, alignment = 'center',
+    height_multiplier = 1.25})
+    local stats = item_stat_multipliers[item]
+    if stats then
+      for key, val in pairs(stats) do
+        local text = '[fg] ' .. val * 100 .. '% ' .. item_stat_lookup[key]
+        table.insert(out, {text = text, font = pixul_font, alignment = 'center', height_multiplier = 1.25})
+      end
+    end
+    return out
+  end
+
   item_text = {
     ['smallsword'] = "A tiny sword",
     ['medsword'] = "A medium sword",
