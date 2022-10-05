@@ -110,7 +110,10 @@ function Enemy:hit(damage)
     if self.isBoss then
       self.hfx:use('hit', 0.005, 200, 20)
     else
-      self.hfx:use('hit', 0.25, 200, 10)
+      --scale hit effect to damage
+      local hitStrength = damage / self.max_hp
+
+      self.hfx:use('hit', 0.5 * hitStrength, 200, 10)
     end
     if self.push_invulnerable then return end
     self:show_hp()

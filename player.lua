@@ -2928,7 +2928,9 @@ function Troop:hit(damage, from_undead)
   if self.magician_invulnerable then return end
   if self.undead and not from_undead then return end
 
-  self.hfx:use('hit', 0.25, 200, 10)
+  --scale hit effect to damage
+  local hitStrength = damage / self.max_hp
+  self.hfx:use('hit', 0.5 * hitStrength, 200, 10)
   self:show_hp()
 
   if self.shielded then
