@@ -110,7 +110,12 @@ function Enemy:hit(damage)
     if self.isBoss then
       self.hfx:use('hit', 0.005, 200, 20)
     else
-      self.hfx:use('hit', 0.25, 200, 10)
+      --scale hit effect to damage
+      --no damage won't grow model, up to max effect at 0.5x max hp
+      local hitStrength = (damage * 1.0) / self.max_hp
+      hitStrength = math.min(hitStrength, 0.5)
+      hitStrength = math.remap(hitStrength, 0, 0.5, 0, 1)
+      self.hfx:use('hit', 0.25 * hitStrength, 200, 10)
     end
     if self.push_invulnerable then return end
     self:show_hp()
@@ -139,6 +144,9 @@ function Enemy:onDeath()
     self.parent.summons = self.parent.summons - 1
   end
   Corpse{group = main.current.main, x = self.x, y = self.y}
+
+  self.state_change_functions['death']()
+  self.death_function()
 end
 
 function Enemy:die()

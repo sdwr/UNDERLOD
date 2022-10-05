@@ -1555,11 +1555,7 @@ function ItemPart:create_info_text()
   if self:hasItem() then
     local item = self:getItem()
     self.info_text = InfoText{group = main.current.ui, force_update = true}
-    self.info_text:activate({
-      {text = '[fg]' .. item_text[item] .. ', costs: ' .. item_costs[item], font = pixul_font, alignment = 'center',
-        height_multiplier = 1.25},
-      {text = "Item stat text here", font = pixul_font, alignment = 'center', height_multiplier = 1.25},
-    }, nil, nil, nil, nil, 16, 4, nil, 2)
+    self.info_text:activate(build_item_text(item), nil, nil, nil, nil, 16, 4, nil, 2)
     self.info_text.x, self.info_text.y = self.x + 70, self.y +20
   end
 end
@@ -1950,11 +1946,7 @@ function ItemCard:create_info_text()
   self.info_text = nil
   if self.item then
     self.info_text = InfoText{group = main.current.ui, force_update = true}
-    self.info_text:activate({
-      {text = '[fg]' .. item_text[self.item] .. ', costs: ' .. item_costs[self.item], font = pixul_font, alignment = 'center',
-        height_multiplier = 1.25},
-      {text = "Item stat text here", font = pixul_font, alignment = 'center', height_multiplier = 1.25},
-    }, nil, nil, nil, nil, 16, 4, nil, 2)
+    self.info_text:activate(build_item_text(self.item), nil, nil, nil, nil, 16, 4, nil, 2)
     self.info_text.x, self.info_text.y = gw/2, gh/2 + 10
   end
 end

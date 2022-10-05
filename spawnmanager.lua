@@ -8,6 +8,8 @@ function SpawnGlobals.Init()
   local y_offset = 35
   
   local y_corner_offset = 50
+
+  SpawnGlobals.wall_width = 40
   
   SpawnGlobals.spawn_markers = {
     {x = right_x, y = mid_y},
@@ -41,11 +43,22 @@ function Can_Spawn(rs, location)
   local check_circle = Circle(0,0, rs)
   check_circle:move_to(location.x, location.y)
   local objects = main.current.main:get_objects_in_shape(check_circle, {Enemy, EnemyCritter, Critter, Troop})
-  if #objects > 0 then
+  if #objects > 0 or Outside_Arena(location) then
     return false
   else
     return true
   end
+end
+
+function Outside_Arena(location)
+  if location.x < SpawnGlobals.wall_width or 
+     location.x > gw - SpawnGlobals.wall_width or 
+     location.y < SpawnGlobals.wall_width or
+     location.y > gh - SpawnGlobals.wall_width then
+      return true
+  else
+    return false
+  end 
 end
 
 
@@ -150,9 +163,16 @@ function Manage_Spawns(arena)
         --spawns new group every delay, doesn't wait for group before to finish
         --make sure time_between_spawns * spawns_in_group < time_between_spawn_groups
         if current_group <= num_rares then
+          if arena.level < 6 then
+            Spawn_Enemies(arena, current_group, {'rager', 'mortar'})
+          elseif arena.level < 11 then
+            Spawn_Enemies(arena, current_group, {'mortar', 'stomper', 'spawner'})
+          elseif arena.level < 16 then
+            Spawn_Enemies(arena, current_group, {'summoner', 'mortar', 'assassin', 'spawner'})
+          end
           --Spawn_Enemies(arena, current_group, {'summoner', 'spawner'})
           --Spawn_Enemies(arena, current_group, {'mortar', 'laser', 'spread'})
-          Spawn_Enemies(arena, current_group, {'stomper', 'mortar', 'assassin', 'summoner', 'laser', 'spawner'})
+          --Spawn_Enemies(arena, current_group, {'stomper', 'mortar', 'assassin', 'summoner', 'laser', 'spawner'})
         else
           Spawn_Enemies(arena, current_group, {'shooter', 'seeker'})
         end

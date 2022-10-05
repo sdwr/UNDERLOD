@@ -240,8 +240,7 @@ function Arena:update(dt)
   self.ui:update(dt*slow_amount)
   self.credits:update(dt)
 
-
-  Helper.update()
+  Helper.update(dt*slow_amount)
 end
 
 

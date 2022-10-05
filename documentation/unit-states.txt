@@ -1,0 +1,82 @@
+kiting and attack canceling like real RTS:
+
+Spell attributes:
+---------------
+cooldown
+cast time
+backswing
+
+aggro range
+cast range
+cast loss range (outranged, cancels cast)
+
+Spell function requirements:
+---------------
+start cast
+finish cast
+cancel cast (reset cooldown)
+
+States:
+-----------
+
+normal
+    Troop: not moving or casting
+    Enemy: not casting, might be moving
+
+frozen
+    can't move or attack
+
+casting
+    multiple spells: can't start another cast
+    Troop: can cancel with move or rally
+
+channeling
+    multiple spells: can't start another cast
+    Troop: can't cancel with move or rally
+
+following
+    Troop: following mouse cursor
+
+rallying
+    Troop: going to rally point
+
+
+State Transitions:
+
+following/rallying ---> normal
+    finished movement, reduce velocity to 0
+
+normal ----> casting
+    start cast animation
+    start spell effect (if any)
+
+    Troop: interruptable by follow/rally
+    all: interruptable by stun
+    all: should reset cast cooldown if interrupted by move, not if by stun
+
+normal -----> channeling
+    start cast animation
+    start spell effect (if any)
+
+    not interruptable by follow/rally
+    all: interruptable by stun
+
+normal -----> follow/rally
+    start moving
+
+
+casting/channeling ---> normal
+    cast finished successfully
+    remove cast animation
+    trigger spell
+    start cast cooldown
+
+casting ----> follow/rally
+    cancel cast with move
+
+    remove cast animation
+    reset cast cooldown
+
+casting/channeling ---> frozen
+    enemy: small move delay after casting
+

@@ -3,10 +3,6 @@ turn game into rts :o
 -------------
 BUGS:
 --------------
-spawn:
-  spawning units on top of each other slows/freezes the game
-  checks and cancels spawn now, no respawn though
-  fps counter still shows max though??
 
 combat:
 new spells still aim/cast when dead

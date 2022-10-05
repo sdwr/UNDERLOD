@@ -203,6 +203,10 @@ function Unit:init_unit()
   self.hfx:add('shoot', 1)
   self.hp_bar = HPBar{group = main.current.effects, parent = self}
   self.effect_bar = EffectBar{group = main.current.effects, parent = self}
+
+  self.state = unit_states['normal']
+
+  Helper.Unit.add_custom_variables_to_unit(self)
 end
 
 
@@ -397,6 +401,13 @@ function Unit:calculate_stats(first_run)
   self.class_aspd_m = self.class_aspd_m*class_stat_multipliers[self.class].aspd
   self.aspd_m = 1/(self.base_aspd_m*self.class_aspd_m*self.buff_aspd_m)
 
+  if self.baseCooldown then
+    self.cooldownTime = self.baseCooldown * self.aspd_m
+  end
+  if self.baseCast then
+    self.castTime = self.baseCast * self.aspd_m
+  end
+
   self.class_area_dmg_m = self.class_area_dmg_m*class_stat_multipliers[self.class].area_dmg
   self.area_dmg_m = self.base_area_dmg_m*self.class_area_dmg_m*self.buff_area_dmg_m
 
@@ -441,7 +452,7 @@ end
 
 function Unit:should_follow()
   local input = (input.mouse_state["m1"] and main.selectedCharacter == self.character) or input['space'].down
-  local canMove = (self.state == unit_states['normal'] or self.state == unit_states['stopped'] or self.state == unit_states['rallying'] or self.state == unit_states['following'])
+  local canMove = (self.state == unit_states['normal'] or self.state == unit_states['stopped'] or self.state == unit_states['rallying'] or self.state == unit_states['following'] or self.state == unit_states['casting'])
 
   return input and canMove
 

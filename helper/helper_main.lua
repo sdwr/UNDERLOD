@@ -1,57 +1,62 @@
 Helper = {}
+
+require 'helper/helper_geometry'
+require 'helper/spells/helper_spell_main'
+require 'helper/helper_time'
+require 'helper/helper_color'
+require 'helper/helper_lua'
+require 'helper/helper_unit'
+require 'helper/helper_graphics'
+
 Helper.initialized = false
 Helper.mousex = 0
 Helper.mousey = 0
 Helper.window_width = 0
 Helper.window_height = 0
 
-require 'helper/helper_geometry'
-require 'helper/spells/helper_spell_main'
-require 'helper/helper_time'
-require 'helper/helper_color'
-
 
 
 function Helper.init()
-    Helper.Time.past_time = love.timer.getTime()
-    math.randomseed(love.timer.getTime())
+    Helper.Time.time = love.timer.getTime()
+    math.randomseed(Helper.Time.time)
 
-    Helper.Time.set_interval(0.5, function() 
-        Helper.Spell.Flame.damage() 
+    Helper.Time.set_interval(0.25, function()
+        Helper.Spell.Flame.damage()
     end)
 end
 
 
 
 function Helper.draw()
-    Helper.Spell.Flame.draw()
     Helper.Spell.Missile.draw()
     Helper.Spell.DamageCircle.draw()
     Helper.Spell.Laser.draw_aims()
     Helper.Spell.DamageLine.draw()
     Helper.Spell.SpreadMissile.draw_aims()
+    Helper.Spell.Flame.draw_hitbox()
+
+    Helper.Graphics.draw_particles()
 end
 
 
 
-function Helper.update()
+function Helper.update(dt)
     if not Helper.initialized then
         Helper.init()
         Helper.initialized = true
     end
 
-    Helper.Time.delta_time = love.timer.getTime() - Helper.Time.past_time
-    Helper.Time.past_time = love.timer.getTime()
+    Helper.Time.time = love.timer.getTime()
+    Helper.Time.delta_time = dt
 
+    --update timers, run state functions
     Helper.Time.run_intervals()
     Helper.Time.run_waits()
-    Helper.Spell.get_last_target_location()
+    Helper.Unit.run_state_change_functions()
+    Helper.Unit.run_state_always_run_functions()
 
 
-
-    Helper.Spell.Flame.update_target_location()
-    Helper.Spell.Flame.end_flame()
-
+    --update spells
     Helper.Spell.Missile.update_position()
     Helper.Spell.Missile.explode()
     
@@ -65,6 +70,13 @@ function Helper.update()
 
     Helper.Spell.SpreadMissile.shoot_missiles()
 
+    Helper.Spell.Flame.update_direction()
+    Helper.Spell.Flame.end_flames()
+
+
+    --particles
+    Helper.Graphics.update_particles()
+
 
 
     Helper.mousex, Helper.mousey = love.mouse.getPosition()
@@ -73,7 +85,7 @@ function Helper.update()
     if love.keyboard.isDown( "d" ) then
         Helper.Spell.DamageCircle.create(Helper.Color.blue, true, 50, 10, Helper.mousex, Helper.mousey)
         Helper.Spell.DamageCircle.create(Helper.Color.blue, false, 50, 10, Helper.mousex, Helper.mousey)
-    end  
+    end
     
     Helper.window_width = love.graphics.getWidth() / sx
     Helper.window_height = love.graphics.getHeight() / sx
@@ -86,4 +98,7 @@ function Helper.release()
 
     Helper.Time.stop_all_intervals()
     Helper.Time.stop_all_waits()
+
+    Helper.Spell.Flame.end_all_flames()
+    Helper.Spell.Laser.clear_all()
 end

@@ -2676,8 +2676,10 @@ function Troop:draw()
     i = i + 1
   end
   graphics.rectangle(self.x, self.y, self.shape.w*.66, self.shape.h*.66, 3, 3, self.hfx.hit.f and fg[0] or self.color)
-  if self.casting then
+  if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
     self:draw_cast_timer()
+  elseif Helper.Unit.is_attack_on_cooldown(self) then
+    self:draw_cooldown_timer()
   end
   if self.bubbled then 
     graphics.circle(self.x, self.y, self.shape.w, yellow_transparent_weak)
@@ -2690,13 +2692,25 @@ end
 
 function Troop:draw_cast_timer()
   local currentTime = love.timer.getTime()
-  local time = currentTime - self.startedCastingAt
+  local time = currentTime - self.last_attack_started
   local pct = time / self.castTime
   local bodySize = self.shape.rs or self.shape.w/2 or 5
   local rs = pct * bodySize
   if pct < 1 then
     graphics.circle(self.x, self.y, rs, white_transparent)
   end
+end
+
+function Troop:draw_cooldown_timer()
+  local currentTime = love.timer.getTime()
+  local time = currentTime - self.last_attack_finished
+  local pct = 1 - (time / self.cooldownTime)
+  local bodySize = self.shape.rs or self.shape.w/2 or 5
+  local rs = pct * bodySize
+  if pct > 0 then
+    graphics.circle(self.x, self.y, rs, white_transparent)
+  end
+
 end
 
 function Troop:slow(amount, duration)
@@ -2744,56 +2758,112 @@ end
 
 function Troop:onDeath()
   Corpse{group = main.current.main, x = self.x, y = self.y}
+  
+  self.state_change_functions['death']()
+  self.death_function()
 end
 
 
 
 function Troop:set_character()
   if self.character == 'swordsman' then
-    self.dmg = self.dmg;
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['melee'])
+
+    --cooldowns
+    self.baseCooldown = attack_speeds['medium-fast']
+    self.cooldownTime = self.baseCooldown
+
+    self.state_always_run_functions['always_run'] = function()
+      if Helper.Unit.can_cast(self) then
+        self:attack(self.dmg, {x = self.target.x, y = self.target.y})
+        self.last_attack_finished = Helper.Time.time
+      end
+    end
+
     self.t:cooldown(attack_speeds['medium-fast'], self:in_range(), function()
       if self.target then
         self:attack(10, {x = self.target.x, y = self.target.y})
       end
     end, nil, nil, 'attack')
 
-  elseif self.character == 'archer' then
-    self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
-    self.t:cooldown(attack_speeds['ultra-fast'], self:in_range(), function()
-      if self.target then
-        self:shootAnimation(self:angle_to_object(self.target))
-      end
-    end, nil, nil, 'shoot')
-  
   elseif self.character == 'laser' then
-    self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium-long'])
-    self.t:cooldown(attack_speeds['medium'], self:in_range(), function()
-      if self.target then
-        sniper_load:play{volume=0.9}
-        Helper.Spell.Laser.create(Helper.Color.blue, 1, false, false, 20, self, 0, 0)
+    self.attack_sensor = Circle(self.x, self.y, 100)
+
+    --total cooldown is cooldownTime + castTime
+    self.baseCooldown = attack_speeds['fast']
+    self.cooldownTime = self.cooldown
+    self.baseCast = attack_speeds['buff']
+    self.castTime = self.baseCast
+
+    self.state_always_run_functions['always_run'] = function()
+      if Helper.Unit.can_cast(self) then
+        Helper.Unit.claim_target(self, Helper.Spell.get_nearest_least_targeted(self, 130))
+        Helper.Time.wait(get_random(0, 0.1), function()
+          
+          sniper_load:play{volume=0.8}
+          Helper.Spell.Laser.create(Helper.Color.blue, 1, false, 20, self)
+        end)
       end
-    end, nil, nil, 'shoot')
+      
+      if self.have_target and not Helper.Spell.claimed_target_is_in_range(self, 140) then
+        Helper.Spell.Laser.stop_aiming(self)
+        Helper.Unit.unclaim_target(self)
+      end
+    end
+
+    self.state_always_run_functions['following_or_rallying'] = function()
+      if self.have_target then
+        Helper.Spell.Laser.stop_aiming(self)
+      end
+    end
+
+    self.state_change_functions['normal'] = function() end
+
+    self.state_change_functions['death'] = function()
+      Helper.Spell.Laser.stop_aiming(self)
+      Helper.Unit.unclaim_target(self)
+    end
 
 
-  --spell tests
-  --elseif self.character == 'archer' then
-    --self.attack_sensor = Circle(self.x, self.y, attack_ranges['ultra-long'])
-    --self.t:cooldown(3, self:in_range(), function()
-      --if self.target then
-        -- shoot1:play{volume=0.9}
-        -- Helper.Spell.Missile.create(Helper.Color.blue, 10, false, 50, false, 20, self.x, self.y, Helper.Geometry.random_in_radius(self.target.x, self.target.y, 25))
 
-        -- sniper_load:play{volume=0.9}
-        -- Helper.Spell.SpreadMissile.create(Helper.Color.green, 20, false, 100, 30, self)
+  elseif self.character == 'archer' then
+    self.attack_sensor = Circle(self.x, self.y, 60)
+    -- self.t:cooldown(attack_speeds['ultra-fast'], self:in_range(), function()
+    --   if self.target then
+    --     self:shootAnimation(self:angle_to_object(self.target))
+    --   end
+    -- end, nil, nil, 'shoot')
 
-        --sniper_load:play{volume=0.9}
-        --Helper.Spell.Laser.create(Helper.Color.blue, 1, false, false, 100, self, 0, 0)
+    self.state_always_run_functions['always_run'] = function()
+      if Helper.Spell.there_is_target_in_range(self, 70) 
+      and Helper.Time.time - self.last_attack_finished > 1 then
+        if self.have_target then
+          Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
+        else
+          Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
+          Helper.Spell.Flame.create(Helper.Color.orange, 60, 70, 3, self)
+        end
+      end
 
-        -- sniper_load:play{volume=0.9}
-        -- Helper.Spell.SpreadLaser.create(Helper.Color.red, 5, false, 300, self)
-      --end
-    --end, nil, nil, 'shoot')
+      if self.have_target and not Helper.Spell.claimed_target_is_in_range(self, 70) then
+        Helper.Spell.Flame.end_flame_after(self, 0.25)
+        Helper.Unit.unclaim_target(self)
+      end
+    end
+
+    self.state_change_functions['target_death'] = function()
+      Helper.Spell.Flame.end_flame_after(self, 0.25)
+      Helper.Unit.unclaim_target(self)
+    end
+
+    self.state_change_functions['death'] = function()
+      Helper.Spell.Flame.end_flame_after(self, 0)
+      Helper.Unit.unclaim_target(self)
+    end
+  
+
+
+
 
   elseif self.character == 'cannon' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['long'])
@@ -2882,7 +2952,12 @@ function Troop:hit(damage, from_undead)
   if self.magician_invulnerable then return end
   if self.undead and not from_undead then return end
 
-  self.hfx:use('hit', 0.25, 200, 10)
+  --scale hit effect to damage
+  --no damage won't grow model, up to max effect at 0.5x max hp
+  local hitStrength = (damage * 1.0) / self.max_hp
+  hitStrength = math.min(hitStrength, 0.5)
+  hitStrength = math.remap(hitStrength, 0, 0.5, 0, 1)
+  self.hfx:use('hit', 0.25 * hitStrength, 200, 10)
   self:show_hp()
 
   if self.shielded then

@@ -255,10 +255,11 @@ function init()
   unit_states = {
     ['normal'] = 'normal',
     ['frozen'] = 'frozen',
+    ['casting'] = 'casting',
     ['channeling'] = 'channeling',
     ['stopped'] = 'stopped',
     ['rallying'] = 'rallying',
-    ['following'] = 'following,'
+    ['following'] = 'following'
   }
 
   type_colors = {
@@ -1076,7 +1077,7 @@ function init()
 
   first_run_tier_to_characters = {
     [1] = {'swordsman', 'archer', 'laser'},
-    [2] = {'shaman', 'cannon'},
+    [2] = {'shaman', 'cannon', 'laser'},
     [3] = {'sniper'},
     [4] = {'sniper'}
   }
@@ -1159,6 +1160,29 @@ function init()
     ['largebomb'] = {area_size = 0.4},
 
   }
+
+  item_stat_lookup = {
+    ['dmg'] = 'damage',
+    ['mvspd'] = 'move speed',
+    ['aspd'] = 'attack speed',
+    ['hp'] = 'hp',
+    ['def'] = 'defense',
+    ['area_size'] = 'area size',
+  }
+
+  build_item_text = function(item)
+    local out = {}
+    table.insert(out, {text = '[fg]' .. item_text[item] .. ', costs: ' .. item_costs[item], font = pixul_font, alignment = 'center',
+    height_multiplier = 1.25})
+    local stats = item_stat_multipliers[item]
+    if stats then
+      for key, val in pairs(stats) do
+        local text = '[fg] ' .. val * 100 .. '% ' .. item_stat_lookup[key]
+        table.insert(out, {text = text, font = pixul_font, alignment = 'center', height_multiplier = 1.25})
+      end
+    end
+    return out
+  end
 
   item_text = {
     ['smallsword'] = "A tiny sword",

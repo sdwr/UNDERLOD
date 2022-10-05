@@ -1,7 +1,8 @@
 Helper.Time = {}
 
-Helper.Time.past_time = 0
 Helper.Time.delta_time = 0
+
+Helper.Time.time = love.timer.getTime()
 
 
 
@@ -23,7 +24,7 @@ function Helper.Time.set_interval(delay, intervalfunction)
     
     local interval = {
         intervalfunction = intervalfunction,
-        startat = love.timer.getTime(),
+        startat = Helper.Time.time,
         delay = delay,
         looped = 1,
         stopped = false
@@ -46,7 +47,7 @@ end
 
 function Helper.Time.run_intervals()
     for _, interval in ipairs(Helper.Time.intervals) do
-        if love.timer.getTime() - interval.startat > interval.delay * interval.looped and not interval.stopped then
+        if Helper.Time.time - interval.startat > interval.delay * interval.looped and not interval.stopped then
             interval.intervalfunction()
             interval.looped = interval.looped + 1
         end
@@ -73,7 +74,7 @@ function Helper.Time.wait(delay, waitfunction)
     
     local wait = {
         waitfunction = waitfunction,
-        startat = love.timer.getTime(),
+        startat = Helper.Time.time,
         delay = delay,
         finished = false
     }
@@ -83,7 +84,7 @@ end
 
 function Helper.Time.run_waits()
     for _, wait in ipairs(Helper.Time.waits) do
-        if love.timer.getTime() - wait.startat > wait.delay and not wait.finished then
+        if Helper.Time.time - wait.startat > wait.delay and not wait.finished then
             wait.waitfunction()
             wait.finished = true
         end
