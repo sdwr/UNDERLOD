@@ -8,6 +8,8 @@ function SpawnGlobals.Init()
   local y_offset = 35
   
   local y_corner_offset = 50
+
+  SpawnGlobals.wall_width = 40
   
   SpawnGlobals.spawn_markers = {
     {x = right_x, y = mid_y},
@@ -41,11 +43,22 @@ function Can_Spawn(rs, location)
   local check_circle = Circle(0,0, rs)
   check_circle:move_to(location.x, location.y)
   local objects = main.current.main:get_objects_in_shape(check_circle, {Enemy, EnemyCritter, Critter, Troop})
-  if #objects > 0 then
+  if #objects > 0 or Outside_Arena(location) then
     return false
   else
     return true
   end
+end
+
+function Outside_Arena(location)
+  if location.x < SpawnGlobals.wall_width or 
+     location.x > gw - SpawnGlobals.wall_width or 
+     location.y < SpawnGlobals.wall_width or
+     location.y > gh - SpawnGlobals.wall_width then
+      return true
+  else
+    return false
+  end 
 end
 
 
