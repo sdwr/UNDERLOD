@@ -13,7 +13,7 @@ function Helper.Unit.add_custom_variables_to_unit(unit)
 
     unit.is_troop = true
     unit.targeted_by = {}
-    unit.claimed_target = {}
+    unit.claimed_target = nil
     unit.have_target = false
     unit.state_change_functions = {}
     unit.state_always_run_functions = {}

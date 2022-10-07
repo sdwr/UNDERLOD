@@ -38,13 +38,6 @@ function Helper.draw()
         end
     end
 
-    Helper.Spell.Missile.draw()
-    Helper.Spell.DamageCircle.draw()
-    Helper.Spell.Laser.draw_aims()
-    Helper.Spell.DamageLine.draw()
-    Helper.Spell.SpreadMissile.draw_aims()
-    Helper.Spell.Flame.draw()
-
     Helper.Graphics.draw_particles()
 end
 
@@ -56,7 +49,7 @@ function Helper.update(dt)
         Helper.initialized = true
     end
 
-    Helper.Time.time = love.timer.getTime()
+    Helper.Time.time = Helper.Time.time + dt
     Helper.Time.delta_time = dt
 
     --update timers, run state functions

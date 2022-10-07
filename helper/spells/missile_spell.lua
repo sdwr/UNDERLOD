@@ -5,6 +5,7 @@ Helper.Spell.Missile.list = {}
 Helper.Spell.Missile.prelist = {}
 
 function Helper.Spell.Missile.create(color, missile_length, damage_troops, damage, unit, fly_infinitely, explode_radius, x, y, targetx, targety)
+
     local missile = {
         x = x,
         y = y,
@@ -56,8 +57,8 @@ function Helper.Spell.Missile.set_position(missile)
     missile.y = missile.unit.y
     -- only players have cooldown? fix
     if missile.unit and missile.unit.claimed_target.x then
-        missile.targetx = missile.unit.claimed_target.x
-        missile.targety = missile.unit.claimed_target.y
+        missile.targetx, missile.targety = Helper.Spell.Laser.get_end_location(missile.x, missile.y, 
+        missile.unit.claimed_target.x, missile.unit.claimed_target.y)
     end
 end
 
