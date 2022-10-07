@@ -1109,6 +1109,9 @@ function init()
     ['vampirism'] = hextouch,
     ['ghostboots'] = temporal_chains,
     ['frostorb'] = freezing_field,
+    ['spikedcollar'] = exploder_elite,
+    ['basher'] = forcer_elite,
+
   }
 
   item_costs = {
@@ -1139,6 +1142,8 @@ function init()
     ['vampirism'] = 6,
     ['ghostboots'] = 6,
     ['frostorb'] = 6,
+    ['spikedcollar'] = 6,
+    ['basher'] = 6,
   }
 
   item_stat_multipliers = {
@@ -1168,7 +1173,9 @@ function init()
 
     ['vampirism'] = {vamp = 0.1},
     ['ghostboots'] = {mvspd = 0.1, ghost = 1},
-    ['frostorb'] = {slow = 0.2, aspd = 0.2}
+    ['frostorb'] = {slow = 0.2, aspd = 0.2},
+    ['spikedcollar'] = {thorns = 0.1, hp = 0.2},
+    ['basher'] = {bash = 0.2, dmg = 0.25},
 
   }
 
@@ -1181,7 +1188,9 @@ function init()
     ['area_size'] = 'area size',
     ['vamp'] = 'vampirism',
     ['ghost'] = 'move through units',
-    ['slow'] = 'movement slow on attack'
+    ['slow'] = 'movement slow on attack',
+    ['thorns'] = 'return damage to attacker',
+    ['bash'] = 'chance to stun'
   }
 
   build_item_text = function(item)
@@ -1226,13 +1235,16 @@ function init()
     ['vampirism'] = 'Vampire cloak',
     ['ghostboots'] = "Ghost boots",
     ['frostorb'] = "Frost orb",
+    ['spikedcollar'] = "Spiked collar",
+    ['basher'] = "Basher",
   }
 
   tier_to_items = {
     [1] = {'smallsword', 'smallboots', 'smallbow', 'smallvest', 'smallshield',
            'smallbomb'},
     [2] = {'medsword', 'medboots', 'medbow', 'medvest', 'medshield',
-           'medbomb', 'vampirism', 'ghostboots', 'frostorb'},
+           'medbomb', 'vampirism', 'ghostboots', 'frostorb', 'spikedcollar',
+           'basher', },
     [3] = {'largesword', 'largeboots', 'largebow', 'largevest', 'largeshield',
            'largebomb'},
     [4] = {'largesword'},
@@ -1297,10 +1309,12 @@ function init()
     ['area_dmg'] = 'area_dmg',
     ['area_size'] = 'area_size',
     ['hp'] = 'hp',
+    ['status_resist'] = 'status_resist',
 
     ['vamp'] = 'vamp',
     ['ghost'] = 'ghost',
     ['slow'] = 'slow',
+    ['bash'] = 'bash',
   }
 
   non_attacking_characters = {'cleric', 'stormweaver', 'squire', 'chronomancer', 'sage', 'psykeeper', 'bane', 'carver', 'fairy', 'priest', 'paladin', 'necromancer', 'bard', 'druid', 'flagellant', 'merchant', 'miner'}

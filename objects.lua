@@ -268,11 +268,18 @@ function Unit:update_buffs(dt)
     if v.name == 'druid_hot' then
       self.hp = self.hp + (dt * v.heal_per_s)
       if self.hp > self.max_hp then self.hp = self.max_hp end
+    elseif k == 'stunned' then
+      self.state = unit_states['frozen']
     end
 
 
     v.duration = v.duration - dt
     if v.duration < 0 then
+      if k == 'bash_cd' then
+        self.canBash = true
+      elseif k == 'stunned' then
+        self.state = unit_states['normal']
+      end
       self.buffs[k] = nil
     end
   end
@@ -342,9 +349,26 @@ function Unit:calculate_stats(first_run)
   self.buff_mvspd_m = 1
   self.slow_mvspd_m = 1
 
+  self.status_resist = 0
+  if self.class == 'miniboss' then
+    self.status_resist = 0.5
+  elseif self.class == 'boss' then
+    self.status_resist = 0.8
+  end
+
   self.vamp = 0
-  self.ghost = false
   self.slows = 0
+  self.thorns = 0
+  --self.ghost
+  --self.canBash
+
+  self.bash_cd = 2.5
+  self.bash_duration = 1
+  self.bash_chance = 0
+  if first_run then
+    local bashCooldown = {name = 'bash_cd', duration = self.bash_cd}
+    self:add_buff(bashCooldown)
+  end
 
   if self.buffs and #self.buffs > 0 then
     for k,v in self.buffs do
@@ -365,6 +389,8 @@ function Unit:calculate_stats(first_run)
             self.buff_area_size_m = self.buff_area_size_m + amt
           elseif stat == buff_types['hp'] then
             self.buff_hp_m = self.buff_hp_m + amt
+          elseif stat == buff_types['status_resist'] then
+            self.status_resist = self.status_resist + stat
           end
         end
       end
@@ -390,12 +416,18 @@ function Unit:calculate_stats(first_run)
             self.buff_area_size_m = self.buff_area_size_m + amt
           elseif stat == buff_types['hp'] then
             self.buff_hp_m = self.buff_hp_m + amt
+          elseif stat == buff_types['status_resist'] then
+            self.status_resist = self.status_resist + amt
           elseif stat == buff_types['vamp'] then
             self.vamp = self.vamp + amt
           elseif stat == buff_types['ghost'] then
             self.ghost = true
           elseif stat == buff_types['slow'] then
             self.slows = self.slows + amt
+          elseif stat == buff_types['thorns'] then
+            self.thorns = self.thorns + amt
+          elseif stat == buff_types['bash'] then
+            self.bash_chance = self.bash_chance + amt
           end
         end
       end
@@ -440,17 +472,36 @@ end
 function Unit:onHitCallbacks(dmg, from)
   if from ~= nil then
     from:onDamageDealt(dmg)
+    from:tryBash(self)
     if from.slows ~=nil and from.slows > 0 then
       self:slow(from.slows, 2)
     end
+    if self.thorns ~= nil and self.thorns > 0 then
+      --don't pass self in to prevent endless loop
+      from:hit(dmg * self.thorns)
+    end
   end
+end
+
+function Unit:tryBash(enemy)
+  if self.canBash and random:float(0.0, 1.0) < self.bash_chance then
+    self:bash(enemy)
+  end
+end
+
+function Unit:bash(enemy)
+  local duration = math.max(self.bash_duration * (1 - (enemy.status_resist or 0)), 0)
+  local stunBuff = {name = 'stunned', duration = duration}
+  enemy:add_buff(stunBuff)
+  local bashCooldown = {name = 'bash_cd', duration = self.bash_cd}
+  self:add_buff(bashCooldown)
 end
 
 function Unit:onDamageDealt(dmg)
   if self.vamp > 0 then
     local heal = dmg * self.vamp
     self.hp = self.hp + heal
-    self.hp = math.max(self.hp, self.max_hp)
+    self.hp = math.min(self.hp, self.max_hp)
   end
 end
 

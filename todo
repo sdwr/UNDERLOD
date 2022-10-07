@@ -24,6 +24,17 @@ crash when spawning units inside each other (fixed for boss though?)
 --check global GameState references - had a bug trying to set the rallyEffect in the main menu
 
 
+---------------
+OPTIMIZATION
+---------------
+stats are recalculated every frame
+  switch to "push" system from "pull
+  buffs with durations, apply once, then unapply at expiration
+
+lots of n^2 calculations in new spell system
+finding targets
+
+
 -------------
 GAMEPLAY TUNING:
 --------------
@@ -117,13 +128,13 @@ items:
   utility:
     m̶o̶v̶e̶ ̶s̶p̶e̶e̶d̶
 ̶ ̶ ̶ ̶ ̶g̶h̶o̶s̶t̶ ̶t̶h̶r̶o̶u̶g̶h̶ ̶u̶n̶i̶t̶s̶
-    basher
+̶ ̶ ̶ ̶ ̶b̶a̶s̶h̶e̶r̶
     s̶l̶o̶w̶/̶f̶r̶e̶e̶z̶e̶
     aura
 
   special:
     revive after death for 5s
-    thorns
+̶ ̶ ̶ ̶ ̶t̶h̶o̶r̶n̶s̶
     heal over time
     stim pack
 
