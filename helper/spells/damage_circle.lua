@@ -1,6 +1,6 @@
 Helper.Spell.DamageCircle = {}
 
-Helper.Spell.DamageCircle.duration = 0.5
+Helper.Spell.DamageCircle.duration = 0.05
 Helper.Spell.DamageCircle.list = {}
 
 function Helper.Spell.DamageCircle.create(color, damage_troops, damage, radius, x, y)
@@ -10,7 +10,7 @@ function Helper.Spell.DamageCircle.create(color, damage_troops, damage, radius, 
         creation_time = Helper.Time.time,
         damage_dealt = false,
         damage_troops = damage_troops,
-        color = color,
+        color = Helper.Color.set_transparency(color, 0.3),
         radius = radius,
         -- line_width = radius / 15,
         damage = damage
@@ -23,8 +23,13 @@ function Helper.Spell.DamageCircle.draw()
     for i, damage_circle in ipairs(Helper.Spell.DamageCircle.list) do
         love.graphics.setColor(damage_circle.color.r, damage_circle.color.g, damage_circle.color.b, damage_circle.color.a)
         love.graphics.setLineWidth(1)
-        love.graphics.circle( 'line', damage_circle.x, damage_circle.y, damage_circle.radius )
+        love.graphics.circle( 'fill', damage_circle.x, damage_circle.y, damage_circle.radius )
     end
+end
+
+function Helper.Spell.DamageCircle.update()
+    Helper.Spell.DamageCircle.damage()
+    Helper.Spell.DamageCircle.delete()
 end
 
 function Helper.Spell.DamageCircle.damage()

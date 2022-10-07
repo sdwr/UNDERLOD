@@ -47,6 +47,10 @@ function Helper.Spell.Flame.create(color, flamewidth, flameheight, damage, unit)
     end
 end
 
+function Helper.Spell.Flame.update()
+    Helper.Spell.Flame.update_direction()
+end
+
 function Helper.Spell.Flame.damage()
     for __, flame in ipairs(Helper.Spell.Flame.list) do
         for _, target in ipairs(Helper.Unit.get_list(not flame.unit.is_troop)) do
@@ -54,8 +58,8 @@ function Helper.Spell.Flame.damage()
             and Helper.Geometry.distance(flame.unit.x, flame.unit.y, flame.unit.claimed_target.x, flame.unit.claimed_target.y) < flame.flameheight then
                 target:hit(flame.damage)
                 HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
-                for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = blue[0]} end
-                for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
+                --for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = blue[0]} end
+                --for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
             end
         end
     end
@@ -73,7 +77,8 @@ function Helper.Spell.Flame.update_direction()
     end
 end
 
-function Helper.Spell.Flame.draw_hitbox()
+function Helper.Spell.Flame.draw()
+    --debug, draw hitbox
     if Helper.Spell.Flame.do_draw_hitbox then
         for __, flame in ipairs(Helper.Spell.Flame.list) do
             love.graphics.setColor(flame.color.r, flame.color.g, flame.color.b, 0.1)
@@ -97,7 +102,7 @@ function Helper.Spell.Flame.end_flames()
     end
 end
 
-function Helper.Spell.Flame.end_all_flames()
+function Helper.Spell.Flame.clear_all()
     for i = #Helper.Spell.Flame.list, 1, -1 do
         Helper.Time.stop_interval(Helper.Spell.Flame.list[i].particle_interval_id)
         table.remove(Helper.Spell.Flame.list, i)

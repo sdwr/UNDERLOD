@@ -8,6 +8,23 @@ require 'helper/spells/damage_line'
 require 'helper/spells/spread_laser_spell'
 require 'helper/spells/spread_missile_spell'
 
+Helper.Spell.spells = {
+    Helper.Spell.SpreadMissile,
+    Helper.Spell.Missile, 
+    Helper.Spell.Laser, 
+    Helper.Spell.Flame,
+    Helper.Spell.DamageCircle, 
+    Helper.Spell.DamageLine,
+}
+
+function Helper.Spell.can_shoot(spell)
+    if Helper.Time.time - spell.start_aim_time > spell.cast_time then
+        return true
+    else
+        return false
+    end
+end
+
 function Helper.Spell.get_nearest_target(unit, include_list)
     include_list = include_list or {}
 

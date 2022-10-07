@@ -48,6 +48,11 @@ function Helper.Spell.DamageLine.draw()
     end
 end
 
+function Helper.Spell.DamageLine.update()
+    Helper.Spell.DamageLine.damage()
+    Helper.Spell.DamageLine.delete()
+end
+
 function Helper.Spell.DamageLine.damage()
     local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
     local troops = main.current.main:get_objects_by_class(Troop)

@@ -279,7 +279,7 @@ function Arena:quit()
 
         self.build_text = Text2{group = self.ui, x = 40, y = 20, force_update = true, lines = {{text = "[wavy_mid, fg]your build", font = pixul_font, alignment = 'center'}}}
         for i, unit in ipairs(self.units) do
-          CharacterPart{group = self.ui, x = 20, y = 40 + (i-1)*19, character = unit.character, level = unit.level, force_update = true, cant_click = true, parent = self}
+          CharacterPart{group = self.ui, x = 20, y = 40 + (i-1)*19, unit = unit, character = unit.character, level = unit.level, force_update = true, cant_click = true, parent = self}
           Text2{group = self.ui, x = 20 + 14 + pixul_font:get_text_width(unit.character)/2, y = 40 + (i-1)*19, force_update = true, lines = {
             {text = '[' .. character_color_strings[unit.character] .. ']' .. unit.character, font = pixul_font, alignment = 'left'}
           }}

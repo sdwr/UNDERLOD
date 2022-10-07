@@ -28,12 +28,22 @@ end
 
 
 function Helper.draw()
+
+    for i, spell in ipairs(Helper.Spell.spells) do
+        if spell.draw_aims ~= nil then
+            spell.draw_aims()
+        end
+        if spell.draw ~= nil then
+            spell.draw()
+        end
+    end
+
     Helper.Spell.Missile.draw()
     Helper.Spell.DamageCircle.draw()
     Helper.Spell.Laser.draw_aims()
     Helper.Spell.DamageLine.draw()
     Helper.Spell.SpreadMissile.draw_aims()
-    Helper.Spell.Flame.draw_hitbox()
+    Helper.Spell.Flame.draw()
 
     Helper.Graphics.draw_particles()
 end
@@ -57,22 +67,12 @@ function Helper.update(dt)
 
 
     --update spells
-    Helper.Spell.Missile.update_position()
-    Helper.Spell.Missile.explode()
-    
-    Helper.Spell.DamageCircle.damage()
-    Helper.Spell.DamageCircle.delete()
 
-    Helper.Spell.Laser.shoot()
-
-    Helper.Spell.DamageLine.damage()
-    Helper.Spell.DamageLine.delete()
-
-    Helper.Spell.SpreadMissile.shoot_missiles()
-
-    Helper.Spell.Flame.update_direction()
-    Helper.Spell.Flame.end_flames()
-
+    for i, spell in ipairs(Helper.Spell.spells) do
+        if spell.update ~= nil then
+            spell.update()
+        end
+    end
 
     --particles
     Helper.Graphics.update_particles()
@@ -99,6 +99,9 @@ function Helper.release()
     Helper.Time.stop_all_intervals()
     Helper.Time.stop_all_waits()
 
-    Helper.Spell.Flame.end_all_flames()
-    Helper.Spell.Laser.clear_all()
+    for i, spell in ipairs(Helper.Spell.spells) do
+        if spell.clear_all ~= nil then
+            spell.clear_all()
+        end
+    end
 end

@@ -62,8 +62,10 @@ function Helper.Unit.can_cast(unit)
 end
 
 function Helper.Unit.start_casting(unit)
-    unit.state = unit_states['casting']
-    unit.last_attack_started = Helper.Time.time
+    if unit then
+        unit.state = unit_states['casting']
+        unit.last_attack_started = Helper.Time.time
+    end
 end
 
 function Helper.Unit.cancel_casting(unit)
@@ -71,8 +73,10 @@ function Helper.Unit.cancel_casting(unit)
 end
 
 function Helper.Unit.finish_casting(unit)
-    unit.last_attack_finished = Helper.Time.time
-    unit.state = unit_states['normal']
+    if unit then
+        unit.last_attack_finished = Helper.Time.time
+        unit.state = unit_states['normal']
+    end
 end
 
 function Helper.Unit.is_attack_on_cooldown(unit)

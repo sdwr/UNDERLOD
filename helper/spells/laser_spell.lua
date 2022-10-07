@@ -6,7 +6,7 @@ function Helper.Spell.Laser.create(color, laser_aim_width, direction_lock, damag
         local laser = {
             unit = unit,
             start_aim_time = Helper.Time.time,
-            cast_time = unit.castTime or 0.5,
+            cast_time = unit.castTime or 1,
             direction_targetx = -1,
             direction_targety = -1,
             direction_lock = direction_lock,
@@ -112,7 +112,8 @@ function Helper.Spell.Laser.draw_aims()
     end
 end
 
-function Helper.Spell.Laser.shoot()
+function Helper.Spell.Laser.update()
+    --shoot
     for i = #Helper.Spell.Laser.list, 1, -1 do
         local laser = Helper.Spell.Laser.list[i]
         if Helper.Time.time - laser.start_aim_time > laser.cast_time and not laser.holding_fire then
@@ -131,9 +132,7 @@ function Helper.Spell.Laser.shoot()
 end
 
 function Helper.Spell.Laser.clear_all()
-    for i = #Helper.Spell.Laser.list, 1, -1 do
-        table.remove(Helper.Spell.Laser.list, i)
-    end
+    Helper.Spell.Laser.list = {}
 end
 
 
