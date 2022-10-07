@@ -5,7 +5,6 @@ require 'mainmenu'
 require 'buy_screen'
 require 'objects'
 require 'player'
-require 'enemies'
 require 'media'
 require 'helper/helper_main'
 require 'spawnmanager'
@@ -1106,6 +1105,9 @@ function init()
     ['smallbomb'] = magnify,
     ['medbomb'] = magnify,
     ['largebomb'] = magnify,
+
+    ['vampirism'] = hextouch,
+    ['ghostboots'] = temporal_chains,
   }
 
   item_costs = {
@@ -1132,6 +1134,9 @@ function init()
     ['smallbomb'] = 3,
     ['medbomb'] = 5,
     ['largebomb'] = 10,
+
+    ['vampirism'] = 6,
+    ['ghostboots'] = 6
   }
 
   item_stat_multipliers = {
@@ -1159,6 +1164,9 @@ function init()
     ['medbomb'] = {area_size = 0.3},
     ['largebomb'] = {area_size = 0.4},
 
+    ['vampirism'] = {vamp = 0.1},
+    ['ghostboots'] = {mvspd = 0.1, ghost = 1}
+
   }
 
   item_stat_lookup = {
@@ -1168,6 +1176,8 @@ function init()
     ['hp'] = 'hp',
     ['def'] = 'defense',
     ['area_size'] = 'area size',
+    ['vamp'] = 'vampirism',
+    ['ghost'] = 'move through units',
   }
 
   build_item_text = function(item)
@@ -1177,7 +1187,7 @@ function init()
     local stats = item_stat_multipliers[item]
     if stats then
       for key, val in pairs(stats) do
-        local text = '[fg] ' .. val * 100 .. '% ' .. item_stat_lookup[key]
+        local text = '[fg] ' .. val * 100 .. '% ' .. (item_stat_lookup[key] or '')
         table.insert(out, {text = text, font = pixul_font, alignment = 'center', height_multiplier = 1.25})
       end
     end
@@ -1208,13 +1218,16 @@ function init()
     ['smallbomb'] = "Small bomb",
     ['medbomb'] = "Medium bomb",
     ['largebomb'] = "Large bomb",
+
+    ['vampirism'] = 'Vampire cloak',
+    ['ghostboots'] = "Ghost boots",
   }
 
   tier_to_items = {
     [1] = {'smallsword', 'smallboots', 'smallbow', 'smallvest', 'smallshield',
            'smallbomb'},
     [2] = {'medsword', 'medboots', 'medbow', 'medvest', 'medshield',
-           'medbomb'},
+           'medbomb', 'vampirism', 'ghostboots'},
     [3] = {'largesword', 'largeboots', 'largebow', 'largevest', 'largeshield',
            'largebomb'},
     [4] = {'largesword'},
@@ -1279,6 +1292,9 @@ function init()
     ['area_dmg'] = 'area_dmg',
     ['area_size'] = 'area_size',
     ['hp'] = 'hp',
+
+    ['vamp'] = 'vamp',
+    ['ghost'] = 'ghost',
   }
 
   non_attacking_characters = {'cleric', 'stormweaver', 'squire', 'chronomancer', 'sage', 'psykeeper', 'bane', 'carver', 'fairy', 'priest', 'paladin', 'necromancer', 'bard', 'druid', 'flagellant', 'merchant', 'miner'}
@@ -1902,7 +1918,7 @@ function open_options(self)
           slow_amount = 1
           music_slow_amount = 1
           run_time = 0
-          gold = 10
+          gold = starting_gold
           passives = {}
           main_song_instance:stop()
           run_passive_pool = {

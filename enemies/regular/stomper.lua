@@ -17,7 +17,7 @@ fns['init_enemy'] = function(self)
     self.t:cooldown(attack_speeds['slow'], function() local target = self:get_closest_target(self.attack_sensor, main.current.friendlies); return target end, function()
       local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.friendlies)
       if closest_enemy then
-        Stomp{group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = 30, color = red[0], dmg = 50, level = self.level, parent = self}
+        Stomp{group = main.current.main, unit = self, team = "enemy", x = self.x, y = self.y, rs = 30, color = red[0], dmg = 50, level = self.level, parent = self}
       end
     end, nil, nil, 'attack')
 end

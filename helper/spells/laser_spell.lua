@@ -118,9 +118,9 @@ function Helper.Spell.Laser.update()
         local laser = Helper.Spell.Laser.list[i]
         if Helper.Time.time - laser.start_aim_time > laser.cast_time and not laser.holding_fire then
             if laser.direction_lock then
-                Helper.Spell.DamageLine.create(laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.unit.x, laser.unit.y, Helper.Spell.Laser.get_end_location(laser.unit.x, laser.unit.y, laser.unit.x + laser.direction_targetx, laser.unit.y + laser.direction_targety))
+                Helper.Spell.DamageLine.create(laser.unit, laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.unit.x, laser.unit.y, Helper.Spell.Laser.get_end_location(laser.unit.x, laser.unit.y, laser.unit.x + laser.direction_targetx, laser.unit.y + laser.direction_targety))
             else
-                Helper.Spell.DamageLine.create(laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.unit.x, laser.unit.y, Helper.Spell.Laser.get_end_location(laser.unit.x, laser.unit.y, laser.unit.claimed_target.x, laser.unit.claimed_target.y))
+                Helper.Spell.DamageLine.create(laser.unit, laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.unit.x, laser.unit.y, Helper.Spell.Laser.get_end_location(laser.unit.x, laser.unit.y, laser.unit.claimed_target.x, laser.unit.claimed_target.y))
             end
             table.remove(Helper.Spell.Laser.list, i)
             shoot1:play{volume=0.9}

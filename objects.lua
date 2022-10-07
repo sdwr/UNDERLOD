@@ -341,6 +341,9 @@ function Unit:calculate_stats(first_run)
   self.buff_def_m = 1
   self.buff_mvspd_m = 1
 
+  self.vamp = 0
+  self.ghost = false
+
   if self.buffs and #self.buffs > 0 then
     for k,v in self.buffs do
       local buff = v
@@ -385,6 +388,10 @@ function Unit:calculate_stats(first_run)
             self.buff_area_size_m = self.buff_area_size_m + amt
           elseif stat == buff_types['hp'] then
             self.buff_hp_m = self.buff_hp_m + amt
+          elseif stat == buff_types['vamp'] then
+            self.vamp = self.vamp + amt
+          elseif stat == buff_types['ghost'] then
+            self.ghost = true
           end
         end
       end
@@ -420,6 +427,14 @@ function Unit:calculate_stats(first_run)
   self.class_mvspd_m = self.class_mvspd_m*class_stat_multipliers[self.class].mvspd
   self.max_v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m
   self.v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m
+end
+
+function Unit:onDamageDealt(dmg)
+  if self.vamp > 0 then
+    local heal = dmg * self.vamp
+    self.hp = self.hp + heal
+    self.hp = math.max(self.hp, self.max_hp)
+  end
 end
 
 function Unit:get_closest_target(shape, classes)

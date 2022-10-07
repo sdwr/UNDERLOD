@@ -69,13 +69,19 @@ end
 function EnemyCritter:attack()
   if self.target and not self.target.dead then
     swordsman1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
-    self.target:hit(self.dmg)
+    self.target:hit(self.dmg, self)
   end
 end
 
-function EnemyCritter:hit(damage, projectile)
+function EnemyCritter:hit(damage, from)
   if self.dead or self.invulnerable then return end
   self.hfx:use('hit', 0.25, 200, 10)
+
+  --damage dealt callback
+  if from ~= nil then
+    from:onDamageDealt(damage)
+  end
+
   self.hp = self.hp - damage
   self:show_hp()
   if self.hp <= 0 then self:die() end

@@ -63,7 +63,7 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
   self.main:disable_collision_between('ghost', 'troop')
   self.main:disable_collision_between('ghost', 'projectile')
   self.main:disable_collision_between('ghost', 'enemy')
-  self.main:disable_collision_between('ghost', 'enemy_projectile')
+  --self.main:disable_collision_between('ghost', 'enemy_projectile')
   self.main:disable_collision_between('ghost', 'ghost')
   self.main:disable_collision_between('ghost', 'force_field')
   self.main:enable_trigger_between('projectile', 'enemy')
@@ -199,7 +199,7 @@ function Arena:update(dt)
         slow_amount = 1
         music_slow_amount = 1
         run_time = 0
-        gold = 10
+        gold = starting_gold
         passives = {}
         main_song_instance:stop()
         run_passive_pool = {
@@ -490,7 +490,7 @@ end
 
 function Arena:draw()
   self.floor:draw()
-  self.main:draw()
+  self.main:draw_with_ghost_ontop()
   self.post_main:draw()
   self.effects:draw()
 
@@ -573,7 +573,7 @@ function Arena:die()
           slow_amount = 1
           music_slow_amount = 1
           run_time = 0
-          gold = 10
+          gold = starting_gold
           passives = {}
           main_song_instance:stop()
           run_passive_pool = {

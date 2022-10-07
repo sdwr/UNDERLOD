@@ -33,11 +33,11 @@ fns['init_enemy'] = function(self)
         local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
         if target then
         self:rotate_towards_object(target, 1)
-        Mortar{group = main.current.main, team = "enemy", target = target, rs = 25, color = red[0], dmg = 30, level = self.level, parent = self}
+        Mortar{group = main.current.main, unit = self, team = "enemy", target = target, rs = 25, color = red[0], dmg = 30, level = self.level, parent = self}
         end
     end, nil, nil, 'shoot')
     self.t:cooldown(attack_speeds['slow'], function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target and self.state == unit_states['normal'] end, function()
-        Stomp{group = main.current.main, team = "enemy", x = self.x, y = self.y, rs = self.attack_sensor.rs, color = red[0], dmg = 50, level = self.level, parent = self}
+        Stomp{group = main.current.main, unit = self, team = "enemy", x = self.x, y = self.y, rs = self.attack_sensor.rs, color = red[0], dmg = 50, level = self.level, parent = self}
     end, nil, nil, 'stomp')
     self.t:cooldown(attack_speeds['fast'], function() local targets = self:get_objects_in_shape(self.aggro_sensor, main.current.friendlies); return targets and #targets > 0 and self.state == unit_states['normal'] end, function()
         local closest_enemy = self:get_closest_object_in_shape(self.aggro_sensor, main.current.friendlies)

@@ -93,7 +93,7 @@ function MainMenu:on_enter(from)
           'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
         }
         run_time = run.time or 0
-        gold = run.gold or 10
+        gold = run.gold or starting_gold
         passives = run.passives or {}
         locked_state = run.locked_state
         current_new_game_plus = run.current_new_game_plus or current_new_game_plus or 0
@@ -121,7 +121,7 @@ function MainMenu:on_enter(from)
         'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
       }
       run_time = 0
-      gold = 10
+      gold = starting_gold
       passives = {}
       locked_state = run.locked_state
       current_new_game_plus = current_new_game_plus or 0

@@ -117,7 +117,8 @@ function Helper.Spell.Missile.explode()
         local missile = Helper.Spell.Missile.list[i]
         if not missile.fly_infinitely then
             if Helper.Geometry.distance(missile.x, missile.y, missile.targetx, missile.targety) < missile.missile_length / 3 then
-                Helper.Spell.DamageCircle.create(missile.color, missile.damage_troops, missile.damage, missile.explode_radius, missile.x, missile.y)
+                Helper.Spell.DamageCircle.create(missile.unit, missile.color, missile.damage_troops, 
+                missile.damage, missile.explode_radius, missile.x, missile.y)
                 table.remove(Helper.Spell.Missile.list, i)
                 shoot1:play{volume=0.7}
             end
@@ -130,7 +131,8 @@ function Helper.Spell.Missile.explode()
             end
             for _, entity in ipairs(entities) do
                 if Helper.Geometry.distance(missile.x, missile.y, entity.x, entity.y) < missile.missile_length / 3 then
-                    Helper.Spell.DamageCircle.create(missile.color, missile.damage_troops, missile.damage, missile.explode_radius, missile.x, missile.y)
+                    Helper.Spell.DamageCircle.create(missile.unit, missile.color, missile.damage_troops, 
+                    missile.damage, missile.explode_radius, missile.x, missile.y)
                     table.remove(Helper.Spell.Missile.list, i)
                     shoot1:play{volume=0.7}
                     break
@@ -139,7 +141,8 @@ function Helper.Spell.Missile.explode()
 
             if Helper.window_width - missile.x < missile.missile_length / 3 or missile.x <= missile.missile_length / 3 
             or Helper.window_height - missile.y < missile.missile_length / 3 or missile.y <= missile.missile_length / 3 then
-                Helper.Spell.DamageCircle.create(missile.color, missile.damage_troops, missile.damage, missile.explode_radius, missile.x, missile.y)
+                Helper.Spell.DamageCircle.create(missile.unit, missile.color, missile.damage_troops, 
+                missile.damage, missile.explode_radius, missile.x, missile.y)
                 table.remove(Helper.Spell.Missile.list, i)
                 shoot1:play{volume=0.7}
             end

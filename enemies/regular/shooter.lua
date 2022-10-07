@@ -4,7 +4,7 @@ local fns = {}
 
 fns['shoot'] = function(self, r, mods)
   mods = mods or {}
-  local t = {group = main.current.main, x = self.x, y = self.y, v = 175, r = r, color = self.color, dmg = self.dmg}
+  local t = {group = main.current.main, unit = self, x = self.x, y = self.y, v = 175, r = r, color = self.color, dmg = self.dmg}
   self.hfx:use('shoot', 0.25)
   self.state = unit_states['frozen']
 
@@ -101,16 +101,16 @@ end
 function EnemyProjectile:on_trigger_enter(other, contact)
   if other:is(Player) or other:is(Troop) then
     self:die(self.x, self.y, nil, random:int(2, 3))
-    other:hit(self.dmg)
+    other:hit(self.dmg, self.unit)
 
   elseif other:is(Critter) then
     self:die(self.x, self.y, nil, random:int(2, 3))
-    other:hit(self.dmg)
+    other:hit(self.dmg, self.unit)
 
   elseif other:is(Enemy) or other:is(EnemyCritter) then
     if self.source == 'shooter' then
       self:die(self.x, self.y, nil, random:int(2, 3))
-      other:hit(0.5*self.dmg, nil, nil, true)
+      other:hit(0.5*self.dmg, self.unit)
     end
   end
 end

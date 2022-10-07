@@ -95,6 +95,22 @@ function Group:draw(scroll_factor_x, scroll_factor_y)
   if self.camera then self.camera:detach() end
 end
 
+function Group:draw_with_ghost_ontop()
+  local ghosts = {}
+  for _, object in ipairs(self.objects) do
+    if not object.hidden then
+      if object.ghost == true then
+        table.insert(ghosts, object)
+      else
+        object:draw()
+      end
+    end
+  end
+  for i, object in ipairs(ghosts) do
+    object:draw()
+  end
+end
+
 
 -- Draws only objects within the indexed range
 -- group:draw_range(1, 3) -> draws only 1st, 2nd and 3rd objects in this group

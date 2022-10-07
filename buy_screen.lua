@@ -166,7 +166,7 @@ function BuyScreen:on_enter(from, level, loop, units, max_units, passives, shop_
       slow_amount = 1
       music_slow_amount = 1
       run_time = 0
-      gold = 10
+      gold = starting_gold
       passives = {}
       main_song_instance:stop()
       run_passive_pool = {
@@ -310,7 +310,7 @@ end
 
 function BuyScreen:buy(character, i)
   local bought
-  if table.any(self.units, function(v) return v.character == character end) and gold >= character_tiers[character] then
+  if table.any(self.units, function(v) return v.character == character end) and gold >= tier_to_cost[character_tiers[character]] then
     if table.any(self.units, function(v) return v.character == character and v.level == 3 end) then
       if not self.info_text then
         self.info_text = InfoText{group = main.current.ui}
@@ -361,10 +361,10 @@ function BuyScreen:buy(character, i)
       end
       self.t:after(2, function() self.info_text:deactivate(); self.info_text.dead = true; self.info_text = nil end, 'info_text')
     else
-      if gold >= character_tiers[character] then
+      if gold >= tier_to_cost[character_tiers[character]] then
         gold = gold - tier_to_cost[character_tiers[character]]
         self.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
-        table.insert(self.units, {character = character, level = 1, reserve = {0, 0}, items = {nil, nil, nil}})
+        table.insert(self.units, {character = character, level = 1, reserve = {0, 0}, items = {nil, nil, nil}, numItems = 6})
         bought = true
       end
     end
@@ -659,7 +659,7 @@ function RestartButton:update(dt)
       slow_amount = 1
       music_slow_amount = 1
       run_time = 0
-      gold = 10
+      gold = starting_gold
       passives = {}
       main_song_instance:stop()
       run_passive_pool = {
@@ -1431,7 +1431,9 @@ function LooseItem:update(dt)
 end
 
 function LooseItem:draw()
-  item_images[self.item]:draw(self.x, self.y, 0, 0.2, 0.2)
+  if item_images[self.item] then
+    item_images[self.item]:draw(self.x, self.y, 0, 0.2, 0.2)
+  end
 
 end
 
@@ -1529,7 +1531,7 @@ function ItemPart:draw(y)
     local item = self.parent.unit.items[self.i]
     graphics.rectangle(self.x, self.y, 14, 14, 3, 3, item_to_color(self:getItem()))
     graphics.rectangle(self.x, self.y, 10, 10, 3, 3, bg[5])
-    if item and not self.itemGrabbed then
+    if item and not self.itemGrabbed and item_images[item] then
       item_images[item]:draw(self.x, self.y, 0, 0.2, 0.2)
     end
     if self.colliding_with_mouse and buyScreen and not buyScreen.loose_inventory_item then
@@ -1630,7 +1632,7 @@ function CharacterPart:init(args)
   end
 
   if not self.parent:is(CharacterPart) then
-    for i = 1, 3 do
+    for i = 1, self.unit.numItems do
       local item = self.unit.items[i]
       table.insert(self.items, ItemPart{group = main.current.main, x = self.x + (20*i), y = self.y, i = i, parent = self})
     end
@@ -1931,7 +1933,9 @@ function ItemCard:draw()
     graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
     graphics.rectangle(self.x, self.y, self.w, self.h, 6,6, bg[5])
     graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, self.tier_color, 3)
-    self.image:draw(self.x, self.y)
+    if self.image then
+      self.image:draw(self.x, self.y)
+    end
 
     graphics.pop()
   end

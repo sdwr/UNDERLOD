@@ -1127,7 +1127,7 @@ function Area:init(args)
       --make slow for troops as well
       target:slow(0.5, 2)
     else
-      target:hit(self.dmg, self)
+      target:hit(self.dmg, self.parent)
     end
     HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
     for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
@@ -1194,7 +1194,7 @@ function DotArea:init(args)
         targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
       end
       for _, target in ipairs(targets) do
-        target:hit(self.dmg/5, self, true)
+        target:hit(self.dmg/5, self.parent)
         HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
         for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
         for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
@@ -1206,7 +1206,7 @@ function DotArea:init(args)
     local enemies = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
     if #enemies > 0 then self.spring:pull(0.05, 200, 10) end
     for _, enemy in ipairs(enemies) do
-      enemy:hit(self.dmg/5, self, true)
+      enemy:hit(self.dmg/5, self.parent)
       enemy:slow(0.8, 1)
       HitCircle{group = main.current.effects, x = enemy.x, y = enemy.y, rs = 6, color = fg[0], duration = 0.1}
       for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = self.color} end
@@ -1632,7 +1632,7 @@ function Snipe:fire()
   if self then self.state = "recovering" else return end
   if self.parent then self.parent.state = 'stopped' end
   dual_gunner2:play({pitch = random:float(0.9, 1.1), volume = 0.7})
-  if self.target then self.target:hit(self.dmg) end
+  if self.target then self.target:hit(self.dmg, self.parent) end
 end
 
 function Snipe:recover()
@@ -1757,7 +1757,7 @@ function ChainLightning:init(args)
     if #self.targets >= self.i then
       local target = self.targets[self.i]
       if not target then return end
-      target:hit(self.dmg)
+      target:hit(self.dmg, self.parent)
       spark2:play{pitch = random:float(0.8, 1.2), volume = 0.7}
 
       local lastTarget = nil
@@ -1842,7 +1842,7 @@ function Stomp:stomp()
   end
   if #targets > 0 then self.spring:pull(0.05, 200, 10) end
   for _, target in ipairs(targets) do
-    target:hit(self.dmg, self, true)
+    target:hit(self.dmg, self.unit)
     target:slow(0.8, 1)
     HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
     for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
@@ -1891,7 +1891,7 @@ end
 
 function Mortar:fire()
   cannoneer1:play{pitch = random:float(0.95, 1.05), volume = 0.9}
-  Stomp{group = main.current.main, team = self.team, x = self.target.x + math.random(-10, 10), y = self.target.y + math.random(-10, 10), rs = self.rs, color = self.color, dmg = self.dmg, level = self.level, parent = self}
+  Stomp{group = main.current.main, unit = self.unit, team = self.team, x = self.target.x + math.random(-10, 10), y = self.target.y + math.random(-10, 10), rs = self.rs, color = self.color, dmg = self.dmg, level = self.level, parent = self}
 end
 
 function Mortar:recover()
@@ -2527,13 +2527,18 @@ function Troop:init(args)
   local level = self.level or 1
   local scaleMod = 1 + ((level - 1) / 3)
   local size = unit_size['medium'] * scaleMod
-  self:set_as_rectangle(size, size,'dynamic', 'troop')
+
+  self.class = 'troop'
+  self:calculate_stats(true)
+  if self.ghost == true then
+    self:set_as_rectangle(size, size,'dynamic', 'ghost')
+  else
+    self:set_as_rectangle(size, size,'dynamic', 'troop')
+  end
   self:set_restitution(0.5)
 
   self.color = character_colors[self.character]
-  self.class = 'troop'
   self.type = character_types[self.character]
-  self:calculate_stats(true)
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
 
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 40)
@@ -2552,6 +2557,7 @@ function Troop:update(dt)
     self.buff_mvspd_m = 1 
   end
   self:calculate_stats()
+
 
   --[[
   --steps should be:
@@ -2654,7 +2660,7 @@ function Troop:update(dt)
     --otherwise target is in attack range or doesn't exist, stay still
     else
       self:set_velocity(0,0)
-      self:steering_separate(8, {Troop})
+      self:steering_separate(16, {Troop})
     end
   else
     self:set_velocity(0,0)
@@ -2979,11 +2985,10 @@ function Troop:set_character()
   self.aggro_sensor = Circle(self.x, self.y, math.max(1000, 60))
 end
 
-function Troop:hit(damage, from_undead)
+function Troop:hit(damage, from)
   if self.bubbled then return end
   if self.dead then return end
   if self.magician_invulnerable then return end
-  if self.undead and not from_undead then return end
 
   --scale hit effect to damage
   --no damage won't grow model, up to max effect at 0.5x max hp
@@ -3004,6 +3009,11 @@ function Troop:hit(damage, from_undead)
   end
 
   local actual_damage = math.max(self:calculate_damage(damage), 0)
+  --damage dealt callback
+  if from ~= nil then
+    from:onDamageDealt(actual_damage)
+  end
+
   self.hp = self.hp - actual_damage
 
   camera:shake(2, 0.5)
@@ -3594,9 +3604,15 @@ function Critter:attack()
 end
 
 
-function Critter:hit(damage)
+function Critter:hit(damage, from)
   if self.dead or self.invulnerable then return end
   self.hfx:use('hit', 0.25, 200, 10)
+
+  --damage dealt callback
+  if from ~= nil then
+    from:onDamageDealt(damage)
+  end
+
   self.hp = self.hp - damage
   self:show_hp()
   if self.hp <= 0 then self:die() end

@@ -4,8 +4,9 @@ turn game into rts :o
 BUGS:
 --------------
 
+ghost units stack ontop of each other
+
 combat:
-new spells still aim/cast when dead
 rally doesn't work while shooting/about to shoot
 
 shouldn't be able to push bosses with units
@@ -13,7 +14,6 @@ should be able to hit enemies without needing to hit the exact center (mainly pr
 necromancers (+healers?) all target same corpse/unit
 
 items:
-items don't display properly in death screen (your build)
 items too big coming from shop
 saving/enter arena with item on cursor?
 
@@ -103,18 +103,18 @@ items:
 
 
   damage:
-    f̶l̶a̶t̶ ̶d̶m̶g̶ ̶
-    %dmg
-    %aspd
+    flat dmg 
+    %̶d̶m̶g̶
+    %̶a̶s̶p̶d̶
   
   survival:
-    vamp
+    v̶a̶m̶p̶
     shield
     a̶r̶m̶o̶r̶/̶h̶p̶
 
   utility:
     m̶o̶v̶e̶ ̶s̶p̶e̶e̶d̶
-    ghost through units
+̶ ̶ ̶ ̶ ̶g̶h̶o̶s̶t̶ ̶t̶h̶r̶o̶u̶g̶h̶ ̶u̶n̶i̶t̶s̶
     basher
     slow/freeze
     aura
