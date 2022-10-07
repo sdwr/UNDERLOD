@@ -2672,9 +2672,11 @@ end
 function Troop:draw()
   --graphics.circle(self.x, self.y, self.attack_sensor.rs, orange[0], 1)
   graphics.push(self.x, self.y, self.r, self.hfx.hit.x, self.hfx.hit.x)
-  for i , buff in ipairs(self.buffs) do
+  local i = 1
+  for _ , buff in pairs(self.buffs) do
     if buff.color then
       graphics.circle(self.x, self.y, ((self.shape.w * 0.66) / 2) + (i), buff.color, 1)
+      i = i + 1
     end
   end
   graphics.rectangle(self.x, self.y, self.shape.w*.66, self.shape.h*.66, 3, 3, self.hfx.hit.f and fg[0] or self.color)
@@ -2760,7 +2762,13 @@ end
 
 function Troop:onDeath()
   Corpse{group = main.current.main, x = self.x, y = self.y}
-  
+  if self.enrage_on_death then
+    local allies = self:get_objects_in_shape(Circle(self.x, self.y, 100), {Troop})
+    for i, troop in ipairs(allies) do
+      local enrage = {name = 'enrage', duration = 5, color = red[0], stats = {mvspd = 0.2, aspd = 0.3}}
+      troop:add_buff(enrage)
+    end
+  end
   self.state_change_functions['death']()
   self.death_function()
 end

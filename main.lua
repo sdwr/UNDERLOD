@@ -1111,6 +1111,7 @@ function init()
     ['frostorb'] = freezing_field,
     ['spikedcollar'] = exploder_elite,
     ['basher'] = forcer_elite,
+    ['berserkerbelt'] = awakening,
 
   }
 
@@ -1144,6 +1145,7 @@ function init()
     ['frostorb'] = 6,
     ['spikedcollar'] = 6,
     ['basher'] = 6,
+    ['berserkerbelt'] = 6,
   }
 
   item_stat_multipliers = {
@@ -1176,6 +1178,7 @@ function init()
     ['frostorb'] = {slow = 0.2, aspd = 0.2},
     ['spikedcollar'] = {thorns = 0.1, hp = 0.2},
     ['basher'] = {bash = 0.2, dmg = 0.25},
+    ['berserkerbelt'] = {enrage = 1},
 
   }
 
@@ -1190,7 +1193,8 @@ function init()
     ['ghost'] = 'move through units',
     ['slow'] = 'movement slow on attack',
     ['thorns'] = 'return damage to attacker',
-    ['bash'] = 'chance to stun'
+    ['bash'] = 'chance to stun',
+    ['enrage'] = 'enrage allies on death',
   }
 
   build_item_text = function(item)
@@ -1237,6 +1241,7 @@ function init()
     ['frostorb'] = "Frost orb",
     ['spikedcollar'] = "Spiked collar",
     ['basher'] = "Basher",
+    ['berserkerbelt'] = "Berserker belt",
   }
 
   tier_to_items = {
@@ -1244,7 +1249,7 @@ function init()
            'smallbomb'},
     [2] = {'medsword', 'medboots', 'medbow', 'medvest', 'medshield',
            'medbomb', 'vampirism', 'ghostboots', 'frostorb', 'spikedcollar',
-           'basher', },
+           'basher', 'berserkerbelt'},
     [3] = {'largesword', 'largeboots', 'largebow', 'largevest', 'largeshield',
            'largebomb'},
     [4] = {'largesword'},

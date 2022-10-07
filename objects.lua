@@ -370,6 +370,9 @@ function Unit:calculate_stats(first_run)
     self:add_buff(bashCooldown)
   end
 
+  self.enrage_on_death = 0
+
+
   if self.buffs and #self.buffs > 0 then
     for k,v in self.buffs do
       local buff = v
@@ -428,6 +431,8 @@ function Unit:calculate_stats(first_run)
             self.thorns = self.thorns + amt
           elseif stat == buff_types['bash'] then
             self.bash_chance = self.bash_chance + amt
+          elseif stat == buff_types['enrage'] then
+            self.enrage_on_death = self.enrage_on_death + amt
           end
         end
       end
