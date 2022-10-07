@@ -167,8 +167,3 @@ function Enemy:push(f, r, push_invulnerable)
     self:set_damping(1.5*(1/n))
     self:set_angular_damping(1.5*(1/n))
 end
-
-function Enemy:slow(amount, duration)
-  self.slowed = math.max(amount, self.slowed or 0)
-  self.t:after(duration, function() self.slowed = 0 end, 'slow')
-end

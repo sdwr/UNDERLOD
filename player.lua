@@ -971,20 +971,7 @@ function Projectile:on_trigger_enter(other, contact)
         local object = self:get_random_object_in_shape(Circle(self.x, self.y, 48), main.current.enemies, self.chain_enemies_hit)
         if object then
           self.r = self:angle_to_object(object)
-          if self.character == 'lich' then
-            self.v = self.v*1.1
-            if self.level == 3 then
-              object:slow(0.2, 2)
-            end
-          else
-            self.v = self.v*1.25
-          end
-          if self.level == 3 and self.character == 'scout' then
-            self.dmg = self.dmg*1.25
-          end
-          if self.parent.ultimatum then
-            self.dmg = self.dmg*((self.parent.ultimatum == 1 and 1.1) or (self.parent.ultimatum == 2 and 1.2) or (self.parent.ultimatum == 3 and 1.3))
-          end
+          self.v = self.v*1.25
         end
       end
       HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 6, color = fg[0], duration = 0.1}
@@ -1843,7 +1830,7 @@ function Stomp:stomp()
   if #targets > 0 then self.spring:pull(0.05, 200, 10) end
   for _, target in ipairs(targets) do
     target:hit(self.dmg, self.unit)
-    target:slow(0.8, 1)
+    target:slow(0.3, 1)
     HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
     for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
     for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
@@ -2716,12 +2703,6 @@ function Troop:draw_cooldown_timer()
   end
 
 end
-
-function Troop:slow(amount, duration)
-  self.slowed = math.max(amount, self.slowed or 0)
-  self.t:after(duration, function() self.slowed = 0 end, 'slow')
-end
-
 
 function Troop:shoot(r, mods)
   mods = mods or {}
@@ -3613,12 +3594,6 @@ function Critter:hit(damage, from)
   self:show_hp()
   if self.hp <= 0 then self:die() end
 end
-
-function Critter:slow(amount, duration)
-  self.slowed = math.max(amount, self.slowed or 0)
-  self.t:after(duration, function() self.slowed = 0 end, 'slow')
-end
-
 
 function Critter:push(f, r)
   self.push_force = f

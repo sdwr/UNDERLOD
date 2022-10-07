@@ -357,7 +357,7 @@ function Unit:calculate_stats(first_run)
   end
 
   self.vamp = 0
-  self.slows = 0
+  self.mvspd_slow = 0
   self.thorns = 0
   --self.ghost
   --self.canBash
@@ -425,7 +425,7 @@ function Unit:calculate_stats(first_run)
           elseif stat == buff_types['ghost'] then
             self.ghost = true
           elseif stat == buff_types['slow'] then
-            self.slows = self.slows + amt
+            self.mvspd_slow = self.mvspd_slow + amt
           elseif stat == buff_types['thorns'] then
             self.thorns = self.thorns + amt
           elseif stat == buff_types['bash'] then
@@ -477,8 +477,8 @@ function Unit:onHitCallbacks(dmg, from)
   if from ~= nil then
     from:onDamageDealt(dmg)
     from:tryBash(self)
-    if from.slows ~=nil and from.slows > 0 then
-      self:slow(from.slows, 2)
+    if from.mvspd_slow ~=nil and from.mvspd_slow > 0 then
+      self:slow(from.mvspd_slow, 2)
     end
     if self.thorns ~= nil and self.thorns > 0 then
       --don't pass self in to prevent endless loop
@@ -499,6 +499,11 @@ function Unit:bash(enemy)
   enemy:add_buff(stunBuff)
   local bashCooldown = {name = 'bash_cd', duration = self.bash_cd}
   self:add_buff(bashCooldown)
+end
+
+function Unit:slow(amount, duration)
+  local slowBuff = {name = 'slowed', color = blue[2], duration = duration, stats = {mvspd = -1 * amount}}
+  self:add_buff(slowBuff)
 end
 
 function Unit:onDamageDealt(dmg)

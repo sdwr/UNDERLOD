@@ -80,13 +80,6 @@ function EnemyCritter:hit(damage, from)
   if self.hp <= 0 then self:die() end
 end
 
-function EnemyCritter:slow(amount, duration)
-    self.slowed = math.max(amount, self.slowed or 0)
-    self.t:after(duration, function() self.slowed = 0 end, 'slow')
-end
-
-
-
 function EnemyCritter:push(f, r)
   self.push_force = f
   self.being_pushed = true

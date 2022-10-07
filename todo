@@ -6,7 +6,7 @@ BUGS:
 
 ghost units stack ontop of each other
 critters arent affected by slow
-no animation for slow (bring color down a few saturation pegs?)
+buffs with same name don't stack properly (first amt gets duration refreshed)
 
 combat:
 rally doesn't work while shooting/about to shoot
