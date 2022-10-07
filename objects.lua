@@ -373,11 +373,10 @@ function Unit:calculate_stats(first_run)
   self.enrage_on_death = 0
 
 
-  if self.buffs and #self.buffs > 0 then
-    for k,v in self.buffs do
-      local buff = v
+  if self.buffs then
+    for k, buff in pairs(self.buffs) do
       if buff.stats then
-        for stat, amt in buff.stats do
+        for stat, amt in pairs(buff.stats) do
           if stat == buff_types['dmg'] then
             self.buff_dmg_m = self.buff_dmg_m + amt
           elseif stat == buff_types['def'] then

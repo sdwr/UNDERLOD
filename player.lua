@@ -2765,7 +2765,7 @@ function Troop:onDeath()
   if self.enrage_on_death then
     local allies = self:get_objects_in_shape(Circle(self.x, self.y, 100), {Troop})
     for i, troop in ipairs(allies) do
-      local enrage = {name = 'enrage', duration = 5, color = red[0], stats = {mvspd = 0.2, aspd = 0.3}}
+      local enrage = {name = 'enrage', duration = 5, color = red[0], stats = {mvspd = 0.2, aspd = 0.4}}
       troop:add_buff(enrage)
     end
   end
