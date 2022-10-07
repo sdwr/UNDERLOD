@@ -166,7 +166,7 @@ function BuyScreen:on_enter(from, level, loop, units, max_units, passives, shop_
       slow_amount = 1
       music_slow_amount = 1
       run_time = 0
-      gold = 3
+      gold = 10
       passives = {}
       main_song_instance:stop()
       run_passive_pool = {
@@ -321,7 +321,7 @@ function BuyScreen:buy(character, i)
       end
       self.t:after(2, function() self.info_text:deactivate(); self.info_text.dead = true; self.info_text = nil end, 'info_text')
     else
-      gold = gold - character_tiers[character]
+      gold = gold - tier_to_cost[character_tiers[character]]
       self.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
       for _, unit in ipairs(self.units) do
         if unit.character == character then
@@ -362,7 +362,7 @@ function BuyScreen:buy(character, i)
       self.t:after(2, function() self.info_text:deactivate(); self.info_text.dead = true; self.info_text = nil end, 'info_text')
     else
       if gold >= character_tiers[character] then
-        gold = gold - character_tiers[character]
+        gold = gold - tier_to_cost[character_tiers[character]]
         self.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
         table.insert(self.units, {character = character, level = 1, reserve = {0, 0}, items = {nil, nil, nil}})
         bought = true
@@ -659,7 +659,7 @@ function RestartButton:update(dt)
       slow_amount = 1
       music_slow_amount = 1
       run_time = 0
-      gold = 3
+      gold = 10
       passives = {}
       main_song_instance:stop()
       run_passive_pool = {
@@ -2002,7 +2002,7 @@ function ShopCard:init(args)
   local x = self.x
   table.insert(self.type_icons, TypeIcon{group = main.current.effects, x = x + (0-1)*20, y = self.y + 6, type = type, character = self.unit, units = self.parent.units, parent = self})
 
-  self.cost = character_tiers[self.unit]
+  self.cost = tier_to_cost[character_tiers[self.unit]]
   self.spring:pull(0.2, 200, 10)
   self:refresh()
 end

@@ -1352,6 +1352,13 @@ function init()
     ['thief'] = 4,
   }
 
+  tier_to_cost = {
+    [1] = 10,
+    [2] = 20,
+    [3] = 30,
+    [4] = 40,
+  }
+
   local ts = function(lvl, a, b, c) return '[' .. ylb1(lvl) .. ']' .. tostring(a) .. '[light_bg]/[' .. ylb2(lvl) .. ']' .. tostring(b) .. '[light_bg]/[' .. ylb3(lvl) .. ']' .. tostring(c) .. '[fg]' end
   passive_descriptions_level = {
     ['centipede'] = function(lvl) return ts(lvl, '+10%', '20%', '30%') .. ' movement speed' end,
@@ -1475,10 +1482,10 @@ function init()
   }
 
   level_to_gold_gained = {
-    [1] = {3, 3},
-    [2] = {3, 3},
-    [3] = {5, 6},
-    [4] = {4, 5},
+    [1] = {5, 5},
+    [2] = {5, 5},
+    [3] = {6, 7},
+    [4] = {5, 5},
     [5] = {5, 8},
     [6] = {8, 10},
     [7] = {8, 10}, 
@@ -1895,7 +1902,7 @@ function open_options(self)
           slow_amount = 1
           music_slow_amount = 1
           run_time = 0
-          gold = 3
+          gold = 10
           passives = {}
           main_song_instance:stop()
           run_passive_pool = {

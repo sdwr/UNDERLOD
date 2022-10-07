@@ -199,7 +199,7 @@ function Arena:update(dt)
         slow_amount = 1
         music_slow_amount = 1
         run_time = 0
-        gold = 3
+        gold = 10
         passives = {}
         main_song_instance:stop()
         run_passive_pool = {
@@ -573,7 +573,7 @@ function Arena:die()
           slow_amount = 1
           music_slow_amount = 1
           run_time = 0
-          gold = 3
+          gold = 10
           passives = {}
           main_song_instance:stop()
           run_passive_pool = {
