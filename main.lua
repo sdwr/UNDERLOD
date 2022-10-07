@@ -1108,6 +1108,7 @@ function init()
 
     ['vampirism'] = hextouch,
     ['ghostboots'] = temporal_chains,
+    ['frostorb'] = freezing_field,
   }
 
   item_costs = {
@@ -1136,7 +1137,8 @@ function init()
     ['largebomb'] = 10,
 
     ['vampirism'] = 6,
-    ['ghostboots'] = 6
+    ['ghostboots'] = 6,
+    ['frostorb'] = 6,
   }
 
   item_stat_multipliers = {
@@ -1165,7 +1167,8 @@ function init()
     ['largebomb'] = {area_size = 0.4},
 
     ['vampirism'] = {vamp = 0.1},
-    ['ghostboots'] = {mvspd = 0.1, ghost = 1}
+    ['ghostboots'] = {mvspd = 0.1, ghost = 1},
+    ['frostorb'] = {slow = 0.2, aspd = 0.2}
 
   }
 
@@ -1178,6 +1181,7 @@ function init()
     ['area_size'] = 'area size',
     ['vamp'] = 'vampirism',
     ['ghost'] = 'move through units',
+    ['slow'] = 'movement slow on attack'
   }
 
   build_item_text = function(item)
@@ -1221,13 +1225,14 @@ function init()
 
     ['vampirism'] = 'Vampire cloak',
     ['ghostboots'] = "Ghost boots",
+    ['frostorb'] = "Frost orb",
   }
 
   tier_to_items = {
     [1] = {'smallsword', 'smallboots', 'smallbow', 'smallvest', 'smallshield',
            'smallbomb'},
     [2] = {'medsword', 'medboots', 'medbow', 'medvest', 'medshield',
-           'medbomb', 'vampirism', 'ghostboots'},
+           'medbomb', 'vampirism', 'ghostboots', 'frostorb'},
     [3] = {'largesword', 'largeboots', 'largebow', 'largevest', 'largeshield',
            'largebomb'},
     [4] = {'largesword'},
@@ -1295,6 +1300,7 @@ function init()
 
     ['vamp'] = 'vamp',
     ['ghost'] = 'ghost',
+    ['slow'] = 'slow',
   }
 
   non_attacking_characters = {'cleric', 'stormweaver', 'squire', 'chronomancer', 'sage', 'psykeeper', 'bane', 'carver', 'fairy', 'priest', 'paladin', 'necromancer', 'bard', 'druid', 'flagellant', 'merchant', 'miner'}

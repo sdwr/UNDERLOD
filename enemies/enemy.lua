@@ -29,13 +29,6 @@ end
 
 function Enemy:update(dt)
     self:update_game_object(dt)
-
-
-    if self.slowed then self.slow_mvspd_m = self.slowed
-    else self.slow_mvspd_m = 1 end
-  
-    self.buff_mvspd_m = (self.speed_boosting_mvspd_m or 1)*(self.slow_mvspd_m or 1)*(self.temporal_chains_mvspd_m or 1)*(self.tank and 0.35 or 1)*(self.deceleration_mvspd_m or 1)
-    self.buff_def_m = (self.seeping_def_m or 1)
   
     self:calculate_stats()
   
@@ -121,10 +114,9 @@ function Enemy:hit(damage, from)
     self:show_hp()
   
     local actual_damage = math.max(self:calculate_damage(damage)*(self.stun_dmg_m or 1), 0)
-    --damage dealt callback
-    if from ~= nil then
-      from:onDamageDealt(actual_damage)
-    end
+
+    --callbacks
+    self:onHitCallbacks(actual_damage, from)
 
     self.hp = self.hp - actual_damage
     if self.hp > self.max_hp then self.hp = self.max_hp end
@@ -177,6 +169,6 @@ function Enemy:push(f, r, push_invulnerable)
 end
 
 function Enemy:slow(amount, duration)
-  self.slowed = amount
-  self.t:after(duration, function() self.slowed = false end, 'slow')
+  self.slowed = math.max(amount, self.slowed or 0)
+  self.t:after(duration, function() self.slowed = 0 end, 'slow')
 end

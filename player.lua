@@ -2551,11 +2551,7 @@ end
 function Troop:update(dt)
   self:update_game_object(dt)
   self:update_buffs(dt)
-  if self.slowed then 
-    self.buff_mvspd_m = self.slowed
-  else
-    self.buff_mvspd_m = 1 
-  end
+
   self:calculate_stats()
 
 
@@ -2720,8 +2716,8 @@ function Troop:draw_cooldown_timer()
 end
 
 function Troop:slow(amount, duration)
-  self.slowed = amount
-  self.t:after(duration, function() self.slowed = false end, 'slow')
+  self.slowed = math.max(amount, self.slowed or 0)
+  self.t:after(duration, function() self.slowed = 0 end, 'slow')
 end
 
 
@@ -3009,10 +3005,8 @@ function Troop:hit(damage, from)
   end
 
   local actual_damage = math.max(self:calculate_damage(damage), 0)
-  --damage dealt callback
-  if from ~= nil then
-    from:onDamageDealt(actual_damage)
-  end
+  --callbacks
+  self:onHitCallbacks(actuaL_damage, from)
 
   self.hp = self.hp - actual_damage
 
@@ -3557,10 +3551,6 @@ end
 function Critter:update(dt)
   self:update_game_object(dt)
 
-  if self.slowed then
-    self.slow_mvspd_m = self.slowed
-  end
-
   if self.being_pushed then
     local v = math.length(self:get_velocity())
     if v < 50 then
@@ -3609,9 +3599,7 @@ function Critter:hit(damage, from)
   self.hfx:use('hit', 0.25, 200, 10)
 
   --damage dealt callback
-  if from ~= nil then
-    from:onDamageDealt(damage)
-  end
+  self:onHitCallbacks(damage, from)
 
   self.hp = self.hp - damage
   self:show_hp()
@@ -3619,8 +3607,8 @@ function Critter:hit(damage, from)
 end
 
 function Critter:slow(amount, duration)
-  self.slowed = amount
-  self.t:after(duration, function() self.slowed = false end, 'slow')
+  self.slowed = math.max(amount, self.slowed or 0)
+  self.t:after(duration, function() self.slowed = 0 end, 'slow')
 end
 
 

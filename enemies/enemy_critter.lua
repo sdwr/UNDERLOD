@@ -27,10 +27,6 @@ end
 function EnemyCritter:update(dt)
   self:update_game_object(dt)
 
-  if self.slowed then
-    self.slow_mvspd_m = self.slowed
-  end
-
   if self.being_pushed then
     local v = math.length(self:get_velocity())
     if v < 50 then
@@ -77,10 +73,7 @@ function EnemyCritter:hit(damage, from)
   if self.dead or self.invulnerable then return end
   self.hfx:use('hit', 0.25, 200, 10)
 
-  --damage dealt callback
-  if from ~= nil then
-    from:onDamageDealt(damage)
-  end
+  self:onHitCallbacks(damage, from)
 
   self.hp = self.hp - damage
   self:show_hp()
@@ -88,8 +81,8 @@ function EnemyCritter:hit(damage, from)
 end
 
 function EnemyCritter:slow(amount, duration)
-  self.slowed = amount
-  self.t:after(duration, function() self.slowed = false end, 'slow')
+    self.slowed = math.max(amount, self.slowed or 0)
+    self.t:after(duration, function() self.slowed = 0 end, 'slow')
 end
 
 

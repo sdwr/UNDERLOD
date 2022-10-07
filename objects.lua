@@ -340,9 +340,11 @@ function Unit:calculate_stats(first_run)
   self.buff_area_size_m = 1
   self.buff_def_m = 1
   self.buff_mvspd_m = 1
+  self.slow_mvspd_m = 1
 
   self.vamp = 0
   self.ghost = false
+  self.slows = 0
 
   if self.buffs and #self.buffs > 0 then
     for k,v in self.buffs do
@@ -392,6 +394,8 @@ function Unit:calculate_stats(first_run)
             self.vamp = self.vamp + amt
           elseif stat == buff_types['ghost'] then
             self.ghost = true
+          elseif stat == buff_types['slow'] then
+            self.slows = self.slows + amt
           end
         end
       end
@@ -424,9 +428,22 @@ function Unit:calculate_stats(first_run)
   self.class_def_m = self.class_def_m*class_stat_multipliers[self.class].def
   self.def = (self.base_def + self.class_def_a + self.buff_def_a)*self.class_def_m*self.buff_def_m
 
+  
+  if self.slowed then self.slow_mvspd_m = math.max(1 - self.slowed, 0.2)
+  else self.slow_mvspd_m = 1 end
+
   self.class_mvspd_m = self.class_mvspd_m*class_stat_multipliers[self.class].mvspd
-  self.max_v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m
-  self.v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m
+  self.max_v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m
+  self.v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m
+end
+
+function Unit:onHitCallbacks(dmg, from)
+  if from ~= nil then
+    from:onDamageDealt(dmg)
+    if from.slows ~=nil and from.slows > 0 then
+      self:slow(from.slows, 2)
+    end
+  end
 end
 
 function Unit:onDamageDealt(dmg)

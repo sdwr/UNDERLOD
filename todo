@@ -5,6 +5,8 @@ BUGS:
 --------------
 
 ghost units stack ontop of each other
+critters arent affected by slow
+no animation for slow (bring color down a few saturation pegs?)
 
 combat:
 rally doesn't work while shooting/about to shoot
@@ -116,7 +118,7 @@ items:
     m̶o̶v̶e̶ ̶s̶p̶e̶e̶d̶
 ̶ ̶ ̶ ̶ ̶g̶h̶o̶s̶t̶ ̶t̶h̶r̶o̶u̶g̶h̶ ̶u̶n̶i̶t̶s̶
     basher
-    slow/freeze
+    s̶l̶o̶w̶/̶f̶r̶e̶e̶z̶e̶
     aura
 
   special:
