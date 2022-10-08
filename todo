@@ -4,6 +4,7 @@ turn game into rts :o
 BUGS:
 --------------
 
+safety dance doesn't damage every time
 ghost units stack ontop of each other
 critters arent affected by slow
 buffs with same name don't stack properly (first amt gets duration refreshed)
@@ -47,9 +48,21 @@ think about build variety:
   aoe vs single target
   summoner
 
+also, what enemies require different builds?
+  non-piercing projectiles need tanks in front or shields
+  backline summoners/casters need sneaky assassin or sniper with targeting
+  spam/lots of enemies need AoE
+
+balance to facilitate:
+  give melee more hp/def
+  aoe should do less single-target dps
+
+
 make table of enemy hp vs unit damage 
 don't go blind into balancing
 make sure later waves have enough threats to be able to cast a few spells (can't kill every enemy at start)
+
+different enemy sizes
 
 how to make fun? 
 what does SNKRX do:
@@ -72,7 +85,10 @@ what does SNKRX do:
     chain attacks
     homing missile
 
-  lots of player attacks happening in rhythms, enemy attacks are "burstier"
+  lots of player attacks happening in rhythms, enemy attacks are "burstier" (watch for a while, react suddenly to bomb/charge etc)
+
+  UNDERLOD is too chaotic, with 3/4 mortars you have to dodge too much
+
 
   buy screen:
     always something to look for (matching sets)
@@ -101,8 +117,12 @@ tooling:
   mac/web build?!?!
   debug mode
     f̶p̶s̶ ̶c̶o̶u̶n̶t̶e̶r̶
+    fps longest frames
 ̶ ̶ ̶ ̶ ̶g̶o̶ ̶t̶o̶ ̶l̶e̶v̶e̶l̶ ̶f̶r̶o̶m̶ ̶b̶u̶y̶ ̶s̶c̶r̶e̶e̶n̶
 ̶ ̶ ̶ ̶ ̶f̶r̶e̶e̶ ̶g̶o̶l̶d̶
+profiler
+  live profile? separate window?
+  hot functions/files
 
 items:
  ̶ ̶c̶o̶s̶t̶ ̶1̶/̶3̶/̶5̶ ̶o̶r̶ ̶2̶/̶5̶/̶1̶0̶
@@ -113,6 +133,11 @@ items:
 
   think about taking out character rolling, move to popup card on certain levels
   how will items combo? need to have value, can't be too degenerate (stack dmg on sniper)
+
+  legendary items (T3, T4)
+  most of the randomness will be coming from items now, need flashy and strong items for the endgame
+
+  think about unlocking items/classes per run, replayability
 
 
   damage:
@@ -163,26 +188,18 @@ enemies
   add bosses
   ogre boss, big aoe stomp
   snake boss, burrows into ground / charges?
+  heigan, safety dance
 
 
   - change spawn logic
     * fixed by level?
     * all at once or over time?
 
-items
-
-
-
 allies
-  - archer feels weird
-  - cannon kinda op?
-  - blizzard wizard
-    *̶ ̶m̶a̶k̶e̶ ̶a̶r̶e̶a̶ ̶d̶i̶s̶a̶p̶p̶e̶a̶r̶ ̶a̶f̶t̶e̶r̶ ̶t̶i̶m̶e̶
-    * make damage not stack
-      - turn into debuff on enemy instead of damage from area?
-  - c̶h̶a̶i̶n̶ ̶l̶i̶g̶h̶t̶n̶i̶n̶g̶
 
   - healers
+  healers should also fight
+    paladin: heal and tank
     * d̶i̶s̶c̶ ̶p̶r̶i̶e̶s̶t̶ ̶(̶s̶h̶i̶e̶l̶d̶)̶
     * rejuv (hot)
     * 
@@ -196,7 +213,8 @@ allies
      * curse explosion (caustic finale)
      * curse dot
 
-  - buff types
+  - b̶u̶f̶f̶ ̶t̶y̶p̶e̶s̶
+  buffs moved to items
     * aspd aura
     * double spell
     * ̶b̶u̶b̶b̶l̶e̶ ̶a̶l̶l̶y̶ ̶t̶o̶ ̶p̶r̶e̶v̶e̶n̶t̶ ̶d̶e̶a̶t̶h̶
@@ -216,14 +234,13 @@ allies
 tuning
   - movement
     * m̶e̶l̶e̶e̶ ̶u̶n̶i̶t̶s̶ ̶s̶h̶o̶u̶l̶d̶ ̶s̶t̶o̶p̶ ̶i̶n̶ ̶a̶t̶t̶a̶c̶k̶ ̶r̶a̶n̶g̶e̶,̶ ̶a̶n̶d̶ ̶n̶o̶t̶ ̶p̶u̶s̶h̶ ̶t̶a̶r̶g̶e̶t̶s̶
-    * units shouldn't move towards target when attack is on cooldown
-      - how?
-    * units should only chase when attack is off cooldown, not preemptively
-    * troops move too quickly, makes kiting feel weird
-      * try adding turn time?
+    caster enemies shouldn't chase (bullet-hell/spread, summoners)
+      maybe move randomly or try to escape
+
   - triggers
     * enemies should be able to attack on spawn, instead of waiting full cd
-      - add "cooldown_immediate" type trigger? works like cooldown trigger and also starts immediately?
+      maybe? easily doable with new spell system
+
   - effects
     *̶ ̶c̶r̶e̶a̶t̶e̶ ̶l̶a̶y̶e̶r̶s̶ ̶f̶o̶r̶ ̶s̶p̶e̶l̶l̶ ̶e̶f̶f̶e̶c̶t̶s̶,̶ ̶s̶o̶ ̶d̶a̶n̶g̶e̶r̶ ̶z̶o̶n̶e̶s̶ ̶a̶r̶e̶ ̶a̶l̶w̶a̶y̶s̶ ̶v̶i̶s̶i̶b̶l̶e̶
   - spells
@@ -237,13 +254,6 @@ CODE CLEANUP:
   - unify target selection, attack triggering
     * need proper lambdas? delayed functions cant have params
   
-    
-
-
-
-debugger
-  - find/setup debugger for when game hangs
-
 ui
   - show nice cursor
   - add unit hotbar per class

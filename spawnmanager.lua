@@ -9,7 +9,8 @@ function SpawnGlobals.Init()
   
   local y_corner_offset = 50
 
-  SpawnGlobals.wall_width = 40
+  SpawnGlobals.wall_width = 0.2*gw/2
+  SpawnGlobals.wall_height = 0.2*gh/2
   
   SpawnGlobals.spawn_markers = {
     {x = right_x, y = mid_y},
@@ -53,8 +54,8 @@ end
 function Outside_Arena(location)
   if location.x < SpawnGlobals.wall_width or 
      location.x > gw - SpawnGlobals.wall_width or 
-     location.y < SpawnGlobals.wall_width or
-     location.y > gh - SpawnGlobals.wall_width then
+     location.y < SpawnGlobals.wall_height or
+     location.y > gh - SpawnGlobals.wall_height then
       return true
   else
     return false
