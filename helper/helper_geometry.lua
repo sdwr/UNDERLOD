@@ -195,3 +195,18 @@ function Helper.Geometry.rotate_to(centerx, centery, fromx, fromy, tox, toy, spe
         return tox, toy
     end
 end
+
+function Helper.Geometry.move_point(x, y, angle, amount)
+    local x2 = x + (amount * math.cos(angle))
+    local y2 = y + (amount * math.sin(angle))
+    return x2, y2
+end
+
+function Helper.Geometry.is_off_screen(x, y, angle, radius)
+    local x2, y2 = Helper.Geometry.move_point(x, y, angle, radius)
+    if x2 > gw or x2 < 0 or y2 > gh or y2 < 0 then
+        return true
+    else
+        return false
+    end
+end

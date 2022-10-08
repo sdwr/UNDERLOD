@@ -683,15 +683,18 @@ end
 
 function Arena:gain_gold()
   local merchant
+
+  self.bonus_gold = 0
   for _, unit in ipairs(self.starting_units) do
-    if unit.character == 'merchant' then
-      merchant = true
-      break
+    for _, item in ipairs(unit.items) do
+      if item == 'heartofgold' then
+        self.bonus_gold = self.bonus_gold + 1
+      end
     end
   end
   self.gold_gained = random:int(level_to_gold_gained[self.level][1], level_to_gold_gained[self.level][2])
-  self.interest = math.min(math.floor(gold/5), 5) + math.min((merchant and math.floor(gold/10) or 0), 10)
-  gold = gold + self.gold_gained + self.gold_picked_up + self.interest
+
+  gold = gold + self.gold_gained + self.gold_picked_up + self.bonus_gold
 end
 
 
@@ -723,7 +726,7 @@ function Arena:transition()
       t.text:set_text({
         {text = '[nudge_down, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']gold gained: ' .. tostring(self.gold_gained or 0) .. ' + ' .. tostring(self.gold_picked_up or 0), font = pixul_font, 
           alignment = 'center', height_multiplier = 1.5},
-        {text = '[wavy_lower, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']interest: 0', font = pixul_font, alignment = 'center', height_multiplier = 1.5},
+        {text = '[wavy_lower, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']bonus gold: 0', font = pixul_font, alignment = 'center', height_multiplier = 1.5},
         {text = '[wavy_lower, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']total: 0', font = pixul_font, alignment = 'center'}
       })
       _G[random:table{'coins1', 'coins2', 'coins3'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
@@ -731,7 +734,7 @@ function Arena:transition()
         t.text:set_text({
           {text = '[wavy_lower, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']gold gained: ' .. tostring(self.gold_gained or 0) .. ' + ' .. tostring(self.gold_picked_up or 0), font = pixul_font,
             alignment = 'center', height_multiplier = 1.5},
-          {text = '[nudge_down, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']interest: ' .. tostring(self.interest or 0), font = pixul_font, alignment = 'center', height_multiplier = 1.5},
+          {text = '[nudge_down, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']bonus gold: ' .. tostring(self.bonus_gold or 0), font = pixul_font, alignment = 'center', height_multiplier = 1.5},
           {text = '[wavy_lower, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']total: 0', font = pixul_font, alignment = 'center'}
         })
         _G[random:table{'coins1', 'coins2', 'coins3'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
@@ -739,8 +742,8 @@ function Arena:transition()
           t.text:set_text({
             {text = '[wavy_lower, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']gold gained: ' .. tostring(self.gold_gained or 0) .. ' + ' .. tostring(self.gold_picked_up or 0), font = pixul_font,
               alignment = 'center', height_multiplier = 1.5},
-            {text = '[wavy_lower, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']interest: ' .. tostring(self.interest or 0), font = pixul_font, alignment = 'center', height_multiplier = 1.5},
-            {text = '[nudge_down, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']total: ' .. tostring((self.gold_gained or 0) + (self.interest or 0) + (self.gold_picked_up or 0)), font = pixul_font, alignment = 'center'}
+            {text = '[wavy_lower, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']bonus gold: ' .. tostring(self.bonus_gold or 0), font = pixul_font, alignment = 'center', height_multiplier = 1.5},
+            {text = '[nudge_down, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']total: ' .. tostring((self.gold_gained or 0) + (self.bonus_gold or 0) + (self.gold_picked_up or 0)), font = pixul_font, alignment = 'center'}
           })
           _G[random:table{'coins1', 'coins2', 'coins3'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
         end)
@@ -748,7 +751,7 @@ function Arena:transition()
     end)
   end, text = Text({
     {text = '[wavy_lower, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']gold gained: 0 + 0', font = pixul_font, alignment = 'center', height_multiplier = 1.5},
-    {text = '[wavy_lower, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']interest: 0', font = pixul_font, alignment = 'center', height_multiplier = 1.5},
+    {text = '[wavy_lower, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']bonus gold: 0', font = pixul_font, alignment = 'center', height_multiplier = 1.5},
     {text = '[wavy_lower, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']total: 0', font = pixul_font, alignment = 'center'}
   }, global_text_tags)}
 end

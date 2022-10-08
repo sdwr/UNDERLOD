@@ -1112,6 +1112,7 @@ function init()
     ['spikedcollar'] = exploder_elite,
     ['basher'] = forcer_elite,
     ['berserkerbelt'] = awakening,
+    ['heartofgold'] = star,
 
   }
 
@@ -1146,6 +1147,7 @@ function init()
     ['spikedcollar'] = 6,
     ['basher'] = 6,
     ['berserkerbelt'] = 6,
+    ['heartofgold'] = 6,
   }
 
   item_stat_multipliers = {
@@ -1179,6 +1181,7 @@ function init()
     ['spikedcollar'] = {thorns = 0.1, hp = 0.2},
     ['basher'] = {bash = 0.2, dmg = 0.25},
     ['berserkerbelt'] = {enrage = 1},
+    ['heartofgold'] = {gold = 1, hp = 0.2}
 
   }
 
@@ -1195,6 +1198,7 @@ function init()
     ['thorns'] = 'return damage to attacker',
     ['bash'] = 'chance to stun',
     ['enrage'] = 'enrage allies on death',
+    ['gold'] = 'gold per round',
   }
 
   build_item_text = function(item)
@@ -1204,7 +1208,14 @@ function init()
     local stats = item_stat_multipliers[item]
     if stats then
       for key, val in pairs(stats) do
-        local text = '[fg] ' .. val * 100 .. '% ' .. (item_stat_lookup[key] or '')
+        local text = ''
+        if key == 'gold' then
+          text = '[fg] ' .. val .. ' ' .. (item_stat_lookup[key] or '')
+        elseif key == 'enrage' or key =='ghost' then
+          text = '[fg] ' .. (item_stat_lookup[key] or '')
+        else
+          text = '[fg] ' .. val * 100 .. '% ' .. (item_stat_lookup[key] or '')
+        end
         table.insert(out, {text = text, font = pixul_font, alignment = 'center', height_multiplier = 1.25})
       end
     end
@@ -1242,6 +1253,7 @@ function init()
     ['spikedcollar'] = "Spiked collar",
     ['basher'] = "Basher",
     ['berserkerbelt'] = "Berserker belt",
+    ['heartofgold'] = "Heart of gold",
   }
 
   tier_to_items = {
@@ -1249,7 +1261,7 @@ function init()
            'smallbomb'},
     [2] = {'medsword', 'medboots', 'medbow', 'medvest', 'medshield',
            'medbomb', 'vampirism', 'ghostboots', 'frostorb', 'spikedcollar',
-           'basher', 'berserkerbelt'},
+           'basher', 'berserkerbelt', 'heartofgold'},
     [3] = {'largesword', 'largeboots', 'largebow', 'largevest', 'largeshield',
            'largebomb'},
     [4] = {'largesword'},

@@ -166,7 +166,7 @@ function Manage_Spawns(arena)
           if arena.level < 6 then
             Spawn_Enemies(arena, current_group, {'rager', 'mortar'})
           elseif arena.level < 11 then
-            Spawn_Enemies(arena, current_group, {'mortar', 'stomper', 'spawner'})
+            Spawn_Enemies(arena, current_group, {'mortar', 'stomper', 'spawner', 'arcspread'})
           elseif arena.level < 16 then
             Spawn_Enemies(arena, current_group, {'summoner', 'mortar', 'assassin', 'spawner'})
           end
