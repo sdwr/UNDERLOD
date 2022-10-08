@@ -49,6 +49,7 @@ end
 
 function Helper.Spell.Flame.update()
     Helper.Spell.Flame.update_direction()
+    Helper.Spell.Flame.end_flames()
 end
 
 function Helper.Spell.Flame.damage()
