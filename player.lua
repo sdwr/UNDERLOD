@@ -2792,7 +2792,7 @@ function Troop:set_character()
         Helper.Unit.claim_target(self, Helper.Spell.get_nearest_least_targeted(self, 130))
         Helper.Time.wait(get_random(0, 0.1), function()
           
-          sniper_load:play{volume=0.8}
+          sniper_load:play{volume=0.7}
           Helper.Spell.Laser.create(Helper.Color.blue, 1, false, 20, self)
         end)
       end
@@ -2822,7 +2822,7 @@ function Troop:set_character()
 
 
 
-  elseif self.character == 'archer' then
+  elseif self.character == 'pyro' then
     self.attack_sensor = Circle(self.x, self.y, 60)
     -- self.t:cooldown(attack_speeds['ultra-fast'], self:in_range(), function()
     --   if self.target then

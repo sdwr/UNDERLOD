@@ -123,7 +123,7 @@ function Helper.Spell.Laser.update()
                 Helper.Spell.DamageLine.create(laser.unit, laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.unit.x, laser.unit.y, Helper.Spell.Laser.get_end_location(laser.unit.x, laser.unit.y, laser.unit.claimed_target.x, laser.unit.claimed_target.y))
             end
             table.remove(Helper.Spell.Laser.list, i)
-            shoot1:play{volume=0.9}
+            shoot1:play{volume=0.7}
 
             Helper.Unit.unclaim_target(laser.unit)
             Helper.Unit.finish_casting(laser.unit)
