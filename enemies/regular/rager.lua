@@ -22,7 +22,7 @@ end
 fns['init_enemy'] = function(self)
 
   --create shape
-  self.color = red[0]:clone()
+  self.color = red[5]:clone()
   self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
   
   --set physics 
