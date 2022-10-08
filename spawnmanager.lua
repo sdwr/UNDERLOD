@@ -164,11 +164,11 @@ function Manage_Spawns(arena)
         --make sure time_between_spawns * spawns_in_group < time_between_spawn_groups
         if current_group <= num_rares then
           if arena.level < 6 then
-            Spawn_Enemies(arena, current_group, {'rager', 'mortar'})
+            Spawn_Enemies(arena, current_group, {'rager', 'stomper'})
           elseif arena.level < 11 then
-            Spawn_Enemies(arena, current_group, {'mortar', 'stomper', 'spawner', 'arcspread'})
+            Spawn_Enemies(arena, current_group, {'mortar', 'spawner', 'arcspread'})
           elseif arena.level < 16 then
-            Spawn_Enemies(arena, current_group, {'summoner', 'mortar', 'assassin', 'spawner'})
+            Spawn_Enemies(arena, current_group, {'summoner', 'mortar', 'assassin', 'spawner', 'arcspread'})
           end
           --Spawn_Enemies(arena, current_group, {'summoner', 'spawner'})
           --Spawn_Enemies(arena, current_group, {'mortar', 'laser', 'spread'})
