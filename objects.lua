@@ -263,6 +263,13 @@ function Unit:add_buff(buff)
   end
 end
 
+function Unit:remove_buff(buffName)
+  local existing_buff = self.buffs[buffName]
+  if existing_buff then
+    self.buffs[buffName] = nil
+  end
+end
+
 function Unit:update_buffs(dt)
   for k, v in pairs(self.buffs) do
     if v.name == 'druid_hot' then
@@ -495,10 +502,14 @@ end
 
 function Unit:bash(enemy)
   local duration = math.max(self.bash_duration * (1 - (enemy.status_resist or 0)), 0)
-  local stunBuff = {name = 'stunned', duration = duration}
-  enemy:add_buff(stunBuff)
+  enemy:stun(duration)
   local bashCooldown = {name = 'bash_cd', duration = self.bash_cd}
   self:add_buff(bashCooldown)
+end
+
+function Unit:stun(duration)
+  local stunBuff = {name = 'stunned', color = black[0], duration = duration}
+  self:add_buff(stunBuff)
 end
 
 function Unit:slow(amount, duration)

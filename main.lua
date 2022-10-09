@@ -1202,27 +1202,6 @@ function init()
     ['gold'] = 'gold per round',
   }
 
-  build_item_text = function(item)
-    local out = {}
-    table.insert(out, {text = '[fg]' .. item_text[item] .. ', costs: ' .. item_costs[item], font = pixul_font, alignment = 'center',
-    height_multiplier = 1.25})
-    local stats = item_stat_multipliers[item]
-    if stats then
-      for key, val in pairs(stats) do
-        local text = ''
-        if key == 'gold' then
-          text = '[fg] ' .. val .. ' ' .. (item_stat_lookup[key] or '')
-        elseif key == 'enrage' or key =='ghost' then
-          text = '[fg] ' .. (item_stat_lookup[key] or '')
-        else
-          text = '[fg] ' .. val * 100 .. '% ' .. (item_stat_lookup[key] or '')
-        end
-        table.insert(out, {text = text, font = pixul_font, alignment = 'center', height_multiplier = 1.25})
-      end
-    end
-    return out
-  end
-
   item_text = {
     ['smallsword'] = "A tiny sword",
     ['medsword'] = "A medium sword",
@@ -1267,6 +1246,27 @@ function init()
            'largebomb'},
     [4] = {'largesword'},
   }
+
+  build_item_text = function(item)
+    local out = {}
+    table.insert(out, {text = '[fg]' .. item_text[item] .. ', costs: ' .. item_costs[item], font = pixul_font, alignment = 'center',
+    height_multiplier = 1.25})
+    local stats = item_stat_multipliers[item]
+    if stats then
+      for key, val in pairs(stats) do
+        local text = ''
+        if key == 'gold' then
+          text = '[fg] ' .. val .. ' ' .. (item_stat_lookup[key] or '')
+        elseif key == 'enrage' or key =='ghost' then
+          text = '[fg] ' .. (item_stat_lookup[key] or '')
+        else
+          text = '[fg] ' .. val * 100 .. '% ' .. (item_stat_lookup[key] or '')
+        end
+        table.insert(out, {text = text, font = pixul_font, alignment = 'center', height_multiplier = 1.25})
+      end
+    end
+    return out
+  end
   
   item_to_color = function(item)
     local cost = item_costs[item]
