@@ -137,10 +137,40 @@ function Helper.Graphics.draw_dashed_line(color, line_width, dash_length, dash_m
 end
 
 function Helper.Graphics.draw_dashed_rectangle(color, line_width, dash_length, dash_margin, dash_offset_percentage, x1, y1, x2, y2)
-    Helper.Graphics.draw_dashed_line(color, line_width, dash_length, dash_margin, dash_offset_percentage, x1, y1, x2, y1)
-    Helper.Graphics.draw_dashed_line(color, line_width, dash_length, dash_margin, dash_offset_percentage, x2, y1, x2, y2)
-    Helper.Graphics.draw_dashed_line(color, line_width, dash_length, dash_margin, dash_offset_percentage, x2, y2, x1, y2)
-    Helper.Graphics.draw_dashed_line(color, line_width, dash_length, dash_margin, dash_offset_percentage, x1, y2, x1, y1)
+    if math.abs(x2 - x1) > dash_length + dash_margin then
+        Helper.Graphics.draw_dashed_line(Helper.Color.set_transparency(color, 0.3), line_width, dash_length, dash_margin, dash_offset_percentage, x1, y1, x2, y1)
+        Helper.Graphics.draw_dashed_line(Helper.Color.set_transparency(color, 0.3), line_width, dash_length, dash_margin, dash_offset_percentage, x2, y2, x1, y2)
+    end
+    if math.abs(y2 - y1) > dash_length + dash_margin then
+        Helper.Graphics.draw_dashed_line(Helper.Color.set_transparency(color, 0.3), line_width, dash_length, dash_margin, dash_offset_percentage, x2, y1, x2, y2)
+        Helper.Graphics.draw_dashed_line(Helper.Color.set_transparency(color, 0.3), line_width, dash_length, dash_margin, dash_offset_percentage, x1, y2, x1, y1)
+    end
+        love.graphics.setColor(color.r, color.g, color.b, 1)
+    love.graphics.setLineWidth(line_width)
+    if x1 > x2 then
+        local x3 = x1
+        x1 = x2
+        x2 = x3
+    end
+    if y1 > y2 then
+        local y3 = y1
+        y1 = y2
+        y2 = y3
+    end
+    local corner_lengthx = dash_length > x2 - x1 and x2 - x1 or dash_length
+    local corner_lengthy = dash_length > y2 - y1 and y2 - y1 or dash_length
+    local cornerx1 = x1 - line_width / 2
+    local cornery1 = y1 - line_width / 2
+    local cornerx2 = x2 + line_width / 2
+    local cornery2 = y2 + line_width / 2
+    love.graphics.line(cornerx1, y1, cornerx1 + corner_lengthx, y1)
+    love.graphics.line(x1, cornery1, x1, cornery1 + corner_lengthy)
+    love.graphics.line(cornerx2, y1, cornerx2 - corner_lengthx, y1)
+    love.graphics.line(x2, cornery1, x2, cornery1 + corner_lengthy)
+    love.graphics.line(cornerx2, y2, cornerx2 - corner_lengthx, y2)
+    love.graphics.line(x2, cornery2, x2, cornery2 - corner_lengthy)
+    love.graphics.line(cornerx1, y2, cornerx1 + corner_lengthx, y2)
+    love.graphics.line(x1, cornery2, x1, cornery2 - corner_lengthy)
 end
 
 

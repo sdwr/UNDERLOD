@@ -31,7 +31,7 @@ end
 function Helper.Spell.Sweep.draw()
     for i, sweep in ipairs(Helper.Spell.Sweep.list) do
         if Helper.Time.time - sweep.cast_time < Helper.Spell.Sweep.announce_time then
-            Helper.Graphics.draw_dashed_rectangle(Helper.Color.set_transparency(sweep.color, 0.5), 3, 10, 5, Helper.Time.time * 80, sweep.x1, sweep.y1, sweep.x2, sweep.y2)
+            Helper.Graphics.draw_dashed_rectangle(sweep.color, 3, 10, 5, Helper.Time.time * 80, sweep.x1, sweep.y1, sweep.x2, sweep.y2)
         else
             local t = Helper.Time.time - sweep.cast_time
             t = t - Helper.Spell.Sweep.announce_time

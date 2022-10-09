@@ -6,6 +6,11 @@ function Arena:init(name)
   self:init_game_object()
 end
 
+-- function Arena:add_hotbar_button(b)
+--   self.hotbar['team' .. Helper.Unit.number_of_teams] = b
+--   table.insert(self.hotbar_by_index, b)
+-- end
+
 function Arena:select_character(character)
   if main.selectedCharacter then self.hotbar[main.selectedCharacter].unit_selected = false end
   main.selectedCharacter = character
@@ -102,15 +107,21 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
   main.selectedCharacter = nil
   self.hotbar = {}
   self.hotbar_by_index = {}
-  for i, unit in ipairs(units) do
-    local character = unit.character
+
+  local b = HotbarButton{group = self.ui, x = gw/3 + ((1/(#units + 1))*(gw/3)) , y = gh - 20, force_update = true, button_text = 'selection', fg_color = 'white', bg_color = 'bg', action = function() self:select_character('selection') end}
+  self.hotbar['selection'] = b
+  self.hotbar_by_index[1] = b
+  self:select_character('selection')
+
+  for i = 2, #units + 1 do
+    local character = units[i - 1].character
     local type = character_types[character]
-    local b = HotbarButton{group = self.ui, x = gw/3 + ((i/#units)*(gw/3)) , y = gh - 20, force_update = true, button_text = character, fg_color = type_color_strings[type], bg_color = 'bg', action = function() self:select_character(character) end}
+    local b = HotbarButton{group = self.ui, x = gw/3 + ((i/(#units + 1))*(gw/3)) , y = gh - 20, force_update = true, button_text = character, fg_color = type_color_strings[type], bg_color = 'bg', action = function() self:select_character(character) end}
     self.hotbar[character] = b
     self.hotbar_by_index[i] = b
-    if i == 1 then
-      self:select_character(character)
-    end
+    -- if i == 1 then
+    --   self:select_character(character)
+    -- end
   end
 
 

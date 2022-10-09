@@ -1,5 +1,17 @@
 Helper.Unit = {}
 
+Helper.Unit.selection = {
+    x1 = 0,
+    y1 = 0,
+    x2 = 0,
+    y2 = 0
+}
+Helper.Unit.do_draw_selection = false
+Helper.Unit.mouse_just_down = false
+Helper.Unit.right_mouse_just_down = false
+Helper.Unit.new_team_key_just_pressed = false
+Helper.Unit.number_of_teams = 0
+
 function Helper.Unit.get_list(troop_list)
     if troop_list then
         return main.current.main:get_objects_by_class(Troop)
@@ -28,6 +40,7 @@ function Helper.Unit.add_custom_variables_to_unit(unit)
     unit.damage_taken_at = {
         ['sweep'] = -999999
     }
+    unit.selected = false
 
     Helper.Unit.add_default_state_change_functions(unit)
     Helper.Unit.add_default_state_always_run_functions(unit)
@@ -188,5 +201,75 @@ function Helper.Unit.run_state_always_run_functions()
     for i, unit in ipairs(Helper.Unit.get_list(true)) do
         unit.state_always_run_functions[unit.state]()
         unit.state_always_run_functions['always_run']()
+    end
+end
+
+
+
+function Helper.Unit:select()
+    if main.selectedCharacter == 'selection' then
+        if love.mouse.isDown(1) then
+            if not mouse_just_down then
+                self.x1 = Helper.mousex
+                self.y1 = Helper.mousey
+                self.do_draw_selection = true
+            end
+
+            self.x2 = Helper.mousex
+            self.y2 = Helper.mousey
+            
+            for i, unit in ipairs(self.get_list(true)) do
+                if Helper.Geometry.is_inside_rectangle(unit.x, unit.y, self.x1, self.y1, self.x2, self.y2) then
+                    unit.selected = true
+                else
+                    unit.selected = false
+                end
+            end
+
+            mouse_just_down = true
+        else
+            if mouse_just_down then
+                self.do_draw_selection = false
+            end
+            mouse_just_down = false
+
+            if love.mouse.isDown(2) then
+                if not self.right_mouse_just_down then
+                    for i, unit in ipairs(self.get_list(true)) do
+                        if unit.selected then
+                            unit.target_pos = {x = Helper.mousex, y = Helper.mousey}
+                            unit.state = unit_states['rallying']
+                        end
+                    end
+                end
+                self.right_mouse_just_down = true
+            else
+                self.right_mouse_just_down = false
+            end
+        end
+    end
+
+    -- if love.keyboard.isDown( "t" ) then
+    --     if not self.new_team_key_just_pressed then
+    --         local b = HotbarButton{group = self.ui, x = 50 , y = 50, force_update = true, button_text = 'selection', fg_color = 'white', bg_color = 'bg', action = function() self:select_character('team' .. self.number_of_teams + 1) end}
+    --         Arena:add_hotbar_button(b)
+    --         self.number_of_teams = self.number_of_teams + 1
+    --     end
+    --     self.new_team_key_just_pressed = true
+    -- else
+    --     self.new_team_key_just_pressed = false
+    -- end
+end
+
+function Helper.Unit:draw_selection()
+    if self.do_draw_selection then
+        Helper.Graphics.draw_dashed_rectangle(Helper.Color.white, 2, 8, 4, Helper.Time.time * 80, self.x1, self.y1, self.x2, self.y2)
+    end
+    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.setLineWidth(2)
+    for i, unit in ipairs(self.get_list(true)) do
+        if unit.selected then
+            love.graphics.circle('line', unit.x, unit.y, 5)
+        end
     end
 end
