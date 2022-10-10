@@ -13,7 +13,7 @@ fns['init_enemy'] = function(self)
   --set attacks
     self.t:cooldown(attack_speeds['slow'], function() return true end, function ()
         sniper_load:play{volume=0.9}
-        Helper.Spell.DamageArc.create_spread(self, Helper.Color.blue, true, false, 10, 30, 3, 4, 70, self.x, self.y)
+        Helper.Spell.DamageArc.create_spread(self, Helper.Color.blue, true, false, 10, 30, 3, 4, 50, self.x, self.y)
     end, nil, nil, 'shoot')
 end
 

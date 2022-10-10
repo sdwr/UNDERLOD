@@ -1292,19 +1292,19 @@ function init()
   }
 
   attack_speeds = {
-    ['short-cast'] = 0.15,
-    ['medium-cast'] = 0.25,
-    ['long-cast'] = 0.5,
-    ['ultra-long-cast'] = 0.75,
+    ['short-cast'] = 0.25,
+    ['medium-cast'] = 0.37,
+    ['long-cast'] = 0.66,
+    ['ultra-long-cast'] = 1,
     
-    ['buff'] = 0.5,
-    ['ultra-fast'] = 0.78,
-    ['fast'] = 1,
-    ['medium-fast'] = 1.35,
-    ['medium'] = 1.75,
-    ['medium-slow'] = 2.5,
-    ['slow'] = 3.5,
-    ['ultra-slow'] = 6
+    ['buff'] = 0.66,
+    ['ultra-fast'] = 1,
+    ['fast'] = 1.35,
+    ['medium-fast'] = 1.75,
+    ['medium'] = 2.5,
+    ['medium-slow'] = 3.5,
+    ['slow'] = 5,
+    ['ultra-slow'] = 8
   }
 
   move_speeds = {

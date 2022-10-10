@@ -234,13 +234,13 @@ function Arena:update(dt)
 
   star_group:update(dt*slow_amount)
   self.floor:update(dt*slow_amount)
-  self.main:update(dt*slow_amount*self.main_slow_amount)
+  self.main:update(dt*slow_amount)
   self.post_main:update(dt*slow_amount)
   self.effects:update(dt*slow_amount)
   self.ui:update(dt*slow_amount)
   self.credits:update(dt)
 
-  Helper.update(dt*slow_amount*self.main_slow_amount)
+  Helper.update(dt*slow_amount)
 end
 
 

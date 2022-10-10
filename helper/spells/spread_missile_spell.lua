@@ -1,6 +1,6 @@
 Helper.Spell.SpreadMissile = {}
 Helper.Spell.SpreadMissile.list = {}
-Helper.Spell.SpreadMissile.aims_duration = 2
+Helper.Spell.SpreadMissile.aims_duration = 3
 
 function Helper.Spell.SpreadMissile.create(color, missile_length, damage_troops, damage, unit, explode_radius, show_aims)
     local spread_missile = {

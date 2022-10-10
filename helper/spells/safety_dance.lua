@@ -4,8 +4,8 @@ Helper.Spell.SafetyDance.prelist = {}
 Helper.Spell.SafetyDance.list = {}
 
 Helper.Spell.SafetyDance.index = 1
-Helper.Spell.SafetyDance.chargeTime = 2
-Helper.Spell.SafetyDance.duration = 0.25
+Helper.Spell.SafetyDance.chargeTime = 3
+Helper.Spell.SafetyDance.duration = 0.37
 
 --width in degrees
 function Helper.Spell.SafetyDance.create(unit, color, damage_troops, damage, x, y, w, h)
