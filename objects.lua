@@ -445,6 +445,8 @@ function Unit:calculate_stats(first_run, dt)
             self.enrage_on_death = true
           elseif stat == buff_types['heal'] then
             self:heal_over_time(amt, 9999)
+          elseif stat == buff_types['explode'] then
+            self.canExplode = true
           end
         end
       end
@@ -489,6 +491,7 @@ end
 function Unit:onHitCallbacks(dmg, from)
   if from ~= nil then
     from:onDamageDealt(dmg)
+    from:tryExplode(self)
     from:tryBash(self)
     if from.mvspd_slow ~=nil and from.mvspd_slow > 0 then
       self:slow(from.mvspd_slow, 2)
@@ -498,6 +501,21 @@ function Unit:onHitCallbacks(dmg, from)
       from:hit(dmg * self.thorns)
     end
   end
+end
+
+function Unit:tryExplode(enemy)
+  --means attack killed enemy
+  if enemy.dead and self.canExplode then
+    self:explode(enemy)
+  end
+end
+
+function Unit:explode(enemy)
+  local damage_troops = not self:is(Troop)
+  local radius = enemy.shape.w * self.area_size_m
+  explosion1:play{volume = 0.7}
+  Helper.Spell.DamageCircle.create(self, black[0], damage_troops, enemy.max_hp * 0.2, 
+  radius, enemy.x, enemy.y)
 end
 
 function Unit:tryBash(enemy)

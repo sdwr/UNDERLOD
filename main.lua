@@ -1119,6 +1119,8 @@ function init()
     ['heartofgold'] = star,
     ['healingleaf'] = healer,
 
+    ['corpseexplode'] = seeping,
+
   }
 
   item_costs = {
@@ -1155,6 +1157,8 @@ function init()
     ['heartofgold'] = 6,
     ['healingleaf'] = 6,
 
+    ['corpseexplode'] = 10,
+
   }
 
   item_stat_multipliers = {
@@ -1189,7 +1193,9 @@ function init()
     ['basher'] = {bash = 0.2, dmg = 0.25},
     ['berserkerbelt'] = {enrage = 1},
     ['heartofgold'] = {gold = 1, hp = 0.2},
-    ['healingleaf'] = {heal = 0.02, aspd = 0.1}
+    ['healingleaf'] = {heal = 0.02, aspd = 0.1},
+    
+    ['corpseexplode'] = {explode = 1, dmg = 0.2},
 
   }
 
@@ -1207,7 +1213,8 @@ function init()
     ['bash'] = 'chance to stun',
     ['enrage'] = 'enrage allies on death',
     ['gold'] = 'gold per round',
-    ['heal'] = 'healing per second'
+    ['heal'] = 'healing per second',
+    ['explode'] = 'explode on kill',
   }
 
   item_text = {
@@ -1242,7 +1249,9 @@ function init()
     ['basher'] = "Basher",
     ['berserkerbelt'] = "Berserker belt",
     ['heartofgold'] = "Heart of gold",
-    ['healingleaf'] = "Healing leaf"
+    ['healingleaf'] = "Healing leaf",
+
+    ['corpseexplode'] = "Corpse exploder",
   }
 
   tier_to_items = {
@@ -1252,7 +1261,9 @@ function init()
            'medbomb', 'vampirism', 'ghostboots', 'frostorb', 'spikedcollar',
            'basher', 'berserkerbelt', 'heartofgold', 'healingleaf'},
     [3] = {'largesword', 'largeboots', 'largebow', 'largevest', 'largeshield',
-           'largebomb'},
+           'largebomb',
+          
+          'corpseexplode'},
     [4] = {'largesword'},
   }
 
@@ -1344,6 +1355,7 @@ function init()
     ['slow'] = 'slow',
     ['bash'] = 'bash',
     ['heal'] = 'heal',
+    ['explode'] = 'explode',
   }
 
   non_attacking_characters = {'cleric', 'stormweaver', 'squire', 'chronomancer', 'sage', 'psykeeper', 'bane', 'carver', 'fairy', 'priest', 'paladin', 'necromancer', 'bard', 'druid', 'flagellant', 'merchant', 'miner'}
