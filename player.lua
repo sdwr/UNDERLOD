@@ -2661,7 +2661,7 @@ end
 function Troop:draw()
   --graphics.circle(self.x, self.y, self.attack_sensor.rs, orange[0], 1)
   graphics.push(self.x, self.y, self.r, self.hfx.hit.x, self.hfx.hit.x)
-  local i = 1
+  local i = 0.5
   for _ , buff in pairs(self.buffs) do
     if buff.color then
       graphics.circle(self.x, self.y, ((self.shape.w * 0.66) / 2) + (i), buff.color, 1)

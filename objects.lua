@@ -259,6 +259,11 @@ function Unit:add_buff(buff)
   if existing_buff then
     self.buffs[buff.name].duration = math.max(existing_buff.duration, buff.duration)
   else
+    if buff.color then
+      local color = buff.color
+      color.a = 0.6
+      buff.color = color
+    end
     self.buffs[buff.name] = buff
   end
 end
@@ -272,8 +277,8 @@ end
 
 function Unit:update_buffs(dt)
   for k, v in pairs(self.buffs) do
-    if v.name == 'druid_hot' then
-      self.hp = self.hp + (dt * v.heal_per_s)
+    if v.name == 'heal' then
+      self.hp = self.hp + (dt * v.stats.heal_pct_per_s * self.max_hp)
       if self.hp > self.max_hp then self.hp = self.max_hp end
     elseif k == 'stunned' then
       self.state = unit_states['frozen']
@@ -293,7 +298,7 @@ function Unit:update_buffs(dt)
 end
 
 
-function Unit:calculate_stats(first_run)
+function Unit:calculate_stats(first_run, dt)
   local level = self.level or 1
   local hpMod = 1 + ((level - 1) / 2)
   local dmgMod = 1 + ((level - 1) / 2)
@@ -379,7 +384,6 @@ function Unit:calculate_stats(first_run)
 
   self.enrage_on_death = false
 
-
   if self.buffs then
     for k, buff in pairs(self.buffs) do
       if buff.stats then
@@ -439,6 +443,8 @@ function Unit:calculate_stats(first_run)
             self.bash_chance = self.bash_chance + amt
           elseif stat == buff_types['enrage'] then
             self.enrage_on_death = true
+          elseif stat == buff_types['heal'] then
+            self:heal_over_time(amt, 9999)
           end
         end
       end
@@ -515,6 +521,11 @@ end
 function Unit:slow(amount, duration)
   local slowBuff = {name = 'slowed', color = blue[2], duration = duration, stats = {mvspd = -1 * amount}}
   self:add_buff(slowBuff)
+end
+
+function Unit:heal_over_time(amount, duration)
+  local healBuff = {name = 'heal', color = green[3], duration = duration, stats = {heal_pct_per_s = amount}}
+  self:add_buff(healBuff)
 end
 
 function Unit:onDamageDealt(dmg)

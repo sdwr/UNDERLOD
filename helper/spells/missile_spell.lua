@@ -23,6 +23,11 @@ function Helper.Spell.Missile.create(color, missile_length, damage_troops, damag
         damage = damage
     }
 
+    if unit and unit.area_size_m then
+        missile.explode_radius = missile.explode_radius * unit.area_size_m
+        missile.missile_width = missile.missile_width * unit.area_size_m
+    end
+
     Helper.Unit.start_casting(unit)
     table.insert(Helper.Spell.Missile.prelist, missile)
 end

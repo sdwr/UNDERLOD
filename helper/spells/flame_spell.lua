@@ -22,6 +22,11 @@ function Helper.Spell.Flame.create(color, flamewidth, flameheight, damage, unit)
                 damage = damage
             }
 
+            if unit and unit.area_size_m then
+                flame.flamewidth = flame.flamewidth * unit.area_size_m
+                flame.flameheight = flame.flameheight * unit.area_size_m
+            end
+
             if Helper.Spell.Flame.do_draw_particles then
                 flame.particle_interval_id = Helper.Time.set_interval(0.125, function()
                     for i = 0, get_random(2, 4) do

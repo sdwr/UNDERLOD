@@ -27,6 +27,10 @@ function Helper.Spell.Laser.create(color, laser_aim_width, direction_lock, damag
             laser.direction_targety = local_direction_targety - unit.y
         end
 
+        if unit and unit.area_size_m then
+            laser.laser_aim_width = laser.laser_aim_width * unit.area_size_m
+        end
+
         Helper.Unit.start_casting(unit)
         table.insert(Helper.Spell.Laser.list, laser)
     end
