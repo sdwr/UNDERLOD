@@ -156,6 +156,7 @@ end
 
 
 function Arena:update(dt)
+
   if main_song_instance:isStopped() then
     if self.level <= 6 then
       --zone 1, gunnar
@@ -503,6 +504,7 @@ function Arena:draw()
     graphics.rectangle(gw/2, gh/2, self.w, self.h, nil, nil, fg[0])
     camera:detach()
   end, true)
+  
 
   camera:attach()
   --self:display_text()

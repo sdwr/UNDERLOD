@@ -17,6 +17,9 @@ function FPSCounter:update(dt)
         if input['a'].pressed then
             self:toggleShow()
         end
+        if input['p'].pressed then
+            self:toggleProfiler()
+        end
     end
 end
 
@@ -28,4 +31,8 @@ end
 
 function FPSCounter:toggleShow()
     self.show = not self.show
+end
+
+function FPSCounter:toggleProfiler()
+    love.USE_PROFILER = not love.USE_PROFILER
 end

@@ -9,7 +9,10 @@ require 'media'
 require 'helper/helper_main'
 require 'spawnmanager'
 require 'enemies.enemy_helper'
-require 'ui/fpscounter'
+require 'util/fpscounter'
+
+love.profiler = require('util/profiler/profile')
+require 'util/runprofiler'
 
 
 
@@ -1822,8 +1825,12 @@ function init()
 end
 
 
+love.frame = 0
 function update(dt)
   main:update(dt)
+  if love.USE_PROFILER then
+    Run_Profiler()
+  end
 
   --[[
   if input.b.pressed then
@@ -1897,6 +1904,10 @@ function draw()
   shared_draw(function()
     main:draw()
   end)
+
+  if love.USE_PROFILER then
+    Draw_Profiler()
+  end
 end
 
 
@@ -2196,6 +2207,7 @@ end
 
 
 function love.run()
+
   return engine_run({
     game_name = 'UNDERLOD',
     window_width = 'max',

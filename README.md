@@ -45,7 +45,10 @@ ctrl+g gives 100 gold
 
 ctrl+u toggles level select buttons
 
+ctrl+p toggles basic profiler
+
 d makes damage circle
+s makes sweep spell
 
 ### Dev notes at
 design doc:
