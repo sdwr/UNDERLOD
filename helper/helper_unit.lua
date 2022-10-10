@@ -25,6 +25,9 @@ function Helper.Unit.add_custom_variables_to_unit(unit)
             unit.targeted_by[i].state_change_functions['target_death']()
         end   
     end
+    unit.damage_taken_at = {
+        ['sweep'] = -999999
+    }
 
     Helper.Unit.add_default_state_change_functions(unit)
     Helper.Unit.add_default_state_always_run_functions(unit)

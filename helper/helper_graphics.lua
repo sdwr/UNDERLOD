@@ -136,11 +136,11 @@ function Helper.Graphics.draw_dashed_line(color, line_width, dash_length, dash_m
     love.graphics.setLineWidth(1)
 end
 
-function Helper.Graphics.draw_dashed_rectangle(x1, y1, x2, y2)
-    Helper.Graphics.draw_dashed_line(3, 10, 5, Helper.Time.time * 80, x1, y1, x2, y1)
-    Helper.Graphics.draw_dashed_line(3, 10, 5, Helper.Time.time * 80, x2, y1, x2, y2)
-    Helper.Graphics.draw_dashed_line(3, 10, 5, Helper.Time.time * 80, x2, y2, x1, y2)
-    Helper.Graphics.draw_dashed_line(3, 10, 5, Helper.Time.time * 80, x1, y2, x1, y1)
+function Helper.Graphics.draw_dashed_rectangle(color, line_width, dash_length, dash_margin, dash_offset_percentage, x1, y1, x2, y2)
+    Helper.Graphics.draw_dashed_line(color, line_width, dash_length, dash_margin, dash_offset_percentage, x1, y1, x2, y1)
+    Helper.Graphics.draw_dashed_line(color, line_width, dash_length, dash_margin, dash_offset_percentage, x2, y1, x2, y2)
+    Helper.Graphics.draw_dashed_line(color, line_width, dash_length, dash_margin, dash_offset_percentage, x2, y2, x1, y2)
+    Helper.Graphics.draw_dashed_line(color, line_width, dash_length, dash_margin, dash_offset_percentage, x1, y2, x1, y1)
 end
 
 
