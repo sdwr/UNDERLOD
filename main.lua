@@ -1295,6 +1295,7 @@ function init()
     ['short-cast'] = 0.15,
     ['medium-cast'] = 0.25,
     ['long-cast'] = 0.5,
+    ['ultra-long-cast'] = 0.75,
     
     ['buff'] = 0.5,
     ['ultra-fast'] = 0.78,

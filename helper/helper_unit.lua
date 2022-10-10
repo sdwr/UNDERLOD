@@ -1,5 +1,7 @@
 Helper.Unit = {}
 
+Helper.Unit.cast_flash_duration = 0.08
+
 function Helper.Unit.get_list(troop_list)
     if troop_list then
         return main.current.main:get_objects_by_class(Troop)
@@ -40,28 +42,33 @@ function Helper.Unit.add_custom_variables_to_unit(unit)
 end
 
 function Helper.Unit.claim_target(unit, target)
-    if unit.have_target then
-        if unit.claimed_target == target then
-            return
+    if unit then
+        if unit.have_target then
+            if unit.claimed_target == target then
+                return
+            end
+            table.remove(unit.claimed_target.targeted_by, find_in_list(unit.claimed_target.targeted_by, unit))
         end
-        table.remove(unit.claimed_target.targeted_by, find_in_list(unit.claimed_target.targeted_by, unit))
+        unit.claimed_target = target
+        table.insert(unit.claimed_target.targeted_by, unit)
+        unit.have_target = true
     end
-    unit.claimed_target = target
-    table.insert(unit.claimed_target.targeted_by, unit)
-    unit.have_target = true
 end
 
 function Helper.Unit.unclaim_target(unit)
-    if unit.have_target then
+    if unit and unit.have_target then
         table.remove(unit.claimed_target.targeted_by, find_in_list(unit.claimed_target.targeted_by, unit))
         unit.have_target = false
     end
 end
 
 function Helper.Unit.can_cast(unit)
-    return unit.state == unit_states['normal'] and not unit.have_target
-    and Helper.Time.time - unit.last_attack_finished > unit.cooldownTime
-    and Helper.Spell.there_is_target_in_range(unit, unit.attack_sensor.rs)
+    if unit then
+        return unit.state == unit_states['normal'] and not unit.have_target
+        and Helper.Time.time - unit.last_attack_finished > unit.cooldownTime
+        and Helper.Spell.there_is_target_in_range(unit, unit.attack_sensor.rs)
+    end
+    return false
 end
 
 function Helper.Unit.start_casting(unit)
@@ -83,9 +90,11 @@ function Helper.Unit.finish_casting(unit)
 end
 
 function Helper.Unit.is_attack_on_cooldown(unit)
-    local time_since_cast = Helper.Time.time - (unit.last_attack_finished or 0)
-    if unit.cooldownTime and time_since_cast < unit.cooldownTime then
-        return true
+    if unit then
+        local time_since_cast = Helper.Time.time - (unit.last_attack_finished or 0)
+        if unit.cooldownTime and time_since_cast < unit.cooldownTime then
+            return true
+        end
     end
     return false
 end

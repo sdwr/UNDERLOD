@@ -1592,39 +1592,41 @@ Snipe:implement(GameObject)
 Snipe:implement(Physics)
 function Snipe:init(args)
   self:init_game_object(args)
+  self.dmg = self.dmg * 4
   if not self.group.world then self.recover() return end
 
   self.color = red[0]:clone()
   self.currentTime = 0
+  self.color.a = math.min(self.currentTime, 1)
 
   self.state = "charging"
-  self.parent.state = 'frozen'
+  Helper.Unit.start_casting(self.parent)
   sniper_load:play({volume = 0.5})
-  self.t:after(1, function() self:fire() end)
-  self.t:after(1.25, function() self:recover() end)
+  self.t:after(self.parent.castTime, function() self:fire() end, 'shoot')
+
+end
+
+function Snipe:cancel()
+  self.dead = true
+  Helper.Unit.unclaim_target(self.parent)
 
 end
 
 function Snipe:update(dt)
-  if self.parent and self.parent.dead == true then self.recover() return end
-  if not self.target or self.target.dead == true then self:recover() return end
   self:update_game_object(dt)
+  if self.parent and self.parent.dead == true then self:cancel() return end
+  if not self.target or self.target.dead == true then self:cancel() return end
   self.currentTime = self.currentTime + dt
 
-  self.color.a = math.min(self.currentTime, 1)
+  self.color.a = math.min(self.currentTime / self.parent.castTime, 1)
 
 end
 
 function Snipe:fire()
-  if self then self.state = "recovering" else return end
-  if self.parent then self.parent.state = 'stopped' end
   dual_gunner2:play({pitch = random:float(0.9, 1.1), volume = 0.7})
   if self.target then self.target:hit(self.dmg, self.parent) end
-end
-
-function Snipe:recover()
-  if self then self.dead = true else return end
-  if self.parent then self.parent.state = 'normal' end
+  Helper.Unit.finish_casting(self.parent)
+  self:cancel()
 end
 
 function Snipe:draw()
@@ -2682,7 +2684,7 @@ function Troop:draw()
 end
 
 function Troop:draw_cast_timer()
-  local currentTime = love.timer.getTime()
+  local currentTime = Helper.Time.time
   local time = currentTime - self.last_attack_started
   local pct = time / self.castTime
   local bodySize = self.shape.rs or self.shape.w/2 or 5
@@ -2693,12 +2695,14 @@ function Troop:draw_cast_timer()
 end
 
 function Troop:draw_cooldown_timer()
-  local currentTime = love.timer.getTime()
+  local currentTime = Helper.Time.time
   local time = currentTime - self.last_attack_finished
   local pct = 1 - (time / self.cooldownTime)
   local bodySize = self.shape.rs or self.shape.w/2 or 5
   local rs = pct * bodySize
-  if pct > 0 then
+  if time < Helper.Unit.cast_flash_duration then
+    graphics.circle(self.x, self.y, rs, yellow_transparent)
+  elseif pct > 0 then
     graphics.circle(self.x, self.y, rs, white_transparent)
   end
 
@@ -2878,6 +2882,7 @@ function Troop:set_character()
           
           Helper.Spell.Missile.create(Helper.Color.orange, 10, false, self.dmg, self, true, 15)
         end)
+      end
     end
 
     --cancel on move
@@ -2895,18 +2900,36 @@ function Troop:set_character()
       Helper.Spell.Missile.stop_aiming(self)
       Helper.Unit.unclaim_target(self)
     end
-  end
 
   elseif self.character == 'sniper' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['ultra-long'])
-    self.dmg = self.dmg * 4
-    self.castTime = 1
-    self.backswing = 0.25
-    self.t:cooldown(attack_speeds['slow'], self:in_range(), function()
-      if self.target then
-        Snipe{group = main.current.main, team = 'player', parent = self, target = self.target, dmg = self.dmg}
+
+    --cooldown
+    self.baseCooldown = attack_speeds['medium']
+    self.cooldownTime = self.baseCooldown
+    self.baseCast = attack_speeds['ultra-long-cast']
+    self.castTime = self.baseCast
+
+    --if ready to cast and has target in range, start casting
+    self.state_always_run_functions['always_run'] = function()
+      if Helper.Unit.can_cast(self) then
+        Helper.Unit.claim_target(self, Helper.Spell.get_nearest_least_targeted(self, self.attack_sensor.rs))
+        self.spell = Snipe{group = main.current.main, team = 'player', parent = self, target = self.claimed_target, dmg = self.dmg}
       end
-    end, nil, nil, 'shoot')
+    end
+    
+    --cancel on move
+    self.state_always_run_functions['following_or_rallying'] = function()
+      if self.have_target then
+        self.spell:cancel()
+      end
+    end
+
+    self.state_change_functions['normal'] = function() end
+    --cancel on death
+    self.state_change_functions['death'] = function()
+      self.spell:cancel()
+    end
 
   elseif self.character == 'wizard' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium-long'])
