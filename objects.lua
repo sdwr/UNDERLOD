@@ -275,6 +275,16 @@ function Unit:remove_buff(buffName)
   end
 end
 
+function Unit:draw_buffs()
+  local i = 0.5
+  for _ , buff in pairs(self.buffs) do
+    if buff.color then
+      graphics.circle(self.x, self.y, ((self.shape.w) / 2) + (i), buff.color, 1)
+      i = i + 1
+    end
+  end
+end
+
 function Unit:update_buffs(dt)
   for k, v in pairs(self.buffs) do
     if v.name == 'heal' then
@@ -316,12 +326,12 @@ function Unit:calculate_stats(first_run, dt)
     self.base_dmg = 5 * dmgMod
     self.base_mvspd = 100 * spdMod
   elseif self.class == 'regular_enemy' then
-    self.base_hp = 150 * (math.pow(1.05, level))
-    self.base_dmg = 20  * (math.pow(1.05, level))
+    self.base_hp = 150 * (math.pow(1.02, level))
+    self.base_dmg = 20  * (math.pow(1.02, level))
     self.base_mvspd = 34
   elseif self.class == 'miniboss' then
-    self.base_hp = 500 * (math.pow(1.05, level))
-    self.base_dmg = 20  * (math.pow(1.05, level))
+    self.base_hp = 500 * (math.pow(1.02, level))
+    self.base_dmg = 20  * (math.pow(1.02, level))
     self.base_mvspd = 55
   end
   if self.class == 'regular_enemy' and self.type == 'rager' then
@@ -453,15 +463,19 @@ function Unit:calculate_stats(first_run, dt)
     end
   end
 
-  self.class_hp_m = self.class_hp_m*class_stat_multipliers[self.class].hp
+  local unit_stat_mult = unit_stat_multipliers[self.character] or unit_stat_multipliers['none']
+
+  self.class_hp_m = self.class_hp_m*unit_stat_mult.hp
   self.max_hp = (self.base_hp + self.class_hp_a + self.buff_hp_a)*self.class_hp_m*self.buff_hp_m
   if first_run then self.hp = self.max_hp end
 
-  self.class_dmg_m = self.class_dmg_m*class_stat_multipliers[self.class].dmg
+  self.class_dmg_m = self.class_dmg_m*unit_stat_mult.dmg
   self.dmg = (self.base_dmg + self.class_dmg_a + self.buff_dmg_a)*self.class_dmg_m*self.buff_dmg_m
 
-  self.class_aspd_m = self.class_aspd_m*class_stat_multipliers[self.class].aspd
-  self.aspd_m = 1/(self.base_aspd_m*self.class_aspd_m*self.buff_aspd_m)
+  self.class_def_m = self.class_def_m*unit_stat_mult.def
+  self.def = (self.base_def + self.class_def_a + self.buff_def_a)*self.class_def_m*self.buff_def_m
+
+  self.aspd_m = 1/(self.base_aspd_m*self.buff_aspd_m)
 
   if self.baseCooldown then
     self.cooldownTime = self.baseCooldown * self.aspd_m
@@ -470,20 +484,9 @@ function Unit:calculate_stats(first_run, dt)
     self.castTime = self.baseCast * self.aspd_m
   end
 
-  self.class_area_dmg_m = self.class_area_dmg_m*class_stat_multipliers[self.class].area_dmg
-  self.area_dmg_m = self.base_area_dmg_m*self.class_area_dmg_m*self.buff_area_dmg_m
+  self.area_size_m = self.base_area_size_m*self.buff_area_size_m
 
-  self.class_area_size_m = self.class_area_size_m*class_stat_multipliers[self.class].area_size
-  self.area_size_m = self.base_area_size_m*self.class_area_size_m*self.buff_area_size_m
-
-  self.class_def_m = self.class_def_m*class_stat_multipliers[self.class].def
-  self.def = (self.base_def + self.class_def_a + self.buff_def_a)*self.class_def_m*self.buff_def_m
-
-  
-  if self.slowed then self.slow_mvspd_m = math.max(1 - self.slowed, 0.2)
-  else self.slow_mvspd_m = 1 end
-
-  self.class_mvspd_m = self.class_mvspd_m*class_stat_multipliers[self.class].mvspd
+  self.class_mvspd_m = self.class_mvspd_m*unit_stat_mult.mvspd
   self.max_v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m
   self.v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m
 end
@@ -544,6 +547,15 @@ end
 function Unit:heal_over_time(amount, duration)
   local healBuff = {name = 'heal', color = green[3], duration = duration, stats = {heal_pct_per_s = amount}}
   self:add_buff(healBuff)
+end
+
+function Unit:set_as_target()
+  local targetBuff = {name = 'target', color = yellow[0], duration = 9999, stats = nil}
+  self:add_buff(targetBuff)
+end
+
+function Unit:untarget()
+  self:remove_buff('target')
 end
 
 function Unit:onDamageDealt(dmg)

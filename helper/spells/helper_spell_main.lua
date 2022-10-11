@@ -38,6 +38,17 @@ function Helper.Spell.get_nearest_target(unit, include_list)
     if #unit_list > 0 then
         local target = {}
         local distancemin = 100000000
+
+        local globalTarget = nil
+        if main and main.current and main.current.targetedEnemy then
+            globalTarget = main.current.targetedEnemy
+        end
+
+        --check global target first
+        if is_in_list(include_list, globalTarget) and Helper.Geometry.distance(unit.x, unit.y, globalTarget.x, globalTarget.y) then
+            return globalTarget
+        end
+
         for _, value in ipairs(unit_list) do
             if Helper.Geometry.distance(unit.x, unit.y, value.x, value.y) < distancemin and (#include_list == 0 or is_in_list(include_list, value)) then
                 distancemin = Helper.Geometry.distance(unit.x, unit.y, value.x, value.y)
@@ -70,6 +81,12 @@ function Helper.Spell.get_nearest_least_targeted(unit, range)
         if #value.targeted_by == targeted_min then
             table.insert(least_targeted_units, value)
         end
+    end
+
+    local globalTarget = nil
+    if main and main.current and main.current.targetedEnemy then
+        globalTarget = main.current.targetedEnemy
+        table.insert(least_targeted_units, globalTarget)
     end
 
     return Helper.Spell.get_nearest_target(unit, least_targeted_units)

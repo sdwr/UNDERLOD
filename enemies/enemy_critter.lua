@@ -12,7 +12,6 @@ function EnemyCritter:init(args)
 
   self.aggro_sensor = Circle(self.x, self.y, 1000)
   self.attack_sensor = Circle(self.x, self.y, 25)
-  self.slowed = false
 
   self.class = 'enemy_critter'
   self.color = args.color or grey[0]

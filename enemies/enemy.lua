@@ -75,6 +75,7 @@ function Enemy:update(dt)
 end
 
 function Enemy:draw()
+  self:draw_buffs()
   self.draw_enemy(self)
 end
 

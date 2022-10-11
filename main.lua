@@ -130,6 +130,8 @@ function init()
   turret_deploy = Sound('321215__hybrid-v__sci-fi-weapons-deploy.ogg', s)
   rogue_crit1 = Sound('Dagger Stab (Flesh) 4.ogg', s)
   rogue_crit2 = Sound('Sword hits another sword 6.ogg', s)
+
+  sweep_sound = Sound('Spark 1.ogg', s)
   
   song1 = Sound('gunnar - 26 hours and I feel Fine.mp3', {tags = {music}})
   song2 = Sound('gunnar - Back On Track.mp3', {tags = {music}})
@@ -602,7 +604,7 @@ function init()
     local troop = Troop{group = group, leader = true, character = character, level = level, follower_index = 1}
     troop:update(0)
     return '[red]HP: [red]' .. troop.max_hp .. '[fg], [red]DMG: [red]' .. troop.dmg .. '[fg], [green]ASPD: [green]' .. math.round(troop.aspd_m, 2) .. 'x[fg], [blue]AREA: [blue]' ..
-    math.round(troop.area_dmg_m*troop.area_size_m, 2) ..  'x[fg], [yellow]DEF: [yellow]' .. math.round(troop.def, 2) .. '[fg], [green]MVSPD: [green]' .. math.round(troop.v, 2) .. '[fg]'
+    math.round(troop.area_size_m, 2) ..  'x[fg], [yellow]DEF: [yellow]' .. math.round(troop.def, 2) .. '[fg], [green]MVSPD: [green]' .. math.round(troop.v, 2) .. '[fg]'
   end
 
   get_character_stat = function(character, level, stat)
@@ -1028,6 +1030,17 @@ function init()
     ['miniboss'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1},
     ['boss'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1},
     ['enemy_critter'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 0.5},
+  }
+
+  unit_stat_multipliers = {
+    ['swordsman'] = {hp = 1.5, dmg = 1.25, def = 1.25, mvspd = 1},
+    ['laser'] = {hp = 1, dmg = 1, def = 1, mvspd = 1},
+    ['pyro'] = {hp = 1.25, dmg = 1, def = 1.25, mvspd = 1},
+    ['cannon'] = {hp = 1, dmg = 2, def = 1.25, mvspd = 1},
+    ['shaman'] = {hp = 1, dmg = 1, def = 1, mvspd = 1},
+    ['sniper'] = {hp = 0.8, dmg = 4, def = 1, mvspd = 0.9},
+
+    ['none'] = {hp = 1, dmg = 1, def = 1, mvspd = 1},
   }
 
   local ylb1 = function(lvl)

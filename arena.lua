@@ -36,6 +36,7 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
   main_song_instance:stop()
 
   self.starting_units = table.copy(units)
+  self.targetedEnemy = nil
 
   --if not state.mouse_control then
     --input:set_mouse_visible(false)
@@ -172,10 +173,20 @@ function Arena:update(dt)
   end
 
   if not self.paused then
+    --select character from hotbar
     self.troop_list = self.main:get_objects_by_class(Troop)
     for i = 1, 9 do
       if input[tostring(i)].pressed then
         self:select_character_by_index(i)
+      end
+    end
+    --target enemy with rightclick
+    if input["m2"].pressed then
+      local mx, my = self.main.camera:get_mouse_position()
+      local mouseCircle = Circle(mx, my, 5)
+      local targets = self.main:get_objects_in_shape(mouseCircle, self.enemies)
+      if targets and #targets > 0 then
+        self:target_enemy(targets[1])
       end
     end
   end
@@ -242,6 +253,14 @@ function Arena:update(dt)
   self.credits:update(dt)
 
   Helper.update(dt*slow_amount)
+end
+
+function Arena:target_enemy(enemy)
+  if self.targetedEnemy then
+    self.targetedEnemy:untarget()
+  end
+  self.targetedEnemy = enemy
+  self.targetedEnemy:set_as_target()
 end
 
 
