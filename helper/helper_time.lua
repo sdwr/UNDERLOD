@@ -36,7 +36,9 @@ function Helper.Time.set_interval(delay, intervalfunction)
 end
 
 function Helper.Time.stop_interval(id)
-    Helper.Time.intervals[id].stopped = true
+    if id <= #Helper.Time.intervals then
+        Helper.Time.intervals[id].stopped = true
+    end
 end
 
 function Helper.Time.stop_all_intervals()
