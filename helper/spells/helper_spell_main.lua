@@ -10,6 +10,7 @@ require 'helper/spells/spread_missile_spell'
 require 'helper/spells/damage_arc'
 require 'helper/spells/safety_dance'
 require 'helper/spells/sweep_spell'
+require 'helper/spells/bomb'
 
 Helper.Spell.spells = {
     Helper.Spell.SpreadMissile,
@@ -20,7 +21,8 @@ Helper.Spell.spells = {
     Helper.Spell.DamageLine,
     Helper.Spell.DamageArc,
     Helper.Spell.SafetyDance,
-    Helper.Spell.Sweep
+    Helper.Spell.Sweep,
+    Helper.Spell.Bomb,
 }
 
 function Helper.Spell.can_shoot(spell)
