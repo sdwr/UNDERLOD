@@ -198,4 +198,8 @@ function Helper.Unit.run_state_always_run_functions()
         unit.state_always_run_functions[unit.state]()
         unit.state_always_run_functions['always_run']()
     end
+    for i, unit in ipairs(Helper.Unit.get_list(false)) do
+        unit.state_always_run_functions[unit.state]()
+        unit.state_always_run_functions['always_run']()
+    end
 end

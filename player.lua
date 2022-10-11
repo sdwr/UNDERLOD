@@ -1181,7 +1181,7 @@ function DotArea:init(args)
         targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
       end
       for _, target in ipairs(targets) do
-        target:hit(self.dmg/5, self.parent)
+        target:hit(self.dmg/5)
         HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
         for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
         for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end

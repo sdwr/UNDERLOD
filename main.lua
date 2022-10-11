@@ -8,7 +8,8 @@ require 'player'
 require 'media'
 require 'helper/helper_main'
 require 'spawnmanager'
-require 'enemies.enemy_helper'
+require 'enemies/level_manager'
+require 'enemies/enemy_includes'
 require 'util/fpscounter'
 
 love.profiler = require('util/profiler/profile')
@@ -131,7 +132,8 @@ function init()
   rogue_crit1 = Sound('Dagger Stab (Flesh) 4.ogg', s)
   rogue_crit2 = Sound('Sword hits another sword 6.ogg', s)
 
-  sweep_sound = Sound('Spark 1.ogg', s)
+  sweep_sound = Sound('spell_sweep_saber.mp3', s)
+  sweep_sound_2 = Sound('spell_sweep_saber_2.mp3', s)
   
   song1 = Sound('gunnar - 26 hours and I feel Fine.mp3', {tags = {music}})
   song2 = Sound('gunnar - Back On Track.mp3', {tags = {music}})

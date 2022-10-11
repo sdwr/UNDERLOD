@@ -14,21 +14,33 @@ fns['init_enemy'] = function(self)
     self.class = 'boss'
 
   --set attacks
-    self.summons = 0
-    self.t:cooldown(attack_speeds['slow'], function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end, function()
-        local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies);
-        self.target = target
+  self.fireDmg = 5
+  self.fireDuration = 2
+  self.fireRange = 100
 
-        if self:in_range()() then 
-            local duration = 2
-            local rs = self.attack_sensor.rs + 5
-            BreatheFire{origin_offset = true, follows_caster = true, area_type = 'triangle',
-            group = main.current.main, team = "self", x = self.x, y = self.y, rs = rs, color = red[3], dmg = 20, duration = duration, level = self.level, parent = self}
+  self.state_always_run_functions['always_run'] = function()
+      if Helper.Spell.there_is_target_in_range(self, 100) 
+      and Helper.Time.time - self.last_attack_finished > 1 then
+          Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
+          Helper.Spell.Flame.create(Helper.Color.orange, 60, 100, self.fireDmg, self)
+          Helper.Spell.Flame.end_flame_after(self, self.fireDuration)
         end
-    end, nil, nil, 'channel')
-    self.t:cooldown(attack_speeds["ultra-slow"], function() return true end, function()
-        main.current:spawn_critters(random:int(1, 2), 12)
-    end, nil, nil, 'summon')
+      
+      if self.have_target and not Helper.Spell.claimed_target_is_in_range(self, 115) then
+          Helper.Spell.Flame.end_flame_after(self, 0.25)
+          Helper.Unit.unclaim_target(self)
+      end
+  end
+
+  self.state_change_functions['target_death'] = function()
+      Helper.Spell.Flame.end_flame_after(self, 0.25)
+      Helper.Unit.unclaim_target(self)
+  end
+
+    self.state_change_functions['death'] = function()
+      Helper.Spell.Flame.end_flame_after(self, 0)
+      Helper.Unit.unclaim_target(self)
+  end
 end
 
 fns['draw_enemy'] = function(self)

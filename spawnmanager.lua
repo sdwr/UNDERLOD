@@ -26,7 +26,16 @@ function SpawnGlobals.Init()
     {x = left_x, y = mid_y + 2*y_offset},
   }
   
-  SpawnGlobals.spawn_offsets = {{x = -12, y = -12}, {x = 12, y = -12}, {x = 12, y = 12}, {x = -12, y = 12}, {x = 0, y = 0}}
+  SpawnGlobals.spawn_offsets = 
+  {{x = -12, y = -12}, 
+  {x = 12, y = -12}, 
+  {x = 12, y = 12}, 
+  {x = -12, y = 12},
+  {x = -6, y = -6},
+  {x = -6, y = 6},
+  {x = 6, y = -6},
+  {x = 6, y = 6}, 
+  {x = 0, y = 0}}
   
   
   SpawnGlobals.corner_spawns = {
@@ -221,7 +230,7 @@ function Spawn_Boss(arena, name)
   arena.spawning_enemies = true
   
   Spawn_Effect(arena, SpawnGlobals.boss_spawn_point)
-  Enemy{type = name, isBoss = true, group = arena.main, x = SpawnGlobals.boss_spawn_point.x, y = SpawnGlobals.boss_spawn_point.y, level = arena.level}
+  LevelManager.activeBoss = Enemy{type = name, isBoss = true, group = arena.main, x = SpawnGlobals.boss_spawn_point.x, y = SpawnGlobals.boss_spawn_point.y, level = arena.level}
   SetSpawning(arena, false)
 end
 

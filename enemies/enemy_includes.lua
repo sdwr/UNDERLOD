@@ -15,3 +15,5 @@ require 'enemies/regular/spread'
 require 'enemies/regular/stomper'
 require 'enemies/regular/summoner'
 require 'enemies/miniboss/bigstomper'
+
+require 'enemies/static/dragonegg'

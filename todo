@@ -8,6 +8,8 @@ safety dance doesn't damage every time
 ghost units stack ontop of each other
 critters arent affected by slow
 buffs with same name don't stack properly (first amt gets duration refreshed)
+buffs aren't the right size on all units (hidden under square, too big around rect)
+
 
 combat:
 rally doesn't work while shooting/about to shoot
