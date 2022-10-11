@@ -2585,7 +2585,7 @@ function Troop:update(dt)
 
   --cancel follow if no longer pressing button
   if self.state == unit_states['following'] then
-    if not self:should_follow() then
+    if not self:should_follow() and Helper.Unit.selected_team == 0 then
       self.state = unit_states['normal']
     end
   end

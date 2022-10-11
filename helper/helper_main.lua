@@ -14,10 +14,6 @@ Helper.mousey = 0
 Helper.window_width = 0
 Helper.window_height = 0
 
-s_just_pressed = false
-
-
-
 function Helper.init()
     Helper.Time.time = love.timer.getTime()
     math.randomseed(Helper.Time.time)
@@ -84,16 +80,13 @@ function Helper.update(dt)
         Helper.Spell.DamageCircle.create(nil, Helper.Color.blue, true, 50, 10, Helper.mousex, Helper.mousey)
         Helper.Spell.DamageCircle.create(nil, Helper.Color.blue, false, 50, 10, Helper.mousex, Helper.mousey)
     end
-    if love.keyboard.isDown( "c" ) then
+    if input['c'].pressed then
         print(Helper.mousex .. ' ' .. Helper.mousey)
     end
-    if love.keyboard.isDown( "s" ) then
+    if input['s'].pressed then
         if not s_just_pressed then
             Helper.Spell.Sweep.create(Helper.Color.blue, true, 100, 50, Helper.mousey - 50, Helper.window_width - 50, Helper.mousey + 50)
         end
-        s_just_pressed = true
-    else
-        s_just_pressed = false
     end
     
     Helper.window_width = love.graphics.getWidth() / sx

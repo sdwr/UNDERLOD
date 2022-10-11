@@ -1,17 +1,5 @@
 Helper.Unit = {}
 
-Helper.Unit.selection = {
-    x1 = 0,
-    y1 = 0,
-    x2 = 0,
-    y2 = 0
-}
-Helper.Unit.do_draw_selection = false
-Helper.Unit.mouse_just_down = false
-Helper.Unit.right_mouse_just_down = false
-Helper.Unit.new_team_key_just_pressed = false
-Helper.Unit.number_of_teams = 0
-
 function Helper.Unit.get_list(troop_list)
     if troop_list then
         return main.current.main:get_objects_by_class(Troop)
@@ -74,7 +62,7 @@ end
 function Helper.Unit.can_cast(unit)
     return unit.state == unit_states['normal'] and not unit.have_target
     and Helper.Time.time - unit.last_attack_finished > unit.cooldownTime
-    and Helper.Spell.there_is_target_in_range(unit, unit.attack_sensor.rs)
+    and Helper.Spell.there_is_target_in_range(unit, unit.attack_sensor.rs + 10)
 end
 
 function Helper.Unit.start_casting(unit)
@@ -206,15 +194,30 @@ end
 
 
 
+Helper.Unit.selection = {
+    x1 = 0,
+    y1 = 0,
+    x2 = 0,
+    y2 = 0
+}
+Helper.Unit.do_draw_selection = false
+Helper.Unit.number_of_teams = 0
+Helper.Unit.teams = {}
+Helper.Unit.selected_team = 0
+
 function Helper.Unit:select()
     if main.selectedCharacter == 'selection' then
-        if love.mouse.isDown(1) then
-            if not mouse_just_down then
-                self.x1 = Helper.mousex
-                self.y1 = Helper.mousey
-                self.do_draw_selection = true
-            end
+        if input['m1'].pressed then
+            self.x1 = Helper.mousex
+            self.y1 = Helper.mousey
+            self.do_draw_selection = true
+        end
 
+        if input['m1'].released then
+            self.do_draw_selection = false
+        end
+
+        if input['m1'].down then
             self.x2 = Helper.mousex
             self.y2 = Helper.mousey
             
@@ -225,40 +228,67 @@ function Helper.Unit:select()
                     unit.selected = false
                 end
             end
+        end
 
-            mouse_just_down = true
-        else
-            if mouse_just_down then
-                self.do_draw_selection = false
-            end
-            mouse_just_down = false
-
-            if love.mouse.isDown(2) then
-                if not self.right_mouse_just_down then
-                    for i, unit in ipairs(self.get_list(true)) do
-                        if unit.selected then
-                            unit.target_pos = {x = Helper.mousex, y = Helper.mousey}
-                            unit.state = unit_states['rallying']
-                        end
-                    end
+        if not input['m1'].down and input['m2'].pressed then
+            for i, unit in ipairs(self.get_list(true)) do
+                if unit.selected then
+                    unit.target_pos = {x = Helper.mousex, y = Helper.mousey}
+                    unit.state = unit_states['rallying']
                 end
-                self.right_mouse_just_down = true
-            else
-                self.right_mouse_just_down = false
             end
         end
     end
 
-    -- if love.keyboard.isDown( "t" ) then
-    --     if not self.new_team_key_just_pressed then
-    --         local b = HotbarButton{group = self.ui, x = 50 , y = 50, force_update = true, button_text = 'selection', fg_color = 'white', bg_color = 'bg', action = function() self:select_character('team' .. self.number_of_teams + 1) end}
-    --         Arena:add_hotbar_button(b)
-    --         self.number_of_teams = self.number_of_teams + 1
-    --     end
-    --     self.new_team_key_just_pressed = true
-    -- else
-    --     self.new_team_key_just_pressed = false
-    -- end
+    if input['t'].pressed then
+        if not self.new_team_key_just_pressed then
+            self.number_of_teams = self.number_of_teams + 1
+            local number_of_teams = self.number_of_teams
+            local b = HotbarButton{group = main.current.ui, x = 50 + (number_of_teams - 1) * 80, y = gh - 50, 
+                                    force_update = true, button_text = 'team ' .. Helper.Unit.number_of_teams, 
+                                    fg_color = 'white', bg_color = 'bg', action = function() 
+                                        main.current:select_character('team ' .. number_of_teams) 
+                                        Helper.Unit.selected_team = number_of_teams
+                                        Helper.Unit:deselect_all_troops()
+                                        for i, troop in ipairs(Helper.Unit.teams[Helper.Unit.selected_team]) do
+                                            troop.selected = true
+                                        end
+                                    end}
+            main.current.hotbar['team ' .. number_of_teams] = b
+            table.insert(main.current.hotbar_by_index, b)
+
+            local team = {}
+            for i, troop in ipairs(self.get_list(true)) do
+                if troop.selected then
+                    table.insert(team, troop)
+                end
+            end
+            table.insert(self.teams, team)
+        end
+    end
+
+    if self.selected_team ~= 0 then
+        if input['m1'].pressed then
+            for i, troop in ipairs(self.teams[self.selected_team]) do
+                troop.state = unit_states['following']
+                troop.target = nil
+                troop.target_pos = nil
+            end
+        end
+
+        if input['m1'].released then
+            for i, troop in ipairs(self.teams[self.selected_team]) do
+                troop.state = unit_states['normal']
+            end
+        end
+
+        if not input['m1'].down and input['m2'].pressed then
+            for i, troop in ipairs(self.teams[self.selected_team]) do
+                troop.target_pos = {x = Helper.mousex, y = Helper.mousey}
+                troop.state = unit_states['rallying']
+            end
+        end
+    end
 end
 
 function Helper.Unit:draw_selection()
@@ -271,5 +301,11 @@ function Helper.Unit:draw_selection()
         if unit.selected then
             love.graphics.circle('line', unit.x, unit.y, 5)
         end
+    end
+end
+
+function Helper.Unit:deselect_all_troops()
+    for i, troop in ipairs(self.get_list(true)) do
+        troop.selected = false
     end
 end
