@@ -2763,8 +2763,10 @@ function Troop:set_character()
 
     self.state_always_run_functions['always_run'] = function()
       if Helper.Unit.can_cast(self) then
-        self:attack(self.dmg, {x = self.target.x, y = self.target.y})
-        self.last_attack_finished = Helper.Time.time
+        if self.target then
+          self:attack(self.dmg, {x = self.target.x, y = self.target.y})
+          self.last_attack_finished = Helper.Time.time
+        end
       end
     end
 
