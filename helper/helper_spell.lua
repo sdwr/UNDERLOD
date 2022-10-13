@@ -1,15 +1,16 @@
 Helper.Spell = {}
 
-require 'helper/spells/flame_spell'
-require 'helper/spells/missile_spell'
+require 'helper/spells/flame'
+require 'helper/spells/missile'
 require 'helper/spells/damage_circle'
-require 'helper/spells/laser_spell'
+require 'helper/spells/laser'
 require 'helper/spells/damage_line'
-require 'helper/spells/spread_laser_spell'
-require 'helper/spells/spread_missile_spell'
+require 'helper/spells/spread_laser'
+require 'helper/spells/spread_missile'
 require 'helper/spells/damage_arc'
 require 'helper/spells/safety_dance'
-require 'helper/spells/sweep_spell'
+require 'helper/spells/sweep'
+require 'helper/spells/brust'
 
 Helper.Spell.spells = {
     Helper.Spell.SpreadMissile,

@@ -1,7 +1,7 @@
 Helper = {}
 
 require 'helper/helper_geometry'
-require 'helper/spells/helper_spell_main'
+require 'helper/helper_spell'
 require 'helper/helper_time'
 require 'helper/helper_color'
 require 'helper/helper_lua'

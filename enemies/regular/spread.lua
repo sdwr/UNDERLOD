@@ -16,7 +16,7 @@ fns['init_enemy'] = function(self)
       if target then
         self:rotate_towards_object(target, 1)
         sniper_load:play{volume=0.9}
-        Helper.Spell.SpreadMissile.create(Helper.Color.blue, 10, true, 20, self, 25, true) 
+        Helper.Spell.SpreadMissile.create(Helper.Color.blue, 10, 20, self, 25, true) 
         end
     end, nil, nil, 'shoot')
 end

@@ -2819,46 +2819,41 @@ function Troop:set_character()
 
 
 
-  elseif self.character == 'pyro' then
-    self.attack_sensor = Circle(self.x, self.y, 60)
-    -- self.t:cooldown(attack_speeds['ultra-fast'], self:in_range(), function()
-    --   if self.target then
-    --     self:shootAnimation(self:angle_to_object(self.target))
-    --   end
-    -- end, nil, nil, 'shoot')
+  -- elseif self.character == 'pyro' then
+  --   self.attack_sensor = Circle(self.x, self.y, 60)
 
-    self.state_always_run_functions['always_run'] = function()
-      if Helper.Spell.there_is_target_in_range(self, 70) 
-      and Helper.Time.time - self.last_attack_finished > 1 then
-        if self.have_target then
-          Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
-        else
-          Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
-          Helper.Spell.Flame.create(Helper.Color.orange, 60, 70, 3, self)
-        end
-      end
+  --   self.state_always_run_functions['always_run'] = function()
+  --     if Helper.Spell.there_is_target_in_range(self, 70) 
+  --     and Helper.Time.time - self.last_attack_finished > 1 then
+  --       if self.have_target then
+  --         Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
+  --       else
+  --         Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
+  --         Helper.Spell.Flame.create(Helper.Color.orange, 60, 70, 3, self)
+  --       end
+  --     end
 
-      if self.have_target and not Helper.Spell.claimed_target_is_in_range(self, 70) then
-        Helper.Spell.Flame.end_flame_after(self, 0.25)
-        Helper.Unit.unclaim_target(self)
-      end
-    end
+  --     if self.have_target and not Helper.Spell.claimed_target_is_in_range(self, 70) then
+  --       Helper.Spell.Flame.end_flame_after(self, 0.25)
+  --       Helper.Unit.unclaim_target(self)
+  --     end
+  --   end
 
-    self.state_change_functions['target_death'] = function()
-      Helper.Spell.Flame.end_flame_after(self, 0.25)
-      Helper.Unit.unclaim_target(self)
-    end
+  --   self.state_change_functions['target_death'] = function()
+  --     Helper.Spell.Flame.end_flame_after(self, 0.25)
+  --     Helper.Unit.unclaim_target(self)
+  --   end
 
-    self.state_change_functions['death'] = function()
-      Helper.Spell.Flame.end_flame_after(self, 0)
-      Helper.Unit.unclaim_target(self)
-    end
+  --   self.state_change_functions['death'] = function()
+  --     Helper.Spell.Flame.end_flame_after(self, 0)
+  --     Helper.Unit.unclaim_target(self)
+  --   end
   
 
 
 
 
-  elseif self.character == 'cannon' then
+  elseif self.character == 'pyro' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['long'])
 
     --cooldown
@@ -2873,7 +2868,7 @@ function Troop:set_character()
         Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
         Helper.Time.wait(get_random(0, 0.1), function()
           
-          Helper.Spell.Missile.create(Helper.Color.orange, 10, false, self.dmg, self, true, 15)
+          Helper.Spell.Missile.create(Helper.Color.orange, 10, self.dmg, self, true, 15)
         end)
       end
     end

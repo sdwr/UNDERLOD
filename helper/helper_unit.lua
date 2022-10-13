@@ -100,88 +100,38 @@ function Helper.Unit.is_attack_on_cooldown(unit)
 end
 
 function Helper.Unit.add_default_state_change_functions(unit)
-    local function default_normal()
-    end
-
-    local function default_frozen()
-    end
-
-    local function default_casting()
-    end
-
-    local function default_channeling()
-    end
-
-    local function default_stopped()
-    end
-
-    local function default_following()
+    unit.state_change_functions['normal'] = function() end
+    unit.state_change_functions['frozen'] = function() end
+    unit.state_change_functions['casting'] = function() end
+    unit.state_change_functions['channeling'] = function() end
+    unit.state_change_functions['stopped'] = function() end
+    unit.state_change_functions['following'] = function() 
         unit.state_change_functions['following_or_rallying']()
     end
-
-    local function default_rallying()
+    unit.state_change_functions['rallying'] = function() 
         unit.state_change_functions['following_or_rallying']()
     end
-
-    local function default_following_and_rallying()
-    end
-
-    local function default_death()
-    end
-
-    unit.state_change_functions['normal'] = default_normal
-    unit.state_change_functions['frozen'] = default_frozen
-    unit.state_change_functions['casting'] = default_casting
-    unit.state_change_functions['channeling'] = default_channeling
-    unit.state_change_functions['stopped'] = default_stopped
-    unit.state_change_functions['following'] = default_following
-    unit.state_change_functions['rallying'] = default_rallying
     
-    unit.state_change_functions['following_or_rallying'] = default_following_and_rallying
-    unit.state_change_functions['death'] = default_death
+    unit.state_change_functions['following_or_rallying'] = function() end
+    unit.state_change_functions['death'] = function() end
     unit.state_change_functions['target_death'] = function() end
 end
 
 function Helper.Unit.add_default_state_always_run_functions(unit)
-    local function default_normal()
+    unit.state_always_run_functions['normal'] = function() end
+    unit.state_always_run_functions['frozen'] = function() end
+    unit.state_always_run_functions['casting'] = function() end
+    unit.state_always_run_functions['channeling'] = function() end
+    unit.state_always_run_functions['stopped'] = function() end
+    unit.state_always_run_functions['following'] = function() 
+        unit.state_always_run_functions['following_or_rallying']()
     end
-
-    local function default_frozen()
-    end
-
-    local function default_casting()
-    end
-
-    local function default_channeling()
-    end
-
-    local function default_stopped()
-    end
-
-    local function default_following()
+    unit.state_always_run_functions['rallying'] = function() 
         unit.state_always_run_functions['following_or_rallying']()
     end
 
-    local function default_rallying()
-        unit.state_always_run_functions['following_or_rallying']()
-    end
-
-    local function default_following_and_rallying()
-    end
-
-    local function default_always_run()
-    end
-
-    unit.state_always_run_functions['normal'] = default_normal
-    unit.state_always_run_functions['frozen'] = default_frozen
-    unit.state_always_run_functions['casting'] = default_casting
-    unit.state_always_run_functions['channeling'] = default_channeling
-    unit.state_always_run_functions['stopped'] = default_stopped
-    unit.state_always_run_functions['following'] = default_following
-    unit.state_always_run_functions['rallying'] = default_rallying
-
-    unit.state_always_run_functions['following_or_rallying'] = default_following_and_rallying
-    unit.state_always_run_functions['always_run'] = default_always_run
+    unit.state_always_run_functions['following_or_rallying'] = function() end
+    unit.state_always_run_functions['always_run'] = function() end
 end
 
 function Helper.Unit.run_state_change_functions()

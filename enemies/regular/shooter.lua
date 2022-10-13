@@ -29,13 +29,21 @@ fns['init_enemy'] = function(self)
   self.class = 'regular_enemy'
 
   --set attacks
-    self.attack_sensor = Circle(self.x, self.y, 100)
-    self.t:cooldown(attack_speeds['medium'], function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end, function ()
-      local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies)
+    -- self.attack_sensor = Circle(self.x, self.y, 100)
+    -- self.t:cooldown(attack_speeds['medium'], function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end, function ()
+    --   local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies)
+    --   if target then
+    --     self:rotate_towards_object(target, 1)
+    --     fns['shoot'](self, self:angle_to_object(target))
+    --   end
+    -- end, nil, nil, 'shoot')
+    self.t:cooldown(attack_speeds['medium-slow'], function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end, function ()
+      local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
       if target then
         self:rotate_towards_object(target, 1)
-        fns['shoot'](self, self:angle_to_object(target))
-      end
+        sniper_load:play{volume=0.9}
+        Helper.Spell.SpreadMissile.create(Helper.Color.blue, 10, 20, self, 25, true) 
+        end
     end, nil, nil, 'shoot')
 end
 
