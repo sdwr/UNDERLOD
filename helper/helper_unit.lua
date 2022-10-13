@@ -165,7 +165,7 @@ Helper.Unit.selection = {
 }
 Helper.Unit.do_draw_selection = false
 Helper.Unit.number_of_teams = 0
-Helper.Unit.teams = {}
+Helper.Unit.teams = {{}, {}, {}, {}}
 Helper.Unit.selected_team = 0
 
 function Helper.Unit:select()
@@ -203,34 +203,69 @@ function Helper.Unit:select()
         end
     end
 
-    if input['t'].pressed then
-        if not self.new_team_key_just_pressed then
-            self.number_of_teams = self.number_of_teams + 1
-            local number_of_teams = self.number_of_teams
-            local b = HotbarButton{group = main.current.ui, x = 50 + (number_of_teams - 1) * 80, y = gh - 50, 
-                                    force_update = true, button_text = 'team ' .. Helper.Unit.number_of_teams, 
-                                    fg_color = 'white', bg_color = 'bg', action = function() 
-                                        main.current:select_character('team ' .. number_of_teams) 
-                                        Helper.Unit.selected_team = number_of_teams
-                                        Helper.Unit:deselect_all_troops()
-                                        for i, troop in ipairs(Helper.Unit.teams[Helper.Unit.selected_team]) do
-                                            troop.selected = true
-                                        end
-                                    end}
-            main.current.hotbar['team ' .. number_of_teams] = b
-            table.insert(main.current.hotbar_by_index, b)
-
-            local team = {}
-            for i, troop in ipairs(self.get_list(true)) do
-                if troop.selected then
-                    table.insert(team, troop)
-                end
+    local function refresh_button(team_number)
+        local color_marks = {}
+        for i, troop in ipairs(self.teams[team_number]) do
+            if not is_in_list(color_marks, character_colors[troop.character]) then
+                table.insert(color_marks, character_colors[troop.character])
             end
-            table.insert(self.teams, team)
+        end
+        main.current.hotbar_by_index[team_number].color_marks = color_marks
+    end
+
+    local function set_team(team_number)
+        local team = {}
+        for i, troop in ipairs(self.get_list(true)) do
+            if troop.selected then
+                table.insert(team, troop)
+            end
+        end
+        main.current.hotbar_by_index[team_number]:action()
+        if #team ~= 0 then
+            self.teams[team_number] = team
+            refresh_button(team_number)
         end
     end
 
-    if self.selected_team ~= 0 then
+    if input['lctrl'].down then
+        if input['1'].pressed then
+            set_team(1)
+        elseif input['2'].pressed then
+            set_team(2)
+        elseif input['3'].pressed then
+            set_team(3)
+        elseif input['4'].pressed then
+            set_team(4)
+        end
+    end
+
+    local function add_to_team(team_number)
+        local added = false
+        for i, troop in ipairs(self.get_list(true)) do
+            if troop.selected and not is_in_list(self.teams[team_number], troop) then
+                table.insert(self.teams[team_number], troop)
+                added = true
+            end
+        end
+        main.current.hotbar_by_index[team_number]:action()
+        if added then
+            refresh_button(team_number)
+        end
+    end
+
+    if input['lshift'].down then
+        if input['1'].pressed then
+            add_to_team(1)
+        elseif input['2'].pressed then
+            add_to_team(2)
+        elseif input['3'].pressed then
+            add_to_team(3)
+        elseif input['4'].pressed then
+            add_to_team(4)
+        end
+    end
+
+    if self.selected_team ~= 0 and self.teams[self.selected_team] then
         if input['m1'].pressed then
             for i, troop in ipairs(self.teams[self.selected_team]) do
                 troop.state = unit_states['following']

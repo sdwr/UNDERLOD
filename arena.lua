@@ -14,7 +14,7 @@ function Arena:select_character(character)
 end
 
 function Arena:select_character_by_index(i)
-  if self.hotbar_by_index[i] then
+  if self.hotbar_by_index[i] and not input['lctrl'].down and not input['lshift'].down then
     self.hotbar_by_index[i]:action()
   end
 end
@@ -105,7 +105,25 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
   self.hotbar = {}
   self.hotbar_by_index = {}
 
-  local b = HotbarButton{group = self.ui, x = gw/3 + ((1/(#units + 1))*(gw/3)) , y = gh - 20, 
+  for i = 1, 4 do
+    local b = HotbarButton{group = self.ui, x = 50 + 50 * (i - 1) , y = gh - 20, 
+                          force_update = true, button_text = tostring(i), w = 40, fg_color = 'white', bg_color = 'bg', 
+                          action = function() 
+                            main.current:select_character('team ' .. i) 
+                            Helper.Unit.selected_team = i
+                            Helper.Unit:deselect_all_troops()
+                            if Helper.Unit.teams[Helper.Unit.selected_team] then
+                              for i, troop in ipairs(Helper.Unit.teams[Helper.Unit.selected_team]) do
+                                troop.selected = true
+                              end
+                            end
+                          end}
+    self.hotbar['team ' .. i] = b
+    self.hotbar_by_index[i] = b
+    self:select_character('team ' .. i)
+  end
+
+  local b = HotbarButton{group = self.ui, x = 260, y = gh - 20, 
                           force_update = true, button_text = 'selection', fg_color = 'white', bg_color = 'bg', 
                           action = function() 
                             self:select_character('selection') 
@@ -113,19 +131,20 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
                             Helper.Unit:deselect_all_troops()
                           end}
   self.hotbar['selection'] = b
-  self.hotbar_by_index[1] = b
+  self.hotbar_by_index[5] = b
   self:select_character('selection')
 
-  for i = 2, #units + 1 do
-    local character = units[i - 1].character
+  for i = 6, #units + 5 do
+    local character = units[i - 5].character
     local type = character_types[character]
-    local b = HotbarButton{group = self.ui, x = gw/3 + ((i/(#units + 1))*(gw/3)) , y = gh - 20, 
+    local b = HotbarButton{group = self.ui, x = 320 + 30 * (i - 6) , y = gh - 20, w = 20,
                             force_update = true, button_text = character, fg_color = type_color_strings[type], bg_color = 'bg', 
                             action = function() 
                               self:select_character(character) 
                               Helper.Unit.selected_team = 0
                               Helper.Unit:deselect_all_troops()
-                            end}
+                            end,
+                            color_marks = {[1] = character_colors[character]}}
     self.hotbar[character] = b
     self.hotbar_by_index[i] = b
     -- if i == 1 then

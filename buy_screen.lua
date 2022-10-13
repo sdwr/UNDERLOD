@@ -714,6 +714,8 @@ function HotbarButton:init(args)
   self.interact_with_mouse = true
   self.text = Text({{text = '[' .. self.fg_color .. ']' .. self.button_text, font = pixul_font, alignment = 'center'}}, global_text_tags)
   self.unit_selected = false
+
+  self.color_marks = args.color_marks or {}
 end
 
 function HotbarButton:update(dt)
@@ -756,8 +758,20 @@ function HotbarButton:draw()
       graphics.rectangle(self.x+1, self.y+1, self.shape.w+1, self.shape.h+1, 4,4,  _G['white'][0], 3)
     end
     graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, self.selected and fg[0] or _G[self.bg_color][0])
-    self.text:draw(self.x, self.y + 1, 0, 1, 1)
+    
+    if #self.color_marks == 0 then
+      self.text:draw(self.x, self.y + 1, 0, 1, 1)
+    end
   graphics.pop()
+
+  for i, color_mark in ipairs(self.color_marks) do
+    if self.selected then
+      love.graphics.setColor(186/255, 186/255, 186/255, 1)
+    else
+      love.graphics.setColor(color_mark.r, color_mark.g, color_mark.b, 1)
+    end
+    love.graphics.circle('fill', self.x - self.shape.w/2 + 10 + 8*(i - 1), self.y, 3)
+  end
 end
 
 
