@@ -129,7 +129,7 @@ function Helper.Spell.Laser.update()
             table.remove(Helper.Spell.Laser.list, i)
             shoot1:play{volume=0.7}
 
-            Helper.Unit.unclaim_target(laser.unit)
+            -- Helper.Unit.unclaim_target(laser.unit)
             Helper.Unit.finish_casting(laser.unit)
         end
     end

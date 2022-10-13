@@ -66,7 +66,7 @@ function Helper.Unit.can_cast(unit)
     if unit then
         return unit.state == unit_states['normal'] and not unit.have_target
         and Helper.Time.time - unit.last_attack_finished > unit.cooldownTime
-        and Helper.Spell.there_is_target_in_range(unit, unit.attack_sensor.rs)
+        and Helper.Spell.there_is_target_in_range(unit, unit.attack_sensor.rs + 10)
     end
     return false
 end

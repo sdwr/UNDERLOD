@@ -2853,9 +2853,32 @@ function Troop:set_character()
   
 
 
-
-
   elseif self.character == 'pyro' then
+    self.attack_sensor = Circle(self.x, self.y, attack_ranges['long'])
+
+    self.state_always_run_functions['normal'] = function()
+      if Helper.Spell.there_is_target_in_range(self, attack_ranges['long'] + 10) then
+      Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
+        if Helper.Time.time - self.last_attack_started > 2 then
+          self.last_attack_started = Helper.Time.time
+          Helper.Time.wait(get_random(0, 0.4), function()
+            Helper.Spell.Brust.create(Helper.Color.white, 5, self.dmg, 500, self)
+          end)
+        end
+      end
+    end
+
+    self.state_change_functions['target_death'] = function()
+      Helper.Unit.unclaim_target(self)
+    end
+
+    self.state_change_functions['death'] = function()
+      Helper.Unit.unclaim_target(self)
+    end
+
+
+
+  elseif self.character == 'cannon' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['long'])
 
     --cooldown
@@ -2870,7 +2893,7 @@ function Troop:set_character()
         Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
         Helper.Time.wait(get_random(0, 0.1), function()
           
-          Helper.Spell.Missile.create(Helper.Color.orange, 10, self.dmg, self, true, 15)
+          Helper.Spell.Missile.create(Helper.Color.orange, 10, self.dmg, 300, self, true, 15)
         end)
       end
     end

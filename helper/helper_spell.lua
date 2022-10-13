@@ -24,6 +24,7 @@ Helper.Spell.spells = {
     Helper.Spell.SafetyDance,
     Helper.Spell.Sweep,
     Helper.Spell.Bomb,
+    Helper.Spell.Brust
 }
 
 function Helper.Spell.can_shoot(spell)
