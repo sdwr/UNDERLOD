@@ -1181,7 +1181,7 @@ function DotArea:init(args)
         targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
       end
       for _, target in ipairs(targets) do
-        target:hit(self.dmg/5, self.parent)
+        target:hit(self.dmg/5)
         HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
         for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
         for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
@@ -2763,8 +2763,10 @@ function Troop:set_character()
 
     self.state_always_run_functions['always_run'] = function()
       if Helper.Unit.can_cast(self) then
-        self:attack(self.dmg, {x = self.target.x, y = self.target.y})
-        self.last_attack_finished = Helper.Time.time
+        if self.target then
+          self:attack(self.dmg, {x = self.target.x, y = self.target.y})
+          self.last_attack_finished = Helper.Time.time
+        end
       end
     end
 
@@ -2886,6 +2888,39 @@ function Troop:set_character()
     --cancel on death
     self.state_change_functions['death'] = function()
       Helper.Spell.Missile.stop_aiming(self)
+      Helper.Unit.unclaim_target(self)
+    end
+
+  elseif self.character == 'bomber' then
+    self.attack_sensor = Circle(self.x, self.y, attack_ranges['whole-map'])
+
+    --cooldown
+    self.baseCooldown = attack_speeds['medium']
+    self.cooldownTime = self.baseCooldown
+    self.baseCast = attack_speeds['long-cast']
+    self.castTime = self.baseCast
+
+    --attack
+    self.explode_radius = 15
+
+    self.state_always_run_functions['always_run'] = function()
+      if Helper.Unit.can_cast(self) then
+        Helper.Spell.Bomb.create(black[2], false, self.dmg, 4, self, 1.5, self.explode_radius, self.x, self.y)
+      end
+    end
+
+    
+    --cancel on move
+    self.state_always_run_functions['following_or_rallying'] = function()
+        Helper.Spell.Bomb.stop_aiming(self)
+        Helper.Unit.unclaim_target(self)
+    end
+
+    self.state_change_functions['normal'] = function() end
+
+    --cancel on death
+    self.state_change_functions['death'] = function()
+      Helper.Spell.Bomb.stop_aiming(self)
       Helper.Unit.unclaim_target(self)
     end
 

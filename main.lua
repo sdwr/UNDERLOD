@@ -8,7 +8,8 @@ require 'player'
 require 'media'
 require 'helper/helper'
 require 'spawnmanager'
-require 'enemies.enemy_helper'
+require 'enemies/level_manager'
+require 'enemies/enemy_includes'
 require 'util/fpscounter'
 
 love.profiler = require('util/profiler/profile')
@@ -131,8 +132,8 @@ function init()
   rogue_crit1 = Sound('Dagger Stab (Flesh) 4.ogg', s)
   rogue_crit2 = Sound('Sword hits another sword 6.ogg', s)
 
-  -- sweep_sound = Sound('Spark 1.ogg', s)
-  sweep_sound = Sound('spell_sweep_saber_2.mp3', s)
+  sweep_sound = Sound('spell_sweep_saber.mp3', s)
+  sweep_sound_2 = Sound('spell_sweep_saber_2.mp3', s)
   
   song1 = Sound('gunnar - 26 hours and I feel Fine.mp3', {tags = {music}})
   song2 = Sound('gunnar - Back On Track.mp3', {tags = {music}})
@@ -317,6 +318,7 @@ function init()
     ['magician'] = 'Magician',
     ['pyro'] = 'Pyro',
     ['laser'] = 'Laser',
+    ['bomber'] = 'Bomber',
     ['cannon'] = 'Cannon',
     ['sniper'] = 'Sniper',
     ['scout'] = 'Scout',
@@ -330,7 +332,6 @@ function init()
     ['blade'] = 'Blade',
     ['elementor'] = 'Elementor',
     ['saboteur'] = 'Saboteur',
-    ['bomber'] = 'Bomber',
     ['stormweaver'] = 'Stormweaver',
     ['sage'] = 'Sage',
     ['squire'] = 'Squire',
@@ -387,6 +388,7 @@ function init()
     ['cannon'] = green[0],
     ['sniper'] = green[0],
     ['laser'] = blue[0],
+    ['bomber'] = orange[0],
     ['scout'] = red[0],
     ['cleric'] = green[0],
     ['shaman'] = blue[0],
@@ -398,7 +400,6 @@ function init()
     ['blade'] = yellow[0],
     ['elementor'] = blue[0],
     ['saboteur'] = orange[0],
-    ['bomber'] = orange[0],
     ['stormweaver'] = blue[0],
     ['sage'] = purple[0],
     ['squire'] = yellow[0],
@@ -453,6 +454,7 @@ function init()
     ['magician'] = 'blue',
     ['pyro'] = 'red',
     ['laser'] = 'blue',
+    ['bomber'] = 'orange',
     ['cannon'] = 'green',
     ['sniper'] = 'green',
     ['scout'] = 'red',
@@ -466,7 +468,6 @@ function init()
     ['blade'] = 'yellow',
     ['elementor'] = 'blue',
     ['saboteur'] = 'orange',
-    ['bomber'] = 'orange',
     ['stormweaver'] = 'blue',
     ['sage'] = 'purple',
     ['squire'] = 'yellow',
@@ -521,6 +522,7 @@ function init()
     ['cannon'] = 'ranger',
     ['sniper'] = 'ranger',
     ['laser'] = 'mage',
+    ['bomber'] = 'nuker',
     ['wizard'] = 'mage',
     ['shaman'] = 'mage',
     ['druid'] = 'healer',
@@ -529,7 +531,6 @@ function init()
     ['necromancer'] = 'cursed',
     ['cleric'] = 'healer',
     ['priest'] = 'healer',
-    ['bomber'] = 'nuker',
   }
 
   character_type_strings = {
@@ -541,6 +542,7 @@ function init()
     ['cannon'] = '[green]Ranger',
     ['sniper'] = '[green]Ranger',
     ['laser'] = '[blue]Mage',
+    ['bomber'] = '[red]Nuker, [orange]Builder',
     ['scout'] = '[red]Rogue',
     ['cleric'] = '[green]Healer',
     ['shaman'] = '[blue]Mage',
@@ -552,7 +554,6 @@ function init()
     ['blade'] = '[yellow]Warrior, [red]Nuker',
     ['elementor'] = '[blue]Mage, [red]Nuker',
     -- ['saboteur'] = '[red]Rogue, [orange]Conjurer, [red]Nuker',
-    ['bomber'] = '[red]Nuker, [orange]Builder',
     ['stormweaver'] = '[blue]Enchanter',
     ['sage'] = '[red]Nuker, [yellow]Forcer',
     ['squire'] = '[yellow]Warrior, [blue]Enchanter',
@@ -1040,6 +1041,7 @@ function init()
     ['cannon'] = {hp = 1, dmg = 2, def = 1.25, mvspd = 1},
     ['shaman'] = {hp = 1, dmg = 1, def = 1, mvspd = 1},
     ['sniper'] = {hp = 0.8, dmg = 4, def = 1, mvspd = 0.9},
+    ['bomber'] = {hp = 1, dmg = 6, def = 1, mvspd = 1.1},
 
     ['none'] = {hp = 1, dmg = 1, def = 1, mvspd = 1},
   }
@@ -1087,14 +1089,14 @@ function init()
   --wizard sucks right now, stacks blizzard and takes too long to cast
   tier_to_characters = {
     [1] = {'swordsman', 'pyro', 'cleric', 'laser'},
-    [2] = {'shaman', 'paladin', 'priest', 'cannon'},
+    [2] = {'shaman', 'paladin', 'priest', 'cannon', 'bomber'},
     [3] = {'sniper', 'necromancer', 'bard', 'druid'},
     [4] = {'juggernaut'},
   }
 
   first_run_tier_to_characters = {
     [1] = {'swordsman', 'pyro', 'laser'},
-    [2] = {'shaman', 'cannon', 'laser'},
+    [2] = {'shaman', 'cannon', 'laser', 'bomber'},
     [3] = {'sniper'},
     [4] = {'sniper'}
   }
@@ -1323,6 +1325,8 @@ function init()
     ['medium-long'] = 100,
     ['long'] = 150,
     ['ultra-long'] = 250,
+
+    ['whole-map'] = 999,
   }
 
   attack_speeds = {
@@ -1381,6 +1385,7 @@ function init()
     ['magician'] = 1,
     ['pyro'] = 1,
     ['laser'] = 1,
+    ['bomber'] = 2,
     ['cannon'] = 2,
     ['scout'] = 1,
     ['cleric'] = 1,

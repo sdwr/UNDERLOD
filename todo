@@ -8,6 +8,8 @@ safety dance doesn't damage every time
 ghost units stack ontop of each other
 critters arent affected by slow
 buffs with same name don't stack properly (first amt gets duration refreshed)
+buffs aren't the right size on all units (hidden under square, too big around rect)
+
 
 combat:
 rally doesn't work while shooting/about to shoot
@@ -169,6 +171,24 @@ items:
 ̶ ̶ ̶ ̶ ̶e̶n̶r̶a̶g̶e̶ ̶a̶l̶l̶i̶e̶s̶
 
 
+level effects 
+̶ ̶ ̶e̶g̶g̶,̶ ̶h̶a̶t̶c̶h̶e̶s̶ ̶i̶n̶t̶o̶ ̶l̶o̶t̶s̶ ̶o̶f̶ ̶c̶r̶i̶t̶t̶e̶r̶s̶
+  capture point
+    capture for team heal
+    capture for team aspd
+    capture to freeze/damage enemies
+      unkillable enemies that need to be wiped with capture point?
+
+
+allies
+  needler 
+    shoots clip of bullets in random spray around target
+  
+  bomb dropper
+
+  engineer
+    spawns turret
+    
 
 
 enemies
@@ -184,6 +204,10 @@ enemies
   add leapers
   add homing missiler
   add ranged archer
+
+  add minibosses
+    scaled up versions of regular casters
+
 
   add bosses
   ogre boss, big aoe stomp

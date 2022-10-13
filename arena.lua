@@ -4,6 +4,7 @@ Arena:implement(GameObject)
 function Arena:init(name)
   self:init_state(name)
   self:init_game_object()
+  LevelManager.init()
 end
 
 function Arena:select_character(character)
@@ -253,6 +254,7 @@ function Arena:update(dt)
   self.credits:update(dt)
 
   Helper.update(dt*slow_amount)
+  LevelManager.update(dt)
 end
 
 function Arena:target_enemy(enemy)

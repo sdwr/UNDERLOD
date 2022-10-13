@@ -143,6 +143,9 @@ function Summon:init(args)
   self.state = "charging"
 
   self.parent.state = 'frozen'
+  
+  self.color_transparent = self.color:clone()
+  self.color_transparent.a = 0.4
 
   self.summonTime = self.castTime or 3
   illusion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
@@ -189,6 +192,10 @@ end
 function Summon:recover()
   self.state = 'recovering'
   if self and self.parent then self.parent.state = 'normal' end
+  if self.suicide and self.parent then
+    self.parent:die()
+    self.dead = true
+  end
   if self then self.dead = true end
 end
 
@@ -198,8 +205,8 @@ function Summon:draw()
   if self.state == 'charging' then
     graphics.push(self.x, self.y, self.r + (self.vr or 0), self.spring.x, self.spring.x)
       -- graphics.circle(self.x, self.y, self.shape.rs + random:float(-1, 1), self.color, 2)
-      graphics.circle(self.x, self.y, self.attack_sensor.rs * math.min(self.currentTime / self.summonTime, 1) , purple_transparent)
-      graphics.circle(self.x, self.y, self.attack_sensor.rs, purple[0], 1)
+      graphics.circle(self.x, self.y, self.attack_sensor.rs * math.min(self.currentTime / self.summonTime, 1) , self.color_transparent)
+      graphics.circle(self.x, self.y, self.attack_sensor.rs, self.color, 1)
     graphics.pop()
   end
 

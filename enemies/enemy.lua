@@ -32,8 +32,6 @@ function Enemy:update(dt)
   
     self:calculate_stats()
   
-    self.stun_dmg_m = (self.barbarian_stunned and 2 or 1)
-  
     --get target / rotate to target
     if self.target and self.target.dead then self.target = nil end
     if self.state == unit_states['normal'] then
@@ -44,7 +42,7 @@ function Enemy:update(dt)
       if self.target then
         self:rotate_towards_object(self.target, 0.5)
       end
-    elseif self.state == unit_states['stopped'] or self.state == unit_states['channeling'] then
+    elseif self.state == unit_states['stopped'] or self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
       if self.target and not self.target.dead then
         self:rotate_towards_object(self.target, 1)
       end
@@ -149,6 +147,11 @@ end
 
 function Enemy:die()
     self.dead = true
+    if main.current:is(Arena) then
+      if main.current.targetedEnemy == self then
+        main.current.targetedEnemy = nil
+      end
+    end
     if self.parent and self.parent.summons and self.parent.summons > 0 then
       self.parent.summons = self.parent.summons - 1
     end
