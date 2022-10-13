@@ -25,10 +25,10 @@ function Helper.Spell.Sweep.create(color, damage_troops, damage, x1, y1, x2, y2)
         sweep.from_left = false
     end
 
-    -- Helper.Time.wait(0.8, function()
-    --     sweep_sound:play{volume = 3}
-    -- end)
-    Helper.Time.wait(0.4, function() sweep_sound:play{volume = 2} end)
+    Helper.Time.wait(0.8, function()
+        sweep_sound_2:play{volume = 3}
+    end)
+    -- Helper.Time.wait(0.4, function() sweep_sound:play{volume = 2} end)
 
     table.insert(Helper.Spell.Sweep.list, sweep)
 end
