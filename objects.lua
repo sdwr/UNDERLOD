@@ -259,14 +259,36 @@ function Unit:add_buff(buff)
   if existing_buff then
     self.buffs[buff.name].duration = math.max(existing_buff.duration, buff.duration)
   else
+    if buff.color then
+      local color = buff.color
+      color.a = 0.6
+      buff.color = color
+    end
     self.buffs[buff.name] = buff
+  end
+end
+
+function Unit:remove_buff(buffName)
+  local existing_buff = self.buffs[buffName]
+  if existing_buff then
+    self.buffs[buffName] = nil
+  end
+end
+
+function Unit:draw_buffs()
+  local i = 0.5
+  for _ , buff in pairs(self.buffs) do
+    if buff.color then
+      graphics.circle(self.x, self.y, ((self.shape.w) / 2) + (i), buff.color, 1)
+      i = i + 1
+    end
   end
 end
 
 function Unit:update_buffs(dt)
   for k, v in pairs(self.buffs) do
-    if v.name == 'druid_hot' then
-      self.hp = self.hp + (dt * v.heal_per_s)
+    if v.name == 'heal' then
+      self.hp = self.hp + (dt * v.stats.heal_pct_per_s * self.max_hp)
       if self.hp > self.max_hp then self.hp = self.max_hp end
     elseif k == 'stunned' then
       self.state = unit_states['frozen']
@@ -286,7 +308,7 @@ function Unit:update_buffs(dt)
 end
 
 
-function Unit:calculate_stats(first_run)
+function Unit:calculate_stats(first_run, dt)
   local level = self.level or 1
   local hpMod = 1 + ((level - 1) / 2)
   local dmgMod = 1 + ((level - 1) / 2)
@@ -294,32 +316,32 @@ function Unit:calculate_stats(first_run)
   if self:is(Player) then
     self.base_hp = 100
     self.base_dmg = 10
-    self.base_mvspd = 75
+    self.base_mvspd = 50
   elseif self:is(Troop) then
     self.base_hp = 100 * hpMod
     self.base_dmg = 10 * dmgMod
-    self.base_mvspd = 100 * spdMod
+    self.base_mvspd = 67 * spdMod
   elseif self:is(EnemyCritter) or self:is(Critter) then
     self.base_hp = 25 * hpMod
     self.base_dmg = 5 * dmgMod
-    self.base_mvspd = 150 * spdMod
+    self.base_mvspd = 100 * spdMod
   elseif self.class == 'regular_enemy' then
-    self.base_hp = 150 * (math.pow(1.05, level))
-    self.base_dmg = 20  * (math.pow(1.05, level))
-    self.base_mvspd = 50
+    self.base_hp = 150 * (math.pow(1.02, level))
+    self.base_dmg = 20  * (math.pow(1.02, level))
+    self.base_mvspd = 34
   elseif self.class == 'miniboss' then
-    self.base_hp = 500 * (math.pow(1.05, level))
-    self.base_dmg = 20  * (math.pow(1.05, level))
-    self.base_mvspd = 80
+    self.base_hp = 500 * (math.pow(1.02, level))
+    self.base_dmg = 20  * (math.pow(1.02, level))
+    self.base_mvspd = 55
   end
   if self.class == 'regular_enemy' and self.type == 'rager' then
-    self.base_mvspd = 150
+    self.base_mvspd = 100
     self.base_dmg = 10
   end
   if  self.class == 'boss' then
     self.base_hp = 1500 * (1 + ((level / 6) * 0.25))
     self.base_dmg = 30
-    self.base_mvspd = 50
+    self.base_mvspd = 34
   end
   self.base_aspd_m = 1
   self.base_area_dmg_m = 1
@@ -371,7 +393,6 @@ function Unit:calculate_stats(first_run)
   end
 
   self.enrage_on_death = false
-
 
   if self.buffs then
     for k, buff in pairs(self.buffs) do
@@ -432,21 +453,29 @@ function Unit:calculate_stats(first_run)
             self.bash_chance = self.bash_chance + amt
           elseif stat == buff_types['enrage'] then
             self.enrage_on_death = true
+          elseif stat == buff_types['heal'] then
+            self:heal_over_time(amt, 9999)
+          elseif stat == buff_types['explode'] then
+            self.canExplode = true
           end
         end
       end
     end
   end
 
-  self.class_hp_m = self.class_hp_m*class_stat_multipliers[self.class].hp
+  local unit_stat_mult = unit_stat_multipliers[self.character] or unit_stat_multipliers['none']
+
+  self.class_hp_m = self.class_hp_m*unit_stat_mult.hp
   self.max_hp = (self.base_hp + self.class_hp_a + self.buff_hp_a)*self.class_hp_m*self.buff_hp_m
   if first_run then self.hp = self.max_hp end
 
-  self.class_dmg_m = self.class_dmg_m*class_stat_multipliers[self.class].dmg
+  self.class_dmg_m = self.class_dmg_m*unit_stat_mult.dmg
   self.dmg = (self.base_dmg + self.class_dmg_a + self.buff_dmg_a)*self.class_dmg_m*self.buff_dmg_m
 
-  self.class_aspd_m = self.class_aspd_m*class_stat_multipliers[self.class].aspd
-  self.aspd_m = 1/(self.base_aspd_m*self.class_aspd_m*self.buff_aspd_m)
+  self.class_def_m = self.class_def_m*unit_stat_mult.def
+  self.def = (self.base_def + self.class_def_a + self.buff_def_a)*self.class_def_m*self.buff_def_m
+
+  self.aspd_m = 1/(self.base_aspd_m*self.buff_aspd_m)
 
   if self.baseCooldown then
     self.cooldownTime = self.baseCooldown * self.aspd_m
@@ -455,20 +484,9 @@ function Unit:calculate_stats(first_run)
     self.castTime = self.baseCast * self.aspd_m
   end
 
-  self.class_area_dmg_m = self.class_area_dmg_m*class_stat_multipliers[self.class].area_dmg
-  self.area_dmg_m = self.base_area_dmg_m*self.class_area_dmg_m*self.buff_area_dmg_m
+  self.area_size_m = self.base_area_size_m*self.buff_area_size_m
 
-  self.class_area_size_m = self.class_area_size_m*class_stat_multipliers[self.class].area_size
-  self.area_size_m = self.base_area_size_m*self.class_area_size_m*self.buff_area_size_m
-
-  self.class_def_m = self.class_def_m*class_stat_multipliers[self.class].def
-  self.def = (self.base_def + self.class_def_a + self.buff_def_a)*self.class_def_m*self.buff_def_m
-
-  
-  if self.slowed then self.slow_mvspd_m = math.max(1 - self.slowed, 0.2)
-  else self.slow_mvspd_m = 1 end
-
-  self.class_mvspd_m = self.class_mvspd_m*class_stat_multipliers[self.class].mvspd
+  self.class_mvspd_m = self.class_mvspd_m*unit_stat_mult.mvspd
   self.max_v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m
   self.v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m
 end
@@ -476,6 +494,7 @@ end
 function Unit:onHitCallbacks(dmg, from)
   if from ~= nil then
     from:onDamageDealt(dmg)
+    from:tryExplode(self)
     from:tryBash(self)
     if from.mvspd_slow ~=nil and from.mvspd_slow > 0 then
       self:slow(from.mvspd_slow, 2)
@@ -487,6 +506,21 @@ function Unit:onHitCallbacks(dmg, from)
   end
 end
 
+function Unit:tryExplode(enemy)
+  --means attack killed enemy
+  if enemy.dead and self.canExplode then
+    self:explode(enemy)
+  end
+end
+
+function Unit:explode(enemy)
+  local damage_troops = not self:is(Troop)
+  local radius = enemy.shape.w * self.area_size_m
+  explosion1:play{volume = 0.7}
+  Helper.Spell.DamageCircle.create(self, black[0], damage_troops, enemy.max_hp * 0.2, 
+  radius, enemy.x, enemy.y)
+end
+
 function Unit:tryBash(enemy)
   if self.canBash and random:float(0.0, 1.0) < self.bash_chance then
     self:bash(enemy)
@@ -495,15 +529,33 @@ end
 
 function Unit:bash(enemy)
   local duration = math.max(self.bash_duration * (1 - (enemy.status_resist or 0)), 0)
-  local stunBuff = {name = 'stunned', duration = duration}
-  enemy:add_buff(stunBuff)
+  enemy:stun(duration)
   local bashCooldown = {name = 'bash_cd', duration = self.bash_cd}
   self:add_buff(bashCooldown)
+end
+
+function Unit:stun(duration)
+  local stunBuff = {name = 'stunned', color = black[0], duration = duration}
+  self:add_buff(stunBuff)
 end
 
 function Unit:slow(amount, duration)
   local slowBuff = {name = 'slowed', color = blue[2], duration = duration, stats = {mvspd = -1 * amount}}
   self:add_buff(slowBuff)
+end
+
+function Unit:heal_over_time(amount, duration)
+  local healBuff = {name = 'heal', color = green[3], duration = duration, stats = {heal_pct_per_s = amount}}
+  self:add_buff(healBuff)
+end
+
+function Unit:set_as_target()
+  local targetBuff = {name = 'target', color = yellow[0], duration = 9999, stats = nil}
+  self:add_buff(targetBuff)
+end
+
+function Unit:untarget()
+  self:remove_buff('target')
 end
 
 function Unit:onDamageDealt(dmg)

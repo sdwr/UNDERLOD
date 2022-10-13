@@ -1,30 +1,35 @@
 Helper.Spell.Missile = {}
 
-Helper.Spell.Missile.speed = 300
 Helper.Spell.Missile.list = {}
 Helper.Spell.Missile.prelist = {}
 
-function Helper.Spell.Missile.create(color, missile_length, damage_troops, damage, unit, fly_infinitely, explode_radius, x, y, targetx, targety)
+function Helper.Spell.Missile.create(color, missile_length, damage, speed, unit, fly_infinitely, explode_radius, targetx, targety)
+    if unit.have_target or (targetx and targety) then
+        local missile = {
+            x = 0,
+            y = 0,
+            cast_time = unit.castTime or 0,
+            start_aim_time = Helper.Time.time,
+            unit = unit,
+            targetx = targetx or -1,
+            targety = targety or -1,
+            fly_infinitely = fly_infinitely,
+            color = color,
+            missile_length = missile_length,
+            missile_width = missile_length / 3,
+            explode_radius = explode_radius,
+            damage = damage,
+            speed = speed
+        }
 
-    local missile = {
-        x = x,
-        y = y,
-        cast_time = unit.castTime or 0,
-        start_aim_time = Helper.Time.time,
-        unit = unit,
-        targetx = targetx,
-        targety = targety,
-        fly_infinitely = fly_infinitely,
-        color = color,
-        missile_length = missile_length,
-        missile_width = missile_length / 3,
-        explode_radius = explode_radius,
-        damage_troops = damage_troops,
-        damage = damage
-    }
+        if unit and unit.area_size_m then
+            missile.explode_radius = missile.explode_radius * unit.area_size_m
+            missile.missile_width = missile.missile_width * unit.area_size_m
+        end
 
-    Helper.Unit.start_casting(unit)
-    table.insert(Helper.Spell.Missile.prelist, missile)
+        Helper.Unit.start_casting(unit)
+        table.insert(Helper.Spell.Missile.prelist, missile)
+    end
 end
 
 function Helper.Spell.Missile.draw()
@@ -45,6 +50,8 @@ function Helper.Spell.Missile.draw()
         love.graphics.setLineWidth(missile.missile_width)
         love.graphics.setColor(missile.color.r, missile.color.g, missile.color.b, missile.color.a)
         love.graphics.line(missile.x - deltax, missile.y - deltay, missile.x + deltax, missile.y + deltay)
+        love.graphics.circle('fill', missile.x - deltax, missile.y - deltay, missile.missile_width / 2)
+        love.graphics.circle('fill', missile.x + deltax, missile.y + deltay, missile.missile_width / 2)
     end
 end
 
@@ -55,8 +62,9 @@ end
 function Helper.Spell.Missile.set_position(missile)
     missile.x = missile.unit.x
     missile.y = missile.unit.y
+    
     -- only players have cooldown? fix
-    if missile.unit and missile.unit.claimed_target.x then
+    if missile.unit.have_target and (missile.targetx == -1 or missile.targety == -1) then
         missile.targetx, missile.targety = Helper.Spell.Laser.get_end_location(missile.x, missile.y, 
         missile.unit.claimed_target.x, missile.unit.claimed_target.y)
     end
@@ -70,7 +78,7 @@ function Helper.Spell.Missile.shoot()
             table.insert(Helper.Spell.Missile.list, missile)
             table.remove(Helper.Spell.Missile.prelist, i)
 
-            Helper.Unit.unclaim_target(missile.unit)
+            -- Helper.Unit.unclaim_target(missile.unit)
             Helper.Unit.finish_casting(missile.unit)
         end
     end
@@ -89,11 +97,11 @@ function Helper.Spell.Missile.update_position()
         local deltay = 0
         if missile.targety - missile.y ~= 0 then
             xdivy = (missile.targetx - missile.x) / (missile.targety - missile.y)
-            deltay = math.sqrt((((Helper.Spell.Missile.speed * Helper.Time.delta_time)/2)^2) / (xdivy^2 + 1))
+            deltay = math.sqrt((((missile.speed * Helper.Time.delta_time)/2)^2) / (xdivy^2 + 1))
             deltax = deltay * xdivy
         else
             deltay = 0
-            deltax = (Helper.Spell.Missile.speed * Helper.Time.delta_time) / 2
+            deltax = (missile.speed * Helper.Time.delta_time) / 2
         end
 
         if missile.targety - missile.y > 0 then
@@ -116,22 +124,22 @@ function Helper.Spell.Missile.explode()
     for i = #Helper.Spell.Missile.list, 1, -1 do
         local missile = Helper.Spell.Missile.list[i]
         if not missile.fly_infinitely then
-            if Helper.Geometry.distance(missile.x, missile.y, missile.targetx, missile.targety) < missile.missile_length / 3 then
-                Helper.Spell.DamageCircle.create(missile.unit, missile.color, missile.damage_troops, 
+            if Helper.Geometry.distance(missile.x, missile.y, missile.targetx, missile.targety) < missile.missile_length / 2 then
+                Helper.Spell.DamageCircle.create(missile.unit, missile.color, not missile.unit.is_troop, 
                 missile.damage, missile.explode_radius, missile.x, missile.y)
                 table.remove(Helper.Spell.Missile.list, i)
                 shoot1:play{volume=0.7}
             end
         else
             local entities = {}
-            if not missile.damage_troops then
+            if missile.unit.is_troop then
                 entities = main.current.main:get_objects_by_classes(main.current.enemies)
             else
                 entities = main.current.main:get_objects_by_class(Troop)
             end
             for _, entity in ipairs(entities) do
-                if Helper.Geometry.distance(missile.x, missile.y, entity.x, entity.y) < missile.missile_length / 3 then
-                    Helper.Spell.DamageCircle.create(missile.unit, missile.color, missile.damage_troops, 
+                if Helper.Geometry.distance(missile.x, missile.y, entity.x, entity.y) < missile.missile_length / 2 then
+                    Helper.Spell.DamageCircle.create(missile.unit, missile.color, not missile.unit.is_troop, 
                     missile.damage, missile.explode_radius, missile.x, missile.y)
                     table.remove(Helper.Spell.Missile.list, i)
                     shoot1:play{volume=0.7}
@@ -139,9 +147,9 @@ function Helper.Spell.Missile.explode()
                 end 
             end
 
-            if Helper.window_width - missile.x < missile.missile_length / 3 or missile.x <= missile.missile_length / 3 
-            or Helper.window_height - missile.y < missile.missile_length / 3 or missile.y <= missile.missile_length / 3 then
-                Helper.Spell.DamageCircle.create(missile.unit, missile.color, missile.damage_troops, 
+            if Helper.window_width - missile.x < missile.missile_length / 2 or missile.x <= missile.missile_length / 2 
+            or Helper.window_height - missile.y < missile.missile_length / 2 or missile.y <= missile.missile_length / 2 then
+                Helper.Spell.DamageCircle.create(missile.unit, missile.color, not missile.unit.is_troop, 
                 missile.damage, missile.explode_radius, missile.x, missile.y)
                 table.remove(Helper.Spell.Missile.list, i)
                 shoot1:play{volume=0.7}

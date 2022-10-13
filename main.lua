@@ -6,10 +6,14 @@ require 'buy_screen'
 require 'objects'
 require 'player'
 require 'media'
-require 'helper/helper_main'
+require 'helper/helper'
 require 'spawnmanager'
-require 'enemies.enemy_helper'
-require 'ui/fpscounter'
+require 'enemies/level_manager'
+require 'enemies/enemy_includes'
+require 'util/fpscounter'
+
+love.profiler = require('util/profiler/profile')
+require 'util/runprofiler'
 
 
 
@@ -85,6 +89,7 @@ function init()
   hit4 = Sound('Kick 16_2.ogg', s)
   sniper_load = Sound('sniper_load.ogg', s)
   proj_hit_wall1 = Sound('Player Takes Damage 2.ogg', s)
+  glass_shatter = Sound('Damage 3.ogg', s)
   enemy_die1 = Sound('Bloody punches 7.ogg', s)
   enemy_die2 = Sound('Bloody punches 10.ogg', s)
   magic_area1 = Sound('Fire bolt 10.ogg', s)
@@ -126,6 +131,9 @@ function init()
   turret_deploy = Sound('321215__hybrid-v__sci-fi-weapons-deploy.ogg', s)
   rogue_crit1 = Sound('Dagger Stab (Flesh) 4.ogg', s)
   rogue_crit2 = Sound('Sword hits another sword 6.ogg', s)
+
+  sweep_sound = Sound('spell_sweep_saber.mp3', s)
+  sweep_sound_2 = Sound('spell_sweep_saber_2.mp3', s)
   
   song1 = Sound('gunnar - 26 hours and I feel Fine.mp3', {tags = {music}})
   song2 = Sound('gunnar - Back On Track.mp3', {tags = {music}})
@@ -310,6 +318,7 @@ function init()
     ['magician'] = 'Magician',
     ['pyro'] = 'Pyro',
     ['laser'] = 'Laser',
+    ['bomber'] = 'Bomber',
     ['cannon'] = 'Cannon',
     ['sniper'] = 'Sniper',
     ['scout'] = 'Scout',
@@ -323,7 +332,6 @@ function init()
     ['blade'] = 'Blade',
     ['elementor'] = 'Elementor',
     ['saboteur'] = 'Saboteur',
-    ['bomber'] = 'Bomber',
     ['stormweaver'] = 'Stormweaver',
     ['sage'] = 'Sage',
     ['squire'] = 'Squire',
@@ -380,6 +388,7 @@ function init()
     ['cannon'] = green[0],
     ['sniper'] = green[0],
     ['laser'] = blue[0],
+    ['bomber'] = orange[0],
     ['scout'] = red[0],
     ['cleric'] = green[0],
     ['shaman'] = blue[0],
@@ -391,7 +400,6 @@ function init()
     ['blade'] = yellow[0],
     ['elementor'] = blue[0],
     ['saboteur'] = orange[0],
-    ['bomber'] = orange[0],
     ['stormweaver'] = blue[0],
     ['sage'] = purple[0],
     ['squire'] = yellow[0],
@@ -446,6 +454,7 @@ function init()
     ['magician'] = 'blue',
     ['pyro'] = 'red',
     ['laser'] = 'blue',
+    ['bomber'] = 'orange',
     ['cannon'] = 'green',
     ['sniper'] = 'green',
     ['scout'] = 'red',
@@ -459,7 +468,6 @@ function init()
     ['blade'] = 'yellow',
     ['elementor'] = 'blue',
     ['saboteur'] = 'orange',
-    ['bomber'] = 'orange',
     ['stormweaver'] = 'blue',
     ['sage'] = 'purple',
     ['squire'] = 'yellow',
@@ -514,6 +522,7 @@ function init()
     ['cannon'] = 'ranger',
     ['sniper'] = 'ranger',
     ['laser'] = 'mage',
+    ['bomber'] = 'nuker',
     ['wizard'] = 'mage',
     ['shaman'] = 'mage',
     ['druid'] = 'healer',
@@ -522,7 +531,6 @@ function init()
     ['necromancer'] = 'cursed',
     ['cleric'] = 'healer',
     ['priest'] = 'healer',
-    ['bomber'] = 'nuker',
   }
 
   character_type_strings = {
@@ -534,6 +542,7 @@ function init()
     ['cannon'] = '[green]Ranger',
     ['sniper'] = '[green]Ranger',
     ['laser'] = '[blue]Mage',
+    ['bomber'] = '[red]Nuker, [orange]Builder',
     ['scout'] = '[red]Rogue',
     ['cleric'] = '[green]Healer',
     ['shaman'] = '[blue]Mage',
@@ -545,7 +554,6 @@ function init()
     ['blade'] = '[yellow]Warrior, [red]Nuker',
     ['elementor'] = '[blue]Mage, [red]Nuker',
     -- ['saboteur'] = '[red]Rogue, [orange]Conjurer, [red]Nuker',
-    ['bomber'] = '[red]Nuker, [orange]Builder',
     ['stormweaver'] = '[blue]Enchanter',
     ['sage'] = '[red]Nuker, [yellow]Forcer',
     ['squire'] = '[yellow]Warrior, [blue]Enchanter',
@@ -598,7 +606,7 @@ function init()
     local troop = Troop{group = group, leader = true, character = character, level = level, follower_index = 1}
     troop:update(0)
     return '[red]HP: [red]' .. troop.max_hp .. '[fg], [red]DMG: [red]' .. troop.dmg .. '[fg], [green]ASPD: [green]' .. math.round(troop.aspd_m, 2) .. 'x[fg], [blue]AREA: [blue]' ..
-    math.round(troop.area_dmg_m*troop.area_size_m, 2) ..  'x[fg], [yellow]DEF: [yellow]' .. math.round(troop.def, 2) .. '[fg], [green]MVSPD: [green]' .. math.round(troop.v, 2) .. '[fg]'
+    math.round(troop.area_size_m, 2) ..  'x[fg], [yellow]DEF: [yellow]' .. math.round(troop.def, 2) .. '[fg], [green]MVSPD: [green]' .. math.round(troop.v, 2) .. '[fg]'
   end
 
   get_character_stat = function(character, level, stat)
@@ -1026,6 +1034,18 @@ function init()
     ['enemy_critter'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 0.5},
   }
 
+  unit_stat_multipliers = {
+    ['swordsman'] = {hp = 1.5, dmg = 1.25, def = 1.25, mvspd = 1},
+    ['laser'] = {hp = 1, dmg = 1, def = 1, mvspd = 1},
+    ['pyro'] = {hp = 1.25, dmg = 1, def = 1.25, mvspd = 1},
+    ['cannon'] = {hp = 1, dmg = 2, def = 1.25, mvspd = 1},
+    ['shaman'] = {hp = 1, dmg = 1, def = 1, mvspd = 1},
+    ['sniper'] = {hp = 0.8, dmg = 4, def = 1, mvspd = 0.9},
+    ['bomber'] = {hp = 1, dmg = 6, def = 1, mvspd = 1.1},
+
+    ['none'] = {hp = 1, dmg = 1, def = 1, mvspd = 1},
+  }
+
   local ylb1 = function(lvl)
     if lvl == 3 then return 'light_bg'
     elseif lvl == 2 then return 'light_bg'
@@ -1069,14 +1089,14 @@ function init()
   --wizard sucks right now, stacks blizzard and takes too long to cast
   tier_to_characters = {
     [1] = {'swordsman', 'pyro', 'cleric', 'laser'},
-    [2] = {'shaman', 'paladin', 'priest', 'cannon'},
+    [2] = {'shaman', 'paladin', 'priest', 'cannon', 'bomber'},
     [3] = {'sniper', 'necromancer', 'bard', 'druid'},
     [4] = {'juggernaut'},
   }
 
   first_run_tier_to_characters = {
     [1] = {'swordsman', 'pyro', 'laser'},
-    [2] = {'shaman', 'cannon', 'laser'},
+    [2] = {'shaman', 'cannon', 'laser', 'bomber'},
     [3] = {'sniper'},
     [4] = {'sniper'}
   }
@@ -1113,6 +1133,9 @@ function init()
     ['basher'] = forcer_elite,
     ['berserkerbelt'] = awakening,
     ['heartofgold'] = star,
+    ['healingleaf'] = healer,
+
+    ['corpseexplode'] = seeping,
 
   }
 
@@ -1148,6 +1171,10 @@ function init()
     ['basher'] = 6,
     ['berserkerbelt'] = 6,
     ['heartofgold'] = 6,
+    ['healingleaf'] = 6,
+
+    ['corpseexplode'] = 10,
+
   }
 
   item_stat_multipliers = {
@@ -1181,7 +1208,10 @@ function init()
     ['spikedcollar'] = {thorns = 0.1, hp = 0.2},
     ['basher'] = {bash = 0.2, dmg = 0.25},
     ['berserkerbelt'] = {enrage = 1},
-    ['heartofgold'] = {gold = 1, hp = 0.2}
+    ['heartofgold'] = {gold = 1, hp = 0.2},
+    ['healingleaf'] = {heal = 0.02, aspd = 0.1},
+    
+    ['corpseexplode'] = {explode = 1, dmg = 0.2},
 
   }
 
@@ -1199,28 +1229,9 @@ function init()
     ['bash'] = 'chance to stun',
     ['enrage'] = 'enrage allies on death',
     ['gold'] = 'gold per round',
+    ['heal'] = 'healing per second',
+    ['explode'] = 'explode on kill',
   }
-
-  build_item_text = function(item)
-    local out = {}
-    table.insert(out, {text = '[fg]' .. item_text[item] .. ', costs: ' .. item_costs[item], font = pixul_font, alignment = 'center',
-    height_multiplier = 1.25})
-    local stats = item_stat_multipliers[item]
-    if stats then
-      for key, val in pairs(stats) do
-        local text = ''
-        if key == 'gold' then
-          text = '[fg] ' .. val .. ' ' .. (item_stat_lookup[key] or '')
-        elseif key == 'enrage' or key =='ghost' then
-          text = '[fg] ' .. (item_stat_lookup[key] or '')
-        else
-          text = '[fg] ' .. val * 100 .. '% ' .. (item_stat_lookup[key] or '')
-        end
-        table.insert(out, {text = text, font = pixul_font, alignment = 'center', height_multiplier = 1.25})
-      end
-    end
-    return out
-  end
 
   item_text = {
     ['smallsword'] = "A tiny sword",
@@ -1254,6 +1265,9 @@ function init()
     ['basher'] = "Basher",
     ['berserkerbelt'] = "Berserker belt",
     ['heartofgold'] = "Heart of gold",
+    ['healingleaf'] = "Healing leaf",
+
+    ['corpseexplode'] = "Corpse exploder",
   }
 
   tier_to_items = {
@@ -1261,11 +1275,34 @@ function init()
            'smallbomb'},
     [2] = {'medsword', 'medboots', 'medbow', 'medvest', 'medshield',
            'medbomb', 'vampirism', 'ghostboots', 'frostorb', 'spikedcollar',
-           'basher', 'berserkerbelt', 'heartofgold'},
+           'basher', 'berserkerbelt', 'heartofgold', 'healingleaf'},
     [3] = {'largesword', 'largeboots', 'largebow', 'largevest', 'largeshield',
-           'largebomb'},
+           'largebomb',
+          
+          'corpseexplode'},
     [4] = {'largesword'},
   }
+
+  build_item_text = function(item)
+    local out = {}
+    table.insert(out, {text = '[fg]' .. item_text[item] .. ', costs: ' .. item_costs[item], font = pixul_font, alignment = 'center',
+    height_multiplier = 1.25})
+    local stats = item_stat_multipliers[item]
+    if stats then
+      for key, val in pairs(stats) do
+        local text = ''
+        if key == 'gold' then
+          text = '[fg] ' .. val .. ' ' .. (item_stat_lookup[key] or '')
+        elseif key == 'enrage' or key =='ghost' then
+          text = '[fg] ' .. (item_stat_lookup[key] or '')
+        else
+          text = '[fg] ' .. val * 100 .. '% ' .. (item_stat_lookup[key] or '')
+        end
+        table.insert(out, {text = text, font = pixul_font, alignment = 'center', height_multiplier = 1.25})
+      end
+    end
+    return out
+  end
   
   item_to_color = function(item)
     local cost = item_costs[item]
@@ -1288,21 +1325,24 @@ function init()
     ['medium-long'] = 100,
     ['long'] = 150,
     ['ultra-long'] = 250,
+
+    ['whole-map'] = 999,
   }
 
   attack_speeds = {
-    ['short-cast'] = 0.15,
-    ['medium-cast'] = 0.25,
-    ['long-cast'] = 0.5,
+    ['short-cast'] = 0.25,
+    ['medium-cast'] = 0.37,
+    ['long-cast'] = 0.66,
+    ['ultra-long-cast'] = 1,
     
-    ['buff'] = 0.5,
-    ['ultra-fast'] = 0.78,
-    ['fast'] = 1,
-    ['medium-fast'] = 1.35,
-    ['medium'] = 1.75,
-    ['medium-slow'] = 2.5,
-    ['slow'] = 3.5,
-    ['ultra-slow'] = 6
+    ['buff'] = 0.66,
+    ['ultra-fast'] = 1,
+    ['fast'] = 1.35,
+    ['medium-fast'] = 1.75,
+    ['medium'] = 2.5,
+    ['medium-slow'] = 3.5,
+    ['slow'] = 5,
+    ['ultra-slow'] = 8
   }
 
   move_speeds = {
@@ -1332,6 +1372,8 @@ function init()
     ['ghost'] = 'ghost',
     ['slow'] = 'slow',
     ['bash'] = 'bash',
+    ['heal'] = 'heal',
+    ['explode'] = 'explode',
   }
 
   non_attacking_characters = {'cleric', 'stormweaver', 'squire', 'chronomancer', 'sage', 'psykeeper', 'bane', 'carver', 'fairy', 'priest', 'paladin', 'necromancer', 'bard', 'druid', 'flagellant', 'merchant', 'miner'}
@@ -1343,6 +1385,7 @@ function init()
     ['magician'] = 1,
     ['pyro'] = 1,
     ['laser'] = 1,
+    ['bomber'] = 2,
     ['cannon'] = 2,
     ['scout'] = 1,
     ['cleric'] = 1,
@@ -1820,8 +1863,12 @@ function init()
 end
 
 
+love.frame = 0
 function update(dt)
   main:update(dt)
+  if love.USE_PROFILER then
+    Run_Profiler()
+  end
 
   --[[
   if input.b.pressed then
@@ -1895,6 +1942,10 @@ function draw()
   shared_draw(function()
     main:draw()
   end)
+
+  if love.USE_PROFILER then
+    Draw_Profiler()
+  end
 end
 
 
@@ -2194,6 +2245,7 @@ end
 
 
 function love.run()
+
   return engine_run({
     game_name = 'UNDERLOD',
     window_width = 'max',

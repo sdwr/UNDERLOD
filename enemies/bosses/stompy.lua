@@ -4,7 +4,7 @@ local fns = {}
 
 fns['attack'] = function(self, area, mods, color)
   mods = mods or {}
-  local t = {team = "enemy", group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(area or 64), color = color or self.color, dmg = self.area_dmg_m*self.dmg,
+  local t = {team = "enemy", group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(area or 64), color = color or self.color, dmg = self.dmg,
     character = self.character, level = self.level, parent = self}
 
   self.state = unit_states['frozen']

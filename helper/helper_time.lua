@@ -8,7 +8,7 @@ Helper.Time.time = love.timer.getTime()
 
 Helper.Time.intervals = {}
 
-function Helper.Time.set_interval(delay, intervalfunction)
+function Helper.Time.set_interval(delay, intervalfunction, number_of_loops)
     local id = -1
 
     for _, interval in ipairs(Helper.Time.intervals) do
@@ -27,7 +27,8 @@ function Helper.Time.set_interval(delay, intervalfunction)
         startat = Helper.Time.time,
         delay = delay,
         looped = 1,
-        stopped = false
+        stopped = false,
+        number_of_loops = number_of_loops or -1
     }
 
     Helper.Time.intervals[id] = interval
@@ -36,7 +37,9 @@ function Helper.Time.set_interval(delay, intervalfunction)
 end
 
 function Helper.Time.stop_interval(id)
-    Helper.Time.intervals[id].stopped = true
+    if id <= #Helper.Time.intervals then
+        Helper.Time.intervals[id].stopped = true
+    end
 end
 
 function Helper.Time.stop_all_intervals()
@@ -50,6 +53,9 @@ function Helper.Time.run_intervals()
         if Helper.Time.time - interval.startat > interval.delay * interval.looped and not interval.stopped then
             interval.intervalfunction()
             interval.looped = interval.looped + 1
+            if interval.number_of_loops ~= -1 and interval.looped > interval.number_of_loops then
+                interval.stopped = true
+            end
         end
     end
 end

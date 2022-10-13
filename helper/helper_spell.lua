@@ -1,14 +1,17 @@
 Helper.Spell = {}
 
-require 'helper/spells/flame_spell'
-require 'helper/spells/missile_spell'
+require 'helper/spells/flame'
+require 'helper/spells/missile'
 require 'helper/spells/damage_circle'
-require 'helper/spells/laser_spell'
+require 'helper/spells/laser'
 require 'helper/spells/damage_line'
-require 'helper/spells/spread_laser_spell'
-require 'helper/spells/spread_missile_spell'
+require 'helper/spells/spread_laser'
+require 'helper/spells/spread_missile'
 require 'helper/spells/damage_arc'
-require 'helper/spells/sweep_spell'
+require 'helper/spells/safety_dance'
+require 'helper/spells/sweep'
+require 'helper/spells/brust'
+require 'helper/spells/bomb'
 
 Helper.Spell.spells = {
     Helper.Spell.SpreadMissile,
@@ -18,7 +21,10 @@ Helper.Spell.spells = {
     Helper.Spell.DamageCircle, 
     Helper.Spell.DamageLine,
     Helper.Spell.DamageArc,
-    Helper.Spell.Sweep
+    Helper.Spell.SafetyDance,
+    Helper.Spell.Sweep,
+    Helper.Spell.Bomb,
+    Helper.Spell.Brust
 }
 
 function Helper.Spell.can_shoot(spell)
@@ -36,6 +42,17 @@ function Helper.Spell.get_nearest_target(unit, include_list)
     if #unit_list > 0 then
         local target = {}
         local distancemin = 100000000
+
+        local globalTarget = nil
+        if main and main.current and main.current.targetedEnemy then
+            globalTarget = main.current.targetedEnemy
+        end
+
+        --check global target first
+        if is_in_list(include_list, globalTarget) and Helper.Geometry.distance(unit.x, unit.y, globalTarget.x, globalTarget.y) then
+            return globalTarget
+        end
+
         for _, value in ipairs(unit_list) do
             if Helper.Geometry.distance(unit.x, unit.y, value.x, value.y) < distancemin and (#include_list == 0 or is_in_list(include_list, value)) then
                 distancemin = Helper.Geometry.distance(unit.x, unit.y, value.x, value.y)
@@ -68,6 +85,12 @@ function Helper.Spell.get_nearest_least_targeted(unit, range)
         if #value.targeted_by == targeted_min then
             table.insert(least_targeted_units, value)
         end
+    end
+
+    local globalTarget = nil
+    if main and main.current and main.current.targetedEnemy then
+        globalTarget = main.current.targetedEnemy
+        table.insert(least_targeted_units, globalTarget)
     end
 
     return Helper.Spell.get_nearest_target(unit, least_targeted_units)

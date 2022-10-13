@@ -4,6 +4,7 @@ Arena:implement(GameObject)
 function Arena:init(name)
   self:init_state(name)
   self:init_game_object()
+  LevelManager.init()
 end
 
 function Arena:select_character(character)
@@ -36,6 +37,7 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
   main_song_instance:stop()
 
   self.starting_units = table.copy(units)
+  self.targetedEnemy = nil
 
   --if not state.mouse_control then
     --input:set_mouse_visible(false)
@@ -174,6 +176,7 @@ end
 
 
 function Arena:update(dt)
+
   if main_song_instance:isStopped() then
     if self.level <= 6 then
       --zone 1, gunnar
@@ -189,10 +192,20 @@ function Arena:update(dt)
   end
 
   if not self.paused then
+    --select character from hotbar
     self.troop_list = self.main:get_objects_by_class(Troop)
     for i = 1, 9 do
       if input[tostring(i)].pressed then
         self:select_character_by_index(i)
+      end
+    end
+    --target enemy with rightclick
+    if input["m2"].pressed then
+      local mx, my = self.main.camera:get_mouse_position()
+      local mouseCircle = Circle(mx, my, 5)
+      local targets = self.main:get_objects_in_shape(mouseCircle, self.enemies)
+      if targets and #targets > 0 then
+        self:target_enemy(targets[1])
       end
     end
   end
@@ -252,13 +265,22 @@ function Arena:update(dt)
 
   star_group:update(dt*slow_amount)
   self.floor:update(dt*slow_amount)
-  self.main:update(dt*slow_amount*self.main_slow_amount)
+  self.main:update(dt*slow_amount)
   self.post_main:update(dt*slow_amount)
   self.effects:update(dt*slow_amount)
   self.ui:update(dt*slow_amount)
   self.credits:update(dt)
 
   Helper.update(dt*slow_amount)
+  LevelManager.update(dt)
+end
+
+function Arena:target_enemy(enemy)
+  if self.targetedEnemy then
+    self.targetedEnemy:untarget()
+  end
+  self.targetedEnemy = enemy
+  self.targetedEnemy:set_as_target()
 end
 
 
@@ -521,6 +543,7 @@ function Arena:draw()
     graphics.rectangle(gw/2, gh/2, self.w, self.h, nil, nil, fg[0])
     camera:detach()
   end, true)
+  
 
   camera:attach()
   --self:display_text()

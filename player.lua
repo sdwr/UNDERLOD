@@ -875,16 +875,16 @@ function Projectile:die(x, y, r, n)
   self.dead = true
 
   if self.character == 'wizard' then
-    Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*24, color = self.color, dmg = self.parent.area_dmg_m*self.dmg, character = self.character, level = self.level, parent = self,
+    Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*24, color = self.color, dmg = self.dmg, character = self.character, level = self.level, parent = self,
       void_rift = self.parent.void_rift, echo_barrage = self.parent.echo_barrage}
   elseif self.character == 'cannon' then
-    Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*32, color = self.color, dmg = self.parent.area_dmg_m*self.dmg, character = self.character, level = self.level, parent = self,
+    Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*32, color = self.color, dmg = self.dmg, character = self.character, level = self.level, parent = self,
       void_rift = self.parent.void_rift, echo_barrage = self.parent.echo_barrage}
   elseif self.character == 'blade' then
-    Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*64, color = self.color, dmg = self.parent.area_dmg_m*self.dmg, character = self.character, level = self.level, parent = self,
+    Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*64, color = self.color, dmg = self.dmg, character = self.character, level = self.level, parent = self,
       void_rift = self.parent.void_rift, echo_barrage = self.parent.echo_barrage}
   elseif self.character == 'cannoneer' then
-    Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*96, color = self.color, dmg = 2*self.parent.area_dmg_m*self.dmg, character = self.character, level = self.level, parent = self,
+    Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*96, color = self.color, dmg = self.dmg, character = self.character, level = self.level, parent = self,
       void_rift = self.parent.void_rift, echo_barrage = self.parent.echo_barrage}
     if self.level == 3 then
       self.parent.t:every(0.3, function()
@@ -997,7 +997,7 @@ function Projectile:on_trigger_enter(other, contact)
     other:hit(self.dmg*(self.distance_dmg_m or 1), self)
 
     if self.character == 'wizard' and self.level == 3 then
-      Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*32, color = self.color, dmg = self.parent.area_dmg_m*self.dmg, character = self.character, parent = self,
+      Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*32, color = self.color, dmg = self.dmg, character = self.character, parent = self,
         void_rift = self.parent.void_rift, echo_barrage = self.parent.echo_barrage}
     end
 
@@ -1089,7 +1089,7 @@ function Projectile:on_trigger_enter(other, contact)
 
     if self.parent and self.parent.void_rift and self.class == 'mage' then
       if random:bool(20) then
-        DotArea{group = main.current.effects, x = self.x, y = self.y, rs = self.parent.area_size_m*24, color = self.color, dmg = self.parent.area_dmg_m*self.dmg*(self.parent.dot_dmg_m or 1), void_rift = true, duration = 1}
+        DotArea{group = main.current.effects, x = self.x, y = self.y, rs = self.parent.area_size_m*24, color = self.color, dmg = self.dmg*(self.parent.dot_dmg_m or 1), void_rift = true, duration = 1}
       end
     end
   end
@@ -1181,7 +1181,7 @@ function DotArea:init(args)
         targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
       end
       for _, target in ipairs(targets) do
-        target:hit(self.dmg/5, self.parent)
+        target:hit(self.dmg/5)
         HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
         for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
         for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
@@ -1596,35 +1596,36 @@ function Snipe:init(args)
 
   self.color = red[0]:clone()
   self.currentTime = 0
+  self.color.a = math.min(self.currentTime, 1)
 
   self.state = "charging"
-  self.parent.state = 'frozen'
+  Helper.Unit.start_casting(self.parent)
   sniper_load:play({volume = 0.5})
-  self.t:after(1, function() self:fire() end)
-  self.t:after(1.25, function() self:recover() end)
+  self.t:after(self.parent.castTime, function() self:fire() end, 'shoot')
+
+end
+
+function Snipe:cancel()
+  self.dead = true
+  Helper.Unit.unclaim_target(self.parent)
 
 end
 
 function Snipe:update(dt)
-  if self.parent and self.parent.dead == true then self.recover() return end
-  if not self.target or self.target.dead == true then self:recover() return end
   self:update_game_object(dt)
+  if self.parent and self.parent.dead == true then self:cancel() return end
+  if not self.target or self.target.dead == true then self:cancel() return end
   self.currentTime = self.currentTime + dt
 
-  self.color.a = math.min(self.currentTime, 1)
+  self.color.a = math.min(self.currentTime / self.parent.castTime, 1)
 
 end
 
 function Snipe:fire()
-  if self then self.state = "recovering" else return end
-  if self.parent then self.parent.state = 'stopped' end
   dual_gunner2:play({pitch = random:float(0.9, 1.1), volume = 0.7})
   if self.target then self.target:hit(self.dmg, self.parent) end
-end
-
-function Snipe:recover()
-  if self then self.dead = true else return end
-  if self.parent then self.parent.state = 'normal' end
+  Helper.Unit.finish_casting(self.parent)
+  self:cancel()
 end
 
 function Snipe:draw()
@@ -2024,7 +2025,7 @@ function Volcano:init(args)
     camera:shake(4, 0.5)
     _G[random:table{'earth1', 'earth2', 'earth3'}]:play{pitch = random:float(0.95, 1.05), volume = 0.25}
     _G[random:table{'fire1', 'fire2', 'fire3'}]:play{pitch = random:float(0.95, 1.05), volume = 0.25}
-    Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*72, r = random:float(0, 2*math.pi), color = self.color, dmg = (self.parent.area_dmg_m or 1)*self.parent.dmg,
+    Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*72, r = random:float(0, 2*math.pi), color = self.color, dmg = self.parent.dmg,
       character = self.parent.character, level = self.parent.level, parent = self, void_rift = self.parent.void_rift, echo_barrage = self.parent.echo_barrage}
   end, self.level == 3 and 8 or 4)
 
@@ -2223,7 +2224,7 @@ function Turret:init(args)
     if self.parent.construct_instability then
       camera:shake(2, 0.5)
       local n = (self.parent.construct_instability == 1 and 1) or (self.parent.construct_instability == 2 and 1.5) or (self.parent.construct_instability == 3 and 2) or 1
-      Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*48, color = self.color, dmg = n*self.parent.dmg*self.parent.area_dmg_m, parent = self.parent}
+      Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*48, color = self.color, dmg = n*self.parent.dmg, parent = self.parent}
       _G[random:table{'cannoneer1', 'cannoneer2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     end
   end)
@@ -2386,7 +2387,7 @@ end
 function Bomb:explode()
   camera:shake(4, 0.5)
   local t = {group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*64*(self.level == 3 and 2 or 1), color = self.color, 
-    dmg = self.parent.area_dmg_m*self.dmg*(self.parent.conjurer_buff_m or 1)*(self.level == 3 and 2 or 1), character = self.character, parent = self.parent}
+    dmg = self.dmg*(self.parent.conjurer_buff_m or 1)*(self.level == 3 and 2 or 1), character = self.character, parent = self.parent}
   Area(table.merge(t, mods or {}))
   if not self.parent.construct_instability and not self.parent.rearm then self.dead = true end
   _G[random:table{'cannoneer1', 'cannoneer2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
@@ -2407,7 +2408,7 @@ function Bomb:explode()
       camera:shake(2, 0.5)
       local n = (self.parent.construct_instability == 1 and 1) or (self.parent.construct_instability == 2 and 1.5) or (self.parent.construct_instability == 3 and 2) or 1
       Area{group = main.current.effects, x = self.x, y = self.y, r = self.r + random:float(-math.pi/16, math.pi/16), w = self.parent.area_size_m*48*(self.level == 3 and 2 or 1), color = self.color,
-        dmg = n*self.parent.dmg*self.parent.area_dmg_m*(self.level == 3 and 2 or 1), parent = self.parent}
+        dmg = n*self.parent.dmg*(self.level == 3 and 2 or 1), parent = self.parent}
       _G[random:table{'cannoneer1', 'cannoneer2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
       self.dead = true
     end
@@ -2479,7 +2480,7 @@ function Saboteur:on_collision_enter(other, contact)
   if table.any(main.current.enemies, function(v) return other:is(v) end) then
     camera:shake(4, 0.5)
     local t = {group = main.current.effects, x = self.x, y = self.y, r = self.r, w = (self.crit and 1.5 or 1)*self.area_size_m*64, color = self.color, 
-      dmg = (self.crit and 2 or 1)*self.area_dmg_m*self.actual_dmg*(self.conjurer_buff_m or 1), character = self.character, parent = self.parent}
+      dmg = (self.crit and 2 or 1)*self.actual_dmg*(self.conjurer_buff_m or 1), character = self.character, parent = self.parent}
     Area(table.merge(t, mods or {}))
 
     if self.parent.construct_instability then
@@ -2659,13 +2660,7 @@ end
 function Troop:draw()
   --graphics.circle(self.x, self.y, self.attack_sensor.rs, orange[0], 1)
   graphics.push(self.x, self.y, self.r, self.hfx.hit.x, self.hfx.hit.x)
-  local i = 1
-  for _ , buff in pairs(self.buffs) do
-    if buff.color then
-      graphics.circle(self.x, self.y, ((self.shape.w * 0.66) / 2) + (i), buff.color, 1)
-      i = i + 1
-    end
-  end
+  self:draw_buffs()
   graphics.rectangle(self.x, self.y, self.shape.w*.66, self.shape.h*.66, 3, 3, self.hfx.hit.f and fg[0] or self.color)
   if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
     self:draw_cast_timer()
@@ -2682,7 +2677,7 @@ function Troop:draw()
 end
 
 function Troop:draw_cast_timer()
-  local currentTime = love.timer.getTime()
+  local currentTime = Helper.Time.time
   local time = currentTime - self.last_attack_started
   local pct = time / self.castTime
   local bodySize = self.shape.rs or self.shape.w/2 or 5
@@ -2693,12 +2688,14 @@ function Troop:draw_cast_timer()
 end
 
 function Troop:draw_cooldown_timer()
-  local currentTime = love.timer.getTime()
+  local currentTime = Helper.Time.time
   local time = currentTime - self.last_attack_finished
   local pct = 1 - (time / self.cooldownTime)
   local bodySize = self.shape.rs or self.shape.w/2 or 5
   local rs = pct * bodySize
-  if pct > 0 then
+  if time < Helper.Unit.cast_flash_duration then
+    graphics.circle(self.x, self.y, rs, yellow_transparent)
+  elseif pct > 0 then
     graphics.circle(self.x, self.y, rs, white_transparent)
   end
 
@@ -2716,7 +2713,7 @@ end
 
 function Troop:attack(area, mods)
   mods = mods or {}
-  local t = {group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(area or 64), color = self.color, dmg = self.area_dmg_m*self.dmg,
+  local t = {group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(area or 64), color = self.color, dmg = self.dmg,
     character = self.character, level = self.level, parent = self}
   Area(table.merge(t, mods))
 
@@ -2766,8 +2763,10 @@ function Troop:set_character()
 
     self.state_always_run_functions['always_run'] = function()
       if Helper.Unit.can_cast(self) then
-        self:attack(self.dmg, {x = self.target.x, y = self.target.y})
-        self.last_attack_finished = Helper.Time.time
+        if self.target then
+          self:attack(self.dmg, {x = self.target.x, y = self.target.y})
+          self.last_attack_finished = Helper.Time.time
+        end
       end
     end
 
@@ -2778,7 +2777,7 @@ function Troop:set_character()
     end, nil, nil, 'attack')
 
   elseif self.character == 'laser' then
-    self.attack_sensor = Circle(self.x, self.y, 100)
+    self.attack_sensor = Circle(self.x, self.y, 130)
 
     --total cooldown is cooldownTime + castTime
     self.baseCooldown = attack_speeds['fast']
@@ -2822,42 +2821,60 @@ function Troop:set_character()
 
 
 
+  -- elseif self.character == 'pyro' then
+  --   self.attack_sensor = Circle(self.x, self.y, 60)
+
+  --   self.state_always_run_functions['always_run'] = function()
+  --     if Helper.Spell.there_is_target_in_range(self, 70) 
+  --     and Helper.Time.time - self.last_attack_finished > 1 then
+  --       if self.have_target then
+  --         Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
+  --       else
+  --         Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
+  --         Helper.Spell.Flame.create(Helper.Color.orange, 60, 70, 3, self)
+  --       end
+  --     end
+
+  --     if self.have_target and not Helper.Spell.claimed_target_is_in_range(self, 70) then
+  --       Helper.Spell.Flame.end_flame_after(self, 0.25)
+  --       Helper.Unit.unclaim_target(self)
+  --     end
+  --   end
+
+  --   self.state_change_functions['target_death'] = function()
+  --     Helper.Spell.Flame.end_flame_after(self, 0.25)
+  --     Helper.Unit.unclaim_target(self)
+  --   end
+
+  --   self.state_change_functions['death'] = function()
+  --     Helper.Spell.Flame.end_flame_after(self, 0)
+  --     Helper.Unit.unclaim_target(self)
+  --   end
+  
+
+
   elseif self.character == 'pyro' then
-    self.attack_sensor = Circle(self.x, self.y, 60)
-    -- self.t:cooldown(attack_speeds['ultra-fast'], self:in_range(), function()
-    --   if self.target then
-    --     self:shootAnimation(self:angle_to_object(self.target))
-    --   end
-    -- end, nil, nil, 'shoot')
+    self.attack_sensor = Circle(self.x, self.y, attack_ranges['long'])
 
-    self.state_always_run_functions['always_run'] = function()
-      if Helper.Spell.there_is_target_in_range(self, 70) 
-      and Helper.Time.time - self.last_attack_finished > 1 then
-        if self.have_target then
-          Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
-        else
-          Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
-          Helper.Spell.Flame.create(Helper.Color.orange, 60, 70, 3, self)
+    self.state_always_run_functions['normal'] = function()
+      if Helper.Spell.there_is_target_in_range(self, attack_ranges['long'] + 10) then
+      Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
+        if Helper.Time.time - self.last_attack_started > 2 then
+          self.last_attack_started = Helper.Time.time
+          Helper.Time.wait(get_random(0, 0.4), function()
+            Helper.Spell.Brust.create(Helper.Color.white, 5, self.dmg, 500, self)
+          end)
         end
-      end
-
-      if self.have_target and not Helper.Spell.claimed_target_is_in_range(self, 70) then
-        Helper.Spell.Flame.end_flame_after(self, 0.25)
-        Helper.Unit.unclaim_target(self)
       end
     end
 
     self.state_change_functions['target_death'] = function()
-      Helper.Spell.Flame.end_flame_after(self, 0.25)
       Helper.Unit.unclaim_target(self)
     end
 
     self.state_change_functions['death'] = function()
-      Helper.Spell.Flame.end_flame_after(self, 0)
       Helper.Unit.unclaim_target(self)
     end
-  
-
 
 
 
@@ -2876,8 +2893,9 @@ function Troop:set_character()
         Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
         Helper.Time.wait(get_random(0, 0.1), function()
           
-          Helper.Spell.Missile.create(Helper.Color.orange, 10, false, self.dmg, self, true, 15)
+          Helper.Spell.Missile.create(Helper.Color.orange, 10, self.dmg, 300, self, true, 15)
         end)
+      end
     end
 
     --cancel on move
@@ -2895,18 +2913,69 @@ function Troop:set_character()
       Helper.Spell.Missile.stop_aiming(self)
       Helper.Unit.unclaim_target(self)
     end
-  end
+
+  elseif self.character == 'bomber' then
+    self.attack_sensor = Circle(self.x, self.y, attack_ranges['whole-map'])
+
+    --cooldown
+    self.baseCooldown = attack_speeds['medium']
+    self.cooldownTime = self.baseCooldown
+    self.baseCast = attack_speeds['long-cast']
+    self.castTime = self.baseCast
+
+    --attack
+    self.explode_radius = 15
+
+    self.state_always_run_functions['always_run'] = function()
+      if Helper.Unit.can_cast(self) then
+        Helper.Spell.Bomb.create(black[2], false, self.dmg, 4, self, 1.5, self.explode_radius, self.x, self.y)
+      end
+    end
+
+    
+    --cancel on move
+    self.state_always_run_functions['following_or_rallying'] = function()
+        Helper.Spell.Bomb.stop_aiming(self)
+        Helper.Unit.unclaim_target(self)
+    end
+
+    self.state_change_functions['normal'] = function() end
+
+    --cancel on death
+    self.state_change_functions['death'] = function()
+      Helper.Spell.Bomb.stop_aiming(self)
+      Helper.Unit.unclaim_target(self)
+    end
 
   elseif self.character == 'sniper' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['ultra-long'])
-    self.dmg = self.dmg * 4
-    self.castTime = 1
-    self.backswing = 0.25
-    self.t:cooldown(attack_speeds['slow'], self:in_range(), function()
-      if self.target then
-        Snipe{group = main.current.main, team = 'player', parent = self, target = self.target, dmg = self.dmg}
+
+    --cooldown
+    self.baseCooldown = attack_speeds['medium']
+    self.cooldownTime = self.baseCooldown
+    self.baseCast = attack_speeds['ultra-long-cast']
+    self.castTime = self.baseCast
+
+    --if ready to cast and has target in range, start casting
+    self.state_always_run_functions['always_run'] = function()
+      if Helper.Unit.can_cast(self) then
+        Helper.Unit.claim_target(self, Helper.Spell.get_nearest_least_targeted(self, self.attack_sensor.rs))
+        self.spell = Snipe{group = main.current.main, team = 'player', parent = self, target = self.claimed_target, dmg = self.dmg}
       end
-    end, nil, nil, 'shoot')
+    end
+    
+    --cancel on move
+    self.state_always_run_functions['following_or_rallying'] = function()
+      if self.have_target then
+        self.spell:cancel()
+      end
+    end
+
+    self.state_change_functions['normal'] = function() end
+    --cancel on death
+    self.state_change_functions['death'] = function()
+      self.spell:cancel()
+    end
 
   elseif self.character == 'wizard' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium-long'])
@@ -3225,7 +3294,7 @@ function Automaton:init(args)
     if self.parent.construct_instability then
       camera:shake(2, 0.5)
       local n = (self.parent.construct_instability == 1 and 1) or (self.parent.construct_instability == 2 and 1.5) or (self.parent.construct_instability == 3 and 2) or 1
-      Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*48, color = self.color, dmg = n*self.parent.dmg*self.parent.area_dmg_m, parent = self.parent}
+      Area{group = main.current.effects, x = self.x, y = self.y, r = self.r, w = self.parent.area_size_m*48, color = self.color, dmg = n*self.parent.dmg, parent = self.parent}
       _G[random:table{'cannoneer1', 'cannoneer2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     end
   end)
@@ -3522,7 +3591,6 @@ function Critter:init(args)
 
   self.aggro_sensor = Circle(self.x, self.y, 125)
   self.attack_sensor = Circle(self.x, self.y, 25)
-  self.slowed = false
 
   self.class = 'enemy_critter'
   self.color = args.color or white[0]

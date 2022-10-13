@@ -210,3 +210,15 @@ function Helper.Geometry.is_off_screen(x, y, angle, radius)
         return false
     end
 end
+
+function Helper.Geometry.get_arena_rect(index, total)
+    local aw = gw - (2 * SpawnGlobals.wall_width)
+    local ah = gh - (2 * SpawnGlobals.wall_height)
+    local x_offset = (aw * 1.0) / total
+    local y_offset = (ah * 1.0) / total
+
+    local x = SpawnGlobals.wall_width
+    local y = SpawnGlobals.wall_height + (y_offset * (index - 1))
+
+    return x, y, aw, y_offset
+end
