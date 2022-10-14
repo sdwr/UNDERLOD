@@ -595,7 +595,7 @@ function Unit:in_range()
 end
 
 function Unit:should_follow()
-  local input = (input.mouse_state["m1"] and main.selectedCharacter == self.character) or input['space'].down
+  local input = input['space'].down
   local canMove = (self.state == unit_states['normal'] or self.state == unit_states['stopped'] or self.state == unit_states['rallying'] or self.state == unit_states['following'] or self.state == unit_states['casting'])
 
   return input and canMove

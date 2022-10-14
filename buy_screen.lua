@@ -783,6 +783,8 @@ function HotbarButton:on_mouse_enter()
   self.text:set_text{{text = '[fgm5]' .. self.button_text, font = pixul_font, alignment = 'center'}}
   self.spring:pull(0.2, 200, 10)
   if self.mouse_enter then self:mouse_enter() end
+
+  Helper.mouse_on_button = true
 end
 
 
@@ -791,6 +793,8 @@ function HotbarButton:on_mouse_exit()
   self.text:set_text{{text = '[' .. self.fg_color .. ']' .. self.button_text, font = pixul_font, alignment = 'center'}}
   self.selected = false
   if self.mouse_exit then self:mouse_exit() end
+
+  Helper.mouse_on_button = false
 end
 
 

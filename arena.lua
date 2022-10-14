@@ -112,53 +112,37 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
                             main.current:select_character('team ' .. i) 
                             Helper.Unit.selected_team = i
                             Helper.Unit:deselect_all_troops()
-                            if Helper.Unit.teams[Helper.Unit.selected_team] then
-                              for i, troop in ipairs(Helper.Unit.teams[Helper.Unit.selected_team]) do
-                                troop.selected = true
-                              end
+                            for i, troop in ipairs(Helper.Unit.teams[Helper.Unit.selected_team]) do
+                              troop.selected = true
                             end
                           end}
     self.hotbar['team ' .. i] = b
     self.hotbar_by_index[i] = b
-    self:select_character('team ' .. i)
   end
 
-  local b = HotbarButton{group = self.ui, x = 260, y = gh - 20, 
-                          force_update = true, button_text = 'selection', fg_color = 'white', bg_color = 'bg', 
-                          action = function() 
-                            self:select_character('selection') 
-                            Helper.Unit.selected_team = 0
-                            Helper.Unit:deselect_all_troops()
-                          end}
-  self.hotbar['selection'] = b
-  self.hotbar_by_index[5] = b
-  self:select_character('selection')
-
-  for i = 6, #units + 5 do
-    local character = units[i - 5].character
+  for i = 5, #units + 4 do
+    local character = units[i - 4].character
     local type = character_types[character]
-    local b = HotbarButton{group = self.ui, x = 320 + 30 * (i - 6) , y = gh - 20, w = 20,
+    local b = HotbarButton{group = self.ui, x = 260 + 30 * (i - 5) , y = gh - 20, w = 20,
                             force_update = true, button_text = character, fg_color = type_color_strings[type], bg_color = 'bg', 
                             action = function() 
                               self:select_character(character) 
                               Helper.Unit.selected_team = 0
                               Helper.Unit:deselect_all_troops()
+                              for i, troop in ipairs(Helper.Unit.get_list(true)) do
+                                if troop.character == character then
+                                  troop.selected = true
+                                end
+                              end
                             end,
                             color_marks = {[1] = character_colors[character]}}
     self.hotbar[character] = b
     self.hotbar_by_index[i] = b
-    -- if i == 1 then
-    --   self:select_character(character)
-    -- end
   end
 
-
   Spawn_Troops(self)
-
   self.start_time = 3
-
   Manage_Spawns(self)
-  
 end
 
 function Arena:spawn_critters(spawn_point, amount)

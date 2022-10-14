@@ -2570,23 +2570,23 @@ function Troop:update(dt)
 
     self.target = nil
     self.target_pos = nil
-  elseif (input["m2"].pressed and main.selectedCharacter == self.character) and (self.state == unit_states['normal'] or self.state == unit_states['stopped'] or self.state == unit_states['rallying'] or self.state == unit_states['following']) then
-    self.state = unit_states['rallying']
-    local mx, my = self.group.camera:get_mouse_position()
-    RallyEffect{group = main.current.effects, x = mx, y = my}
+  -- elseif (input["m2"].pressed and main.selectedCharacter == self.character) and (self.state == unit_states['normal'] or self.state == unit_states['stopped'] or self.state == unit_states['rallying'] or self.state == unit_states['following']) then
+  --   self.state = unit_states['rallying']
+  --   local mx, my = self.group.camera:get_mouse_position()
+  --   RallyEffect{group = main.current.effects, x = mx, y = my}
 
-    self:seek_mouse()
-    self:wander(15,50,5)
-    self:rotate_towards_velocity(1)
+  --   self:seek_mouse()
+  --   self:wander(15,50,5)
+  --   self:rotate_towards_velocity(1)
 
-    self.target = nil
-    local tx, ty = self.group.camera:get_mouse_position()
-    self.target_pos = {x = tx, y = ty}
+  --   self.target = nil
+  --   local tx, ty = self.group.camera:get_mouse_position()
+  --   self.target_pos = {x = tx, y = ty}
   end
 
   --cancel follow if no longer pressing button
   if self.state == unit_states['following'] then
-    if not self:should_follow() and Helper.Unit.selected_team == 0 then
+    if input['m2'].released or input['space'].released then
       self.state = unit_states['normal']
     end
   end

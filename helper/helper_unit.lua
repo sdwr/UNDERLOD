@@ -169,15 +169,11 @@ Helper.Unit.teams = {{}, {}, {}, {}}
 Helper.Unit.selected_team = 0
 
 function Helper.Unit:select()
-    if main.selectedCharacter == 'selection' then
+    if not Helper.mouse_on_button then
         if input['m1'].pressed then
             self.x1 = Helper.mousex
             self.y1 = Helper.mousey
             self.do_draw_selection = true
-        end
-
-        if input['m1'].released then
-            self.do_draw_selection = false
         end
 
         if input['m1'].down then
@@ -193,14 +189,19 @@ function Helper.Unit:select()
             end
         end
 
-        if not input['m1'].down and input['m2'].pressed then
+        if not input['m1'].down and input['m2'].down then
             for i, unit in ipairs(self.get_list(true)) do
                 if unit.selected then
-                    unit.target_pos = {x = Helper.mousex, y = Helper.mousey}
-                    unit.state = unit_states['rallying']
+                    unit.state = unit_states['following']
+                    unit.target = nil
+                    unit.target_pos = nil
                 end
             end
         end
+    end
+
+    if input['m1'].released then
+        self.do_draw_selection = false
     end
 
     local function refresh_button(team_number)
@@ -220,11 +221,11 @@ function Helper.Unit:select()
                 table.insert(team, troop)
             end
         end
-        main.current.hotbar_by_index[team_number]:action()
         if #team ~= 0 then
             self.teams[team_number] = team
             refresh_button(team_number)
         end
+        main.current.hotbar_by_index[team_number]:action()
     end
 
     if input['lctrl'].down then
@@ -247,10 +248,10 @@ function Helper.Unit:select()
                 added = true
             end
         end
-        main.current.hotbar_by_index[team_number]:action()
         if added then
             refresh_button(team_number)
         end
+        main.current.hotbar_by_index[team_number]:action()
     end
 
     if input['lshift'].down then
@@ -262,29 +263,6 @@ function Helper.Unit:select()
             add_to_team(3)
         elseif input['4'].pressed then
             add_to_team(4)
-        end
-    end
-
-    if self.selected_team ~= 0 and self.teams[self.selected_team] then
-        if input['m1'].pressed then
-            for i, troop in ipairs(self.teams[self.selected_team]) do
-                troop.state = unit_states['following']
-                troop.target = nil
-                troop.target_pos = nil
-            end
-        end
-
-        if input['m1'].released then
-            for i, troop in ipairs(self.teams[self.selected_team]) do
-                troop.state = unit_states['normal']
-            end
-        end
-
-        if not input['m1'].down and input['m2'].pressed then
-            for i, troop in ipairs(self.teams[self.selected_team]) do
-                troop.target_pos = {x = Helper.mousex, y = Helper.mousey}
-                troop.state = unit_states['rallying']
-            end
         end
     end
 end

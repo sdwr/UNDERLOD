@@ -13,6 +13,7 @@ Helper.mousex = 0
 Helper.mousey = 0
 Helper.window_width = 0
 Helper.window_height = 0
+Helper.mouse_on_button = false
 
 function Helper.init()
     Helper.Time.time = love.timer.getTime()
