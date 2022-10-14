@@ -31,7 +31,6 @@ function Helper.Spell.Laser.create(color, laser_aim_width, direction_lock, damag
             laser.laser_aim_width = laser.laser_aim_width * unit.area_size_m
         end
 
-        Helper.Unit.start_casting(unit)
         table.insert(Helper.Spell.Laser.list, laser)
     end
 end
@@ -129,8 +128,9 @@ function Helper.Spell.Laser.update()
             table.remove(Helper.Spell.Laser.list, i)
             shoot1:play{volume=0.7}
 
+            laser.unit.last_attack_finished = Helper.Time.time
             -- Helper.Unit.unclaim_target(laser.unit)
-            Helper.Unit.finish_casting(laser.unit)
+            -- Helper.Unit.finish_casting(laser.unit)
         end
     end
 end

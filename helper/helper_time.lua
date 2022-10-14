@@ -37,7 +37,7 @@ function Helper.Time.set_interval(delay, intervalfunction, number_of_loops)
 end
 
 function Helper.Time.stop_interval(id)
-    if id <= #Helper.Time.intervals then
+    if id <= #Helper.Time.intervals and id > 0 then
         Helper.Time.intervals[id].stopped = true
     end
 end
@@ -86,6 +86,7 @@ function Helper.Time.wait(delay, waitfunction)
     }
 
     Helper.Time.waits[id] = wait
+    return id
 end
 
 function Helper.Time.run_waits()
@@ -94,6 +95,12 @@ function Helper.Time.run_waits()
             wait.waitfunction()
             wait.finished = true
         end
+    end
+end
+
+function Helper.Time.cancel_wait(id)
+    if id <= #Helper.Time.waits and id > 0 then
+        Helper.Time.waits[id].finished = true
     end
 end
 
