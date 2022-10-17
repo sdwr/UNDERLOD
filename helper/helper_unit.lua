@@ -176,7 +176,7 @@ Helper.Unit.flagged_enemy = -1
 
 function Helper.Unit:set_team(team_number)
     local team = {}
-    for i, troop in ipairs(self.get_list(true)) do
+    for i, troop in ipairs(self:get_list(true)) do
         if troop.selected then
             table.insert(team, troop)
         end
@@ -184,13 +184,13 @@ function Helper.Unit:set_team(team_number)
     if #team ~= 0 then
         self.teams[team_number] = team
         self:refresh_button(team_number)
+        main.current.hotbar_by_index[team_number]:action()
     end
-    main.current.hotbar_by_index[team_number]:action()
 end
 
 function Helper.Unit:add_to_team(team_number)
     local added = false
-    for i, troop in ipairs(self.get_list(true)) do
+    for i, troop in ipairs(self:get_list(true)) do
         if troop.selected and not is_in_list(self.teams[team_number], troop) then
             table.insert(self.teams[team_number], troop)
             added = true
@@ -198,8 +198,8 @@ function Helper.Unit:add_to_team(team_number)
     end
     if added then
         self:refresh_button(team_number)
+        main.current.hotbar_by_index[team_number]:action()
     end
-    main.current.hotbar_by_index[team_number]:action()
 end
 
 function Helper.Unit:refresh_button(team_number)
@@ -216,8 +216,8 @@ function Helper.Unit:select()
     if not Helper.mouse_on_button then
         local flag = false
         if input['m1'].pressed then
-            for i, enemy in ipairs(self.get_list(false)) do
-                if Helper.Geometry.distance(Helper.mousex, Helper.mousey, enemy.x, enemy.y) < 9 then 
+            for i, enemy in ipairs(self:get_list(false)) do
+                if Helper.Geometry:distance(Helper.mousex, Helper.mousey, enemy.x, enemy.y) < 9 then 
                     flag = true
                     break
                 end
@@ -228,7 +228,7 @@ function Helper.Unit:select()
                     self.flagged_enemy = -1
                 else
                     self.flagged_enemy = flagged_enemy
-                    for i, troop in ipairs(self.get_list(true)) do
+                    for i, troop in ipairs(self:get_list(true)) do
                         troop.target = self.flagged_enemy
                     end
                 end
@@ -245,8 +245,8 @@ function Helper.Unit:select()
             self.x2 = Helper.mousex
             self.y2 = Helper.mousey
             
-            for i, unit in ipairs(self.get_list(true)) do
-                if Helper.Geometry.is_inside_rectangle(unit.x, unit.y, self.x1, self.y1, self.x2, self.y2) then
+            for i, unit in ipairs(self:get_list(true)) do
+                if Helper.Geometry:is_inside_rectangle(unit.x, unit.y, self.x1, self.y1, self.x2, self.y2) then
                     unit.selected = true
                 else
                     unit.selected = false
@@ -255,7 +255,7 @@ function Helper.Unit:select()
         end
 
         if not input['m1'].down and input['m2'].down then
-            for i, unit in ipairs(self.get_list(true)) do
+            for i, unit in ipairs(self:get_list(true)) do
                 if unit.selected then
                     unit.state = unit_states['following']
                     unit.target = nil
@@ -324,11 +324,11 @@ end
 
 function Helper.Unit:draw_selection()
     if self.do_draw_selection then
-        Helper.Graphics.draw_dashed_rectangle(Helper.Color.white, 2, 8, 4, Helper.Time.time * 80, self.x1, self.y1, self.x2, self.y2)
+        Helper.Graphics:draw_dashed_rectangle(Helper.Color.white, 2, 8, 4, Helper.Time.time * 80, self.x1, self.y1, self.x2, self.y2)
     end
     love.graphics.setColor(1, 1, 1, 1)
     love.graphics.setLineWidth(2)
-    for i, unit in ipairs(self.get_list(true)) do
+    for i, unit in ipairs(self:get_list(true)) do
         if unit.selected then
             love.graphics.circle('line', unit.x, unit.y, 5)
         end
@@ -336,13 +336,13 @@ function Helper.Unit:draw_selection()
 
     if self.flagged_enemy ~= -1 then
         love.graphics.setLineWidth(1)
-        Helper.Color.set_color(Helper.Color.orange)
+        Helper.Color:set_color(Helper.Color.orange)
         love.graphics.circle('line', self.flagged_enemy.x, self.flagged_enemy.y, 9)
     end
 end
 
 function Helper.Unit:deselect_all_troops()
-    for i, troop in ipairs(self.get_list(true)) do
+    for i, troop in ipairs(self:get_list(true)) do
         troop.selected = false
     end
 end

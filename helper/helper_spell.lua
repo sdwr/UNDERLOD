@@ -76,7 +76,7 @@ function Helper.Spell:get_nearest_target_from_point(x, y, target_is_troop)
         is_troop = not target_is_troop
     }
 
-    return self.get_nearest_target(unit)
+    return self:get_nearest_target(unit)
 end
 
 function Helper.Spell:get_nearest_least_targeted(unit, range)

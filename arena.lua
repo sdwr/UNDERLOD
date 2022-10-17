@@ -144,7 +144,7 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
                               self:select_character(character) 
                               Helper.Unit.selected_team = 0
                               Helper.Unit:deselect_all_troops()
-                              for i, troop in ipairs(Helper.Unit.get_list(true)) do
+                              for i, troop in ipairs(Helper.Unit:get_list(true)) do
                                 if troop.character == character then
                                   troop.selected = true
                                 end
