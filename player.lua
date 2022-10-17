@@ -1607,7 +1607,7 @@ end
 
 function Snipe:cancel()
   self.dead = true
-  Helper.Unit.unclaim_target(self.parent)
+  Helper.Unit:unclaim_target(self.parent)
 
 end
 
@@ -1624,7 +1624,7 @@ end
 function Snipe:fire()
   dual_gunner2:play({pitch = random:float(0.9, 1.1), volume = 0.7})
   if self.target then self.target:hit(self.dmg, self.parent) end
-  Helper.Unit.finish_casting(self.parent)
+  Helper.Unit:finish_casting(self.parent)
   self:cancel()
 end
 
@@ -2670,7 +2670,7 @@ function Troop:draw()
   graphics.rectangle(self.x, self.y, self.shape.w*.66, self.shape.h*.66, 3, 3, self.hfx.hit.f and fg[0] or self.color)
   -- if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
   self:draw_cast_timer()
-  if Helper.Unit.is_attack_on_cooldown(self) then
+  if Helper.Unit:is_attack_on_cooldown(self) then
     self:draw_cooldown_timer()
   end
   if self.bubbled then 
@@ -2768,7 +2768,7 @@ function Troop:set_character()
     self.cooldownTime = self.baseCooldown
 
     self.state_always_run_functions['always_run'] = function()
-      if Helper.Unit.can_cast(self) then
+      if Helper.Unit:can_cast(self) then
         if self.target then
           self:attack(self.dmg, {x = self.target.x, y = self.target.y})
           self.last_attack_finished = Helper.Time.time
@@ -2793,36 +2793,36 @@ function Troop:set_character()
 
     --if ready to cast and has target in range, start cast
     self.state_always_run_functions['normal'] = function()
-      if Helper.Spell.there_is_target_in_range(self, 140) 
+      if Helper.Spell:there_is_target_in_range(self, 140) 
       and Helper.Time.time - self.last_attack_started > self.baseCooldown 
       and Helper.Time.time - self.last_attack_finished > self.baseCooldown then
-        Helper.Unit.claim_target(self, Helper.Spell.get_nearest_least_targeted(self, 160))
+        Helper.Unit:claim_target(self, Helper.Spell:get_nearest_least_targeted(self, 160))
         self.last_attack_started = Helper.Time.time
-        Helper.Time.wait(get_random(0, 0.1), function()
+        Helper.Time:wait(get_random(0, 0.1), function()
           sniper_load:play{volume=0.7}
-          Helper.Spell.Laser.create(Helper.Color.blue, 1, false, 20, self)
+          Helper.Spell.Laser:create(Helper.Color.blue, 1, false, 20, self)
         end)
       end
       
       --cancel if target moves out of range
-      if self.have_target and not Helper.Spell.claimed_target_is_in_range(self, 170) then
-        Helper.Spell.Laser.stop_aiming(self)
-        Helper.Unit.unclaim_target(self)
+      if self.have_target and not Helper.Spell:claimed_target_is_in_range(self, 170) then
+        Helper.Spell.Laser:stop_aiming(self)
+        Helper.Unit:unclaim_target(self)
       end
     end
 
     --cancel on move
     self.state_always_run_functions['following_or_rallying'] = function()
       if self.have_target then
-        Helper.Spell.Laser.stop_aiming(self)
-        Helper.Unit.unclaim_target(self)
+        Helper.Spell.Laser:stop_aiming(self)
+        Helper.Unit:unclaim_target(self)
       end
     end
 
     --cancel on death
     self.state_change_functions['death'] = function()
-      Helper.Spell.Laser.stop_aiming(self)
-      Helper.Unit.unclaim_target(self)
+      Helper.Spell.Laser:stop_aiming(self)
+      Helper.Unit:unclaim_target(self)
     end
 
 
@@ -2831,30 +2831,30 @@ function Troop:set_character()
   --   self.attack_sensor = Circle(self.x, self.y, 60)
 
   --   self.state_always_run_functions['always_run'] = function()
-  --     if Helper.Spell.there_is_target_in_range(self, 70) 
+  --     if Helper.Spell:there_is_target_in_range(self, 70) 
   --     and Helper.Time.time - self.last_attack_finished > 1 then
   --       if self.have_target then
-  --         Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
+  --         Helper.Unit:claim_target(self, Helper.Spell:get_nearest_target(self))
   --       else
-  --         Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
-  --         Helper.Spell.Flame.create(Helper.Color.orange, 60, 70, 3, self)
+  --         Helper.Unit:claim_target(self, Helper.Spell:get_nearest_target(self))
+  --         Helper.Spell.Flame:create(Helper.Color.orange, 60, 70, 3, self)
   --       end
   --     end
 
-  --     if self.have_target and not Helper.Spell.claimed_target_is_in_range(self, 70) then
-  --       Helper.Spell.Flame.end_flame_after(self, 0.25)
-  --       Helper.Unit.unclaim_target(self)
+  --     if self.have_target and not Helper.Spell:claimed_target_is_in_range(self, 70) then
+  --       Helper.Spell.Flame:end_flame_after(self, 0.25)
+  --       Helper.Unit:unclaim_target(self)
   --     end
   --   end
 
   --   self.state_change_functions['target_death'] = function()
-  --     Helper.Spell.Flame.end_flame_after(self, 0.25)
-  --     Helper.Unit.unclaim_target(self)
+  --     Helper.Spell.Flame:end_flame_after(self, 0.25)
+  --     Helper.Unit:unclaim_target(self)
   --   end
 
   --   self.state_change_functions['death'] = function()
-  --     Helper.Spell.Flame.end_flame_after(self, 0)
-  --     Helper.Unit.unclaim_target(self)
+  --     Helper.Spell.Flame:end_flame_after(self, 0)
+  --     Helper.Unit:unclaim_target(self)
   --   end
   
 
@@ -2865,40 +2865,40 @@ function Troop:set_character()
     self.castTime = 1
 
     self.state_always_run_functions['normal'] = function()
-      if Helper.Spell.there_is_target_in_range(self, attack_ranges['long'] + 10) 
+      if Helper.Spell:there_is_target_in_range(self, attack_ranges['long'] + 10) 
       and Helper.Time.time - self.last_attack_finished > 2 
       and Helper.Time.time - self.last_attack_started > 2 then
         self.last_attack_started = Helper.Time.time
-        Helper.Time.wait(1, function()
+        Helper.Time:wait(1, function()
           self.last_attack_finished = Helper.Time.time
         end)
-        self.spell_wait_id = Helper.Time.wait(1, function()
-          Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
+        self.spell_wait_id = Helper.Time:wait(1, function()
+          Helper.Unit:claim_target(self, Helper.Spell:get_nearest_target(self))
           Helper.Spell.Burst:create(Helper.Color.white, 5, self.dmg, 500, self)
         end)
       end
     end
 
     self.state_always_run_functions['always_run'] = function()
-      if Helper.Spell.there_is_target_in_range(self, attack_ranges['long'] + 10) then
-        Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
+      if Helper.Spell:there_is_target_in_range(self, attack_ranges['long'] + 10) then
+        Helper.Unit:claim_target(self, Helper.Spell:get_nearest_target(self))
       end
     end
 
     self.state_change_functions['following_or_rallying'] = function()
-      Helper.Time.cancel_wait(self.spell_wait_id)
+      Helper.Time:cancel_wait(self.spell_wait_id)
       self.spell_wait_id = -1
     end
 
     self.state_change_functions['target_death'] = function()
-      Helper.Unit.unclaim_target(self)
+      Helper.Unit:unclaim_target(self)
     end
 
     self.state_change_functions['death'] = function()
-      Helper.Time.cancel_wait(self.spell_wait_id)
+      Helper.Time:cancel_wait(self.spell_wait_id)
       self.spell_wait_id = -1
       Helper.Spell.Burst:stop_firing(self)
-      Helper.Unit.unclaim_target(self)
+      Helper.Unit:unclaim_target(self)
     end
 
 
@@ -2910,32 +2910,32 @@ function Troop:set_character()
 
     --if has target in range, start casting
     self.state_always_run_functions['normal'] = function()
-      if Helper.Spell.there_is_target_in_range(self, attack_ranges['long'] + 10) 
+      if Helper.Spell:there_is_target_in_range(self, attack_ranges['long'] + 10) 
       and Helper.Time.time - self.last_attack_finished > 2 
       and Helper.Time.time - self.last_attack_started > 2 then
         self.last_attack_started = Helper.Time.time
-        Helper.Time.wait(1, function()
+        Helper.Time:wait(1, function()
           self.last_attack_finished = Helper.Time.time
         end)
-        self.spell_wait_id = Helper.Time.wait(1, function()
-          Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
-          Helper.Spell.Missile.create(Helper.Color.orange, 10, self.dmg, 300, self, true, 15)
+        self.spell_wait_id = Helper.Time:wait(1, function()
+          Helper.Unit:claim_target(self, Helper.Spell:get_nearest_target(self))
+          Helper.Spell.Missile:create(Helper.Color.orange, 10, self.dmg, 300, self, true, 15)
         end)
       end
     end
 
     --cancel on move
     self.state_change_functions['following_or_rallying'] = function()
-      Helper.Time.cancel_wait(self.spell_wait_id)
+      Helper.Time:cancel_wait(self.spell_wait_id)
       self.spell_wait_id = -1
-      Helper.Unit.unclaim_target(self)
+      Helper.Unit:unclaim_target(self)
     end
 
     --cancel on death
     self.state_change_functions['death'] = function()
-      Helper.Time.cancel_wait(self.spell_wait_id)
+      Helper.Time:cancel_wait(self.spell_wait_id)
       self.spell_wait_id = -1
-      Helper.Unit.unclaim_target(self)
+      Helper.Unit:unclaim_target(self)
     end
 
   elseif self.character == 'bomber' then
@@ -2951,24 +2951,24 @@ function Troop:set_character()
     self.explode_radius = 15
 
     self.state_always_run_functions['always_run'] = function()
-      if Helper.Unit.can_cast(self) then
-        Helper.Spell.Bomb.create(black[2], false, self.dmg, 4, self, 1.5, self.explode_radius, self.x, self.y)
+      if Helper.Unit:can_cast(self) then
+        Helper.Spell.Bomb:create(black[2], false, self.dmg, 4, self, 1.5, self.explode_radius, self.x, self.y)
       end
     end
 
     
     --cancel on move
     self.state_always_run_functions['following_or_rallying'] = function()
-        Helper.Spell.Bomb.stop_aiming(self)
-        Helper.Unit.unclaim_target(self)
+        Helper.Spell.Bomb:stop_aiming(self)
+        Helper.Unit:unclaim_target(self)
     end
 
     self.state_change_functions['normal'] = function() end
 
     --cancel on death
     self.state_change_functions['death'] = function()
-      Helper.Spell.Bomb.stop_aiming(self)
-      Helper.Unit.unclaim_target(self)
+      Helper.Spell.Bomb:stop_aiming(self)
+      Helper.Unit:unclaim_target(self)
     end
 
   elseif self.character == 'sniper' then
@@ -2982,8 +2982,8 @@ function Troop:set_character()
 
     --if ready to cast and has target in range, start casting
     self.state_always_run_functions['always_run'] = function()
-      if Helper.Unit.can_cast(self) then
-        Helper.Unit.claim_target(self, Helper.Spell.get_nearest_least_targeted(self, self.attack_sensor.rs))
+      if Helper.Unit:can_cast(self) then
+        Helper.Unit:claim_target(self, Helper.Spell:get_nearest_least_targeted(self, self.attack_sensor.rs))
         self.spell = Snipe{group = main.current.main, team = 'player', parent = self, target = self.claimed_target, dmg = self.dmg}
       end
     end

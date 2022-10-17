@@ -1,7 +1,7 @@
 Helper.Spell.Laser = {}
 Helper.Spell.Laser.list = {}
 
-function Helper.Spell.Laser.create(color, laser_aim_width, direction_lock, damage, unit, direction_targetx, direction_targety)
+function Helper.Spell.Laser:create(color, laser_aim_width, direction_lock, damage, unit, direction_targetx, direction_targety)
     if unit.have_target then
         local laser = {
             unit = unit,
@@ -35,7 +35,7 @@ function Helper.Spell.Laser.create(color, laser_aim_width, direction_lock, damag
     end
 end
 
-function Helper.Spell.Laser.get_end_location(x, y, targetx, targety)
+function Helper.Spell.Laser:get_end_location(x, y, targetx, targety)
     local deltax = math.abs(targetx - x)
     local deltay = math.abs(targety - y)
     local length_to_window_width = 0
@@ -103,52 +103,52 @@ function Helper.Spell.Laser.get_end_location(x, y, targetx, targety)
     return endx, endy
 end
 
-function Helper.Spell.Laser.draw_aims()
+function Helper.Spell.Laser:draw_aims()
     for i, laser in ipairs(Helper.Spell.Laser.list) do
         love.graphics.setLineWidth(laser.laser_aim_width)
         love.graphics.setColor(laser.color.r, laser.color.g, laser.color.b, 0.5)
         if laser.direction_lock then
-            love.graphics.line(laser.unit.x, laser.unit.y, Helper.Spell.Laser.get_end_location(laser.unit.x, laser.unit.y, laser.unit.x + laser.direction_targetx, laser.unit.y + laser.direction_targety))
+            love.graphics.line(laser.unit.x, laser.unit.y, Helper.Spell.Laser:get_end_location(laser.unit.x, laser.unit.y, laser.unit.x + laser.direction_targetx, laser.unit.y + laser.direction_targety))
         else
-            love.graphics.line(laser.unit.x, laser.unit.y, Helper.Spell.Laser.get_end_location(laser.unit.x, laser.unit.y, laser.unit.claimed_target.x, laser.unit.claimed_target.y))
+            love.graphics.line(laser.unit.x, laser.unit.y, Helper.Spell.Laser:get_end_location(laser.unit.x, laser.unit.y, laser.unit.claimed_target.x, laser.unit.claimed_target.y))
         end
     end
 end
 
-function Helper.Spell.Laser.update()
+function Helper.Spell.Laser:update()
     --shoot
     for i = #Helper.Spell.Laser.list, 1, -1 do
         local laser = Helper.Spell.Laser.list[i]
         if Helper.Time.time - laser.start_aim_time > laser.cast_time and not laser.holding_fire then
             if laser.direction_lock then
-                Helper.Spell.DamageLine.create(laser.unit, laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.unit.x, laser.unit.y, Helper.Spell.Laser.get_end_location(laser.unit.x, laser.unit.y, laser.unit.x + laser.direction_targetx, laser.unit.y + laser.direction_targety))
+                Helper.Spell.DamageLine:create(laser.unit, laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.unit.x, laser.unit.y, Helper.Spell.Laser:get_end_location(laser.unit.x, laser.unit.y, laser.unit.x + laser.direction_targetx, laser.unit.y + laser.direction_targety))
             else
-                Helper.Spell.DamageLine.create(laser.unit, laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.unit.x, laser.unit.y, Helper.Spell.Laser.get_end_location(laser.unit.x, laser.unit.y, laser.unit.claimed_target.x, laser.unit.claimed_target.y))
+                Helper.Spell.DamageLine:create(laser.unit, laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.unit.x, laser.unit.y, Helper.Spell.Laser:get_end_location(laser.unit.x, laser.unit.y, laser.unit.claimed_target.x, laser.unit.claimed_target.y))
             end
             table.remove(Helper.Spell.Laser.list, i)
             shoot1:play{volume=0.7}
 
             laser.unit.last_attack_finished = Helper.Time.time
-            -- Helper.Unit.unclaim_target(laser.unit)
-            -- Helper.Unit.finish_casting(laser.unit)
+            -- Helper.Unit:unclaim_target(laser.unit)
+            -- Helper.Unit:finish_casting(laser.unit)
         end
     end
 end
 
-function Helper.Spell.Laser.clear_all()
+function Helper.Spell.Laser:clear_all()
     Helper.Spell.Laser.list = {}
 end
 
 
 
-function Helper.Spell.Laser.hold_fire(unit)
+function Helper.Spell.Laser:hold_fire(unit)
     local i, laser = find_in_list(Helper.Spell.Laser.list, unit, function(value) return value.unit end)
     if i ~= -1 then
         laser.holding_fire = true
     end
 end
 
-function Helper.Spell.Laser.continue_fire(unit)
+function Helper.Spell.Laser:continue_fire(unit)
     local i, laser = find_in_list(Helper.Spell.Laser.list, unit, function(value) return value.unit end)
     if i ~= -1 then
         laser.holding_fire = false
@@ -156,7 +156,7 @@ function Helper.Spell.Laser.continue_fire(unit)
     end
 end
 
-function Helper.Spell.Laser.stop_aiming(unit)
+function Helper.Spell.Laser:stop_aiming(unit)
     local i, laser = find_in_list(Helper.Spell.Laser.list, unit, function(value) return value.unit end)
     if i ~= -1 then
         unit.have_target = false

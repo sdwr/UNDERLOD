@@ -5,7 +5,7 @@ Helper.Spell.Sweep.sweep_speed = 3500
 Helper.Spell.Sweep.sweep_width = 130
 Helper.Spell.Sweep.list = {}
 
-function Helper.Spell.Sweep.create(color, damage_troops, damage, x1, y1, x2, y2)
+function Helper.Spell.Sweep:create(color, damage_troops, damage, x1, y1, x2, y2)
     local sweep = {
         damage = damage,
         damage_troops = damage_troops,
@@ -25,18 +25,18 @@ function Helper.Spell.Sweep.create(color, damage_troops, damage, x1, y1, x2, y2)
         sweep.from_left = false
     end
 
-    Helper.Time.wait(0.8, function()
+    Helper.Time:wait(0.8, function()
         sweep_sound_2:play{volume = 3}
     end)
-    -- Helper.Time.wait(0.4, function() sweep_sound:play{volume = 2} end)
+    -- Helper.Time:wait(0.4, function() sweep_sound:play{volume = 2} end)
 
     table.insert(Helper.Spell.Sweep.list, sweep)
 end
 
-function Helper.Spell.Sweep.draw()
+function Helper.Spell.Sweep:draw()
     for i, sweep in ipairs(Helper.Spell.Sweep.list) do
         if Helper.Time.time - sweep.cast_time < Helper.Spell.Sweep.announce_time then
-            Helper.Graphics.draw_dashed_rectangle(sweep.color, 3, 10, 5, Helper.Time.time * 80, sweep.x1, sweep.y1, sweep.x2, sweep.y2)
+            Helper.Graphics:draw_dashed_rectangle(sweep.color, 3, 10, 5, Helper.Time.time * 80, sweep.x1, sweep.y1, sweep.x2, sweep.y2)
         else
             local t = Helper.Time.time - sweep.cast_time
             t = t - Helper.Spell.Sweep.announce_time
@@ -51,10 +51,10 @@ function Helper.Spell.Sweep.draw()
                                                 Helper.window_width - Helper.Spell.Sweep.sweep_speed * t, sweep.y2)
 
                 if sweep.particle_interval_id == -1 then
-                    sweep.particle_interval_id = Helper.Time.set_interval(0.001, function()
+                    sweep.particle_interval_id = Helper.Time:set_interval(0.001, function()
                         local t = Helper.Time.time - sweep.cast_time
                         t = t - Helper.Spell.Sweep.announce_time
-                        Helper.Graphics.create_particle(sweep.color, get_random(0.5, 1.5), Helper.window_width + width/2 - Helper.Spell.Sweep.sweep_speed * t,
+                        Helper.Graphics:create_particle(sweep.color, get_random(0.5, 1.5), Helper.window_width + width/2 - Helper.Spell.Sweep.sweep_speed * t,
                                                         get_random(sweep.y1, sweep.y2), get_random(30, 70), get_random(2, 5),
                                                         -1, 0, 30)
                     end)
@@ -66,10 +66,10 @@ function Helper.Spell.Sweep.draw()
                                                 -width + Helper.Spell.Sweep.sweep_speed * t, sweep.y2)
 
                 if sweep.particle_interval_id == -1 then
-                    sweep.particle_interval_id = Helper.Time.set_interval(0.001, function()
+                    sweep.particle_interval_id = Helper.Time:set_interval(0.001, function()
                         local t = Helper.Time.time - sweep.cast_time
                         t = t - Helper.Spell.Sweep.announce_time
-                        Helper.Graphics.create_particle(sweep.color, get_random(0.5, 1.5), -width + width/2 + Helper.Spell.Sweep.sweep_speed * t,
+                        Helper.Graphics:create_particle(sweep.color, get_random(0.5, 1.5), -width + width/2 + Helper.Spell.Sweep.sweep_speed * t,
                                                         get_random(sweep.y1, sweep.y2), get_random(30, 70), get_random(2, 5),
                                                         1, 0, 30)
                     end)
@@ -79,7 +79,7 @@ function Helper.Spell.Sweep.draw()
     end
 end
 
-function Helper.Spell.Sweep.update()
+function Helper.Spell.Sweep:update()
     for i = #Helper.Spell.Sweep.list, 1, -1 do
         local t = Helper.Time.time - Helper.Spell.Sweep.list[i].cast_time
         t = t - Helper.Spell.Sweep.announce_time
@@ -87,8 +87,8 @@ function Helper.Spell.Sweep.update()
         local width = Helper.Spell.Sweep.sweep_width * height / 100
 
         if not Helper.Spell.Sweep.list[i].from_left then
-            for j, target in ipairs(Helper.Unit.get_list(Helper.Spell.Sweep.list[i].damage_troops)) do
-                if Helper.Time.time - target.damage_taken_at['sweep'] > 2 and Helper.Geometry.is_inside_rectangle(target.x, target.y, 
+            for j, target in ipairs(Helper.Unit:get_list(Helper.Spell.Sweep.list[i].damage_troops)) do
+                if Helper.Time.time - target.damage_taken_at['sweep'] > 2 and Helper.Geometry:is_inside_rectangle(target.x, target.y, 
                                                                                                                     Helper.window_width - width - Helper.Spell.Sweep.sweep_speed * t, Helper.Spell.Sweep.list[i].y1,
                                                                                                                     Helper.window_width + width*2 - Helper.Spell.Sweep.sweep_speed * t, Helper.Spell.Sweep.list[i].y2) then
                     target.damage_taken_at['sweep'] = Helper.Time.time
@@ -100,8 +100,8 @@ function Helper.Spell.Sweep.update()
                 end
             end
         else
-            for j, target in ipairs(Helper.Unit.get_list(Helper.Spell.Sweep.list[i].damage_troops)) do
-                if Helper.Time.time - target.damage_taken_at['sweep'] > 2 and Helper.Geometry.is_inside_rectangle(target.x, target.y, 
+            for j, target in ipairs(Helper.Unit:get_list(Helper.Spell.Sweep.list[i].damage_troops)) do
+                if Helper.Time.time - target.damage_taken_at['sweep'] > 2 and Helper.Geometry:is_inside_rectangle(target.x, target.y, 
                                                                                                                     -width*2 + width/5 + Helper.Spell.Sweep.sweep_speed * t, Helper.Spell.Sweep.list[i].y1,
                                                                                                                     width*4/5 + Helper.Spell.Sweep.sweep_speed * t, Helper.Spell.Sweep.list[i].y2) then
                     target.damage_taken_at['sweep'] = Helper.Time.time
@@ -115,7 +115,7 @@ function Helper.Spell.Sweep.update()
         end
 
         if Helper.Time.time - Helper.Spell.Sweep.list[i].cast_time > Helper.Spell.Sweep.announce_time + 1 then
-            Helper.Time.stop_interval(Helper.Spell.Sweep.list[i].particle_interval_id)
+            Helper.Time:stop_interval(Helper.Spell.Sweep.list[i].particle_interval_id)
             table.remove(Helper.Spell.Sweep.list, 1)
         end
     end

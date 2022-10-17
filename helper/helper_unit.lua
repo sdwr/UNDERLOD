@@ -2,7 +2,7 @@ Helper.Unit = {}
 
 Helper.Unit.cast_flash_duration = 0.08
 
-function Helper.Unit.get_list(troop_list)
+function Helper.Unit:get_list(troop_list)
     if troop_list then
         return main.current.main:get_objects_by_class(Troop)
     else
@@ -10,7 +10,7 @@ function Helper.Unit.get_list(troop_list)
     end
 end
 
-function Helper.Unit.add_custom_variables_to_unit(unit)
+function Helper.Unit:add_custom_variables_to_unit(unit)
     unit.previous_state = ''
 
     unit.is_troop = true
@@ -37,17 +37,17 @@ function Helper.Unit.add_custom_variables_to_unit(unit)
     unit.selected = false
     unit.spell_wait_id = -1
 
-    Helper.Unit.add_default_state_change_functions(unit)
-    Helper.Unit.add_default_state_always_run_functions(unit)
+    Helper.Unit:add_default_state_change_functions(unit)
+    Helper.Unit:add_default_state_always_run_functions(unit)
 
-    if is_in_list(Helper.Unit.get_list(true), unit) then
+    if is_in_list(Helper.Unit:get_list(true), unit) then
         unit.is_troop = true
     else
         unit.is_troop = false
     end
 end
 
-function Helper.Unit.claim_target(unit, target)
+function Helper.Unit:claim_target(unit, target)
     if unit then
         if unit.have_target then
             if unit.claimed_target == target then
@@ -61,41 +61,41 @@ function Helper.Unit.claim_target(unit, target)
     end
 end
 
-function Helper.Unit.unclaim_target(unit)
+function Helper.Unit:unclaim_target(unit)
     if unit and unit.have_target then
         table.remove(unit.claimed_target.targeted_by, find_in_list(unit.claimed_target.targeted_by, unit))
         unit.have_target = false
     end
 end
 
-function Helper.Unit.can_cast(unit)
+function Helper.Unit:can_cast(unit)
     if unit then
         return unit.state == unit_states['normal'] and not unit.have_target
         and Helper.Time.time - unit.last_attack_finished > unit.cooldownTime
-        and Helper.Spell.there_is_target_in_range(unit, unit.attack_sensor.rs + 10)
+        and Helper.Spell:there_is_target_in_range(unit, unit.attack_sensor.rs + 10)
     end
     return false
 end
 
-function Helper.Unit.start_casting(unit)
+function Helper.Unit:start_casting(unit)
     if unit then
         unit.state = unit_states['casting']
         unit.last_attack_started = Helper.Time.time
     end
 end
 
-function Helper.Unit.cancel_casting(unit)
+function Helper.Unit:cancel_casting(unit)
 
 end
 
-function Helper.Unit.finish_casting(unit)
+function Helper.Unit:finish_casting(unit)
     if unit then
         unit.last_attack_finished = Helper.Time.time
         unit.state = unit_states['normal']
     end
 end
 
-function Helper.Unit.is_attack_on_cooldown(unit)
+function Helper.Unit:is_attack_on_cooldown(unit)
     if unit then
         local time_since_cast = Helper.Time.time - (unit.last_attack_finished or 0)
         if unit.cooldownTime and time_since_cast < unit.cooldownTime then
@@ -105,7 +105,7 @@ function Helper.Unit.is_attack_on_cooldown(unit)
     return false
 end
 
-function Helper.Unit.add_default_state_change_functions(unit)
+function Helper.Unit:add_default_state_change_functions(unit)
     unit.state_change_functions['normal'] = function() end
     unit.state_change_functions['frozen'] = function() end
     unit.state_change_functions['casting'] = function() end
@@ -123,7 +123,7 @@ function Helper.Unit.add_default_state_change_functions(unit)
     unit.state_change_functions['target_death'] = function() end
 end
 
-function Helper.Unit.add_default_state_always_run_functions(unit)
+function Helper.Unit:add_default_state_always_run_functions(unit)
     unit.state_always_run_functions['normal'] = function() end
     unit.state_always_run_functions['frozen'] = function() end
     unit.state_always_run_functions['casting'] = function() end
@@ -140,8 +140,8 @@ function Helper.Unit.add_default_state_always_run_functions(unit)
     unit.state_always_run_functions['always_run'] = function() end
 end
 
-function Helper.Unit.run_state_change_functions()
-    for i, unit in ipairs(Helper.Unit.get_list(true)) do
+function Helper.Unit:run_state_change_functions()
+    for i, unit in ipairs(Helper.Unit:get_list(true)) do
         if unit.previous_state ~= unit.state then
             unit.state_change_functions[unit.state]()
         end
@@ -149,12 +149,12 @@ function Helper.Unit.run_state_change_functions()
     end
 end
 
-function Helper.Unit.run_state_always_run_functions()
-    for i, unit in ipairs(Helper.Unit.get_list(true)) do
+function Helper.Unit:run_state_always_run_functions()
+    for i, unit in ipairs(Helper.Unit:get_list(true)) do
         unit.state_always_run_functions[unit.state]()
         unit.state_always_run_functions['always_run']()
     end
-    for i, unit in ipairs(Helper.Unit.get_list(false)) do
+    for i, unit in ipairs(Helper.Unit:get_list(false)) do
         unit.state_always_run_functions[unit.state]()
         unit.state_always_run_functions['always_run']()
     end

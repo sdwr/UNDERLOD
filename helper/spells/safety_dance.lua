@@ -8,7 +8,7 @@ Helper.Spell.SafetyDance.chargeTime = 3
 Helper.Spell.SafetyDance.duration = 0.37
 
 --width in degrees
-function Helper.Spell.SafetyDance.create(unit, color, damage_troops, damage, x, y, w, h)
+function Helper.Spell.SafetyDance:create(unit, color, damage_troops, damage, x, y, w, h)
     local spell = {
         unit = unit,
         x = x,
@@ -17,7 +17,7 @@ function Helper.Spell.SafetyDance.create(unit, color, damage_troops, damage, x, 
         h = h,
         creation_time = Helper.Time.time,
         damage_troops = damage_troops,
-        color = Helper.Color.set_transparency(color, 0.8),
+        color = Helper.Color:set_transparency(color, 0.8),
         -- line_width = radius / 15,
         damage = damage
     }
@@ -27,12 +27,12 @@ function Helper.Spell.SafetyDance.create(unit, color, damage_troops, damage, x, 
     table.insert(Helper.Spell.SafetyDance.prelist, spell)
 end
 
-function Helper.Spell.SafetyDance.create_all(unit, color, damage_troops, pattern, total, damage)
+function Helper.Spell.SafetyDance:create_all(unit, color, damage_troops, pattern, total, damage)
     if pattern == 'one_safe' then
         for i = 1, total do
             if i ~= Helper.Spell.SafetyDance.index then
-                local x, y, w, h = Helper.Geometry.get_arena_rect(i, total)
-                Helper.Spell.SafetyDance.create(unit, color, damage_troops, damage,
+                local x, y, w, h = Helper.Geometry:get_arena_rect(i, total)
+                Helper.Spell.SafetyDance:create(unit, color, damage_troops, damage,
                     x, y, w, h)
                 glass_shatter:play{volume = 0.6}
             end
@@ -45,7 +45,7 @@ function Helper.Spell.SafetyDance.create_all(unit, color, damage_troops, pattern
     end
 end
 
-function Helper.Spell.SafetyDance.draw_aims()
+function Helper.Spell.SafetyDance:draw_aims()
     for i, spell in ipairs(Helper.Spell.SafetyDance.prelist) do
         local pctCharged = (Helper.Time.time - spell.creation_time) / Helper.Spell.SafetyDance.chargeTime
         local alpha = pctCharged * 0.4
@@ -56,20 +56,20 @@ function Helper.Spell.SafetyDance.draw_aims()
     end
 end
 
-function Helper.Spell.SafetyDance.draw()
+function Helper.Spell.SafetyDance:draw()
     for i, spell in ipairs(Helper.Spell.SafetyDance.list) do
         love.graphics.setColor(spell.color.r, spell.color.g, spell.color.b, spell.color.a)
         love.graphics.rectangle("fill", spell.x, spell.y, spell.w, spell.h)
     end
 end
 
-function Helper.Spell.SafetyDance.update()
-    Helper.Spell.SafetyDance.activate()
-    Helper.Spell.SafetyDance.damage()
-    Helper.Spell.SafetyDance.delete()
+function Helper.Spell.SafetyDance:update()
+    Helper.Spell.SafetyDance:activate()
+    Helper.Spell.SafetyDance:damage()
+    Helper.Spell.SafetyDance:delete()
 end
 
-function Helper.Spell.SafetyDance.activate()
+function Helper.Spell.SafetyDance:activate()
     for i, spell in ipairs(Helper.Spell.SafetyDance.prelist) do
         if Helper.Time.time - Helper.Spell.SafetyDance.chargeTime > spell.creation_time then
             table.insert(Helper.Spell.SafetyDance.list, spell)
@@ -79,18 +79,18 @@ function Helper.Spell.SafetyDance.activate()
     end
 end
 
-function Helper.Spell.SafetyDance.getRect(spell)
+function Helper.Spell.SafetyDance:getRect(spell)
     return spell.x, spell.y, spell.w, spell.h
 end
 
-function Helper.Spell.SafetyDance.damage()
+function Helper.Spell.SafetyDance:damage()
     local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
     local troops = main.current.main:get_objects_by_classes(main.current.friendlies)
 
     for i, spell in ipairs(Helper.Spell.SafetyDance.list) do
         --print(#spell.targets_hit)
 
-        local x, y, w, h = Helper.Spell.SafetyDance.getRect(spell)
+        local x, y, w, h = Helper.Spell.SafetyDance:getRect(spell)
         local rect = Rectangle(x, y, w, h)
         local targets = nil
             if not spell.damage_troops then
@@ -110,7 +110,7 @@ function Helper.Spell.SafetyDance.damage()
     end
 end
 
-function Helper.Spell.SafetyDance.delete()
+function Helper.Spell.SafetyDance:delete()
     for i = #Helper.Spell.SafetyDance.list, 1, -1 do
         local spell = Helper.Spell.SafetyDance.list[i]
         if (Helper.Time.time - Helper.Spell.SafetyDance.chargeTime) - 

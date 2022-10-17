@@ -2,7 +2,7 @@ Helper.Spell.DamageLine = {}
 
 Helper.Spell.DamageLine.list = {}
 
-function Helper.Spell.DamageLine.create(unit, color, linewidth, damage_troops, damage, x1, y1, x2, y2)
+function Helper.Spell.DamageLine:create(unit, color, linewidth, damage_troops, damage, x1, y1, x2, y2)
     local damage_line = {
         unit = unit,
         x1 = x1,
@@ -20,7 +20,7 @@ function Helper.Spell.DamageLine.create(unit, color, linewidth, damage_troops, d
     table.insert(Helper.Spell.DamageLine.list, damage_line)
 end
 
-function Helper.Spell.DamageLine.draw()
+function Helper.Spell.DamageLine:draw()
     for i, damage_line in ipairs(Helper.Spell.DamageLine.list) do
         if Helper.Time.time - damage_line.start_time < 0.05 then
             love.graphics.setLineWidth(damage_line.linewidth)
@@ -49,12 +49,12 @@ function Helper.Spell.DamageLine.draw()
     end
 end
 
-function Helper.Spell.DamageLine.update()
-    Helper.Spell.DamageLine.damage()
-    Helper.Spell.DamageLine.delete()
+function Helper.Spell.DamageLine:update()
+    Helper.Spell.DamageLine:damage()
+    Helper.Spell.DamageLine:delete()
 end
 
-function Helper.Spell.DamageLine.damage()
+function Helper.Spell.DamageLine:damage()
     local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
     local troops = main.current.main:get_objects_by_class(Troop)
 
@@ -62,7 +62,7 @@ function Helper.Spell.DamageLine.damage()
         if not damage_line.damage_dealt then
             if not damage_line.damage_troops then
                 for _, enemy in ipairs(enemies) do
-                    if Helper.Geometry.is_on_line(enemy.x, enemy.y, damage_line.x1, damage_line.y1, damage_line.x2, damage_line.y2, damage_line.linewidth) then
+                    if Helper.Geometry:is_on_line(enemy.x, enemy.y, damage_line.x1, damage_line.y1, damage_line.x2, damage_line.y2, damage_line.linewidth) then
                         enemy:hit(damage_line.damage, damage_line.unit)
                         HitCircle{group = main.current.effects, x = enemy.x, y = enemy.y, rs = 6, color = fg[0], duration = 0.1}
                         for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = blue[0]} end
@@ -71,7 +71,7 @@ function Helper.Spell.DamageLine.damage()
                 end
             else
                 for _, troop in ipairs(troops) do
-                    if Helper.Geometry.is_on_line(troop.x, troop.y, damage_line.x1, damage_line.y1, damage_line.x2, damage_line.y2, damage_line.linewidth) then
+                    if Helper.Geometry:is_on_line(troop.x, troop.y, damage_line.x1, damage_line.y1, damage_line.x2, damage_line.y2, damage_line.linewidth) then
                         troop:hit(damage_line.damage, damage_line.unit)
                         HitCircle{group = main.current.effects, x = troop.x, y = troop.y, rs = 6, color = fg[0], duration = 0.1}
                         for i = 1, 1 do HitParticle{group = main.current.effects, x = troop.x, y = troop.y, color = blue[0]} end
@@ -85,7 +85,7 @@ function Helper.Spell.DamageLine.damage()
     end
 end
 
-function Helper.Spell.DamageLine.delete()
+function Helper.Spell.DamageLine:delete()
     for i = #Helper.Spell.DamageLine.list, 1, -1 do
         if Helper.Time.time - Helper.Spell.DamageLine.list[i].start_time > 0.25 then
             table.remove(Helper.Spell.DamageLine.list, i)

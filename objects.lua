@@ -206,7 +206,7 @@ function Unit:init_unit()
 
   self.state = unit_states['normal']
 
-  Helper.Unit.add_custom_variables_to_unit(self)
+  Helper.Unit:add_custom_variables_to_unit(self)
 end
 
 
@@ -517,7 +517,7 @@ function Unit:explode(enemy)
   local damage_troops = not self:is(Troop)
   local radius = enemy.shape.w * self.area_size_m
   explosion1:play{volume = 0.7}
-  Helper.Spell.DamageCircle.create(self, black[0], damage_troops, enemy.max_hp * 0.2, 
+  Helper.Spell.DamageCircle:create(self, black[0], damage_troops, enemy.max_hp * 0.2, 
   radius, enemy.x, enemy.y)
 end
 
