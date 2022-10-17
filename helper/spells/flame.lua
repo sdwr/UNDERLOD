@@ -4,7 +4,7 @@ Helper.Spell.Flame.do_draw_hitbox = false
 Helper.Spell.Flame.do_draw_particles = true
 Helper.Spell.Flame.list = {}
 
-function Helper.Spell.Flame.create(color, flamewidth, flameheight, damage, unit)
+function Helper.Spell.Flame:create(color, flamewidth, flameheight, damage, unit)
     if unit.have_target then
         local i, flame = find_in_list(Helper.Spell.Flame.list, unit, function(value) return value.unit end)
         if flame == -1 then
@@ -52,12 +52,12 @@ function Helper.Spell.Flame.create(color, flamewidth, flameheight, damage, unit)
     end
 end
 
-function Helper.Spell.Flame.update()
-    Helper.Spell.Flame.update_direction()
-    Helper.Spell.Flame.end_flames()
+function Helper.Spell.Flame:update()
+    Helper.Spell.Flame:update_direction()
+    Helper.Spell.Flame:end_flames()
 end
 
-function Helper.Spell.Flame.damage()
+function Helper.Spell.Flame:damage()
     for __, flame in ipairs(Helper.Spell.Flame.list) do
         for _, target in ipairs(Helper.Unit:get_list(not flame.unit.is_troop)) do
             if Helper.Geometry:is_inside_triangle(target.x, target.y, Helper.Geometry:get_triangle_from_height_and_width(flame.unit.x, flame.unit.y, flame.unit.x + flame.directionx, flame.unit.y + flame.directiony, flame.flameheight, flame.flamewidth)) 
@@ -71,7 +71,7 @@ function Helper.Spell.Flame.damage()
     end
 end
 
-function Helper.Spell.Flame.update_direction()
+function Helper.Spell.Flame:update_direction()
     for __, flame in ipairs(Helper.Spell.Flame.list) do
         if flame.unit.have_target then
             local x = flame.unit.x + flame.directionx
@@ -83,7 +83,7 @@ function Helper.Spell.Flame.update_direction()
     end
 end
 
-function Helper.Spell.Flame.draw()
+function Helper.Spell.Flame:draw()
     --debug, draw hitbox
     if Helper.Spell.Flame.do_draw_hitbox then
         for __, flame in ipairs(Helper.Spell.Flame.list) do
@@ -96,7 +96,7 @@ function Helper.Spell.Flame.draw()
     end
 end
 
-function Helper.Spell.Flame.end_flames()
+function Helper.Spell.Flame:end_flames()
     for i = #Helper.Spell.Flame.list, 1, -1 do
         if Helper.Spell.Flame.list[i].set_to_end then
             if Helper.Time.time - Helper.Spell.Flame.list[i].start_ending_at > Helper.Spell.Flame.list[i].end_after then
@@ -108,7 +108,7 @@ function Helper.Spell.Flame.end_flames()
     end
 end
 
-function Helper.Spell.Flame.clear_all()
+function Helper.Spell.Flame:clear_all()
     for i = #Helper.Spell.Flame.list, 1, -1 do
         Helper.Time:stop_interval(Helper.Spell.Flame.list[i].particle_interval_id)
         table.remove(Helper.Spell.Flame.list, i)
@@ -117,7 +117,7 @@ end
 
 
 
-function Helper.Spell.Flame.end_flame_after(unit, duration)
+function Helper.Spell.Flame:end_flame_after(unit, duration)
     local i, flame = find_in_list(Helper.Spell.Flame.list, unit, function(value) return value.unit end)
     if i ~= -1 then
         flame.set_to_end = true

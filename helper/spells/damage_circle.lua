@@ -3,7 +3,7 @@ Helper.Spell.DamageCircle = {}
 Helper.Spell.DamageCircle.duration = 0.25
 Helper.Spell.DamageCircle.list = {}
 
-function Helper.Spell.DamageCircle.create(unit, color, damage_troops, damage, radius, x, y)
+function Helper.Spell.DamageCircle:create(unit, color, damage_troops, damage, radius, x, y)
     local damage_circle = {
         unit = unit,
         x = x,
@@ -20,7 +20,7 @@ function Helper.Spell.DamageCircle.create(unit, color, damage_troops, damage, ra
     table.insert(Helper.Spell.DamageCircle.list, damage_circle)
 end
 
-function Helper.Spell.DamageCircle.draw()
+function Helper.Spell.DamageCircle:draw()
     for i, damage_circle in ipairs(Helper.Spell.DamageCircle.list) do
         love.graphics.setColor(damage_circle.color.r, damage_circle.color.g, damage_circle.color.b, damage_circle.color.a)
         love.graphics.setLineWidth(1)
@@ -28,12 +28,12 @@ function Helper.Spell.DamageCircle.draw()
     end
 end
 
-function Helper.Spell.DamageCircle.update()
-    Helper.Spell.DamageCircle.damage()
-    Helper.Spell.DamageCircle.delete()
+function Helper.Spell.DamageCircle:update()
+    Helper.Spell.DamageCircle:damage()
+    Helper.Spell.DamageCircle:delete()
 end
 
-function Helper.Spell.DamageCircle.damage()
+function Helper.Spell.DamageCircle:damage()
     local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
     local troops = main.current.main:get_objects_by_class(Troop)
 
@@ -64,7 +64,7 @@ function Helper.Spell.DamageCircle.damage()
     end
 end
 
-function Helper.Spell.DamageCircle.delete()
+function Helper.Spell.DamageCircle:delete()
     for i = #Helper.Spell.DamageCircle.list, 1, -1 do
         if Helper.Time.time - Helper.Spell.DamageCircle.list[i].creation_time > Helper.Spell.DamageCircle.duration then
             table.remove(Helper.Spell.DamageCircle.list, i)

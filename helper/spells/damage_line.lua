@@ -2,7 +2,7 @@ Helper.Spell.DamageLine = {}
 
 Helper.Spell.DamageLine.list = {}
 
-function Helper.Spell.DamageLine.create(unit, color, linewidth, damage_troops, damage, x1, y1, x2, y2)
+function Helper.Spell.DamageLine:create(unit, color, linewidth, damage_troops, damage, x1, y1, x2, y2)
     local damage_line = {
         unit = unit,
         x1 = x1,
@@ -20,7 +20,7 @@ function Helper.Spell.DamageLine.create(unit, color, linewidth, damage_troops, d
     table.insert(Helper.Spell.DamageLine.list, damage_line)
 end
 
-function Helper.Spell.DamageLine.draw()
+function Helper.Spell.DamageLine:draw()
     for i, damage_line in ipairs(Helper.Spell.DamageLine.list) do
         if Helper.Time.time - damage_line.start_time < 0.05 then
             love.graphics.setLineWidth(damage_line.linewidth)
@@ -49,12 +49,12 @@ function Helper.Spell.DamageLine.draw()
     end
 end
 
-function Helper.Spell.DamageLine.update()
-    Helper.Spell.DamageLine.damage()
-    Helper.Spell.DamageLine.delete()
+function Helper.Spell.DamageLine:update()
+    Helper.Spell.DamageLine:damage()
+    Helper.Spell.DamageLine:delete()
 end
 
-function Helper.Spell.DamageLine.damage()
+function Helper.Spell.DamageLine:damage()
     local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
     local troops = main.current.main:get_objects_by_class(Troop)
 
@@ -85,7 +85,7 @@ function Helper.Spell.DamageLine.damage()
     end
 end
 
-function Helper.Spell.DamageLine.delete()
+function Helper.Spell.DamageLine:delete()
     for i = #Helper.Spell.DamageLine.list, 1, -1 do
         if Helper.Time.time - Helper.Spell.DamageLine.list[i].start_time > 0.25 then
             table.remove(Helper.Spell.DamageLine.list, i)

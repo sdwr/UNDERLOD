@@ -4,7 +4,7 @@ Helper.Spell.DamageArc.list = {}
 Helper.Spell.DamageArc.grow = true
 
 --width in degrees
-function Helper.Spell.DamageArc.create(unit, color, damage_troops, pierce, damage, width, angle, speed, x, y, radius)
+function Helper.Spell.DamageArc:create(unit, color, damage_troops, pierce, damage, width, angle, speed, x, y, radius)
     local damage_arc = {
         unit = unit,
         x = x,
@@ -28,17 +28,17 @@ function Helper.Spell.DamageArc.create(unit, color, damage_troops, pierce, damag
     table.insert(Helper.Spell.DamageArc.list, damage_arc)
 end
 
-function Helper.Spell.DamageArc.create_spread(unit, color, damage_troops, pierce, damage, width, thickness, numArcs, speed, x, y)
+function Helper.Spell.DamageArc:create_spread(unit, color, damage_troops, pierce, damage, width, thickness, numArcs, speed, x, y)
     local angle = math.random(360)
     for i = 1, numArcs do
         angle = angle + (360 / numArcs)
         for j = 0, thickness-1 do
-            Helper.Spell.DamageArc.create(unit, color, damage_troops, pierce, damage, width, angle, speed, x, y, 20 - (j*4))
+            Helper.Spell.DamageArc:create(unit, color, damage_troops, pierce, damage, width, angle, speed, x, y, 20 - (j*4))
         end
     end
 end
 
-function Helper.Spell.DamageArc.draw()
+function Helper.Spell.DamageArc:draw()
     for i, damage_arc in ipairs(Helper.Spell.DamageArc.list) do
         love.graphics.setColor(damage_arc.color.r, damage_arc.color.g, damage_arc.color.b, damage_arc.color.a)
         local a1 = damage_arc.angle 
@@ -47,13 +47,13 @@ function Helper.Spell.DamageArc.draw()
     end
 end
 
-function Helper.Spell.DamageArc.update()
-    Helper.Spell.DamageArc.move()
-    Helper.Spell.DamageArc.damage()
-    Helper.Spell.DamageArc.delete()
+function Helper.Spell.DamageArc:update()
+    Helper.Spell.DamageArc:move()
+    Helper.Spell.DamageArc:damage()
+    Helper.Spell.DamageArc:delete()
 end
 
-function Helper.Spell.DamageArc.move()
+function Helper.Spell.DamageArc:move()
     for i, damage_arc in ipairs(Helper.Spell.DamageArc.list) do
         local movement = Helper.Time.delta_time * damage_arc.speed
         if Helper.Spell.DamageArc.grow then
@@ -65,20 +65,20 @@ function Helper.Spell.DamageArc.move()
     end
 end
 
-function Helper.Spell.DamageArc.getLine(arc)
+function Helper.Spell.DamageArc:getLine(arc)
     local x1, y1 = Helper.Geometry:move_point(arc.x, arc.y, arc.angle, arc.radius)
     local x2, y2 = Helper.Geometry:move_point(arc.x, arc.y, arc.angle + arc.width, arc.radius)
 
     return x1, y1, x2, y2
 end
 
-function Helper.Spell.DamageArc.damage()
+function Helper.Spell.DamageArc:damage()
     local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
     local troops = main.current.main:get_objects_by_class(Troop)
 
     for i, damage_arc in ipairs(Helper.Spell.DamageArc.list) do
 
-        local x1, y1, x2, y2 = Helper.Spell.DamageArc.getLine(damage_arc)
+        local x1, y1, x2, y2 = Helper.Spell.DamageArc:getLine(damage_arc)
         local line = Line(x1, y1, x2, y2)
         local targets = nil
             if not damage_arc.damage_troops then
@@ -101,7 +101,7 @@ function Helper.Spell.DamageArc.damage()
     end
 end
 
-function Helper.Spell.DamageArc.delete()
+function Helper.Spell.DamageArc:delete()
     for i = #Helper.Spell.DamageArc.list, 1, -1 do
         local arc = Helper.Spell.DamageArc.list[i]
         if Helper.Geometry:is_off_screen(arc.x, arc.y, arc.angle, arc.radius + 20) then

@@ -3,7 +3,7 @@ Helper.Spell.Bomb = {}
 Helper.Spell.Bomb.list = {}
 Helper.Spell.Bomb.prelist = {}
 
-function Helper.Spell.Bomb.create(color, damage_troops, damage, radius, unit, armed_duration, explode_radius, x, y)
+function Helper.Spell.Bomb:create(color, damage_troops, damage, radius, unit, armed_duration, explode_radius, x, y)
 
     local bomb = {
         x = x,
@@ -28,7 +28,7 @@ function Helper.Spell.Bomb.create(color, damage_troops, damage, radius, unit, ar
     table.insert(Helper.Spell.Bomb.prelist, bomb)
 end
 
-function Helper.Spell.Bomb.draw()
+function Helper.Spell.Bomb:draw()
     for i, bomb in ipairs(Helper.Spell.Bomb.list) do
 
         love.graphics.setColor(bomb.color.r, bomb.color.g, bomb.color.b, bomb.color.a)
@@ -39,7 +39,7 @@ function Helper.Spell.Bomb.draw()
     end
 end
 
-function Helper.Spell.Bomb.shoot()
+function Helper.Spell.Bomb:shoot()
     --move to active list if ready to cast
     for i, bomb in ipairs(Helper.Spell.Bomb.prelist) do
         if Helper.Spell:can_shoot(bomb) then
@@ -53,16 +53,16 @@ function Helper.Spell.Bomb.shoot()
     end
 end
 
-function Helper.Spell.Bomb.update()
-    Helper.Spell.Bomb.shoot()
-    Helper.Spell.Bomb.explode()
+function Helper.Spell.Bomb:update()
+    Helper.Spell.Bomb:shoot()
+    Helper.Spell.Bomb:explode()
 end
 
-function Helper.Spell.Bomb.explode()
+function Helper.Spell.Bomb:explode()
     for i = #Helper.Spell.Bomb.list, 1, -1 do
         local bomb = Helper.Spell.Bomb.list[i]
         if Helper.Time.time - bomb.armed_duration > bomb.start_armed_time then
-            Helper.Spell.DamageCircle.create(bomb.unit, bomb.color, bomb.damage_troops,
+            Helper.Spell.DamageCircle:create(bomb.unit, bomb.color, bomb.damage_troops,
                 bomb.damage, bomb.explode_radius, bomb.x, bomb.y)
             table.remove(Helper.Spell.Bomb.list, i)
             cannoneer1:play{volume=1.3}
@@ -70,7 +70,7 @@ function Helper.Spell.Bomb.explode()
     end
 end
 
-function Helper.Spell.Bomb.stop_aiming(unit)
+function Helper.Spell.Bomb:stop_aiming(unit)
     local i, bomb = find_in_list(Helper.Spell.Bomb.prelist, unit, function(value) return value.unit end)
     if i ~= -1 then
         unit.have_target = false
@@ -78,7 +78,7 @@ function Helper.Spell.Bomb.stop_aiming(unit)
     end
 end
 
-function Helper.Spell.Bomb.clear_all()
+function Helper.Spell.Bomb:clear_all()
     Helper.Spell.Bomb.prelist = {}
     Helper.Spell.Bomb.list = {}
 end

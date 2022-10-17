@@ -2794,13 +2794,13 @@ function Troop:set_character()
         self.last_attack_started = Helper.Time.time
         Helper.Time:wait(get_random(0, 0.1), function()
           sniper_load:play{volume=0.7}
-          Helper.Spell.Laser.create(Helper.Color.blue, 1, false, 20, self)
+          Helper.Spell.Laser:create(Helper.Color.blue, 1, false, 20, self)
         end)
       end
       
       --cancel if target moves out of range
       if self.have_target and not Helper.Spell:claimed_target_is_in_range(self, 170) then
-        Helper.Spell.Laser.stop_aiming(self)
+        Helper.Spell.Laser:stop_aiming(self)
         Helper.Unit:unclaim_target(self)
       end
     end
@@ -2808,14 +2808,14 @@ function Troop:set_character()
     --cancel on move
     self.state_always_run_functions['following_or_rallying'] = function()
       if self.have_target then
-        Helper.Spell.Laser.stop_aiming(self)
+        Helper.Spell.Laser:stop_aiming(self)
         Helper.Unit:unclaim_target(self)
       end
     end
 
     --cancel on death
     self.state_change_functions['death'] = function()
-      Helper.Spell.Laser.stop_aiming(self)
+      Helper.Spell.Laser:stop_aiming(self)
       Helper.Unit:unclaim_target(self)
     end
 
@@ -2831,23 +2831,23 @@ function Troop:set_character()
   --         Helper.Unit:claim_target(self, Helper.Spell:get_nearest_target(self))
   --       else
   --         Helper.Unit:claim_target(self, Helper.Spell:get_nearest_target(self))
-  --         Helper.Spell.Flame.create(Helper.Color.orange, 60, 70, 3, self)
+  --         Helper.Spell.Flame:create(Helper.Color.orange, 60, 70, 3, self)
   --       end
   --     end
 
   --     if self.have_target and not Helper.Spell:claimed_target_is_in_range(self, 70) then
-  --       Helper.Spell.Flame.end_flame_after(self, 0.25)
+  --       Helper.Spell.Flame:end_flame_after(self, 0.25)
   --       Helper.Unit:unclaim_target(self)
   --     end
   --   end
 
   --   self.state_change_functions['target_death'] = function()
-  --     Helper.Spell.Flame.end_flame_after(self, 0.25)
+  --     Helper.Spell.Flame:end_flame_after(self, 0.25)
   --     Helper.Unit:unclaim_target(self)
   --   end
 
   --   self.state_change_functions['death'] = function()
-  --     Helper.Spell.Flame.end_flame_after(self, 0)
+  --     Helper.Spell.Flame:end_flame_after(self, 0)
   --     Helper.Unit:unclaim_target(self)
   --   end
   
@@ -2946,14 +2946,14 @@ function Troop:set_character()
 
     self.state_always_run_functions['always_run'] = function()
       if Helper.Unit:can_cast(self) then
-        Helper.Spell.Bomb.create(black[2], false, self.dmg, 4, self, 1.5, self.explode_radius, self.x, self.y)
+        Helper.Spell.Bomb:create(black[2], false, self.dmg, 4, self, 1.5, self.explode_radius, self.x, self.y)
       end
     end
 
     
     --cancel on move
     self.state_always_run_functions['following_or_rallying'] = function()
-        Helper.Spell.Bomb.stop_aiming(self)
+        Helper.Spell.Bomb:stop_aiming(self)
         Helper.Unit:unclaim_target(self)
     end
 
@@ -2961,7 +2961,7 @@ function Troop:set_character()
 
     --cancel on death
     self.state_change_functions['death'] = function()
-      Helper.Spell.Bomb.stop_aiming(self)
+      Helper.Spell.Bomb:stop_aiming(self)
       Helper.Unit:unclaim_target(self)
     end
 
