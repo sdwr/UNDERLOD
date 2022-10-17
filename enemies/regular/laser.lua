@@ -16,7 +16,7 @@ fns['init_enemy'] = function(self)
       if target then
         self:rotate_towards_object(target, 1)
         Helper.Unit.claim_target(self, target)
-        Helper.Spell.Laser.create(Helper.Color.blue, 1, true, 20, self)      
+        Helper.Spell.Laser.create(Helper.Color.blue, 1, true, self.dmg, self)      
         end
     end, nil, nil, 'shoot')
 end
