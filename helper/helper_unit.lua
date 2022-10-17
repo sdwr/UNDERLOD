@@ -168,6 +168,44 @@ Helper.Unit.number_of_teams = 0
 Helper.Unit.teams = {{}, {}, {}, {}}
 Helper.Unit.selected_team = 0
 
+function Helper.Unit:set_team(team_number)
+    local team = {}
+    for i, troop in ipairs(self.get_list(true)) do
+        if troop.selected then
+            table.insert(team, troop)
+        end
+    end
+    if #team ~= 0 then
+        self.teams[team_number] = team
+        self:refresh_button(team_number)
+    end
+    main.current.hotbar_by_index[team_number]:action()
+end
+
+function Helper.Unit:add_to_team(team_number)
+    local added = false
+    for i, troop in ipairs(self.get_list(true)) do
+        if troop.selected and not is_in_list(self.teams[team_number], troop) then
+            table.insert(self.teams[team_number], troop)
+            added = true
+        end
+    end
+    if added then
+        self:refresh_button(team_number)
+    end
+    main.current.hotbar_by_index[team_number]:action()
+end
+
+function Helper.Unit:refresh_button(team_number)
+    local color_marks = {}
+    for i, troop in ipairs(self.teams[team_number]) do
+        if not is_in_list(color_marks, character_colors[troop.character]) then
+            table.insert(color_marks, character_colors[troop.character])
+        end
+    end
+    main.current.hotbar_by_index[team_number].color_marks = color_marks
+end
+
 function Helper.Unit:select()
     if not Helper.mouse_on_button then
         if input['m1'].pressed then
@@ -204,65 +242,55 @@ function Helper.Unit:select()
         self.do_draw_selection = false
     end
 
-    local function refresh_button(team_number)
-        local color_marks = {}
-        for i, troop in ipairs(self.teams[team_number]) do
-            if not is_in_list(color_marks, character_colors[troop.character]) then
-                table.insert(color_marks, character_colors[troop.character])
-            end
-        end
-        main.current.hotbar_by_index[team_number].color_marks = color_marks
-    end
-
-    local function set_team(team_number)
-        local team = {}
-        for i, troop in ipairs(self.get_list(true)) do
-            if troop.selected then
-                table.insert(team, troop)
-            end
-        end
-        if #team ~= 0 then
-            self.teams[team_number] = team
-            refresh_button(team_number)
-        end
-        main.current.hotbar_by_index[team_number]:action()
-    end
-
     if input['lctrl'].down then
         if input['1'].pressed then
-            set_team(1)
+            self:set_team(1)
         elseif input['2'].pressed then
-            set_team(2)
+            self:set_team(2)
         elseif input['3'].pressed then
-            set_team(3)
+            self:set_team(3)
         elseif input['4'].pressed then
-            set_team(4)
+            self:set_team(4)
         end
-    end
-
-    local function add_to_team(team_number)
-        local added = false
-        for i, troop in ipairs(self.get_list(true)) do
-            if troop.selected and not is_in_list(self.teams[team_number], troop) then
-                table.insert(self.teams[team_number], troop)
-                added = true
-            end
-        end
-        if added then
-            refresh_button(team_number)
-        end
-        main.current.hotbar_by_index[team_number]:action()
     end
 
     if input['lshift'].down then
         if input['1'].pressed then
-            add_to_team(1)
+            self:add_to_team(1)
         elseif input['2'].pressed then
-            add_to_team(2)
+            self:add_to_team(2)
         elseif input['3'].pressed then
-            add_to_team(3)
+            self:add_to_team(3)
         elseif input['4'].pressed then
-            add_to_team(4)
+            self:add_to_team(4)
+        end
+    end
+
+
+
+    for i = 1, 9 do
+        if not input['lctrl'].down and not input['lshift'].down then
+            if input[tostring(i)].pressed and main.current.hotbar_by_index[i] then
+                main.current.hotbar_by_index[i]:on_mouse_enter()
+            end
+        elseif not (input['lctrl'].down and input['lshift'].down) then
+            if input['lctrl'].down then
+                if input[tostring(i)].pressed and i <= 4 and i >= 1 then
+                    main.current.hotbar['set team ' .. i]:on_mouse_enter()
+                end
+            elseif input['lshift'].down then
+                if input[tostring(i)].pressed and i <= 4 and i >= 1 then
+                    main.current.hotbar['add to team ' .. i]:on_mouse_enter()
+                end
+            end
+        end
+
+        if input[tostring(i)].released and main.current.hotbar_by_index[i] then
+            main.current.hotbar_by_index[i]:on_mouse_exit()
+            if i <= 4 and i >= 1 then
+                main.current.hotbar['set team ' .. i]:on_mouse_exit()
+                main.current.hotbar['add to team ' .. i]:on_mouse_exit()
+            end
         end
     end
 end

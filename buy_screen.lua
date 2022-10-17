@@ -754,9 +754,9 @@ end
 
 function HotbarButton:draw()
   graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
-    if self.unit_selected then
-      graphics.rectangle(self.x+1, self.y+1, self.shape.w+1, self.shape.h+1, 4,4,  _G['white'][0], 3)
-    end
+    -- if self.unit_selected then
+    --   graphics.rectangle(self.x+1, self.y+1, self.shape.w+1, self.shape.h+1, 4,4,  _G['white'][0], 3)
+    -- end
     graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, self.selected and fg[0] or _G[self.bg_color][0])
     
     if #self.color_marks == 0 then

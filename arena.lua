@@ -106,7 +106,7 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
   self.hotbar_by_index = {}
 
   for i = 1, 4 do
-    local b = HotbarButton{group = self.ui, x = 50 + 50 * (i - 1) , y = gh - 20, 
+    local b = HotbarButton{group = self.ui, x = 30 + 85 * (i - 1) , y = gh - 20, 
                           force_update = true, button_text = tostring(i), w = 40, fg_color = 'white', bg_color = 'bg', 
                           action = function() 
                             main.current:select_character('team ' .. i) 
@@ -118,12 +118,27 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
                           end}
     self.hotbar['team ' .. i] = b
     self.hotbar_by_index[i] = b
+
+    local b = HotbarButton{group = self.ui, x = 30 + 85 * (i - 1) + 30 , y = gh - 20, 
+                          force_update = true, button_text = '', w = 20, fg_color = 'white', bg_color = 'bg', 
+                          action = function() 
+                            Helper.Unit:set_team(i)
+                          end,
+                          color_marks = {[1] = white[0]}}
+    self.hotbar['set team ' .. i] = b
+
+    local b = HotbarButton{group = self.ui, x = 30 + 85 * (i - 1) + 50 , y = gh - 20, 
+                          force_update = true, button_text = '+', w = 20, fg_color = 'white', bg_color = 'bg', 
+                          action = function() 
+                            Helper.Unit:add_to_team(i)
+                          end}
+    self.hotbar['add to team ' .. i] = b
   end
 
-  for i = 5, #units + 4 do
-    local character = units[i - 4].character
+  for i = 1, #units do
+    local character = units[i].character
     local type = character_types[character]
-    local b = HotbarButton{group = self.ui, x = 260 + 30 * (i - 5) , y = gh - 20, w = 20,
+    local b = HotbarButton{group = self.ui, x = 340 + 25 * i , y = gh - 20, w = 20,
                             force_update = true, button_text = character, fg_color = type_color_strings[type], bg_color = 'bg', 
                             action = function() 
                               self:select_character(character) 
@@ -137,7 +152,7 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
                             end,
                             color_marks = {[1] = character_colors[character]}}
     self.hotbar[character] = b
-    self.hotbar_by_index[i] = b
+    self.hotbar_by_index[i + 4] = b
   end
 
   Spawn_Troops(self)
