@@ -27,7 +27,7 @@ Helper.Spell.spells = {
     Helper.Spell.Burst
 }
 
-function Helper.Spell.can_shoot(spell)
+function Helper.Spell:can_shoot(spell)
     if Helper.Time.time - spell.start_aim_time > spell.cast_time then
         return true
     else
@@ -35,10 +35,10 @@ function Helper.Spell.can_shoot(spell)
     end
 end
 
-function Helper.Spell.get_nearest_target(unit, include_list)
+function Helper.Spell:get_nearest_target(unit, include_list)
     include_list = include_list or {}
 
-    local unit_list = Helper.Unit.get_list(not unit.is_troop)
+    local unit_list = Helper.Unit:get_list(not unit.is_troop)
     if #unit_list > 0 then
         local target = {}
         local distancemin = 100000000
@@ -49,13 +49,13 @@ function Helper.Spell.get_nearest_target(unit, include_list)
         end
 
         --check global target first
-        if is_in_list(include_list, globalTarget) and Helper.Geometry.distance(unit.x, unit.y, globalTarget.x, globalTarget.y) then
+        if is_in_list(include_list, globalTarget) and Helper.Geometry:distance(unit.x, unit.y, globalTarget.x, globalTarget.y) then
             return globalTarget
         end
 
         for _, value in ipairs(unit_list) do
-            if Helper.Geometry.distance(unit.x, unit.y, value.x, value.y) < distancemin and (#include_list == 0 or is_in_list(include_list, value)) then
-                distancemin = Helper.Geometry.distance(unit.x, unit.y, value.x, value.y)
+            if Helper.Geometry:distance(unit.x, unit.y, value.x, value.y) < distancemin and (#include_list == 0 or is_in_list(include_list, value)) then
+                distancemin = Helper.Geometry:distance(unit.x, unit.y, value.x, value.y)
                 target = value
             end
         end
@@ -65,10 +65,10 @@ function Helper.Spell.get_nearest_target(unit, include_list)
     end
 end
 
-function Helper.Spell.get_nearest_least_targeted(unit, range)
+function Helper.Spell:get_nearest_least_targeted(unit, range)
     local target_list = {}
-    for i, value in ipairs(Helper.Unit.get_list(not unit.is_troop)) do
-        if Helper.Geometry.distance(unit.x, unit.y, value.x, value.y) <= range then
+    for i, value in ipairs(Helper.Unit:get_list(not unit.is_troop)) do
+        if Helper.Geometry:distance(unit.x, unit.y, value.x, value.y) <= range then
             table.insert(target_list, value)
         end
     end
@@ -93,20 +93,20 @@ function Helper.Spell.get_nearest_least_targeted(unit, range)
         table.insert(least_targeted_units, globalTarget)
     end
 
-    return Helper.Spell.get_nearest_target(unit, least_targeted_units)
+    return Helper.Spell:get_nearest_target(unit, least_targeted_units)
 end
 
-function Helper.Spell.claimed_target_is_in_range(unit, range)
-    if unit.have_target and Helper.Geometry.distance(unit.x, unit.y, unit.claimed_target.x, unit.claimed_target.y) <= range then
+function Helper.Spell:claimed_target_is_in_range(unit, range)
+    if unit.have_target and Helper.Geometry:distance(unit.x, unit.y, unit.claimed_target.x, unit.claimed_target.y) <= range then
         return true
     end
 
     return false
 end
 
-function Helper.Spell.there_is_target_in_range(unit, range)
-    for i, target in ipairs(Helper.Unit.get_list(not unit.is_troop)) do
-        if Helper.Geometry.distance(unit.x, unit.y, target.x, target.y) < range then
+function Helper.Spell:there_is_target_in_range(unit, range)
+    for i, target in ipairs(Helper.Unit:get_list(not unit.is_troop)) do
+        if Helper.Geometry:distance(unit.x, unit.y, target.x, target.y) < range then
             return true
         end
     end

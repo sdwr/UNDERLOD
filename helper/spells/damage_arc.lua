@@ -15,14 +15,14 @@ function Helper.Spell.DamageArc.create(unit, color, damage_troops, pierce, damag
         angle = math.rad(angle),
         width = math.rad(width),
         speed = speed,
-        color = Helper.Color.set_transparency(color, 0.8),
+        color = Helper.Color:set_transparency(color, 0.8),
         radius = radius or 20,
         -- line_width = radius / 15,
         damage = damage
     }
 
     damage_arc.targets_hit = {}
-    damage_arc.x, damage_arc.y = Helper.Geometry.move_point(damage_arc.x, damage_arc.y, 
+    damage_arc.x, damage_arc.y = Helper.Geometry:move_point(damage_arc.x, damage_arc.y, 
     damage_arc.angle + math.pi, damage_arc.radius / 2)
 
     table.insert(Helper.Spell.DamageArc.list, damage_arc)
@@ -59,15 +59,15 @@ function Helper.Spell.DamageArc.move()
         if Helper.Spell.DamageArc.grow then
             damage_arc.radius = damage_arc.radius + movement
         else
-            damage_arc.x, damage_arc.y = Helper.Geometry.move_point(damage_arc.x, damage_arc.y, 
+            damage_arc.x, damage_arc.y = Helper.Geometry:move_point(damage_arc.x, damage_arc.y, 
             damage_arc.angle, movement)
         end
     end
 end
 
 function Helper.Spell.DamageArc.getLine(arc)
-    local x1, y1 = Helper.Geometry.move_point(arc.x, arc.y, arc.angle, arc.radius)
-    local x2, y2 = Helper.Geometry.move_point(arc.x, arc.y, arc.angle + arc.width, arc.radius)
+    local x1, y1 = Helper.Geometry:move_point(arc.x, arc.y, arc.angle, arc.radius)
+    local x2, y2 = Helper.Geometry:move_point(arc.x, arc.y, arc.angle + arc.width, arc.radius)
 
     return x1, y1, x2, y2
 end
@@ -104,7 +104,7 @@ end
 function Helper.Spell.DamageArc.delete()
     for i = #Helper.Spell.DamageArc.list, 1, -1 do
         local arc = Helper.Spell.DamageArc.list[i]
-        if Helper.Geometry.is_off_screen(arc.x, arc.y, arc.angle, arc.radius + 20) then
+        if Helper.Geometry:is_off_screen(arc.x, arc.y, arc.angle, arc.radius + 20) then
             table.remove(Helper.Spell.DamageArc.list, i)
         end
     end

@@ -24,7 +24,7 @@ function Helper.Spell.Bomb.create(color, damage_troops, damage, radius, unit, ar
         bomb.explode_radius = bomb.explode_radius * unit.area_size_m
     end
 
-    Helper.Unit.start_casting(unit)
+    Helper.Unit:start_casting(unit)
     table.insert(Helper.Spell.Bomb.prelist, bomb)
 end
 
@@ -42,13 +42,13 @@ end
 function Helper.Spell.Bomb.shoot()
     --move to active list if ready to cast
     for i, bomb in ipairs(Helper.Spell.Bomb.prelist) do
-        if Helper.Spell.can_shoot(bomb) then
+        if Helper.Spell:can_shoot(bomb) then
             bomb.start_armed_time = Helper.Time.time
             table.insert(Helper.Spell.Bomb.list, bomb)
             table.remove(Helper.Spell.Bomb.prelist, i)
 
-            Helper.Unit.unclaim_target(bomb.unit)
-            Helper.Unit.finish_casting(bomb.unit)
+            Helper.Unit:unclaim_target(bomb.unit)
+            Helper.Unit:finish_casting(bomb.unit)
         end
     end
 end

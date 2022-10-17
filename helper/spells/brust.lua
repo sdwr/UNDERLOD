@@ -8,9 +8,9 @@ function Helper.Spell.Burst:create(color, bullet_length, damage, speed, unit)
         unit = unit
     }
 
-    burst.interval_id = Helper.Time.set_interval(0.1, function()
+    burst.interval_id = Helper.Time:set_interval(0.1, function()
         if unit.have_target then
-            Helper.Spell.Missile.create(color, bullet_length, damage, speed, unit, true, 3)
+            Helper.Spell.Missile:create(color, bullet_length, damage, speed, unit, true, 3)
         end
     end, 6)
 
@@ -20,6 +20,6 @@ end
 function Helper.Spell.Burst:stop_firing(unit)
     local i, burst = find_in_list(self.list, unit, function(value) return value.unit end)
     if i ~= -1 then
-        Helper.Time.stop_interval(burst.interval_id)
+        Helper.Time:stop_interval(burst.interval_id)
     end
 end

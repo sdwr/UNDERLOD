@@ -18,19 +18,18 @@ s_just_pressed = false
 
 
 
-function Helper.init()
+function Helper:init()
     Helper.Time.time = love.timer.getTime()
     math.randomseed(Helper.Time.time)
 
-    Helper.Time.set_interval(0.25, function()
+    Helper.Time:set_interval(0.25, function()
         Helper.Spell.Flame.damage()
     end)
 end
 
 
 
-function Helper.draw()
-
+function Helper:draw()
     for i, spell in ipairs(Helper.Spell.spells) do
         if spell.draw_aims ~= nil then
             spell.draw_aims()
@@ -40,14 +39,14 @@ function Helper.draw()
         end
     end
 
-    Helper.Graphics.draw_particles()
+    Helper.Graphics:draw_particles()
 end
 
 
 
-function Helper.update(dt)
+function Helper:update(dt)
     if not Helper.initialized then
-        Helper.init()
+        Helper:init()
         Helper.initialized = true
     end
 
@@ -55,11 +54,10 @@ function Helper.update(dt)
     Helper.Time.delta_time = dt
 
     --update timers, run state functions
-    Helper.Time.run_intervals()
-    Helper.Time.run_waits()
-    Helper.Unit.run_state_change_functions()
-    Helper.Unit.run_state_always_run_functions()
-
+    Helper.Time:run_intervals()
+    Helper.Time:run_waits()
+    Helper.Unit:run_state_change_functions()
+    Helper.Unit:run_state_always_run_functions()
 
     --update spells
 
@@ -70,7 +68,7 @@ function Helper.update(dt)
     end
 
     --particles
-    Helper.Graphics.update_particles()
+    Helper.Graphics:update_particles()
 
 
 
@@ -86,7 +84,7 @@ function Helper.update(dt)
     end
     if love.keyboard.isDown( "s" ) then
         if not s_just_pressed then
-            Helper.Spell.Sweep.create(Helper.Color.blue, true, 100, 50, Helper.mousey - 50, Helper.window_width - 50, Helper.mousey + 50)
+            Helper.Spell.Sweep:create(Helper.Color.blue, true, 100, 50, Helper.mousey - 50, Helper.window_width - 50, Helper.mousey + 50)
         end
         s_just_pressed = true
     else
@@ -99,11 +97,11 @@ end
 
 
 
-function Helper.release()
+function Helper:release()
     Helper.initialized = false
 
-    Helper.Time.stop_all_intervals()
-    Helper.Time.stop_all_waits()
+    Helper.Time:stop_all_intervals()
+    Helper.Time:stop_all_waits()
 
     for i, spell in ipairs(Helper.Spell.spells) do
         if spell.clear_all ~= nil then

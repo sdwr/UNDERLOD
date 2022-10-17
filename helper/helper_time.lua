@@ -8,7 +8,7 @@ Helper.Time.time = love.timer.getTime()
 
 Helper.Time.intervals = {}
 
-function Helper.Time.set_interval(delay, intervalfunction, number_of_loops)
+function Helper.Time:set_interval(delay, intervalfunction, number_of_loops)
     local id = -1
 
     for _, interval in ipairs(Helper.Time.intervals) do
@@ -36,19 +36,19 @@ function Helper.Time.set_interval(delay, intervalfunction, number_of_loops)
     return id
 end
 
-function Helper.Time.stop_interval(id)
+function Helper.Time:stop_interval(id)
     if id <= #Helper.Time.intervals and id > 0 then
         Helper.Time.intervals[id].stopped = true
     end
 end
 
-function Helper.Time.stop_all_intervals()
+function Helper.Time:stop_all_intervals()
     for i, interval in ipairs(Helper.Time.intervals) do
         Helper.Time.intervals[i].stopped = true
     end
 end
 
-function Helper.Time.run_intervals()
+function Helper.Time:run_intervals()
     for _, interval in ipairs(Helper.Time.intervals) do
         if Helper.Time.time - interval.startat > interval.delay * interval.looped and not interval.stopped then
             interval.intervalfunction()
@@ -64,7 +64,7 @@ end
 
 Helper.Time.waits = {}
 
-function Helper.Time.wait(delay, waitfunction)
+function Helper.Time:wait(delay, waitfunction)
     local id = -1
 
     for _, wait in ipairs(Helper.Time.waits) do
@@ -89,7 +89,7 @@ function Helper.Time.wait(delay, waitfunction)
     return id
 end
 
-function Helper.Time.run_waits()
+function Helper.Time:run_waits()
     for _, wait in ipairs(Helper.Time.waits) do
         if Helper.Time.time - wait.startat > wait.delay and not wait.finished then
             wait.waitfunction()
@@ -98,13 +98,13 @@ function Helper.Time.run_waits()
     end
 end
 
-function Helper.Time.cancel_wait(id)
+function Helper.Time:cancel_wait(id)
     if id <= #Helper.Time.waits and id > 0 then
         Helper.Time.waits[id].finished = true
     end
 end
 
-function Helper.Time.stop_all_waits()
+function Helper.Time:stop_all_waits()
     for i, wait in ipairs(Helper.Time.waits) do
         Helper.Time.waits[i].finished = true
     end

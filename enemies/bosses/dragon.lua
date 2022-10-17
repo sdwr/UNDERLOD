@@ -19,27 +19,27 @@ fns['init_enemy'] = function(self)
   self.fireRange = 100
 
   self.state_always_run_functions['always_run'] = function()
-      if Helper.Spell.there_is_target_in_range(self, 100) 
+      if Helper.Spell:there_is_target_in_range(self, 100) 
       and Helper.Time.time - self.last_attack_finished > 1 then
-          Helper.Unit.claim_target(self, Helper.Spell.get_nearest_target(self))
+          Helper.Unit:claim_target(self, Helper.Spell:get_nearest_target(self))
           Helper.Spell.Flame.create(Helper.Color.orange, 60, 100, self.fireDmg, self)
           Helper.Spell.Flame.end_flame_after(self, self.fireDuration)
         end
       
-      if self.have_target and not Helper.Spell.claimed_target_is_in_range(self, 115) then
+      if self.have_target and not Helper.Spell:claimed_target_is_in_range(self, 115) then
           Helper.Spell.Flame.end_flame_after(self, 0.25)
-          Helper.Unit.unclaim_target(self)
+          Helper.Unit:unclaim_target(self)
       end
   end
 
   self.state_change_functions['target_death'] = function()
       Helper.Spell.Flame.end_flame_after(self, 0.25)
-      Helper.Unit.unclaim_target(self)
+      Helper.Unit:unclaim_target(self)
   end
 
     self.state_change_functions['death'] = function()
       Helper.Spell.Flame.end_flame_after(self, 0)
-      Helper.Unit.unclaim_target(self)
+      Helper.Unit:unclaim_target(self)
   end
 end
 

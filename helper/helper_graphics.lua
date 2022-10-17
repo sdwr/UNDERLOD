@@ -1,11 +1,11 @@
 Helper.Graphics = {}
 
-function Helper.Graphics.draw_triangle_from_height_and_width(x, y, xh, yh, height, width)
-    local x1, y1, x2, y2, x3, y3 = Helper.Geometry.get_triangle_from_height_and_width(x, y, xh, yh, height, width)
+function Helper.Graphics:draw_triangle_from_height_and_width(x, y, xh, yh, height, width)
+    local x1, y1, x2, y2, x3, y3 = Helper.Geometry:get_triangle_from_height_and_width(x, y, xh, yh, height, width)
     love.graphics.polygon( 'fill', x1, y1, x2, y2, x3, y3)
 end
 
-function Helper.Graphics.draw_dashed_line(color, line_width, dash_length, dash_margin, dash_offset_percentage, x1, y1, x2, y2)
+function Helper.Graphics:draw_dashed_line(color, line_width, dash_length, dash_margin, dash_offset_percentage, x1, y1, x2, y2)
     local function line_end_check(drawx, drawy, x1, y1, x2, y2)
         if x2 == x1 and y2 == y1 then
             return true
@@ -136,18 +136,48 @@ function Helper.Graphics.draw_dashed_line(color, line_width, dash_length, dash_m
     love.graphics.setLineWidth(1)
 end
 
-function Helper.Graphics.draw_dashed_rectangle(color, line_width, dash_length, dash_margin, dash_offset_percentage, x1, y1, x2, y2)
-    Helper.Graphics.draw_dashed_line(color, line_width, dash_length, dash_margin, dash_offset_percentage, x1, y1, x2, y1)
-    Helper.Graphics.draw_dashed_line(color, line_width, dash_length, dash_margin, dash_offset_percentage, x2, y1, x2, y2)
-    Helper.Graphics.draw_dashed_line(color, line_width, dash_length, dash_margin, dash_offset_percentage, x2, y2, x1, y2)
-    Helper.Graphics.draw_dashed_line(color, line_width, dash_length, dash_margin, dash_offset_percentage, x1, y2, x1, y1)
+function Helper.Graphics:draw_dashed_rectangle(color, line_width, dash_length, dash_margin, dash_offset_percentage, x1, y1, x2, y2)
+    if math.abs(x2 - x1) > dash_length + dash_margin then
+        Helper.Graphics:draw_dashed_line(Helper.Color:set_transparency(color, 0.3), line_width, dash_length, dash_margin, dash_offset_percentage, x1, y1, x2, y1)
+        Helper.Graphics:draw_dashed_line(Helper.Color:set_transparency(color, 0.3), line_width, dash_length, dash_margin, dash_offset_percentage, x2, y2, x1, y2)
+    end
+    if math.abs(y2 - y1) > dash_length + dash_margin then
+        Helper.Graphics:draw_dashed_line(Helper.Color:set_transparency(color, 0.3), line_width, dash_length, dash_margin, dash_offset_percentage, x2, y1, x2, y2)
+        Helper.Graphics:draw_dashed_line(Helper.Color:set_transparency(color, 0.3), line_width, dash_length, dash_margin, dash_offset_percentage, x1, y2, x1, y1)
+    end
+        love.graphics.setColor(color.r, color.g, color.b, 1)
+    love.graphics.setLineWidth(line_width)
+    if x1 > x2 then
+        local x3 = x1
+        x1 = x2
+        x2 = x3
+    end
+    if y1 > y2 then
+        local y3 = y1
+        y1 = y2
+        y2 = y3
+    end
+    local corner_lengthx = dash_length > x2 - x1 and x2 - x1 or dash_length
+    local corner_lengthy = dash_length > y2 - y1 and y2 - y1 or dash_length
+    local cornerx1 = x1 - line_width / 2
+    local cornery1 = y1 - line_width / 2
+    local cornerx2 = x2 + line_width / 2
+    local cornery2 = y2 + line_width / 2
+    love.graphics.line(cornerx1, y1, cornerx1 + corner_lengthx, y1)
+    love.graphics.line(x1, cornery1, x1, cornery1 + corner_lengthy)
+    love.graphics.line(cornerx2, y1, cornerx2 - corner_lengthx, y1)
+    love.graphics.line(x2, cornery1, x2, cornery1 + corner_lengthy)
+    love.graphics.line(cornerx2, y2, cornerx2 - corner_lengthx, y2)
+    love.graphics.line(x2, cornery2, x2, cornery2 - corner_lengthy)
+    love.graphics.line(cornerx1, y2, cornerx1 + corner_lengthx, y2)
+    love.graphics.line(x1, cornery2, x1, cornery2 - corner_lengthy)
 end
 
 
 
 Helper.Graphics.particles = {}
 
-function Helper.Graphics.create_particle(color, size, x, y, speed, travel_time, directionx, directiony, random)
+function Helper.Graphics:create_particle(color, size, x, y, speed, travel_time, directionx, directiony, random)
     local particle = {
         x = x,
         y = y,
@@ -163,14 +193,14 @@ function Helper.Graphics.create_particle(color, size, x, y, speed, travel_time, 
 
     local unitvx = particle.directionx / math.sqrt(particle.directionx^2 + particle.directiony^2)
     local unitvy = particle.directiony / math.sqrt(particle.directionx^2 + particle.directiony^2)
-    unitvx, unitvy = Helper.Geometry.rotate_point(unitvx, unitvy, 0, 0, get_random(-random/2, random/2))
+    unitvx, unitvy = Helper.Geometry:rotate_point(unitvx, unitvy, 0, 0, get_random(-random/2, random/2))
     particle.directionx = unitvx
     particle.directiony = unitvy
 
     table.insert(Helper.Graphics.particles, particle)
 end
 
-function Helper.Graphics.update_particles()
+function Helper.Graphics:update_particles()
     for i = #Helper.Graphics.particles, 1, -1 do
         local particle = Helper.Graphics.particles[i]
         if Helper.Time.time - particle.creation_time > particle.travel_time then
@@ -187,7 +217,7 @@ function Helper.Graphics.update_particles()
     end
 end
 
-function Helper.Graphics.draw_particles()
+function Helper.Graphics:draw_particles()
     for i, particle in ipairs(Helper.Graphics.particles) do
         love.graphics.setColor(particle.color.r, particle.color.g, particle.color.b, particle.color.a)
         love.graphics.circle('fill', particle.x, particle.y, particle.size)

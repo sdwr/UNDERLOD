@@ -206,7 +206,7 @@ function Unit:init_unit()
 
   self.state = unit_states['normal']
 
-  Helper.Unit.add_custom_variables_to_unit(self)
+  Helper.Unit:add_custom_variables_to_unit(self)
 end
 
 

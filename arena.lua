@@ -153,7 +153,7 @@ function Arena:on_exit()
 
   main.selectedCharacter = nil
 
-  Helper.release()
+  Helper:release()
 end
 
 
@@ -253,7 +253,7 @@ function Arena:update(dt)
   self.ui:update(dt*slow_amount)
   self.credits:update(dt)
 
-  Helper.update(dt*slow_amount)
+  Helper:update(dt*slow_amount)
   LevelManager.update(dt)
 end
 
@@ -536,7 +536,7 @@ function Arena:draw()
 
 
 
-  Helper.draw()
+  Helper:draw()
 
 
 
