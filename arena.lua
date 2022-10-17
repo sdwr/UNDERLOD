@@ -218,14 +218,14 @@ function Arena:update(dt)
       end
     end
     --target enemy with rightclick
-    if input["m2"].pressed then
-      local mx, my = self.main.camera:get_mouse_position()
-      local mouseCircle = Circle(mx, my, 5)
-      local targets = self.main:get_objects_in_shape(mouseCircle, self.enemies)
-      if targets and #targets > 0 then
-        self:target_enemy(targets[1])
-      end
-    end
+    -- if input["m2"].pressed then
+    --   local mx, my = self.main.camera:get_mouse_position()
+    --   local mouseCircle = Circle(mx, my, 5)
+    --   local targets = self.main:get_objects_in_shape(mouseCircle, self.enemies)
+    --   if targets and #targets > 0 then
+    --     self:target_enemy(targets[1])
+    --   end
+    -- end
   end
 
   if self.shop_text then self.shop_text:update(dt) end

@@ -36,6 +36,10 @@ function Helper.Spell.can_shoot(spell)
 end
 
 function Helper.Spell.get_nearest_target(unit, include_list)
+    if Helper.Unit.flagged_enemy ~= -1 then
+        return Helper.Unit.flagged_enemy
+    end
+
     include_list = include_list or {}
 
     local unit_list = Helper.Unit.get_list(not unit.is_troop)
@@ -65,7 +69,21 @@ function Helper.Spell.get_nearest_target(unit, include_list)
     end
 end
 
+function Helper.Spell:get_nearest_target_from_point(x, y, target_is_troop)
+    local unit = {
+        x = x,
+        y = y,
+        is_troop = not target_is_troop
+    }
+
+    return self.get_nearest_target(unit)
+end
+
 function Helper.Spell.get_nearest_least_targeted(unit, range)
+    if Helper.Unit.flagged_enemy ~= -1 then
+        return Helper.Unit.flagged_enemy
+    end
+    
     local target_list = {}
     for i, value in ipairs(Helper.Unit.get_list(not unit.is_troop)) do
         if Helper.Geometry.distance(unit.x, unit.y, value.x, value.y) <= range then

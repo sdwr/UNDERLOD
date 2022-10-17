@@ -2633,7 +2633,13 @@ function Troop:update(dt)
     elseif self.character == "necromancer" then
       if not self.target then self.target = self:get_closest_object_in_shape(self.aggro_sensor, {Corpse}) end
     else
-      if not self.target then self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies) end
+      if not self.target then 
+        if Helper.Unit.flagged_enemy == -1 then
+          self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies) 
+        else
+          self.target = Helper.Unit.flagged_enemy
+        end
+      end
     end
     --if target not in attack range, close in
     if self.target and not self:in_range()() and self.state == unit_states['normal'] then

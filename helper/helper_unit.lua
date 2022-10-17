@@ -25,7 +25,11 @@ function Helper.Unit.add_custom_variables_to_unit(unit)
     unit.death_function = function()  
         for i = #unit.targeted_by, 1, -1 do
             unit.targeted_by[i].state_change_functions['target_death']()
-        end   
+        end
+
+        if unit == Helper.Unit.flagged_enemy then
+            Helper.Unit.flagged_enemy = -1
+        end
     end
     unit.damage_taken_at = {
         ['sweep'] = -999999
@@ -167,6 +171,7 @@ Helper.Unit.do_draw_selection = false
 Helper.Unit.number_of_teams = 0
 Helper.Unit.teams = {{}, {}, {}, {}}
 Helper.Unit.selected_team = 0
+Helper.Unit.flagged_enemy = -1
 
 function Helper.Unit:set_team(team_number)
     local team = {}
@@ -208,13 +213,34 @@ end
 
 function Helper.Unit:select()
     if not Helper.mouse_on_button then
+        local flag = false
         if input['m1'].pressed then
+            for i, enemy in ipairs(self.get_list(false)) do
+                if Helper.Geometry.distance(Helper.mousex, Helper.mousey, enemy.x, enemy.y) < 9 then 
+                    flag = true
+                    break
+                end
+            end
+            if flag then
+                local flagged_enemy = Helper.Spell:get_nearest_target_from_point(Helper.mousex, Helper.mousey, false)
+                if self.flagged_enemy == flagged_enemy then
+                    self.flagged_enemy = -1
+                else
+                    self.flagged_enemy = flagged_enemy
+                    for i, troop in ipairs(self.get_list(true)) do
+                        troop.target = self.flagged_enemy
+                    end
+                end
+            end
+        end
+
+        if input['m1'].pressed and not flag then
             self.x1 = Helper.mousex
             self.y1 = Helper.mousey
             self.do_draw_selection = true
         end
 
-        if input['m1'].down then
+        if input['m1'].down and self.do_draw_selection then
             self.x2 = Helper.mousex
             self.y2 = Helper.mousey
             
@@ -305,6 +331,12 @@ function Helper.Unit:draw_selection()
         if unit.selected then
             love.graphics.circle('line', unit.x, unit.y, 5)
         end
+    end
+
+    if self.flagged_enemy ~= -1 then
+        love.graphics.setLineWidth(1)
+        Helper.Color.set_color(Helper.Color.orange)
+        love.graphics.circle('line', self.flagged_enemy.x, self.flagged_enemy.y, 9)
     end
 end
 

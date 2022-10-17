@@ -15,3 +15,7 @@ function Helper.Color.set_transparency(color, a)
     }
     return transparent_color
 end
+
+function Helper.Color.set_color(color)
+    love.graphics.setColor(color.r, color.g, color.b, color.a)
+end
