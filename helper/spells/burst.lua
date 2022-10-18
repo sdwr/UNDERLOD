@@ -10,7 +10,10 @@ function Helper.Spell.Burst:create(color, bullet_length, damage, speed, unit)
 
     burst.interval_id = Helper.Time:set_interval(0.1, function()
         if unit.have_target then
-            Helper.Spell.Missile:create(color, bullet_length, damage, speed, unit, true, 3)
+            if Helper.Spell:there_is_target_in_range(unit, attack_ranges['long'] + 30) then
+                Helper.Unit:claim_target(unit, Helper.Spell:get_nearest_target(unit))
+                Helper.Spell.Missile:create(color, bullet_length, damage, speed, unit, true, 3)
+            end
         end
     end, 6)
 
