@@ -129,8 +129,8 @@ function Helper.Spell.Laser:update()
             shoot1:play{volume=0.7}
 
             laser.unit.last_attack_finished = Helper.Time.time
-            -- Helper.Unit:unclaim_target(laser.unit)
-            -- Helper.Unit:finish_casting(laser.unit)
+            Helper.Unit:unclaim_target(laser.unit)
+            Helper.Unit:finish_casting(laser.unit)
         end
     end
 end

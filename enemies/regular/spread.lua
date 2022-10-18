@@ -9,6 +9,8 @@ fns['init_enemy'] = function(self)
   self:set_restitution(0.5)
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
   self.class = 'regular_enemy'
+  
+  self.cast_time = 0
 
   --set attacks
     self.t:cooldown(attack_speeds['medium-slow'], function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end, function ()

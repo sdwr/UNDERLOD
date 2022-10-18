@@ -10,7 +10,7 @@ require 'helper/spells/spread_missile'
 require 'helper/spells/damage_arc'
 require 'helper/spells/safety_dance'
 require 'helper/spells/sweep'
-require 'helper/spells/brust'
+require 'helper/spells/burst'
 require 'helper/spells/bomb'
 
 Helper.Spell.spells = {
