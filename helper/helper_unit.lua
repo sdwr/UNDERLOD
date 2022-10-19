@@ -48,7 +48,7 @@ function Helper.Unit:add_custom_variables_to_unit(unit)
 end
 
 function Helper.Unit:claim_target(unit, target)
-    if unit then
+    if unit and target ~= -1 then
         if unit.have_target then
             if unit.claimed_target == target then
                 return
@@ -344,5 +344,40 @@ end
 function Helper.Unit:deselect_all_troops()
     for i, troop in ipairs(self:get_list(true)) do
         troop.selected = false
+    end
+end
+
+
+
+Helper.Unit.team_saves = {{}, {}, {}, {}}
+
+function Helper.Unit:save_teams_to_next_round()
+    Helper.Unit.team_saves = {{}, {}, {}, {}}
+
+    for i = 1, 4 do
+        if #self.teams[i] > 0 then
+            for j, troop in ipairs(self.teams[i]) do
+                if self.team_saves[i][troop.character] then
+                    self.team_saves[i][troop.character] = self.team_saves[i][troop.character] + 1
+                else
+                    self.team_saves[i][troop.character] = 1
+                end
+            end
+        end
+    end
+end
+
+function Helper.Unit:load_teams_to_next_round()
+    self.teams = {{}, {}, {}, {}}
+
+    for i = 1, 4 do
+        for j, troop in ipairs(self:get_list(true)) do
+            if self.team_saves[i][troop.character] and self.team_saves[i][troop.character] > 0 then
+                self.team_saves[i][troop.character] = self.team_saves[i][troop.character] - 1
+                table.insert(self.teams[i], troop)
+            end
+        end
+
+        self:refresh_button(i)
     end
 end

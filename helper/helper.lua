@@ -19,6 +19,8 @@ function Helper:init()
     Helper.Time.time = love.timer.getTime()
     math.randomseed(Helper.Time.time)
 
+    Helper.Unit:load_teams_to_next_round()
+
     Helper.Time:set_interval(0.25, function()
         Helper.Spell.Flame:damage()
     end)
@@ -105,4 +107,6 @@ function Helper:release()
             spell.clear_all()
         end
     end
+
+    Helper.Unit:save_teams_to_next_round()
 end

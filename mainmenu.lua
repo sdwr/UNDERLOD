@@ -97,6 +97,7 @@ function MainMenu:on_enter(from)
         passives = run.passives or {}
         locked_state = run.locked_state
         current_new_game_plus = run.current_new_game_plus or current_new_game_plus or 0
+        Helper.Unit.team_saves = run.team_saves or {{}, {}, {}, {}}
         system.save_state()
         main:add(BuyScreen'buy_screen')
         main:go_to('buy_screen', run.level or 1, run.loop or 0, run.units or {}, run.max_units or 3, passives, run.shop_level or 1, run.shop_xp or 0)
