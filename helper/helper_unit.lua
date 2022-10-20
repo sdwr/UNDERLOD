@@ -173,6 +173,10 @@ Helper.Unit.number_of_teams = 0
 Helper.Unit.teams = {{}, {}, {}, {}}
 Helper.Unit.selected_team = 0
 Helper.Unit.flagged_enemy = -1
+Helper.Unit.setting_rallying = false
+Helper.Unit.number_of_troop_types = 0
+Helper.Unit.troop_type_button_width = 0
+Helper.Unit.team_button_width = 0
 
 function Helper.Unit:set_team(team_number)
     local team = {}
@@ -184,7 +188,7 @@ function Helper.Unit:set_team(team_number)
     if #team ~= 0 then
         self.teams[team_number] = team
         self:refresh_button(team_number)
-        main.current.hotbar_by_index[team_number]:action()
+        main.current.hotbar_by_index[team_number + self.number_of_troop_types]:action()
     end
 end
 
@@ -198,7 +202,7 @@ function Helper.Unit:add_to_team(team_number)
     end
     if added then
         self:refresh_button(team_number)
-        main.current.hotbar_by_index[team_number]:action()
+        main.current.hotbar_by_index[team_number + self.number_of_troop_types]:action()
     end
 end
 
@@ -209,11 +213,11 @@ function Helper.Unit:refresh_button(team_number)
             table.insert(color_marks, character_colors[troop.character])
         end
     end
-    main.current.hotbar_by_index[team_number].color_marks = color_marks
+    main.current.hotbar_by_index[team_number + self.number_of_troop_types].color_marks = color_marks
 end
 
 function Helper.Unit:select()
-    if not Helper.mouse_on_button then
+    if not Helper.mouse_on_button and not input['lshift'].down then
         local flag = false
         if input['m1'].pressed then
             for i, enemy in ipairs(self:get_list(false)) do
@@ -254,7 +258,7 @@ function Helper.Unit:select()
             end
         end
 
-        if not input['m1'].down and input['m2'].down then
+        if not input['m1'].down and input['m2'].down and not self.setting_rallying then
             for i, unit in ipairs(self:get_list(true)) do
                 if unit.selected then
                     unit.state = unit_states['following']
@@ -265,30 +269,44 @@ function Helper.Unit:select()
         end
     end
 
+    if input['lshift'].down and input['m2'].pressed then
+        self.setting_rallying = true
+        for i, troop in ipairs(self:get_list(true)) do
+            if troop.selected then
+                troop.target_pos = {x = Helper.mousex, y = Helper.mousey}
+                troop.state = unit_states['rallying']
+            end
+        end
+    end
+
+    if input['m2'].released then
+        self.setting_rallying = false
+    end
+
     if input['m1'].released then
         self.do_draw_selection = false
     end
 
     if input['lctrl'].down then
-        if input['1'].pressed then
+        if input[tostring(self.number_of_troop_types + 1)].pressed then
             self:set_team(1)
-        elseif input['2'].pressed then
+        elseif input[tostring(self.number_of_troop_types + 2)].pressed then
             self:set_team(2)
-        elseif input['3'].pressed then
+        elseif input[tostring(self.number_of_troop_types + 3)].pressed then
             self:set_team(3)
-        elseif input['4'].pressed then
+        elseif input[tostring(self.number_of_troop_types + 4)].pressed then
             self:set_team(4)
         end
     end
 
     if input['lshift'].down then
-        if input['1'].pressed then
+        if input[tostring(self.number_of_troop_types + 1)].pressed then
             self:add_to_team(1)
-        elseif input['2'].pressed then
+        elseif input[tostring(self.number_of_troop_types + 2)].pressed then
             self:add_to_team(2)
-        elseif input['3'].pressed then
+        elseif input[tostring(self.number_of_troop_types + 3)].pressed then
             self:add_to_team(3)
-        elseif input['4'].pressed then
+        elseif input[tostring(self.number_of_troop_types + 4)].pressed then
             self:add_to_team(4)
         end
     end
@@ -302,21 +320,39 @@ function Helper.Unit:select()
             end
         elseif not (input['lctrl'].down and input['lshift'].down) then
             if input['lctrl'].down then
-                if input[tostring(i)].pressed and i <= 4 and i >= 1 then
-                    main.current.hotbar['set team ' .. i]:on_mouse_enter()
+                if input[tostring(i)].pressed and i <= 4 + self.number_of_troop_types and i >= 1 + self.number_of_troop_types then
+                    main.current.hotbar['set team ' .. i - self.number_of_troop_types].visible = true
+                    main.current.hotbar['set team ' .. i - self.number_of_troop_types]:on_mouse_enter()
                 end
             elseif input['lshift'].down then
-                if input[tostring(i)].pressed and i <= 4 and i >= 1 then
-                    main.current.hotbar['add to team ' .. i]:on_mouse_enter()
+                if input[tostring(i)].pressed and i <= 4 + self.number_of_troop_types and i >= 1 + self.number_of_troop_types then
+                    main.current.hotbar['add to team ' .. i - self.number_of_troop_types].visible = true
+                    main.current.hotbar['add to team ' .. i - self.number_of_troop_types]:on_mouse_enter()
                 end
             end
         end
 
         if input[tostring(i)].released and main.current.hotbar_by_index[i] then
             main.current.hotbar_by_index[i]:on_mouse_exit()
-            if i <= 4 and i >= 1 then
-                main.current.hotbar['set team ' .. i]:on_mouse_exit()
-                main.current.hotbar['add to team ' .. i]:on_mouse_exit()
+            if i <= 4 + self.number_of_troop_types and i >= 1 + self.number_of_troop_types then
+                main.current.hotbar['set team ' .. i - self.number_of_troop_types]:on_mouse_exit()
+                main.current.hotbar['set team ' .. i - self.number_of_troop_types].visible = false
+                main.current.hotbar['add to team ' .. i - self.number_of_troop_types]:on_mouse_exit()
+                main.current.hotbar['add to team ' .. i - self.number_of_troop_types].visible = false
+            end
+        end
+    end
+
+    local x = 50 + (Helper.Unit.troop_type_button_width + 5) * (Helper.Unit.number_of_troop_types)
+    local y = gh - 50
+    for i = 1, 4 do
+        if (not input['lshift'].down and not input['lctrl'].down) or input[tostring(i + self.number_of_troop_types)].released then
+            if Helper.Geometry:is_inside_rectangle(Helper.mousex, Helper.mousey, x + 52 * (i - 1), y, x + 47 + 52 * (i - 1), gh - 10) then
+                main.current.hotbar['set team ' .. i].visible = true
+                main.current.hotbar['add to team ' .. i].visible = true
+            else
+                main.current.hotbar['set team ' .. i].visible = false
+                main.current.hotbar['add to team ' .. i].visible = false
             end
         end
     end

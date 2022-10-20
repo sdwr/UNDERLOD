@@ -104,41 +104,13 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
   main.selectedCharacter = nil
   self.hotbar = {}
   self.hotbar_by_index = {}
+  Helper.Unit.number_of_troop_types = #units
 
-  for i = 1, 4 do
-    local b = HotbarButton{group = self.ui, x = 30 + 85 * (i - 1) , y = gh - 20, 
-                          force_update = true, button_text = tostring(i), w = 40, fg_color = 'white', bg_color = 'bg', 
-                          action = function() 
-                            main.current:select_character('team ' .. i) 
-                            Helper.Unit.selected_team = i
-                            Helper.Unit:deselect_all_troops()
-                            for i, troop in ipairs(Helper.Unit.teams[Helper.Unit.selected_team]) do
-                              troop.selected = true
-                            end
-                          end}
-    self.hotbar['team ' .. i] = b
-    self.hotbar_by_index[i] = b
-
-    local b = HotbarButton{group = self.ui, x = 30 + 85 * (i - 1) + 30 , y = gh - 20, 
-                          force_update = true, button_text = '', w = 20, fg_color = 'white', bg_color = 'bg', 
-                          action = function() 
-                            Helper.Unit:set_team(i)
-                          end,
-                          color_marks = {[1] = white[0]}}
-    self.hotbar['set team ' .. i] = b
-
-    local b = HotbarButton{group = self.ui, x = 30 + 85 * (i - 1) + 50 , y = gh - 20, 
-                          force_update = true, button_text = '+', w = 20, fg_color = 'white', bg_color = 'bg', 
-                          action = function() 
-                            Helper.Unit:add_to_team(i)
-                          end}
-    self.hotbar['add to team ' .. i] = b
-  end
-
+  Helper.Unit.troop_type_button_width = 20
   for i = 1, #units do
     local character = units[i].character
     local type = character_types[character]
-    local b = HotbarButton{group = self.ui, x = 340 + 25 * i , y = gh - 20, w = 20,
+    local b = HotbarButton{group = self.ui, x = 50 + (Helper.Unit.troop_type_button_width + 5) * (i - 1) , y = gh - 20, w = Helper.Unit.troop_type_button_width,
                             force_update = true, button_text = character, fg_color = type_color_strings[type], bg_color = 'bg', 
                             action = function() 
                               self:select_character(character) 
@@ -152,7 +124,40 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
                             end,
                             color_marks = {[1] = character_colors[character]}}
     self.hotbar[character] = b
-    self.hotbar_by_index[i + 4] = b
+    self.hotbar_by_index[i] = b
+  end
+
+  Helper.Unit.team_button_width = 47
+  for i = 1, 4 do
+    local b = HotbarButton{group = self.ui, x = 50 + (Helper.Unit.troop_type_button_width + 5) * (Helper.Unit.number_of_troop_types) + Helper.Unit.team_button_width/2 + (Helper.Unit.team_button_width + 5) * (i - 1), 
+                          y = gh - 20, force_update = true, button_text = tostring(i + Helper.Unit.number_of_troop_types), w = Helper.Unit.team_button_width, fg_color = 'white', bg_color = 'bg', 
+                          action = function() 
+                            main.current:select_character('team ' .. i) 
+                            Helper.Unit.selected_team = i
+                            Helper.Unit:deselect_all_troops()
+                            for i, troop in ipairs(Helper.Unit.teams[Helper.Unit.selected_team]) do
+                              troop.selected = true
+                            end
+                          end}
+    self.hotbar['team ' .. i] = b
+    self.hotbar_by_index[i + Helper.Unit.number_of_troop_types] = b
+
+    local b = HotbarButton{group = self.ui, x = 50 + (Helper.Unit.troop_type_button_width + 5) * (Helper.Unit.number_of_troop_types) + Helper.Unit.troop_type_button_width/2 + (Helper.Unit.team_button_width + 5) * (i - 1), 
+                          y = gh - 40, force_update = true, button_text = '', w = Helper.Unit.troop_type_button_width, fg_color = 'white', bg_color = 'bg', 
+                          action = function() 
+                            Helper.Unit:set_team(i)
+                          end,
+                          color_marks = {[1] = white[0]},
+                          visible = false}
+    self.hotbar['set team ' .. i] = b
+
+    local b = HotbarButton{group = self.ui, x = 50 + (Helper.Unit.troop_type_button_width + 5) * (Helper.Unit.number_of_troop_types) + Helper.Unit.troop_type_button_width/2 + (Helper.Unit.team_button_width + 5) * (i - 1) + Helper.Unit.troop_type_button_width + 5, 
+                          y = gh - 40, force_update = true, button_text = '+', w = Helper.Unit.troop_type_button_width, fg_color = 'white', bg_color = 'bg', 
+                          action = function() 
+                            Helper.Unit:add_to_team(i)
+                          end,
+                          visible = false}
+    self.hotbar['add to team ' .. i] = b
   end
 
   Spawn_Troops(self)
