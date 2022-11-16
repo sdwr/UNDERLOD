@@ -4,11 +4,19 @@ function FPSCounter:init()
     self.stack = Stack(120)
     self.fps = 0
 
+    self.lastCalled = love.timer.getTime()
+
     self.text = Text({{text = '[yellow]' .. tostring(self.fps), font = pixul_font, alignment = 'left'}}, global_text_tags)
 end
 
-function FPSCounter:update(dt)
-    self.stack:push(dt or 0.01)
+function FPSCounter:update()
+    --calculate time since last update
+    local time = love.timer.getTime()
+    local dt = time - self.lastCalled
+    self.lastCalled = time
+
+
+    self.stack:push(dt)
     self.fps = math.round(1 / self.stack.avg, 0)
     self.text:set_text({{text = '[yellow]' .. tostring(self.fps), font = pixul_font, alignment = 'left'}}, global_text_tags)
     self.text:update(dt)

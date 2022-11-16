@@ -15,7 +15,7 @@ fns['init_enemy'] = function(self)
       local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
       if target then
         self:rotate_towards_object(target, 1)
-        Mortar{group = main.current.main, unit = self, team = "enemy", target = target, rs = 25, color = red[0], dmg = 30, level = self.level, parent = self}
+        Mortar{group = main.current.main, unit = self, team = "enemy", target = target, rs = 25, color = red[0], dmg = self.dmg, level = self.level, parent = self}
       end
     end, nil, nil, 'shoot')
 end

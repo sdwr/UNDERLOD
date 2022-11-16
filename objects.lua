@@ -313,36 +313,39 @@ function Unit:calculate_stats(first_run, dt)
   local hpMod = 1 + ((level - 1) / 2)
   local dmgMod = 1 + ((level - 1) / 2)
   local spdMod = 1
-  if self:is(Player) then
-    self.base_hp = 100
-    self.base_dmg = 10
-    self.base_mvspd = 50
-  elseif self:is(Troop) then
-    self.base_hp = 100 * hpMod
-    self.base_dmg = 10 * dmgMod
-    self.base_mvspd = 67 * spdMod
-  elseif self:is(EnemyCritter) or self:is(Critter) then
-    self.base_hp = 25 * hpMod
-    self.base_dmg = 5 * dmgMod
-    self.base_mvspd = 100 * spdMod
-  elseif self.class == 'regular_enemy' then
-    self.base_hp = 150 * (math.pow(1.02, level))
-    self.base_dmg = 20  * (math.pow(1.02, level))
-    self.base_mvspd = 34
-  elseif self.class == 'miniboss' then
-    self.base_hp = 500 * (math.pow(1.02, level))
-    self.base_dmg = 20  * (math.pow(1.02, level))
-    self.base_mvspd = 55
+
+  if(first_run) then
+    if self:is(Player) then
+      self.base_hp = 100
+      self.base_dmg = 10
+      self.base_mvspd = 50
+    elseif self:is(Troop) then
+      self.base_hp = 100 * hpMod
+      self.base_dmg = 10 * dmgMod
+      self.base_mvspd = 67 * spdMod
+    elseif self:is(EnemyCritter) or self:is(Critter) then
+      self.base_hp = 25 * hpMod
+      self.base_dmg = 5 * dmgMod
+      self.base_mvspd = 100 * spdMod
+    elseif self.class == 'regular_enemy' then
+      self.base_hp = 150 * (math.pow(1.02, level))
+      self.base_dmg = 20  * (math.pow(1.02, level))
+      self.base_mvspd = 34
+    elseif self.class == 'miniboss' then
+      self.base_hp = 500 * (math.pow(1.02, level))
+      self.base_dmg = 20  * (math.pow(1.02, level))
+      self.base_mvspd = 55
+    end
+    if self.class == 'boss' then
+      self.base_hp = 1500 * (1 + ((level / 6) * 0.25))
+      self.base_dmg = 30
+      self.base_mvspd = 34
+    end
+
+    self.baseCooldown = self.baseCooldown or attack_speeds['medium']
+    self.baseCast = self.baseCast or attack_speeds['medium-cast']
   end
-  if self.class == 'regular_enemy' and self.type == 'rager' then
-    self.base_mvspd = 100
-    self.base_dmg = 10
-  end
-  if  self.class == 'boss' then
-    self.base_hp = 1500 * (1 + ((level / 6) * 0.25))
-    self.base_dmg = 30
-    self.base_mvspd = 34
-  end
+
   self.base_aspd_m = 1
   self.base_area_dmg_m = 1
   self.base_area_size_m = 1
@@ -393,6 +396,32 @@ function Unit:calculate_stats(first_run, dt)
   end
 
   self.enrage_on_death = false
+
+  if self.class == 'regular_enemy' then
+    local enemy_stats = enemy_type_to_stats[self.type]
+    if enemy_stats then
+      for stat, amt in pairs(enemy_stats) do
+        if stat == buff_types['dmg'] then
+          self.class_dmg_m = amt
+        elseif stat == buff_types['def'] then
+          self.class_def_m = amt
+        elseif stat == buff_types['mvspd'] then
+          self.class_mvspd_m = amt
+        elseif stat == buff_types['aspd'] then
+          self.class_aspd_m = amt
+        elseif stat == buff_types['area_dmg'] then
+          self.class_area_dmg_m = amt
+        elseif stat == buff_types['area_size'] then
+          self.class_area_size_m = amt
+        elseif stat == buff_types['hp'] then
+          self.class_hp_m = amt
+        elseif stat == buff_types['status_resist'] then
+          self.status_resist = self.status_resist + stat
+        end
+        
+      end
+    end
+  end
 
   if self.buffs then
     for k, buff in pairs(self.buffs) do

@@ -1,0 +1,86 @@
+
+
+potential changes:
+make melee enemies attack on hit, instead of casting attack
+spawn random elites in group instead of full group of elites
+weight elites by value, 
+
+
+
+how does snkrx do it?
+
+Buy 1:
+2/3 units
+
+level 1:
+8 units
+
+8 units
+
+aoe spawns 3 AoEs
+
+buy 2:
+2 units
+
+level 2:
+8 
+8
+8
+
+buy 3:
+2 units
+
+level 3:
+8 units
+7 + 1 special (green infector)
+5 units all over
+7 + 1 special (green infector)
+
+buy 4:
+PASSIVE GET
+1 dmg, 2 class specific dmg, 1 util
+5 gold, buy 2
+
+level 4:
+7 + 1 speical (blue bomb)
+5 + 5 
+10 + 1 special (blue bomb)
+
+buy 5:
+1 unit
+
+level 5:
+12 enemies, split waves,
+green or blue
+
+level 6
+boss (green elite)
+spawns 12 enemies
+
+buy 7:
+PASSIVE GET
+3 damage/utility, 1 class specific
+
+level 7:
+8, 8, 10 + 1 special, 10 + 1 special,
+5 split 1 special
+
+buy 8:
+0
+
+level 8:
+2 specials per wave,
+split wave with 5, 5, 10 + special
+5 waves total
+
+
+takeaways:
+most enemies are normal
+a few specials per level
+split waves makes game more exciting
+overall NG is easy
+hit damage scales more than enemy hp
+
+buy 9:
+PASSIVE GET
+1 util, 2 class-speicifc, 1 dps

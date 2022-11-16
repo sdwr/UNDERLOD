@@ -1046,6 +1046,21 @@ function init()
     ['none'] = {hp = 1, dmg = 1, def = 1, mvspd = 1},
   }
 
+  enemy_type_to_stats = {
+    ['seeker'] = {dmg = 0.25},
+    ['shooter'] = {},
+
+    ['arcspread'] = {dmg = 0.5},
+    ['assassin'] = {},
+    ['laser'] = {},
+    ['mortar'] = {dmg = 1.5},
+    ['rager'] = {dmg = 0.5, mvspd = 2},
+    ['spawner'] = {},
+    ['stomper'] = {dmg = 2.5},
+    ['summoner'] = {},
+    
+  }
+
   local ylb1 = function(lvl)
     if lvl == 3 then return 'light_bg'
     elseif lvl == 2 then return 'light_bg'
@@ -1398,7 +1413,6 @@ function init()
     ['blade'] = 4,
     ['elementor'] = 3,
     -- ['saboteur'] = 2,
-    ['bomber'] = 2,
     ['wizard'] = 2,
     ['stormweaver'] = 3,
     ['sage'] = 2,
