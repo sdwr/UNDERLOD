@@ -1902,10 +1902,9 @@ function Vanish:init(args)
   self.parent.state = 'frozen'
 
   self.invulnTime = 0.25
-  self.vanishTime = 0.5
   illusion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
   self.t:after(self.invulnTime, function() self.parent.invulnerable = true end)
-  self.t:after(self.vanishTime, function() self:teleport() end)
+  self.t:after(self.invulnTime + self.castTime, function() self:teleport() end)
 
 end
 
@@ -3574,7 +3573,7 @@ function Critter:init(args)
   self.aggro_sensor = Circle(self.x, self.y, 125)
   self.attack_sensor = Circle(self.x, self.y, 25)
 
-  self.class = 'enemy_critter'
+  self.class = 'critter'
   self.color = args.color or white[0]
   self:calculate_stats(true)
   self:set_as_steerable(self.v, 400, math.pi, 1)

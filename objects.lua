@@ -310,37 +310,13 @@ end
 
 function Unit:calculate_stats(first_run, dt)
   local level = self.level or 1
-  local hpMod = 1 + ((level - 1) / 2)
-  local dmgMod = 1 + ((level - 1) / 2)
-  local spdMod = 1
 
   if(first_run) then
-    if self:is(Player) then
-      self.base_hp = 100
-      self.base_dmg = 10
-      self.base_mvspd = 50
-    elseif self:is(Troop) then
-      self.base_hp = 100 * hpMod
-      self.base_dmg = 10 * dmgMod
-      self.base_mvspd = 67 * spdMod
-    elseif self:is(EnemyCritter) or self:is(Critter) then
-      self.base_hp = 25 * hpMod
-      self.base_dmg = 5 * dmgMod
-      self.base_mvspd = 100 * spdMod
-    elseif self.class == 'regular_enemy' then
-      self.base_hp = 150 * (math.pow(1.02, level))
-      self.base_dmg = 20  * (math.pow(1.02, level))
-      self.base_mvspd = 34
-    elseif self.class == 'miniboss' then
-      self.base_hp = 500 * (math.pow(1.02, level))
-      self.base_dmg = 20  * (math.pow(1.02, level))
-      self.base_mvspd = 55
-    end
-    if self.class == 'boss' then
-      self.base_hp = 1500 * (1 + ((level / 6) * 0.25))
-      self.base_dmg = 30
-      self.base_mvspd = 34
-    end
+    local unit_stats = unit_base_stats[self.class]
+
+    self.base_hp = unit_stats.hp
+    self.base_dmg = unit_stats.dmg
+    self.base_mvspd = unit_stats.mvspd
 
     self.baseCooldown = self.baseCooldown or attack_speeds['medium']
     self.baseCast = self.baseCast or attack_speeds['medium-cast']

@@ -1026,12 +1026,13 @@ function init()
     ['thief'] = function(lvl) return get_character_stat_string('thief', lvl) end,
   }
 
-  class_stat_multipliers = {
-    ['troop'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1},
-    ['regular_enemy'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1},
-    ['miniboss'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1},
-    ['boss'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 1},
-    ['enemy_critter'] = {hp = 1, dmg = 1, aspd = 1, area_dmg = 1, area_size = 1, def = 1, mvspd = 0.5},
+  unit_base_stats = {
+    ['troop'] = {hp = 100, dmg = 10, mvspd = 67},
+    ['critter'] = {hp = 25, dmg = 5, mvspd = 100},
+    ['regular_enemy'] = {hp = 150, dmg = 20, mvspd = 34},
+    ['miniboss'] = {hp = 500, dmg = 20, mvspd = 55},
+
+    ['boss'] = {hp = 1500, dmg = 30, mvspd = 34},
   }
 
   unit_stat_multipliers = {

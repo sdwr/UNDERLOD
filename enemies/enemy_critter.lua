@@ -13,7 +13,7 @@ function EnemyCritter:init(args)
   self.aggro_sensor = Circle(self.x, self.y, 1000)
   self.attack_sensor = Circle(self.x, self.y, 25)
 
-  self.class = 'enemy_critter'
+  self.class = 'critter'
   self.color = args.color or grey[0]
   self:calculate_stats(true)
   self:set_as_steerable(self.v, 400, math.pi, 1)

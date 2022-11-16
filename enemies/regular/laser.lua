@@ -10,8 +10,11 @@ fns['init_enemy'] = function(self)
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
   self.class = 'regular_enemy'
 
+  self.baseCooldown = attack_speeds['medium-slow']
+  self.baseCast = 1
+
   --set attacks
-    self.t:cooldown(attack_speeds['medium-slow'], function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end, function ()
+    self.t:cooldown(self.baseCooldown, function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end, function ()
       local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
       if target then
         self:rotate_towards_object(target, 1)
