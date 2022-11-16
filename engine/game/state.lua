@@ -71,7 +71,6 @@ function Main:update(dt)
     end
   end
   self.transitions:update(dt)
-  self.fps:update(dt)
 end
 
 
@@ -82,6 +81,7 @@ function Main:draw()
     end
   end
   self.transitions:draw()
+  self.fps:update()
   self.fps:draw()
 end
 
