@@ -55,6 +55,8 @@ function Helper.Unit:add_custom_variables_to_unit(unit)
     unit.points = {}
     self:add_point(unit, 0, 0)
     unit.point_damages = {}
+    unit.hitbox_points_can_rotate = false
+    unit.hitbox_points_rotation = 0
 
     Helper.Unit:add_default_state_change_functions(unit)
     Helper.Unit:add_default_state_always_run_functions(unit)
@@ -87,11 +89,12 @@ function Helper.Unit:unclaim_target(unit)
     end
 end
 
-function Helper.Unit:can_cast(unit)
+function Helper.Unit:can_cast(unit, points)
+    points = points or false
     if unit then
         return unit.state == unit_states['normal'] and not unit.have_target
         and Helper.Time.time - unit.last_attack_finished > unit.cooldownTime
-        and Helper.Spell:there_is_target_in_range(unit, unit.attack_sensor.rs + 10, true)
+        and Helper.Spell:there_is_target_in_range(unit, unit.attack_sensor.rs, points)
     end
     return false
 end
@@ -441,11 +444,23 @@ end
 -- Add hitbox points relative to unit's position
 function Helper.Unit:add_point(unit, x, y)
     local point = {
+        unrotatedx = x,
+        unrotatedy = y,
         x = x,
         y = y,
         unit = unit
     }
     table.insert(unit.points, point)
+end
+
+function Helper.Unit:update_hitbox_points()
+    for i, unit in ipairs(self:get_all_units()) do
+        if unit.hitbox_points_can_rotate then
+            for j, point in ipairs(unit.points) do
+                point.x, point.y = Helper.Geometry:rotate_point(point.unrotatedx, point.unrotatedy, 0, 0, unit.hitbox_points_rotation)
+            end
+        end
+    end
 end
 
 function Helper.Unit:draw_points()

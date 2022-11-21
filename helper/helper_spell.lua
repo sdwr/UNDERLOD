@@ -81,6 +81,7 @@ end
 
 function Helper.Spell:get_nearest_least_targeted(unit, range, points)
     points = points or false
+    range = range + 30
     
     if Helper.Unit.flagged_enemy ~= -1 then
         return Helper.Unit.flagged_enemy
@@ -129,6 +130,7 @@ end
 
 function Helper.Spell:claimed_target_is_in_range(unit, range, points)
     points = points or false
+    range = range + 40
 
     if not points then
         if unit.have_target and Helper.Geometry:distance(unit.x, unit.y, unit.claimed_target.x, unit.claimed_target.y) <= range then
@@ -147,6 +149,7 @@ end
 
 function Helper.Spell:there_is_target_in_range(unit, range, points)
     points = points or false
+    range = range + 30
     
     if not points then
         for i, target in ipairs(Helper.Unit:get_list(not unit.is_troop)) do

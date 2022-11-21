@@ -55,7 +55,8 @@ function Helper:update(dt)
     Helper.Time.time = Helper.Time.time + dt
     Helper.Time.delta_time = dt
 
-    --update timers, run state functions
+    --update timers, run state functions, update hitbox points
+    Helper.Unit:update_hitbox_points()
     Helper.Time:run_intervals()
     Helper.Time:run_waits()
     Helper.Unit:run_state_change_functions()

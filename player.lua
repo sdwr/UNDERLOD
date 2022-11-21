@@ -2804,7 +2804,7 @@ function Troop:set_character()
       end
       
       --cancel if target moves out of range
-      if self.have_target and not Helper.Spell:claimed_target_is_in_range(self, 140, true) then
+      if self.have_target and not Helper.Spell:claimed_target_is_in_range(self, 130, true) then
         Helper.Spell.Laser:stop_aiming(self)
         Helper.Unit:unclaim_target(self)
       end
@@ -2832,7 +2832,7 @@ function Troop:set_character()
   --   self.attack_sensor = Circle(self.x, self.y, 60)
 
   --   self.state_always_run_functions['always_run'] = function()
-  --     if Helper.Spell:there_is_target_in_range(self, 70) 
+  --     if Helper.Spell:there_is_target_in_range(self, 60) 
   --     and Helper.Time.time - self.last_attack_finished > 1 then
   --       if self.have_target then
   --         Helper.Unit:claim_target(self, Helper.Spell:get_nearest_target(self))
@@ -2842,7 +2842,7 @@ function Troop:set_character()
   --       end
   --     end
 
-  --     if self.have_target and not Helper.Spell:claimed_target_is_in_range(self, 70) then
+  --     if self.have_target and not Helper.Spell:claimed_target_is_in_range(self, 60) then
   --       Helper.Spell.Flame:end_flame_after(self, 0.25)
   --       Helper.Unit:unclaim_target(self)
   --     end
@@ -2866,7 +2866,7 @@ function Troop:set_character()
     self.castTime = 0
 
     self.state_always_run_functions['normal'] = function()
-      if Helper.Spell:there_is_target_in_range(self, attack_ranges['long'] + 10, true) 
+      if Helper.Spell:there_is_target_in_range(self, attack_ranges['long'], true) 
       and Helper.Time.time - self.last_attack_finished > 2 
       and Helper.Time.time - self.last_attack_started > 2 then
         self.last_attack_started = Helper.Time.time
@@ -2881,7 +2881,7 @@ function Troop:set_character()
     end
 
     self.state_always_run_functions['always_run'] = function()
-      if Helper.Spell:there_is_target_in_range(self, attack_ranges['long'] + 10, true) then
+      if Helper.Spell:there_is_target_in_range(self, attack_ranges['long'], true) then
         Helper.Unit:claim_target(self, Helper.Spell:get_nearest_target(self))
       end
     end
