@@ -365,7 +365,8 @@ function Helper.Unit:select()
     local x = 50 + (Helper.Unit.troop_type_button_width + 5) * (Helper.Unit.number_of_troop_types)
     local y = gh - 50
     for i = 1, 4 do
-        if (not input['lshift'].down and not input['lctrl'].down) or input[tostring(i + self.number_of_troop_types)].released then
+        if (not input['lshift'].down and not input['lctrl'].down and not input['m1'].down and not input['m2'].down and not input['space'].down) 
+        or input[tostring(i + self.number_of_troop_types)].released then
             if Helper.Geometry:is_inside_rectangle(Helper.mousex, Helper.mousey, x + 52 * (i - 1), y, x + 47 + 52 * (i - 1), gh - 10) then
                 main.current.hotbar['set team ' .. i].visible = true
                 main.current.hotbar['add to team ' .. i].visible = true
