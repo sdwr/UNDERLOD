@@ -34,27 +34,12 @@ function Helper.Spell.DamageCircle:update()
 end
 
 function Helper.Spell.DamageCircle:damage()
-    local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
-    local troops = main.current.main:get_objects_by_class(Troop)
-
     for i, damage_circle in ipairs(Helper.Spell.DamageCircle.list) do
         if not damage_circle.damage_dealt then
-            if not damage_circle.damage_troops then
-                for _, enemy in ipairs(enemies) do
-                    if Helper.Geometry:distance(damage_circle.x, damage_circle.y, enemy.x, enemy.y) < damage_circle.radius then
-                        enemy:hit(damage_circle.damage, damage_circle.unit)
-                        HitCircle{group = main.current.effects, x = enemy.x, y = enemy.y, rs = 6, color = fg[0], duration = 0.1}
-                        for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = blue[0]} end
-                        for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = enemy.color} end
-                    end
-                end
-            else
-                for _, troop in ipairs(troops) do
-                    if Helper.Geometry:distance(damage_circle.x, damage_circle.y, troop.x, troop.y) < damage_circle.radius then
-                        troop:hit(damage_circle.damage, damage_circle.unit)
-                        HitCircle{group = main.current.effects, x = troop.x, y = troop.y, rs = 6, color = fg[0], duration = 0.1}
-                        for i = 1, 1 do HitParticle{group = main.current.effects, x = troop.x, y = troop.y, color = blue[0]} end
-                        for i = 1, 1 do HitParticle{group = main.current.effects, x = troop.x, y = troop.y, color = troop.color} end
+            for i, unit in ipairs(Helper.Unit:get_list(damage_circle.damage_troops)) do
+                for j, point in ipairs(unit.points) do
+                    if Helper.Geometry:distance(damage_circle.x, damage_circle.y, unit.x + point.x, unit.y + point.y) < damage_circle.radius then
+                        Helper.Spell:register_damage_point(point, damage_circle.unit, damage_circle.damage)
                     end
                 end
             end

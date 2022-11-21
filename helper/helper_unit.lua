@@ -1,13 +1,29 @@
 Helper.Unit = {}
 
 Helper.Unit.cast_flash_duration = 0.08
+Helper.Unit.do_draw_points = false
 
 function Helper.Unit:get_list(troop_list)
+    if troop_list == nil then
+        return -1
+    end
+
     if troop_list then
         return main.current.main:get_objects_by_class(Troop)
     else
         return main.current.main:get_objects_by_classes(main.current.enemies)
     end
+end
+
+function Helper.Unit:get_all_units()
+    local unit_list = {}
+    for i, unit in ipairs(Helper.Unit:get_list(true)) do
+        table.insert(unit_list, unit)
+    end
+    for i, unit in ipairs(Helper.Unit:get_list(false)) do
+        table.insert(unit_list, unit)
+    end
+    return unit_list
 end
 
 function Helper.Unit:add_custom_variables_to_unit(unit)
@@ -36,6 +52,9 @@ function Helper.Unit:add_custom_variables_to_unit(unit)
     }
     unit.selected = false
     unit.spell_wait_id = -1
+    unit.points = {}
+    self:add_point(unit, 0, 0)
+    unit.point_damages = {}
 
     Helper.Unit:add_default_state_change_functions(unit)
     Helper.Unit:add_default_state_always_run_functions(unit)
@@ -48,7 +67,7 @@ function Helper.Unit:add_custom_variables_to_unit(unit)
 end
 
 function Helper.Unit:claim_target(unit, target)
-    if unit and target ~= -1 then
+    if target ~= -1 then
         if unit.have_target then
             if unit.claimed_target == target then
                 return
@@ -62,7 +81,7 @@ function Helper.Unit:claim_target(unit, target)
 end
 
 function Helper.Unit:unclaim_target(unit)
-    if unit and unit.have_target then
+    if unit.have_target then
         table.remove(unit.claimed_target.targeted_by, find_in_list(unit.claimed_target.targeted_by, unit))
         unit.have_target = false
     end
@@ -72,7 +91,7 @@ function Helper.Unit:can_cast(unit)
     if unit then
         return unit.state == unit_states['normal'] and not unit.have_target
         and Helper.Time.time - unit.last_attack_finished > unit.cooldownTime
-        and Helper.Spell:there_is_target_in_range(unit, unit.attack_sensor.rs + 10)
+        and Helper.Spell:there_is_target_in_range(unit, unit.attack_sensor.rs + 10, true)
     end
     return false
 end
@@ -416,4 +435,42 @@ function Helper.Unit:load_teams_to_next_round()
 
         self:refresh_button(i)
     end
+end
+
+-- Add hitbox points relative to unit's position
+function Helper.Unit:add_point(unit, x, y)
+    local point = {
+        x = x,
+        y = y,
+        unit = unit
+    }
+    table.insert(unit.points, point)
+end
+
+function Helper.Unit:draw_points()
+    if self.do_draw_points then
+        for i, unit in ipairs(self:get_list(true)) do
+            for j, point in ipairs(unit.points) do
+                Helper.Color:set_color(Helper.Color.orange)
+                love.graphics.circle("fill", point.x + unit.x, point.y + unit.y, 2)
+            end
+        end 
+    
+        for i, unit in ipairs(self:get_list(false)) do
+            for j, point in ipairs(unit.points) do
+                Helper.Color:set_color(Helper.Color.orange)
+                love.graphics.circle("fill", point.x + unit.x, point.y + unit.y, 2)
+            end
+        end 
+    end
+end
+
+function Helper.Unit:get_points(troop_points)
+    local points = {}
+    for i, unit in ipairs(self:get_list(troop_points)) do
+        for j, point in ipairs(unit.points) do
+            table.insert(points, point)
+        end
+    end
+    return points
 end

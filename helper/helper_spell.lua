@@ -79,15 +79,28 @@ function Helper.Spell:get_nearest_target_from_point(x, y, target_is_troop)
     return self:get_nearest_target(unit)
 end
 
-function Helper.Spell:get_nearest_least_targeted(unit, range)
+function Helper.Spell:get_nearest_least_targeted(unit, range, points)
+    points = points or false
+    
     if Helper.Unit.flagged_enemy ~= -1 then
         return Helper.Unit.flagged_enemy
     end
     
     local target_list = {}
-    for i, value in ipairs(Helper.Unit:get_list(not unit.is_troop)) do
-        if Helper.Geometry:distance(unit.x, unit.y, value.x, value.y) <= range then
-            table.insert(target_list, value)
+    if not points then
+        for i, value in ipairs(Helper.Unit:get_list(not unit.is_troop)) do
+            if Helper.Geometry:distance(unit.x, unit.y, value.x, value.y) <= range then
+                table.insert(target_list, value)
+            end
+        end
+    else
+        for i, value in ipairs(Helper.Unit:get_list(not unit.is_troop)) do
+            for j, point in ipairs(unit.points) do
+                if Helper.Geometry:distance(unit.x, unit.y, value.x + point.x, value.y + point.y) <= range then
+                    table.insert(target_list, value)
+                    break
+                end
+            end
         end
     end
 
@@ -114,20 +127,88 @@ function Helper.Spell:get_nearest_least_targeted(unit, range)
     return Helper.Spell:get_nearest_target(unit, least_targeted_units)
 end
 
-function Helper.Spell:claimed_target_is_in_range(unit, range)
-    if unit.have_target and Helper.Geometry:distance(unit.x, unit.y, unit.claimed_target.x, unit.claimed_target.y) <= range then
-        return true
+function Helper.Spell:claimed_target_is_in_range(unit, range, points)
+    points = points or false
+
+    if not points then
+        if unit.have_target and Helper.Geometry:distance(unit.x, unit.y, unit.claimed_target.x, unit.claimed_target.y) <= range then
+            return true
+        end
+    else
+        for i, point in ipairs(unit.claimed_target.points) do
+            if unit.have_target and Helper.Geometry:distance(unit.x, unit.y, unit.claimed_target.x + point.x, unit.claimed_target.y + point.y) <= range then
+                return true
+            end
+        end
     end
 
     return false
 end
 
-function Helper.Spell:there_is_target_in_range(unit, range)
-    for i, target in ipairs(Helper.Unit:get_list(not unit.is_troop)) do
-        if Helper.Geometry:distance(unit.x, unit.y, target.x, target.y) < range then
-            return true
+function Helper.Spell:there_is_target_in_range(unit, range, points)
+    points = points or false
+    
+    if not points then
+        for i, target in ipairs(Helper.Unit:get_list(not unit.is_troop)) do
+            if Helper.Geometry:distance(unit.x, unit.y, target.x, target.y) < range then
+                return true
+            end
+        end
+    else
+        for i, target in ipairs(Helper.Unit:get_list(not unit.is_troop)) do
+            for j, point in ipairs(target.points) do
+                if Helper.Geometry:distance(unit.x, unit.y, target.x + point.x, target.y + point.y) < range then
+                    return true
+                end
+            end
         end
     end
 
     return false
+end
+
+function Helper.Spell:get_claimed_target_nearest_point(unit)
+    local max_distance = 99999999
+    local nearestx = 0
+    local nearesty = 0
+    for i, point in ipairs(unit.claimed_target.points) do
+        local distance = Helper.Geometry:distance(unit.x, unit.y, unit.claimed_target.x + point.x, unit.claimed_target.y + point.y)
+        if distance < max_distance then
+            max_distance = distance
+            nearestx = unit.claimed_target.x + point.x
+            nearesty = unit.claimed_target.y + point.y
+        end
+    end
+
+    return nearestx, nearesty
+end
+
+function Helper.Spell:register_damage_point(point, damage_source_unit, damage)
+    local point_damage = {
+        point = point,
+        damage_source_unit = damage_source_unit,
+        damage = damage
+    }
+
+    table.insert(point.unit.point_damages, point_damage)
+end
+
+function Helper.Spell:damage_points()
+    for i, unit in ipairs(Helper.Unit:get_all_units()) do
+        local counted_damage_source_unit = {}
+        for j, point_damage in ipairs(unit.point_damages) do
+            if not is_in_list(counted_damage_source_unit, point_damage.damage_source_unit) then
+                table.insert(counted_damage_source_unit, point_damage.damage_source_unit)
+                unit:hit(point_damage.damage, point_damage.damage_source_unit)
+            end
+            local x = point_damage.point.unit.x + point_damage.point.x
+            local y = point_damage.point.unit.y + point_damage.point.y
+            HitCircle{group = main.current.effects, x = x, y = y, rs = 6, color = fg[0], duration = 0.1}
+            for i = 1, 1 do HitParticle{group = main.current.effects, x = x, y = y, color = blue[0]} end
+            for i = 1, 1 do HitParticle{group = main.current.effects, x = x, y = y, color = blue[0]} end
+        end
+        for k in ipairs(unit.point_damages) do
+            unit.point_damages[k] = nil
+        end
+    end
 end

@@ -69,8 +69,8 @@ function Helper.Spell.Missile:set_position(missile)
     
     -- only players have cooldown? fix
     if missile.unit.have_target and (missile.targetx == -1 or missile.targety == -1) then
-        missile.targetx, missile.targety = Helper.Spell.Laser:get_end_location(missile.x, missile.y, 
-        missile.unit.claimed_target.x, missile.unit.claimed_target.y)
+        local x, y = Helper.Spell:get_claimed_target_nearest_point(missile.unit)
+        missile.targetx, missile.targety = Helper.Spell.Laser:get_end_location(missile.x, missile.y, x, y)
     end
 end
 
@@ -82,7 +82,7 @@ function Helper.Spell.Missile:shoot()
             table.insert(Helper.Spell.Missile.list, missile)
             table.remove(Helper.Spell.Missile.prelist, i)
 
-            Helper.Unit.unclaim_target(missile.unit)
+            Helper.Unit:unclaim_target(missile.unit)
             Helper.Unit:finish_casting(missile.unit)
         end
     end
@@ -142,13 +142,15 @@ function Helper.Spell.Missile:explode()
                 entities = main.current.main:get_objects_by_class(Troop)
             end
             for _, entity in ipairs(entities) do
-                if Helper.Geometry:distance(missile.x, missile.y, entity.x, entity.y) < missile.missile_length / 1.5 then
-                    Helper.Spell.DamageCircle:create(missile.unit, missile.color, not missile.unit.is_troop, 
-                    missile.damage, missile.explode_radius, missile.x, missile.y)
-                    table.remove(Helper.Spell.Missile.list, i)
-                    shoot1:play{volume=0.7}
-                    break
-                end 
+                for __, point in ipairs(entity.points) do
+                    if Helper.Geometry:distance(missile.x, missile.y, entity.x + point.x, entity.y + point.y) < missile.missile_length / 1.5 then
+                        Helper.Spell.DamageCircle:create(missile.unit, missile.color, not missile.unit.is_troop, 
+                        missile.damage, missile.explode_radius, missile.x, missile.y)
+                        table.remove(Helper.Spell.Missile.list, i)
+                        shoot1:play{volume=0.7}
+                        break
+                    end 
+                end
             end
 
             if Helper.window_width - missile.x < missile.missile_length / 1.5 or missile.x <= missile.missile_length / 1.5 

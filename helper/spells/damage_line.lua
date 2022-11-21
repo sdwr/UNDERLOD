@@ -55,31 +55,17 @@ function Helper.Spell.DamageLine:update()
 end
 
 function Helper.Spell.DamageLine:damage()
-    local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
-    local troops = main.current.main:get_objects_by_class(Troop)
-
     for i, damage_line in ipairs(Helper.Spell.DamageLine.list) do
         if not damage_line.damage_dealt then
-            if not damage_line.damage_troops then
-                for _, enemy in ipairs(enemies) do
-                    if Helper.Geometry:is_on_line(enemy.x, enemy.y, damage_line.x1, damage_line.y1, damage_line.x2, damage_line.y2, damage_line.linewidth) then
-                        enemy:hit(damage_line.damage, damage_line.unit)
-                        HitCircle{group = main.current.effects, x = enemy.x, y = enemy.y, rs = 6, color = fg[0], duration = 0.1}
-                        for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = blue[0]} end
-                        for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = enemy.color} end
-                    end
-                end
-            else
-                for _, troop in ipairs(troops) do
-                    if Helper.Geometry:is_on_line(troop.x, troop.y, damage_line.x1, damage_line.y1, damage_line.x2, damage_line.y2, damage_line.linewidth) then
-                        troop:hit(damage_line.damage, damage_line.unit)
-                        HitCircle{group = main.current.effects, x = troop.x, y = troop.y, rs = 6, color = fg[0], duration = 0.1}
-                        for i = 1, 1 do HitParticle{group = main.current.effects, x = troop.x, y = troop.y, color = blue[0]} end
-                        for i = 1, 1 do HitParticle{group = main.current.effects, x = troop.x, y = troop.y, color = troop.color} end
+            for j, unit in ipairs(Helper.Unit:get_list(damage_line.damage_troops)) do
+                for k, point in ipairs(unit.points) do
+                    local x = unit.x + point.x
+                    local y = unit.y + point.y
+                    if Helper.Geometry:is_on_line(x, y, damage_line.x1, damage_line.y1, damage_line.x2, damage_line.y2, damage_line.linewidth) then
+                        Helper.Spell:register_damage_point(point, damage_line.unit, damage_line.damage)
                     end
                 end
             end
-
             damage_line.damage_dealt = true
         end
     end

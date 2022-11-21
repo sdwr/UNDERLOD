@@ -35,3 +35,7 @@ end
 function get_random(lower, upper)
     return math.random() * (upper - lower) + lower
 end
+
+function near(num1, num2, max_difference)
+    return math.abs(num1 - num2) < max_difference
+end

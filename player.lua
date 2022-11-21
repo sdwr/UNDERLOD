@@ -2795,7 +2795,7 @@ function Troop:set_character()
     --if ready to cast and has target in range, start cast
     self.state_always_run_functions['always_run'] = function()
       if Helper.Unit:can_cast(self) then
-        Helper.Unit:claim_target(self, Helper.Spell:get_nearest_least_targeted(self, 130))
+        Helper.Unit:claim_target(self, Helper.Spell:get_nearest_least_targeted(self, 130, true))
         Helper.Time:wait(get_random(0, 0.1), function()
           
           sniper_load:play{volume=0.7}
@@ -2804,7 +2804,7 @@ function Troop:set_character()
       end
       
       --cancel if target moves out of range
-      if self.have_target and not Helper.Spell:claimed_target_is_in_range(self, 140) then
+      if self.have_target and not Helper.Spell:claimed_target_is_in_range(self, 140, true) then
         Helper.Spell.Laser:stop_aiming(self)
         Helper.Unit:unclaim_target(self)
       end
@@ -2866,7 +2866,7 @@ function Troop:set_character()
     self.castTime = 0
 
     self.state_always_run_functions['normal'] = function()
-      if Helper.Spell:there_is_target_in_range(self, attack_ranges['long'] + 10) 
+      if Helper.Spell:there_is_target_in_range(self, attack_ranges['long'] + 10, true) 
       and Helper.Time.time - self.last_attack_finished > 2 
       and Helper.Time.time - self.last_attack_started > 2 then
         self.last_attack_started = Helper.Time.time
@@ -2881,7 +2881,7 @@ function Troop:set_character()
     end
 
     self.state_always_run_functions['always_run'] = function()
-      if Helper.Spell:there_is_target_in_range(self, attack_ranges['long'] + 10) then
+      if Helper.Spell:there_is_target_in_range(self, attack_ranges['long'] + 10, true) then
         Helper.Unit:claim_target(self, Helper.Spell:get_nearest_target(self))
       end
     end
