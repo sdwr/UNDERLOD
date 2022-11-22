@@ -147,11 +147,6 @@ end
 
 function Enemy:die()
     self.dead = true
-    if main.current:is(Arena) then
-      if main.current.targetedEnemy == self then
-        main.current.targetedEnemy = nil
-      end
-    end
     if self.parent and self.parent.summons and self.parent.summons > 0 then
       self.parent.summons = self.parent.summons - 1
     end

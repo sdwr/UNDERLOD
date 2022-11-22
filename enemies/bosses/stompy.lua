@@ -28,6 +28,24 @@ fns['init_enemy'] = function(self)
     self:set_as_steerable(self.v, 1000, 2*math.pi, 2)
     self.class = 'boss'
 
+  --add hitbox points
+  local step = (self.shape.w - 4) / 5
+  for x = -self.shape.w/2 + 2, self.shape.w/2 - 2, step do
+    for y = -self.shape.h/2 + 2, self.shape.h/2 - 2, step do
+      if x == -self.shape.w/2 + 2 and y == -self.shape.h/2 + 2 then
+        Helper.Unit:add_point(self, x + 2, y + 2)
+      elseif x == -self.shape.w/2 + 2 and near(y, self.shape.h/2 - 2, 0.01) then
+        Helper.Unit:add_point(self, x + 2, y - 2)
+      elseif near(x, self.shape.w/2 - 2, 0.01) and y == -self.shape.h/2 + 2 then
+        Helper.Unit:add_point(self, x - 2, y + 2)
+      elseif near(x, self.shape.w/2 - 2, 0.01) and near(y, self.shape.h/2 - 2, 0.01) then
+        Helper.Unit:add_point(self, x - 2, y - 2)
+      else
+        Helper.Unit:add_point(self, x, y)
+      end
+    end
+  end
+
   --set attacks
     self.t:cooldown(attack_speeds['ultra-slow'], function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target and self.state == unit_states['normal'] end, function ()
         local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)

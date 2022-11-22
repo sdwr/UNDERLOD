@@ -14,7 +14,7 @@ function Arena:select_character(character)
 end
 
 function Arena:select_character_by_index(i)
-  if self.hotbar_by_index[i] then
+  if self.hotbar_by_index[i] and not input['lctrl'].down and not input['lshift'].down then
     self.hotbar_by_index[i]:action()
   end
 end
@@ -104,24 +104,65 @@ function Arena:on_enter(from, level, loop, units, max_units, passives, shop_leve
   main.selectedCharacter = nil
   self.hotbar = {}
   self.hotbar_by_index = {}
-  for i, unit in ipairs(units) do
-    local character = unit.character
+  Helper.Unit.number_of_troop_types = #units
+
+  Helper.Unit.troop_type_button_width = 20
+  for i = 1, #units do
+    local character = units[i].character
     local type = character_types[character]
-    local b = HotbarButton{group = self.ui, x = gw/3 + ((i/#units)*(gw/3)) , y = gh - 20, force_update = true, button_text = character, fg_color = type_color_strings[type], bg_color = 'bg', action = function() self:select_character(character) end}
+    local b = HotbarButton{group = self.ui, x = 50 + (Helper.Unit.troop_type_button_width + 5) * (i - 1) , y = gh - 20, w = Helper.Unit.troop_type_button_width,
+                            force_update = true, button_text = character, fg_color = type_color_strings[type], bg_color = 'bg', 
+                            action = function() 
+                              self:select_character(character) 
+                              Helper.Unit.selected_team = 0
+                              Helper.Unit:deselect_all_troops()
+                              for i, troop in ipairs(Helper.Unit:get_list(true)) do
+                                if troop.character == character then
+                                  troop.selected = true
+                                end
+                              end
+                            end,
+                            color_marks = {[1] = character_colors[character]}}
     self.hotbar[character] = b
     self.hotbar_by_index[i] = b
-    if i == 1 then
-      self:select_character(character)
-    end
   end
 
+  Helper.Unit.team_button_width = 47
+  for i = 1, 4 do
+    local b = HotbarButton{group = self.ui, x = 50 + (Helper.Unit.troop_type_button_width + 5) * (Helper.Unit.number_of_troop_types) + Helper.Unit.team_button_width/2 + (Helper.Unit.team_button_width + 5) * (i - 1), 
+                          y = gh - 20, force_update = true, button_text = tostring(i + Helper.Unit.number_of_troop_types), w = Helper.Unit.team_button_width, fg_color = 'white', bg_color = 'bg', 
+                          action = function() 
+                            main.current:select_character('team ' .. i) 
+                            Helper.Unit.selected_team = i
+                            Helper.Unit:deselect_all_troops()
+                            for i, troop in ipairs(Helper.Unit.teams[Helper.Unit.selected_team]) do
+                              troop.selected = true
+                            end
+                          end}
+    self.hotbar['team ' .. i] = b
+    self.hotbar_by_index[i + Helper.Unit.number_of_troop_types] = b
+
+    local b = HotbarButton{group = self.ui, x = 50 + (Helper.Unit.troop_type_button_width + 5) * (Helper.Unit.number_of_troop_types) + Helper.Unit.troop_type_button_width/2 + (Helper.Unit.team_button_width + 5) * (i - 1), 
+                          y = gh - 40, force_update = true, button_text = '', w = Helper.Unit.troop_type_button_width, fg_color = 'white', bg_color = 'bg', 
+                          action = function() 
+                            Helper.Unit:set_team(i)
+                          end,
+                          color_marks = {[1] = white[0]},
+                          visible = false}
+    self.hotbar['set team ' .. i] = b
+
+    local b = HotbarButton{group = self.ui, x = 50 + (Helper.Unit.troop_type_button_width + 5) * (Helper.Unit.number_of_troop_types) + Helper.Unit.troop_type_button_width/2 + (Helper.Unit.team_button_width + 5) * (i - 1) + Helper.Unit.troop_type_button_width + 5, 
+                          y = gh - 40, force_update = true, button_text = '+', w = Helper.Unit.troop_type_button_width, fg_color = 'white', bg_color = 'bg', 
+                          action = function() 
+                            Helper.Unit:add_to_team(i)
+                          end,
+                          visible = false}
+    self.hotbar['add to team ' .. i] = b
+  end
 
   Spawn_Troops(self)
-
   self.start_time = 3
-
   Manage_Spawns(self)
-  
 end
 
 function Arena:spawn_critters(spawn_point, amount)
@@ -153,7 +194,7 @@ function Arena:on_exit()
 
   main.selectedCharacter = nil
 
-  Helper.release()
+  Helper:release()
 end
 
 
@@ -182,14 +223,14 @@ function Arena:update(dt)
       end
     end
     --target enemy with rightclick
-    if input["m2"].pressed then
-      local mx, my = self.main.camera:get_mouse_position()
-      local mouseCircle = Circle(mx, my, 5)
-      local targets = self.main:get_objects_in_shape(mouseCircle, self.enemies)
-      if targets and #targets > 0 then
-        self:target_enemy(targets[1])
-      end
-    end
+    -- if input["m2"].pressed then
+    --   local mx, my = self.main.camera:get_mouse_position()
+    --   local mouseCircle = Circle(mx, my, 5)
+    --   local targets = self.main:get_objects_in_shape(mouseCircle, self.enemies)
+    --   if targets and #targets > 0 then
+    --     self:target_enemy(targets[1])
+    --   end
+    -- end
   end
 
   if self.shop_text then self.shop_text:update(dt) end
@@ -253,17 +294,18 @@ function Arena:update(dt)
   self.ui:update(dt*slow_amount)
   self.credits:update(dt)
 
-  Helper.update(dt*slow_amount)
+  Helper:update(dt*slow_amount)
   LevelManager.update(dt)
 end
 
-function Arena:target_enemy(enemy)
-  if self.targetedEnemy then
-    self.targetedEnemy:untarget()
-  end
-  self.targetedEnemy = enemy
-  self.targetedEnemy:set_as_target()
-end
+--for old control code
+--function Arena:target_enemy(enemy)
+  --if self.targetedEnemy then
+    --self.targetedEnemy:untarget()
+  --end
+  --self.targetedEnemy = enemy
+  --self.targetedEnemy:set_as_target()
+--end
 
 
 function Arena:quit()
@@ -536,7 +578,7 @@ function Arena:draw()
 
 
 
-  Helper.draw()
+  Helper:draw()
 
 
 

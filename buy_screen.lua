@@ -714,36 +714,41 @@ function HotbarButton:init(args)
   self.interact_with_mouse = true
   self.text = Text({{text = '[' .. self.fg_color .. ']' .. self.button_text, font = pixul_font, alignment = 'center'}}, global_text_tags)
   self.unit_selected = false
+
+  self.color_marks = args.color_marks or {}
+  self.visible = args.visible or true
 end
 
 function HotbarButton:update(dt)
-  self:update_game_object(dt)
+  if self.visible then
+    self:update_game_object(dt)
 
-  if self.hold_button then
-    if self.selected and input.m1.pressed then
-      self.press_time = love.timer.getTime()
-      self.spring:pull(0.2, 200, 10)
-    end
-    if self.press_time then
-      if input.m1.down and love.timer.getTime() - self.press_time > self.hold_button then
-        self:action()
+    if self.hold_button then
+      if self.selected and input.m1.pressed then
+        self.press_time = love.timer.getTime()
+        self.spring:pull(0.2, 200, 10)
+      end
+      if self.press_time then
+        if input.m1.down and love.timer.getTime() - self.press_time > self.hold_button then
+          self:action()
+          self.press_time = nil
+          self.spring:pull(0.1, 200, 10)
+        end
+      end
+      if input.m1.released then
         self.press_time = nil
         self.spring:pull(0.1, 200, 10)
       end
-    end
-    if input.m1.released then
-      self.press_time = nil
-      self.spring:pull(0.1, 200, 10)
-    end
-  else
-    if self.selected and input.m1.pressed then
-      if self.action then
-        self:action()
+    else
+      if self.selected and input.m1.pressed then
+        if self.action then
+          self:action()
+        end
       end
-    end
-    if self.selected and input.m2.pressed then
-      if self.action_2 then
-        self:action_2()
+      if self.selected and input.m2.pressed then
+        if self.action_2 then
+          self:action_2()
+        end
       end
     end
   end
@@ -751,13 +756,27 @@ end
 
 
 function HotbarButton:draw()
-  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
-    if self.unit_selected then
-      graphics.rectangle(self.x+1, self.y+1, self.shape.w+1, self.shape.h+1, 4,4,  _G['white'][0], 3)
+  if self.visible then
+    graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
+      -- if self.unit_selected then
+      --   graphics.rectangle(self.x+1, self.y+1, self.shape.w+1, self.shape.h+1, 4,4,  _G['white'][0], 3)
+      -- end
+      graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, self.selected and fg[0] or _G[self.bg_color][0])
+      
+      if #self.color_marks == 0 then
+        self.text:draw(self.x, self.y + 1, 0, 1, 1)
+      end
+    graphics.pop()
+
+    for i, color_mark in ipairs(self.color_marks) do
+      if self.selected then
+        love.graphics.setColor(186/255, 186/255, 186/255, 1)
+      else
+        love.graphics.setColor(color_mark.r, color_mark.g, color_mark.b, 1)
+      end
+      love.graphics.circle('fill', self.x - self.shape.w/2 + 10 + 8*(i - 1), self.y, 3)
     end
-    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, self.selected and fg[0] or _G[self.bg_color][0])
-    self.text:draw(self.x, self.y + 1, 0, 1, 1)
-  graphics.pop()
+  end
 end
 
 
@@ -769,6 +788,8 @@ function HotbarButton:on_mouse_enter()
   self.text:set_text{{text = '[fgm5]' .. self.button_text, font = pixul_font, alignment = 'center'}}
   self.spring:pull(0.2, 200, 10)
   if self.mouse_enter then self:mouse_enter() end
+
+  Helper.mouse_on_button = true
 end
 
 
@@ -777,6 +798,8 @@ function HotbarButton:on_mouse_exit()
   self.text:set_text{{text = '[' .. self.fg_color .. ']' .. self.button_text, font = pixul_font, alignment = 'center'}}
   self.selected = false
   if self.mouse_exit then self:mouse_exit() end
+
+  Helper.mouse_on_button = false
 end
 
 

@@ -3,7 +3,7 @@
 local fns = {}
 
 fns['safety_dance'] = function(self)
-    Helper.Spell.SafetyDance.create_all(self, orange[-5], true, 'one_safe', 4, 20)
+    Helper.Spell.SafetyDance:create_all(self, orange[-5], true, 'one_safe', 4, 20)
 end
 
 fns['init_enemy'] = function(self)
