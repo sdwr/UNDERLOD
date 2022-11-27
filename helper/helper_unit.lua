@@ -297,6 +297,7 @@ function Helper.Unit:select()
             if troop.selected then
                 troop.target_pos = {x = Helper.mousex, y = Helper.mousey}
                 troop.state = unit_states['rallying']
+                self:start_rally_mark(Helper.mousex, Helper.mousey)
             end
         end
     end
@@ -489,4 +490,81 @@ function Helper.Unit:get_points(troop_points)
         end
     end
     return points
+end
+
+
+
+Helper.Unit.rally_marks = {}
+Helper.Unit.yellow_rally_mark_only = false
+
+function Helper.Unit:start_rally_mark(x, y)
+    local there_are_selected_unit = false
+    for i, unit in ipairs(self:get_list(true)) do
+        if unit.selected then
+            there_are_selected_unit = true
+            break
+        end
+    end
+
+    if there_are_selected_unit then
+        local rally_mark = {
+            x = x,
+            y = y,
+            color_marks = {},
+            units = {},
+            interval_id = -1,
+            current_color_mark_index = 2
+        }
+
+        for i, unit in ipairs(self:get_list(true)) do
+            if unit.selected then
+                table.insert(rally_mark.units, unit)
+            end
+        end
+        if not self.yellow_rally_mark_only then
+            rally_mark.color_marks = self:get_color_marks(rally_mark.units)
+        else
+            rally_mark.color_marks = {Helper.Color.yellow}
+        end
+
+        Helper.Graphics:create_inward_circle(rally_mark.x, rally_mark.y, 
+                                                rally_mark.color_marks[1],
+                                                10, 5)
+        rally_mark.interval_id = Helper.Time:set_interval(1.2, function()
+            if rally_mark.current_color_mark_index > #rally_mark.color_marks then
+                rally_mark.current_color_mark_index = 1
+            end
+            Helper.Graphics:create_inward_circle(rally_mark.x, rally_mark.y, 
+                                                rally_mark.color_marks[rally_mark.current_color_mark_index],
+                                                10, 5)
+            rally_mark.current_color_mark_index = rally_mark.current_color_mark_index + 1
+        end)
+
+        table.insert(self.rally_marks, rally_mark)
+    end
+end
+
+function Helper.Unit:update_rally_marks()
+    for i = #self.rally_marks, 1, -1 do
+        for j, unit in ipairs(self.rally_marks[i].units) do
+            if unit.state ~= unit_states['rallying'] or unit.target_pos.x ~= self.rally_marks[i].x 
+            or unit.target_pos.y ~= self.rally_marks[i].y or unit.dead then
+                table.remove(self.rally_marks[i].units, j)
+            end
+        end
+        if #self.rally_marks[i].units == 0 then
+            Helper.Time:stop_interval(self.rally_marks[i].interval_id)
+            table.remove(self.rally_marks, i)
+        end
+    end
+end
+
+function Helper.Unit:get_color_marks(units)
+    local color_marks = {}
+    for i, unit in ipairs(units) do
+        if not is_in_list(color_marks, character_colors[unit.character]) then
+            table.insert(color_marks, character_colors[unit.character])
+        end
+    end
+    return color_marks
 end

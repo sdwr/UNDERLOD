@@ -39,6 +39,7 @@ function Helper:draw()
     end
 
     Helper.Graphics:draw_particles()
+    Helper.Graphics:draw_inward_circles()
     Helper.Unit:draw_selection()
 
     Helper.Unit:draw_points()
@@ -63,6 +64,9 @@ function Helper:update(dt)
     Helper.Unit:run_state_always_run_functions()
     Helper.Unit:select()
 
+    --update rally marks
+    Helper.Unit:update_rally_marks()
+
     --update spells
 
     for i, spell in ipairs(Helper.Spell.spells) do
@@ -73,6 +77,8 @@ function Helper:update(dt)
 
     --particles
     Helper.Graphics:update_particles()
+    --inward circles
+    Helper.Graphics:update_inward_circles()
 
     Helper.Spell:damage_points();
 

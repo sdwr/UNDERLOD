@@ -223,3 +223,47 @@ function Helper.Graphics:draw_particles()
         love.graphics.circle('fill', particle.x, particle.y, particle.size)
     end
 end
+
+
+
+Helper.Graphics.inward_circles = {}
+
+function Helper.Graphics:create_inward_circle(x, y, color, radius, speed)
+    local inward_circle = {
+        x = x,
+        y = y,
+        color = color,
+        start_time = Helper.Time.time,
+        radius = radius,
+        speed = speed
+    }
+
+    table.insert(self.inward_circles, inward_circle)
+end
+
+function Helper.Graphics:update_inward_circles()
+    for i = #self.inward_circles, 1, -1 do
+        local current_radius = self.inward_circles[i].radius - (Helper.Time.time - self.inward_circles[i].start_time)*self.inward_circles[i].speed
+        if current_radius <= 0 then
+            table.remove(self.inward_circles, i)
+            break
+        end
+    end
+end
+
+function Helper.Graphics:draw_inward_circles()
+    for i = #self.inward_circles, 1, -1 do
+        local current_radius = self.inward_circles[i].radius - (Helper.Time.time - self.inward_circles[i].start_time)*self.inward_circles[i].speed
+        local current_radius_percentage = current_radius/self.inward_circles[i].radius * 100
+        local alpha = 1
+        if current_radius_percentage > 40 then
+            alpha = 1 - ((current_radius_percentage - 40) / 60)
+        end
+        if current_radius > 0 then
+            love.graphics.setLineWidth(1.5)
+            love.graphics.setColor(self.inward_circles[i].color.r, self.inward_circles[i].color.g, 
+                                    self.inward_circles[i].color.b, alpha)
+            love.graphics.circle('line', self.inward_circles[i].x, self.inward_circles[i].y, current_radius)
+        end
+    end
+end
