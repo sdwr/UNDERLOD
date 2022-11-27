@@ -228,17 +228,27 @@ end
 
 Helper.Graphics.inward_circles = {}
 
-function Helper.Graphics:create_inward_circle(x, y, color, radius, speed)
+function Helper.Graphics:create_inward_circle(parent, x, y, color, radius, speed)
     local inward_circle = {
         x = x,
         y = y,
         color = color,
         start_time = Helper.Time.time,
         radius = radius,
-        speed = speed
+        speed = speed,
+        parent = parent
     }
 
     table.insert(self.inward_circles, inward_circle)
+    return inward_circle;
+end
+
+function Helper.Graphics:delete_inward_circles(parent)
+    for i = #self.inward_circles, 1, -1 do
+        if self.inward_circles[i].parent == parent then
+            table.remove(self.inward_circles, i)
+        end
+    end
 end
 
 function Helper.Graphics:update_inward_circles()
