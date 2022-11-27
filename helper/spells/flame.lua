@@ -21,6 +21,7 @@ function Helper.Spell.Flame:create(color, flamewidth, flameheight, damage, unit)
                 flameheight = flameheight,
                 damage = damage
             }
+            flame.directionx, flame.directiony = Helper.Spell:get_claimed_target_nearest_point(unit)
 
             if unit and unit.area_size_m then
                 flame.flamewidth = flame.flamewidth * unit.area_size_m
@@ -60,12 +61,11 @@ end
 function Helper.Spell.Flame:damage()
     for __, flame in ipairs(Helper.Spell.Flame.list) do
         for _, target in ipairs(Helper.Unit:get_list(not flame.unit.is_troop)) do
-            if Helper.Geometry:is_inside_triangle(target.x, target.y, Helper.Geometry:get_triangle_from_height_and_width(flame.unit.x, flame.unit.y, flame.unit.x + flame.directionx, flame.unit.y + flame.directiony, flame.flameheight, flame.flamewidth)) 
-            and Helper.Geometry:distance(flame.unit.x, flame.unit.y, flame.unit.claimed_target.x, flame.unit.claimed_target.y) < flame.flameheight then
-                target:hit(flame.damage, flame.unit)
-                HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
-                --for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = blue[0]} end
-                --for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
+            for ___, point in ipairs(target.points) do
+                if Helper.Geometry:is_inside_triangle(target.x + point.x, target.y + point.y, Helper.Geometry:get_triangle_from_height_and_width(flame.unit.x, flame.unit.y, flame.unit.x + flame.directionx, flame.unit.y + flame.directiony, flame.flameheight, flame.flamewidth)) 
+                and Helper.Geometry:distance(flame.unit.x, flame.unit.y, target.x + point.x, target.y + point.y) < flame.flameheight then
+                    Helper.Spell:register_damage_point(point, flame.unit, flame.damage)
+                end
             end
         end
     end
@@ -76,7 +76,8 @@ function Helper.Spell.Flame:update_direction()
         if flame.unit.have_target then
             local x = flame.unit.x + flame.directionx
             local y = flame.unit.y + flame.directiony
-            x, y = Helper.Geometry.rotate_to(flame.unit.x, flame.unit.y, x, y, flame.unit.claimed_target.x, flame.unit.claimed_target.y, 300)
+            local target_point_x, target_point_y = Helper.Spell:get_claimed_target_nearest_point(flame.unit)
+            x, y = Helper.Geometry.rotate_to(flame.unit.x, flame.unit.y, x, y, target_point_x, target_point_y, 300)
             flame.directionx = x - flame.unit.x
             flame.directiony = y - flame.unit.y
         end
