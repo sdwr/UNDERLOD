@@ -1,0 +1,13 @@
+controls:
+
+leftclick targets enemies and starts boxselect
+
+rightclick makes selected group follow cursor
+
+shift+rightclick creates rally point for selected group
+
+numbers 1,2,3 etc select control group (when SHIFT/CTRL not pressed!)
+ctrl+number creates/overwrites control group with selected units
+shift+number adds selected units to control group
+
+first x control groups are hardcoded to the x owned units

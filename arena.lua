@@ -298,13 +298,14 @@ function Arena:update(dt)
   LevelManager.update(dt)
 end
 
-function Arena:target_enemy(enemy)
-  if self.targetedEnemy then
-    self.targetedEnemy:untarget()
-  end
-  self.targetedEnemy = enemy
-  self.targetedEnemy:set_as_target()
-end
+--for old control code
+--function Arena:target_enemy(enemy)
+  --if self.targetedEnemy then
+    --self.targetedEnemy:untarget()
+  --end
+  --self.targetedEnemy = enemy
+  --self.targetedEnemy:set_as_target()
+--end
 
 
 function Arena:quit()

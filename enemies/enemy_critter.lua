@@ -106,6 +106,7 @@ function EnemyCritter:onDeath()
     if self.parent and self.parent.summons then
       self.parent.summons = self.parent.summons - 1
     end
+    self.death_function()
 end
 
 
