@@ -17,6 +17,12 @@ function Image:draw(x, y, r, sx, sy, ox, oy, color)
   if color then love.graphics.setColor(_r, g, b, a) end
 end
 
+function Image:drawItem(x,y,r,sx,sy,ox,oy,color)
+  local scalew = (ITEM_SIZE_W / self.w) * (sx or 1)
+  local scaleh = (ITEM_SIZE_H / self.h) * (sy or 1)
+  self:draw(x,y,r,scalew, scaleh,ox,oy,color)
+end
+
 
 
 
