@@ -266,7 +266,7 @@ function init()
   local d = 'newItems/'
   arrows = Image(d .. 'arrows')
   bear = Image(d .. 'bear')
-  bomb = Image(d .. 'bomb')
+  bomb = Image(d .. 'bomb2')
   boots = Image(d .. 'boots')
 
 
@@ -1148,9 +1148,9 @@ function init()
     ['medshield'] = curser,
     ['largeshield'] = curser,
 
-    ['smallbomb'] = magnify,
-    ['medbomb'] = magnify,
-    ['largebomb'] = magnify,
+    ['smallbomb'] = bomb,
+    ['medbomb'] = bomb,
+    ['largebomb'] = bomb,
 
     ['vampirism'] = hextouch,
     ['ghostboots'] = temporal_chains,

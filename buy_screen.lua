@@ -1455,7 +1455,7 @@ end
 
 function LooseItem:draw()
   if item_images[self.item] then
-    item_images[self.item]:drawItem(self.x, self.y, 0, 0.4, 0.4)
+    item_images[self.item]:drawFullRes(self.x, self.y, 0, 0.4, 0.4)
   end
 
 end
@@ -1556,7 +1556,7 @@ function ItemPart:draw(y)
     graphics.rectangle(self.x, self.y, 14, 14, 3, 3, item_to_color(self:getItem()))
     graphics.rectangle(self.x, self.y, 10, 10, 3, 3, bg[5])
     if item and not self.itemGrabbed and item_images[item] then
-      item_images[item]:drawItem(self.x, self.y, 0, 0.2, 0.2)
+      item_images[item]:drawFullRes(self.x, self.y, 0, 0.2, 0.2)
     end
     
     if self.colliding_with_mouse and buyScreen and not buyScreen.loose_inventory_item then
@@ -1962,7 +1962,7 @@ function ItemCard:draw()
     graphics.rectangle(self.x, self.y, self.w, self.h, 6,6, bg[5])
     --draw image
     if self.image then
-      self.image:drawItem(self.x, self.y)
+      self.image:drawFullRes(self.x, self.y)
     end
 
     --draw border
