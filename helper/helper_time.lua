@@ -8,7 +8,7 @@ Helper.Time.time = love.timer.getTime()
 
 Helper.Time.intervals = {}
 
-function Helper.Time:set_interval(delay, intervalfunction, number_of_loops)
+function Helper.Time:set_interval(delay, intervalfunction, number_of_loops, afterfunction)
     local id = -1
 
     for _, interval in ipairs(Helper.Time.intervals) do
@@ -24,6 +24,7 @@ function Helper.Time:set_interval(delay, intervalfunction, number_of_loops)
     
     local interval = {
         intervalfunction = intervalfunction,
+        afterfunction = afterfunction,
         startat = Helper.Time.time,
         delay = delay,
         looped = 1,
@@ -55,6 +56,9 @@ function Helper.Time:run_intervals()
             interval.looped = interval.looped + 1
             if interval.number_of_loops ~= -1 and interval.looped > interval.number_of_loops then
                 interval.stopped = true
+                if interval.afterfunction then 
+                    interval.afterfunction()
+                end
             end
         end
     end
