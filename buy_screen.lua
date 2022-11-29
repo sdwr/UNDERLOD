@@ -1958,15 +1958,12 @@ function ItemCard:draw()
   if self.item then
     graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
 
-    --draw background for transparent
     graphics.rectangle(self.x, self.y, self.w, self.h, 6,6, bg[5])
-    --draw image
+    graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, self.tier_color, 3)
     if self.image then
       self.image:drawFullRes(self.x, self.y)
     end
 
-    --draw border
-    graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, self.tier_color, 3)
 
     graphics.pop()
   end
