@@ -259,6 +259,17 @@ function init()
   divine_blessing = Image('divine_blessing')
   hardening = Image('hardening')
 
+  ITEM_SIZE_W = 40
+  ITEM_SIZE_H = 50
+  
+  --new items
+  local d = 'newItems/'
+  arrows = Image(d .. 'arrows')
+  bear = Image(d .. 'bear')
+  bomb = Image(d .. 'bomb2')
+  boots = Image(d .. 'boots')
+
+
   unit_states = {
     ['normal'] = 'normal',
     ['frozen'] = 'frozen',
@@ -1121,9 +1132,9 @@ function init()
     ['medsword'] = warrior,
     ['largesword'] = warrior,
 
-    ['smallboots'] = rogue,
-    ['medboots'] = rogue,
-    ['largeboots'] = rogue,
+    ['smallboots'] = boots,
+    ['medboots'] = boots,
+    ['largeboots'] = boots,
 
     ['smallbow'] = berserking,
     ['medbow'] = berserking,
@@ -1137,9 +1148,9 @@ function init()
     ['medshield'] = curser,
     ['largeshield'] = curser,
 
-    ['smallbomb'] = magnify,
-    ['medbomb'] = magnify,
-    ['largebomb'] = magnify,
+    ['smallbomb'] = bomb,
+    ['medbomb'] = bomb,
+    ['largebomb'] = bomb,
 
     ['vampirism'] = hextouch,
     ['ghostboots'] = temporal_chains,

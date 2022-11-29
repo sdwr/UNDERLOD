@@ -17,6 +17,28 @@ function Image:draw(x, y, r, sx, sy, ox, oy, color)
   if color then love.graphics.setColor(_r, g, b, a) end
 end
 
+-- hardcoded to item dimensions
+-- scales to monitor resolution and draws on a separate canvas on top of everything
+-- ox, oy aren't scaled properly
+function Image:drawFullRes(x,y,r,sx,sy,ox,oy,color)
+  
+  --hardcoded to only work on items :o
+  local scalew = (ITEM_SIZE_W / self.w) * (sx or 1)
+  local scaleh = (ITEM_SIZE_H / self.h) * (sy or 1)
+  --scale back from game res to full res
+  scalew = scalew * (ww/gw)
+  scaleh = scaleh * (wh/gh)
+  x = x * (ww/gw)
+  y = y * (wh/gh)
+  --havent fixed origin coord
+
+  --adds draw function to the table of draws (emptied every frame)
+  local drawFn = function()
+    self:draw(x,y,r,scalew, scaleh,ox,oy,color)
+  end
+  table.insert(full_res_draws, drawFn)
+end
+
 
 
 

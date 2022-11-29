@@ -1455,7 +1455,7 @@ end
 
 function LooseItem:draw()
   if item_images[self.item] then
-    item_images[self.item]:draw(self.x, self.y, 0, 0.2, 0.2)
+    item_images[self.item]:drawFullRes(self.x, self.y, 0, 0.4, 0.4)
   end
 
 end
@@ -1552,11 +1552,13 @@ function ItemPart:draw(y)
   if not self.parent.grabbed then
     graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
     local item = self.parent.unit.items[self.i]
+
     graphics.rectangle(self.x, self.y, 14, 14, 3, 3, item_to_color(self:getItem()))
     graphics.rectangle(self.x, self.y, 10, 10, 3, 3, bg[5])
     if item and not self.itemGrabbed and item_images[item] then
-      item_images[item]:draw(self.x, self.y, 0, 0.2, 0.2)
+      item_images[item]:drawFullRes(self.x, self.y, 0, 0.2, 0.2)
     end
+    
     if self.colliding_with_mouse and buyScreen and not buyScreen.loose_inventory_item then
       if not self.info_text then
         self:create_info_text()
@@ -1904,6 +1906,7 @@ function ItemCard:init(args)
 
   self.cost = item_costs[self.item]
   self.image = item_images[self.item]
+  
   self.tier_color = item_to_color(self.item)
   self.text = item_text[self.item]
   self.stats = item_stat_multipliers[self.item]
@@ -1954,11 +1957,13 @@ end
 function ItemCard:draw()
   if self.item then
     graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
+
     graphics.rectangle(self.x, self.y, self.w, self.h, 6,6, bg[5])
     graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, self.tier_color, 3)
     if self.image then
-      self.image:draw(self.x, self.y)
+      self.image:drawFullRes(self.x, self.y)
     end
+
 
     graphics.pop()
   end

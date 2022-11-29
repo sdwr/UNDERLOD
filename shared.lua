@@ -48,6 +48,8 @@ function shared_init()
   pixul_font = Font('PixulBrush', 8)
   background_canvas = Canvas(gw, gh)
   main_canvas = Canvas(gw, gh, {stencil = true})
+  full_res_canvas = Canvas(ww, wh)
+  full_res_draws = {}
   shadow_canvas = Canvas(gw, gh)
   shadow_shader = Shader(nil, 'shadow.frag')
   star_canvas = Canvas(gw, gh, {stencil = true})
@@ -56,7 +58,6 @@ function shared_init()
   for i = -30, gh + 30, 15 do table.insert(star_positions, {x = -40, y = i}) end
   for i = -30, gw, 15 do table.insert(star_positions, {x = i, y = gh + 40}) end
 end
-
 
 function shared_draw(draw_action)
   star_canvas:draw_to(function()
@@ -86,6 +87,15 @@ function shared_draw(draw_action)
     draw_action()
     if flashing then graphics.rectangle(gw/2, gh/2, gw, gh, nil, nil, flash_color) end
   end)
+  
+  full_res_canvas:draw_to(function()
+    if not IN_TRANSITION then
+      for i, drawFn in ipairs(full_res_draws) do
+        drawFn()
+      end
+    end
+    full_res_draws = {}
+  end)
 
   shadow_canvas:draw_to(function()
     graphics.set_color(white[0])
@@ -98,6 +108,7 @@ function shared_draw(draw_action)
   background_canvas:draw(x, y, 0, sx, sy)
   shadow_canvas:draw(x + 1.5*sx, y + 1.5*sy, 0, sx, sy)
   main_canvas:draw(x, y, 0, sx, sy)
+  full_res_canvas:draw(x, y)
 end
 
 
@@ -462,6 +473,7 @@ function TransitionEffect:init(args)
   self.rs = 0
   self.text_sx, self.text_sy = 0, 0
   self.t:after(0.25, function()
+    IN_TRANSITION = true
     self.t:after(0.1, function()
       self.t:tween(0.1, self, {text_sx = 1, text_sy = 1}, math.cubic_in_out)
     end)
@@ -492,6 +504,10 @@ function TransitionEffect:draw()
   graphics.circle(self.x, self.y, self.rs, self.color)
   graphics.pop()
   if self.text then self.text:draw(gw/2, gh/2, 0, self.text_sx, self.text_sy) end
+end
+
+function TransitionEffect:onDeath()
+  IN_TRANSITION = false
 end
 
 
