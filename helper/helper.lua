@@ -40,6 +40,7 @@ function Helper:draw()
 
     Helper.Graphics:draw_particles()
     Helper.Graphics:draw_inward_circles()
+    Helper.Graphics:draw_damage_numbers()
     Helper.Unit:draw_selection()
 
     Helper.Unit:draw_points()
@@ -79,6 +80,8 @@ function Helper:update(dt)
     Helper.Graphics:update_particles()
     --inward circles
     Helper.Graphics:update_inward_circles()
+    --damage numbers
+    Helper.Graphics:update_damage_numbers()
 
     Helper.Spell:damage_points();
 

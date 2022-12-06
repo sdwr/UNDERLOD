@@ -267,3 +267,74 @@ function Helper.Graphics:draw_inward_circles()
         end
     end
 end
+
+
+
+Helper.Graphics.damage_numbers = {}
+Helper.Graphics.fly_up_damage_numbers = false
+Helper.Graphics.show_damage_numbers = true
+
+function Helper.Graphics:create_damage_number(x, y, number, rotation)
+    if self.show_damage_numbers then
+        local damage_number_overlap = false
+        repeat
+            damage_number_overlap = false
+            for i, damage_number in ipairs(self.damage_numbers) do
+                if Helper.Geometry:is_inside_rectangle(x, y, damage_number.x - 7, damage_number.y - 7, damage_number.x + 7, damage_number.y + 7)
+                and Helper.Time.time - damage_number.start_time < 0.15 then
+                    damage_number_overlap = true
+                    break
+                end
+            end
+
+            if damage_number_overlap then
+                local add_positive_value = math.random(0, 1)
+                if add_positive_value == 0 then
+                    x = x - get_random(7, 10)
+                else
+                    x = x + get_random(7, 10)
+                end
+
+                add_positive_value = math.random(0, 1)
+                if add_positive_value == 0 then
+                    y = y - get_random(7, 10)
+                else
+                    y = y + get_random(7, 10)
+                end
+            end
+        until not damage_number_overlap
+
+        local damage_number = {
+            x = x,
+            y = y,
+            number = number,
+            start_time = Helper.Time.time,
+            rotation = rotation
+        }
+
+        table.insert(self.damage_numbers, damage_number)
+    end
+end
+
+function Helper.Graphics:update_damage_numbers()
+    for i = #self.damage_numbers, 1, -1 do
+        if self.fly_up_damage_numbers then
+            self.damage_numbers[i].y = self.damage_numbers[i].y - Helper.Time.delta_time * 18
+        end
+        if Helper.Time.time - self.damage_numbers[i].start_time > 1 then
+            table.remove(self.damage_numbers, i)
+        end
+    end
+end
+
+function Helper.Graphics:draw_damage_numbers()
+    for i, damage_number in ipairs(self.damage_numbers) do
+        local alpha = ((1 - (Helper.Time.time - damage_number.start_time)) * 3)
+        if alpha > 1 then
+            alpha = 1
+        end
+        alpha = alpha * 0.95
+        Helper.Color:set_color(Helper.Color:set_transparency(Helper.Color.red, alpha))
+        graphics.print_centered(tostring(damage_number.number), pixul_font, damage_number.x, damage_number.y, math.rad(damage_number.rotation))
+    end
+end

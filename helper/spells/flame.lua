@@ -77,7 +77,7 @@ function Helper.Spell.Flame:update_direction()
             local x = flame.unit.x + flame.directionx
             local y = flame.unit.y + flame.directiony
             local target_point_x, target_point_y = Helper.Spell:get_claimed_target_nearest_point(flame.unit)
-            x, y = Helper.Geometry.rotate_to(flame.unit.x, flame.unit.y, x, y, target_point_x, target_point_y, 300)
+            x, y = Helper.Geometry:rotate_to(flame.unit.x, flame.unit.y, x, y, target_point_x, target_point_y, 300)
             flame.directionx = x - flame.unit.x
             flame.directiony = y - flame.unit.y
         end

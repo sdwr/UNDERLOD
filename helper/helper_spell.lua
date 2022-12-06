@@ -203,6 +203,8 @@ function Helper.Spell:damage_points()
             if not is_in_list(counted_damage_source_unit, point_damage.damage_source_unit) then
                 table.insert(counted_damage_source_unit, point_damage.damage_source_unit)
                 unit:hit(point_damage.damage, point_damage.damage_source_unit)
+
+                Helper.Graphics:create_damage_number(point_damage.point.x + unit.x, point_damage.point.y + unit.y, point_damage.damage, 0);
             end
             local x = point_damage.point.unit.x + point_damage.point.x
             local y = point_damage.point.unit.y + point_damage.point.y

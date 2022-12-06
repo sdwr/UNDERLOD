@@ -173,7 +173,7 @@ function Helper.Geometry:get_angle(centerx, centery, x1, y1, x2, y2)
     return angle
 end
 
-function Helper.Geometry.rotate_to(centerx, centery, fromx, fromy, tox, toy, speed)
+function Helper.Geometry:rotate_to(centerx, centery, fromx, fromy, tox, toy, speed)
     local angle = Helper.Geometry:get_angle(centerx, centery, fromx, fromy, tox, toy)
     if angle > 0.25 and angle < 359.75 then
         if angle > 180 then
