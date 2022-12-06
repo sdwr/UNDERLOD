@@ -527,14 +527,14 @@ function Helper.Unit:start_rally_mark(x, y)
             rally_mark.color_marks = {Helper.Color.yellow}
         end
 
-        Helper.Graphics:create_inward_circle(rally_mark.x, rally_mark.y, 
+        Helper.Graphics:create_inward_circle(rally_mark, rally_mark.x, rally_mark.y, 
                                                 rally_mark.color_marks[1],
                                                 10, 5)
         rally_mark.interval_id = Helper.Time:set_interval(1.2, function()
             if rally_mark.current_color_mark_index > #rally_mark.color_marks then
                 rally_mark.current_color_mark_index = 1
             end
-            Helper.Graphics:create_inward_circle(rally_mark.x, rally_mark.y, 
+            Helper.Graphics:create_inward_circle(rally_mark, rally_mark.x, rally_mark.y, 
                                                 rally_mark.color_marks[rally_mark.current_color_mark_index],
                                                 10, 5)
             rally_mark.current_color_mark_index = rally_mark.current_color_mark_index + 1
@@ -554,6 +554,7 @@ function Helper.Unit:update_rally_marks()
         end
         if #self.rally_marks[i].units == 0 then
             Helper.Time:stop_interval(self.rally_marks[i].interval_id)
+            Helper.Graphics:delete_inward_circles(self.rally_marks[i])
             table.remove(self.rally_marks, i)
         end
     end
