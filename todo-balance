@@ -1,3 +1,9 @@
+design doc:
+https://docs.google.com/document/d/1h1HBBKpgfyQK8WC4L8NUQqK6oAXedDW6Qe8LG5zbEEI/edit
+
+unit balance:
+https://docs.google.com/spreadsheets/d/1QvwsmUMpfQ2xgpiHGV0wy-ooc-nnkyhdeTN2CoGGme8/edit#gid=0
+
 ------------
 GAMEPLAY TUNING:
 -------------
@@ -13,6 +19,20 @@ level 3
   - or save for a unit
 level 4
   ???
+
+possible troop x item costs:
+--------------------------
+Troop | 1 | 2 | 3 | 4 |
+------------------------
+  10    3   6   9   12
+
+  5     2   4   8   12
+
+whats the difference?
+the more expensive items, the more powerful they can be
+just king has 9 cost items and 3 cost units
+but also stacks units to lvl 3 = 5x unit cost
+maybe higher tier troops cost more?
 
 
 difficulty has to ramp faster

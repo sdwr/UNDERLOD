@@ -757,7 +757,7 @@ function Arena:gain_gold()
       end
     end
   end
-  self.gold_gained = random:int(level_to_gold_gained[self.level][1], level_to_gold_gained[self.level][2])
+  self.gold_gained = 5
 
   gold = gold + self.gold_gained + self.gold_picked_up + self.bonus_gold
 end

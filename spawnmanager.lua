@@ -103,6 +103,7 @@ end
 function Manage_Spawns(arena)
   
   -- Set win condition and enemy spawns
+  -- REDO THIS
   arena.win_condition = 'wave'
   arena.level_to_spawn_groups = {
     1, 2, 3, 3, 4, 0,

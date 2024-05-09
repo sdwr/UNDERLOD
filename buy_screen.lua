@@ -85,7 +85,7 @@ function BuyScreen:on_enter(from, level, loop, units, max_units, passives, shop_
   self.locked = locked_state and locked_state.locked
   LockButton{group = self.main, x = 205, y = 18, parent = self}
 
-  self:set_cards(self.shop_level, nil, true)
+  self:set_cards(self.shop_level, nil)
   self:set_party()
   self:set_items(self.shop_level)
 
@@ -380,12 +380,7 @@ function BuyScreen:gain_gold(amount)
 end
 
 
-function BuyScreen:set_cards(shop_level, dont_spawn_effect, first_call)
-  local first_run = nil
-  if not self.cards or #self.cards == 0 then first_run = true end
-  if first_run then
-    locked_state = nil
-  end
+function BuyScreen:set_cards(shop_level, dont_spawn_effect)
   if self.cards then for i = 1, 3 do if self.cards[i] then self.cards[i]:die(dont_spawn_effect) end end end
   self.cards = {}
   local all_units = {}
@@ -394,28 +389,15 @@ function BuyScreen:set_cards(shop_level, dont_spawn_effect, first_call)
   local unit_3
   local shop_level = shop_level or 1
   local tier_weights = level_to_shop_odds[shop_level]
-  if first_run then
-    unit_1 = random:table(first_run_tier_to_characters[random:weighted_pick(unpack(tier_weights))])
-    unit_2 = random:table(first_run_tier_to_characters[random:weighted_pick(unpack(tier_weights))])
-    unit_3 = random:table(first_run_tier_to_characters[random:weighted_pick(unpack(tier_weights))])
+  repeat 
+    unit_1 = random:table(tier_to_characters[random:weighted_pick(unpack(tier_weights))])
+    unit_2 = random:table(tier_to_characters[random:weighted_pick(unpack(tier_weights))])
+    unit_3 = random:table(tier_to_characters[random:weighted_pick(unpack(tier_weights))])
     all_units = {unit_1, unit_2, unit_3}
-  else
-    repeat 
-      unit_1 = random:table(tier_to_characters[random:weighted_pick(unpack(tier_weights))])
-      unit_2 = random:table(tier_to_characters[random:weighted_pick(unpack(tier_weights))])
-      unit_3 = random:table(tier_to_characters[random:weighted_pick(unpack(tier_weights))])
-      all_units = {unit_1, unit_2, unit_3}
-    until not table.all(all_units, function(v) return table.any(non_attacking_characters, function(u) return v == u end) end)
-  end
-  if first_call and locked_state then
-    if locked_state.cards[1] then self.cards[1] = ShopCard{group = self.main, x = 60, y = 75, w = 80, h = 90, unit = locked_state.cards[1], parent = self, i = 1} end
-    if locked_state.cards[2] then self.cards[2] = ShopCard{group = self.main, x = 140, y = 75, w = 80, h = 90, unit = locked_state.cards[2], parent = self, i = 2} end
-    if locked_state.cards[3] then self.cards[3] = ShopCard{group = self.main, x = 220, y = 75, w = 80, h = 90, unit = locked_state.cards[3], parent = self, i = 3} end
-  else
-    self.cards[1] = ShopCard{group = self.main, x = 60, y = 75, w = 80, h = 90, unit = unit_1, parent = self, i = 1}
-    self.cards[2] = ShopCard{group = self.main, x = 140, y = 75, w = 80, h = 90, unit = unit_2, parent = self, i = 2}
-    self.cards[3] = ShopCard{group = self.main, x = 220, y = 75, w = 80, h = 90, unit = unit_3, parent = self, i = 3}
-  end
+  until not table.all(all_units, function(v) return table.any(non_attacking_characters, function(u) return v == u end) end)
+  self.cards[1] = ShopCard{group = self.main, x = 60, y = 75, w = 80, h = 90, unit = unit_1, parent = self, i = 1}
+  self.cards[2] = ShopCard{group = self.main, x = 140, y = 75, w = 80, h = 90, unit = unit_2, parent = self, i = 2}
+  self.cards[3] = ShopCard{group = self.main, x = 220, y = 75, w = 80, h = 90, unit = unit_3, parent = self, i = 3}
 end
 
 
@@ -1231,7 +1213,7 @@ function RerollButton:update(dt)
         self.t:after(2, function() self.info_text:deactivate(); self.info_text.dead = true; self.info_text = nil end, 'info_text')
       else
         ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-        self.parent:set_cards(self.parent.shop_level, true)
+        self.parent:set_cards(self.parent.shop_level)
         self.parent:set_items(self.parent.shop_level)
         self.selected = true
         self.spring:pull(0.2, 200, 10)

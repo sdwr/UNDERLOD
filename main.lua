@@ -1124,17 +1124,10 @@ function init()
 
   --wizard sucks right now, stacks blizzard and takes too long to cast
   tier_to_characters = {
-    [1] = {'swordsman', 'pyro', 'cleric', 'laser'},
+    [1] = {'swordsman', 'laser'},
     [2] = {'shaman', 'paladin', 'priest', 'cannon', 'bomber'},
     [3] = {'sniper', 'necromancer', 'bard', 'druid'},
     [4] = {'juggernaut'},
-  }
-
-  first_run_tier_to_characters = {
-    [1] = {'swordsman', 'pyro', 'laser'},
-    [2] = {'shaman', 'cannon', 'laser', 'bomber'},
-    [3] = {'sniper'},
-    [4] = {'sniper'}
   }
 
   item_images = {
@@ -1611,44 +1604,6 @@ function init()
     [24] = {0, 10, 30, 60},
     [25] = {0, 0, 0, 100},
   }
-
-  level_to_gold_gained = {
-    [1] = {5, 5},
-    [2] = {5, 5},
-    [3] = {6, 7},
-    [4] = {5, 5},
-    [5] = {5, 8},
-    [6] = {8, 10},
-    [7] = {8, 10}, 
-    [8] = {12, 14},
-    [9] = {14, 18},
-    [10] = {10, 13},
-    [11] = {12, 15},
-    [12] = {18, 20},
-    [13] = {10, 14},
-    [14] = {12, 16},
-    [15] = {14, 18},
-    [16] = {12, 12},
-    [17] = {12, 12},
-    [18] = {20, 24}, 
-    [19] = {8, 12},
-    [20] = {10, 14}, 
-    [21] = {20, 28},
-    [22] = {32, 32},
-    [23] = {36, 36},
-    [24] = {48, 48},
-    [25] = {100, 100},
-  }
-
-  local k = 1
-  for i = 26, 5000 do
-    local n = i % 25
-    if n == 0 then
-      n = 25
-      k = k + 1
-    end
-    level_to_gold_gained[i] = {level_to_gold_gained[n][1]*k, level_to_gold_gained[n][2]*k}
-  end
 
   level_to_elite_spawn_weights = {
     [1] = {0},
