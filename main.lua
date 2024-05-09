@@ -264,10 +264,20 @@ function init()
   
   --new items
   local d = 'newItems/'
-  arrows = Image(d .. 'arrows')
-  bear = Image(d .. 'bear')
-  bomb = Image(d .. 'bomb2')
-  boots = Image(d .. 'boots')
+  arrows    = Image(d .. 'arrows')
+  bear      = Image(d .. 'bear')
+  bomb      = Image(d .. 'bomb')
+  boots     = Image(d .. 'boots')
+  bow       = Image(d ..'bow')
+  cactus    = Image(d ..'cactus')
+  cat       = Image(d .. 'cat2')
+  cauldron  = Image(d .. 'cauldron')
+  crystalball= Image(d ..'crystalball')
+  egg       = Image(d ..'egg')
+  gloves    = Image(d .. 'fingerlessgloves')
+  frostorb  = Image(d .. 'frostorb')
+  
+
 
 
   unit_states = {

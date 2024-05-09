@@ -1,0 +1,111 @@
+------------
+GAMEPLAY TUNING:
+-------------
+balance the starting gold curve
+level 1
+  - buy 1 unit
+level 2
+  - buy an item (or two?)
+  - or save for a unit
+level 3
+  - buy a unit (if you saved)
+  - or buy an item
+  - or save for a unit
+level 4
+  ???
+
+
+difficulty has to ramp faster
+level 1
+  -easy with any troop
+level 2
+  -first special enemy
+  -need some stats or good movement
+level 3+
+  - boring right now
+
+maybe set a "expected curve" for swordsman buying +dmg items every round
+  - then tune the enemies to that curve
+
+take out leveling the shop, just have a hidden level
+  - that increases with round
+
+take out leveling troops
+  - too confusing, overlaps with items too much
+  - too much to balance
+
+start with 1 unit per troop, buy additional up to cap?
+  - either always available for gold
+  - or as a shop item
+
+consider combining troops and items into one shop
+  - like HS battlegrounds, you can buy a unit or an item
+
+
+-------------
+GAMEPLAY THOUGHTS:
+--------------
+enemy summoners are too good, either kill them right away or lose to the summons
+rounds are too fast, multiple waves? 
+
+think about build variety:
+  tanky melee
+  squishy ranged
+  aoe vs single target
+  summoner
+
+also, what enemies require different builds?
+  non-piercing projectiles need tanks in front or shields
+  backline summoners/casters need sneaky assassin or sniper with targeting
+  spam/lots of enemies need AoE
+
+balance to facilitate:
+  give melee more hp/def
+  aoe should do less single-target dps
+
+
+make table of enemy hp vs unit damage 
+don't go blind into balancing
+make sure later waves have enough threats to be able to cast a few spells (can't kill every enemy at start)
+
+different enemy sizes
+
+how to make fun? 
+what does SNKRX do:
+
+  instant control - only two buttons
+  constant threat - lose a few units and the rest of the round is harder/impossible
+  difficulty scaling - starts easy, NG+
+  scaling within a game - first few levels are easy, difficulty spikes that require buying out
+
+  enemy variety
+    green infectors
+    white turrets
+    blue bombers
+  
+  have to react differently to enemy types
+
+  eye candy - lots of player effects
+    AoEs
+    critter spawns
+    chain attacks
+    homing missile
+
+  lots of player attacks happening in rhythms, enemy attacks are "burstier" (watch for a while, react suddenly to bomb/charge etc)
+
+  UNDERLOD is too chaotic, with 3/4 mortars you have to dodge too much
+
+
+  buy screen:
+    always something to look for (matching sets)
+    units start off simple, scale into "god units" (tier 4)
+    units combos (aura +attack speed, match damage types, global buffs)
+  
+to replicate in RTS game:
+
+  start out with slower units, slower paced fights
+  introduce special enemies gradually, have tiers of special units
+  multiple waves in round, increase tension/healing/setup
+
+  right click target? focus down with snipers
+
