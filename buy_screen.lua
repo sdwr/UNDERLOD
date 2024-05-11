@@ -28,8 +28,6 @@ function BuyScreen:on_exit()
   self.shop_text = nil
   self.party_text = nil
   self.items_text = nil
-  self.ng_text = nil
-  self.level_text = nil
   self.characters = nil
   self.sets = nil
   self.cards = nil
@@ -48,22 +46,10 @@ function BuyScreen:on_exit()
   self.level_button = nil
 end
 
-function BuyScreen:set_level_text()
-  local get_elite_str = function(lvl)
-    if (lvl == 6 or lvl == 11 or lvl == 16) then return ' (boss)'
-    else return '' end
-  end
-  if not self.level_text then
-    self.level_text = Text({{text = '[fg]Lv.' .. tostring(self.level) .. get_elite_str(self.level), font = pixul_font, alignment = 'center'}}, global_text_tags)
-  else
-    self.level_text:set_text({{text = '[fg]Lv.' .. tostring(self.level) .. get_elite_str(self.level), font = pixul_font, alignment = 'center'}})
-  end
-end
-
-
-function BuyScreen:on_enter(from, level, loop, units, max_units, passives, shop_level, shop_xp)
+function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, passives, shop_level, shop_xp)
   self.gameState = GameState({level = level, loop = loop, units = units, max_units = max_units, passives = passives, shop_level = shop_level, shop_xp = shop_xp})
   self.level = level
+  self.level_list = level_list
   self.loop = loop
   self.units = units
   self.max_units = max_units
@@ -71,6 +57,12 @@ function BuyScreen:on_enter(from, level, loop, units, max_units, passives, shop_
   self.shop_level = shop_level
   self.shop_xp = shop_xp
   camera.x, camera.y = gw/2, gh/2
+
+  --decide on enemies for every level here
+  --if this is the first level
+  if self.level == 1 or #self.level_list == 0 then
+    self.level_list = Build_Level_List(25)
+  end
 
   input:set_mouse_visible(true)
 
@@ -94,14 +86,13 @@ function BuyScreen:on_enter(from, level, loop, units, max_units, passives, shop_
   self.shop_text = Text({{text = '[wavy_mid, fg]shop [fg]- gold: [yellow]' .. gold, font = pixul_font, alignment = 'center'}}, global_text_tags)
   self.party_text = Text({{text = '[wavy_mid, fg]party ' .. tostring(#units) .. '/' .. tostring(self.max_units), font = pixul_font, alignment = 'center'}}, global_text_tags)
   self.items_text = Text({{text = '[wavy_mid, fg]items', font = pixul_font, alignment = 'center'}}, global_text_tags)
-  self.ng_text = Text({{text = '[fg]NG+' .. current_new_game_plus, font = pixul_font, alignment = 'center'}}, global_text_tags)
   local get_elite_str = function(lvl)
     if (lvl-(25*self.loop)) % 6 == 0 or lvl % 25 == 0 then return ' (elite)'
     elseif (lvl-(25*self.loop)) % 3 == 0 then return ' (hard)'
     else return '' end
   end
 
-  self:set_level_text()
+  LevelMap{group = self.main, x = 265, y = gh - 20, parent = self, level = self.level, loop = self.loop}
 
   RerollButton{group = self.main, x = 150, y = 18, parent = self}
   ArenaLevelButton{group = self.main, x = 225, y = gh - 20, parent = self}
@@ -181,7 +172,7 @@ function BuyScreen:on_enter(from, level, loop, units, max_units, passives, shop_
       self.max_units = 3
       main:add(BuyScreen'buy_screen')
       system.save_run()
-      main:go_to('buy_screen', 1, 0, {}, self.max_units, passives, 1, 0)
+      main:go_to('buy_screen', 1, self.level_list, 0, {}, self.max_units, passives, 1, 0)
     end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
   end, mouse_enter = function(b)
     b.info_text = InfoText{group = main.current.ui, force_update = true}
@@ -221,8 +212,6 @@ function BuyScreen:update(dt)
     if self.shop_text then self.shop_text:update(dt) end
     if self.party_text then self.party_text:update(dt) end
     if self.items_text then self.items_text:update(dt) end
-    if self.ng_text then self.ng_text:update(dt) end
-    if self.level_text then self.level_text:update(dt) end
   else
     self.ui:update(dt*slow_amount)
     self.tutorial:update(dt*slow_amount)
@@ -256,7 +245,7 @@ function BuyScreen:update(dt)
 end
 
 function BuyScreen:save_run()
-  system.save_run(self.level, self.loop, gold, self.units,  self.max_units, self.passives, self.shop_level, self.shop_xp, run_passive_pool, locked_state)
+  system.save_run(self.level, self.level_list, self.loop, gold, self.units,  self.max_units, self.passives, self.shop_level, self.shop_xp, run_passive_pool, locked_state)
 end
 
 
@@ -278,7 +267,6 @@ function BuyScreen:draw()
   self.main:draw()
   self.effects:draw()
   if self.items_text then self.items_text:draw(32, 145) end
-  if self.level_text then self.level_text:draw(265, gh - 20) end
 
   if self.unit_grabbed then
     local x, y = camera:get_mouse_position()
@@ -294,7 +282,6 @@ function BuyScreen:draw()
 
   if self.shop_text then self.shop_text:draw(64, 20) end
   if self.party_text then self.party_text:draw(328, 20) end
-  if current_new_game_plus > 0 then self.ng_text:draw(265, gh - 40) end
 
   if self.paused then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
   self.ui:draw()
@@ -582,7 +569,6 @@ function ArenaLevelButton:update(dt)
           self.parent.level = self.parent.level -1
         end
       end
-      self.parent:set_level_text()
       system.save_state()
       buyScreen:save_run()
     end
@@ -657,7 +643,7 @@ function RestartButton:update(dt)
       system.save_state()
       main:add(BuyScreen'buy_screen')
       system.save_run()
-      main:go_to('buy_screen', 1, 0, {}, self.max_units, passives, 1, 0)
+      main:go_to('buy_screen', 1, self.level_list, 0, {}, self.max_units, passives, 1, 0)
     end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
   end
 end
@@ -791,6 +777,85 @@ function HotbarButton:set_text(text)
   self.spring:pull(0.2, 200, 10)
 end
 
+LevelMap = Object:extend()
+LevelMap:implement(GameObject)
+function LevelMap:init(args)
+  self:init_game_object(args)
+  self.interact_with_mouse = false
+  self.shape = Rectangle(self.x, self.y, 200, 80)
+  self.text = Text({{text = '[fg]level map', font = pixul_font, alignment = 'center'}}, global_text_tags)
+  self.level = args.level
+  self.levels = {}
+
+
+  for i = 1, 5 do
+    local level = self.level + i - 1
+    if level < 25 then
+      table.insert(self.levels, 
+        LevelMapLevel{group = self.group, x = self.x - 50 + (i-1)*30, y = self.y - 20, 
+          line_color = fg[0],
+          fill_color = self.parent.level_list[i].color
+        })
+    end
+  end
+
+  self.level_connections = {}
+  for i = 1, #self.levels - 1 do
+    table.insert(self.level_connections, LevelMapConnection{group = self.group, x = self.levels[i].x + 15, y = self.levels[i].y, w = 20, h = 3, color = fg[1]})
+  end
+end
+
+function LevelMap:update(dt)
+  self:update_game_object(dt)
+end
+
+function LevelMap:draw()
+  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
+    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, self.selected and fg[0] or bg[1])
+    self.text:draw(self.x, self.y + 1, 0, 1, 1)
+  graphics.pop()
+end
+
+LevelMapLevel = Object:extend()
+LevelMapLevel:implement(GameObject)
+function LevelMapLevel:init(args)
+  self:init_game_object(args)
+  self.interact_with_mouse = true
+  self.shape = Circle(self.x, self.y, 10, 3)
+  self.line_color = args.color
+  self.fill_color = args.fill_color
+end
+
+function LevelMapLevel:update(dt)
+  self:update_game_object(dt)
+end
+
+function LevelMapLevel:draw()
+  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
+    graphics.circle(self.x, self.y, 10, self.line_color, 3)
+    graphics.circle(self.x, self.y, 8, self.fill_color)
+  graphics.pop()
+end
+
+
+LevelMapConnection = Object:extend()
+LevelMapConnection:implement(GameObject)
+function LevelMapConnection:init(args)
+  self:init_game_object(args)
+  self.interact_with_mouse = true
+  self.shape = Rectangle(self.x, self.y, args.w, args.h)
+  self.color = args.color
+end
+
+function LevelMapConnection:update(dt)
+  self:update_game_object(dt)
+end
+
+function LevelMapConnection:draw()
+  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
+    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, self.color)
+  graphics.pop()
+end
 
 
 
@@ -918,7 +983,7 @@ function GoButton:update(dt)
       buyScreen:save_run()
       TransitionEffect{group = main.transitions, x = self.x, y = self.y, color = state.dark_transitions and bg[-2] or character_colors[random:table(self.parent.units).character], transition_action = function()
         main:add(Arena'arena')
-        main:go_to('arena', self.parent.level, self.parent.loop, self.parent.units, self.parent.max_units, self.parent.passives, self.parent.shop_level, self.parent.shop_xp, self.parent.locked)
+        main:go_to('arena', self.parent.level, self.parent.level_list, self.parent.loop, self.parent.units, self.parent.max_units, self.parent.passives, self.parent.shop_level, self.parent.shop_xp, self.parent.locked)
       end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']level ' .. tostring(self.parent.level) .. '/' .. tostring(25*(self.parent.loop+1)), font = pixul_font, alignment = 'center'}}, global_text_tags)}
     end
 

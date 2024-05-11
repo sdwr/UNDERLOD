@@ -8,6 +8,7 @@ require 'player'
 require 'media'
 require 'helper/helper'
 require 'spawnmanager'
+require 'levelmanager'
 require 'enemies/level_manager'
 require 'enemies/enemy_includes'
 require 'util/fpscounter'
@@ -1577,6 +1578,69 @@ function init()
     [5] = 40,
   }
 
+  level_to_round_power = {
+    [1] = 100,
+    [2] = 300,  -- Base round
+    [3] = 450,  -- 1.5x base of 300
+    [4] = 600,  -- 2x base of 300
+    [5] = 800,  -- Next round base
+    [6] = 1200, -- 1.5x base of 800
+    [7] = 1600, -- 2x base of 800
+    [8] = 2000, -- Next round base
+    [9] = 3000, -- 1.5x base of 2000
+    [10] = 4000, -- 2x base of 2000
+    [11] = 5000, -- Next round base
+    [12] = 7500, -- 1.5x base of 5000
+    [13] = 10000,-- 2x base of 5000
+    [14] = 11000, -- Next round base
+    [15] = 16500, -- 1.5x base of 11000
+    [16] = 22000, -- 2x base of 11000
+    [17] = 20000, -- Next round base
+    [18] = 30000, -- 1.5x base of 20000
+    [19] = 40000, -- 2x base of 20000
+    [20] = 35000, -- Next round base
+    [21] = 52500, -- 1.5x base of 35000
+    [22] = 70000, -- 2x base of 35000
+    [23] = 50000, -- Next round base
+    [24] = 75000, -- 1.5x base of 50000
+    [25] = 100000 -- 2x base of 50000
+  }
+
+  normal_enemies = {
+    'shooter',
+    'seeker',
+  }
+
+  normal_enemy_to_round_power = {
+    --regular enemies
+    ['shooter'] = 100,
+    ['seeker'] = 100,
+  }
+  special_enemy_to_round_power = {
+    --special enemies t1
+    ['rager'] = 300,
+    ['stomper'] = 300,
+    --special enemies t2
+    ['mortar'] = 500,
+    ['spawner'] = 500,
+    ['arcspread'] = 500,
+    --special enemies t3
+    ['summoner'] = 1000,
+    ['assassin'] = 1000,
+  }
+
+  enemy_to_color = {
+    ['shooter'] = grey[0],
+    ['seeker'] = grey[0],
+    ['rager'] = red[3],
+    ['stomper'] = red[3],
+    ['mortar'] = orange[3],
+    ['spawner'] = orange[3],
+    ['arcspread'] = blue[3],
+    ['summoner'] = purple[3],
+    ['assassin'] = purple[3],
+  }
+
   level_to_tier_weights = {
     [1] = {90, 10, 0, 0},
     [2] = {80, 15, 5, 0},
@@ -2012,7 +2076,7 @@ function open_options(self)
           main:add(BuyScreen'buy_screen')
           locked_state = nil
           system.save_run()
-          main:go_to('buy_screen', 1, 0, {}, max_units, passives, 1, 0, max_units)
+          main:go_to('buy_screen', 1, {}, 0, {}, max_units, passives, 1, 0, max_units)
         end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
       end}
     end

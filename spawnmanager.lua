@@ -100,49 +100,60 @@ function Spawn_Troops(arena)
   end
 end
 
+
+function Spawn_Wave(arena, wave)
+  print("starting spawn wave", wave)
+  local wave_index = 1
+  local current_group = 1
+  arena.t:every(arena.time_between_spawn_groups, function()
+    current_group = current_group % #SpawnGlobals.spawn_markers
+    --hardcoded normal enemy types instead of searching for them
+    if wave[wave_index] == 'shooter' or wave[wave_index] == 'seeker' then
+      print("trying to spawn group", wave[wave_index], wave_index)
+      Spawn_Group(arena, current_group, wave[wave_index])
+    else
+      print("trying to spawn special", wave[wave_index], wave_index)
+      Spawn_Enemy(arena, wave[wave_index], SpawnGlobals.spawn_markers[current_group])
+    end
+
+    current_group = current_group + 1
+    wave_index = wave_index + 1
+  end, #wave)
+end
+
 function Manage_Spawns(arena)
   
   -- Set win condition and enemy spawns
   -- REDO THIS
   arena.win_condition = 'wave'
-  arena.level_to_spawn_groups = {
-    1, 2, 3, 3, 4, 0,
-    3, 4, 5, 5, 0,
-    3, 4, 5, 6, 0,
-  }
 
-  arena.level_to_rare_groups = {
-    0, 1, 1, 2, 2, 0,
-    1, 2, 3, 3, 0,
-    3, 3, 4, 4, 0,
-  }
 
-  arena.level_to_minibosses = {
-    0, 0, 0, 0, 0, 0,
-    1, 0, 0, 1, 0,
-    0, 1, 1, 1, 0,
-  }
+  arena.boss_levels = {6, 11, 16, 21, 25}
 
+  -- set arena specific values
   arena.spawns_in_group = 4
 
   arena.max_waves = 1
-  arena.wave = 0
+  arena.wave = 1
 
   arena.entry_delay = 0.5
 
   arena.time_between_spawn_groups = 1.5
   arena.time_between_spawns = 0.2
 
+  arena.time_between_waves = 8
+
   arena.start_time = 3
   arena.spawning_enemies = true
+
+  arena.enemypower = (1 + 0.15) ^ (arena.level)
+
   arena.t:after(arena.entry_delay, function()
-    --spawn miniboss
-    if arena.level_to_minibosses[arena.level] == 1 then
-      Spawn_Enemy(arena, {'bigstomper'}, SpawnGlobals.spawn_markers[6])
-    end
-    arena.wave = arena.wave + 1
+    -- --spawn miniboss
+    --   Spawn_Enemy(arena, {'bigstomper'}, SpawnGlobals.spawn_markers[6])
+    -- arena.wave = arena.wave + 1
     --spawn boss
-    if arena.level == 6 or arena.level == 11 or arena.level == 16 or arena.level == 21 or arena.level == 25 then
+    if table.contains(arena.boss_levels, arena.level) then
       local boss_name = nil
       SpawnMarker{group = arena.effects, x = SpawnGlobals.boss_spawn_point.x, y = SpawnGlobals.boss_spawn_point.y}
       if arena.level == 6 then
@@ -160,32 +171,15 @@ function Manage_Spawns(arena)
       arena.t:after(1.5, function() Spawn_Boss(arena, boss_name) end)
 
     else
-      --spawn waves
-
-      local num_groups = arena.level_to_spawn_groups[arena.level]
-      local num_rares = arena.level_to_rare_groups[arena.level]
-      
-      local current_group = 1
-      arena.t:every(arena.time_between_spawn_groups, function()
-        current_group = current_group % #SpawnGlobals.spawn_markers
-        --spawns new group every delay, doesn't wait for group before to finish
-        --make sure time_between_spawns * spawns_in_group < time_between_spawn_groups
-        if current_group <= num_rares then
-          if arena.level < 6 then
-            Spawn_Enemies(arena, current_group, {'rager', 'stomper'})
-          elseif arena.level < 11 then
-            Spawn_Enemies(arena, current_group, {'mortar', 'spawner', 'arcspread'})
-          elseif arena.level < 16 then
-            Spawn_Enemies(arena, current_group, {'summoner', 'mortar', 'assassin', 'spawner', 'arcspread'})
-          end
-          --Spawn_Enemies(arena, current_group, {'summoner', 'spawner'})
-          --Spawn_Enemies(arena, current_group, {'mortar', 'laser', 'spread'})
-          --Spawn_Enemies(arena, current_group, {'stomper', 'mortar', 'assassin', 'summoner', 'laser', 'spawner'})
-        else
-          Spawn_Enemies(arena, current_group, {'shooter', 'seeker'})
-        end
-        current_group = current_group + 1
-      end, num_groups)
+      local waves = Decide_on_Spawns(arena.level)
+      print(waves)
+      print(#waves)
+      arena.max_waves = #waves
+      --also need to spawn a wave early each time the previous wave is defeated
+      arena.t:every(arena.time_between_waves, function()
+        Spawn_Wave(arena, waves[arena.wave])
+        arena.wave = arena.wave + 1
+      end, arena.max_waves)
     end
 
     --check for level end
@@ -232,17 +226,16 @@ function Spawn_Boss(arena, name)
   SetSpawning(arena, false)
 end
 
-function Spawn_Enemy(arena, enemies, location)
+function Spawn_Enemy(arena, type, location)
   Spawn_Effect(arena, location)
   alert1:play{pitch = 1, volume = 0.8}
-  local type = random:table(enemies)
   if Can_Spawn(6, location) then
     Enemy{type = type, group = arena.main, x = location.x, y = location.y, level = arena.level}
   end
 
 end
 
-function Spawn_Enemies(arena, group_index, enemies)
+function Spawn_Group(arena, group_index, type)
   --set twice because of initial delay
   arena.spawning_enemies = true
 
@@ -254,7 +247,7 @@ function Spawn_Enemies(arena, group_index, enemies)
     local offset = SpawnGlobals.spawn_offsets[index]
     local spawn_x, spawn_y = spawn_marker.x + offset.x, spawn_marker.y + offset.y
 
-    Spawn_Enemy(arena, enemies, {x = spawn_x, y = spawn_y})
+    Spawn_Enemy(arena, type, {x = spawn_x, y = spawn_y})
 
     index = index+1
   end, arena.spawns_in_group, function() SetSpawning(arena, false) end)
