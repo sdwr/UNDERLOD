@@ -661,7 +661,6 @@ function InfoText:draw()
   graphics.pop()
 end
 
-
 function InfoText:activate(text, ox, oy, sx, sy, ow, oh, tox, toy)
   self.ox, self.oy = ox or 0, oy or 0
   self.sx, self.sy = sx or 1, sy or 1

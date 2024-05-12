@@ -64,9 +64,19 @@ consider combining troops and items into one shop
 --------------
 BALATRO PROGRESSION:
 
-round power
-300 450 600
+round power:
+1 1.5 2
+300
+800
+2000
+5000
+11000
+20000
+35000
+50000
 
+
+rewards:
 $5 base + $0-3 bonus
 
 shop screen:
@@ -94,6 +104,96 @@ and the curve is:
   - mid game, lock in a strategy
   - round out the jokers, start w/ arcana and planets
 
+---------------
+the key to the jokers is that they combine in emergent ways
+more interesting than +dmg, +hp
+the dimensions are:
+ - +stat vs +mult
+ - buff hand vs buff card
+ - econ cards
+ - build score over time
+ - plus some randos that break the game
+
+underlod item dimensions could be:
+ - +hp vs +attack? meh
+ - +atk vs +aspd? kinda works if there are real reasons to pick 1
+  - ex attack triggers 1 time bonus that does/doesn't stack
+    - heal to nearby allies
+    - poison target
+    - mark target for death, explode on death
+- elemental damage?
+
+should stay away from flat buffs like +20% aoe
+boring and polarizing - either good or bad
+
+items in tiers
+but even low tier items are crazy good
+high tier is just insane
+
+if t1 items are too good, strat is load up on t1s right away
+kinda good gameplay
+
+what should the base power be for a t1 item?
+we want to be able to buy 1 or 2 items on round 2
+then 1 or 2 per round until we level up/get new char
+
+to feel meaningful, they should be 30-50% multiplicative boost
+
+too much overlap b/t items and characters?
+could reduce characters to basic warrior/archer/mage
+and put the whole build in the items
+would mean having items act as weapons as well
+probably better to still have characters
+
+should items stack with each other?
+  -slow from ice orb chains on maelstrom proc
+yes: more item interaction
+no: turns into stack everything mash
+
+how does tiny rogues do trait combination?
+traits stack like crazy, but only within their domain
+there are pet traits
+and stat traits
+and proc traits
+and they mostly interact only within their realm
+but a few cross over to keep you thinking
+
+how to apply that to items?
+
+------------
+ITEM IDEAS:
+------------
+- 20% dmg, slow on hit
+  - good with aspd, good on ranged
+
+- flat lightning damage on hit, chains
+  - good with aspd, good early
+
+- mark for death, enemy explodes if killed in 5seconds (and/or takes +dmg)
+  - good mixin, good with aoe
+
+- heart of gold, +hp +gold
+  - econ choice, reference
+
+- radiance, burn aura (+shield every few seconds?)
+  - aoe, good on melee
+
+- bloodlust, mspd and aspd at start of round
+  - good with burst
+
+- 20% aspd, 10% range
+  - good lategame, good on ranged, can still use on melee
+
+- flat heal to nearby ally/aoe on hit
+  - good early
+
+- % vamp heal to self on hit
+  - sustain, scales
+
+- 15% mspd, phasing(??)
+
+
+- potions that are 1-round only?
 
 -------------
 GAMEPLAY THOUGHTS:

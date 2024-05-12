@@ -1,3 +1,29 @@
+--------------
+NEW FEATURE PLAN:
+
+get the playthrough to be fun:
+  - v2 items
+    - powerful and flashy from the start
+    - need a robust system for item effects in combat
+      - +stats is easy and done
+      - now +effects
+        - auras
+        - on-hit (crit, slow, freeze, etc)
+        - on-death (explode, heal, revive)
+        - on-cast (double cast, aoe, etc)
+        - on-take-damage (shield, heal, etc)
+        - on-kill (heal, buff, etc)
+
+  - finish level map
+    - hover over to see level effects
+    - fix change level 
+      (performance hit, update buttons instead of destroy/create)
+    
+  - add level modifiers (maybe don't need, overlaps with special enemies)
+    - berserk
+    - infected
+    - shielded
+    - capture point
 
 -------------
 BUGS:
@@ -11,6 +37,7 @@ combat:
   safety dance doesn't damage every time
   ghost units stack ontop of each other
   critters arent affected by slow
+  basher doesn't work (black circle)
   buffs with same name don't stack properly (first amt gets duration refreshed)
   buffs aren't the right size on all units (hidden under square, too big around rect)
 

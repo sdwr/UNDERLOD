@@ -86,13 +86,14 @@ function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, pas
   self.shop_text = Text({{text = '[wavy_mid, fg]shop [fg]- gold: [yellow]' .. gold, font = pixul_font, alignment = 'center'}}, global_text_tags)
   self.party_text = Text({{text = '[wavy_mid, fg]party ' .. tostring(#units) .. '/' .. tostring(self.max_units), font = pixul_font, alignment = 'center'}}, global_text_tags)
   self.items_text = Text({{text = '[wavy_mid, fg]items', font = pixul_font, alignment = 'center'}}, global_text_tags)
-  local get_elite_str = function(lvl)
-    if (lvl-(25*self.loop)) % 6 == 0 or lvl % 25 == 0 then return ' (elite)'
-    elseif (lvl-(25*self.loop)) % 3 == 0 then return ' (hard)'
-    else return '' end
+
+
+  self.build_level_map = function(self)
+    if self.level_map then self.level_map:die() end
+    self.level_map = BuildLevelMap(self.main, 265, gh - 20, self, self.level, self.loop, self.level_list)
   end
 
-  LevelMap{group = self.main, x = 265, y = gh - 20, parent = self, level = self.level, loop = self.loop}
+  self:build_level_map()
 
   RerollButton{group = self.main, x = 150, y = 18, parent = self}
   ArenaLevelButton{group = self.main, x = 225, y = gh - 20, parent = self}
@@ -564,9 +565,11 @@ function ArenaLevelButton:update(dt)
     if self.selected and input.m1.pressed then
       if self.up then
         self.parent.level = self.parent.level + 1
+        self.parent.level_map:reset()
       else
         if self.parent.level > 1 then
           self.parent.level = self.parent.level -1
+          self.parent.level_map:reset()
         end
       end
       system.save_state()
@@ -785,22 +788,35 @@ function LevelMap:init(args)
   self.shape = Rectangle(self.x, self.y, 200, 80)
   self.text = Text({{text = '[fg]level map', font = pixul_font, alignment = 'center'}}, global_text_tags)
   self.level = args.level
-  self.levels = {}
+  self.parent = args.parent
+  self.level_list = args.level_list
 
+  self:build()
+end
+
+function LevelMap:build()
+  self.levels = {}
+  self.level_connections = {}
+  self.level = self.parent.level
 
   for i = 1, 5 do
     local level = self.level + i - 1
     if level < 25 then
       table.insert(self.levels, 
-        LevelMapLevel{group = self.group, x = self.x - 50 + (i-1)*30, y = self.y - 20, 
-          line_color = fg[0],
-          fill_color = self.parent.level_list[i].color
+        LevelMapLevel{group = self.group, x = self.x - 60 + (i-1)*30, y = self.y - 20, 
+        line_color = (level == self.level) and yellow[2] or fg[0],
+        fill_color = self.parent.level_list[level].color,
+        level = level,
+        parent = self
         })
     end
   end
 
   self.level_connections = {}
   for i = 1, #self.levels - 1 do
+    if i == 1 and self.level > 1 then
+      table.insert(self.level_connections, LevelMapConnection{group = self.group, x = self.levels[i].x - 15, y = self.levels[i].y, w = 20, h = 3, color = fg[1]})
+    end
     table.insert(self.level_connections, LevelMapConnection{group = self.group, x = self.levels[i].x + 15, y = self.levels[i].y, w = 20, h = 3, color = fg[1]})
   end
 end
@@ -816,14 +832,35 @@ function LevelMap:draw()
   graphics.pop()
 end
 
+function LevelMap:clear()
+  for _, level in ipairs(self.levels) do
+    level:die()
+  end
+  for _, connection in ipairs(self.level_connections) do
+    connection:die()
+  end
+end
+
+function LevelMap:reset()
+  self:clear()
+  self:build()
+end
+
+function LevelMap:die()
+  self:clear()
+  self.dead = true
+end
+
 LevelMapLevel = Object:extend()
 LevelMapLevel:implement(GameObject)
 function LevelMapLevel:init(args)
   self:init_game_object(args)
   self.interact_with_mouse = true
   self.shape = Circle(self.x, self.y, 10, 3)
-  self.line_color = args.color
+  self.line_color = args.line_color
   self.fill_color = args.fill_color
+  self.level = args.level
+  self.parent = args.parent
 end
 
 function LevelMapLevel:update(dt)
@@ -832,9 +869,30 @@ end
 
 function LevelMapLevel:draw()
   graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
+    graphics.circle(self.x, self.y, 9, self.fill_color)
     graphics.circle(self.x, self.y, 10, self.line_color, 3)
-    graphics.circle(self.x, self.y, 8, self.fill_color)
+    graphics.print_centered(self.level, pixul_font, self.x, self.y +2, 0, 1, 1, 0, 0, (self.level == self.parent.level) and yellow[2] or fg[0])
   graphics.pop()
+end
+
+function LevelMapLevel:on_mouse_enter()
+  ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
+  pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+  self.selected = true
+  self.spring:pull(0.2, 200, 10)
+  self.level_text = BuildLevelText(self.parent.level_list, 
+    self.level, 260, gh - 80)
+end
+
+function LevelMapLevel:on_mouse_exit()
+  self.level_text:deactivate()
+  self.level_text.dead = true
+  self.level_text = nil
+  self.selected = false
+end
+
+function LevelMapLevel:die()
+  self.dead = true
 end
 
 
@@ -855,6 +913,10 @@ function LevelMapConnection:draw()
   graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
     graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, self.color)
   graphics.pop()
+end
+
+function LevelMapConnection:die()
+  self.dead = true
 end
 
 

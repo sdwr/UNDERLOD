@@ -2,6 +2,7 @@ require 'engine'
 require 'shared'
 require 'arena'
 require 'mainmenu'
+require 'buy_screen_utils'
 require 'buy_screen'
 require 'objects'
 require 'player'
@@ -1208,6 +1209,12 @@ function init()
   }
 
   item_stat_multipliers = {
+    ['frostorb'] = {slow = 0.2, dmg = 0.25},
+    ['heartofgold'] = {gold = 1, hp = 0.2},
+    ['basher'] = {bash = 0.2, dmg = 0.25},
+    ['medbow'] = {aspd = 0.3},
+
+    
     ['smallsword'] = {dmg = 0.25},
     ['medsword'] = {dmg = 0.5},
     ['largesword'] = {dmg = 0.75},
@@ -1217,16 +1224,7 @@ function init()
     ['largeboots'] = {mvspd = 0.3},
 
     ['smallbow'] = {aspd = 0.2},
-    ['medbow'] = {aspd = 0.3},
     ['largebow'] = {aspd = 0.4},
-
-    ['smallvest'] = {hp = 0.2},
-    ['medvest'] = {hp = 0.35},
-    ['largevest'] = {hp = 0.5},
-
-    ['smallshield'] = {def = 0.2},
-    ['medshield'] = {def = 0.35},
-    ['largeshield'] = {def = 0.5},
 
     ['smallbomb'] = {area_size = 0.2},
     ['medbomb'] = {area_size = 0.3},
@@ -1234,11 +1232,8 @@ function init()
 
     ['vampirism'] = {vamp = 0.1},
     ['ghostboots'] = {mvspd = 0.1, ghost = 1},
-    ['frostorb'] = {slow = 0.2, aspd = 0.2},
     ['spikedcollar'] = {thorns = 0.1, hp = 0.2},
-    ['basher'] = {bash = 0.2, dmg = 0.25},
     ['berserkerbelt'] = {enrage = 1},
-    ['heartofgold'] = {gold = 1, hp = 0.2},
     ['healingleaf'] = {heal = 0.02, aspd = 0.1},
     
     ['corpseexplode'] = {explode = 1, dmg = 0.2},
@@ -1276,14 +1271,6 @@ function init()
     ['medbow'] = "Medium bow",
     ['largebow'] = "Large bow!",
 
-    ['smallvest'] = "Small vest",
-    ['medvest'] = "Medium vest",
-    ['largevest'] = "Large vest!",
-
-    ['smallshield'] = "Small shield",
-    ['medshield'] = "Medium shield",
-    ['largeshield'] = "Large shield!",
-
     ['smallbomb'] = "Small bomb",
     ['medbomb'] = "Medium bomb",
     ['largebomb'] = "Large bomb",
@@ -1301,16 +1288,10 @@ function init()
   }
 
   tier_to_items = {
-    [1] = {'smallsword', 'smallboots', 'smallbow', 'smallvest', 'smallshield',
-           'smallbomb'},
-    [2] = {'medsword', 'medboots', 'medbow', 'medvest', 'medshield',
-           'medbomb', 'vampirism', 'ghostboots', 'frostorb', 'spikedcollar',
-           'basher', 'berserkerbelt', 'heartofgold', 'healingleaf'},
-    [3] = {'largesword', 'largeboots', 'largebow', 'largevest', 'largeshield',
-           'largebomb',
-          
-          'corpseexplode'},
-    [4] = {'largesword'},
+    [1] = {'frostorb', 'heartofgold', 'basher', 'medbow'},
+    [2] = {},
+    [3] = {},
+    [4] = {},
   }
 
   build_item_text = function(item)

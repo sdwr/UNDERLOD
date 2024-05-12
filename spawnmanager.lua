@@ -142,6 +142,7 @@ function Manage_Spawns(arena)
   arena.time_between_spawns = 0.2
 
   arena.time_between_waves = 8
+  arena.time_between_next_wave_check = 2
 
   arena.start_time = 3
   arena.spawning_enemies = true
@@ -175,10 +176,27 @@ function Manage_Spawns(arena)
       print(waves)
       print(#waves)
       arena.max_waves = #waves
-      --also need to spawn a wave early each time the previous wave is defeated
-      arena.t:every(arena.time_between_waves, function()
-        Spawn_Wave(arena, waves[arena.wave])
-        arena.wave = arena.wave + 1
+      --spawn first wave right off the bat
+      Spawn_Wave(arena, waves[arena.wave])
+      arena.wave = arena.wave + 1
+
+      --then launch a timer that spawns waves
+      --after the previous wave is done
+      --or after a certain amount of time
+      arena.time_until_next_wave = arena.time_between_waves
+      arena.t:every(arena.time_between_next_wave_check, function()
+        --quit if we're done
+        if arena.wave > arena.max_waves or arena.quitting then return end
+        --tick timer towards 0
+        arena.time_until_next_wave = arena.time_until_next_wave - arena.time_between_next_wave_check
+
+        --if timer is up or all enemies are dead, spawn next wave
+        if arena.time_until_next_wave <= 0 or #arena.main:get_objects_by_classes(arena.enemies) <= 0 then
+          Spawn_Wave(arena, waves[arena.wave])
+          arena.wave = arena.wave + 1
+          arena.time_until_next_wave = arena.time_between_waves
+        end
+        
       end, arena.max_waves)
     end
 
