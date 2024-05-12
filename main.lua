@@ -1,7 +1,9 @@
 require 'engine'
 require 'shared'
+require 'game_constants'
 require 'arena'
 require 'mainmenu'
+require 'items'
 require 'buy_screen_utils'
 require 'buy_screen'
 require 'objects'
@@ -1197,11 +1199,11 @@ function init()
 
     ['vampirism'] = 6,
     ['ghostboots'] = 6,
-    ['frostorb'] = 6,
+    ['frostorb'] = 5,
     ['spikedcollar'] = 6,
-    ['basher'] = 6,
-    ['berserkerbelt'] = 6,
-    ['heartofgold'] = 6,
+    ['basher'] = 5,
+    ['berserkerbelt'] = 5,
+    ['heartofgold'] = 5,
     ['healingleaf'] = 6,
 
     ['corpseexplode'] = 10,
@@ -1212,9 +1214,16 @@ function init()
     ['frostorb'] = {slow = 0.2, dmg = 0.25},
     ['heartofgold'] = {gold = 1, hp = 0.2},
     ['basher'] = {bash = 0.2, dmg = 0.25},
-    ['medbow'] = {aspd = 0.3},
+    ['medbow'] = {aspd = 0.2, proc = {
+      type = 'lightning',
+      trigger = 'on_hit',
+      dmg = 10,
+      chain = 4,
+      every_attacks = 4,
+      attacks_left = 4,
+    }},
 
-    
+
     ['smallsword'] = {dmg = 0.25},
     ['medsword'] = {dmg = 0.5},
     ['largesword'] = {dmg = 0.75},
@@ -1256,6 +1265,8 @@ function init()
     ['gold'] = 'gold per round',
     ['heal'] = 'healing per second',
     ['explode'] = 'explode on kill',
+
+    ['proc'] = 'Extra effect on attack',
   }
 
   item_text = {
@@ -1268,7 +1279,7 @@ function init()
     ['largeboots'] = "Large boots!",
 
     ['smallbow'] = "Small bow",
-    ['medbow'] = "Medium bow",
+    ['medbow'] = "Medium lightning bow",
     ['largebow'] = "Large bow!",
 
     ['smallbomb'] = "Small bomb",
@@ -1306,6 +1317,8 @@ function init()
           text = '[fg] ' .. val .. ' ' .. (item_stat_lookup[key] or '')
         elseif key == 'enrage' or key =='ghost' then
           text = '[fg] ' .. (item_stat_lookup[key] or '')
+        elseif key == 'proc' then
+          text = '[fg]' .. 'custom proc... add later'
         else
           text = '[fg] ' .. val * 100 .. '% ' .. (item_stat_lookup[key] or '')
         end
@@ -1837,7 +1850,7 @@ function init()
   if not state.new_game_plus then state.new_game_plus = new_game_plus end
   current_new_game_plus = state.current_new_game_plus or new_game_plus
   if not state.current_new_game_plus then state.current_new_game_plus = current_new_game_plus end
-  max_units = 3
+  max_units = MAX_UNITS
 
   main_song_instance = silence:play{volume = 0.5}
   main = Main()
@@ -2041,7 +2054,7 @@ function open_options(self)
           slow_amount = 1
           music_slow_amount = 1
           run_time = 0
-          gold = starting_gold
+          gold = STARTING_GOLD
           passives = {}
           main_song_instance:stop()
           run_passive_pool = {
@@ -2053,7 +2066,7 @@ function open_options(self)
             'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
             'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
           }
-          max_units = 3
+          max_units = MAX_UNITS
           main:add(BuyScreen'buy_screen')
           locked_state = nil
           system.save_run()
@@ -2208,7 +2221,7 @@ function open_options(self)
         current_new_game_plus = math.clamp(current_new_game_plus - 1, 0, 5)
         state.current_new_game_plus = current_new_game_plus
         self.ng_t.text:set_text({{text = '[bg10]current: ' .. current_new_game_plus, font = pixul_font, alignment = 'center'}})
-        max_units = 3
+        max_units = MAX_UNITS
         system.save_run()
       end}
 
@@ -2219,7 +2232,7 @@ function open_options(self)
         current_new_game_plus = math.clamp(current_new_game_plus + 1, 0, new_game_plus)
         state.current_new_game_plus = current_new_game_plus
         self.ng_t.text:set_text({{text = '[bg10]current: ' .. current_new_game_plus, font = pixul_font, alignment = 'center'}})
-        max_units = 3
+        max_units = MAX_UNITS
         system.save_run()
       end}
     end

@@ -14,10 +14,25 @@ get the playthrough to be fun:
         - on-take-damage (shield, heal, etc)
         - on-kill (heal, buff, etc)
 
+    - clean up unit stat system
+    - already unified between enemies and troops, good
+    - save item procs to unit on first_run
+    - check for item procs either on attack
+    - or from the on-hit callback on the target
+    - will need to pass the attacker to the target
+    - for the Helper spells
+
   - finish level map
     - hover over to see level effects
     - fix change level 
       (performance hit, update buttons instead of destroy/create)
+
+  - change controls, or at least have option
+    - 1 troop selected at a time
+    - LMB move 
+    - shift LMB move to target
+    - RMB attack enemy
+    - space move all
     
   - add level modifiers (maybe don't need, overlaps with special enemies)
     - berserk

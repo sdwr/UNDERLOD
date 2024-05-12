@@ -160,6 +160,42 @@ but a few cross over to keep you thinking
 
 how to apply that to items?
 
+Exponential scaling:
+----------
+SC2 exponential scaling comes from #units
+2 stalkers fight, 20 stalkers 1-shot
+
+just king doesn't really have expo scaling
+items are pretty boring, and barely keep up with enemy hp
+
+tiny rogues comes from 
+  stat * dmg * aspd * bonus ability * trait
+
+poison doesn't do much
+until you get the "enemies have 0 poison resist" trait
+and the "50% extra elemental damage" trait
+and the "50% extra damage when enemies have 10+ stacks" trait
+and a weapon that applies it 2x per second
+
+we need the combo pieces, that pop off together
+but ideally not be too mechanically intense to implement
+don't want 5 more debuff types to put in
+
+simplest is item types/colors
+  - set bonuses like underlords, snkrx
+  - yellow ones give +aspd
+  - red ones give +dmg
+  some items can have secondary buffs that only activate
+  w the set bonus
+
+yellow:
+  - every 3rd attack adds lightning dmg
+  - +mvspd and... 
+  - reduced HP and increased damage
+
+not deep enough when they are only hitting 2 stats, dmg and aspd
+
+
 ------------
 ITEM IDEAS:
 ------------

@@ -62,5 +62,41 @@ Attacks and timers handled via Triggers
 Enemy spawns are in Arena:on_enter()
 
 
+------------------
+Combat Triggers
+-----------------
+For a proper item system, we need consistent triggers
+Some attack hitboxes are:
+    - Area on the ground
+    - instant hitscan (where??)
+    - Missile (spell object that moves, maybe explode on contact)
+
+When a unit takes damage we need to know:
+    - which character initiated the attack (NOT the damaging entity)
+    - if this is the primary target or not (items should only proc once per attack)
+
+so :onhit callback that returns to character
+and :onkill callback that returns to character
+
+-------------
+Unit Stats/Items/Procs
+------------
+all happens in objects.lua Unit:calculate_stats()
+
+- sets base stats (different per unit type :( )
+- sets status resist
+- sets procs
+
+- sets enemy class stats
+- sets self buffs 
+- sets self item buffs
+- sets troop unit mults
+
+- sets all stats using buffs
+
+buffs are calculated in same file
+but only player calls update_buffs?
+
+
 
 

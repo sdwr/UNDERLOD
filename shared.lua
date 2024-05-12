@@ -1,6 +1,5 @@
 -- Shared functions and classes for projects using JUGGLRX's visual style.
 function shared_init()
-  starting_gold = 16
 
   local colors = {
     white = ColorRamp(Color(1, 1, 1, 1), 0.025),

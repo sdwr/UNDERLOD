@@ -387,6 +387,21 @@ function Unit:calculate_stats(first_run, dt)
   --self.ghost
   --self.canBash
 
+
+  --add per-attack procs from items here
+  --time based procs are handled as buffs
+  if first_run and self.items and #self.items > 0 then
+    self.procs = {}
+    for k,v in ipairs(self.items) do
+      if item_stat_multipliers[v] then
+        local item_stats = item_stat_multipliers[v]
+        if item_stats.proc then
+          Add_Item_Proc(self, item_stats.proc)
+        end
+      end
+    end
+  end
+
   self.bash_cd = 2.5
   self.bash_duration = 1
   self.bash_chance = 0
@@ -520,9 +535,15 @@ function Unit:calculate_stats(first_run, dt)
   self.v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m
 end
 
+--this is called by a target
+--from is the attacker
+-- we can use this to apply effects to both the units
+-- ex. bash on target, vamp on attacker
+-- and also check if procs are ready to trigger on attacker
 function Unit:onHitCallbacks(dmg, from)
   if from ~= nil then
     from:onDamageDealt(dmg)
+    Check_On_Hit_Procs(from, self)
     from:tryExplode(self)
     from:tryBash(self)
     if from.mvspd_slow ~=nil and from.mvspd_slow > 0 then

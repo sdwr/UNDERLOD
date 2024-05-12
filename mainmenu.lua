@@ -93,14 +93,14 @@ function MainMenu:on_enter(from)
           'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
         }
         run_time = run.time or 0
-        gold = run.gold or starting_gold
+        gold = run.gold or STARTING_GOLD
         passives = run.passives or {}
         locked_state = run.locked_state
         current_new_game_plus = run.current_new_game_plus or current_new_game_plus or 0
         Helper.Unit.team_saves = run.team_saves or {{}, {}, {}, {}}
         system.save_state()
         main:add(BuyScreen'buy_screen')
-        main:go_to('buy_screen', run.level or 1, run.level_list or {}, run.loop or 0, run.units or {}, run.max_units or 3, passives, run.shop_level or 1, run.shop_xp or 0)
+        main:go_to('buy_screen', run.level or 1, run.level_list or {}, run.loop or 0, run.units or {}, run.max_units or MAX_UNITS, passives, run.shop_level or 1, run.shop_xp or 0)
       end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
     end}
   end
@@ -122,7 +122,7 @@ function MainMenu:on_enter(from)
         'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
       }
       run_time = 0
-      gold = starting_gold
+      gold = STARTING_GOLD
       passives = {}
       locked_state = run.locked_state
       current_new_game_plus = current_new_game_plus or 0

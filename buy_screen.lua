@@ -61,7 +61,7 @@ function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, pas
   --decide on enemies for every level here
   --if this is the first level
   if self.level == 1 or #self.level_list == 0 then
-    self.level_list = Build_Level_List(25)
+    self.level_list = Build_Level_List(NUMBER_OF_ROUNDS)
   end
 
   input:set_mouse_visible(true)
@@ -158,7 +158,7 @@ function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, pas
       slow_amount = 1
       music_slow_amount = 1
       run_time = 0
-      gold = starting_gold
+      gold = STARTING_GOLD
       passives = {}
       main_song_instance:stop()
       run_passive_pool = {
@@ -170,7 +170,7 @@ function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, pas
         'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
         'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
       }
-      self.max_units = 3
+      self.max_units = MAX_UNITS
       main:add(BuyScreen'buy_screen')
       system.save_run()
       main:go_to('buy_screen', 1, self.level_list, 0, {}, self.max_units, passives, 1, 0)
@@ -630,7 +630,7 @@ function RestartButton:update(dt)
       slow_amount = 1
       music_slow_amount = 1
       run_time = 0
-      gold = starting_gold
+      gold = STARTING_GOLD
       passives = {}
       main_song_instance:stop()
       run_passive_pool = {
@@ -642,7 +642,7 @@ function RestartButton:update(dt)
         'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
         'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
       }
-      self.max_units = 3
+      self.max_units = MAX_UNITS
       system.save_state()
       main:add(BuyScreen'buy_screen')
       system.save_run()
@@ -801,7 +801,7 @@ function LevelMap:build()
 
   for i = 1, 5 do
     local level = self.level + i - 1
-    if level < 25 then
+    if level < NUMBER_OF_ROUNDS then
       table.insert(self.levels, 
         LevelMapLevel{group = self.group, x = self.x - 60 + (i-1)*30, y = self.y - 20, 
         line_color = (level == self.level) and yellow[2] or fg[0],

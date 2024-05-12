@@ -29,7 +29,8 @@ end
 
 function Enemy:update(dt)
     self:update_game_object(dt)
-  
+    self:update_buffs(dt)
+
     self:calculate_stats()
   
     --get target / rotate to target

@@ -28,7 +28,7 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
   self.level_list = level_list
   self.loop = loop or 0
   self.units = units
-  self.max_units = max_units or 3
+  self.max_units = max_units or MAX_UNITS
   self.passives = passives
   self.shop_level = shop_level or 1
   self.shop_xp = shop_xp or 0
@@ -254,7 +254,7 @@ function Arena:update(dt)
         slow_amount = 1
         music_slow_amount = 1
         run_time = 0
-        gold = starting_gold
+        gold = STARTING_GOLD
         passives = {}
         main_song_instance:stop()
         run_passive_pool = {
@@ -266,7 +266,7 @@ function Arena:update(dt)
           'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
           'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
         }
-        max_units = 3
+        max_units = MAX_UNITS
         main:add(BuyScreen'buy_screen')
         locked_state = nil
         system.save_run()
@@ -326,7 +326,7 @@ function Arena:quit()
       end
       current_new_game_plus = current_new_game_plus + 1
       state.current_new_game_plus = current_new_game_plus
-      max_units = math.clamp(7 + current_new_game_plus + self.loop, 7, 12)
+      max_units = MAX_UNITS
 
       system.save_run()
       trigger:tween(1, _G, {slow_amount = 0}, math.linear, function() slow_amount = 0 end, 'slow_amount')
@@ -360,7 +360,7 @@ function Arena:quit()
           end
           current_new_game_plus = 5
           state.current_new_game_plus = current_new_game_plus
-          max_units = 12
+          max_units = MAX_UNITS
 
           self.win_text2 = Text2{group = self.ui, x = gw/2 + 40, y = gh/2 + 20, force_update = true, lines = {
             {text = "[fg]now you've really beaten the game!", font = pixul_font, alignment = 'center', height_multiplier = 1.24},
@@ -639,7 +639,7 @@ function Arena:die()
           slow_amount = 1
           music_slow_amount = 1
           run_time = 0
-          gold = starting_gold
+          gold = STARTING_GOLD
           passives = {}
           main_song_instance:stop()
           run_passive_pool = {
@@ -651,7 +651,7 @@ function Arena:die()
             'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
             'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
           }
-          max_units = 3
+          max_units = MAX_UNITS
           main:add(BuyScreen'buy_screen')
           system.save_run()
           main:go_to('buy_screen', 1, self.level_list, 0, {}, max_units, passives, 1, 0)
@@ -758,7 +758,7 @@ function Arena:gain_gold()
       end
     end
   end
-  self.gold_gained = 5
+  self.gold_gained = GOLD_PER_ROUND
 
   gold = gold + self.gold_gained + self.gold_picked_up + self.bonus_gold
 end
