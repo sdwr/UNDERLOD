@@ -13,6 +13,19 @@ get the playthrough to be fun:
         - on-cast (double cast, aoe, etc)
         - on-take-damage (shield, heal, etc)
         - on-kill (heal, buff, etc)
+      - items have procs
+        - procs are added to the unit on first_run (objects.lua calculate_stats)
+        - procs can be triggered on 
+          -attack, hit, death, cast, take-damage, kill, move
+        - and have access to the attacker and target
+        - need to figure out how procs can have memory
+          - for example, a proc that triggers on hit, but only once per second
+          - or that triggers on hit, but only once no matter how many times it hits
+            - break proc into two parts, on_attack and on_hit
+            - on_attack sets a flag on the attacker
+            - on_hit checks the flag and triggers (and resets) if it's set
+          - options are keeping it in the proc, or in the unit
+            - should be in the proc
 
     - clean up unit stat system
     - already unified between enemies and troops, good

@@ -415,9 +415,13 @@ function BuyScreen:set_items(shop_level)
   local item_3
   local all_items = {}
 
-  item_1 = random:table(tier_to_items[random:weighted_pick(unpack(tier_weights))])
-  item_2 = random:table(tier_to_items[random:weighted_pick(unpack(tier_weights))])
-  item_3 = random:table(tier_to_items[random:weighted_pick(unpack(tier_weights))])
+  -- item_1 = random:table(tier_to_items[random:weighted_pick(unpack(tier_weights))])
+  -- item_2 = random:table(tier_to_items[random:weighted_pick(unpack(tier_weights))])
+  -- item_3 = random:table(tier_to_items[random:weighted_pick(unpack(tier_weights))])
+  item_1 = get_random_from_table(item_to_item_data)
+  item_2 = get_random_from_table(item_to_item_data)
+  item_3 = get_random_from_table(item_to_item_data)
+
   all_items = {item_1, item_2, item_3}
   
 
@@ -2013,9 +2017,11 @@ function ItemCard:init(args)
   self.origY = self.y
   self.interact_with_mouse = true
 
-  self.cost = item_costs[self.item]
-  self.image = item_images[self.item]
-  
+  self.cost = self.item.cost
+  -- putin item data?
+  self.image = item_images[self.item.name] or item_images['default']
+  self.colors = self.item.colors
+
   self.tier_color = item_to_color(self.item)
   self.text = item_text[self.item]
   self.stats = item_stat_multipliers[self.item]
@@ -2068,6 +2074,12 @@ function ItemCard:draw()
     graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
 
     graphics.rectangle(self.x, self.y, self.w, self.h, 6,6, bg[5])
+    if self.colors then
+      for i, color_name in ipairs(self.colors) do
+        local color = _G[color_name]
+        graphics.rectangle(self.x, self.y + 20 + 4*i, self.w, 4, 6, 6, color[0])
+      end
+    end
     graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, self.tier_color, 3)
     if self.image then
       self.image:drawFullRes(self.x, self.y)

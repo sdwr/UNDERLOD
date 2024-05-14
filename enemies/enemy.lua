@@ -119,8 +119,11 @@ function Enemy:hit(damage, from)
     if self.hp > self.max_hp then self.hp = self.max_hp end
     main.current.damage_dealt = main.current.damage_dealt + actual_damage
   
-  
+    --callbacks
+    self:onHitCallbacks(actual_damage, from)
+
     if self.hp <= 0 then
+      self:onDeathCallbacks(from)
       self:die()
       for i = 1, random:int(4, 6) do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color} end
       HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 12}:scale_down(0.3):change_color(0.5, self.color)
@@ -131,9 +134,6 @@ function Enemy:hit(damage, from)
         magic_die1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
       end
     end
-    
-    --callbacks
-    self:onHitCallbacks(actual_damage, from)
 end
 
 function Enemy:onDeath()

@@ -1,15 +1,17 @@
 require 'engine'
 require 'shared'
+require 'utils'
 require 'game_constants'
+require 'helper/helper'
 require 'arena'
 require 'mainmenu'
+require 'procs/procs'
 require 'items'
 require 'buy_screen_utils'
 require 'buy_screen'
 require 'objects'
 require 'player'
 require 'media'
-require 'helper/helper'
 require 'spawnmanager'
 require 'levelmanager'
 require 'enemies/level_manager'
@@ -1135,6 +1137,8 @@ function init()
   }
 
   item_images = {
+    ['default'] = warrior,
+
     ['smallsword'] = warrior,
     ['medsword'] = warrior,
     ['largesword'] = warrior,
@@ -1307,9 +1311,10 @@ function init()
 
   build_item_text = function(item)
     local out = {}
-    table.insert(out, {text = '[fg]' .. item_text[item] .. ', costs: ' .. item_costs[item], font = pixul_font, alignment = 'center',
+    table.insert(out, {text = '[fg]' .. item.name, font = pixul_font, alignment = 'center', height_multiplier = 1.25})
+    table.insert(out, {text = '[fg]' .. item.desc .. ', costs: ' .. item.cost, font = pixul_font, alignment = 'center',
     height_multiplier = 1.25})
-    local stats = item_stat_multipliers[item]
+    local stats = item.stats
     if stats then
       for key, val in pairs(stats) do
         local text = ''
@@ -1332,9 +1337,9 @@ function init()
     local cost = item_costs[item]
     local color = grey[0]
     if cost then
-      if cost <= 3 then
+      if cost <= 6 then
         color = grey[0]
-      elseif cost <= 6 then
+      elseif cost <= 12 then
         color = yellow[5]
       else 
         color = orange[3]

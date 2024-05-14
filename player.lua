@@ -3058,9 +3058,10 @@ function Troop:hit(damage, from)
 
   local actual_damage = math.max(self:calculate_damage(damage), 0)
   --callbacks
-  self:onHitCallbacks(actual_damage, from)
-
+  
   self.hp = self.hp - actual_damage
+
+  self:onHitCallbacks(actual_damage, from)
 
   camera:shake(2, 0.5)
 
@@ -3071,6 +3072,7 @@ function Troop:hit(damage, from)
     for i = 1, random:int(4, 6) do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color} end
     HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 12}:scale_down(0.3):change_color(0.5, self.color)
 
+    self:onDeathCallbacks(from)
     self.dead = true
     if main.current:all_troops_dead() then
       main.current:die()
@@ -3650,11 +3652,14 @@ function Critter:hit(damage, from)
   self.hfx:use('hit', 0.25, 200, 10)
 
   --damage dealt callback
+  self.hp = self.hp - damage
   self:onHitCallbacks(damage, from)
 
-  self.hp = self.hp - damage
   self:show_hp()
-  if self.hp <= 0 then self:die() end
+  if self.hp <= 0 then
+    self:onDeathCallbacks(from)
+    self:die()
+  end
 end
 
 function Critter:push(f, r)

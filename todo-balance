@@ -133,6 +133,10 @@ high tier is just insane
 if t1 items are too good, strat is load up on t1s right away
 kinda good gameplay
 
+get new characters as 1 of 3 at start + certain rounds
+remove character pool
+only buy items and extra buffs
+
 what should the base power be for a t1 item?
 we want to be able to buy 1 or 2 items on round 2
 then 1 or 2 per round until we level up/get new char
@@ -182,23 +186,70 @@ but ideally not be too mechanically intense to implement
 don't want 5 more debuff types to put in
 
 simplest is item types/colors
-  - set bonuses like underlords, snkrx
-  - yellow ones give +aspd
-  - red ones give +dmg
-  some items can have secondary buffs that only activate
+  - some items can have secondary buffs that only activate
   w the set bonus
+
+  ex:
+  
+  3 yellow - when you deal lightning damage, trigger
+  20% aspd and 10% mvspd for 2 seconds
 
 yellow:
   - every 3rd attack adds lightning dmg
+  - all your lightning damage is doubled
+
   - +mvspd and... 
   - reduced HP and increased damage
 
-not deep enough when they are only hitting 2 stats, dmg and aspd
+blue:
+  - attacks slow enemies
+  - attacks leave puddles of slow
+    - refresh slow debuff while standing in
+
+yellow+blue
+  - your lightning damage slows
+
+
+---------------------
+LEGENDARY ITEM IDEAS:
+---------------------
+
+
+purple/black:
+- first enemy hit drops black hole
+  -sucks enemies in and does damage
+
+red:
+- chain explode
+  - any enemy that dies while affected by fire explodes
+    -lighting other enemies on fire
+
+- hot hot hot
+  - fire stacks if reapplied before expiry
+
+- going critical
+  - gain aspd per enemy on fire
+
+blue:
+  - the first time (?) allies die, they are instead iceblocked
+    -are immune to dmg but can still be healed
 
 
 ------------
 ITEM IDEAS:
 ------------
+
+- crit chance
+  - 10% crit chance
+
+- ele vamp
+  - elemental damage +20%
+  - all elemental damage vamps
+
+- craggy vest
+  - 10% thorns
+  - chance to stun on reflect
+
 - 20% dmg, slow on hit
   - good with aspd, good on ranged
 

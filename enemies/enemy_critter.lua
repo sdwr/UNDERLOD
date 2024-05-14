@@ -72,11 +72,14 @@ function EnemyCritter:hit(damage, from)
   if self.dead or self.invulnerable then return end
   self.hfx:use('hit', 0.25, 200, 10)
 
+  self.hp = self.hp - damage
   self:onHitCallbacks(damage, from)
 
-  self.hp = self.hp - damage
   self:show_hp()
-  if self.hp <= 0 then self:die() end
+  if self.hp <= 0 then 
+    self:onDeathCallbacks(from)
+    self:die() 
+  end
 end
 
 function EnemyCritter:push(f, r)

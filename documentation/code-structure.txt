@@ -18,6 +18,9 @@ Units/Effects are GameObjects, have
     draw()
         draws to screen every frame
 
+    -what happens when =dead is set on GameObject, not Unit?
+    -looks like it is still garbage collected, is used for UI elements
+
     Unit classes being used are 
         - Troop for player units
             .character is unit type
@@ -77,6 +80,49 @@ When a unit takes damage we need to know:
 
 so :onhit callback that returns to character
 and :onkill callback that returns to character
+
+Items have procs, and those procs can be:
+    - on attack (cast chain lightning)
+        - note that on attack still requires hit confirmation, but doesn't 
+        proc multiple times per enemy hit
+        - can put a var on unit, reset on attack, only first :onhitcallback triggers
+    - on hit (slow enemy, inflict poison, vamp)
+    - on being hit (thorns)
+    - on hp threshold (second wind)
+    - on enemy hp threshold (culling strike)
+    - over time (shield every 5 seconds)
+    - at time (bloodlust on start of round)
+
+and also probably shouldn't proc each other
+
+and can require access to:
+    - the owner
+    - the target
+    - nearby allies/enemies potentially
+
+right now, thorns/vamp are on the Unit, and use the unit :onhitcallback()
+bash is a Unit buff
+and lightning is a proc
+
+the proc loading system is good (info on item, load onto unit at start of round)
+and allows for item memory
+
+need a distinction between cast abilities and secondary?
+    - for onhit + procs procing procs
+
+but what about combinations of items?
+    doubles elemental damage + lightning proc
+        - +eledmg is a unit stat, the lightning proc checks it on activate
+    
+    shield every 5 seconds + your cds are 20% faster
+        - nextShield is a buff(?), and its dt is * by fasterCds
+
+    all your lighning damage slows + all your slow damage reduces aspd
+        - need elemental dmg types
+        - need unit source on all :hit()
+        - to go back and calculate attack bonuses
+        - can put in Check_On_Hit_Procs, just need to add dmg type to :hit()
+
 
 -------------
 Unit Stats/Items/Procs

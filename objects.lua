@@ -307,6 +307,89 @@ function Unit:update_buffs(dt)
   end
 end
 
+function Unit:init_stats()
+  --constants? remove
+  local level = self.level or 1
+  local hpMod = 1 + ((level - 1) / 2)
+  local dmgMod = 1 + ((level - 1) / 2)
+  local spdMod = 1
+  
+  --init base stats
+  if self:is(Player) then
+    self.base_hp = 100
+    self.base_dmg = 10
+    self.base_mvspd = 50
+  elseif self:is(Troop) then
+    self.base_hp = 100 * hpMod
+    self.base_dmg = 10 * dmgMod
+    self.base_mvspd = 67 * spdMod
+  elseif self:is(EnemyCritter) or self:is(Critter) then
+    self.base_hp = 25 * hpMod
+    self.base_dmg = 5 * dmgMod
+    self.base_mvspd = 100 * spdMod
+  elseif self.class == 'regular_enemy' then
+    self.base_hp = 150 * (math.pow(1.02, level))
+    self.base_dmg = 20  * (math.pow(1.02, level))
+    self.base_mvspd = 34
+  elseif self.class == 'miniboss' then
+    self.base_hp = 500 * (math.pow(1.02, level))
+    self.base_dmg = 20  * (math.pow(1.02, level))
+    self.base_mvspd = 55
+  end
+  if self.class == 'boss' then
+    self.base_hp = 1500 * (1 + ((level / 6) * 0.25))
+    self.base_dmg = 30
+    self.base_mvspd = 34
+  end
+
+  self.baseCooldown = self.baseCooldown or attack_speeds['medium']
+  self.baseCast = self.baseCast or attack_speeds['medium-cast']
+  
+  --add per-attack procs from items here
+  self.procs = {}
+  if self.items and #self.items > 0 then
+    for k,item in ipairs(self.items) do
+      if item.procs then
+        for _, proc in ipairs(item.procs) do
+          table.insert(self.procs, proc)
+        end
+      end
+    end
+  end
+
+  --add procs to the unit callback lists here
+  self.onHitProcs = {}
+  self.onAttackProcs = {}
+  self.onGotHitProcs = {}
+  self.onKillProcs = {}
+  self.onDeathProcs = {}
+  self.onMoveProcs = {}
+
+  if self.procs then
+    for k, proc in ipairs(self.procs) do
+      if proc:hasTrigger(PROC_ON_HIT)  then
+        table.insert(self.onHitProcs, proc.onHit)
+      end
+      if proc:hasTrigger(PROC_ON_ATTACK) then
+        table.insert(self.onAttackProcs, proc.onAttack)
+      end
+      if proc:hasTrigger(PROC_ON_GOT_HIT) then
+        table.insert(self.onGotHitProcs, proc.onGotHit)
+      end
+      if proc:hasTrigger(PROC_ON_KILL) then
+        table.insert(self.onKillProcs, proc.onKill)
+      end
+      if proc:hasTrigger(PROC_ON_DEATH) then
+        table.insert(self.onDeathProcs, proc.onDeath)
+      end
+      if proc:hasTrigger(PROC_ON_MOVE) then
+        table.insert(self.onMoveProcs, proc.onMove)
+      end
+    end
+  end
+
+end
+
 
 function Unit:calculate_stats(first_run, dt)
   local level = self.level or 1
@@ -314,36 +397,10 @@ function Unit:calculate_stats(first_run, dt)
   local dmgMod = 1 + ((level - 1) / 2)
   local spdMod = 1
 
+  --set base stats to default values
+  --and add procs (+buffs) from items
   if(first_run) then
-    if self:is(Player) then
-      self.base_hp = 100
-      self.base_dmg = 10
-      self.base_mvspd = 50
-    elseif self:is(Troop) then
-      self.base_hp = 100 * hpMod
-      self.base_dmg = 10 * dmgMod
-      self.base_mvspd = 67 * spdMod
-    elseif self:is(EnemyCritter) or self:is(Critter) then
-      self.base_hp = 25 * hpMod
-      self.base_dmg = 5 * dmgMod
-      self.base_mvspd = 100 * spdMod
-    elseif self.class == 'regular_enemy' then
-      self.base_hp = 150 * (math.pow(1.02, level))
-      self.base_dmg = 20  * (math.pow(1.02, level))
-      self.base_mvspd = 34
-    elseif self.class == 'miniboss' then
-      self.base_hp = 500 * (math.pow(1.02, level))
-      self.base_dmg = 20  * (math.pow(1.02, level))
-      self.base_mvspd = 55
-    end
-    if self.class == 'boss' then
-      self.base_hp = 1500 * (1 + ((level / 6) * 0.25))
-      self.base_dmg = 30
-      self.base_mvspd = 34
-    end
-
-    self.baseCooldown = self.baseCooldown or attack_speeds['medium']
-    self.baseCast = self.baseCast or attack_speeds['medium-cast']
+    self:init_stats()
   end
 
   self.base_aspd_m = 1
@@ -380,37 +437,6 @@ function Unit:calculate_stats(first_run, dt)
   elseif self.class == 'boss' then
     self.status_resist = 0.8
   end
-
-  self.vamp = 0
-  self.mvspd_slow = 0
-  self.thorns = 0
-  --self.ghost
-  --self.canBash
-
-
-  --add per-attack procs from items here
-  --time based procs are handled as buffs
-  if first_run and self.items and #self.items > 0 then
-    self.procs = {}
-    for k,v in ipairs(self.items) do
-      if item_stat_multipliers[v] then
-        local item_stats = item_stat_multipliers[v]
-        if item_stats.proc then
-          Add_Item_Proc(self, item_stats.proc)
-        end
-      end
-    end
-  end
-
-  self.bash_cd = 2.5
-  self.bash_duration = 1
-  self.bash_chance = 0
-  if first_run then
-    local bashCooldown = {name = 'bash_cd', duration = self.bash_cd}
-    self:add_buff(bashCooldown)
-  end
-
-  self.enrage_on_death = false
 
   if self.class == 'regular_enemy' then
     local enemy_stats = enemy_type_to_stats[self.type]
@@ -467,8 +493,8 @@ function Unit:calculate_stats(first_run, dt)
   if self.items and #self.items > 0 then
     for k,v in ipairs(self.items) do
       local item = v
-      if item_stat_multipliers[item] then
-        for stat, amt in pairs(item_stat_multipliers[item]) do
+      if item.stats then
+        for stat, amt in pairs(item.stats) do
           if stat == buff_types['dmg'] then
             self.buff_dmg_m = self.buff_dmg_m + amt
           elseif stat == buff_types['def'] then
@@ -485,20 +511,10 @@ function Unit:calculate_stats(first_run, dt)
             self.buff_hp_m = self.buff_hp_m + amt
           elseif stat == buff_types['status_resist'] then
             self.status_resist = self.status_resist + amt
-          elseif stat == buff_types['vamp'] then
-            self.vamp = self.vamp + amt
           elseif stat == buff_types['ghost'] then
             self.ghost = true
-          elseif stat == buff_types['slow'] then
-            self.mvspd_slow = self.mvspd_slow + amt
-          elseif stat == buff_types['thorns'] then
-            self.thorns = self.thorns + amt
-          elseif stat == buff_types['bash'] then
-            self.bash_chance = self.bash_chance + amt
           elseif stat == buff_types['enrage'] then
             self.enrage_on_death = true
-          elseif stat == buff_types['heal'] then
-            self:heal_over_time(amt, 9999)
           elseif stat == buff_types['explode'] then
             self.canExplode = true
           end
@@ -511,6 +527,7 @@ function Unit:calculate_stats(first_run, dt)
 
   self.class_hp_m = self.class_hp_m*unit_stat_mult.hp
   self.max_hp = (self.base_hp + self.class_hp_a + self.buff_hp_a)*self.class_hp_m*self.buff_hp_m
+  --need to set hp after buffs
   if first_run then self.hp = self.max_hp end
 
   self.class_dmg_m = self.class_dmg_m*unit_stat_mult.dmg
@@ -542,24 +559,22 @@ end
 -- and also check if procs are ready to trigger on attacker
 function Unit:onHitCallbacks(dmg, from)
   if from ~= nil then
-    from:onDamageDealt(dmg)
-    Check_On_Hit_Procs(from, self)
-    from:tryExplode(self)
-    from:tryBash(self)
-    if from.mvspd_slow ~=nil and from.mvspd_slow > 0 then
-      self:slow(from.mvspd_slow, 2)
-    end
-    if self.thorns ~= nil and self.thorns > 0 then
-      --don't pass self in to prevent endless loop
-      from:hit(dmg * self.thorns)
-    end
+
   end
 end
 
-function Unit:tryExplode(enemy)
-  --means attack killed enemy
-  if enemy.dead and self.canExplode then
-    self:explode(enemy)
+--warning, target can be either a unit or a coordinate
+function Unit:onAttackCallbacks(target)
+  -- add procs
+end
+
+function Unit:onKillCallbacks(target)
+  -- add procs
+end
+
+function Unit:onDeathCallbacks(from)
+  if from ~= nil then
+    -- add procs
   end
 end
 
@@ -569,19 +584,6 @@ function Unit:explode(enemy)
   explosion1:play{volume = 0.7}
   Helper.Spell.DamageCircle:create(self, black[0], damage_troops, enemy.max_hp * 0.2, 
   radius, enemy.x, enemy.y)
-end
-
-function Unit:tryBash(enemy)
-  if self.canBash and random:float(0.0, 1.0) < self.bash_chance then
-    self:bash(enemy)
-  end
-end
-
-function Unit:bash(enemy)
-  local duration = math.max(self.bash_duration * (1 - (enemy.status_resist or 0)), 0)
-  enemy:stun(duration)
-  local bashCooldown = {name = 'bash_cd', duration = self.bash_cd}
-  self:add_buff(bashCooldown)
 end
 
 function Unit:stun(duration)
@@ -594,11 +596,6 @@ function Unit:slow(amount, duration)
   self:add_buff(slowBuff)
 end
 
-function Unit:heal_over_time(amount, duration)
-  local healBuff = {name = 'heal', color = green[3], duration = duration, stats = {heal_pct_per_s = amount}}
-  self:add_buff(healBuff)
-end
-
 function Unit:set_as_target()
   local targetBuff = {name = 'target', color = yellow[0], duration = 9999, stats = nil}
   self:add_buff(targetBuff)
@@ -606,14 +603,6 @@ end
 
 function Unit:untarget()
   self:remove_buff('target')
-end
-
-function Unit:onDamageDealt(dmg)
-  if self.vamp > 0 then
-    local heal = dmg * self.vamp
-    self.hp = self.hp + heal
-    self.hp = math.min(self.hp, self.max_hp)
-  end
 end
 
 function Unit:get_closest_target(shape, classes)
