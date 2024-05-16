@@ -47,6 +47,14 @@ end
 
 ]]--
 function GameObject:update_game_object(dt)
+  --keep track of distance moved, give to unit:onMoveCallbacks()
+  local distance_moved = 0
+  local current_position = {x = 0, y = 0}
+  if self.shape and self.body then
+
+    current_position.x, current_position.y = self.x, self.y
+  end
+
   self.t:update(dt)
   self.springs:update(dt)
   self.flashes:update(dt)
@@ -61,6 +69,17 @@ function GameObject:update_game_object(dt)
     end
     if self.body then
       self.shape:move_to(self:get_position())
+      --call onMoveCallbacks if it exists and the object has moved
+      if self.onMoveCallbacks then
+        local new_position = {x = 0, y = 0}
+        new_position.x, new_position.y = self.x, self.y
+        distance_moved = math.distance(current_position.x, current_position.y,
+         new_position.x, new_position.y)
+
+        if distance_moved > 0 then
+          self:onMoveCallbacks(distance_moved)
+        end
+      end
     end
 
     if self.interact_with_mouse then

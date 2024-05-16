@@ -22,7 +22,6 @@ function EnemyCritter:init(args)
   function() self:attack() end, nil, nil, "attack")
 end
 
-
 function EnemyCritter:update(dt)
   self:update_game_object(dt)
 
@@ -73,10 +72,16 @@ function EnemyCritter:hit(damage, from)
   self.hfx:use('hit', 0.25, 200, 10)
 
   self.hp = self.hp - damage
-  self:onHitCallbacks(damage, from)
+  if from and from.onHitCallbacks then
+    from:onHitCallbacks(self, damage)
+  end
+  self:onGotHitCallbacks(from, damage)
 
   self:show_hp()
-  if self.hp <= 0 then 
+  if self.hp <= 0 then
+    if from and from.onKillCallbacks then
+      from:onKillCallbacks(self)
+    end
     self:onDeathCallbacks(from)
     self:die() 
   end

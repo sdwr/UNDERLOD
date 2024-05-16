@@ -88,7 +88,7 @@ item_to_item_data = {
     procs = {'berserk'}
   },
   ['basher'] = {
-    name = 'basher',
+  name = 'basher',
     colors = {},
     cost = 5,
     icon = 'basher',
@@ -179,16 +179,25 @@ item_to_item_data = {
     icon = 'firesword',
     desc = 'A sword that burns enemies',
     stats = {dmg = 0.25},
-    procs = {'fire1'}
+    procs = {'fire'}
   },
   ['redshield'] = {
     name = 'redshield',
     colors = {'red'},
     cost = 5,
     icon = 'redshield',
-    desc = 'Gain damage for each enemy near you',
+    desc = 'Gain armor for each hit taken',
     stats = {hp = 0.25},
     procs = {'redshield'}
+  },
+  ['redsword'] = {
+    name = 'redsword',
+    colors = {'red'},
+    cost = 5,
+    icon = 'redsword',
+    desc = 'Gain damage based on your armor',
+    stats = {dmg = 0.25},
+    procs = {'redsword'}
   },
   ['bloodlust'] = {
     name = 'bloodlust',
@@ -196,7 +205,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'bloodlust',
     desc = 'Inc aspd and mvspd at start of round',
-    stats = {},
+    stats = {dmg = 0.2},
     procs = {'bloodlust'}
   },
   ['chainexplosion'] = {
@@ -295,38 +304,34 @@ item_to_item_data = {
   },
 }
 
-item_procs = {
+--replace default values with item specific values
+--does not change proc functionality, just stats
+item_proc_data = {
   
   --consumables
   ['reroll_char'] = {},
   --colorless
   ['craggy'] = {
-    trigger = 'on_got_hit',
     chance = 0.1,
     -- apply stun to attacker
   },
   ['bash'] = {
-    trigger = 'on_hit',
     chance = 0.2,
   },
   ['heal'] = {
-    trigger = 'buff',
     buff = 'heal',
     every_time = 5,
   },
   ['overkill'] = {
-    trigger = 'on_hit',
     -- explode for overkill damage
   },
   ['berserk'] = {
-    trigger = 'buff',
     buff = 'berserk',
   },
 
   --yellow
   ['lightning'] = {
     damage_type = 'lightning',
-    trigger = 'on_hit',
     dmg = 10,
     chain = 4,
     every_attacks = 4,
@@ -336,7 +341,6 @@ item_procs = {
   --triggers on next hit
   ['static'] = {
     damage_type = 'lightning',
-    trigger = 'buff',
     buff = 'static',
     dmg = 10,
     chain = 8,
@@ -344,60 +348,44 @@ item_procs = {
     moves_left = 100,
   },
   ['radianceburn'] = {
-    trigger = 'buff',
     buff = 'radiance',
   },
   ['shield'] = {
-    trigger = 'buff',
     buff = 'shield',
   },
   ['phasing'] = {
-    trigger = 'buff',
     buff = 'phasing',
   },
   ['bubble'] = {
-    trigger = 'buff',
     buff = 'bubble',
   },
 
   --red
   ['fire1'] = {},
   ['redshield'] = {
-    trigger = 'buff',
     buff = 'redshield',
   },
   ['bloodlust'] = {
-    trigger = 'buff',
     buff = 'bloodlust',
   },
   ['chainexplode'] = {
-    trigger = 'on_hit'
   },
   ['firestack'] = {
-    trigger = 'buff',
     buff = 'firestack',
   },
   ['blazin'] = {
-    trigger = 'buff',
     buff = 'blazin',
   },
 
   --blue
   ['slow'] = {},
   ['slowfield'] = {
-    trigger = 'on_hit',
   },
   ['reticle'] = {
-    trigger = 'buff',
-    buff = 'reticle',
   },
   ['holduground'] = {
-    trigger = 'buff',
-    buff = 'holduground',
   },
   ['icenova'] = {
-    trigger = 'buff',
-    buff = 'icenova',
   },
 
   --multicolor

@@ -3,37 +3,11 @@ NEW FEATURE PLAN:
 
 get the playthrough to be fun:
   - v2 items
-    - powerful and flashy from the start
-    - need a robust system for item effects in combat
-      - +stats is easy and done
-      - now +effects
-        - auras
-        - on-hit (crit, slow, freeze, etc)
-        - on-death (explode, heal, revive)
-        - on-cast (double cast, aoe, etc)
-        - on-take-damage (shield, heal, etc)
-        - on-kill (heal, buff, etc)
-      - items have procs
-        - procs are added to the unit on first_run (objects.lua calculate_stats)
-        - procs can be triggered on 
-          -attack, hit, death, cast, take-damage, kill, move
-        - and have access to the attacker and target
-        - need to figure out how procs can have memory
-          - for example, a proc that triggers on hit, but only once per second
-          - or that triggers on hit, but only once no matter how many times it hits
-            - break proc into two parts, on_attack and on_hit
-            - on_attack sets a flag on the attacker
-            - on_hit checks the flag and triggers (and resets) if it's set
-          - options are keeping it in the proc, or in the unit
-            - should be in the proc
+    - add item synergies
 
+    - figure out phasing (add new ghost Group for objects)
     - clean up unit stat system
-    - already unified between enemies and troops, good
-    - save item procs to unit on first_run
-    - check for item procs either on attack
-    - or from the on-hit callback on the target
-    - will need to pass the attacker to the target
-    - for the Helper spells
+    - pass owner unit to :hit() from helper.spell (already done when possible?)
 
   - finish level map
     - hover over to see level effects
@@ -52,6 +26,19 @@ get the playthrough to be fun:
     - infected
     - shielded
     - capture point
+
+  - add passive traits (pick 1 of 3?)
+    - lightning damage mult
+    - after dealing lightning damage, gain mspd (aspd?) for 3 seconds
+
+    - burn damage lasts longer
+    - after dealing burn damage, gain armor for 3 seconds
+
+    - cold slow stacks with itself
+    - when a unit affected by cold dies, freeze nearby enemies for 1 second
+
+    - crit chance
+    - 
 
 -------------
 BUGS:

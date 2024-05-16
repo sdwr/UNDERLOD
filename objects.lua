@@ -199,6 +199,7 @@ function Unit:init_unit()
   self.level = self.level or 1
   self.target = nil
   self.buffs = {}
+  self.toggles = {}
   self.hfx:add('hit', 1)
   self.hfx:add('shoot', 1)
   self.hp_bar = HPBar{group = main.current.effects, parent = self}
@@ -254,6 +255,16 @@ function Unit:calculate_damage(dmg)
   return dmg
 end
 
+--can only have 1 buff with the each name
+--if a buff with the same name is added, the duration is updated
+--but stats are not added together yet (will need for slow stacking etc.)
+
+--add toggles for buffs that have a binary effect
+--increment when a new buff is added, decrement when it is removed
+--don't increment if the buff is already present and we are just updating the duration
+
+--don't need to deep copy the buff, since a new proc is created each time
+--will need to when the proc starts reapplying the buff?
 function Unit:add_buff(buff)
   local existing_buff = self.buffs[buff.name]
   if existing_buff then
@@ -265,6 +276,7 @@ function Unit:add_buff(buff)
       buff.color = color
     end
     self.buffs[buff.name] = buff
+    self:increment_buff_toggles(buff)
   end
 end
 
@@ -273,6 +285,7 @@ function Unit:remove_buff(buffName)
   if existing_buff then
     self.buffs[buffName] = nil
   end
+  self:decrement_buff_toggles(existing_buff)
 end
 
 function Unit:draw_buffs()
@@ -287,15 +300,25 @@ end
 
 function Unit:update_buffs(dt)
   for k, v in pairs(self.buffs) do
-    if v.name == 'heal' then
-      self.hp = self.hp + (dt * v.stats.heal_pct_per_s * self.max_hp)
-      if self.hp > self.max_hp then self.hp = self.max_hp end
-    elseif k == 'stunned' then
+    --on buff start
+    if k == 'stunned' then
       self.state = unit_states['frozen']
     end
 
-
+    --dec duration
     v.duration = v.duration - dt
+
+    --on buff tick
+    if k == 'burn' then
+      if v.duration <= v.nextTick then
+        --add a really quiet short sound here, because it'll be playing all the time
+        self:hit(v.dps, nil)
+        --1 second tick, could be changed
+        v.nextTick = v.nextTick - 1
+      end
+    end
+
+    --on buff end
     if v.duration < 0 then
       if k == 'bash_cd' then
         self.canBash = true
@@ -303,6 +326,26 @@ function Unit:update_buffs(dt)
         self.state = unit_states['normal']
       end
       self.buffs[k] = nil
+    end
+  end
+end
+
+function Unit:has_toggle(name)
+  return self.toggles[name] and self.toggles[name] > 0
+end
+
+function Unit:increment_buff_toggles(buff)
+  if buff.toggles then
+    for k, v in pairs(buff.toggles) do
+      self.toggles[k] = (self.toggles[k] or 0) + v
+    end
+  end
+end
+
+function Unit:decrement_buff_toggles(buff)
+  if buff.toggles then
+    for k, v in pairs(buff.toggles) do
+      self.toggles[k] = self.toggles[k] - v
     end
   end
 end
@@ -347,43 +390,44 @@ function Unit:init_stats()
   
   --add per-attack procs from items here
   self.procs = {}
-  if self.items and #self.items > 0 then
-    for k,item in ipairs(self.items) do
-      if item.procs then
-        for _, proc in ipairs(item.procs) do
-          table.insert(self.procs, proc)
-        end
-      end
-    end
-  end
 
-  --add procs to the unit callback lists here
   self.onHitProcs = {}
   self.onAttackProcs = {}
   self.onGotHitProcs = {}
   self.onKillProcs = {}
   self.onDeathProcs = {}
   self.onMoveProcs = {}
+  if self.items and #self.items > 0 then
+    for k,item in ipairs(self.items) do
+      if item.procs then
+        for _, proc in ipairs(item.procs) do
+          local procname = proc
+          --can fill data from item here, but defaults should be ok
+          local procObj = proc_name_to_class[procname]{unit = self, data = {name = procname}}
+          table.insert(self.procs, procObj)
 
-  if self.procs then
-    for k, proc in ipairs(self.procs) do
-      if proc:hasTrigger(PROC_ON_HIT)  then
-        table.insert(self.onHitProcs, proc.onHit)
-      end
-      if proc:hasTrigger(PROC_ON_ATTACK) then
-        table.insert(self.onAttackProcs, proc.onAttack)
-      end
-      if proc:hasTrigger(PROC_ON_GOT_HIT) then
-        table.insert(self.onGotHitProcs, proc.onGotHit)
-      end
-      if proc:hasTrigger(PROC_ON_KILL) then
-        table.insert(self.onKillProcs, proc.onKill)
-      end
-      if proc:hasTrigger(PROC_ON_DEATH) then
-        table.insert(self.onDeathProcs, proc.onDeath)
-      end
-      if proc:hasTrigger(PROC_ON_MOVE) then
-        table.insert(self.onMoveProcs, proc.onMove)
+          --add procs to the unit callback lists here
+          -- could be done in the proc class, but this is more readable
+          -- still need to deal with proc deletion, right now they should be cleared at end of round (I hope??)
+          if procObj:hasTrigger(PROC_ON_HIT)  then
+            table.insert(self.onHitProcs, procObj)
+          end
+          if procObj:hasTrigger(PROC_ON_ATTACK) then
+            table.insert(self.onAttackProcs, procObj)
+          end
+          if procObj:hasTrigger(PROC_ON_GOT_HIT) then
+            table.insert(self.onGotHitProcs, procObj)
+          end
+          if procObj:hasTrigger(PROC_ON_KILL) then
+            table.insert(self.onKillProcs, procObj)
+          end
+          if procObj:hasTrigger(PROC_ON_DEATH) then
+            table.insert(self.onDeathProcs, procObj)
+          end
+          if procObj:hasTrigger(PROC_ON_MOVE) then
+            table.insert(self.onMoveProcs, procObj)
+          end
+        end
       end
     end
   end
@@ -552,31 +596,49 @@ function Unit:calculate_stats(first_run, dt)
   self.v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m
 end
 
---this is called by a target
---from is the attacker
--- we can use this to apply effects to both the units
--- ex. bash on target, vamp on attacker
--- and also check if procs are ready to trigger on attacker
-function Unit:onHitCallbacks(dmg, from)
-  if from ~= nil then
-
+--warning, target can be either a unit or a coordinate
+function Unit:onAttackCallbacks(target)
+  for k, proc in ipairs(self.onAttackProcs) do
+    proc:onAttack(target)
   end
 end
 
---warning, target can be either a unit or a coordinate
-function Unit:onAttackCallbacks(target)
-  -- add procs
+function Unit:onHitCallbacks(from, damage)
+  for k, proc in ipairs(self.onHitProcs) do
+    proc:onHit(from, damage)
+  end
+end
+
+function Unit:onGotHitCallbacks(from, damage)
+  for k, proc in ipairs(self.onGotHitProcs) do
+    proc:onGotHit(from, damage)
+  end
 end
 
 function Unit:onKillCallbacks(target)
-  -- add procs
-end
-
-function Unit:onDeathCallbacks(from)
-  if from ~= nil then
-    -- add procs
+  for k, proc in ipairs(self.onKillProcs) do
+    proc:onKill(target)
   end
 end
+
+function Unit:onDeathCallbacks()
+  for k, proc in ipairs(self.onDeathProcs) do
+    proc:onDeath()
+  end
+end
+
+function Unit:onMoveCallbacks(distance)
+  for k, proc in ipairs(self.onMoveProcs) do
+    proc:onMove(distance)
+  end
+end
+
+--add custom UI later, so it doesn't stack with the buff circles
+function Unit:burn(dps, duration)
+  local burnBuff = {name = 'burn', color = red[0], duration = duration, nextTick = duration - 1, dps = dps}
+  self:add_buff(burnBuff)
+end
+
 
 function Unit:explode(enemy)
   local damage_troops = not self:is(Troop)

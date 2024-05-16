@@ -120,10 +120,18 @@ function Enemy:hit(damage, from)
     main.current.damage_dealt = main.current.damage_dealt + actual_damage
   
     --callbacks
-    self:onHitCallbacks(actual_damage, from)
+    if from and from.onHitCallbacks then
+      from:onHitCallbacks(self, actual_damage)
+    end
+    self:onGotHitCallbacks(from, actual_damage)
 
     if self.hp <= 0 then
+      --on death callbacks
+      if from and from.onKillCallbacks then
+        from:onKillCallbacks(self)
+      end
       self:onDeathCallbacks(from)
+
       self:die()
       for i = 1, random:int(4, 6) do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color} end
       HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 12}:scale_down(0.3):change_color(0.5, self.color)

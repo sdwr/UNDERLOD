@@ -1668,8 +1668,14 @@ function ItemPart:draw(y)
 
     graphics.rectangle(self.x, self.y, 14, 14, 3, 3, item_to_color(self:getItem()))
     graphics.rectangle(self.x, self.y, 10, 10, 3, 3, bg[5])
-    if item and not self.itemGrabbed and item_images[item] then
-      item_images[item]:drawFullRes(self.x, self.y, 0, 0.2, 0.2)
+    if item then
+      local image = item_images[item] or item_images['default']
+      if not self.itemGrabbed then
+        image:drawFullRes(self.x, self.y, 0, 0.2, 0.2)
+      else
+        local mouseX, mouseY = camera:get_mouse_position()
+        image:drawFullRes(mouseX, mouseY, 0, 0.2, 0.2)
+      end
     end
     
     if self.colliding_with_mouse and buyScreen and not buyScreen.loose_inventory_item then

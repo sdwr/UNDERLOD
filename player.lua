@@ -2539,6 +2539,7 @@ end
 
 function Troop:update(dt)
   self:update_game_object(dt)
+
   self:update_buffs(dt)
 
   self:calculate_stats()
@@ -2720,6 +2721,11 @@ function Troop:shoot(r, mods)
 end
 
 function Troop:attack(area, mods)
+
+  --on attack callbacks
+  if self.onAttackCallbacks then
+    self:onAttackCallbacks(self.target)
+  end
   mods = mods or {}
   local t = {group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(area or 64), color = self.color, dmg = self.dmg,
     character = self.character, level = self.level, parent = self}
@@ -2799,6 +2805,10 @@ function Troop:set_character()
         Helper.Unit:claim_target(self, Helper.Spell:get_nearest_least_targeted(self, 130, true))
         Helper.Time:wait(get_random(0, 0.1), function()
           
+          --on attack callbacks
+          if self.onAttackCallbacks then
+            self:onAttackCallbacks(self.claimed_target)
+          end
           sniper_load:play{volume=0.7}
           Helper.Spell.Laser:create(Helper.Color.blue, 1, false, 20, self)
         end)
@@ -2887,6 +2897,11 @@ function Troop:set_character()
         Helper.Unit:claim_target(self, Helper.Spell:get_nearest_target(self))
         Helper.Time:wait(get_random(0, 0.1), function()
           
+
+          --on attack callbacks
+          if self.onAttackCallbacks then
+            self:onAttackCallbacks(self.claimed_target)
+          end
           Helper.Spell.Missile:create(Helper.Color.orange, 10, self.dmg, 300, self, true, 15)
         end)
       end
@@ -2922,6 +2937,12 @@ function Troop:set_character()
 
     self.state_always_run_functions['always_run'] = function()
       if Helper.Unit:can_cast(self) then
+        
+        --on attack callbacks
+        if self.onAttackCallbacks then
+          self:onAttackCallbacks(self.claimed_target)
+        end
+
         Helper.Spell.Bomb:create(black[2], false, self.dmg, 4, self, 1.5, self.explode_radius, self.x, self.y)
       end
     end
@@ -2954,6 +2975,12 @@ function Troop:set_character()
     self.state_always_run_functions['always_run'] = function()
       if Helper.Unit:can_cast(self) then
         Helper.Unit:claim_target(self, Helper.Spell:get_nearest_least_targeted(self, self.attack_sensor.rs))
+
+        --on attack callbacks
+        if self.onAttackCallbacks then
+          self:onAttackCallbacks(self.claimed_target)
+        end
+
         self.spell = Snipe{group = main.current.main, team = 'player', parent = self, target = self.claimed_target, dmg = self.dmg}
       end
     end
@@ -3057,11 +3084,14 @@ function Troop:hit(damage, from)
   end
 
   local actual_damage = math.max(self:calculate_damage(damage), 0)
-  --callbacks
   
   self.hp = self.hp - actual_damage
-
-  self:onHitCallbacks(actual_damage, from)
+  
+  --on hit callbacks
+  if from and from.onHitCallbacks then
+    from:onHitCallbacks(self, actual_damage)
+  end
+  self:onGotHitCallbacks(from, actual_damage)
 
   camera:shake(2, 0.5)
 
@@ -3072,7 +3102,12 @@ function Troop:hit(damage, from)
     for i = 1, random:int(4, 6) do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color} end
     HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 12}:scale_down(0.3):change_color(0.5, self.color)
 
+    --on death callbacks
+    if from and from.onKillCallbacks then
+      from:onKillCallbacks(self)
+    end
     self:onDeathCallbacks(from)
+
     self.dead = true
     if main.current:all_troops_dead() then
       main.current:die()
@@ -3651,12 +3686,20 @@ function Critter:hit(damage, from)
   if self.dead or self.invulnerable then return end
   self.hfx:use('hit', 0.25, 200, 10)
 
-  --damage dealt callback
   self.hp = self.hp - damage
-  self:onHitCallbacks(damage, from)
+
+  --on hit callbacks
+  if from and from.onHitCallbacks then
+    from:onHitCallbacks(self, damage)
+  end
+  self:onGotHitCallbacks(from, damage)
 
   self:show_hp()
   if self.hp <= 0 then
+    
+    if from and from.onKillCallbacks then
+      from:onKillCallbacks(self)
+    end
     self:onDeathCallbacks(from)
     self:die()
   end
