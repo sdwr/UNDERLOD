@@ -437,7 +437,7 @@ function Proc_Frostfield:init(args)
   --define the proc's vars
   self.slow_amount = self.data.slow_amount or 0.3
   self.slow_duration = self.data.slow_duration or 2
-  self.radius = self.data.radius or 100
+  self.radius = self.data.radius or 20
 
   self.every_attacks = self.data.every_attacks or 4
 
@@ -462,14 +462,29 @@ function Proc_Frostfield:onHit(target, damage)
       self.attacks_left = self.every_attacks
 
       --remove level from spell
-      FrostField{
-        group = main.current.main, 
-        target = target, rs = self.radius, 
-        slow_amount = self.slow_amount, slow_duration = self.slow_duration, 
-        parent = self.unit, 
-        level = 1}
+      Helper.Spell.Frostfield:create(self.unit, blue[0], false, 5, self.radius, 2, target.x, target.y)
     end
   end
+end
+
+--have to define how to stack slows
+-- just the amount is a little tricky, need to multiplicatively stack towards 0
+-- could use stacks, but it would be nice to use any source of slow
+-- ideal is multiplicative stacking, and remove slow over time
+-- which i guess is a stack
+-- also keep track of which unit applied the slow? or just make it a global effect
+Proc_Slowstack = Proc:extend()
+function Proc_Slowstack:init(args)
+  self.triggers = {PROC_ON_HIT}
+
+  Proc_Slowstack.super.init(self, args)
+
+  --define the proc's vars
+  self.slow_amount = self.data.slow_amount or 0.1
+  self.slow_duration = self.data.slow_duration or 2
+  self.max_slow = self.data.max_slow or 0.5
+
+  self.slow = 0
 end
 
 
@@ -489,6 +504,8 @@ proc_name_to_class = {
   ['fire'] = Proc_Fire,
   ['redshield'] = Proc_Redshield,
   ['blazin'] = Proc_Blazin,
+  ['frostfield'] = Proc_Frostfield,
+  ['slowstack'] = Proc_Slowstack,
 }
 
 

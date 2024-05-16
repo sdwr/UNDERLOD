@@ -246,10 +246,10 @@ item_to_item_data = {
     stats = {dmg = 0.25},
     procs = {'frost'}
   },
-  ['frostbomb'] = {
+  ['frostfield'] = {
     name = 'frostbomb',
     colors = {'blue'},
-    cost = 5,
+    cost = 10,
     icon = 'frostbomb',
     desc = 'Creates a slowing field under enemies every few attacks',
     stats = {dmg = 0.25},
@@ -282,6 +282,15 @@ item_to_item_data = {
     stats = {dmg = 0.25},
     procs = {'icenova'}
   },
+  ['icefang'] = {
+    name = 'icefang',
+    colors = {'blue'},
+    cost = 5,
+    icon = 'icefang',
+    desc = 'Your slows stack to slow enemies to a crawl',
+    stats = {dmg = 0.25},
+    procs = {'slowstacks'}
+  },
 
   --multicolor items
   ['twinflame'] = {
@@ -306,6 +315,8 @@ item_to_item_data = {
 
 --replace default values with item specific values
 --does not change proc functionality, just stats
+--idk how this works though, if the proc name is the same as the data name
+--have to specify the proc name separately in here
 item_proc_data = {
   
   --consumables

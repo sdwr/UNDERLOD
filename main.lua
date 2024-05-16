@@ -1214,45 +1214,6 @@ function init()
 
   }
 
-  item_stat_multipliers = {
-    ['frostorb'] = {slow = 0.2, dmg = 0.25},
-    ['heartofgold'] = {gold = 1, hp = 0.2},
-    ['basher'] = {bash = 0.2, dmg = 0.25},
-    ['medbow'] = {aspd = 0.2, proc = {
-      type = 'lightning',
-      trigger = 'on_hit',
-      dmg = 10,
-      chain = 4,
-      every_attacks = 4,
-      attacks_left = 4,
-    }},
-
-
-    ['smallsword'] = {dmg = 0.25},
-    ['medsword'] = {dmg = 0.5},
-    ['largesword'] = {dmg = 0.75},
-
-    ['smallboots'] = {mvspd = 0.1},
-    ['medboots'] = {mvspd = 0.2},
-    ['largeboots'] = {mvspd = 0.3},
-
-    ['smallbow'] = {aspd = 0.2},
-    ['largebow'] = {aspd = 0.4},
-
-    ['smallbomb'] = {area_size = 0.2},
-    ['medbomb'] = {area_size = 0.3},
-    ['largebomb'] = {area_size = 0.4},
-
-    ['vampirism'] = {vamp = 0.1},
-    ['ghostboots'] = {mvspd = 0.1, ghost = 1},
-    ['spikedcollar'] = {thorns = 0.1, hp = 0.2},
-    ['berserkerbelt'] = {enrage = 1},
-    ['healingleaf'] = {heal = 0.02, aspd = 0.1},
-    
-    ['corpseexplode'] = {explode = 1, dmg = 0.2},
-
-  }
-
   item_stat_lookup = {
     ['dmg'] = 'damage',
     ['mvspd'] = 'move speed',
@@ -1302,12 +1263,7 @@ function init()
     ['corpseexplode'] = "Corpse exploder",
   }
 
-  tier_to_items = {
-    [1] = {'frostorb', 'heartofgold', 'basher', 'medbow'},
-    [2] = {},
-    [3] = {},
-    [4] = {},
-  }
+
 
   build_item_text = function(item)
     local out = {}

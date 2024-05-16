@@ -325,6 +325,10 @@ function Unit:update_buffs(dt)
       end
     end
 
+    if k == 'redshield' then
+      
+    end
+
     --on buff end
     if v.duration < 0 then
       if k == 'bash_cd' then

@@ -2050,7 +2050,7 @@ function ItemCard:init(args)
 
   self.tier_color = item_to_color(self.item)
   self.text = item_text[self.item]
-  self.stats = item_stat_multipliers[self.item]
+  self.stats = self.item.stats
   
 end
 
