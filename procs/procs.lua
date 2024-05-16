@@ -334,21 +334,145 @@ function Proc_Fire:onHit(target, damage)
   target:burn(self.burnDps, self.burnDuration)
 end
 
+Proc_Blazin = Proc:extend()
+function Proc_Blazin:init(args)
+  self.triggers = {PROC_ON_TICK}
+
+  Proc_Blazin.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  self.buff = 'blazin'
+  self.buff_duration = self.data.buff_duration or 1
+  self.aspd_per_enemy = self.data.aspd_per_enemy or 0.05
+  self.max_aspd = self.data.max_aspd or 0.5
+
+  self.buffdata = {name = 'blazin', color = red[5], duration = self.buff_duration,
+    stats = {aspd = 0}
+  }
+
+end
+
+function Proc_Blazin:onTick(dt)
+  Proc_Blazin.super.onTick(self, dt)
+
+  --find how many enemies are burning
+  local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
+  local count = 0
+  for i, enemy in ipairs(enemies) do
+    if enemy:has_buff('burn') then
+      count = count + 1
+    end
+  end
+
+  --change stats based on # of enemies burning
+  self.buffdata.stats.aspd = math.min(count * self.aspd_per_enemy, self.max_aspd)
+  
+  --remove buff before reapplying (otherwise will not change stats)
+  self.unit:remove_buff(self.buff)
+  self.unit:add_buff(self.buffdata)
+end
+
 Proc_Redshield = Proc:extend()
 function Proc_Redshield:init(args)
-  self.triggers = {}
+  self.triggers = {PROC_ON_GOT_HIT}
 
   Proc_Redshield.super.init(self, args)
 
   --define the proc's vars
   self.buff = 'redshield'
-  self.armor_per_enemy = self.data.armor_per_enemy or 1
-  self.max_armor = self.data.max_armor or 10
+  self.armor_per_stack = self.data.armor_per_stack or 1
+  self.max_stacks = self.data.max_stacks or 10
+
+  self.stacks = 0
 
   --starting to get complicated, might hurt perforamnce to add things
   --that scale with # of enemies
   --change to stacks per hit taken, have stacks fall off over time or on hit
 end
+
+function Proc_Redshield:onGotHit(from, damage)
+  Proc_Redshield.super.onGotHit(self, from, damage)
+
+
+  --change stats based on # of stacks
+  --do in objects or here?
+  -- in objects, we need seperate logic for stackable buffs
+  -- here, we need to remove and reapply the buff manually
+  --starting to think buffs should be a class as well L(0_0L)
+
+  self.unit:add_buff(self.buff)
+end
+
+function Proc_Redshield:onTick(dt)
+  Proc_Redshield.super.onTick(self, dt)
+
+  --stacks decrement over time
+end
+
+Proc_Frost = Proc:extend()
+function Proc_Frost:init(args)
+  self.triggers = {PROC_ON_HIT}
+
+  Proc_Frost.super.init(self, args)
+
+  --define the proc's vars
+  self.slow_amount = self.data.slow_amount or 0.3
+  self.slow_duration = self.data.slow_duration or 2
+end
+
+function Proc_Frost:onHit(target, damage)
+  Proc_Frost.super.onHit(self, target, damage)
+
+  target:slow(self.slow_amount, self.slow_duration)
+end
+
+Proc_Frostfield = Proc:extend()
+function Proc_Frostfield:init(args)
+  self.triggers = {PROC_ON_ATTACK, PROC_ON_HIT}
+
+  Proc_Frostfield.super.init(self, args)
+
+  --define the proc's vars
+  self.slow_amount = self.data.slow_amount or 0.3
+  self.slow_duration = self.data.slow_duration or 2
+  self.radius = self.data.radius or 100
+
+  self.every_attacks = self.data.every_attacks or 4
+
+  --define the procs memory
+  self.has_attacked = false
+  self.attacks_left = math.random(1, self.every_attacks)
+end
+
+function Proc_Frostfield:onAttack(target)
+  Proc_Frostfield.super.onAttack(self, target)
+  if self.attacks_left > 0 then
+    self.has_attacked = true
+  end
+end
+
+function Proc_Frostfield:onHit(target, damage)
+  Proc_Frostfield.super.onHit(self, target, damage)
+  if self.has_attacked then
+    self.has_attacked = false
+    self.attacks_left = self.attacks_left - 1
+    if self.attacks_left == 0 then
+      self.attacks_left = self.every_attacks
+
+      --remove level from spell
+      FrostField{
+        group = main.current.main, 
+        target = target, rs = self.radius, 
+        slow_amount = self.slow_amount, slow_duration = self.slow_duration, 
+        parent = self.unit, 
+        level = 1}
+    end
+  end
+end
+
+
 
 proc_name_to_class = {
   ['craggy'] = Proc_Craggy,
@@ -363,6 +487,8 @@ proc_name_to_class = {
   ['shield'] = Proc_Shield,
   ['phasing'] = Proc_Phasing,
   ['fire'] = Proc_Fire,
+  ['redshield'] = Proc_Redshield,
+  ['blazin'] = Proc_Blazin,
 }
 
 

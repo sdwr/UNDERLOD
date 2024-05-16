@@ -1590,6 +1590,9 @@ function ItemPart:init(args)
   self.looseItem = nil
   self.info_text = nil
 
+  self.h = 10
+  self.w = 10
+
   self.spring:pull(0.2, 200, 10)
   self.just_created = true
   self.t:after(0.1, function() self.just_created = false end)
@@ -1665,10 +1668,27 @@ function ItemPart:draw(y)
   if not self.parent.grabbed then
     graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
     local item = self.parent.unit.items[self.i]
-
-    graphics.rectangle(self.x, self.y, 14, 14, 3, 3, item_to_color(self:getItem()))
+    local tier_color = item_to_color(item)
+    graphics.rectangle(self.x, self.y, 14, 14, 3, 3, tier_color)
     graphics.rectangle(self.x, self.y, 10, 10, 3, 3, bg[5])
+
     if item then
+      -- draw item background colors (duplicated from itemCard code)
+      if item.colors then
+        local num_colors = #item.colors
+        local color_h = self.h / num_colors
+        for i, color_name in ipairs(item.colors) do
+          --make a copy of the color so we can change the alpha
+          local color = _G[color_name]
+          color = color[0]:clone()
+          color.a = 0.6
+          --find the y midpoint of the rectangle
+          local y = (self.y - self.h/2) + ((i-1) * color_h) + (color_h/2)
+  
+          graphics.rectangle(self.x, y, self.w, color_h, 2, 2, color)
+        end
+      end
+
       local image = item_images[item] or item_images['default']
       if not self.itemGrabbed then
         image:drawFullRes(self.x, self.y, 0, 0.2, 0.2)
@@ -2031,15 +2051,6 @@ function ItemCard:init(args)
   self.tier_color = item_to_color(self.item)
   self.text = item_text[self.item]
   self.stats = item_stat_multipliers[self.item]
-
-  
-  if self.cost <= 3 then
-    self.tier_color = grey[0]
-  elseif self.cost <= 6 then
-    self.tier_color = yellow[5]
-  else
-    self.tier_color = orange[3]
-  end
   
 end
 
@@ -2081,12 +2092,20 @@ function ItemCard:draw()
 
     graphics.rectangle(self.x, self.y, self.w, self.h, 6,6, bg[5])
     if self.colors then
+      local num_colors = #self.colors
+      local color_h = self.h / num_colors
       for i, color_name in ipairs(self.colors) do
+        --make a copy of the color so we can change the alpha
         local color = _G[color_name]
-        graphics.rectangle(self.x, self.y + 20 + 4*i, self.w, 4, 6, 6, color[0])
+        color = color[0]:clone()
+        color.a = 0.6
+        --find the y midpoint of the rectangle
+        local y = (self.y - self.h/2) + ((i-1) * color_h) + (color_h/2)
+
+        graphics.rectangle(self.x, y, self.w, color_h, 6, 6, color)
       end
     end
-    graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, self.tier_color, 3)
+    graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, self.tier_color, 2)
     if self.image then
       self.image:drawFullRes(self.x, self.y)
     end

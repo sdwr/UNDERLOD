@@ -265,6 +265,10 @@ end
 
 --don't need to deep copy the buff, since a new proc is created each time
 --will need to when the proc starts reapplying the buff?
+function Unit:has_buff(buffName)
+  return self.buffs[buffName] ~= nil
+end
+
 function Unit:add_buff(buff)
   local existing_buff = self.buffs[buff.name]
   if existing_buff then
@@ -298,6 +302,9 @@ function Unit:draw_buffs()
   end
 end
 
+--should move this somewhere, maybe to the proc class
+-- dont want to have a bunch of if statements in here
+-- with special logic for each buff
 function Unit:update_buffs(dt)
   for k, v in pairs(self.buffs) do
     --on buff start
@@ -391,6 +398,7 @@ function Unit:init_stats()
   --add per-attack procs from items here
   self.procs = {}
 
+  self.onTickProcs = {}
   self.onHitProcs = {}
   self.onAttackProcs = {}
   self.onGotHitProcs = {}
@@ -426,6 +434,9 @@ function Unit:init_stats()
           end
           if procObj:hasTrigger(PROC_ON_MOVE) then
             table.insert(self.onMoveProcs, procObj)
+          end
+          if procObj:hasTrigger(PROC_ON_TICK) then
+            table.insert(self.onTickProcs, procObj)
           end
         end
       end
@@ -594,6 +605,12 @@ function Unit:calculate_stats(first_run, dt)
   self.class_mvspd_m = self.class_mvspd_m*unit_stat_mult.mvspd
   self.max_v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m
   self.v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m
+end
+
+function Unit:onTickCallbacks(dt)
+  for k, proc in ipairs(self.onTickProcs) do
+    proc:onTick(dt)
+  end
 end
 
 --warning, target can be either a unit or a coordinate

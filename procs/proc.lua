@@ -12,6 +12,7 @@
 -- define the proc's vars (and bring stats in from data)
 -- define the proc's timers
 
+PROC_ON_TICK = 'onTick'
 PROC_ON_HIT = 'onHit'
 PROC_ON_GOT_HIT = 'onGotHit'
 PROC_ON_ATTACK = 'onAttack'
@@ -51,6 +52,12 @@ function Proc:die()
     print('destroying proc: ', self.name)
   end
   self.dead = true
+end
+
+function Proc:onTick(dt)
+  if DEBUG_PROCS then
+    print('onTick ', self.unit, dt, self.name)
+  end
 end
 
 function Proc:onAttack(target)

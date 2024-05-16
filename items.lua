@@ -244,7 +244,7 @@ item_to_item_data = {
     icon = 'frostorb',
     desc = 'An orb that slows enemies',
     stats = {dmg = 0.25},
-    procs = {'slow'}
+    procs = {'frost'}
   },
   ['frostbomb'] = {
     name = 'frostbomb',
@@ -253,7 +253,7 @@ item_to_item_data = {
     icon = 'frostbomb',
     desc = 'Creates a slowing field under enemies every few attacks',
     stats = {dmg = 0.25},
-    procs = {'slowfield'}
+    procs = {'frostfield'}
   },
   ['reticle'] = {
     name = 'reticle',

@@ -1334,14 +1334,16 @@ function init()
   end
   
   item_to_color = function(item)
-    local cost = item_costs[item]
+    if not item then return grey[0] end
+    
+    local cost = item.cost or 0
     local color = grey[0]
     if cost then
       if cost <= 6 then
         color = grey[0]
       elseif cost <= 12 then
         color = yellow[5]
-      else 
+      elseif cost <= 18 then
         color = orange[3]
       end
     end
