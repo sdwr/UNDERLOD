@@ -107,7 +107,8 @@ function Spawn_Wave(arena, wave)
   local wave_index = 1
   local current_group = 1
   arena.t:every(arena.time_between_spawn_groups, function()
-    current_group = current_group % #SpawnGlobals.spawn_markers
+    -- need to adjust mod to be 1 indexed
+    current_group = (current_group - 1) % #SpawnGlobals.spawn_markers + 1
     --hardcoded normal enemy types instead of searching for them
     if wave[wave_index] == 'shooter' or wave[wave_index] == 'seeker' then
       print("trying to spawn group", wave[wave_index], wave_index)
