@@ -65,7 +65,7 @@ fns['init_enemy'] = function(self)
       if Helper.Spell:there_is_target_in_range(self, 100) 
       and Helper.Time.time - self.last_attack_finished > 1 then
           Helper.Unit:claim_target(self, Helper.Spell:get_nearest_target(self))
-          Helper.Spell.Flame:create(Helper.Color.orange, 60, 100, self.fireDmg, self)
+          Helper.Spell.Flame:create(Helper.Color.orange, 60, 100, self.fireDmg, self, true)
           Helper.Spell.Flame:end_flame_after(self, self.fireDuration)
         end
       

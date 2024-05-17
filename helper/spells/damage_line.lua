@@ -2,7 +2,7 @@ Helper.Spell.DamageLine = {}
 
 Helper.Spell.DamageLine.list = {}
 
-function Helper.Spell.DamageLine:create(unit, color, linewidth, damage_troops, damage, x1, y1, x2, y2)
+function Helper.Spell.DamageLine:create(unit, color, linewidth, damage_troops, damage, x1, y1, x2, y2, draw_over_units)
     local damage_line = {
         unit = unit,
         x1 = x1,
@@ -14,7 +14,8 @@ function Helper.Spell.DamageLine:create(unit, color, linewidth, damage_troops, d
         linewidth = linewidth,
         color = color,
         damage = damage,
-        damage_troops = damage_troops
+        damage_troops = damage_troops,
+        draw_over_units = draw_over_units or true
     }
 
     table.insert(Helper.Spell.DamageLine.list, damage_line)

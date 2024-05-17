@@ -44,9 +44,7 @@ function Helper:draw()
     Helper.Unit:draw_points()
 end
 
-
-
-function Helper:update(dt)
+function Helper:updateState(dt)
     if not Helper.initialized then
         Helper:init()
         Helper.initialized = true
@@ -55,6 +53,9 @@ function Helper:update(dt)
     Helper.Time.time = Helper.Time.time + dt
     Helper.Time.delta_time = dt
 
+    Helper.window_width = love.graphics.getWidth() / sx
+    Helper.window_height = love.graphics.getHeight() / sx
+
     --update timers, run state functions, update hitbox points
     Helper.Unit:update_hitbox_points()
     Helper.Time:run_intervals()
@@ -62,12 +63,19 @@ function Helper:update(dt)
     Helper.Unit:run_state_change_functions()
     Helper.Unit:run_state_always_run_functions()
     Helper.Unit:select()
+end
+
+function Helper:updateUnderUnits()
+
+end
+
+function Helper:updateOverUnits()
 
     --update spells
 
     for i, spell in ipairs(Helper.Spell.spells) do
         if spell.update ~= nil then
-            spell.update()
+            spell:update()
         end
     end
 
@@ -76,30 +84,28 @@ function Helper:update(dt)
 
     Helper.Spell:damage_points();
 
+end
 
-
+function Helper:updateDebug()
+    
     Helper.mousex, Helper.mousey = love.mouse.getPosition()
     Helper.mousex = Helper.mousex / sx
     Helper.mousey = Helper.mousey / sx
 
     if love.keyboard.isDown( "d" ) then
-        Helper.Spell.DamageCircle:create(nil, Helper.Color.blue, true, 50, 10, Helper.mousex, Helper.mousey)
-        Helper.Spell.DamageCircle:create(nil, Helper.Color.blue, false, 50, 10, Helper.mousex, Helper.mousey)
+        Helper.Spell.DamageCircle:create(nil, Helper.Color.blue, true, 50, 10, Helper.mousex, Helper.mousey, true)
+        Helper.Spell.DamageCircle:create(nil, Helper.Color.blue, false, 50, 10, Helper.mousex, Helper.mousey, true)
     end
     if input['c'].pressed then
         print(Helper.mousex .. ' ' .. Helper.mousey)
     end
     if input['s'].pressed then
-        if not s_just_pressed then
-            Helper.Spell.Sweep:create(Helper.Color.blue, true, 100, 50, Helper.mousey - 50, Helper.window_width - 50, Helper.mousey + 50)
-        end
+        Helper.Spell.Sweep:create(Helper.Color.blue, true, 100, 50, Helper.mousey - 50, Helper.window_width - 50, Helper.mousey + 50)
     end
     if input['p'].pressed then
         Helper.Unit.do_draw_points = not Helper.Unit.do_draw_points 
     end
-    
-    Helper.window_width = love.graphics.getWidth() / sx
-    Helper.window_height = love.graphics.getHeight() / sx
+
 end
 
 

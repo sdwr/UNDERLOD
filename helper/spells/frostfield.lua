@@ -8,7 +8,7 @@ Helper.Spell.Frostfield.slowAmount = 0.3
 
 Helper.Spell.Frostfield.list = {}
 
-function Helper.Spell.Frostfield:create(unit, color, damage_troops, damagePerTick, radius, duration, x, y)
+function Helper.Spell.Frostfield:create(unit, color, damage_troops, damagePerTick, radius, duration, x, y, draw_over_units)
 
     local frostfield = {
         unit = unit,
@@ -20,6 +20,7 @@ function Helper.Spell.Frostfield:create(unit, color, damage_troops, damagePerTic
         radius = radius,
         duration = duration or Helper.Spell.Frostfield.duration,
         color = color:clone(),
+        draw_over_units = draw_over_units or false
     }
 
 

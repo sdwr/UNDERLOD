@@ -137,7 +137,7 @@ function Proc_Overkill:onKill(target)
 
     cannoneer2:play{pitch = random:float(0.8, 1.2), volume = 0.5}
     Helper.Spell.DamageCircle:create(self, black[0], damage_troops, damage,
-      radius, target.x, target.y)
+      radius, target.x, target.y, true)
   end
 end
 
@@ -462,7 +462,7 @@ function Proc_Frostfield:onHit(target, damage)
       self.attacks_left = self.every_attacks
 
       --remove level from spell
-      Helper.Spell.Frostfield:create(self.unit, blue[0], false, 5, self.radius, 2, target.x, target.y)
+      Helper.Spell.Frostfield:create(self.unit, blue[0], false, 5, self.radius, 2, target.x, target.y, false)
     end
   end
 end

@@ -2,10 +2,11 @@ Helper.Spell.Burst = {}
 
 Helper.Spell.Burst.list = {}
 
-function Helper.Spell.Burst:create(color, bullet_length, damage, speed, unit)
+function Helper.Spell.Burst:create(color, bullet_length, damage, speed, unit, draw_over_units)
     local burst = {
         interval_id = -1,
-        unit = unit
+        unit = unit,
+        draw_over_units = draw_over_units or true
     }
 
     burst.interval_id = Helper.Time:set_interval(0.1, function()

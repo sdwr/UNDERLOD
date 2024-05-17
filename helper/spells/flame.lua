@@ -4,7 +4,7 @@ Helper.Spell.Flame.do_draw_hitbox = false
 Helper.Spell.Flame.do_draw_particles = true
 Helper.Spell.Flame.list = {}
 
-function Helper.Spell.Flame:create(color, flamewidth, flameheight, damage, unit)
+function Helper.Spell.Flame:create(color, flamewidth, flameheight, damage, unit, draw_over_units)
     if unit.have_target then
         local i, flame = find_in_list(Helper.Spell.Flame.list, unit, function(value) return value.unit end)
         if flame == -1 then
@@ -19,7 +19,8 @@ function Helper.Spell.Flame:create(color, flamewidth, flameheight, damage, unit)
                 color = color,
                 flamewidth = flamewidth,
                 flameheight = flameheight,
-                damage = damage
+                damage = damage,
+                draw_over_units = draw_over_units or true
             }
 
             if unit and unit.area_size_m then

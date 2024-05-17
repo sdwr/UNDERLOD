@@ -2811,7 +2811,17 @@ function Troop:set_character()
             self:onAttackCallbacks(self.claimed_target)
           end
           sniper_load:play{volume=0.7}
-          Helper.Spell.Laser:create(Helper.Color.blue, 1, false, 20, self)
+          local data = {
+            group = main.current.effects, 
+            unit = self,
+            target = self.claimed_target,
+            direction_lock = false,
+            laser_aim_width = 3,
+            color = Helper.Color.blue,
+            damage = self.dmg,
+          }
+          Spell_Laser:init(data)
+          Helper.Spell.Laser:create(Helper.Color.blue, 1, false, 20, self, true)
         end)
       end
       
@@ -2854,7 +2864,7 @@ function Troop:set_character()
         end)
         self.spell_wait_id = Helper.Time:wait(1, function()
           Helper.Unit:claim_target(self, Helper.Spell:get_nearest_target(self))
-          Helper.Spell.Burst:create(Helper.Color.white, 5, self.dmg, 500, self)
+          Helper.Spell.Burst:create(Helper.Color.white, 5, self.dmg, 500, self, true)
         end)
       end
     end

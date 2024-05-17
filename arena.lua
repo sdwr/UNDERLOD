@@ -38,7 +38,7 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
   main_song_instance:stop()
 
   self.starting_units = table.copy(units)
-  self.targetedEnemy = nil
+  self.targetedEnemy = nil0
 
   --if not state.mouse_control then
     --input:set_mouse_visible(false)
@@ -50,7 +50,9 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
   --steam.friends.setRichPresence('steam_display', '#StatusFull')
   --steam.friends.setRichPresence('text', 'Arena - Level ' .. self.level)
 
+  self.spells = Group()
   self.floor = Group()
+  self.floor_effects = Group()
   self.main = Group():set_as_physics_world(32, 0, 0, {'troop', 'enemy', 'projectile', 'enemy_projectile', 'force_field', 'ghost',})
   self.post_main = Group()
   self.effects = Group()
@@ -172,14 +174,18 @@ end
 
 
 function Arena:on_exit()
+  self.spells:destroy()
   self.floor:destroy()
+  self.floor_effects:destroy()
   self.main:destroy()
   self.post_main:destroy()
   self.effects:destroy()
   self.ui:destroy()
   self.credits:destroy()
   self.t:destroy()
+  self.spells = nil
   self.floor = nil
+  self.floor_effects = nil
   self.main = nil
   self.post_main = nil
   self.effects = nil
@@ -287,15 +293,21 @@ function Arena:update(dt)
   self:update_game_object(dt*slow_amount)
   main_song_instance.pitch = math.clamp(slow_amount*music_slow_amount, 0.05, 1)
 
+  Helper:updateState(dt*slow_amount)
   star_group:update(dt*slow_amount)
+  self.spells:update(dt*slow_amount)
   self.floor:update(dt*slow_amount)
+  self.floor_effects:update(dt*slow_amount)
   self.main:update(dt*slow_amount)
   self.post_main:update(dt*slow_amount)
   self.effects:update(dt*slow_amount)
   self.ui:update(dt*slow_amount)
   self.credits:update(dt)
 
-  Helper:update(dt*slow_amount)
+  --right now, all these spells are drawing 
+  --over everything else
+  --need to interleave them with the rest of the drawing
+  -- it shouldn't matter when the spell updates happen
   LevelManager.update(dt)
 end
 
@@ -552,9 +564,21 @@ function Arena:display_text()
 
 end
 
+--spells can be drawn in multiple layers
+-- 1. on the floor, under units
+-- 2. on top of units
+-- so where should they be added to groups?
+-- either the spell itself is a gameobject that gets drawn
+-- or the spell effects are drawn
+--probably want the granularity of the spell effects being drawn
+-- say if a spell has a projectile and a floor effect
+-- but its more tricky to implement, especially because the spells are all drawn manually right now
+-- so i would have to change the way they are drawn
+--compromise is make the spells gameobjects, and let them spawn effects in different groups
 
 function Arena:draw()
   self.floor:draw()
+  self.floor_effects:draw()
   self.main:draw_with_ghost_ontop()
   self.post_main:draw()
   self.effects:draw()

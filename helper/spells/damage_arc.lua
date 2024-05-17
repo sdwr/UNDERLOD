@@ -4,7 +4,7 @@ Helper.Spell.DamageArc.list = {}
 Helper.Spell.DamageArc.grow = true
 
 --width in degrees
-function Helper.Spell.DamageArc:create(unit, color, damage_troops, pierce, damage, width, angle, speed, x, y, radius)
+function Helper.Spell.DamageArc:create(unit, color, damage_troops, pierce, damage, width, angle, speed, x, y, radius, draw_over_units)
     local damage_arc = {
         unit = unit,
         x = x,
@@ -18,7 +18,8 @@ function Helper.Spell.DamageArc:create(unit, color, damage_troops, pierce, damag
         color = Helper.Color:set_transparency(color, 0.8),
         radius = radius or 20,
         -- line_width = radius / 15,
-        damage = damage
+        damage = damage,
+        draw_over_units = draw_over_units or true
     }
 
     damage_arc.targets_hit = {}
@@ -28,12 +29,12 @@ function Helper.Spell.DamageArc:create(unit, color, damage_troops, pierce, damag
     table.insert(Helper.Spell.DamageArc.list, damage_arc)
 end
 
-function Helper.Spell.DamageArc:create_spread(unit, color, damage_troops, pierce, damage, width, thickness, numArcs, speed, x, y)
+function Helper.Spell.DamageArc:create_spread(unit, color, damage_troops, pierce, damage, width, thickness, numArcs, speed, x, y, draw_over_units)
     local angle = math.random(360)
     for i = 1, numArcs do
         angle = angle + (360 / numArcs)
         for j = 0, thickness-1 do
-            Helper.Spell.DamageArc:create(unit, color, damage_troops, pierce, damage, width, angle, speed, x, y, 20 - (j*4))
+            Helper.Spell.DamageArc:create(unit, color, damage_troops, pierce, damage, width, angle, speed, x, y, 20 - (j*4), draw_over_units)
         end
     end
 end

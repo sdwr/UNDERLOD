@@ -666,7 +666,7 @@ function Unit:explode(enemy)
   local radius = enemy.shape.w * self.area_size_m
   explosion1:play{volume = 0.7}
   Helper.Spell.DamageCircle:create(self, black[0], damage_troops, enemy.max_hp * 0.2, 
-  radius, enemy.x, enemy.y)
+  radius, enemy.x, enemy.y, true)
 end
 
 function Unit:stun(duration)

@@ -3,7 +3,7 @@ Helper.Spell.DamageCircle = {}
 Helper.Spell.DamageCircle.duration = 0.25
 Helper.Spell.DamageCircle.list = {}
 
-function Helper.Spell.DamageCircle:create(unit, color, damage_troops, damage, radius, x, y)
+function Helper.Spell.DamageCircle:create(unit, color, damage_troops, damage, radius, x, y, draw_over_units)
     local damage_circle = {
         unit = unit,
         x = x,
@@ -14,7 +14,8 @@ function Helper.Spell.DamageCircle:create(unit, color, damage_troops, damage, ra
         color = Helper.Color:set_transparency(color, 0.3),
         radius = radius,
         -- line_width = radius / 15,
-        damage = damage
+        damage = damage,
+        draw_over_units = draw_over_units or false
     }
 
     table.insert(Helper.Spell.DamageCircle.list, damage_circle)

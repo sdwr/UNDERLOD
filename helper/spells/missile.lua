@@ -3,7 +3,7 @@ Helper.Spell.Missile = {}
 Helper.Spell.Missile.list = {}
 Helper.Spell.Missile.prelist = {}
 
-function Helper.Spell.Missile:create(color, missile_length, damage, speed, unit, fly_infinitely, explode_radius, targetx, targety)
+function Helper.Spell.Missile:create(color, missile_length, damage, speed, unit, fly_infinitely, explode_radius, targetx, targety, draw_over_units)
     if unit.have_target or (targetx and targety) then
         local missile = {
             x = 0,
@@ -19,7 +19,8 @@ function Helper.Spell.Missile:create(color, missile_length, damage, speed, unit,
             missile_width = missile_length / 3,
             explode_radius = explode_radius,
             damage = damage,
-            speed = speed
+            speed = speed,
+            draw_over_units = draw_over_units or true
         }
 
         if missile.targetx ~= -1 and missile.targety ~= -1 then
@@ -130,7 +131,7 @@ function Helper.Spell.Missile:explode()
         if not missile.fly_infinitely then
             if Helper.Geometry:distance(missile.x, missile.y, missile.targetx, missile.targety) < missile.missile_length / 1.5 then
                 Helper.Spell.DamageCircle:create(missile.unit, missile.color, not missile.unit.is_troop, 
-                missile.damage, missile.explode_radius, missile.x, missile.y)
+                missile.damage, missile.explode_radius, missile.x, missile.y, true)
                 table.remove(Helper.Spell.Missile.list, i)
                 shoot1:play{volume=0.7}
             end
@@ -145,7 +146,7 @@ function Helper.Spell.Missile:explode()
                 for __, point in ipairs(entity.points) do
                     if Helper.Geometry:distance(missile.x, missile.y, entity.x + point.x, entity.y + point.y) < missile.missile_length / 1.5 then
                         Helper.Spell.DamageCircle:create(missile.unit, missile.color, not missile.unit.is_troop, 
-                        missile.damage, missile.explode_radius, missile.x, missile.y)
+                        missile.damage, missile.explode_radius, missile.x, missile.y, true)
                         table.remove(Helper.Spell.Missile.list, i)
                         shoot1:play{volume=0.7}
                         break
@@ -156,7 +157,7 @@ function Helper.Spell.Missile:explode()
             if Helper.window_width - missile.x < missile.missile_length / 1.5 or missile.x <= missile.missile_length / 1.5 
             or Helper.window_height - missile.y < missile.missile_length / 1.5 or missile.y <= missile.missile_length / 1.5 then
                 Helper.Spell.DamageCircle:create(missile.unit, missile.color, not missile.unit.is_troop, 
-                missile.damage, missile.explode_radius, missile.x, missile.y)
+                missile.damage, missile.explode_radius, missile.x, missile.y, true)
                 table.remove(Helper.Spell.Missile.list, i)
                 shoot1:play{volume=0.7}
             end

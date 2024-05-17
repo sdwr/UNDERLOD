@@ -20,6 +20,8 @@ function Helper.Spell.Bomb:create(color, damage_troops, damage, radius, unit, ar
         damage = damage
     }
 
+    bomb.draw_over_units = false
+
     if unit and unit.area_size_m then
         bomb.explode_radius = bomb.explode_radius * unit.area_size_m
     end
@@ -63,7 +65,7 @@ function Helper.Spell.Bomb:explode()
         local bomb = Helper.Spell.Bomb.list[i]
         if Helper.Time.time - bomb.armed_duration > bomb.start_armed_time then
             Helper.Spell.DamageCircle:create(bomb.unit, bomb.color, bomb.damage_troops,
-                bomb.damage, bomb.explode_radius, bomb.x, bomb.y)
+                bomb.damage, bomb.explode_radius, bomb.x, bomb.y, true)
             table.remove(Helper.Spell.Bomb.list, i)
             cannoneer1:play{volume=1.3}
         end

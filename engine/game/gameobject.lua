@@ -102,3 +102,4 @@ end
 function GameObject:draw_game_object()
   if self.body then self:draw_physics() end
 end
+
