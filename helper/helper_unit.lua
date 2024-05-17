@@ -5,11 +5,16 @@ Helper.Unit.do_draw_points = false
 
 function Helper.Unit:get_list(troop_list)
     if troop_list == nil then
-        return -1
+        return {}
     end
 
+    --will not work with subclasses for troop
+    --the Group:get_objects_by_class method is efficient
+    --and searching by self.is_troop will be slow
+    --can maybe make a list of all troop types, but that kinda sucks
+    --
     if troop_list then
-        return main.current.main:get_objects_by_class(Troop)
+        return main.current.main:get_objects_by_classes(main.current.troops)
     else
         return main.current.main:get_objects_by_classes(main.current.enemies)
     end
@@ -29,7 +34,6 @@ end
 function Helper.Unit:add_custom_variables_to_unit(unit)
     unit.previous_state = ''
 
-    unit.is_troop = true
     unit.targeted_by = {}
     unit.claimed_target = nil
     unit.have_target = false
@@ -60,12 +64,6 @@ function Helper.Unit:add_custom_variables_to_unit(unit)
 
     Helper.Unit:add_default_state_change_functions(unit)
     Helper.Unit:add_default_state_always_run_functions(unit)
-
-    if is_in_list(Helper.Unit:get_list(true), unit) then
-        unit.is_troop = true
-    else
-        unit.is_troop = false
-    end
 end
 
 function Helper.Unit:claim_target(unit, target)

@@ -373,7 +373,7 @@ function Unit:init_stats()
     self.base_hp = 100
     self.base_dmg = 10
     self.base_mvspd = 50
-  elseif self:is(Troop) then
+  elseif self.is_troop then
     self.base_hp = 100 * hpMod
     self.base_dmg = 10 * dmgMod
     self.base_mvspd = 67 * spdMod
@@ -450,7 +450,7 @@ function Unit:init_stats()
 end
 
 
-function Unit:calculate_stats(first_run, dt)
+function Unit:calculate_stats(first_run)
   local level = self.level or 1
   local hpMod = 1 + ((level - 1) / 2)
   local dmgMod = 1 + ((level - 1) / 2)
@@ -662,7 +662,7 @@ end
 
 
 function Unit:explode(enemy)
-  local damage_troops = not self:is(Troop)
+  local damage_troops = not self.is_troop
   local radius = enemy.shape.w * self.area_size_m
   explosion1:play{volume = 0.7}
   Helper.Spell.DamageCircle:create(self, black[0], damage_troops, enemy.max_hp * 0.2, 
@@ -777,7 +777,7 @@ function HPBar:draw()
       graphics.line(p.x - 0.5*p.shape.w, p.y - p.shape.h, p.x + 0.5*p.shape.w, p.y - p.shape.h, bg[-3], 2)
       local n = math.remap(p.hp, 0, p.max_hp, 0, 1)
       graphics.line(p.x - 0.5*p.shape.w, p.y - p.shape.h, p.x - 0.5*p.shape.w + n*p.shape.w, p.y - p.shape.h,
-      p.hfx.hit.f and fg[0] or (((p:is(Player) or p:is(Troop)) and green[0]) or (table.any(main.current.enemies, function(v) return p:is(v) end) and red[0])), 2)
+      p.hfx.hit.f and fg[0] or (((p:is(Player) or p.is_troop) and green[0]) or (table.any(main.current.enemies, function(v) return p:is(v) end) and red[0])), 2)
     graphics.pop()
   end
 end

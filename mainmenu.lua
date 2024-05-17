@@ -39,6 +39,7 @@ function MainMenu:on_enter(from)
   self.main:enable_trigger_between('enemy_projectile', 'enemy')
   self.main:enable_trigger_between('troop', 'ghost')
 
+  self.troops = {Troop, Laser_Troop}
   self.enemies = {Enemy, EnemyCritter}
   self.friendlies = {Troop, Critter}
 
@@ -68,7 +69,8 @@ function MainMenu:on_enter(from)
 
   for i, unit in ipairs(self.units) do
     for j=0,4 do
-      Troop{group = self.main, x = gw/2 + random:float(-48, 48), y = gh/2 + 16 + random:float(-48, 48), character = unit.character, level = unit.level}
+      local troop_data = {group = self.main, x = gw/2 + random:float(-48, 48), y = gh/2 + 16 + random:float(-48, 48), character = unit.character, level = unit.level}
+      Create_Troop(troop_data)
     end
   end
 

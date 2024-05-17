@@ -94,7 +94,8 @@ function Spawn_Troops(arena)
 
 
     for row_offset=0, 4 do
-      Troop{group = arena.main, x = spawn_x + (column_offset*20), y = spawn_y + (row_offset*10), level = unit.level, character = unit.character, items = unit.items, passives = arena.passives}
+      troop_data = {group = arena.main, x = spawn_x + (column_offset*20), y = spawn_y + (row_offset*10), level = unit.level, character = unit.character, items = unit.items, passives = arena.passives}
+      Create_Troop(troop_data)
     end
     
   end

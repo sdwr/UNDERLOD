@@ -631,7 +631,8 @@ function init()
 
   get_character_stat_string = function(character, level)
     local group = Group():set_as_physics_world(32, 0, 0, {'troop', 'enemy', 'projectile', 'enemy_projectile'})
-    local troop = Troop{group = group, leader = true, character = character, level = level, follower_index = 1}
+    local troop_data = {group = group, leader = true, character = character, level = level, follower_index = 1}
+    local troop = Create_Troop(troop_data)
     troop:update(0)
     return '[red]HP: [red]' .. troop.max_hp .. '[fg], [red]DMG: [red]' .. troop.dmg .. '[fg], [green]ASPD: [green]' .. math.round(troop.aspd_m, 2) .. 'x[fg], [blue]AREA: [blue]' ..
     math.round(troop.area_size_m, 2) ..  'x[fg], [yellow]DEF: [yellow]' .. math.round(troop.def, 2) .. '[fg], [green]MVSPD: [green]' .. math.round(troop.v, 2) .. '[fg]'
@@ -639,7 +640,8 @@ function init()
 
   get_character_stat = function(character, level, stat)
     local group = Group():set_as_physics_world(32, 0, 0, {'troop', 'enemy', 'projectile', 'enemy_projectile'})
-    local troop = Troop{group = group, leader = true, character = character, level = level, follower_index = 1}
+    local troop_data = {group = group, leader = true, character = character, level = level, follower_index = 1}
+    local troop = Create_Troop(troop_data)
     troop:update(0)
     return math.round(troop[stat], 2)
   end

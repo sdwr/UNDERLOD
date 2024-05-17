@@ -131,7 +131,7 @@ end
 function Proc_Overkill:onKill(target)
   Proc_Overkill.super.onKill(self, target)
   if target.hp <= 0 then
-    local damage_troops = not self:is(Troop)
+    local damage_troops = not self.is_troop
     local damage = math.abs(target.hp) * self.overkillMulti
     local radius = target.shape.w * self.radius
 

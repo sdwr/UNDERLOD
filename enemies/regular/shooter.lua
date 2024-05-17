@@ -99,7 +99,7 @@ end
 
 
 function EnemyProjectile:on_trigger_enter(other, contact)
-  if other:is(Player) or other:is(Troop) then
+  if other:is(Player) or other.is_troop then
     self:die(self.x, self.y, nil, random:int(2, 3))
     other:hit(self.dmg, self.unit)
 

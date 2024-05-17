@@ -79,6 +79,7 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
   self.damage_taken = 0
   self.main_slow_amount = .67
   self.enemies = {Enemy, EnemyCritter}
+  self.troops = {Troop, Laser_Troop}
   self.friendlies = {Troop, Critter}
   self.troop_list = {}
   self.color = self.color or fg[0]
