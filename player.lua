@@ -2499,6 +2499,7 @@ function Saboteur:on_collision_enter(other, contact)
 end
 
 
+<<<<<<< Updated upstream
 Troop = Object:extend()
 Troop:implement(GameObject)
 Troop:implement(Physics)
@@ -3252,6 +3253,8 @@ end
 
 
 
+=======
+>>>>>>> Stashed changes
 Automaton = Object:extend()
 Automaton:implement(GameObject)
 Automaton:implement(Physics)
