@@ -98,7 +98,7 @@ function Troop:update(dt)
   -- then do movement if rally/following
   if self.state == unit_states['following'] then
     self:seek_mouse()
-    --self:steering_separate(16, {Troop})
+    --self:steering_separate(16, troop_classes)
     self:wander(15,50,5)
     self:rotate_towards_velocity(1)
 
@@ -149,12 +149,12 @@ function Troop:update(dt)
     if self.target and not self:in_range()() and self.state == unit_states['normal'] then
       self:seek_point(self.target.x, self.target.y)
       self:wander(7, 30, 5)
-      --self:steering_separate(16, {Troop})
+      --self:steering_separate(16, troop_classes)
       self:rotate_towards_velocity(1)
     --otherwise target is in attack range or doesn't exist, stay still
     else
       self:set_velocity(0,0)
-      self:steering_separate(16, {Troop})
+      self:steering_separate(16, troop_classes)
     end
   else
     self:set_velocity(0,0)
@@ -233,10 +233,6 @@ function Troop:attack(area, mods)
     character = self.character, level = self.level, parent = self}
   Area(table.merge(t, mods))
 
-  if self.character == 'swordsman'then
-    _G[random:table{'swordsman1', 'swordsman2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.75}
-  end
-
   if self.character == 'juggernaut' then
     elementor1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
   end
@@ -256,13 +252,6 @@ end
 
 function Troop:onDeath()
   Corpse{group = main.current.main, x = self.x, y = self.y}
-  if self.enrage_on_death then
-    local allies = self:get_objects_in_shape(Circle(self.x, self.y, 100), {Troop})
-    for i, troop in ipairs(allies) do
-      local enrage = {name = 'enrage', duration = 5, color = red[0], stats = {mvspd = 0.2, aspd = 0.4}}
-      troop:add_buff(enrage)
-    end
-  end
   self.state_change_functions['death']()
   self.death_function()
 end
@@ -270,29 +259,7 @@ end
 
 
 function Troop:set_character()
-  if self.character == 'swordsman' then
-    self.attack_sensor = Circle(self.x, self.y, attack_ranges['melee'])
-
-    --cooldowns
-    self.baseCooldown = attack_speeds['medium-fast']
-    self.cooldownTime = self.baseCooldown
-
-    self.state_always_run_functions['always_run'] = function()
-      if Helper.Unit:can_cast(self) then
-        if self.target then
-          self:attack(self.dmg, {x = self.target.x, y = self.target.y})
-          self.last_attack_finished = Helper.Time.time
-        end
-      end
-    end
-
-    self.t:cooldown(attack_speeds['medium-fast'], self:in_range(), function()
-      if self.target then
-        self:attack(10, {x = self.target.x, y = self.target.y})
-      end
-    end, nil, nil, 'attack')
-
-  elseif self.character == 'pyro' then
+  if self.character == 'pyro' then
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['long'])
     -- self.cooldownTime = 2
     self.castTime = 0
@@ -664,7 +631,7 @@ function Troop:heal(amount)
 end
 
 function Troop:get_hurt_ally(sensor)
-  local allies = self:get_objects_in_shape(sensor, {Troop})
+  local allies = self:get_objects_in_shape(sensor, troop_classes)
   if not allies or #allies == 0 then return false end
   for _, ally in ipairs(allies) do
     if ally.hp < ally.max_hp and self.id ~= ally.id and ally.beingHealed == false then

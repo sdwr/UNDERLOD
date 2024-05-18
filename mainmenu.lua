@@ -39,9 +39,9 @@ function MainMenu:on_enter(from)
   self.main:enable_trigger_between('enemy_projectile', 'enemy')
   self.main:enable_trigger_between('troop', 'ghost')
 
-  self.troops = {Troop, Laser_Troop}
-  self.enemies = {Enemy, EnemyCritter}
-  self.friendlies = {Troop, Critter}
+  self.troops = troop_classes
+  self.enemies = enemy_classes
+  self.friendlies = friendly_classes
 
   -- Spawn solids and player
   self.x1, self.y1 = gw/2 - 0.8*gw/2, gh/2 - 0.8*gh/2

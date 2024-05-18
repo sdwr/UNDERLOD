@@ -22,3 +22,18 @@ deepcopy = function(orig)
   end
   return copy
 end
+
+shallowcopy = function(orig)
+  local copy = {}
+  for k, v in pairs(orig) do
+      copy[k] = v
+  end
+  return copy
+end
+
+function table.extend(t, t2)
+  for i, v in ipairs(t2) do
+      table.insert(t, v)
+  end
+end
+

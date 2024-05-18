@@ -78,9 +78,9 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
   self.damage_dealt = 0
   self.damage_taken = 0
   self.main_slow_amount = .67
-  self.enemies = {Enemy, EnemyCritter}
-  self.troops = {Troop, Laser_Troop}
-  self.friendlies = {Troop, Critter}
+  self.enemies = enemy_classes
+  self.troops = troop_classes
+  self.friendlies = friendly_classes
   self.troop_list = {}
   self.color = self.color or fg[0]
 
@@ -218,7 +218,7 @@ function Arena:update(dt)
 
   if not self.paused then
     --select character from hotbar
-    self.troop_list = self.main:get_objects_by_class(Troop)
+    self.troop_list = self.main:get_objects_by_classes(self.troops)
     for i = 1, 9 do
       if input[tostring(i)].pressed then
         self:select_character_by_index(i)
@@ -594,7 +594,7 @@ function Arena:draw()
 end
 
 function Arena:all_troops_dead()
-  local troops = self.main:get_objects_by_class(Troop)
+  local troops = self.main:get_objects_by_classes(self.troops)
 
   if #troops == 0 then return true end
   for _, troop in ipairs(troops) do

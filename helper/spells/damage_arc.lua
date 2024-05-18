@@ -74,7 +74,7 @@ end
 
 function Helper.Spell.DamageArc:damage()
     local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
-    local troops = main.current.main:get_objects_by_class(Troop)
+    local troops = main.current.main:get_objects_by_classes(main.current.troops or {})
 
     for i, damage_arc in ipairs(Helper.Spell.DamageArc.list) do
 
@@ -82,10 +82,10 @@ function Helper.Spell.DamageArc:damage()
         local line = Line(x1, y1, x2, y2)
         local targets = nil
             if not damage_arc.damage_troops then
-                targets = main.current.main:get_objects_in_shape(line, {Enemy, EnemyCritter}, damage_arc.targets_hit)
+                targets = main.current.main:get_objects_in_shape(line, enemy_classes, damage_arc.targets_hit)
 
             else
-                targets = main.current.main:get_objects_in_shape(line, {Troop, Critter}, damage_arc.targets_hit)
+                targets = main.current.main:get_objects_in_shape(line, friendly_classes, damage_arc.targets_hit)
             end
             for _, target in ipairs(targets) do
                 target:hit(damage_arc.damage, damage_arc.unit)

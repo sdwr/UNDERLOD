@@ -52,7 +52,7 @@ end
 function Can_Spawn(rs, location)
   local check_circle = Circle(0,0, rs)
   check_circle:move_to(location.x, location.y)
-  local objects = main.current.main:get_objects_in_shape(check_circle, {Enemy, EnemyCritter, Critter, Troop})
+  local objects = main.current.main:get_objects_in_shape(check_circle, all_unit_classes)
   if #objects > 0 or Outside_Arena(location) then
     return false
   else

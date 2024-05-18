@@ -415,6 +415,7 @@ function Unit:init_stats()
         for _, proc in ipairs(item.procs) do
           local procname = proc
           --can fill data from item here, but defaults should be ok
+          print(procname)
           local procObj = proc_name_to_class[procname]{unit = self, data = {name = procname}}
           table.insert(self.procs, procObj)
 

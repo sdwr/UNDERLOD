@@ -334,6 +334,29 @@ function Proc_Fire:onHit(target, damage)
   target:burn(self.burnDps, self.burnDuration)
 end
 
+Proc_Firestack = Proc:extend()
+function Proc_Firestack:init(args)
+  self.triggers = {PROC_ON_HIT}
+
+  Proc_Firestack.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  self.buff = 'firestack'
+  self.burnDuration = self.data.burnDuration or 3
+  self.burnDps = self.data.burnDamage or 5
+  self.max_stacks = self.data.max_stacks or 5
+
+  self.stacks = 0
+end
+
+function Proc_Firestack:onHit(target, damage)
+  Proc_Firestack.super.onHit(self, target, damage)
+
+  -- make it stack here (should allow original fire to stack, not add a new one)
+end
+
 Proc_Blazin = Proc:extend()
 function Proc_Blazin:init(args)
   self.triggers = {PROC_ON_TICK}
@@ -502,6 +525,7 @@ proc_name_to_class = {
   ['shield'] = Proc_Shield,
   ['phasing'] = Proc_Phasing,
   ['fire'] = Proc_Fire,
+  ['firestack'] = Proc_Firestack,
   ['redshield'] = Proc_Redshield,
   ['blazin'] = Proc_Blazin,
   ['frostfield'] = Proc_Frostfield,

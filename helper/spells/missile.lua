@@ -139,7 +139,7 @@ function Helper.Spell.Missile:explode()
             if missile.unit.is_troop then
                 entities = main.current.main:get_objects_by_classes(main.current.enemies)
             else
-                entities = main.current.main:get_objects_by_class(Troop)
+                entities = main.current.main:get_objects_by_classes(troop_classes)
             end
             for _, entity in ipairs(entities) do
                 for __, point in ipairs(entity.points) do
