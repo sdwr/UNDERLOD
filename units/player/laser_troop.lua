@@ -32,6 +32,7 @@ function Laser_Troop:set_character()
       Helper.Time:wait(get_random(0, 0.1), function()
         
         --on attack callbacks
+        --this is on the aim, not the actual attack!
         if self.onAttackCallbacks then
           self:onAttackCallbacks(self.claimed_target)
         end

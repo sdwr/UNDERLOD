@@ -1,5 +1,6 @@
 --debug constants
 DEBUG_PROCS = false
+DEBUG_SPELLS = false
 
 --gold
 --note that HoG econ check is in arena.lua
