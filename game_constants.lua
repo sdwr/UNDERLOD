@@ -13,3 +13,8 @@ MAX_UNITS = 3
 --used in the spawn manager
 --and also used by procs to know when to start buffs
 TIME_TO_ROUND_START = 2
+
+
+--game constants
+MAX_STACKS_FIRE = 5
+MAX_STACKS_REDSHIELD = 20

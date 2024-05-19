@@ -1,10 +1,9 @@
 
 enemy_to_class = {}
 
-Enemy = Object:extend()
+Enemy = Unit:extend()
 Enemy:implement(GameObject)
 Enemy:implement(Physics)
-Enemy:implement(Unit)
 function Enemy:init(args)
   self:init_game_object(args)
 
@@ -150,13 +149,13 @@ function Enemy:onDeath()
   if self.parent and self.parent.summons then
     self.parent.summons = self.parent.summons - 1
   end
-  Corpse{group = main.current.main, x = self.x, y = self.y}
 
   self.state_change_functions['death']()
   self.death_function()
 end
 
 function Enemy:die()
+  self.super.die(self)
     self.dead = true
     if self.parent and self.parent.summons and self.parent.summons > 0 then
       self.parent.summons = self.parent.summons - 1

@@ -1,8 +1,7 @@
 
-EnemyCritter = Object:extend()
+EnemyCritter = Unit:extend()
 EnemyCritter:implement(GameObject)
 EnemyCritter:implement(Physics)
-EnemyCritter:implement(Unit)
 function EnemyCritter:init(args)
   self:init_game_object(args)
   if tostring(self.x) == tostring(0/0) or tostring(self.y) == tostring(0/0) then self.dead = true; return end
@@ -99,6 +98,7 @@ end
 
 
 function EnemyCritter:die(x, y, r, n)
+  EnemyCritter.super.die(self)
   if self.dead then return end
   x = x or self.x
   y = y or self.y

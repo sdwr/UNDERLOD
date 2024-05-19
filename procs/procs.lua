@@ -331,30 +331,48 @@ end
 function Proc_Fire:onHit(target, damage)
   Proc_Fire.super.onHit(self, target, damage)
   --need to add a burn debuff to the target
-  target:burn(self.burnDps, self.burnDuration)
+  target:burn(self.burnDps, self.burnDuration, self.unit)
 end
 
 Proc_Firestack = Proc:extend()
 function Proc_Firestack:init(args)
-  self.triggers = {PROC_ON_HIT}
+  self.triggers = {}
 
   Proc_Firestack.super.init(self, args)
+
+  self.buffdata = {name = 'firestack', duration = 9999,
+    toggles = {firestack = 1}
+  }
+  --add ability to stack firedmg on hit to unit
+  self.unit:add_buff(self.buffdata)
+end
+
+
+ProcChainExplode = Proc:extend()
+function ProcChainExplode:init(args)
+  self.triggers = {PROC_ON_KILL}
+
+  ProcChainExplode.super.init(self, args)
   
   
 
   --define the proc's vars
-  self.buff = 'firestack'
-  self.burnDuration = self.data.burnDuration or 3
-  self.burnDps = self.data.burnDamage or 5
-  self.max_stacks = self.data.max_stacks or 5
-
-  self.stacks = 0
+  self.damage = self.data.damage or 10
+  self.radius = self.data.radius or 25
+  self.color = self.data.color or red[0]
 end
 
-function Proc_Firestack:onHit(target, damage)
-  Proc_Firestack.super.onHit(self, target, damage)
+function ProcChainExplode:onKill(target)
+  ProcChainExplode.super.onKill(self, target)
+  if target:has_buff('burn') then
+    local damage_troops = not self.is_troop
+    local damage = self.damage
+    local radius = self.radius
 
-  -- make it stack here (should allow original fire to stack, not add a new one)
+    cannoneer2:play{pitch = random:float(0.8, 1.2), volume = 1.2}
+    Helper.Spell.DamageCircle:create(self, self.color, damage_troops, damage,
+      radius, target.x, target.y)
+  end
 end
 
 Proc_Blazin = Proc:extend()
@@ -404,35 +422,33 @@ function Proc_Redshield:init(args)
   Proc_Redshield.super.init(self, args)
 
   --define the proc's vars
-  self.buff = 'redshield'
-  self.armor_per_stack = self.data.armor_per_stack or 1
-  self.max_stacks = self.data.max_stacks or 10
+  -- proc stats, 
+  self.buffdata = {name = 'redshield', color = grey[5], duration = 5, maxDuration = 5, stacks = 1}
 
-  self.stacks = 0
-
-  --starting to get complicated, might hurt perforamnce to add things
-  --that scale with # of enemies
-  --change to stacks per hit taken, have stacks fall off over time or on hit
 end
 
 function Proc_Redshield:onGotHit(from, damage)
   Proc_Redshield.super.onGotHit(self, from, damage)
 
-
-  --change stats based on # of stacks
-  --do in objects or here?
-  -- in objects, we need seperate logic for stackable buffs
-  -- here, we need to remove and reapply the buff manually
-  --starting to think buffs should be a class as well L(0_0L)
-
-  self.unit:add_buff(self.buff)
+  self.unit:redshield(self.buffdata.duration)
 end
 
-function Proc_Redshield:onTick(dt)
-  Proc_Redshield.super.onTick(self, dt)
+Proc_Redsword = Proc:extend()
+function Proc_Redsword:init(args)
+  self.triggers = {}
 
-  --stacks decrement over time
+  Proc_Redsword.super.init(self, args)
+
+  --define the proc's vars
+  -- gain damage based on your bonus defense
+  self.buffdata = {
+    name = 'redsword',
+    duration = 9999,
+    stats = {dmg_per_def = 2}
+  }
+  self.unit:add_buff(self.buffdata)
 end
+
 
 Proc_Frost = Proc:extend()
 function Proc_Frost:init(args)
@@ -490,6 +506,48 @@ function Proc_Frostfield:onHit(target, damage)
   end
 end
 
+Proc_Icenova = Proc:extend()
+function Proc_Icenova:init(args)
+  self.triggers = {PROC_ON_TICK}
+
+  Proc_Icenova.super.init(self, args)
+
+  --define the proc's vars
+  self.damage = self.data.damage or 10
+  self.radius = self.data.radius or 30
+  self.duration = self.data.duration or 0.1
+  self.slowAmount = self.data.slowAmount or 0.5
+  self.slowDuration = self.data.slowDuration or 3
+  self.color = self.data.color or blue[0]
+
+  --define the procs memory
+  self.canProc = true
+  self.cooldown = self.data.cooldown or 5
+  self.procDelay = self.data.procDelay or 0.8
+end
+
+function Proc_Icenova:onTick(dt)
+  Proc_Icenova.super.onTick(self, dt)
+
+  if self.canProc then
+    --check for nearby enemies
+    if Helper.Spell:there_is_target_in_range(self.unit, self.radius, nil) then
+      self.canProc = false
+      trigger:after(self.cooldown + self.procDelay, function() self.canProc = true end)
+      trigger:after(self.procDelay, function() self:cast() end) 
+    end
+  end
+end
+
+function Proc_Icenova:cast()
+  --play sound
+  pop2:play{pitch = random:float(0.8, 1.2), volume = 0.9}
+
+  --cast here, note that the spell has duration, but we only want it to trigger once
+  Helper.Spell.Frostfield:create(self.unit, self.color, false, self.damage, self.radius, self.duration, self.unit.x, self.unit.y)
+end
+
+
 --have to define how to stack slows
 -- just the amount is a little tricky, need to multiplicatively stack towards 0
 -- could use stacks, but it would be nice to use any source of slow
@@ -524,11 +582,17 @@ proc_name_to_class = {
   ['radianceburn'] = Proc_RadianceBurn,
   ['shield'] = Proc_Shield,
   ['phasing'] = Proc_Phasing,
+  --red procs
   ['fire'] = Proc_Fire,
   ['firestack'] = Proc_Firestack,
   ['redshield'] = Proc_Redshield,
+  ['redsword'] = Proc_Redsword,
+  ['chainexplode'] = ProcChainExplode,
   ['blazin'] = Proc_Blazin,
+  --blue procs
+  ['frost'] = Proc_Frost,
   ['frostfield'] = Proc_Frostfield,
+  ['icenova'] = Proc_Icenova,
   ['slowstack'] = Proc_Slowstack,
 }
 

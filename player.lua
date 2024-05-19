@@ -1,7 +1,6 @@
-Player = Object:extend()
+Player = Unit:extend()
 Player:implement(GameObject)
 Player:implement(Physics)
-Player:implement(Unit)
 function Player:init(args)
   self:init_game_object(args)
   self:init_unit()
@@ -274,8 +273,6 @@ function Player:hit(damage, from_undead)
     end
   end
 
-  self.character_hp:change_hp()
-
   if self.hp <= 0 then
     if self.divined then
       self:heal(self.max_hp)
@@ -376,19 +373,6 @@ function Player:sorcerer_repeat()
 end
 
 
-function Player:heal(amount)
-  local hp = self.hp
-
-  self.hfx:use('hit', 0.25, 200, 10)
-  self:show_hp(1.5)
-  self:show_heal(1.5)
-  self.hp = self.hp + amount
-  if self.hp > self.max_hp then self.hp = self.max_hp end
-
-  self.character_hp:change_hp()
-end
-
-
 function Player:chain_infuse(duration)
   self.chain_infused = true
   self.t:after(duration or 2, function() self.chain_infused = false end, 'chain_infuse')
@@ -453,190 +437,21 @@ function Player:add_follower(unit)
 end
 
 function Player:shoot(r, mods)
-  
---[[
-  mods = mods or {}
-  camera:spring_shake(2, r)
-  self.hfx:use('shoot', 0.25)
-
-  local dmg_m = 1
-  local crit = false
-  if self.character == 'beastmaster' then crit = random:bool(10) end
-  if self.chance_to_crit and random:bool(self.chance_to_crit) then dmg_m = ((self.assassination == 1 and 8) or (self.assassination == 2 and 10) or (self.assassination == 3 and 12) or 4); crit = true end
-  if self.assassination and self.class == 'rogue' then
-    if not crit then
-      dmg_m = 0.5
-    end
-  end
-
-  if self.character == 'thief' then
-    dmg_m = dmg_m*2
-    if self.level == 3 and crit then
-      dmg_m = dmg_m*10
-      main.current.gold_picked_up = main.current.gold_picked_up + 1
-    end
-  end
-
-  if crit and mods.spawn_critters_on_crit then
-    critter1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-    trigger:after(0.01, function()
-      for i = 1, mods.spawn_critters_on_crit do
-        Critter{group = main.current.main, x = self.x, y = self.y, color = orange[0], r = random:float(0, 2*math.pi), v = 10, dmg = self.dmg, parent = self}
-      end
-    end)
-  end
-
-  if self.character == 'outlaw' then
-    HitCircle{group = main.current.effects, x = self.x + 0.8*self.shape.w*math.cos(r), y = self.y + 0.8*self.shape.w*math.sin(r), rs = 6}
-    r = r - 2*math.pi/8
-    for i = 1, 5 do
-      local t = {group = main.current.main, x = self.x + 1.6*self.shape.w*math.cos(r), y = self.y + 1.6*self.shape.w*math.sin(r), v = 250, r = r, color = self.color, dmg = self.dmg*dmg_m, crit = crit, character = self.character,
-        parent = self, level = self.level}
-      Projectile(table.merge(t, mods or {}))
-      r = r + math.pi/8
-    end
-
-  elseif self.character == 'blade' then
-    local enemies = self:get_objects_in_shape(self.attack_sensor, main.current.enemies)
-    if enemies and #enemies > 0 then
-      for _, enemy in ipairs(enemies) do
-        local r = self:angle_to_object(enemy)
-        HitCircle{group = main.current.effects, x = self.x + 0.8*self.shape.w*math.cos(r), y = self.y + 0.8*self.shape.w*math.sin(r), rs = 6}
-        local t = {group = main.current.main, x = self.x + 1.6*self.shape.w*math.cos(r), y = self.y + 1.6*self.shape.w*math.sin(r), v = 250, r = r, color = self.color, dmg = self.dmg*dmg_m, crit = crit, character = self.character,
-          parent = self, level = self.level}
-        Projectile(table.merge(t, mods or {}))
-      end
-    end
-
-  elseif self.character == 'sage' then
-    HitCircle{group = main.current.effects, x = self.x + 0.8*self.shape.w*math.cos(r), y = self.y + 0.8*self.shape.w*math.sin(r), rs = 6}
-    local t = {group = main.current.main, x = self.x + 1.6*self.shape.w*math.cos(r), y = self.y + 1.6*self.shape.w*math.sin(r), v = 25, r = r, color = self.color, dmg = self.dmg, pierce = 1000, character = 'sage',
-      parent = self, level = self.level}
-    Projectile(table.merge(t, mods or {}))
-
-  elseif self.character == 'dual_gunner' then
-    HitCircle{group = main.current.effects, x = self.x + 0.8*self.shape.w*math.cos(r) + 4*math.cos(r - math.pi/2), y = self.y + 0.8*self.shape.w*math.sin(r) + 4*math.sin(r - math.pi/2), rs = 6}
-    HitCircle{group = main.current.effects, x = self.x + 0.8*self.shape.w*math.cos(r) + 4*math.cos(r + math.pi/2), y = self.y + 0.8*self.shape.w*math.sin(r) + 4*math.sin(r + math.pi/2), rs = 6}
-    local t1 = {group = main.current.main, x = self.x + 1.6*self.shape.w*math.cos(r) + 4*math.cos(r - math.pi/2) , y = self.y + 1.6*self.shape.w*math.sin(r) + 4*math.sin(r - math.pi/2),
-    v = 300, r = r, color = self.color, dmg = self.dmg*dmg_m, crit = crit, character = self.character, parent = self, level = self.level}
-    local t2 = {group = main.current.main, x = self.x + 1.6*self.shape.w*math.cos(r) + 4*math.cos(r + math.pi/2) , y = self.y + 1.6*self.shape.w*math.sin(r) + 4*math.sin(r + math.pi/2),
-    v = 300, r = r, color = self.color, dmg = self.dmg*dmg_m, crit = crit, character = self.character, parent = self, level = self.level}
-    Projectile(table.merge(t1, mods or {}))
-    Projectile(table.merge(t2, mods or {}))
-    self.dg_counter = self.dg_counter + 1
-    if self.dg_counter == 5 and self.level == 3 then
-      self.dg_counter = 0
-      self.t:every(0.1, function()
-        local random_enemy = self:get_random_object_in_shape(self.attack_sensor, main.current.enemies)
-        if random_enemy then
-          _G[random:table{'gun_kata1', 'gun_kata2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.35}
-          camera:spring_shake(2, r)
-          self.hfx:use('shoot', 0.25)
-          local r = self:angle_to_object(random_enemy)
-          HitCircle{group = main.current.effects, x = self.x + 0.8*self.shape.w*math.cos(r) + 4*math.cos(r - math.pi/2), y = self.y + 0.8*self.shape.w*math.sin(r) + 4*math.sin(r - math.pi/2), rs = 6}
-          local t = {group = main.current.main, x = self.x + 1.6*self.shape.w*math.cos(r), y = self.y + 1.6*self.shape.w*math.sin(r), v = 300, r = r, color = self.color, dmg = self.dmg, character = self.character,
-            parent = self, level = self.level}
-          Projectile(table.merge(t, mods or {}))
-        end
-      end, 20)
-    end
-  else
-    HitCircle{group = main.current.effects, x = self.x + 0.8*self.shape.w*math.cos(r), y = self.y + 0.8*self.shape.w*math.sin(r), rs = 6}
-    local t = {group = main.current.main, x = self.x + 1.6*self.shape.w*math.cos(r), y = self.y + 1.6*self.shape.w*math.sin(r), v = 250, r = r, color = self.color, dmg = self.dmg*dmg_m, crit = crit, character = self.character,
-    parent = self, level = self.level}
-    Projectile(table.merge(t, mods or {}))
-  end
-
-  if self.character == 'vagrant' or self.character == 'artificer' then
-    shoot1:play{pitch = random:float(0.95, 1.05), volume = 0.2}
-  elseif self.character == 'dual_gunner' then
-    dual_gunner1:play{pitch = random:float(0.95, 1.05), volume = 0.3}
-    dual_gunner2:play{pitch = random:float(0.95, 1.05), volume = 0.3}
-  elseif self.character == 'archer' or self.character == 'hunter' or self.character == 'barrager' or self.character == 'corruptor' or self.character == 'sniper' then
-    archer1:play{pitch = random:float(0.95, 1.05), volume = 0.35}
-  elseif self.character == 'wizard' or self.character == 'lich' or self.character == 'arcanist' then
-    wizard1:play{pitch = random:float(0.95, 1.05), volume = 0.15}
-  elseif self.character == 'scout' or self.character == 'outlaw' or self.character == 'blade' or self.character == 'spellblade' or self.character == 'jester' or self.character == 'assassin' or self.character == 'beastmaster' or
-         self.character == 'thief' then
-    _G[random:table{'scout1', 'scout2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.35}
-    if self.character == 'spellblade' then
-      wizard1:play{pitch = random:float(0.95, 1.05), volume = 0.15}
-    end
-  elseif self.character == 'cannoneer' then
-    _G[random:table{'cannoneer1', 'cannoneer2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-  end
-
-  if self.character == 'lich' then
-    frost1:play{pitch = random:float(0.95, 1.05), volume = 0.3}
-  end
-
-  if self.character == 'arcanist' then
-    arcane1:play{pitch = random:float(0.95, 1.05), volume = 0.3}
-  end
-
-  if self.chance_to_barrage and random:bool(self.chance_to_barrage) then
-    self:barrage(r, 3)
-  end
-  
-]]--
 end
 
 
 
 function Player:attack(area, mods)
-  
---[[
-  mods = mods or {}
-  camera:shake(2, 0.5)
-  self.hfx:use('shoot', 0.25)
-  local t = {group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(area or 64), color = self.color, dmg = self.area_dmg_m*self.dmg,
-    character = self.character, level = self.level, parent = self}
-  Area(table.merge(t, mods))
 
-  if self.character == 'swordsman' or self.character == 'barbarian' or self.character == 'juggernaut' or self.character == 'highlander' then
-    _G[random:table{'swordsman1', 'swordsman2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.75}
-  elseif self.character == 'elementor' then
-    elementor1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
-  elseif self.character == 'psychic' then
-    psychic1:play{pitch = random:float(0.9, 1.1), volume = 0.4}
-  elseif self.character == 'launcher' then
-    buff1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
-  end
-
-  if self.character == 'juggernaut' then
-    elementor1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
-  end
-]]--
 end
 
 
 function Player:dot_attack(area, mods)
-  --[[
-  mods = mods or {}
-  camera:shake(2, 0.5)
-  self.hfx:use('shoot', 0.25)
-  local t = {group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, rs = self.area_size_m*(area or 64), color = self.color, dmg = self.area_dmg_m*self.dmg*(self.dot_dmg_m or 1),
-    character = self.character, level = self.level, parent = self}
-  DotArea(table.merge(t, mods))
 
-  dot1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
 end
 
-
-function Player:barrage(r, n, pierce, ricochet, shoot_5, homing)
-  n = n or 8
-  for i = 1, n do
-    self.t:after((i-1)*0.075, function()
-      if shoot_5 then archer1:play{pitch = random:float(0.95, 1.05), volume = 0.2}
-      else archer1:play{pitch = random:float(0.95, 1.05), volume = 0.35} end
-      HitCircle{group = main.current.effects, x = self.x + 0.8*self.shape.w*math.cos(r), y = self.y + 0.8*self.shape.w*math.sin(r), rs = 6}
-      local t = {group = main.current.main, x = self.x + 1.6*self.shape.w*math.cos(r), y = self.y + 1.6*self.shape.w*math.sin(r), v = 250, r = r + random:float(-math.pi/16, math.pi/16), color = self.color, dmg = self.dmg,
-      parent = self, character = 'barrage', level = self.level, pierce = pierce or 0, ricochet = ricochet or 0, shoot_5 = shoot_5, homing = homing}
-      Projectile(table.merge(t, mods or {}))
-    end)
-  end
-  
-]]--
+function Player:die()
+  Player.super.die(self)
 end
 
 
@@ -2856,10 +2671,9 @@ end
 
 
 
-Critter = Object:extend()
+Critter = Unit:extend()
 Critter:implement(GameObject)
 Critter:implement(Physics)
-Critter:implement(Unit)
 function Critter:init(args)
   self:init_game_object(args)
   if tostring(self.x) == tostring(0/0) or tostring(self.y) == tostring(0/0) then self.dead = true; return end
@@ -2964,6 +2778,7 @@ end
 
 
 function Critter:die(x, y, r, n)
+  Critter.super.die(self)
   if self.parent and self.parent.summons then
     self.parent.summons = self.parent.summons - 1 end
   if self.dead then return end

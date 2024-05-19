@@ -1,8 +1,7 @@
 
-Troop = Object:extend()
+Troop = Unit:extend()
 Troop:implement(GameObject)
 Troop:implement(Physics)
-Troop:implement(Unit)
 function Troop:init(args)
   self.is_troop = true
   self.target_rally = nil
@@ -233,10 +232,6 @@ function Troop:attack(area, mods)
     character = self.character, level = self.level, parent = self}
   Area(table.merge(t, mods))
 
-  if self.character == 'juggernaut' then
-    elementor1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
-  end
-
 end
 
 function Troop:bubble(duration)
@@ -251,7 +246,6 @@ function Troop:shield(amount, duration)
 end
 
 function Troop:onDeath()
-  Corpse{group = main.current.main, x = self.x, y = self.y}
   self.state_change_functions['death']()
   self.death_function()
 end
@@ -529,13 +523,24 @@ function Troop:hit(damage, from)
     end
     self:onDeathCallbacks(from)
 
-    self.dead = true
+    self:die()
     if main.current:all_troops_dead() then
       main.current:die()
     end
 
     if self.dot_area then self.dot_area.dead = true; self.dot_area = nil end
   end
+end
+
+function Troop:die()
+  Troop.super.die(self)
+  self.dead = true
+  if self.parent and self.parent.summons then
+    self.parent.summons = self.parent.summons - 1
+  end
+
+  self.state_change_functions['death']()
+  self.death_function()
 end
 
 function Troop:on_collision_enter(other, contact)

@@ -1313,6 +1313,7 @@ function init()
     ['melee'] = 20,
     ['medium'] = 60,
     ['medium-long'] = 100,
+    ['ranged'] = 130,
     ['long'] = 150,
     ['ultra-long'] = 250,
 
@@ -1357,6 +1358,8 @@ function init()
     ['area_size'] = 'area_size',
     ['hp'] = 'hp',
     ['status_resist'] = 'status_resist',
+    ['attack_range'] = 'attack_range',
+    ['dmg_per_def'] = 'dmg_per_def',
 
     ['vamp'] = 'vamp',
     ['ghost'] = 'ghost',

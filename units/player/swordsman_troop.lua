@@ -1,10 +1,12 @@
 Swordsman_Troop = Troop:extend()
 function Swordsman_Troop:init(data)
+  self.base_attack_range = attack_ranges['melee']
   Swordsman_Troop.super.init(self, data)
 end
 
 function Swordsman_Troop:update(dt)
   Swordsman_Troop.super.update(self, dt)
+  self.attack_sensor.rs = self.attack_range
 end
 
 function Swordsman_Troop:draw()
@@ -17,7 +19,8 @@ function Swordsman_Troop:attack(area, mods)
 end
 
 function Swordsman_Troop:set_character()
-  self.attack_sensor = Circle(self.x, self.y, attack_ranges['melee'])
+  --the size of this is updated in objects.lua, and re-set in :update
+  self.attack_sensor = Circle(self.x, self.y, self.base_attack_range)
 
   --cooldowns
   self.baseCooldown = attack_speeds['medium-fast']

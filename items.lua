@@ -211,16 +211,16 @@ item_to_item_data = {
   ['chainexplosion'] = {
     name = 'chainexplosion',
     colors = {'red'},
-    cost = 5,
+    cost = 10,
     icon = 'chainexplosion',
-    desc = 'A sword that explodes enemies',
+    desc = 'Explodes burning enemies when they die',
     stats = {dmg = 0.25},
     procs = {'chainexplode'}
   },
   ['firestacker'] = {
     name = 'firestacker',
     colors = {'red'},
-    cost = 5,
+    cost = 10,
     icon = 'firestacker',
     desc = 'A sword that lets fire damage stack',
     stats = {dmg = 0.25},
@@ -261,9 +261,11 @@ item_to_item_data = {
     cost = 5,
     icon = 'reticle',
     desc = 'A reticle that increases range',
-    stats = {range = 0.1, dmg = 0.25},
+    stats = {attack_range = 0.1, dmg = 0.25},
     procs = {}
   },
+  --save this for later - best example of why procs should have buff-style ticks
+  -- right now would have to put in objects.lua as a buff
   ['holduground'] = {
     name = 'holduground',
     colors = {'blue'},

@@ -1,11 +1,13 @@
 Laser_Troop = Troop:extend()
 function Laser_Troop:init(data)
+  self.base_attack_range = attack_ranges['ranged']
   Laser_Troop.super.init(self, data)
 end
 
 -- can remove this, no need to override
 function Laser_Troop:update(dt)
   Laser_Troop.super.update(self, dt)
+  self.attack_sensor.rs = self.attack_range
 end
 
 function Laser_Troop:draw()
@@ -17,7 +19,7 @@ function Laser_Troop:draw_cast_timer()
 end
 
 function Laser_Troop:set_character()
-  self.attack_sensor = Circle(self.x, self.y, 130)
+  self.attack_sensor = Circle(self.x, self.y, self.base_attack_range)
 
   --total cooldown is cooldownTime + castTime
   self.baseCooldown = attack_speeds['fast']
@@ -28,7 +30,7 @@ function Laser_Troop:set_character()
   --if ready to cast and has target in range, start cast
   self.state_always_run_functions['always_run'] = function()
     if Helper.Unit:can_cast(self) then
-      Helper.Unit:claim_target(self, Helper.Spell:get_nearest_least_targeted(self, 130, true))
+      Helper.Unit:claim_target(self, Helper.Spell:get_nearest_least_targeted(self, self.attack_sensor.rs, true))
       Helper.Time:wait(get_random(0, 0.1), function()
         
         --on attack callbacks
@@ -50,7 +52,7 @@ function Laser_Troop:set_character()
     end
     
     --cancel if target moves out of range
-    if self.have_target and not Helper.Spell:claimed_target_is_in_range(self, 130, true) then
+    if self.have_target and not Helper.Spell:claimed_target_is_in_range(self, self.attack_sensor.rs, true) then
       Helper.Spell.Laser:stop_aiming(self)
       Helper.Unit:unclaim_target(self)
     end

@@ -235,6 +235,12 @@ function Unit:hide_hp()
   self.hp_bar.hidden = true
 end
 
+function Unit:heal(amount)
+  self.hp = math.min(self.hp + amount, self.max_hp)
+  self.hfx:use('hit', 0.25, 200, 10)
+  --missing effect here
+end
+
 
 function Unit:show_heal(n)
   self.effect_bar.hidden = false
@@ -271,8 +277,13 @@ end
 
 function Unit:add_buff(buff)
   local existing_buff = self.buffs[buff.name]
+
+  --overwrite duration and nextTick if the buff is already present
   if existing_buff then
     self.buffs[buff.name].duration = math.max(existing_buff.duration, buff.duration)
+    if buff.nextTick then
+      self.buffs[buff.name].nextTick = buff.nextTick
+    end
   else
     if buff.color then
       local color = buff.color
@@ -289,7 +300,9 @@ function Unit:remove_buff(buffName)
   if existing_buff then
     self.buffs[buffName] = nil
   end
-  self:decrement_buff_toggles(existing_buff)
+  if existing_buff then
+    self:decrement_buff_toggles(existing_buff)
+  end
 end
 
 function Unit:draw_buffs()
@@ -319,14 +332,10 @@ function Unit:update_buffs(dt)
     if k == 'burn' then
       if v.duration <= v.nextTick then
         --add a really quiet short sound here, because it'll be playing all the time
-        self:hit(v.dps, nil)
+        self:hit(v.dps * (v.stacks or 1), nil)
         --1 second tick, could be changed
         v.nextTick = v.nextTick - 1
       end
-    end
-
-    if k == 'redshield' then
-      
     end
 
     --on buff end
@@ -336,7 +345,12 @@ function Unit:update_buffs(dt)
       elseif k == 'stunned' then
         self.state = unit_states['normal']
       end
-      self.buffs[k] = nil
+      if v.stacks and v.stacks > 1 then
+        v.stacks = v.stacks - 1
+        v.duration = v.maxDuration
+      else
+        self.buffs[k] = nil
+      end
     end
   end
 end
@@ -490,6 +504,8 @@ function Unit:calculate_stats(first_run)
   self.buff_def_m = 1
   self.buff_mvspd_m = 1
   self.slow_mvspd_m = 1
+  self.buff_attack_range_a = 0
+  self.buff_attack_range_m = 1
 
   self.status_resist = 0
   if self.class == 'miniboss' then
@@ -528,23 +544,34 @@ function Unit:calculate_stats(first_run)
     for k, buff in pairs(self.buffs) do
       if buff.stats then
         for stat, amt in pairs(buff.stats) do
+          local amtWithStacks = amt * (buff.stacks or 1)
+
           if stat == buff_types['dmg'] then
-            self.buff_dmg_m = self.buff_dmg_m + amt
-          elseif stat == buff_types['def'] then
-            self.buff_def_m = self.buff_dmg_m + amt
+            self.buff_dmg_m = self.buff_dmg_m + amtWithStacks
           elseif stat == buff_types['mvspd'] then
-            self.buff_mvspd_m = self.buff_mvspd_m + amt
+            self.buff_mvspd_m = self.buff_mvspd_m + amtWithStacks
           elseif stat == buff_types['aspd'] then
-            self.buff_aspd_m = self.buff_aspd_m + amt
+            self.buff_aspd_m = self.buff_aspd_m + amtWithStacks
           elseif stat == buff_types['area_dmg'] then
-            self.buff_area_dmg_m = self.buff_area_dmg_m + amt
+            self.buff_area_dmg_m = self.buff_area_dmg_m + amtWithStacks
           elseif stat == buff_types['area_size'] then
-            self.buff_area_size_m = self.buff_area_size_m + amt
+            self.buff_area_size_m = self.buff_area_size_m + amtWithStacks
           elseif stat == buff_types['hp'] then
-            self.buff_hp_m = self.buff_hp_m + amt
+            self.buff_hp_m = self.buff_hp_m + amtWithStacks
           elseif stat == buff_types['status_resist'] then
-            self.status_resist = self.status_resist + stat
+            self.status_resist = self.status_resist + amtWithStacks
+          elseif stat == buff_types['attack_range'] then
+            self.buff_attack_range_m = self.buff_attack_range_m + amtWithStacks
+
+          --flat stats
+          elseif stat == buff_types['def'] then
+            self.buff_def_a = self.buff_def_a + amtWithStacks
+          --should do this after all other stats are calculated
+          elseif stat == buff_types['dmg_per_def'] then
+            local def = self.buff_def_a
+            self.buff_dmg_a = self.buff_dmg_a + def*amtWithStacks
           end
+          
         end
       end
     end
@@ -563,6 +590,8 @@ function Unit:calculate_stats(first_run)
             self.buff_mvspd_m = self.buff_mvspd_m + amt
           elseif stat == buff_types['aspd'] then
             self.buff_aspd_m = self.buff_aspd_m + amt
+          elseif stat == buff_types['attack_range'] then
+            self.buff_attack_range_m = self.buff_attack_range_m + amt
           elseif stat == buff_types['area_dmg'] then
             self.buff_area_dmg_m = self.buff_area_dmg_m + amt
           elseif stat == buff_types['area_size'] then
@@ -603,6 +632,12 @@ function Unit:calculate_stats(first_run)
   end
   if self.baseCast then
     self.castTime = self.baseCast * self.aspd_m
+  end
+
+  self.attack_range = ((self.base_attack_range or 0) + self.buff_attack_range_a) * self.buff_attack_range_m
+  if self.attack_range > 20 then
+
+    print(self.attack_range, ': attack range', self.name, self.type)
   end
 
   self.area_size_m = self.base_area_size_m*self.buff_area_size_m
@@ -656,9 +691,33 @@ function Unit:onMoveCallbacks(distance)
 end
 
 --add custom UI later, so it doesn't stack with the buff circles
-function Unit:burn(dps, duration)
-  local burnBuff = {name = 'burn', color = red[0], duration = duration, nextTick = duration - 1, dps = dps}
+--check firestack on from unit to see if it can stack
+function Unit:burn(dps, duration, from)
+  local burnBuff = {name = 'burn', color = red[0], duration = duration, maxDuration = duration, nextTick = duration - 1, dps = dps}
+  local existing_buff = self.buffs['burn']
+  
+  burnBuff.stacks = 1
+  if from and from:has_toggle('firestack') and existing_buff then
+    burnBuff.stacks = math.min((existing_buff.stacks or 1) + 1, MAX_STACKS_FIRE)
+  end
+
+  --assume we only have 1 dps of burn for now
+  --duration gets overwritten if the buff is already present, but the dps doesn't stack
+  --handle dps * stacks and stacks falling off in the update function
+  self:remove_buff('burn')
   self:add_buff(burnBuff)
+end
+
+function Unit:redshield(duration)
+  local redshieldBuff = {name = 'redshield', color = grey[0], duration = duration, maxDuration = duration,
+    stacks = 1, stats = {def = 1}}
+  local existing_buff = self.buffs['redshield']
+
+  if existing_buff then
+    redshieldBuff.stacks = math.min((existing_buff.stack or 1) + 1, MAX_STACKS_REDSHIELD)
+  end
+  self:remove_buff('redshield')
+  self:add_buff(redshieldBuff)
 end
 
 
@@ -722,6 +781,14 @@ function Unit:should_follow()
   local canMove = (self.state == unit_states['normal'] or self.state == unit_states['stopped'] or self.state == unit_states['rallying'] or self.state == unit_states['following'] or self.state == unit_states['casting'])
 
   return input and canMove
+
+end
+
+function Unit:die()
+  --cleanup buffs
+  for k, v in pairs(self.buffs) do
+    self:remove_buff(k)
+  end
 
 end
 
