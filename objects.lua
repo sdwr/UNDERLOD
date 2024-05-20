@@ -635,10 +635,6 @@ function Unit:calculate_stats(first_run)
   end
 
   self.attack_range = ((self.base_attack_range or 0) + self.buff_attack_range_a) * self.buff_attack_range_m
-  if self.attack_range > 20 then
-
-    print(self.attack_range, ': attack range', self.name, self.type)
-  end
 
   self.area_size_m = self.base_area_size_m*self.buff_area_size_m
 
@@ -734,8 +730,16 @@ function Unit:stun(duration)
   self:add_buff(stunBuff)
 end
 
-function Unit:slow(amount, duration)
-  local slowBuff = {name = 'slowed', color = blue[2], duration = duration, stats = {mvspd = -1 * amount}}
+function Unit:slow(amount, duration, from)
+  local slowBuff = {name = 'slowed', color = blue[2], duration = duration, maxDuration = duration, stats = {mvspd = -1 * amount}}
+  local existing_buff = self.buffs['slowed']
+
+  slowBuff.stacks = 1
+  if from and from:has_toggle('slowstack') and existing_buff then
+    slowBuff.stacks = math.min((existing_buff.stacks or 1) + 1, MAX_STACKS_SLOW)
+  end
+
+  self:remove_buff('slowed')
   self:add_buff(slowBuff)
 end
 

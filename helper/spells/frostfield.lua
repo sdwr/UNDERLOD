@@ -66,7 +66,7 @@ function Helper.Spell.Frostfield:damage()
             --register damage through the spell system
             Helper.Spell:register_damage_point(point, frostfield.unit, frostfield.damagePerTick)
             --and apply slow directly to the unit
-            unit:slow(Helper.Spell.Frostfield.slowAmount, Helper.Spell.Frostfield.slowDuration)
+            unit:slow(Helper.Spell.Frostfield.slowAmount, Helper.Spell.Frostfield.slowDuration, frostfield.unit)
           end
         end
       end

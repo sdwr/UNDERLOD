@@ -42,24 +42,6 @@ end
 item_to_item_data = {
 
   --consumable items
-  ['reroll_potion'] = {
-    name = 'reroll_potion',
-    colors = {},
-    cost = 1,
-    icon = 'reroll_potion',
-    desc = 'Consumable - Reroll your next character choice',
-    stats = {},
-    procs = {'reroll_char'}
-  },
-  ['revive_potion'] = {
-    name = 'revive_potion',
-    colors = {},
-    cost = 1,
-    icon = 'revive_potion',
-    desc = 'Consumable - Revive this troop the next time they die',
-    stats = {},
-    procs = {}
-  },
   --colorless items
   ['craggyvest'] = {
     name = 'craggyvest',
@@ -84,7 +66,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'berserk',
     desc = 'Increases damage when low on health',
-    stats = {dmg = 0.25},
+    stats = {dmg = 0.5},
     procs = {'berserk'}
   },
   ['basher'] = {
@@ -93,7 +75,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'basher',
     desc = 'A shield that stuns enemies',
-    stats = {bash = 0.2, dmg = 0.25},
+    stats = {bash = 0.2, dmg = 0.5},
     procs = {'bash'}
   },
   ['healingleaf'] = {
@@ -111,7 +93,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'overkill',
     desc = 'Enemies that are overkilled explode for the overkill amount of damage',
-    stats = {dmg = 0.25},
+    stats = {dmg = 0.5},
     procs = {'overkill'}
   },
   ['repeater'] = {
@@ -143,6 +125,7 @@ item_to_item_data = {
     stats = {ms = 0.15},
     procs = {'static'}
   },
+  --still need to add
   ['radiance'] = {
     name = 'radiance',
     colors = {'yellow'},
@@ -152,6 +135,7 @@ item_to_item_data = {
     stats = {hp = .1},
     procs = {'radianceburn', 'shield'}
   },
+  --still need to add
   ['phantomdancer'] = {
     name = 'phantomdancer',
     colors = {'yellow'},
@@ -161,6 +145,7 @@ item_to_item_data = {
     stats = {aspd = 0.25, ms = 0.15},
     procs = {'phasing'}
   },
+  --still need to add
   ['bubble'] = {
     name = 'bubble',
     colors = {'yellow'},
@@ -178,7 +163,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'firesword',
     desc = 'A sword that burns enemies',
-    stats = {dmg = 0.25},
+    stats = {dmg = 0.5},
     procs = {'fire'}
   },
   ['redshield'] = {
@@ -196,7 +181,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'redsword',
     desc = 'Gain damage based on your armor',
-    stats = {dmg = 0.25},
+    stats = {dmg = 0.5},
     procs = {'redsword'}
   },
   ['bloodlust'] = {
@@ -205,7 +190,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'bloodlust',
     desc = 'Inc aspd and mvspd at start of round',
-    stats = {dmg = 0.2},
+    stats = {dmg = 0.4},
     procs = {'bloodlust'}
   },
   ['chainexplosion'] = {
@@ -214,7 +199,7 @@ item_to_item_data = {
     cost = 10,
     icon = 'chainexplosion',
     desc = 'Explodes burning enemies when they die',
-    stats = {dmg = 0.25},
+    stats = {dmg = 0.5},
     procs = {'chainexplode'}
   },
   ['firestacker'] = {
@@ -223,7 +208,7 @@ item_to_item_data = {
     cost = 10,
     icon = 'firestacker',
     desc = 'A sword that lets fire damage stack',
-    stats = {dmg = 0.25},
+    stats = {dmg = 0.5},
     procs = {'firestack'}
   },
   ['blazin'] = {
@@ -232,7 +217,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'blazin',
     desc = 'Gain aspd per burning enemy',
-    stats = {dmg = 0.25},
+    stats = {dmg = 0.5},
     procs = {'blazin'}
   },
 
@@ -243,7 +228,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'frostorb',
     desc = 'An orb that slows enemies',
-    stats = {dmg = 0.25},
+    stats = {dmg = 0.5},
     procs = {'frost'}
   },
   ['frostfield'] = {
@@ -252,7 +237,7 @@ item_to_item_data = {
     cost = 10,
     icon = 'frostbomb',
     desc = 'Creates a slowing field under enemies every few attacks',
-    stats = {dmg = 0.25},
+    stats = {dmg = 0.5},
     procs = {'frostfield'}
   },
   ['reticle'] = {
@@ -261,7 +246,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'reticle',
     desc = 'A reticle that increases range',
-    stats = {attack_range = 0.1, dmg = 0.25},
+    stats = {attack_range = 0.1, dmg = 0.5},
     procs = {}
   },
   --save this for later - best example of why procs should have buff-style ticks
@@ -281,7 +266,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'icenova',
     desc = 'Damages and slows enemies when they get too close',
-    stats = {dmg = 0.25},
+    stats = {dmg = 0.5},
     procs = {'icenova'}
   },
   ['icefang'] = {
@@ -290,8 +275,8 @@ item_to_item_data = {
     cost = 5,
     icon = 'icefang',
     desc = 'Your slows stack to slow enemies to a crawl',
-    stats = {dmg = 0.25},
-    procs = {'slowstacks'}
+    stats = {dmg = 0.5},
+    procs = {'slowstack'}
   },
 
   --multicolor items
@@ -301,7 +286,7 @@ item_to_item_data = {
     cost = 10,
     icon = 'twinflame',
     desc = 'Converts slow to fire damage, and fire damage to slow',
-    stats = {dmg = 0.25},
+    stats = {dmg = 0.5},
     procs = {'twinflame'}
   },
   ['omegastar'] = {
@@ -309,101 +294,8 @@ item_to_item_data = {
     colors = {'red', 'yellow', 'blue'},
     cost = 10,
     icon = 'omegastar',
-    desc = 'Increases all elemental damage, and adds elemental vampirism',
-    stats = {dmg = 0.25},
-    procs = {'eledmg, elevamp'}
+    desc = 'Increases all elemental damage. You heal for a portion of elemental damage dealt',
+    stats = {dmg = 0.5},
+    procs = {'omegastar'}
   },
-}
-
---replace default values with item specific values
---does not change proc functionality, just stats
---idk how this works though, if the proc name is the same as the data name
---have to specify the proc name separately in here
-item_proc_data = {
-  
-  --consumables
-  ['reroll_char'] = {},
-  --colorless
-  ['craggy'] = {
-    chance = 0.1,
-    -- apply stun to attacker
-  },
-  ['bash'] = {
-    chance = 0.2,
-  },
-  ['heal'] = {
-    buff = 'heal',
-    every_time = 5,
-  },
-  ['overkill'] = {
-    -- explode for overkill damage
-  },
-  ['berserk'] = {
-    buff = 'berserk',
-  },
-
-  --yellow
-  ['lightning'] = {
-    damage_type = 'lightning',
-    dmg = 10,
-    chain = 4,
-    every_attacks = 4,
-    attacks_left = 4,
-  },
-  --charge up a static shock by moving
-  --triggers on next hit
-  ['static'] = {
-    damage_type = 'lightning',
-    buff = 'static',
-    dmg = 10,
-    chain = 8,
-    every_moves = 100,
-    moves_left = 100,
-  },
-  ['radianceburn'] = {
-    buff = 'radiance',
-  },
-  ['shield'] = {
-    buff = 'shield',
-  },
-  ['phasing'] = {
-    buff = 'phasing',
-  },
-  ['bubble'] = {
-    buff = 'bubble',
-  },
-
-  --red
-  ['fire1'] = {},
-  ['redshield'] = {
-    buff = 'redshield',
-  },
-  ['bloodlust'] = {
-    buff = 'bloodlust',
-  },
-  ['chainexplode'] = {
-  },
-  ['firestack'] = {
-    buff = 'firestack',
-  },
-  ['blazin'] = {
-    buff = 'blazin',
-  },
-
-  --blue
-  ['slow'] = {},
-  ['slowfield'] = {
-  },
-  ['reticle'] = {
-  },
-  ['holduground'] = {
-  },
-  ['icenova'] = {
-  },
-
-  --multicolor
-  ['twinflame'] = {},
-  ['eledmg'] = {},
-  ['elevamp'] = {},
-
 }

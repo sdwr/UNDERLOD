@@ -30,7 +30,7 @@ fns['init_enemy'] = function(self)
 
   --set attacks
     self.attack_sensor = Circle(self.x, self.y, 100)
-    self.t:cooldown(attack_speeds['medium'], function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end, function ()
+    self.t:cooldown(attack_speeds['slow'], function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end, function ()
       local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies)
       if target then
         self:rotate_towards_object(target, 1)

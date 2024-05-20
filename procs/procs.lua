@@ -464,7 +464,7 @@ end
 function Proc_Frost:onHit(target, damage)
   Proc_Frost.super.onHit(self, target, damage)
 
-  target:slow(self.slow_amount, self.slow_duration)
+  target:slow(self.slow_amount, self.slow_duration, self.unit)
 end
 
 Proc_Frostfield = Proc:extend()
@@ -556,16 +556,40 @@ end
 -- also keep track of which unit applied the slow? or just make it a global effect
 Proc_Slowstack = Proc:extend()
 function Proc_Slowstack:init(args)
-  self.triggers = {PROC_ON_HIT}
+  self.triggers = {}
 
   Proc_Slowstack.super.init(self, args)
 
   --define the proc's vars
-  self.slow_amount = self.data.slow_amount or 0.1
-  self.slow_duration = self.data.slow_duration or 2
-  self.max_slow = self.data.max_slow or 0.5
+  self.buffdata = {name = 'slowstack', duration = 9999,
+    toggles = {slowstack = 1}
+  }
 
-  self.slow = 0
+  self.unit:add_buff(self.buffdata)
+end
+
+--need to assign an owner to burn debuff for this to work
+--consider snapshotting the owner's ele multiplier
+-- and keepign it when the buff gets reapplied
+Proc_Eledmg = Proc:extend()
+function Proc_Eledmg:init(args)
+  self.triggers = {}
+
+  Proc_Eledmg.super.init(self, args)
+
+  self.buffdata = {name = 'eledmg', duration = 9999,
+    stats = {eledmg = 0.5}
+  }
+
+  self.unit:add_buff(self.buffdata)
+end
+
+--need to assign an owner to burn debuff for this to work
+Proc_Elevamp = Proc:extend()
+function Proc_Elevamp:init(args)
+  self.triggers = {}
+
+  Proc_Elevamp.super.init(self, args)
 end
 
 
@@ -594,6 +618,10 @@ proc_name_to_class = {
   ['frostfield'] = Proc_Frostfield,
   ['icenova'] = Proc_Icenova,
   ['slowstack'] = Proc_Slowstack,
+
+  -- elemental procs
+  ['eledmg'] = Proc_Eledmg
+  ['elevamp'] = Proc_Elevamp
 }
 
 

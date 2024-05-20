@@ -133,7 +133,7 @@ function Manage_Spawns(arena)
   arena.boss_levels = {6, 11, 16, 21, 25}
 
   -- set arena specific values
-  arena.spawns_in_group = 4
+  arena.spawns_in_group = 6
 
   arena.max_waves = 1
   arena.wave = 1
@@ -174,7 +174,7 @@ function Manage_Spawns(arena)
       arena.t:after(1.5, function() Spawn_Boss(arena, boss_name) end)
 
     else
-      local waves = Decide_on_Spawns(arena.level)
+      local waves = arena.level_list[arena.level].waves
       print(waves)
       print(#waves)
       arena.max_waves = #waves

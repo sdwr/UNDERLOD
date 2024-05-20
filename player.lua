@@ -927,7 +927,7 @@ function Area:init(args)
   for _, target in ipairs(targets) do
     if self.character == 'freezing_field' then
       --make slow for troops as well
-      target:slow(0.5, 2)
+      target:slow(0.5, 2, self.parent)
     else
       target:hit(self.dmg, self.parent)
     end
@@ -1009,7 +1009,7 @@ function DotArea:init(args)
     if #enemies > 0 then self.spring:pull(0.05, 200, 10) end
     for _, enemy in ipairs(enemies) do
       enemy:hit(self.dmg/5, self.parent)
-      enemy:slow(0.8, 1)
+      enemy:slow(0.8, 1, nil)
       HitCircle{group = main.current.effects, x = enemy.x, y = enemy.y, rs = 6, color = fg[0], duration = 0.1}
       for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = self.color} end
       for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = enemy.color} end
@@ -1647,7 +1647,7 @@ function Stomp:stomp()
   if #targets > 0 then self.spring:pull(0.05, 200, 10) end
   for _, target in ipairs(targets) do
     target:hit(self.dmg, self.unit)
-    target:slow(0.3, 1)
+    target:slow(0.3, 1, nil)
     HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
     for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
     for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end

@@ -90,7 +90,7 @@ function Build_Wave(round_power)
 
   for i=1, num_normal_enemies do
     if round_power < 1 then break end
-    local enemy = random:table({'shooter', 'seeker'})
+    local enemy = 'seeker'
     table.insert(wave, enemy)
     round_power = round_power - normal_enemy_to_round_power[enemy]
   end
