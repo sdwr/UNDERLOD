@@ -10,13 +10,20 @@ fns['init_enemy'] = function(self)
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
   self.class = 'regular_enemy'
 
+  --set special attrs
+  --castTime is what is used to determine the spell duration 
+  -- and is set to a default if baseCast is not set
+  self.baseCast = attack_speeds['medium-fast']
+
   --set attacks
-    self.t:cooldown(attack_speeds['medium-slow'], function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end, function ()
-      local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
+    self.t:cooldown(attack_speeds['slow'], function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end, function ()
+      local target = Helper.Spell:get_furthest_target(self)
       if target then
         self:rotate_towards_object(target, 1)
-        Helper.Unit.claim_target(self, target)
-        Helper.Spell.Laser.create(Helper.Color.blue, 1, true, self.dmg, self)      
+        Helper.Unit:claim_target(self, target)
+        sniper_load:play{volume=0.9}
+        self.state = unit_states['casting']
+        Helper.Spell.Laser:create(Helper.Color.blue, 7, true, self.dmg, self, nil, nil)
         end
     end, nil, nil, 'shoot')
 end

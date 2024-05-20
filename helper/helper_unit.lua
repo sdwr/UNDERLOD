@@ -66,13 +66,16 @@ function Helper.Unit:add_custom_variables_to_unit(unit)
     Helper.Unit:add_default_state_always_run_functions(unit)
 end
 
+-- looks like this is for "least targeted" targeting
 function Helper.Unit:claim_target(unit, target)
     if target ~= -1 then
         if unit.have_target then
             if unit.claimed_target == target then
                 return
             end
-            table.remove(unit.claimed_target.targeted_by, find_in_list(unit.claimed_target.targeted_by, unit))
+            if unit.claimed_target then
+                table.remove(unit.claimed_target.targeted_by, find_in_list(unit.claimed_target.targeted_by, unit))
+            end
         end
         unit.claimed_target = target
         table.insert(unit.claimed_target.targeted_by, unit)

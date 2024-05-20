@@ -37,6 +37,30 @@ function Helper.Spell:can_shoot(spell)
     end
 end
 
+function Helper.Spell:get_furthest_target(unit, include_list)
+    -- what does this do?
+    if Helper.Unit.flagged_enemy ~= -1 then
+        return Helper.Unit.flagged_enemy
+    end
+
+    include_list = include_list or {}
+    local unit_list = Helper.Unit:get_list(not unit.is_troop)
+    if #unit_list > 0 then
+        local target = {}
+        local distancemax = 0
+
+        for _, value in ipairs(unit_list) do
+            if Helper.Geometry:distance(unit.x, unit.y, value.x, value.y) > distancemax and (#include_list == 0 or is_in_list(include_list, value)) then
+                distancemax = Helper.Geometry:distance(unit.x, unit.y, value.x, value.y)
+                target = value
+            end
+        end
+        return target
+    else
+        return -1
+    end
+end
+
 function Helper.Spell:get_nearest_target(unit, include_list)
     if Helper.Unit.flagged_enemy ~= -1 then
         return Helper.Unit.flagged_enemy

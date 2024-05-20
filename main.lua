@@ -1581,6 +1581,7 @@ function init()
   }
   special_enemy_to_round_power = {
     --special enemies t1
+    ['laser'] = 300,
     ['rager'] = 300,
     ['stomper'] = 300,
     --special enemies t2

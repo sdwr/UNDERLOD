@@ -396,7 +396,7 @@ function Unit:init_stats()
     self.base_dmg = 5 * dmgMod
     self.base_mvspd = 100 * spdMod
   elseif self.class == 'regular_enemy' then
-    self.base_hp = 150 * (math.pow(1.02, level))
+    self.base_hp = 100 * (math.pow(1.02, level))
     self.base_dmg = 20  * (math.pow(1.02, level))
     self.base_mvspd = 34
   elseif self.class == 'miniboss' then
@@ -782,6 +782,12 @@ end
 
 --looks like space is the override for all units move
 --and RMB sets 'following' or 'rallying' state in player_troop?
+--change to the original control design
+-- space for "all units follow mouse"
+-- LMB for "selected troop follows mouse"
+-- shift+ LMB for "selected troop rallies to mouse"
+-- RMB for "selected troop targets enemy"
+
 function Unit:should_follow()
   local input = input['space'].down
   local canMove = (self.state == unit_states['normal'] or self.state == unit_states['stopped'] or self.state == unit_states['rallying'] or self.state == unit_states['following'] or self.state == unit_states['casting'])
