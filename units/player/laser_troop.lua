@@ -30,7 +30,9 @@ function Laser_Troop:set_character()
   --if ready to cast and has target in range, start cast
   self.state_always_run_functions['always_run'] = function()
     if Helper.Unit:can_cast(self) then
-      Helper.Unit:claim_target(self, Helper.Spell:get_nearest_least_targeted(self, self.attack_sensor.rs, true))
+      if not self:my_target() then
+        Helper.Unit:claim_target(self, Helper.Spell:get_nearest_least_targeted(self, self.attack_sensor.rs, true))
+      end
       Helper.Time:wait(get_random(0, 0.1), function()
         
         --on attack callbacks
@@ -51,6 +53,10 @@ function Laser_Troop:set_character()
       end)
     end
     
+    --need 2 types of target - one for random targets, one for assigned targets
+    --if target is assigned, it will remain until the target dies or is reassigned
+    --but random targets will be reassigned every attack, to keep a nice spread of damage
+
     --cancel if target moves out of range
     if self.have_target and not Helper.Spell:claimed_target_is_in_range(self, self.attack_sensor.rs, true) then
       Helper.Spell.Laser:stop_aiming(self)

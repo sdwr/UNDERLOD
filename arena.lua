@@ -14,7 +14,7 @@ function Arena:select_character(character)
 end
 
 function Arena:select_character_by_index(i)
-  if self.hotbar_by_index[i] and not input['lctrl'].down and not input['lshift'].down then
+  if self.hotbar_by_index[i] then
     self.hotbar_by_index[i]:action()
   end
 end
@@ -112,11 +112,12 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
   for i = 1, #units do
     local character = units[i].character
     local type = character_types[character]
+    local number = i
     local b = HotbarButton{group = self.ui, x = 50 + (Helper.Unit.troop_type_button_width + 5) * (i - 1) , y = gh - 20, w = Helper.Unit.troop_type_button_width,
                             force_update = true, button_text = character, fg_color = type_color_strings[type], bg_color = 'bg', 
                             action = function() 
                               self:select_character(character) 
-                              Helper.Unit.selected_team = 0
+                              Helper.Unit.selected_team = number
                               Helper.Unit:deselect_all_troops()
                               for i, troop in ipairs(Helper.Unit:get_list(true)) do
                                 if troop.character == character then
@@ -135,6 +136,7 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
                           y = gh - 20, force_update = true, button_text = tostring(i + Helper.Unit.number_of_troop_types), w = Helper.Unit.team_button_width, fg_color = 'white', bg_color = 'bg', 
                           action = function() 
                             main.current:select_character('team ' .. i) 
+                            print('selecting team ' .. i)
                             Helper.Unit.selected_team = i
                             Helper.Unit:deselect_all_troops()
                             for i, troop in ipairs(Helper.Unit.teams[Helper.Unit.selected_team]) do
@@ -163,6 +165,10 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
   end
 
   Spawn_Troops(self)
+
+  --select first character by default
+  self:select_character_by_index(1)
+
   self.start_time = 3
   Manage_Spawns(self)
 end

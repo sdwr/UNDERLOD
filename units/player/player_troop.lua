@@ -45,6 +45,9 @@ function Troop:update(dt)
 
   self:calculate_stats()
 
+  --shouldn't be in here, but update the unit targets as well
+  self:update_targets()
+
 
   --[[
   --steps should be:
@@ -89,7 +92,7 @@ function Troop:update(dt)
 
   --cancel follow if no longer pressing button
   if self.state == unit_states['following'] then
-    if input['m2'].released or input['space'].released then
+    if input['m1'].released or input['space'].released then
       self.state = unit_states['normal']
     end
   end
@@ -113,40 +116,18 @@ function Troop:update(dt)
 
   --then find target if not already moving
   elseif self.state == unit_states['normal'] then
-    --find target
-    if self.target and self.target.dead then self.target = nil end
-    if self.character == "cleric" or self.character == "paladin" or self.character == "priest" then 
-      if self.target and self.target.beingHealed then self.target = nil end
+
+    local target = self:my_target()
+    --find target if not already found
+    if not target then 
+      self:set_target(self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies))
     end
-    if self.character == "cleric" then
-      if self.target and self.target.hp == self.target.max_hp then self.target = nil end
-      if not self.target then self.target = self:get_hurt_ally(self.aggro_sensor) end
-    elseif self.character == "paladin" then
-      if self.target and self.target.bubbled then self.target = nil end
-      if self.target and (self.target.hp == self.target.max_hp) then self.target = nil end
-      if not self.target then self.target = self:get_most_hurt_ally(self.aggro_sensor) end
-    elseif self.character == "priest" then
-      if self.target and (self.target.bubbled or self.target.shielded) then self.target = nil end
-      if self.target and self.target.hp == self.target.max_hp then self.target = nil end
-      if not self.target then self.target = self:get_hurt_ally_without_shield(self.aggro_sensor) end
-    elseif self.character == 'druid' then
-      if self.target and self.target.buffs['druid_hot'] then self.target = nil end
-      if self.target and self.target.hp == self.target.max_hp then self.target = nil end
-      if not self.target then self.target = self:get_most_hurt_ally(self.aggro_sensor) end
-    elseif self.character == "necromancer" then
-      if not self.target then self.target = self:get_closest_object_in_shape(self.aggro_sensor, {Corpse}) end
-    else
-      if not self.target then 
-        if Helper.Unit.flagged_enemy == -1 then
-          self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies) 
-        else
-          self.target = Helper.Unit.flagged_enemy
-        end
-      end
-    end
+
+    target = self:my_target()
+
     --if target not in attack range, close in
-    if self.target and not self:in_range()() and self.state == unit_states['normal'] then
-      self:seek_point(self.target.x, self.target.y)
+    if target and not self:in_range()() and self.state == unit_states['normal'] then
+      self:seek_point(target.x, target.y)
       self:wander(7, 30, 5)
       --self:steering_separate(16, troop_classes)
       self:rotate_towards_velocity(1)

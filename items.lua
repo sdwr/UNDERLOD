@@ -296,6 +296,6 @@ item_to_item_data = {
     icon = 'omegastar',
     desc = 'Increases all elemental damage. You heal for a portion of elemental damage dealt',
     stats = {dmg = 0.5},
-    procs = {'omegastar'}
+    procs = {'eledmg, elevamp'}
   },
 }

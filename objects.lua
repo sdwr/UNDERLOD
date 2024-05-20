@@ -774,6 +774,37 @@ function Unit:get_closest_hurt_target(shape, classes)
 
 end
 
+--2 types of target, assigned target is set by the player (RMB)
+--the regular target is temporary and is set by the unit itself
+function Unit:my_target()
+  return self.assigned_target or self.target
+end
+
+function Unit:set_target(target)
+  self.target = target
+end
+
+function Unit:set_assigned_target(target)
+  self.assigned_target = target
+end
+
+function Unit:clear_assigned_target()
+  self.assigned_target = nil
+end
+
+function Unit:clear_my_target()
+  self.target = nil
+end
+
+function Unit:update_targets()
+  if self.target and self.target.dead then
+    self.target = nil
+  end
+  if self.assigned_target and self.assigned_target.dead then
+    self.assigned_target = nil
+  end
+end
+
 function Unit:in_range()
   return function()
     return self.target and not self.target.dead and self.state == unit_states['normal'] and self:distance_to_object(self.target) - self.target.shape.w/2 < self.attack_sensor.rs
@@ -788,6 +819,12 @@ end
 -- shift+ LMB for "selected troop rallies to mouse"
 -- RMB for "selected troop targets enemy"
 
+
+--controls possibiltiies:
+-- RMB - target enemy
+-- RMB - target enemy OR rally to location
+-- RMB - target enemy OR attack move while holding button
+-- RMB- target enemy OR attack move to location
 function Unit:should_follow()
   local input = input['space'].down
   local canMove = (self.state == unit_states['normal'] or self.state == unit_states['stopped'] or self.state == unit_states['rallying'] or self.state == unit_states['following'] or self.state == unit_states['casting'])
