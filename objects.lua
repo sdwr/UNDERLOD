@@ -780,6 +780,8 @@ function Unit:in_range()
   end
 end
 
+--looks like space is the override for all units move
+--and RMB sets 'following' or 'rallying' state in player_troop?
 function Unit:should_follow()
   local input = input['space'].down
   local canMove = (self.state == unit_states['normal'] or self.state == unit_states['stopped'] or self.state == unit_states['rallying'] or self.state == unit_states['following'] or self.state == unit_states['casting'])

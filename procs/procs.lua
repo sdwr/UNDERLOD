@@ -620,7 +620,7 @@ proc_name_to_class = {
   ['slowstack'] = Proc_Slowstack,
 
   -- elemental procs
-  ['eledmg'] = Proc_Eledmg
+  ['eledmg'] = Proc_Eledmg,
   ['elevamp'] = Proc_Elevamp
 }
 
