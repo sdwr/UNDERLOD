@@ -69,7 +69,7 @@ fns['init_enemy'] = function(self)
           Helper.Spell.Flame:end_flame_after(self, self.fireDuration)
         end
       
-      if self.have_target and not Helper.Spell:claimed_target_is_in_range(self, 100) then
+      if self.my_target() and not Helper.Spell:target_is_in_range(self, 100) then
           Helper.Spell.Flame:end_flame_after(self, 0.25)
           Helper.Unit:unclaim_target(self)
       end

@@ -296,7 +296,7 @@ function Troop:set_character()
 
           --on attack callbacks
           if self.onAttackCallbacks then
-            self:onAttackCallbacks(self.claimed_target)
+            self:onAttackCallbacks(self.target)
           end
           Helper.Spell.Missile:create(Helper.Color.orange, 10, self.dmg, 300, self, true, 15)
         end)
@@ -305,10 +305,8 @@ function Troop:set_character()
 
     --cancel on move
     self.state_always_run_functions['following_or_rallying'] = function()
-      if self.have_target then
-        Helper.Spell.Missile:stop_aiming(self)
-        Helper.Unit:unclaim_target(self)
-      end
+      Helper.Spell.Missile:stop_aiming(self)
+      Helper.Unit:unclaim_target(self)
     end
 
     self.state_change_functions['normal'] = function() end
@@ -336,7 +334,7 @@ function Troop:set_character()
         
         --on attack callbacks
         if self.onAttackCallbacks then
-          self:onAttackCallbacks(self.claimed_target)
+          self:onAttackCallbacks(self.target)
         end
 
         Helper.Spell.Bomb:create(black[2], false, self.dmg, 4, self, 1.5, self.explode_radius, self.x, self.y)
@@ -374,18 +372,16 @@ function Troop:set_character()
 
         --on attack callbacks
         if self.onAttackCallbacks then
-          self:onAttackCallbacks(self.claimed_target)
+          self:onAttackCallbacks(self.target)
         end
 
-        self.spell = Snipe{group = main.current.main, team = 'player', parent = self, target = self.claimed_target, dmg = self.dmg}
+        self.spell = Snipe{group = main.current.main, team = 'player', parent = self, target = self.target, dmg = self.dmg}
       end
     end
     
     --cancel on move
     self.state_always_run_functions['following_or_rallying'] = function()
-      if self.have_target then
-        self.spell:cancel()
-      end
+      self.spell:cancel()
     end
 
     self.state_change_functions['normal'] = function() end

@@ -35,8 +35,6 @@ function Helper.Unit:add_custom_variables_to_unit(unit)
     unit.previous_state = ''
 
     unit.targeted_by = {}
-    unit.claimed_target = nil
-    unit.have_target = false
     unit.state_change_functions = {}
     unit.state_always_run_functions = {}
     unit.last_attack_started = -999999
@@ -69,32 +67,37 @@ end
 -- looks like this is for "least targeted" targeting
 function Helper.Unit:claim_target(unit, target)
     if target ~= -1 then
-        if unit.have_target then
-            if unit.claimed_target == target then
+        if unit.target then
+            if unit.target == target then
                 return
             end
-            if unit.claimed_target then
-                table.remove(unit.claimed_target.targeted_by, find_in_list(unit.claimed_target.targeted_by, unit))
+            if unit.target then
+                table.remove(unit.target.targeted_by, find_in_list(unit.target.targeted_by, unit))
             end
         end
-        unit.claimed_target = target
-        table.insert(unit.claimed_target.targeted_by, unit)
-        unit.have_target = true
+        unit:set_target(target)
+        table.insert(unit.target.targeted_by, unit)
     end
 end
 
 --this should remove the target from the unit as well?
 function Helper.Unit:unclaim_target(unit)
-    if unit.have_target then
-        table.remove(unit.claimed_target.targeted_by, find_in_list(unit.claimed_target.targeted_by, unit))
-        unit.have_target = false
+    --only clear my target, not assigned target
+    if unit.target then
+        table.remove(unit.target.targeted_by, find_in_list(unit.target.targeted_by, unit))
+        unit:clear_my_target()
     end
 end
 
 function Helper.Unit:can_cast(unit, points)
     points = points or false
+    --the goal here is to decouple "has target" from "can cast"
+    -- we want an assigned target to persist between attacks, and not 
+    -- prevent a unit from casting
+
+    --still missing is chasing down a target that moves out of range
     if unit then
-        return unit.state == unit_states['normal'] and not unit.have_target
+        return unit.state == unit_states['normal']
         and Helper.Time.time - unit.last_attack_finished > unit.cooldownTime
         and Helper.Spell:there_is_target_in_range(unit, unit.attack_sensor.rs, points)
     end
@@ -325,7 +328,7 @@ function Helper.Unit:select()
             for i, unit in ipairs(self:get_list(true)) do
                 if unit.selected then
                     unit.state = unit_states['following']
-                    unit.clear_assigned_target()
+                    unit:clear_assigned_target()
                 end
             end
         end

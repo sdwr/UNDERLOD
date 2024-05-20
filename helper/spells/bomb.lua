@@ -73,7 +73,6 @@ end
 function Helper.Spell.Bomb:stop_aiming(unit)
     local i, bomb = find_in_list(Helper.Spell.Bomb.prelist, unit, function(value) return value.unit end)
     if i ~= -1 then
-        unit.have_target = false
         table.remove(Helper.Spell.Bomb.prelist, i)
     end
 end

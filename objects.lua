@@ -477,6 +477,9 @@ function Unit:calculate_stats(first_run)
     self:init_stats()
   end
 
+  self.target = nil
+  self.assigned_target = nil
+
   self.base_aspd_m = 1
   self.base_area_dmg_m = 1
   self.base_area_size_m = 1
