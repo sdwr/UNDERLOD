@@ -2,9 +2,8 @@ Helper.Spell.Laser = {}
 Helper.Spell.Laser.list = {}
 
 function Helper.Spell.Laser:create(color, laser_aim_width, direction_lock, damage, unit, direction_targetx, direction_targety)
-    print("Helper.Spell.Laser:create")
+
     if unit:my_target() then
-        print("has target", unit, unit:my_target())
         local laser = {
             unit = unit,
             start_aim_time = Helper.Time.time,
@@ -33,6 +32,9 @@ function Helper.Spell.Laser:create(color, laser_aim_width, direction_lock, damag
         if unit and unit.area_size_m then
             laser.laser_aim_width = laser.laser_aim_width * unit.area_size_m
         end
+
+        laser.target_last_x = unit:my_target().x
+        laser.target_last_y = unit:my_target().y
 
         table.insert(Helper.Spell.Laser.list, laser)
     end
@@ -114,20 +116,37 @@ function Helper.Spell.Laser:draw_aims()
             love.graphics.line(laser.unit.x, laser.unit.y, Helper.Spell.Laser:get_end_location(laser.unit.x, laser.unit.y, laser.unit.x + laser.direction_targetx, laser.unit.y + laser.direction_targety))
         else
             local x, y = Helper.Spell:get_target_nearest_point(laser.unit)
+            if not x or not y then
+                x = laser.target_last_x
+                y = laser.target_last_y
+            end
             love.graphics.line(laser.unit.x, laser.unit.y, Helper.Spell.Laser:get_end_location(laser.unit.x, laser.unit.y, x, y))
         end
     end
 end
 
+--if target is dead, the laser should fire at the last known location
+--complicated by direction lock which goes based on distance(??)
 function Helper.Spell.Laser:update()
     --shoot
     for i = #Helper.Spell.Laser.list, 1, -1 do
         local laser = Helper.Spell.Laser.list[i]
+        --update target last known location
+        --spells should be getting this generically
+        if laser.unit and laser.unit:my_target() then
+            laser.target_last_x = laser.unit:my_target().x
+            laser.target_last_y = laser.unit:my_target().y
+        end
+
         if Helper.Time.time - laser.start_aim_time > laser.cast_time and not laser.holding_fire then
             if laser.direction_lock then
                 Helper.Spell.DamageLine:create(laser.unit, laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.unit.x, laser.unit.y, Helper.Spell.Laser:get_end_location(laser.unit.x, laser.unit.y, laser.unit.x + laser.direction_targetx, laser.unit.y + laser.direction_targety))
             else
                 local x, y = Helper.Spell:get_target_nearest_point(laser.unit)
+                if not x or not y then
+                    x = laser.target_last_x
+                    y = laser.target_last_y
+                end
                 Helper.Spell.DamageLine:create(laser.unit, laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.unit.x, laser.unit.y, Helper.Spell.Laser:get_end_location(laser.unit.x, laser.unit.y, x, y))
             end
             table.remove(Helper.Spell.Laser.list, i)

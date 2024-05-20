@@ -197,8 +197,8 @@ Helper.Unit.selection = {
 }
 Helper.Unit.do_draw_selection = false
 Helper.Unit.number_of_teams = 0
-Helper.Unit.teams = {{}, {}, {}, {}}
-Helper.Unit.team_targets = {nil, nil, nil, nil}
+Helper.Unit.teams = {}
+Helper.Unit.team_targets = {}
 Helper.Unit.selected_team = 0
 Helper.Unit.flagged_enemy = -1
 Helper.Unit.number_of_troop_types = 0
@@ -216,7 +216,6 @@ function Helper.Unit:set_team_target(team_number, target)
 
     --set a targeting ring around the target
     if target then
-        print("adding buff")
         local targetBuff = {name = 'targeted', duration = 9999, color = yellow[0]}
         target:add_buff(targetBuff)
     end
@@ -310,6 +309,12 @@ function Helper.Unit:select()
                 local flagged_enemy = Helper.Spell:get_nearest_target_from_point(Helper.mousex, Helper.mousey, false)
                 Helper.Unit:clear_team_target(self.selected_team)
                 Helper.Unit:set_team_target(self.selected_team, flagged_enemy)
+                --set the selected troops to 'normal', so they can attack the target
+                for i, unit in ipairs(self:get_list(true)) do
+                    if unit.selected then
+                        unit.state = unit_states['normal']
+                    end
+                end
             else
                 --untarget the flagged enemy for the selected troop, if there is one
                 Helper.Unit:clear_team_target(self.selected_team)
@@ -359,7 +364,7 @@ function Helper.Unit:select()
     --     self.do_draw_selection = false
     -- end
 
-    for i = 1, 9 do
+    for i = 1, #main.current.units do
         if input[tostring(i)].pressed and main.current.hotbar_by_index[i] then
             main.current.hotbar_by_index[i]:on_mouse_enter()
         end
@@ -372,21 +377,6 @@ function Helper.Unit:select()
             --     main.current.hotbar['add to team ' .. i - self.number_of_troop_types]:on_mouse_exit()
             --     main.current.hotbar['add to team ' .. i - self.number_of_troop_types].visible = false
             -- end
-        end
-    end
-
-    local x = 50 + (Helper.Unit.troop_type_button_width + 5) * (Helper.Unit.number_of_troop_types)
-    local y = gh - 50
-    for i = 1, 4 do
-        if (not input['lshift'].down and not input['lctrl'].down and not input['m1'].down and not input['m2'].down and not input['space'].down) 
-        or input[tostring(i + self.number_of_troop_types)].released then
-            if Helper.Geometry:is_inside_rectangle(Helper.mousex, Helper.mousey, x + 52 * (i - 1), y, x + 47 + 52 * (i - 1), gh - 10) then
-                main.current.hotbar['set team ' .. i].visible = true
-                main.current.hotbar['add to team ' .. i].visible = true
-            else
-                main.current.hotbar['set team ' .. i].visible = false
-                main.current.hotbar['add to team ' .. i].visible = false
-            end
         end
     end
 end
@@ -413,41 +403,6 @@ end
 function Helper.Unit:deselect_all_troops()
     for i, troop in ipairs(self:get_list(true)) do
         troop.selected = false
-    end
-end
-
-
-
-Helper.Unit.team_saves = {{}, {}, {}, {}}
-
-function Helper.Unit:save_teams_to_next_round()
-    Helper.Unit.team_saves = {{}, {}, {}, {}}
-
-    for i = 1, 4 do
-        if #self.teams[i] > 0 then
-            for j, troop in ipairs(self.teams[i]) do
-                if self.team_saves[i][troop.character] then
-                    self.team_saves[i][troop.character] = self.team_saves[i][troop.character] + 1
-                else
-                    self.team_saves[i][troop.character] = 1
-                end
-            end
-        end
-    end
-end
-
-function Helper.Unit:load_teams_to_next_round()
-    self.teams = {{}, {}, {}, {}}
-
-    for i = 1, 4 do
-        for j, troop in ipairs(self:get_list(true)) do
-            if self.team_saves[i][troop.character] and self.team_saves[i][troop.character] > 0 then
-                self.team_saves[i][troop.character] = self.team_saves[i][troop.character] - 1
-                table.insert(self.teams[i], troop)
-            end
-        end
-
-        self:refresh_button(i)
     end
 end
 

@@ -18,6 +18,16 @@ function Laser_Troop:draw_cast_timer()
   Laser_Troop.super.draw_cast_timer(self)
 end
 
+
+--conditions to attack should be:
+--1. state is 'normal' (includes has assigned_target)
+--2. target is in range
+--3. cooldown is ready
+
+-- so these should be managed by:
+--1. state can be set by spell/helper
+--2. target is set by RMB click, and if not set there is auto-targetted by spell/helper
+--3. cooldown should be in unit
 function Laser_Troop:set_character()
   self.attack_sensor = Circle(self.x, self.y, self.base_attack_range)
 

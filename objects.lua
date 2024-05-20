@@ -198,6 +198,7 @@ Unit = Object:extend()
 function Unit:init_unit()
   self.level = self.level or 1
   self.target = nil
+  self.assigned_target = nil
   self.buffs = {}
   self.toggles = {}
   self.hfx:add('hit', 1)
@@ -476,9 +477,6 @@ function Unit:calculate_stats(first_run)
   if(first_run) then
     self:init_stats()
   end
-
-  self.target = nil
-  self.assigned_target = nil
 
   self.base_aspd_m = 1
   self.base_area_dmg_m = 1
