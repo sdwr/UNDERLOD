@@ -35,8 +35,6 @@ function Helper.Unit:add_custom_variables_to_unit(unit)
     unit.previous_state = ''
 
     unit.targeted_by = {}
-    unit.claimed_target = nil
-    unit.have_target = false
     unit.state_change_functions = {}
     unit.state_always_run_functions = {}
     unit.last_attack_started = -999999
@@ -69,31 +67,37 @@ end
 -- looks like this is for "least targeted" targeting
 function Helper.Unit:claim_target(unit, target)
     if target ~= -1 then
-        if unit.have_target then
-            if unit.claimed_target == target then
+        if unit.target then
+            if unit.target == target then
                 return
             end
-            if unit.claimed_target then
-                table.remove(unit.claimed_target.targeted_by, find_in_list(unit.claimed_target.targeted_by, unit))
+            if unit.target then
+                table.remove(unit.target.targeted_by, find_in_list(unit.target.targeted_by, unit))
             end
         end
-        unit.claimed_target = target
-        table.insert(unit.claimed_target.targeted_by, unit)
-        unit.have_target = true
+        unit:set_target(target)
+        table.insert(unit.target.targeted_by, unit)
     end
 end
 
+--this should remove the target from the unit as well?
 function Helper.Unit:unclaim_target(unit)
-    if unit.have_target then
-        table.remove(unit.claimed_target.targeted_by, find_in_list(unit.claimed_target.targeted_by, unit))
-        unit.have_target = false
+    --only clear my target, not assigned target
+    if unit.target then
+        table.remove(unit.target.targeted_by, find_in_list(unit.target.targeted_by, unit))
+        unit:clear_my_target()
     end
 end
 
 function Helper.Unit:can_cast(unit, points)
     points = points or false
+    --the goal here is to decouple "has target" from "can cast"
+    -- we want an assigned target to persist between attacks, and not 
+    -- prevent a unit from casting
+
+    --still missing is chasing down a target that moves out of range
     if unit then
-        return unit.state == unit_states['normal'] and not unit.have_target
+        return unit.state == unit_states['normal']
         and Helper.Time.time - unit.last_attack_finished > unit.cooldownTime
         and Helper.Spell:there_is_target_in_range(unit, unit.attack_sensor.rs, points)
     end
@@ -193,13 +197,63 @@ Helper.Unit.selection = {
 }
 Helper.Unit.do_draw_selection = false
 Helper.Unit.number_of_teams = 0
-Helper.Unit.teams = {{}, {}, {}, {}}
+Helper.Unit.teams = {}
+Helper.Unit.team_targets = {}
 Helper.Unit.selected_team = 0
 Helper.Unit.flagged_enemy = -1
-Helper.Unit.setting_rallying = false
 Helper.Unit.number_of_troop_types = 0
 Helper.Unit.troop_type_button_width = 0
 Helper.Unit.team_button_width = 0
+
+function Helper.Unit:set_team_target(team_number, target)
+    if team_number < 1 or team_number > 4 then
+        return
+    end
+    for i, troop in ipairs(Helper.Unit.teams[team_number]) do
+        troop:set_assigned_target(target)
+    end
+    Helper.Unit.team_targets[team_number] = target
+
+    --set a targeting ring around the target
+    if target then
+        local targetBuff = {name = 'targeted', duration = 9999, color = yellow[0]}
+        target:add_buff(targetBuff)
+    end
+end
+
+--need to clear target when all troops are dead as well
+function Helper.Unit:clear_team_target(team_number)
+    if team_number < 1 or team_number > 4 then
+        return
+    end
+
+    local target = Helper.Unit.team_targets[team_number]
+    for i, troop in ipairs(Helper.Unit.teams[team_number]) do
+        --can't clear the unit target here, because this gets called when the target dies
+        troop:clear_assigned_target()
+    end
+    Helper.Unit.team_targets[team_number] = nil
+
+    --clear the targeting ring around the target, if no other team is targeting it
+    if not Helper.Unit:is_a_team_target(target) then
+        if target then
+            target:remove_buff('targeted')
+        end
+    end
+end
+
+function Helper.Unit:is_a_team_target(target)
+    if target == nil then
+        return false
+    end
+
+    for i = 1, 4 do
+        if Helper.Unit.team_targets[i] == target then
+            return true
+        end
+    end
+    return false
+end
 
 function Helper.Unit:set_team(team_number)
     local team = {}
@@ -240,144 +294,89 @@ function Helper.Unit:refresh_button(team_number)
 end
 
 function Helper.Unit:select()
-    if not Helper.mouse_on_button and not input['lshift'].down then
+    if not Helper.mouse_on_button then
         local flag = false
-        if input['m1'].pressed then
+        --should be on key release, not press? or at least only check the first press
+        if input['m2'].pressed then
             for i, enemy in ipairs(self:get_list(false)) do
                 if Helper.Geometry:distance(Helper.mousex, Helper.mousey, enemy.x, enemy.y) < 9 then 
                     flag = true
                     break
                 end
             end
+            --target the flagged enemy with the selected troop
             if flag then
                 local flagged_enemy = Helper.Spell:get_nearest_target_from_point(Helper.mousex, Helper.mousey, false)
-                if self.flagged_enemy == flagged_enemy then
-                    self.flagged_enemy = -1
-                else
-                    self.flagged_enemy = flagged_enemy
-                    for i, troop in ipairs(self:get_list(true)) do
-                        troop.target = self.flagged_enemy
+                Helper.Unit:clear_team_target(self.selected_team)
+                Helper.Unit:set_team_target(self.selected_team, flagged_enemy)
+                --set the selected troops to 'normal', so they can attack the target
+                for i, unit in ipairs(self:get_list(true)) do
+                    if unit.selected then
+                        unit.state = unit_states['normal']
+                    end
+                end
+            else
+                --untarget the flagged enemy for the selected troop, if there is one
+                Helper.Unit:clear_team_target(self.selected_team)
+
+                --draw a rally point for the selected troops
+                Helper.Graphics:draw_dashed_rectangle(Helper.Color.white, 2, 8, 4, Helper.Time.time * 80, Helper.mousex - 10, Helper.mousey - 10, Helper.mousex + 10, Helper.mousey + 10)
+                --rally the selected troops to the mouse location
+                for i, unit in ipairs(self:get_list(true)) do
+                    if unit.selected then
+                        unit.state = unit_states['rallying']
+                        unit.target_pos = {x = Helper.mousex, y = Helper.mousey}
                     end
                 end
             end
-        end
-
-        if input['m1'].pressed and not flag then
-            self.x1 = Helper.mousex
-            self.y1 = Helper.mousey
-            self.do_draw_selection = true
-        end
-
-        if input['m1'].down and self.do_draw_selection then
-            self.x2 = Helper.mousex
-            self.y2 = Helper.mousey
-            
-            for i, unit in ipairs(self:get_list(true)) do
-                if Helper.Geometry:is_inside_rectangle(unit.x, unit.y, self.x1, self.y1, self.x2, self.y2) then
-                    unit.selected = true
-                else
-                    unit.selected = false
-                end
-            end
-        end
-
-        if not input['m1'].down and input['m2'].down and not self.setting_rallying then
+        elseif input['m1'].pressed then
             for i, unit in ipairs(self:get_list(true)) do
                 if unit.selected then
                     unit.state = unit_states['following']
-                    unit.target = nil
-                    unit.target_pos = nil
+                    unit:clear_assigned_target()
                 end
             end
         end
     end
 
-    if input['lshift'].down and input['m2'].pressed then
-        self.setting_rallying = true
-        for i, troop in ipairs(self:get_list(true)) do
-            if troop.selected then
-                troop.target_pos = {x = Helper.mousex, y = Helper.mousey}
-                troop.state = unit_states['rallying']
-            end
-        end
-    end
+        --dont need box selection
+        -- if input['m1'].pressed and not flag then
+        --     self.x1 = Helper.mousex
+        --     self.y1 = Helper.mousey
+        --     self.do_draw_selection = true
+        -- end
 
-    if input['m2'].released then
-        self.setting_rallying = false
-    end
-
-    if input['m1'].released then
-        self.do_draw_selection = false
-    end
-
-    if input['lctrl'].down then
-        if input[tostring(self.number_of_troop_types + 1)].pressed then
-            self:set_team(1)
-        elseif input[tostring(self.number_of_troop_types + 2)].pressed then
-            self:set_team(2)
-        elseif input[tostring(self.number_of_troop_types + 3)].pressed then
-            self:set_team(3)
-        elseif input[tostring(self.number_of_troop_types + 4)].pressed then
-            self:set_team(4)
-        end
-    end
-
-    if input['lshift'].down then
-        if input[tostring(self.number_of_troop_types + 1)].pressed then
-            self:add_to_team(1)
-        elseif input[tostring(self.number_of_troop_types + 2)].pressed then
-            self:add_to_team(2)
-        elseif input[tostring(self.number_of_troop_types + 3)].pressed then
-            self:add_to_team(3)
-        elseif input[tostring(self.number_of_troop_types + 4)].pressed then
-            self:add_to_team(4)
-        end
-    end
+        -- if input['m1'].down and self.do_draw_selection then
+        --     self.x2 = Helper.mousex
+        --     self.y2 = Helper.mousey
+            
+        --     for i, unit in ipairs(self:get_list(true)) do
+        --         if Helper.Geometry:is_inside_rectangle(unit.x, unit.y, self.x1, self.y1, self.x2, self.y2) then
+        --             unit.selected = true
+        --         else
+        --             unit.selected = false
+        --         end
+        --     end
+        -- end
 
 
+    -- if input['m1'].released then
+    --     self.do_draw_selection = false
+    -- end
 
-    for i = 1, 9 do
-        if not input['lctrl'].down and not input['lshift'].down then
-            if input[tostring(i)].pressed and main.current.hotbar_by_index[i] then
-                main.current.hotbar_by_index[i]:on_mouse_enter()
-            end
-        elseif not (input['lctrl'].down and input['lshift'].down) then
-            if input['lctrl'].down then
-                if input[tostring(i)].pressed and i <= 4 + self.number_of_troop_types and i >= 1 + self.number_of_troop_types then
-                    main.current.hotbar['set team ' .. i - self.number_of_troop_types].visible = true
-                    main.current.hotbar['set team ' .. i - self.number_of_troop_types]:on_mouse_enter()
-                end
-            elseif input['lshift'].down then
-                if input[tostring(i)].pressed and i <= 4 + self.number_of_troop_types and i >= 1 + self.number_of_troop_types then
-                    main.current.hotbar['add to team ' .. i - self.number_of_troop_types].visible = true
-                    main.current.hotbar['add to team ' .. i - self.number_of_troop_types]:on_mouse_enter()
-                end
-            end
+    for i = 1, #main.current.units do
+        if input[tostring(i)].pressed and main.current.hotbar_by_index[i] then
+            main.current.hotbar_by_index[i]:on_mouse_enter()
         end
 
         if input[tostring(i)].released and main.current.hotbar_by_index[i] then
             main.current.hotbar_by_index[i]:on_mouse_exit()
-            if i <= 4 + self.number_of_troop_types and i >= 1 + self.number_of_troop_types then
-                main.current.hotbar['set team ' .. i - self.number_of_troop_types]:on_mouse_exit()
-                main.current.hotbar['set team ' .. i - self.number_of_troop_types].visible = false
-                main.current.hotbar['add to team ' .. i - self.number_of_troop_types]:on_mouse_exit()
-                main.current.hotbar['add to team ' .. i - self.number_of_troop_types].visible = false
-            end
-        end
-    end
-
-    local x = 50 + (Helper.Unit.troop_type_button_width + 5) * (Helper.Unit.number_of_troop_types)
-    local y = gh - 50
-    for i = 1, 4 do
-        if (not input['lshift'].down and not input['lctrl'].down and not input['m1'].down and not input['m2'].down and not input['space'].down) 
-        or input[tostring(i + self.number_of_troop_types)].released then
-            if Helper.Geometry:is_inside_rectangle(Helper.mousex, Helper.mousey, x + 52 * (i - 1), y, x + 47 + 52 * (i - 1), gh - 10) then
-                main.current.hotbar['set team ' .. i].visible = true
-                main.current.hotbar['add to team ' .. i].visible = true
-            else
-                main.current.hotbar['set team ' .. i].visible = false
-                main.current.hotbar['add to team ' .. i].visible = false
-            end
+            -- if i <= 4 + self.number_of_troop_types and i >= 1 + self.number_of_troop_types then
+            --     main.current.hotbar['set team ' .. i - self.number_of_troop_types]:on_mouse_exit()
+            --     main.current.hotbar['set team ' .. i - self.number_of_troop_types].visible = false
+            --     main.current.hotbar['add to team ' .. i - self.number_of_troop_types]:on_mouse_exit()
+            --     main.current.hotbar['add to team ' .. i - self.number_of_troop_types].visible = false
+            -- end
         end
     end
 end
@@ -404,41 +403,6 @@ end
 function Helper.Unit:deselect_all_troops()
     for i, troop in ipairs(self:get_list(true)) do
         troop.selected = false
-    end
-end
-
-
-
-Helper.Unit.team_saves = {{}, {}, {}, {}}
-
-function Helper.Unit:save_teams_to_next_round()
-    Helper.Unit.team_saves = {{}, {}, {}, {}}
-
-    for i = 1, 4 do
-        if #self.teams[i] > 0 then
-            for j, troop in ipairs(self.teams[i]) do
-                if self.team_saves[i][troop.character] then
-                    self.team_saves[i][troop.character] = self.team_saves[i][troop.character] + 1
-                else
-                    self.team_saves[i][troop.character] = 1
-                end
-            end
-        end
-    end
-end
-
-function Helper.Unit:load_teams_to_next_round()
-    self.teams = {{}, {}, {}, {}}
-
-    for i = 1, 4 do
-        for j, troop in ipairs(self:get_list(true)) do
-            if self.team_saves[i][troop.character] and self.team_saves[i][troop.character] > 0 then
-                self.team_saves[i][troop.character] = self.team_saves[i][troop.character] - 1
-                table.insert(self.teams[i], troop)
-            end
-        end
-
-        self:refresh_button(i)
     end
 end
 

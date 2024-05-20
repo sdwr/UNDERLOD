@@ -18,6 +18,16 @@ function Laser_Troop:draw_cast_timer()
   Laser_Troop.super.draw_cast_timer(self)
 end
 
+
+--conditions to attack should be:
+--1. state is 'normal' (includes has assigned_target)
+--2. target is in range
+--3. cooldown is ready
+
+-- so these should be managed by:
+--1. state can be set by spell/helper
+--2. target is set by RMB click, and if not set there is auto-targetted by spell/helper
+--3. cooldown should be in unit
 function Laser_Troop:set_character()
   self.attack_sensor = Circle(self.x, self.y, self.base_attack_range)
 
@@ -30,18 +40,21 @@ function Laser_Troop:set_character()
   --if ready to cast and has target in range, start cast
   self.state_always_run_functions['always_run'] = function()
     if Helper.Unit:can_cast(self) then
-      Helper.Unit:claim_target(self, Helper.Spell:get_nearest_least_targeted(self, self.attack_sensor.rs, true))
+      if not self:my_target() then
+        Helper.Unit:claim_target(self, Helper.Spell:get_nearest_least_targeted(self, self.attack_sensor.rs, true))
+      end
+      self.state = unit_states['casting']
       Helper.Time:wait(get_random(0, 0.1), function()
         
         --on attack callbacks
         if self.onAttackCallbacks then
-          self:onAttackCallbacks(self.claimed_target)
+          self:onAttackCallbacks(self.target)
         end
         sniper_load:play{volume=0.7}
         local data = {
           group = main.current.effects, 
           unit = self,
-          target = self.claimed_target,
+          target = self.target,
           direction_lock = false,
           laser_aim_width = 3,
           color = Helper.Color.blue,
@@ -51,8 +64,12 @@ function Laser_Troop:set_character()
       end)
     end
     
+    --need 2 types of target - one for random targets, one for assigned targets
+    --if target is assigned, it will remain until the target dies or is reassigned
+    --but random targets will be reassigned every attack, to keep a nice spread of damage
+
     --cancel if target moves out of range
-    if self.have_target and not Helper.Spell:claimed_target_is_in_range(self, self.attack_sensor.rs, true) then
+    if self:my_target() and not Helper.Spell:target_is_in_range(self, self.attack_sensor.rs, true) then
       Helper.Spell.Laser:stop_aiming(self)
       Helper.Unit:unclaim_target(self)
     end
@@ -60,10 +77,8 @@ function Laser_Troop:set_character()
 
   --cancel on move
   self.state_always_run_functions['following_or_rallying'] = function()
-    if self.have_target then
-      Helper.Spell.Laser:stop_aiming(self)
-      Helper.Unit:unclaim_target(self)
-    end
+    Helper.Spell.Laser:stop_aiming(self)
+    Helper.Unit:unclaim_target(self)
   end
 
   self.state_change_functions['normal'] = function() end

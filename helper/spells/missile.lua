@@ -4,7 +4,7 @@ Helper.Spell.Missile.list = {}
 Helper.Spell.Missile.prelist = {}
 
 function Helper.Spell.Missile:create(color, missile_length, damage, speed, unit, fly_infinitely, explode_radius, targetx, targety)
-    if unit.have_target or (targetx and targety) then
+    if unit.my_target() or (targetx and targety) then
         local missile = {
             x = 0,
             y = 0,
@@ -68,8 +68,8 @@ function Helper.Spell.Missile:set_position(missile)
     missile.y = missile.unit.y
     
     -- only players have cooldown? fix
-    if missile.unit.have_target and (missile.targetx == -1 or missile.targety == -1) then
-        local x, y = Helper.Spell:get_claimed_target_nearest_point(missile.unit)
+    if missile.unit:my_target() and (missile.targetx == -1 or missile.targety == -1) then
+        local x, y = Helper.Spell:get_target_nearest_point(missile.unit)
         missile.targetx, missile.targety = Helper.Spell.Laser:get_end_location(missile.x, missile.y, x, y)
     end
 end
@@ -167,7 +167,6 @@ end
 function Helper.Spell.Missile:stop_aiming(unit)
     local i, missile = find_in_list(Helper.Spell.Missile.prelist, unit, function(value) return value.unit end)
     if i ~= -1 then
-        unit.have_target = false
         table.remove(Helper.Spell.Missile.prelist, i)
     end
 end

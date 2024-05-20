@@ -82,8 +82,16 @@ function Spawn_Troops(arena)
   end
 
   local spawn_x = gw/2 - 50
+
+  --clear Helper.Unit.teams
+  Helper.Unit.teams = {}
+  Helper.Unit.team_targets = {}
   
   for i, unit in ipairs(arena.units) do
+    --add a new team
+    table.insert(Helper.Unit.teams, i, {})
+    table.insert(Helper.Unit.team_targets, i, nil)
+
     local column_offset = (i-1) % 4
 
     if i == 5 then
@@ -95,7 +103,9 @@ function Spawn_Troops(arena)
 
     for row_offset=0, 4 do
       troop_data = {group = arena.main, x = spawn_x + (column_offset*20), y = spawn_y + (row_offset*10), level = unit.level, character = unit.character, items = unit.items, passives = arena.passives}
-      Create_Troop(troop_data)
+      local troop = Create_Troop(troop_data)
+      --add the troop to the team
+      table.insert(Helper.Unit.teams[i], troop)
     end
     
   end

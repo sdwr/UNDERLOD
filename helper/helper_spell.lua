@@ -154,17 +154,18 @@ function Helper.Spell:get_nearest_least_targeted(unit, range, points)
     return Helper.Spell:get_nearest_target(unit, least_targeted_units)
 end
 
-function Helper.Spell:claimed_target_is_in_range(unit, range, points)
+function Helper.Spell:target_is_in_range(unit, range, points)
     points = points or false
     range = range + 40
+    local target = unit:my_target()
 
     if not points then
-        if unit.have_target and Helper.Geometry:distance(unit.x, unit.y, unit.claimed_target.x, unit.claimed_target.y) <= range then
+        if target and Helper.Geometry:distance(unit.x, unit.y, target.x, target.y) <= range then
             return true
         end
     else
-        for i, point in ipairs(unit.claimed_target.points) do
-            if unit.have_target and Helper.Geometry:distance(unit.x, unit.y, unit.claimed_target.x + point.x, unit.claimed_target.y + point.y) <= range then
+        for i, point in ipairs(target.points) do
+            if target and Helper.Geometry:distance(unit.x, unit.y, target.x + point.x, target.y + point.y) <= range then
                 return true
             end
         end
@@ -196,16 +197,20 @@ function Helper.Spell:there_is_target_in_range(unit, range, points)
     return false
 end
 
-function Helper.Spell:get_claimed_target_nearest_point(unit)
+function Helper.Spell:get_target_nearest_point(unit)
     local max_distance = 99999999
     local nearestx = 0
     local nearesty = 0
-    for i, point in ipairs(unit.claimed_target.points) do
-        local distance = Helper.Geometry:distance(unit.x, unit.y, unit.claimed_target.x + point.x, unit.claimed_target.y + point.y)
+    local target = unit:my_target()
+    if not target then
+        return -1, -1
+    end
+    for i, point in ipairs(target.points) do
+        local distance = Helper.Geometry:distance(unit.x, unit.y, target.x + point.x, target.y + point.y)
         if distance < max_distance then
             max_distance = distance
-            nearestx = unit.claimed_target.x + point.x
-            nearesty = unit.claimed_target.y + point.y
+            nearestx = target.x + point.x
+            nearesty = target.y + point.y
         end
     end
 
