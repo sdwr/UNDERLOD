@@ -65,35 +65,6 @@ function Proc_Bash:onHit(target, damage)
   end
 end
 
---proc berserk
-Proc_Berserk = Proc:extend()
-function Proc_Berserk:init(args)
-  self.triggers = {PROC_ON_GOT_HIT}
-
-  Proc_Berserk.super.init(self, args)
-  
-  
-
-  --can only proc once
-  self.canProc = true
-
-  --define the proc's vars
-  self.buffname = 'berserk'
-  self.buffDuration = self.data.buffDuration or 5
-  self.buffdata = {name = 'berserk', color = red[2], duration = self.buffDuration,
-  stats = {dmg = 0.5, attack_speed = 0.3, move_speed = 0.3}
-  }
-end
-
-function Proc_Berserk:onGotHit(from, damage)
-  Proc_Berserk.super.onGotHit(self, from, damage)
-
-  if self.canProc and self.hp / self.max_hp < 0.3 then
-    self.canProc = false
-    self.unit:add_buff(self.buffdata)
-  end
-end
-
 --proc heal
 Proc_Heal = Proc:extend()
 function Proc_Heal:init(args)
@@ -141,23 +112,43 @@ function Proc_Overkill:onKill(target)
   end
 end
 
+--proc bloodlust
 Proc_Bloodlust = Proc:extend()
 function Proc_Bloodlust:init(args)
-  self.triggers = {}
+  self.triggers = {PROC_ON_KILL}
 
   Proc_Bloodlust.super.init(self, args)
   
   
 
   --define the proc's vars
-  --same buff as berserk
-  self.buffname = 'berserk'
+  self.buff = 'bloodlust'
   self.buffDuration = self.data.buffDuration or 5
-  self.buffdata = {name = 'berserk', color = red[2], duration = self.buffDuration,
-  stats = {dmg = 0.5, attack_speed = 0.3, move_speed = 0.3}
+  self.buffdata = {name = 'bloodlust', color = purple[5], duration = 5, maxDuration = 5,
+    stacks = 1,
+    stats = {attack_speed = 0.1, move_speed = 0.1}
   }
 
   trigger:after(TIME_TO_ROUND_START, function() self.unit:add_buff(self.buffdata) end)
+end
+
+Proc_Berserk = Proc:extend()
+function Proc_Berserk:init(args)
+  self.triggers = {}
+
+  Proc_Berserk.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  --buff defined in objects.lua (unit) :berserk()
+  self.buffname = 'berserk'
+  self.buffDuration = self.data.buffDuration or 5
+end
+
+function Proc_Berserk:onKill(target)
+  Proc_Berserk.super.onKill(self, target)
+  self.unit:berserk(self.buffDuration)
 end
 
 
@@ -386,9 +377,10 @@ function Proc_Blazin:init(args)
   --define the proc's vars
   self.buff = 'blazin'
   self.buff_duration = self.data.buff_duration or 1
-  self.aspd_per_enemy = self.data.aspd_per_enemy or 0.05
-  self.max_aspd = self.data.max_aspd or 0.5
+  self.aspd_per_enemy = self.data.aspd_per_enemy or 0.1
+  self.max_aspd = self.data.max_aspd or 1
 
+  --dont use stacks, because we don't want it to decay over time
   self.buffdata = {name = 'blazin', color = red[5], duration = self.buff_duration,
     stats = {aspd = 0}
   }
@@ -585,11 +577,20 @@ function Proc_Eledmg:init(args)
 end
 
 --need to assign an owner to burn debuff for this to work
+--and pass unit in to :slow()
+--and see where the cold damage is coming from for frostfield
+--also think about sharing vamp between the units in the troop
 Proc_Elevamp = Proc:extend()
 function Proc_Elevamp:init(args)
   self.triggers = {}
 
   Proc_Elevamp.super.init(self, args)
+
+  self.buffdata = {name = 'elevamp', duration = 9999,
+    stats = {elevamp = 0.5}
+  }
+
+  self.unit:add_buff(self.buffdata)
 end
 
 

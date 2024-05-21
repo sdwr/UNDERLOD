@@ -2069,7 +2069,9 @@ end
 
 
 
-
+--find a way for clicks to buy into first empty slot
+--need either a time check or distance check
+--so that if you click and drag, you can drop halfway to cancel the buy
 ItemCard = Object:extend()
 ItemCard:implement(GameObject)
 function ItemCard:init(args)

@@ -111,7 +111,12 @@ function Spawn_Troops(arena)
   end
 end
 
-
+--TODO: cap the number of troops that can be spawned
+--think about spawning special enemies with a group of normal enemies
+--also there is no fallback if we can't spawn an enemy
+--it just doesn't spawn
+--which is fine for calculating end of round maybe(??)
+--but not for the progress bar
 function Spawn_Wave(arena, wave)
   print("starting spawn wave", wave)
   local wave_index = 1

@@ -346,6 +346,7 @@ function Unit:update_buffs(dt)
       elseif k == 'stunned' then
         self.state = unit_states['normal']
       end
+      --this is where buff stacks tick down
       if v.stacks and v.stacks > 1 then
         v.stacks = v.stacks - 1
         v.duration = v.maxDuration
@@ -508,6 +509,11 @@ function Unit:calculate_stats(first_run)
   self.buff_attack_range_a = 0
   self.buff_attack_range_m = 1
 
+  self.eledmg_m = 1
+
+  self.vamp = 0
+  self.elevamp = 0
+
   self.status_resist = 0
   if self.class == 'miniboss' then
     self.status_resist = 0.5
@@ -563,6 +569,13 @@ function Unit:calculate_stats(first_run)
             self.status_resist = self.status_resist + amtWithStacks
           elseif stat == buff_types['attack_range'] then
             self.buff_attack_range_m = self.buff_attack_range_m + amtWithStacks
+
+          elseif stat == buff_types['eledmg'] then
+            self.eledmg_m = self.eledmg_m + amtWithStacks
+          elseif stat == buff_types['elevamp'] then
+            self.elevamp = self.elevamp + amtWithStacks
+          elseif stat == buff_types['vamp'] then
+            self.vamp = self.vamp + amtWithStacks
 
           --flat stats
           elseif stat == buff_types['def'] then
@@ -742,6 +755,21 @@ function Unit:slow(amount, duration, from)
 
   self:remove_buff('slowed')
   self:add_buff(slowBuff)
+end
+
+function Unit:berserk(duration)
+  local berserkBuff = {name = 'berserk', color = purple[5], duration = duration, maxDuration = duration, 
+    stats = {aspd = 0.1, mvspd = 0.05}
+  }
+  local existing_buff = self.buffs['berserk']
+
+  berserkBuff.stacks = 1
+  if existing_buff then
+    berserkBuff.stacks = math.min((existing_buff.stacks or 1) + 1, MAX_STACKS_BERSERK)
+  end
+
+  self:remove_buff('berserk')
+  self:add_buff(berserkBuff)
 end
 
 function Unit:set_as_target()

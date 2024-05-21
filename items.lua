@@ -96,6 +96,15 @@ item_to_item_data = {
     stats = {dmg = 0.5},
     procs = {'overkill'}
   },
+  ['bloodlust'] = {
+    name = 'bloodlust',
+    colors = {},
+    cost = 5,
+    icon = 'bloodlust',
+    desc = 'Get attackspeed and movespeed when you kill an enemy',
+    stats = {dmg = 0.5},
+    procs = {'bloodlust'}
+  },
   ['repeater'] = {
     name = 'repeater',
     colors = {},

@@ -1361,7 +1361,10 @@ function init()
     ['attack_range'] = 'attack_range',
     ['dmg_per_def'] = 'dmg_per_def',
 
+    ['eledmg'] = 'eledmg',
+    ['elevamp'] = 'elevamp',
     ['vamp'] = 'vamp',
+
     ['ghost'] = 'ghost',
     ['slow'] = 'slow',
     ['bash'] = 'bash',
