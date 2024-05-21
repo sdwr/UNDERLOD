@@ -39,7 +39,16 @@ function Laser_Troop:set_character()
 
   --if ready to cast and has target in range, start cast
   self.state_always_run_functions['always_run'] = function()
-    if Helper.Unit:can_cast(self) then
+
+    --prioritize moving towards target
+    --should only have a target if it is assigned now
+    -- or if it grabs a random target
+    --because random targets will be taken away after each attack
+    if Helper.Unit:should_follow_target(self) then
+      self.state = unit_states['normal']
+      Helper.Spell.Laser:stop_aiming(self)
+
+    elseif Helper.Unit:can_cast(self) then
       if not self:my_target() then
         Helper.Unit:claim_target(self, Helper.Spell:get_nearest_least_targeted(self, self.attack_sensor.rs, true))
       end

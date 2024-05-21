@@ -784,6 +784,40 @@ function HotbarButton:set_text(text)
   self.spring:pull(0.2, 200, 10)
 end
 
+ProgressBar = Object:extend()
+ProgressBar:implement(GameObject)
+function ProgressBar:init(args)
+  self:init_game_object(args)
+  self.shape = Rectangle(self.x, self.y, self.w, self.h)
+  self.interact_with_mouse = false
+  self.progress = args.progress or 0
+  self.max_progress = args.max_progress or 1
+  self.color = args.color or fg[0]
+  self.bgcolor = args.bgcolor or bg[1]
+end
+
+function ProgressBar:update(dt)
+  self:update_game_object(dt)
+end
+
+function ProgressBar:draw()
+  local progressPct = math.min(self.progress / self.max_progress, 1)
+  local width = self.shape.w*progressPct
+  local new_center_x = self.x - self.shape.w/2 + width/2
+  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
+    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, bg[1])
+    graphics.rectangle(new_center_x, self.y, width, self.shape.h, 4, 4, self.color)
+  graphics.pop()
+end
+
+function ProgressBar:set_progress(progress)
+  self.progress = progress
+end
+
+function ProgressBar:increase_progress(amount)
+  self.progress = self.progress + amount
+end
+
 LevelMap = Object:extend()
 LevelMap:implement(GameObject)
 function LevelMap:init(args)

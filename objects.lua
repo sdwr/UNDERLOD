@@ -808,7 +808,8 @@ end
 
 function Unit:in_range()
   return function()
-    return self.target and not self.target.dead and self.state == unit_states['normal'] and self:distance_to_object(self.target) - self.target.shape.w/2 < self.attack_sensor.rs
+    local target = self:my_target()
+    return target and not target.dead and self.state == unit_states['normal'] and self:distance_to_object(target) - target.shape.w/2 < self.attack_sensor.rs
   end
 end
 

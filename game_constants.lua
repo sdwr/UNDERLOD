@@ -13,6 +13,7 @@ MAX_UNITS = 3
 --used in the spawn manager
 --and also used by procs to know when to start buffs
 TIME_TO_ROUND_START = 2
+SPAWNS_IN_GROUP = 6
 
 
 --game constants

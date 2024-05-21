@@ -116,7 +116,7 @@ function Helper.Spell.Laser:draw_aims()
             love.graphics.line(laser.unit.x, laser.unit.y, Helper.Spell.Laser:get_end_location(laser.unit.x, laser.unit.y, laser.unit.x + laser.direction_targetx, laser.unit.y + laser.direction_targety))
         else
             local x, y = Helper.Spell:get_target_nearest_point(laser.unit)
-            if not x or not y then
+            if x == 0 or y == 0 then
                 x = laser.target_last_x
                 y = laser.target_last_y
             end
@@ -143,7 +143,7 @@ function Helper.Spell.Laser:update()
                 Helper.Spell.DamageLine:create(laser.unit, laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.unit.x, laser.unit.y, Helper.Spell.Laser:get_end_location(laser.unit.x, laser.unit.y, laser.unit.x + laser.direction_targetx, laser.unit.y + laser.direction_targety))
             else
                 local x, y = Helper.Spell:get_target_nearest_point(laser.unit)
-                if not x or not y then
+                if x == 0 or y == 0 then
                     x = laser.target_last_x
                     y = laser.target_last_y
                 end

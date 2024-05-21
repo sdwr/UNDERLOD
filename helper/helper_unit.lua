@@ -89,6 +89,12 @@ function Helper.Unit:unclaim_target(unit)
     end
 end
 
+--doesnt check target points, just center
+function Helper.Unit:should_follow_target(unit)
+    local target = unit:my_target()
+    return target and Helper.Geometry:distance(unit.x, unit.y, target.x, target.y) > unit.attack_sensor.rs
+end
+
 function Helper.Unit:can_cast(unit, points)
     points = points or false
     --the goal here is to decouple "has target" from "can cast"
@@ -199,11 +205,51 @@ Helper.Unit.do_draw_selection = false
 Helper.Unit.number_of_teams = 0
 Helper.Unit.teams = {}
 Helper.Unit.team_targets = {}
+Helper.Unit.team_rally_points = {}
 Helper.Unit.selected_team = 0
 Helper.Unit.flagged_enemy = -1
 Helper.Unit.number_of_troop_types = 0
 Helper.Unit.troop_type_button_width = 0
 Helper.Unit.team_button_width = 0
+
+function Helper.Unit.set_team_rally_point(team_number, x, y)
+    print('setting rally point for team ' .. team_number)
+    local existing_rally = Helper.Unit.team_rally_points[team_number]
+    if existing_rally then
+        existing_rally.dead = true
+    end
+
+    --show the rally point for a few seconds
+    --only clear this rally point, not any new ones that are set afterwards
+    local rallyCircle = RallyCircle{
+        x = x,
+        y = y,
+        group = main.current.floor
+    }
+    --add clearing the rally point when all units have reached it
+    --or when all units are dead
+    Helper.Unit.team_rally_points[team_number] = rallyCircle
+    trigger:after(3, function()
+        if rallyCircle then
+            rallyCircle.dead = true
+        end
+    end)
+end
+
+function Helper.Unit:clear_team_rally_point(team_number)
+    local existing_rally = Helper.Unit.team_rally_points[team_number]
+    if existing_rally then
+        existing_rally.dead = true
+    end
+    Helper.Unit.team_rally_points[team_number] = nil
+end
+
+function Helper.Unit:clear_all_rally_points()
+    for i = 1, 4 do
+        Helper.Unit:clear_team_rally_point(i)
+    end
+end
+
 
 function Helper.Unit:set_team_target(team_number, target)
     if team_number < 1 or team_number > 4 then
@@ -298,6 +344,8 @@ function Helper.Unit:select()
         local flag = false
         --should be on key release, not press? or at least only check the first press
         if input['m2'].pressed then
+            Helper.Unit:clear_team_rally_point(self.selected_team)
+            
             for i, enemy in ipairs(self:get_list(false)) do
                 if Helper.Geometry:distance(Helper.mousex, Helper.mousey, enemy.x, enemy.y) < 9 then 
                     flag = true
@@ -320,7 +368,7 @@ function Helper.Unit:select()
                 Helper.Unit:clear_team_target(self.selected_team)
 
                 --draw a rally point for the selected troops
-                Helper.Graphics:draw_dashed_rectangle(Helper.Color.white, 2, 8, 4, Helper.Time.time * 80, Helper.mousex - 10, Helper.mousey - 10, Helper.mousex + 10, Helper.mousey + 10)
+                Helper.Unit.set_team_rally_point(self.selected_team, Helper.mousex, Helper.mousey)
                 --rally the selected troops to the mouse location
                 for i, unit in ipairs(self:get_list(true)) do
                     if unit.selected then
@@ -330,6 +378,10 @@ function Helper.Unit:select()
                 end
             end
         elseif input['m1'].pressed then
+            --clear target and rally point for the selected team
+            Helper.Unit:clear_team_target(self.selected_team)
+            Helper.Unit:clear_team_rally_point(self.selected_team)
+
             for i, unit in ipairs(self:get_list(true)) do
                 if unit.selected then
                     unit.state = unit_states['following']

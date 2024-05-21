@@ -172,7 +172,7 @@ function Proc_Lightning:init(args)
   
 
   --define the proc's vars
-  self.damage = self.data.damage or 10
+  self.damage = self.data.damage or 20
   self.damageType = 'lightning'
   self.chain = self.data.chain or 4
   self.every_attacks = self.data.every_attacks or 4
@@ -325,7 +325,7 @@ function Proc_Fire:init(args)
   --define the proc's vars
   self.damageType = 'fire'
   self.burnDuration = self.data.burnDuration or 3
-  self.burnDps = self.data.burnDamage or 5
+  self.burnDps = self.data.burnDamage or 15
 end
 
 function Proc_Fire:onHit(target, damage)

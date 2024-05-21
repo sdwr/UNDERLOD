@@ -203,7 +203,7 @@ function Helper.Spell:get_target_nearest_point(unit)
     local nearesty = 0
     local target = unit:my_target()
     if not target then
-        return -1, -1
+        return 0, 0
     end
     for i, point in ipairs(target.points) do
         local distance = Helper.Geometry:distance(unit.x, unit.y, target.x + point.x, target.y + point.y)

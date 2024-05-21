@@ -84,8 +84,6 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
   self.troop_list = {}
   self.color = self.color or fg[0]
 
-  self.rallyEffect = RallyCircle{group = main.current.effects, camera = camera, x = 0, y = 0, hidden = true}
-
   -- Spawn solids
   self.x1, self.y1 = gw/2 - 0.8*gw/2, gh/2 - 0.8*gh/2
   self.x2, self.y2 = gw/2 + 0.8*gw/2, gh/2 + 0.8*gh/2
@@ -128,6 +126,10 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
     self.hotbar[character] = b
     self.hotbar_by_index[i] = b
   end
+
+  --draw progress bar at the top of the screen
+  self.progress_bar = ProgressBar{group = self.ui, x = gw/2, y = 20, w = 200, h = 10, color = yellow[0], progress = 0}
+  self.progress_bar.max_progress = level_to_round_power[self.level]
 
   Spawn_Troops(self)
 

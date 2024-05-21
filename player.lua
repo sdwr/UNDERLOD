@@ -1790,15 +1790,11 @@ RallyCircle = Object:extend()
 RallyCircle:implement(GameObject)
 function RallyCircle:init(args)
   self:init_game_object(args)
-  self.rs = 2
-
+  self.rs = 3
 end
 
 function RallyCircle:update(dt)
   self:update_game_object(dt)
-  local mx, my = self.camera:get_mouse_position()
-  self.x = mx
-  self.y = my
 end
 
 function RallyCircle:draw()
@@ -1807,7 +1803,6 @@ function RallyCircle:draw()
     graphics.circle(self.x, self.y, self.rs, yellow[0])
     graphics.pop()
   end
-  self.hidden = true
 end
 
 

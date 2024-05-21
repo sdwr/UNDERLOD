@@ -143,7 +143,6 @@ function Manage_Spawns(arena)
   arena.boss_levels = {6, 11, 16, 21, 25}
 
   -- set arena specific values
-  arena.spawns_in_group = 6
 
   arena.max_waves = 1
   arena.wave = 1
@@ -280,7 +279,7 @@ function Spawn_Group(arena, group_index, type)
     Spawn_Enemy(arena, type, {x = spawn_x, y = spawn_y})
 
     index = index+1
-  end, arena.spawns_in_group, function() SetSpawning(arena, false) end)
+  end, SPAWNS_IN_GROUP, function() SetSpawning(arena, false) end)
 
 end
 

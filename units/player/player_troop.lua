@@ -69,9 +69,7 @@ function Troop:update(dt)
 
   -- deal with mouse input first, set rally/follow
   if self:should_follow() then
-    if main.current and main.current.rallyEffect then
-      main.current.rallyEffect.hidden = false
-    end
+    Helper.Unit:clear_all_rally_points()
     self.state = unit_states['following']
 
     self.target = nil
