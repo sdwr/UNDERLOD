@@ -277,13 +277,18 @@ function Proc_Shield:init(args)
   
 
   --define the proc's vars
-  self.buff = 'shield'
+  self.buffname = 'shield'
+  self.color = grey[5]
   self.shield_amount = self.data.shield_amount or 10
-  self.time_between = self.data.time_between or 1
+  self.time_between = self.data.time_between or 6
   self.buff_duration = self.data.buff_duration or 5
 
+  self.buffdata = {name = self.buffname, color = self.color, duration = self.buff_duration,
+    stats = {shield = self.shield_amount}
+  }
+
   --need to have shield amount in buff
-  trigger:every(self.time_between, function() self.unit:add_buff(self.buff, self.buff_duration) end)
+  trigger:every(self.time_between, function() self.unit:add_buff(self.buffdata) end)
 end
 
 --need a new gameObject group that collides with walls but not units

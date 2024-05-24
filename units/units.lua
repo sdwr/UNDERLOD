@@ -1,11 +1,13 @@
 require 'units/player/player_troop'
 require 'units/player/laser_troop'
 require 'units/player/swordsman_troop'
+require 'units/player/archer_troop'
 
 troop_classes = {
   Troop,
   Laser_Troop,
-  Swordsman_Troop
+  Swordsman_Troop,
+  Archer_Troop
 }
 
 friendly_classes = shallowcopy(troop_classes)
@@ -24,6 +26,8 @@ function Create_Troop(args)
     return Laser_Troop(args)
   elseif args.character == 'swordsman' then
     return Swordsman_Troop(args)
+  elseif args.character == 'archer' then
+    return Archer_Troop(args)
   else
     return Troop(args)
   end

@@ -44,7 +44,7 @@ function Laser_Troop:set_character()
     --should only have a target if it is assigned now
     -- or if it grabs a random target
     --because random targets will be taken away after each attack
-    if Helper.Unit:should_follow_target(self) then
+    if Helper.Unit:target_out_of_range(self) then
       self.state = unit_states['normal']
       Helper.Spell.Laser:stop_aiming(self)
 

@@ -117,6 +117,8 @@ end
 --it just doesn't spawn
 --which is fine for calculating end of round maybe(??)
 --but not for the progress bar
+
+--if an enemy fails to spawn, the wave will not end
 function Spawn_Wave(arena, wave)
   print("starting spawn wave", wave)
   local wave_index = 1
@@ -138,6 +140,25 @@ function Spawn_Wave(arena, wave)
   end, #wave)
 end
 
+-- possible hazards:
+-- 1. laser
+-- 2. puddle on enemy death
+-- 3. mortar strike
+-- 4. sweep from dragon
+function Spawn_Hazards(arena, hazards)
+  local hazard = hazards.type
+  local level = hazards.level
+  -- need different patterns?
+  -- 1. follows player units (random or closest)
+  -- 2. stationary, angles towards player units
+  -- 3. random movement
+  -- 4. straight lines, muliple fire in sequence
+  if hazard == 'laser' then
+    
+  end
+end
+
+--also manage the spawning of environmental enemies
 function Manage_Spawns(arena)
   
   -- Set win condition and enemy spawns
@@ -189,12 +210,16 @@ function Manage_Spawns(arena)
 
     else
       local waves = arena.level_list[arena.level].waves
+      local environmental_hazards = arena.level_list[arena.level].environmental_hazards
       print(waves)
       print(#waves)
       arena.max_waves = #waves
       --spawn first wave right off the bat
       Spawn_Wave(arena, waves[arena.wave])
       arena.wave = arena.wave + 1
+
+      --and launch the environmental hazards
+      Spawn_Hazards(arena, environmental_hazards)
 
       --then launch a timer that spawns waves
       --after the previous wave is done

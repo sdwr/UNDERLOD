@@ -21,21 +21,33 @@ end
 function Build_Level_List(max_level)
   local level_list = {}
   for i = 1, max_level do
-      level_list[i] = {level = i, waves = {}, color = grey[0]}
+      level_list[i] = {level = i, waves = {}, color = grey[0], environmental_hazards = {}}
   end
 
   for i = 1, max_level do
     local waves = Decide_on_Spawns(i)
     level_list[i].waves = waves
+
     --find the first special enemy in the wave
     -- to use as the level color on the buy screen
     local first_special = find_first_special(waves)
     if first_special then
       level_list[i].color = enemy_to_color[first_special]
     end
+
+    local environmental_hazards = Decide_on_Environmental_Hazards(i)
+    level_list[i].environmental_hazards = environmental_hazards
   end
 
   return level_list
+end
+
+function Decide_on_Environmental_Hazards(level)
+  if level % 4 == 0 then
+    return {type = 'laser', level = level / 4}
+  else
+    return {}
+  end
 end
 
 -- decide what to spawn based on level power

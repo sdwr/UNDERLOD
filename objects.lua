@@ -803,6 +803,23 @@ function Unit:get_closest_hurt_target(shape, classes)
 
 end
 
+--unit level state functions
+function Unit:start_backswing()
+  --unit should always be 'casting' when this is called
+  --if the unit stops casting, the spell should be cancelled
+  if self.state == unit_states['casting'] then
+    self.state = unit_states['stopped']
+  else
+    print('error: unit not casting when start_backswing called')
+  end
+end
+
+function Unit:end_backswing()
+  if self.state == unit_states['stopped'] then
+    self.state = unit_states['normal']
+  end
+end
+
 --2 types of target, assigned target is set by the player (RMB)
 --the regular target is temporary and is set by the unit itself
 function Unit:my_target()

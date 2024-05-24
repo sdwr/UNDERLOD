@@ -72,6 +72,7 @@ function Troop:update(dt)
     Helper.Unit:clear_all_rally_points()
     self.state = unit_states['following']
 
+    --dont clear assigned target here
     self.target = nil
     self.target_pos = nil
   -- elseif (input["m2"].pressed and main.selectedCharacter == self.character) and (self.state == unit_states['normal'] or self.state == unit_states['stopped'] or self.state == unit_states['rallying'] or self.state == unit_states['following']) then

@@ -17,3 +17,5 @@ require 'enemies/regular/summoner'
 require 'enemies/miniboss/bigstomper'
 
 require 'enemies/static/dragonegg'
+
+require 'enemies/environmental/laser'

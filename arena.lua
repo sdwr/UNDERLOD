@@ -34,6 +34,7 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
   self.shop_xp = shop_xp or 0
   self.lock = lock
 
+
   
   main_song_instance:stop()
 

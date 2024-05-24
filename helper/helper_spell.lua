@@ -14,6 +14,11 @@ require 'helper/spells/burst'
 require 'helper/spells/bomb'
 require 'helper/spells/frostfield'
 
+require 'helper/spells/v2/arrow_proj'
+
+require 'helper/spells/v2/spell'
+require 'helper/spells/v2/arrow'
+
 Helper.Spell.spells = {
     Helper.Spell.SpreadMissile,
     Helper.Spell.Missile, 

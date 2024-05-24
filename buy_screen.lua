@@ -173,7 +173,7 @@ function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, pas
       self.max_units = MAX_UNITS
       main:add(BuyScreen'buy_screen')
       system.save_run()
-      main:go_to('buy_screen', 1, self.level_list, 0, {}, self.max_units, passives, 1, 0)
+      main:go_to('buy_screen', 1, self.level_list, 0, {}, self.max_units, passives, 1, 0, 0)
     end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
   end, mouse_enter = function(b)
     b.info_text = InfoText{group = main.current.ui, force_update = true}

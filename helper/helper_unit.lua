@@ -90,7 +90,7 @@ function Helper.Unit:unclaim_target(unit)
 end
 
 --doesnt check target points, just center
-function Helper.Unit:should_follow_target(unit)
+function Helper.Unit:target_out_of_range(unit)
     local target = unit:my_target()
     return target and Helper.Geometry:distance(unit.x, unit.y, target.x, target.y) > unit.attack_sensor.rs
 end
@@ -106,6 +106,17 @@ function Helper.Unit:can_cast(unit, points)
         return unit.state == unit_states['normal']
         and Helper.Time.time - unit.last_attack_finished > unit.cooldownTime
         and Helper.Spell:there_is_target_in_range(unit, unit.attack_sensor.rs, points)
+    end
+    return false
+end
+
+--expects the unit to have a target already
+function Helper.Unit:can_attack(unit, points)
+    points = points or false
+    if unit then
+        return unit.state == unit_states['normal']
+        and Helper.Spell:target_is_in_range(unit, unit.attack_sensor.rs, points)
+        and Helper.Time.time - unit.last_attack_finished > unit.cooldownTime
     end
     return false
 end
@@ -213,7 +224,6 @@ Helper.Unit.troop_type_button_width = 0
 Helper.Unit.team_button_width = 0
 
 function Helper.Unit.set_team_rally_point(team_number, x, y)
-    print('setting rally point for team ' .. team_number)
     local existing_rally = Helper.Unit.team_rally_points[team_number]
     if existing_rally then
         existing_rally.dead = true
@@ -345,7 +355,7 @@ function Helper.Unit:select()
         --should be on key release, not press? or at least only check the first press
         if input['m2'].pressed then
             Helper.Unit:clear_team_rally_point(self.selected_team)
-            
+
             for i, enemy in ipairs(self:get_list(false)) do
                 if Helper.Geometry:distance(Helper.mousex, Helper.mousey, enemy.x, enemy.y) < 9 then 
                     flag = true
@@ -377,7 +387,10 @@ function Helper.Unit:select()
                     end
                 end
             end
-        elseif input['m1'].pressed then
+        --bug with not moving if you start holding m1 while a unit is casting
+        --it will not move until you release m1 and press it again
+        --switched to down, but need a longer term solution? same thing will happen with m2 prob
+        elseif input['m1'].down then
             --clear target and rally point for the selected team
             Helper.Unit:clear_team_target(self.selected_team)
             Helper.Unit:clear_team_rally_point(self.selected_team)
