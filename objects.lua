@@ -272,6 +272,14 @@ end
 
 --don't need to deep copy the buff, since a new proc is created each time
 --will need to when the proc starts reapplying the buff?
+function Unit:get_buff_names()
+  local buff_names = {}
+  for k, v in pairs(self.buffs) do
+    table.insert(buff_names, k)
+  end
+  return buff_names
+end
+
 function Unit:has_buff(buffName)
   return self.buffs[buffName] ~= nil
 end
@@ -377,6 +385,7 @@ function Unit:decrement_buff_toggles(buff)
   end
 end
 
+
 function Unit:init_stats()
   --constants? remove
   local level = self.level or 1
@@ -431,7 +440,6 @@ function Unit:init_stats()
         for _, proc in ipairs(item.procs) do
           local procname = proc
           --can fill data from item here, but defaults should be ok
-          print(procname)
           local procObj = proc_name_to_class[procname]{unit = self, data = {name = procname}}
           table.insert(self.procs, procObj)
 
@@ -466,6 +474,41 @@ function Unit:init_stats()
 
 end
 
+--different from calculate_stats :( 
+--used for the character tooltip in buy screen
+function Unit:get_item_stats()
+  local stats = {}
+
+  if self.items and #self.items > 0 then
+    for k,v in ipairs(self.items) do
+      local item = v
+      if item.stats then
+        for stat, amt in pairs(item.stats) do
+          if stat == buff_types['dmg'] then
+            stats.dmg = (stats.dmg or 0) + amt
+          elseif stat == buff_types['def'] then
+            stats.def = (stats.def or 0) + amt
+          elseif stat == buff_types['mvspd'] then
+            stats.mvspd = (stats.mvspd or 0) + amt
+          elseif stat == buff_types['aspd'] then
+            stats.aspd = (stats.aspd or 0) + amt
+          elseif stat == buff_types['attack_range'] then
+            stats.attack_range = (stats.attack_range or 0) + amt
+          elseif stat == buff_types['area_dmg'] then
+            stats.area_dmg = (stats.area_dmg or 0) + amt
+          elseif stat == buff_types['area_size'] then
+            stats.area_size = (stats.area_size or 0) + amt
+          elseif stat == buff_types['hp'] then
+            stats.hp = (stats.hp or 0) + amt
+          end
+        end
+      end
+    end
+  end
+
+  return stats
+
+end
 
 function Unit:calculate_stats(first_run)
   local level = self.level or 1

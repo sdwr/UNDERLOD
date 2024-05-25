@@ -651,6 +651,60 @@ function init()
     return math.round(troop[stat], 2)
   end
 
+  get_unit_stats = function(unit)
+    local group = Group():set_as_physics_world(32, 0, 0, {'troop', 'enemy', 'projectile', 'enemy_projectile'})
+    local troop_data = {group = group, character = unit.character, level = unit.level, items = unit.items}
+    local troop = Create_Troop(troop_data)
+    troop:update(0)
+    return troop:get_item_stats()
+  end
+
+  get_unit_buffs = function(unit)
+    local group = Group():set_as_physics_world(32, 0, 0, {'troop', 'enemy', 'projectile', 'enemy_projectile'})
+    local troop_data = {group = group, character = unit.character, level = unit.level, items = unit.items}
+    local troop = Create_Troop(troop_data)
+    troop:update(0)
+    return troop:get_buff_names()
+  end
+
+  build_character_info_text = function (unit)
+    local item_stats = get_unit_stats(unit)
+    local buffs = get_unit_buffs(unit)
+    local text_lines = {}
+
+    local next_line = {text = '', font = pixul_font, alignment = 'center'}
+    next_line.text = unit.character:capitalize() .. ': '
+
+    table.insert(text_lines, next_line)
+    --add item stats
+    if #item_stats > 0 then
+      next_line = {text = '', font = pixul_font, alignment = 'center'}
+      next_line.text = 'Item stats:'
+      table.insert(text_lines, next_line)
+    end
+    for k, v in pairs(item_stats) do
+      next_line = {text = '', font = pixul_font, alignment = 'left'}
+      next_line.text = '+' .. (v*100) .. '% ' .. k:capitalize()
+      table.insert(text_lines, next_line)
+    end
+    --add item buffs
+    if #buffs > 0 then
+      next_line = {text = '', font = pixul_font, alignment = 'center'}
+      next_line.text = 'Item buffs:'
+      table.insert(text_lines, next_line)
+    end
+    for k, v in pairs(buffs) do
+      next_line = {text = '', font = pixul_font, alignment = 'left'}
+      next_line.text = v
+      table.insert(text_lines, next_line)
+    end
+
+    local info_text = InfoText{group = main.current.ui, force_update = false}
+    info_text:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
+
+    return info_text
+  end
+
   character_descriptions = {
     ['vagrant'] = function(lvl) return '[fg]shoots a projectile that deals [yellow]' .. get_character_stat('vagrant', lvl, 'dmg') .. '[fg] damage' end,
     ['swordsman'] = function(lvl) return '[fg]deals [yellow]' .. get_character_stat('swordsman', lvl, 'dmg') .. '[fg] damage in an area, deals extra [yellow]' ..

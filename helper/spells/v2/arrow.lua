@@ -20,7 +20,6 @@ function Spell_Arrow:update(dt)
   Spell_Arrow.super.update(self, dt)
 
   if self.dead then
-    print("this spell is dead")
     return
   end
   if Helper.Time.time - self.startTime > self.castTime then

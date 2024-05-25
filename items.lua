@@ -131,7 +131,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'electricboots',
     desc = 'Increase movespeed and charge up lightning attacks',
-    stats = {ms = 0.15},
+    stats = {mvspd = 0.15},
     procs = {'static'}
   },
   --still need to add
@@ -192,15 +192,6 @@ item_to_item_data = {
     desc = 'Gain damage based on your armor',
     stats = {dmg = 0.5},
     procs = {'redsword'}
-  },
-  ['bloodlust'] = {
-    name = 'bloodlust',
-    colors = {'red'},
-    cost = 5,
-    icon = 'bloodlust',
-    desc = 'Inc aspd and mvspd at start of round',
-    stats = {dmg = 0.4},
-    procs = {'bloodlust'}
   },
   ['chainexplosion'] = {
     name = 'chainexplosion',

@@ -391,14 +391,12 @@ function Helper.Unit:select()
         --it will not move until you release m1 and press it again
         --switched to down, but need a longer term solution? same thing will happen with m2 prob
         elseif input['m1'].down then
-            --clear target and rally point for the selected team
-            Helper.Unit:clear_team_target(self.selected_team)
+            --clear rally point for the selected team
             Helper.Unit:clear_team_rally_point(self.selected_team)
 
             for i, unit in ipairs(self:get_list(true)) do
                 if unit.selected then
                     unit.state = unit_states['following']
-                    unit:clear_assigned_target()
                 end
             end
         end
