@@ -5,18 +5,15 @@ function Arena:init(name)
   self:init_state(name)
   self:init_game_object()
   LevelManager.init()
+  self.hotbar = HotbarGlobals()
 end
 
 function Arena:select_character(character)
-  if main.selectedCharacter then self.hotbar[main.selectedCharacter].unit_selected = false end
-  main.selectedCharacter = character
-  self.hotbar[character].unit_selected = true
+  self.hotbar:select_by_character(character)
 end
 
 function Arena:select_character_by_index(i)
-  if self.hotbar_by_index[i] then
-    self.hotbar_by_index[i]:action()
-  end
+  self.hotbar:select_by_index(i)
 end
 
 
@@ -102,9 +99,7 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
   WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x1, self.y2, self.x2, gh + 40), color = bg[-1]}
   
   --need to group units by character
-  main.selectedCharacter = nil
-  self.hotbar = {}
-  self.hotbar_by_index = {}
+  HotbarGlobals:clear_hotbar()
 
   Helper.Unit.team_button_width = 47
   for i = 1, #units do
@@ -113,9 +108,8 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
     local number = i
     local b = HotbarButton{group = self.ui, x = 50 + Helper.Unit.team_button_width/2 + (Helper.Unit.team_button_width + 5) * (i - 1), 
                           y = gh - 20, force_update = true, button_text = tostring(i), w = Helper.Unit.team_button_width, fg_color = 'white', bg_color = 'bg',
-                          color_marks = {[1] = character_colors[character]},
+                          color_marks = {[1] = character_colors[character]}, character = character,
                           action = function() 
-                            main.current:select_character(character)
                             Helper.Unit.selected_team = number
                             Helper.Unit:deselect_all_troops()
                             for i, troop in ipairs(Helper.Unit:get_list(true)) do
@@ -125,8 +119,7 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
                             end
                           end
                         }
-    self.hotbar[character] = b
-    self.hotbar_by_index[i] = b
+    self.hotbar:add_button(i, b)
   end
 
   --draw progress bar at the top of the screen
@@ -169,8 +162,7 @@ function Arena:on_exit()
   self.flashes = nil
   self.hfx = nil
 
-  main.selectedCharacter = nil
-
+  self.hotbar:clear_hotbar()
   Helper:release()
 end
 

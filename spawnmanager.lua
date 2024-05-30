@@ -120,7 +120,6 @@ end
 
 --if an enemy fails to spawn, the wave will not end
 function Spawn_Wave(arena, wave)
-  print("starting spawn wave", wave)
   local wave_index = 1
   local current_group = 1
   arena.t:every(arena.time_between_spawn_groups, function()

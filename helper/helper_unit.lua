@@ -321,7 +321,7 @@ function Helper.Unit:set_team(team_number)
     if #team ~= 0 then
         self.teams[team_number] = team
         self:refresh_button(team_number)
-        main.current.hotbar_by_index[team_number + self.number_of_troop_types]:action()
+        main.current.hotbar.hotbar_by_index[team_number + self.number_of_troop_types]:action()
     end
 end
 
@@ -335,7 +335,7 @@ function Helper.Unit:add_to_team(team_number)
     end
     if added then
         self:refresh_button(team_number)
-        main.current.hotbar_by_index[team_number + self.number_of_troop_types]:action()
+        main.current.hotbar.hotbar_by_index[team_number + self.number_of_troop_types]:action()
     end
 end
 
@@ -346,7 +346,7 @@ function Helper.Unit:refresh_button(team_number)
             table.insert(color_marks, character_colors[troop.character])
         end
     end
-    main.current.hotbar_by_index[team_number + self.number_of_troop_types].color_marks = color_marks
+    main.current.hotbar.hotbar_by_index[team_number + self.number_of_troop_types].color_marks = color_marks
 end
 
 function Helper.Unit:select()
@@ -428,18 +428,13 @@ function Helper.Unit:select()
     -- end
 
     for i = 1, #main.current.units do
-        if input[tostring(i)].pressed and main.current.hotbar_by_index[i] then
-            main.current.hotbar_by_index[i]:on_mouse_enter()
+        if input[tostring(i)].pressed and main.current.hotbar.hotbar_by_index[i] then
+            main.current.hotbar.hotbar_by_index[i]:on_mouse_enter()
+            main.current.hotbar:select_by_index(i)
         end
 
-        if input[tostring(i)].released and main.current.hotbar_by_index[i] then
-            main.current.hotbar_by_index[i]:on_mouse_exit()
-            -- if i <= 4 + self.number_of_troop_types and i >= 1 + self.number_of_troop_types then
-            --     main.current.hotbar['set team ' .. i - self.number_of_troop_types]:on_mouse_exit()
-            --     main.current.hotbar['set team ' .. i - self.number_of_troop_types].visible = false
-            --     main.current.hotbar['add to team ' .. i - self.number_of_troop_types]:on_mouse_exit()
-            --     main.current.hotbar['add to team ' .. i - self.number_of_troop_types].visible = false
-            -- end
+        if input[tostring(i)].released and main.current.hotbar.hotbar_by_index[i] then
+            main.current.hotbar.hotbar_by_index[i]:on_mouse_exit()
         end
     end
 end
