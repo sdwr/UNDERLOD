@@ -31,7 +31,8 @@ function Troop:init(args)
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
 
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 40)
-  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 60)
+  
+  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 200)
   self:set_character()
 
   self.state = unit_states['normal']
@@ -447,8 +448,6 @@ function Troop:set_character()
     end, nil, nil, 'cast')
 
   end
-
-  self.aggro_sensor = Circle(self.x, self.y, math.max(1000, 60))
 end
 
 function Troop:hit(damage, from)

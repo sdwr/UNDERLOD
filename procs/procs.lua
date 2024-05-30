@@ -4,6 +4,36 @@ require 'procs/proc'
 
 --need to pass unit into proc, some procs need to know who they are on (without callbacks)
 
+function Create_Proc(name, unit)
+  if not proc_name_to_class[name] then
+    print('proc not found')
+    return nil
+  end
+
+  return proc_name_to_class[name]({unit = unit, data = {name = name}})
+end
+
+
+--proc reroll
+Proc_Reroll = Proc:extend()
+function Proc_Reroll:init(args)
+  self.triggers = {}
+
+  Proc_Reroll.super.init(self, args)
+  
+end
+
+--when sold in the shop, reroll the upcoming levels
+--make sure this doesn't trigger at the end of rounds, when the unit is removed
+function Proc_Reroll:die()
+  Proc_Reroll.super.die(self)
+  --should only trigger in buy_screen
+  if main.current and main.current.roll_levels then
+    main.current:roll_levels()
+  end
+end
+
+
 --proc craggy
 Proc_Craggy = Proc:extend()
 function Proc_Craggy:init(args)
@@ -82,8 +112,10 @@ end
 
 -- :heal() is on troop, but should be on unit instead
 function Proc_Heal:heal()
-  heal1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
-  self.unit:heal(self.healAmount)
+  if self.unit and self.unit.heal then
+    heal1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+    self.unit:heal(self.healAmount)
+  end
 end
 
 --proc overkill
@@ -293,6 +325,7 @@ end
 
 --need a new gameObject group that collides with walls but not units
 --to make phasing work
+--looks like 'ghost' tag doesn't work, or can't be set mid-game
 Proc_Phasing = Proc:extend()
 function Proc_Phasing:init(args)
   self.triggers = {}
@@ -302,13 +335,13 @@ function Proc_Phasing:init(args)
   
 
   --define the proc's vars
-  self.buff = 'phasing'
+  self.buffname = 'phasing'
   self.buff_duration = self.data.buff_duration or 9999
-  self.buffdata = {name = 'phasing', color = pink[5], duration = self.buff_duration,
+  self.buffdata = {name = self.buffname, color = purple[5], duration = self.buff_duration,
     toggles = {phasing = 1}
   }
 
-  trigger:after(TIME_TO_ROUND_START, function() self.unit:add_buff(self.buffdata) end)
+  self.unit:add_buff(self.buffdata)
 end
 
 Proc_Fire = Proc:extend()
@@ -396,7 +429,7 @@ function Proc_Blazin:onTick(dt)
   Proc_Blazin.super.onTick(self, dt)
 
   --find how many enemies are burning
-  local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
+  local enemies = main.current.main:get_objects_by_classes(enemy_classes)
   local count = 0
   for i, enemy in ipairs(enemies) do
     if enemy:has_buff('burn') then
@@ -601,6 +634,8 @@ end
 
 
 proc_name_to_class = {
+  ['reroll'] = Proc_Reroll,
+
   ['craggy'] = Proc_Craggy,
   ['bash'] = Proc_Bash,
   ['heal'] = Proc_Heal,

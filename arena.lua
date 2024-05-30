@@ -31,7 +31,7 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
   self.shop_xp = shop_xp or 0
   self.lock = lock
 
-
+  self.gold_text = nil
   
   main_song_instance:stop()
 
@@ -267,135 +267,16 @@ function Arena:update(dt)
   LevelManager.update(dt)
 end
 
---for old control code
---function Arena:target_enemy(enemy)
-  --if self.targetedEnemy then
-    --self.targetedEnemy:untarget()
-  --end
-  --self.targetedEnemy = enemy
-  --self.targetedEnemy:set_as_target()
---end
-
-
 function Arena:quit()
   if self.died then return end
 
   self.quitting = true
   if self.level % 15 == 0 then
-    self:gain_gold()
-    if not self.win_text and not self.win_text2 then
-      input:set_mouse_visible(true)
-      self.won = true
-      locked_state = nil
-
-      if current_new_game_plus == new_game_plus then
-        new_game_plus = new_game_plus + 1
-        state.new_game_plus = new_game_plus
-      end
-      current_new_game_plus = current_new_game_plus + 1
-      state.current_new_game_plus = current_new_game_plus
-      max_units = MAX_UNITS
-
-      system.save_run()
-      trigger:tween(1, _G, {slow_amount = 0}, math.linear, function() slow_amount = 0 end, 'slow_amount')
-      trigger:tween(1, _G, {music_slow_amount = 0}, math.linear, function() music_slow_amount = 0 end, 'music_slow_amount')
-      trigger:tween(4, camera, {x = gw/2, y = gh/2, r = 0}, math.linear, function() camera.x, camera.y, camera.r = gw/2, gh/2, 0 end)
-      self.win_text = Text2{group = self.ui, x = gw/2 + 40, y = gh/2 - 69, force_update = true, lines = {{text = '[wavy_mid, cbyc2]congratulations!', font = fat_font, alignment = 'center'}}}
-      trigger:after(2.5, function()
-        local open_url = function(b, url)
-          ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-          b.spring:pull(0.2, 200, 10)
-          b.selected = true
-          ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-          system.open_url(url)
-        end
-
-        self.build_text = Text2{group = self.ui, x = 40, y = 20, force_update = true, lines = {{text = "[wavy_mid, fg]your build", font = pixul_font, alignment = 'center'}}}
-        for i, unit in ipairs(self.units) do
-          CharacterPart{group = self.ui, x = 20, y = 40 + (i-1)*19, unit = unit, character = unit.character, level = unit.level, force_update = true, cant_click = true, parent = self}
-          Text2{group = self.ui, x = 20 + 14 + pixul_font:get_text_width(unit.character)/2, y = 40 + (i-1)*19, force_update = true, lines = {
-            {text = '[' .. character_color_strings[unit.character] .. ']' .. unit.character, font = pixul_font, alignment = 'left'}
-          }}
-        end
-        for i, passive in ipairs(self.passives) do
-          ItemCard{group = self.ui, x = 120 + (i-1)*30, y = 20, w = 30, h = 45, sx = 0.75, sy = 0.75, force_update = true, passive = passive.passive , level = passive.level, xp = passive.xp, parent = self}
-        end
-
-        if current_new_game_plus == 6 then
-          if current_new_game_plus == new_game_plus then
-            new_game_plus = 5
-            state.new_game_plus = new_game_plus
-          end
-          current_new_game_plus = 5
-          state.current_new_game_plus = current_new_game_plus
-          max_units = MAX_UNITS
-
-          self.win_text2 = Text2{group = self.ui, x = gw/2 + 40, y = gh/2 + 20, force_update = true, lines = {
-            {text = "[fg]now you've really beaten the game!", font = pixul_font, alignment = 'center', height_multiplier = 1.24},
-            {text = "[fg]thanks a lot for playing it and completing it entirely!", font = pixul_font, alignment = 'center', height_multiplier = 1.24},
-            {text = "[fg]this game was inspired by:", font = pixul_font, alignment = 'center', height_multiplier = 3.5},
-            {text = "[fg]so check them out! and to get more games like this:", font = pixul_font, alignment = 'center', height_multiplier = 3.5},
-            {text = "[wavy_mid, yellow]thanks for playing!", font = pixul_font, alignment = 'center'},
-          }}
-          SteamFollowButton{group = self.ui, x = gw/2 + 40, y = gh/2 + 58, force_update = true}
-          Button{group = self.ui, x = gw - 40, y = gh - 44, force_update = true, button_text = 'credits', fg_color = 'bg10', bg_color = 'bg', action = function() self:create_credits() end}
-          Button{group = self.ui, x = gw - 39, y = gh - 20, force_update = true, button_text = '  loop  ', fg_color = 'bg10', bg_color = 'bg', action = function() self:endless() end}
-          self.try_loop_text = Text2{group = self.ui, x = gw - 144, y = gh - 20, force_update = true, lines = {
-            {text = '[bg10]continue run (+difficulty):', font = pixul_font},
-          }}
-          Button{group = self.ui, x = gw/2 - 50 + 40, y = gh/2 + 12, force_update = true, button_text = 'nimble quest', fg_color = 'bluem5', bg_color = 'blue', action = function(b) open_url(b, 'https://store.steampowered.com/app/259780/Nimble_Quest/') end}
-          Button{group = self.ui, x = gw/2 + 50 + 40, y = gh/2 + 12, force_update = true, button_text = 'dota underlords', fg_color = 'bluem5', bg_color = 'blue', action = function(b) open_url(b, 'https://store.steampowered.com/app/1046930/Dota_Underlords/') end}
-
-        else
-          self.win_text2 = Text2{group = self.ui, x = gw/2 + 40, y = gh/2 + 5, force_update = true, lines = {
-            {text = "[fg]you've beaten the game!", font = pixul_font, alignment = 'center', height_multiplier = 1.24},
-            {text = "[fg]if you liked it:", font = pixul_font, alignment = 'center', height_multiplier = 3.5},
-            {text = "[fg]and if you liked the music:", font = pixul_font, alignment = 'center', height_multiplier = 3.5},
-            {text = "[wavy_mid, yellow]thanks for playing!", font = pixul_font, alignment = 'center'},
-          }}
-          --[[
-          self.win_text2 = Text2{group = self.ui, x = gw/2 + 40, y = gh/2 + 20, force_update = true, lines = {
-            {text = "[fg]you've beaten the game!", font = pixul_font, alignment = 'center', height_multiplier = 1.24},
-            {text = "[fg]i made this game in 3 months as a dev challenge", font = pixul_font, alignment = 'center', height_multiplier = 1.24},
-            {text = "[fg]and i'm happy with how it turned out!", font = pixul_font, alignment = 'center', height_multiplier = 1.24},
-            {text = "[fg]if you liked it too and want to play more games like this:", font = pixul_font, alignment = 'center', height_multiplier = 4},
-            {text = "[fg]i will release more games this year, so stay tuned!", font = pixul_font, alignment = 'center', height_multiplier = 1.4},
-            {text = "[wavy_mid, yellow]thanks for playing!", font = pixul_font, alignment = 'center'},
-          }}
-          ]]--
-          SteamFollowButton{group = self.ui, x = gw/2 + 40, y = gh/2 - 10, force_update = true}
-          Button{group = self.ui, x = gw/2 + 40, y = gh/2 + 33, force_update = true, button_text = 'buy the soundtrack!', fg_color = 'greenm5', bg_color = 'green', action = function(b) open_url(b, 'https://kubbimusic.com/album/ember') end}
-          Button{group = self.ui, x = gw - 40, y = gh - 44, force_update = true, button_text = '  loop  ', fg_color = 'bg10', bg_color = 'bg', action = function() self:endless() end}
-          RestartButton{group = self.ui, x = gw - 40, y = gh - 20, force_update = true}
-          self.try_loop_text = Text2{group = self.ui, x = gw - 200, y = gh - 44, force_update = true, lines = {
-            {text = '[bg10]continue run (+difficulty, +1 max snake size):', font = pixul_font},
-          }}
-          self.try_ng_text = Text2{group = self.ui, x = gw - 187, y = gh - 20, force_update = true, lines = {
-            {text = '[bg10]new run (+difficulty, +1 max snake size):', font = pixul_font},
-          }}
-          self.credits_button = Button{group = self.ui, x = gw - 40, y = gh - 68, force_update = true, button_text = 'credits', fg_color = 'bg10', bg_color = 'bg', action = function() self:create_credits() end}
-        end
-      end)
-
-      if current_new_game_plus == 2 then
-        state.achievement_new_game_1 = true
-        system.save_state()
-        --steam.userStats.setAchievement('NEW_GAME_1')
-        --steam.userStats.storeStats()
-      end
-
-      if current_new_game_plus == 6 then
-        state.achievement_new_game_5 = true
-        system.save_state()
-        --steam.userStats.setAchievement('GAME_COMPLETE')
-        --steam.userStats.storeStats()
-      end
-    end
-
+    self:on_win()
   else
     if not self.arena_clear_text then self.arena_clear_text = Text2{group = self.ui, x = gw/2, y = gh/2 - 48, lines = {{text = '[wavy_mid, cbyc]arena clear!', font = fat_font, alignment = 'center'}}} end
-    self:gain_gold()
-    self.t:after(2, function()
+    self:gain_gold(ARENA_TRANSITION_TIME)
+    self.t:after(ARENA_TRANSITION_TIME, function()
       self.slow_transitioning = true
       self.t:tween(0.7, self, {main_slow_amount = 0}, math.linear, function() self.main_slow_amount = 0 end)
     end)
@@ -425,6 +306,122 @@ function Arena:quit()
     end, 'transition')
   end
 end
+
+--commented out for now, can use for getting passives at end of round
+function Arena:on_win()
+  self:gain_gold(ARENA_TRANSITION_TIME)
+
+  if not self.win_text and not self.win_text2 then
+    input:set_mouse_visible(true)
+    self.won = true
+    locked_state = nil
+
+    if current_new_game_plus == new_game_plus then
+      new_game_plus = new_game_plus + 1
+      state.new_game_plus = new_game_plus
+    end
+    current_new_game_plus = current_new_game_plus + 1
+    state.current_new_game_plus = current_new_game_plus
+    max_units = MAX_UNITS
+
+    system.save_run()
+    trigger:tween(1, _G, {slow_amount = 0}, math.linear, function() slow_amount = 0 end, 'slow_amount')
+    trigger:tween(1, _G, {music_slow_amount = 0}, math.linear, function() music_slow_amount = 0 end, 'music_slow_amount')
+    trigger:tween(4, camera, {x = gw/2, y = gh/2, r = 0}, math.linear, function() camera.x, camera.y, camera.r = gw/2, gh/2, 0 end)
+    self.win_text = Text2{group = self.ui, x = gw/2 + 40, y = gh/2 - 69, force_update = true, lines = {{text = '[wavy_mid, cbyc2]congratulations!', font = fat_font, alignment = 'center'}}}
+    trigger:after(2.5, function()
+      local open_url = function(b, url)
+        ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+        b.spring:pull(0.2, 200, 10)
+        b.selected = true
+        ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+        system.open_url(url)
+      end
+
+      self.build_text = Text2{group = self.ui, x = 40, y = 20, force_update = true, lines = {{text = "[wavy_mid, fg]your build", font = pixul_font, alignment = 'center'}}}
+      for i, unit in ipairs(self.units) do
+        CharacterPart{group = self.ui, x = 20, y = 40 + (i-1)*19, unit = unit, character = unit.character, level = unit.level, force_update = true, cant_click = true, parent = self}
+        Text2{group = self.ui, x = 20 + 14 + pixul_font:get_text_width(unit.character)/2, y = 40 + (i-1)*19, force_update = true, lines = {
+          {text = '[' .. character_color_strings[unit.character] .. ']' .. unit.character, font = pixul_font, alignment = 'left'}
+        }}
+      end
+      for i, passive in ipairs(self.passives) do
+        ItemCard{group = self.ui, x = 120 + (i-1)*30, y = 20, w = 30, h = 45, sx = 0.75, sy = 0.75, force_update = true, passive = passive.passive , level = passive.level, xp = passive.xp, parent = self}
+      end
+
+      if current_new_game_plus == 6 then
+        if current_new_game_plus == new_game_plus then
+          new_game_plus = 5
+          state.new_game_plus = new_game_plus
+        end
+        current_new_game_plus = 5
+        state.current_new_game_plus = current_new_game_plus
+        max_units = MAX_UNITS
+
+        self.win_text2 = Text2{group = self.ui, x = gw/2 + 40, y = gh/2 + 20, force_update = true, lines = {
+          {text = "[fg]now you've really beaten the game!", font = pixul_font, alignment = 'center', height_multiplier = 1.24},
+          {text = "[fg]thanks a lot for playing it and completing it entirely!", font = pixul_font, alignment = 'center', height_multiplier = 1.24},
+          {text = "[fg]this game was inspired by:", font = pixul_font, alignment = 'center', height_multiplier = 3.5},
+          {text = "[fg]so check them out! and to get more games like this:", font = pixul_font, alignment = 'center', height_multiplier = 3.5},
+          {text = "[wavy_mid, yellow]thanks for playing!", font = pixul_font, alignment = 'center'},
+        }}
+        SteamFollowButton{group = self.ui, x = gw/2 + 40, y = gh/2 + 58, force_update = true}
+        Button{group = self.ui, x = gw - 40, y = gh - 44, force_update = true, button_text = 'credits', fg_color = 'bg10', bg_color = 'bg', action = function() self:create_credits() end}
+        Button{group = self.ui, x = gw - 39, y = gh - 20, force_update = true, button_text = '  loop  ', fg_color = 'bg10', bg_color = 'bg', action = function() self:endless() end}
+        self.try_loop_text = Text2{group = self.ui, x = gw - 144, y = gh - 20, force_update = true, lines = {
+          {text = '[bg10]continue run (+difficulty):', font = pixul_font},
+        }}
+        Button{group = self.ui, x = gw/2 - 50 + 40, y = gh/2 + 12, force_update = true, button_text = 'nimble quest', fg_color = 'bluem5', bg_color = 'blue', action = function(b) open_url(b, 'https://store.steampowered.com/app/259780/Nimble_Quest/') end}
+        Button{group = self.ui, x = gw/2 + 50 + 40, y = gh/2 + 12, force_update = true, button_text = 'dota underlords', fg_color = 'bluem5', bg_color = 'blue', action = function(b) open_url(b, 'https://store.steampowered.com/app/1046930/Dota_Underlords/') end}
+
+      else
+        self.win_text2 = Text2{group = self.ui, x = gw/2 + 40, y = gh/2 + 5, force_update = true, lines = {
+          {text = "[fg]you've beaten the game!", font = pixul_font, alignment = 'center', height_multiplier = 1.24},
+          {text = "[fg]if you liked it:", font = pixul_font, alignment = 'center', height_multiplier = 3.5},
+          {text = "[fg]and if you liked the music:", font = pixul_font, alignment = 'center', height_multiplier = 3.5},
+          {text = "[wavy_mid, yellow]thanks for playing!", font = pixul_font, alignment = 'center'},
+        }}
+        --[[
+        self.win_text2 = Text2{group = self.ui, x = gw/2 + 40, y = gh/2 + 20, force_update = true, lines = {
+          {text = "[fg]you've beaten the game!", font = pixul_font, alignment = 'center', height_multiplier = 1.24},
+          {text = "[fg]i made this game in 3 months as a dev challenge", font = pixul_font, alignment = 'center', height_multiplier = 1.24},
+          {text = "[fg]and i'm happy with how it turned out!", font = pixul_font, alignment = 'center', height_multiplier = 1.24},
+          {text = "[fg]if you liked it too and want to play more games like this:", font = pixul_font, alignment = 'center', height_multiplier = 4},
+          {text = "[fg]i will release more games this year, so stay tuned!", font = pixul_font, alignment = 'center', height_multiplier = 1.4},
+          {text = "[wavy_mid, yellow]thanks for playing!", font = pixul_font, alignment = 'center'},
+        }}
+        ]]--
+        SteamFollowButton{group = self.ui, x = gw/2 + 40, y = gh/2 - 10, force_update = true}
+        Button{group = self.ui, x = gw/2 + 40, y = gh/2 + 33, force_update = true, button_text = 'buy the soundtrack!', fg_color = 'greenm5', bg_color = 'green', action = function(b) open_url(b, 'https://kubbimusic.com/album/ember') end}
+        Button{group = self.ui, x = gw - 40, y = gh - 44, force_update = true, button_text = '  loop  ', fg_color = 'bg10', bg_color = 'bg', action = function() self:endless() end}
+        RestartButton{group = self.ui, x = gw - 40, y = gh - 20, force_update = true}
+        self.try_loop_text = Text2{group = self.ui, x = gw - 200, y = gh - 44, force_update = true, lines = {
+          {text = '[bg10]continue run (+difficulty, +1 max snake size):', font = pixul_font},
+        }}
+        self.try_ng_text = Text2{group = self.ui, x = gw - 187, y = gh - 20, force_update = true, lines = {
+          {text = '[bg10]new run (+difficulty, +1 max snake size):', font = pixul_font},
+        }}
+        self.credits_button = Button{group = self.ui, x = gw - 40, y = gh - 68, force_update = true, button_text = 'credits', fg_color = 'bg10', bg_color = 'bg', action = function() self:create_credits() end}
+      end
+    end)
+
+    if current_new_game_plus == 2 then
+      state.achievement_new_game_1 = true
+      system.save_state()
+      --steam.userStats.setAchievement('NEW_GAME_1')
+      --steam.userStats.storeStats()
+    end
+
+    if current_new_game_plus == 6 then
+      state.achievement_new_game_5 = true
+      system.save_state()
+      --steam.userStats.setAchievement('GAME_COMPLETE')
+      --steam.userStats.storeStats()
+    end
+  end
+
+end
+
 
 
 function Arena:set_passives(from_reroll)
@@ -555,6 +552,7 @@ function Arena:draw()
   self.ui:draw()
 
   if self.shop_text then self.shop_text:draw(gw - 40, gh - 17) end
+  if self.gold_text then self.gold_text:draw(gw / 2, gh / 2) end
 
   if self.in_credits then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent_2) end
   self.credits:draw()
@@ -715,20 +713,103 @@ function Arena:create_credits()
 end
 
 
-function Arena:gain_gold()
-  local merchant
+--gold is the global gold variable
+--need to sum the gold gained, then display it visually in 2 seconds
+--so create a list of +gold events, then display them one by one
 
+--not satisfying, numbers aren't understandable
+--maybe just have the total gold # on screen, then add the gold gained to it
+--and have a popup with the place the gold is from ('interest', 'heart of gold')
+--should have round end gold here too
+function Arena:gain_gold(duration)
+
+  self.gold_events = {}
   self.bonus_gold = 0
+  self.stacks_of_interest = 0
+  self.total_interest = 0
+  self.gold_gained = self.gold_gained or 0
+  self.gold_picked_up = self.gold_picked_up or 0
+
+  local event = nil
   for _, unit in ipairs(self.starting_units) do
     for _, item in ipairs(unit.items) do
-      if item == 'heartofgold' then
-        self.bonus_gold = self.bonus_gold + 1
+      if item.name == 'heartofgold' then
+        event = {type = 'bonus_gold', amount = 1}
+        table.insert(self.gold_events, event)
+      end
+      if item.name == 'stockmarket' then
+        event = {type = 'interest', amount = 1}
+        table.insert(self.gold_events, event)
       end
     end
   end
-  self.gold_gained = GOLD_PER_ROUND
 
-  gold = gold + self.gold_gained + self.gold_picked_up + self.bonus_gold
+  if self.gold_picked_up > 0 then
+    event = {type = 'picked_up', amount = self.gold_picked_up}
+    table.insert(self.gold_events, event)
+    self.gold_picked_up = 0
+  end
+
+  if self.gold_gained > 0 then
+    event = {type = 'gained', amount = self.gold_gained}
+    table.insert(self.gold_events, event)
+    self.gold_gained = 0
+  end
+
+  if #self.gold_events == 0 then
+    return
+  end
+
+  local final_event = {type = 'final', amount = 0}
+  table.insert(self.gold_events, final_event)
+
+  --create a trigger to add each gold event over time
+  --have to cancel when the table is empty
+  local timePerEvent = duration / #self.gold_events
+  trigger:every(timePerEvent, function() 
+    self:process_gold_event()
+  end, #self.gold_events)
+
+end
+
+function Arena:process_gold_event()
+  if #self.gold_events == 0 then
+    print('no more gold events')
+    self:clear_gold()
+    return
+  end
+
+  local event = table.remove(self.gold_events, 1)
+
+  gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
+  if event.type == 'gained' then
+    self.gold_gained = self.gold_gained + event.amount
+  elseif event.type == 'picked_up' then
+    self.gold_picked_up = self.gold_picked_up + event.amount
+  elseif event.type == 'bonus_gold' then
+    self.bonus_gold = self.bonus_gold + event.amount
+  elseif event.type == 'interest' then
+    self.stacks_of_interest = self.stacks_of_interest + event.amount
+    self.total_interest = math.floor(gold * INTEREST_AMOUNT * self.stacks_of_interest)
+  elseif event.type == 'final' then
+    gold = gold + self.gold_gained + self.gold_picked_up + self.bonus_gold + self.total_interest
+    gold = math.floor(gold)
+  else
+    print('unknown gold event type')
+  end
+  self:draw_gold()
+
+end
+
+function Arena:draw_gold()
+  local text_content = '[wavy_mid, yellow[0]gold: ' .. tostring(gold) ..
+    ' + ' .. tostring(self.gold_gained or 0) .. ' + ' .. tostring(self.gold_picked_up or 0) ..
+    ' + ' .. tostring(self.bonus_gold or 0) .. ' + ' .. tostring(self.total_interest or 0)
+  self.gold_text = Text({{text = text_content, font = pixul_font, alignment = 'center'}}, global_text_tags)
+end
+
+function Arena:clear_gold()
+  self.gold_text = nil
 end
 
 

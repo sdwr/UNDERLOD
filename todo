@@ -1,10 +1,19 @@
 
+TODO:
+  - make screen transition circle always white
+  - why are unit colors losing saturation? 
+    - maybe the global color is being changed in 1 place (zzz)
+
+  -add "on round start" to proc
+    -now that items are being created in the shop
+    -we need to make sure that the proc effects only trigger
+    -when in combat, not in the shop
+
 SMALL CLEANUP:
   - add sound effect for buying item
 
 BUG:
-  - add numbers back to control groups
-  - add controls text back to floor for lvl 1 (and maybe 2 + 3)
+  -swordsman not attacking enemy target (only when free-selecting)
 
 --------------
 NEW FEATURE PLAN:

@@ -61,7 +61,7 @@ function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, pas
   --decide on enemies for every level here
   --if this is the first level
   if self.level == 1 or #self.level_list == 0 then
-    self.level_list = Build_Level_List(NUMBER_OF_ROUNDS)
+    self:roll_levels()
   end
 
   input:set_mouse_visible(true)
@@ -87,17 +87,11 @@ function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, pas
   self.party_text = Text({{text = '[wavy_mid, fg]party ' .. tostring(#units) .. '/' .. tostring(self.max_units), font = pixul_font, alignment = 'center'}}, global_text_tags)
   self.items_text = Text({{text = '[wavy_mid, fg]items', font = pixul_font, alignment = 'center'}}, global_text_tags)
 
-
-  self.build_level_map = function(self)
-    if self.level_map then self.level_map:die() end
-    self.level_map = BuildLevelMap(self.main, 265, gh - 20, self, self.level, self.loop, self.level_list)
-  end
+  self.level_buttons = {}
 
   self:build_level_map()
 
   RerollButton{group = self.main, x = 150, y = 18, parent = self}
-  ArenaLevelButton{group = self.main, x = 225, y = gh - 20, parent = self}
-  ArenaLevelButton{group = self.main, x = 305, y = gh - 20, up = true, parent = self}
   GoButton{group = self.main, x = gw - 90, y = gh - 20, parent = self}
   LevelButton{group = self.main, x = gw/2, y = 18, parent = self}
   self.tutorial_button = Button{group = self.main, x = gw/2 + 129, y = 18, button_text = '?', fg_color = 'bg10', bg_color = 'bg', action = function()
@@ -248,6 +242,53 @@ end
 function BuyScreen:save_run()
   system.save_run(self.level, self.level_list, self.loop, gold, self.units,  self.max_units, self.passives, self.shop_level, self.shop_xp, run_passive_pool, locked_state)
 end
+
+--level map /level list functions
+function BuyScreen:roll_levels()
+  self.level_list = Build_Level_List(NUMBER_OF_ROUNDS)
+  --rebuild the level map to update the text/colors
+  self:build_level_map()
+end
+
+function BuyScreen:build_level_map()
+  if self.level_map then self.level_map:die() end
+  self.level_map = BuildLevelMap(self.main, 265, gh - 20, self, self.level, self.loop, self.level_list)
+  self:create_level_buttons()
+end
+
+function BuyScreen:create_level_buttons()
+  if self.level_buttons then for _, button in ipairs(self.level_buttons) do button:die() end end
+  self.level_buttons = {}
+  local button = ArenaLevelButton{group = self.main, x = 225, y = gh - 20, parent = self}
+  table.insert(self.level_buttons, button)
+  button = ArenaLevelButton{group = self.main, x = 305, y = gh - 20, up = true, parent = self}
+  table.insert(self.level_buttons, button)
+end
+
+--item functions
+
+function BuyScreen:unit_first_available_inventory_slot(unit)
+  for i = 1, 6 do
+    if not unit.items[i] then
+      return i
+    end
+  end
+  return nil
+end
+
+--this returns the UI element "ItemPart" that corresponds to the first available inventory slot
+--can call :addItem on this element to add an item rfto the unit's inventory
+function BuyScreen:get_first_available_inventory_slot()
+  for i, character in ipairs(self.characters) do
+    local index = self:unit_first_available_inventory_slot(character.unit)
+    if index then
+      return character.items[index]
+    end
+  end
+  return nil
+end
+
+
 
 
 function BuyScreen:quit_tutorial()
@@ -605,6 +646,10 @@ end
 function ArenaLevelButton:on_mouse_exit()
   if main.current.in_credits then return end
   self.selected = false
+end
+
+function ArenaLevelButton:die()
+  self.dead = true
 end
 
 
@@ -1538,7 +1583,31 @@ function ItemPart:addItem(item)
   self.parent.unit.items[self.i] = item
 end
 
+function ItemPart:sellItem()
+  --kill the item first, to trigger the item's die function
+  --have to create the item first to remove it
+  -- unit.items is just the item data, not the item object
+  if self.parent.unit.items[self.i] then
+    local item = Create_Item(self.parent.unit.items[self.i].name)
+    if item then
+      if item.consumable then
+        spawn_mark2:play{pitch = random:float(0.8, 1.2), volume = 1}
+      else
+        --play sell sound
+        spawn_mark1:play{pitch = random:float(0.8, 1.2), volume = 1}
+        local sell_value = math.ceil(item.cost / 3)
+        main.current:gain_gold(sell_value)
+      end
+      item:die()
+    end
+  end
+
+  --then remove the item from the unit
+  self:removeItem()
+end
+
 function ItemPart:removeItem()
+
   self.parent.unit.items[self.i] = nil
 end
 
@@ -1584,8 +1653,9 @@ function ItemPart:update(dt)
     end
   end
 
+  --differentiate between moving the item to another slot, and selling the item w m2
   if input.m2.released and not self.itemGrabbed and self:isActiveInvSlot() and self:hasItem() then
-    self:removeItem()
+    self:sellItem()
     buyScreen:save_run()
   end
 
@@ -1980,9 +2050,24 @@ function ItemCard:init(args)
   self.tier_color = item_to_color(self.item)
   self.text = item_text[self.item]
   self.stats = self.item.stats
+
+  self.timeGrabbed = 0
+  self.buyTimer = 0.25
   
 end
 
+function ItemCard:buy_item(slot)
+  if not slot or not slot.addItem then 
+    print("no slot to buy item")
+    return
+  end
+  gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
+  slot:addItem(self.item)
+  gold = gold - self.cost
+  self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
+  buyScreen:save_run()
+  self:die()
+end
 
 function ItemCard:update(dt)
   self:update_game_object(dt)
@@ -1991,6 +2076,7 @@ function ItemCard:update(dt)
 
   if input.m1.pressed and self.colliding_with_mouse and gold >= self.cost then
     self.grabbed = true
+    self.timeGrabbed = Helper.Time.time
     --remove item text when grabbed
     self:remove_info_text()
   end
@@ -2003,11 +2089,13 @@ function ItemCard:update(dt)
   if self.grabbed and input.m1.released then
     self.grabbed = false
     if self.parent.active_inventory_slot and not self.parent.active_inventory_slot:hasItem() then
-      self.parent.active_inventory_slot:addItem(self.item)
-      gold = gold - self.cost
-      self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
-      buyScreen:save_run()
-      self:die()
+      self:buy_item(self.parent.active_inventory_slot)
+    elseif Helper.Time.time - self.timeGrabbed < self.buyTimer then
+      --buy the item if the mouse is released within the buyTimer
+      local firstEmptySlot = self.parent:get_first_available_inventory_slot()
+      if firstEmptySlot then
+        self:buy_item(firstEmptySlot)
+      end
     else
       self.x = self.origX
       self.y = self.origY

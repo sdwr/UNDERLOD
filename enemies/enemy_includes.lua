@@ -14,6 +14,8 @@ require 'enemies/regular/spawner'
 require 'enemies/regular/spread'
 require 'enemies/regular/stomper'
 require 'enemies/regular/summoner'
+require 'enemies/regular/bomb'
+
 require 'enemies/miniboss/bigstomper'
 
 require 'enemies/static/dragonegg'

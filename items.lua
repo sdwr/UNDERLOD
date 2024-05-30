@@ -1,24 +1,33 @@
 
---create with
--- Item{item_to_item_data['craggyvest']}
--- when it's on a unit, the procs will be added to the
--- relevant callbacks in objects.lua
--- and the stats will be added to the unit's stats
 
---REMEMBER TO DESTROY ITEMS AND PROCS WHEN UNIT DIES (ROUND ENDS!)
--- OR WHEN UNIT/ITEM IS SOLD!!!
--- have to hunt down the onDeath / dead=true, and standardize between
--- troops and enemies
+--items are actually created from the data in objects.lua on units
+--this is just a way to create them from the shop
+
+function Create_Item(name)
+  if not item_to_item_data[name] then
+    print('item not found')
+    return nil
+  end
+
+  return Item(item_to_item_data[name])
+end
 
 Item = Object:extend()
 function Item:init(data)
   self.name = data.name
+  --unit will be nil, because the unit doesn't exist yet (is created in arena)
+  self.unit = data.unit or {}
   self.colors = data.colors
   self.cost = data.cost
   self.icon = data.icon
   self.desc = data.desc
   self.stats = data.stats
-  self.procs = data.procs
+  self.procs = {}
+  --creates procs from the data, but this doesnt work on the unit
+  -- (because the unit doesn't exist yet)
+  for k, v in pairs(data.procs) do
+    table.insert(self.procs, Create_Proc(v, self.unit))
+  end
 end
 
 function Item:add_proc(unit)
@@ -39,9 +48,28 @@ end
 -- or at least change where it gets the item data from
 
 
+--need tiers for items again?
+--gate some items behind having other items? like firestacker and firesword
+
+--how to trigger consumable items?
+  --shop effects (reroll levels)
+  --in game effects (heal when < 50% hp)
+  --for one level effects (start with a shield)
+--in game effects could be a proc that destroys the item when it triggers
+--shop effects should trigger on sell (just make sure to get 0 gold back)
 item_to_item_data = {
 
   --consumable items
+  ['rerollpotion'] = {
+    name = 'rerollpotion',
+    colors = {},
+    cost = 2,
+    consumable = true,
+    icon = 'rerollpotion',
+    desc = 'Reroll the upcoming levels when you drink this potion',
+    stats = {},
+    procs = {'reroll'}
+  },
   --colorless items
   ['craggyvest'] = {
     name = 'craggyvest',
@@ -59,6 +87,14 @@ item_to_item_data = {
     icon = 'heartofgold',
     desc = 'A heart that increases health',
     stats = {hp = 0.2, gold = 2}
+  },
+  ['stockmarket'] = {
+    name = 'stockmarket',
+    colors = {},
+    cost = 5,
+    icon = 'stockmarket',
+    desc = 'Gain interest on your gold (1 gold per 10 gold)',
+    stats = {hp = 0.2, interest = 1}
   },
   ['berserk'] = {
     name = 'berserk',

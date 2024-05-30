@@ -440,32 +440,34 @@ function Unit:init_stats()
         for _, proc in ipairs(item.procs) do
           local procname = proc
           --can fill data from item here, but defaults should be ok
-          local procObj = proc_name_to_class[procname]{unit = self, data = {name = procname}}
-          table.insert(self.procs, procObj)
+          local procObj = Create_Proc(procname, self)
+          if procObj then
+            table.insert(self.procs, procObj)
 
-          --add procs to the unit callback lists here
-          -- could be done in the proc class, but this is more readable
-          -- still need to deal with proc deletion, right now they should be cleared at end of round (I hope??)
-          if procObj:hasTrigger(PROC_ON_HIT)  then
-            table.insert(self.onHitProcs, procObj)
-          end
-          if procObj:hasTrigger(PROC_ON_ATTACK) then
-            table.insert(self.onAttackProcs, procObj)
-          end
-          if procObj:hasTrigger(PROC_ON_GOT_HIT) then
-            table.insert(self.onGotHitProcs, procObj)
-          end
-          if procObj:hasTrigger(PROC_ON_KILL) then
-            table.insert(self.onKillProcs, procObj)
-          end
-          if procObj:hasTrigger(PROC_ON_DEATH) then
-            table.insert(self.onDeathProcs, procObj)
-          end
-          if procObj:hasTrigger(PROC_ON_MOVE) then
-            table.insert(self.onMoveProcs, procObj)
-          end
-          if procObj:hasTrigger(PROC_ON_TICK) then
-            table.insert(self.onTickProcs, procObj)
+            --add procs to the unit callback lists here
+            -- could be done in the proc class, but this is more readable
+            -- still need to deal with proc deletion, right now they should be cleared at end of round (I hope??)
+            if procObj:hasTrigger(PROC_ON_HIT)  then
+              table.insert(self.onHitProcs, procObj)
+            end
+            if procObj:hasTrigger(PROC_ON_ATTACK) then
+              table.insert(self.onAttackProcs, procObj)
+            end
+            if procObj:hasTrigger(PROC_ON_GOT_HIT) then
+              table.insert(self.onGotHitProcs, procObj)
+            end
+            if procObj:hasTrigger(PROC_ON_KILL) then
+              table.insert(self.onKillProcs, procObj)
+            end
+            if procObj:hasTrigger(PROC_ON_DEATH) then
+              table.insert(self.onDeathProcs, procObj)
+            end
+            if procObj:hasTrigger(PROC_ON_MOVE) then
+              table.insert(self.onMoveProcs, procObj)
+            end
+            if procObj:hasTrigger(PROC_ON_TICK) then
+              table.insert(self.onTickProcs, procObj)
+            end
           end
         end
       end

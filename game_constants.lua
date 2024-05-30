@@ -6,6 +6,7 @@ DEBUG_SPELLS = false
 --note that HoG econ check is in arena.lua
 STARTING_GOLD = 10
 GOLD_PER_ROUND = 8
+INTEREST_AMOUNT = 0.1
 
 NUMBER_OF_ROUNDS = 25
 
@@ -25,3 +26,4 @@ MAX_STACKS_BERSERK = 10
 
 
 -- UI constants
+ARENA_TRANSITION_TIME = 3

@@ -131,12 +131,7 @@ end
 
 function Archer_Troop:find_new_target()
   --first check if there is a target in range
-  local target = Helper.Spell:get_nearest_least_targeted(self, self.attack_sensor.rs, true)
-  if not target then
-    --if no target in range, get the closest (here is where to put new logic in for different units)
-    target = Helper.Spell:get_nearest_target(self)
-  end
-
+  local target = Helper.Spell:get_nearest_target(self)
   if target then
     Helper.Unit:claim_target(self, target)
   end

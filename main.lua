@@ -1155,6 +1155,7 @@ function init()
     ['spawner'] = {},
     ['stomper'] = {dmg = 2.5},
     ['summoner'] = {},
+    ['bomb'] = {hp = -0.25},
     
   }
 
@@ -1377,7 +1378,7 @@ function init()
   end
 
   attack_ranges = {
-    ['melee'] = 20,
+    ['melee'] = 30,
     ['medium'] = 60,
     ['medium-long'] = 100,
     ['ranged'] = 130,
@@ -1655,6 +1656,7 @@ function init()
     ['laser'] = 300,
     ['rager'] = 300,
     ['stomper'] = 300,
+    ['bomb'] = 300,
     --special enemies t2
     ['mortar'] = 500,
     ['spawner'] = 500,
@@ -1671,6 +1673,7 @@ function init()
     ['stomper'] = red[3],
     ['mortar'] = orange[3],
     ['spawner'] = orange[3],
+    ['bomb'] = orange[3],
     ['arcspread'] = blue[3],
     ['summoner'] = purple[3],
     ['assassin'] = purple[3],
