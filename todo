@@ -1,3 +1,11 @@
+
+SMALL CLEANUP:
+  - add sound effect for buying item
+
+BUG:
+  - add numbers back to control groups
+  - add controls text back to floor for lvl 1 (and maybe 2 + 3)
+
 --------------
 NEW FEATURE PLAN:
 
@@ -57,10 +65,7 @@ combat:
   buffs aren't the right size on all units (hidden under square, too big around rect)
 
 units:
-  rally doesn't work while shooting/about to shoot
   shouldn't be able to push bosses with units
-  should be able to hit enemies without needing to hit the exact center (mainly problem with bosses)
-  necromancers (+healers?) all target same corpse/unit
 
 shop screen:
   item overlay doesn't work in windowed mode
@@ -77,10 +82,6 @@ shop screen:
 ---------------
 CODE CLEANUP:
 ---------------
-
-  - create global list of friendly classes
-  - unify target selection, attack triggering
-    * need proper lambdas? delayed functions cant have params
   
 ui
   - show nice cursor

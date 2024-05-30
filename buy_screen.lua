@@ -738,9 +738,8 @@ function HotbarButton:draw()
       -- end
       graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, self.selected and fg[0] or _G[self.bg_color][0])
       
-      if #self.color_marks == 0 then
-        self.text:draw(self.x, self.y + 1, 0, 1, 1)
-      end
+      self.text:draw(self.x, self.y + 1, 0, 1, 1)
+      
     graphics.pop()
 
     for i, color_mark in ipairs(self.color_marks) do
@@ -775,13 +774,19 @@ function HotbarButton:on_mouse_exit()
   if self.mouse_exit then self:mouse_exit() end
 
   Helper.mouse_on_button = false
-end
+end    
 
 
 function HotbarButton:set_text(text)
   self.button_text = text
-  self.text:set_text{{text = '[' .. self.fg_color .. ']' .. self.button_text, font = pixul_font, alignment = 'center'}}
+  self:update_text()
   self.spring:pull(0.2, 200, 10)
+end
+
+--for when selection changes, color of text changes
+function HotbarButton:update_text()
+  local color = self.selected and white[0] or yellow[0]
+  self.text:set_text{{text = '[' .. color .. ']' .. self.button_text, font = pixul_font, alignment = 'center'}}
 end
 
 ProgressBar = Object:extend()
@@ -1666,6 +1671,8 @@ function ItemPart:update(dt)
   if input.m1.pressed and self.colliding_with_mouse and self:hasItem() then
     self.itemGrabbed = true
     self.looseItem = LooseItem{group = self.parent.parent.main, item = self:getItem(), parent = self}
+    --remove item text
+    self:remove_item_text()
   end
 
   if self.itemGrabbed and input.m1.released then
@@ -1739,26 +1746,28 @@ function ItemPart:draw(y)
         self:create_info_text()
       end
     else
-      if self.info_text then
-        self.info_text:deactivate()
-        self.info_text.dead = true
-      end
+      self:remove_item_text()
     end
     graphics.pop()
   end
 end
 
 function ItemPart:create_info_text()
-  if self.info_text then
-    self.info_text:deactivate()
-    self.info_text.dead = true
-  end
-  self.info_text = nil
+  self:remove_item_text()
   if self:hasItem() then
     local item = self:getItem()
     self.info_text = InfoText{group = main.current.ui, force_update = true}
     self.info_text:activate(build_item_text(item), nil, nil, nil, nil, 16, 4, nil, 2)
-    self.info_text.x, self.info_text.y = self.x + 70, self.y +20
+    --set the position of the info text
+    self.info_text.x, self.info_text.y = gw/2, gh/2 + 10
+  end
+end
+
+function ItemPart:remove_item_text()
+  if self.info_text then
+    self.info_text:deactivate()
+    self.info_text.dead = true
+    self.info_text = nil
   end
 end
 
@@ -2091,8 +2100,15 @@ function ItemCard:update(dt)
 
   if input.m1.pressed and self.colliding_with_mouse and gold >= self.cost then
     self.grabbed = true
+    --remove item text when grabbed
+    self:remove_info_text()
   end
 
+  --determine when to purchase the item vs when to cancel the purchase
+  --should be able to click to buy?
+  --but also cancel by letting go if you drag it halfway
+  --leave this for now, kinda confusing to track the mouse position or duration of click
+  -- and have 2 different ways to cancel the purchase
   if self.grabbed and input.m1.released then
     self.grabbed = false
     if self.parent.active_inventory_slot and not self.parent.active_inventory_slot:hasItem() then
@@ -2146,16 +2162,20 @@ end
 
 
 function ItemCard:create_info_text()
-  if self.info_text then
-    self.info_text:deactivate()
-    self.info_text.dead = true
-  end
-  self.info_text = nil
+  self:remove_info_text()
   if self.item then
     self.info_text = InfoText{group = main.current.ui, force_update = true}
     self.info_text:activate(build_item_text(self.item), nil, nil, nil, nil, 16, 4, nil, 2)
     self.info_text.x, self.info_text.y = gw/2, gh/2 + 10
   end
+end
+
+function ItemCard:remove_info_text()
+  if self.info_text then
+    self.info_text:deactivate()
+    self.info_text.dead = true
+  end
+  self.info_text = nil
 end
 
 
@@ -2169,21 +2189,13 @@ end
 
 function ItemCard:on_mouse_exit()
   self.selected = false
-  if self.info_text then
-    self.info_text:deactivate()
-    self.info_text.dead = true
-    self.info_text = nil
-  end
+  self:remove_info_text()
 end
 
 
 function ItemCard:die()
   self.dead = true
-  if self.info_text then
-    self.info_text:deactivate()
-    self.info_text.dead = true
-    self.info_text = nil
-  end
+  self:remove_info_text()
 end
 
 

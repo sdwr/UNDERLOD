@@ -112,7 +112,8 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
     local type = character_types[character]
     local number = i
     local b = HotbarButton{group = self.ui, x = 50 + Helper.Unit.team_button_width/2 + (Helper.Unit.team_button_width + 5) * (i - 1), 
-                          y = gh - 20, force_update = true, button_text = tostring(i), w = Helper.Unit.team_button_width, fg_color = 'white', bg_color = 'bg', 
+                          y = gh - 20, force_update = true, button_text = tostring(i), w = Helper.Unit.team_button_width, fg_color = 'white', bg_color = 'bg',
+                          color_marks = {[1] = character_colors[character]},
                           action = function() 
                             main.current:select_character(character)
                             Helper.Unit.selected_team = number
@@ -122,8 +123,8 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
                                 troop.selected = true
                               end
                             end
-                          end,
-                          color_marks = {[1] = character_colors[character]}}
+                          end
+                        }
     self.hotbar[character] = b
     self.hotbar_by_index[i] = b
   end

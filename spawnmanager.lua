@@ -128,10 +128,8 @@ function Spawn_Wave(arena, wave)
     current_group = (current_group - 1) % #SpawnGlobals.spawn_markers + 1
     --hardcoded normal enemy types instead of searching for them
     if wave[wave_index] == 'shooter' or wave[wave_index] == 'seeker' then
-      print("trying to spawn group", wave[wave_index], wave_index)
       Spawn_Group(arena, current_group, wave[wave_index])
     else
-      print("trying to spawn special", wave[wave_index], wave_index)
       Spawn_Enemy(arena, wave[wave_index], SpawnGlobals.spawn_markers[current_group])
     end
 
@@ -290,6 +288,8 @@ function Spawn_Enemy(arena, type, location)
   alert1:play{pitch = 1, volume = 0.8}
   if Can_Spawn(6, location) then
     Enemy{type = type, group = arena.main, x = location.x, y = location.y, level = arena.level}
+  else
+    print("failed to spawn enemy " .. type .. " at " .. location.x .. ", " .. location.y)
   end
 
 end
