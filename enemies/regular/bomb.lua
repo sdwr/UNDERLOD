@@ -11,9 +11,14 @@
 --best is probably move faster when triggered, and explode after death
 local fns = {}
 fns['init_enemy'] = function(self)
+
+  --set extra variables from data
+  self.data = self.data or {}
+  self.size = self.data.size or 'regular'
+
   --create shape
   self.color = orange[0]:clone()
-  self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
+  Set_Enemy_Shape(self, self.size)
 
   --set physics
   self:set_restitution(0.5)
@@ -26,7 +31,7 @@ fns['init_enemy'] = function(self)
   self.trigger_radius = 40
   self.time_to_explode = 3
   self.explosion_radius = 45
-  self.explosion_damage = 100
+  self.explosion_damage = 100 
   self.area_sensor = Circle(self.x, self.y, self.trigger_radius)
 
   self.beep_times = {2, 1, 0.75, 0.5, 0.25}

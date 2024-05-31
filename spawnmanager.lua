@@ -287,8 +287,11 @@ end
 function Spawn_Enemy(arena, type, location)
   Spawn_Effect(arena, location)
   alert1:play{pitch = 1, volume = 0.8}
+  local data = {}
   if Can_Spawn(6, location) then
-    Enemy{type = type, group = arena.main, x = location.x, y = location.y, level = arena.level}
+    Enemy{type = type, group = arena.main,
+    x = location.x, y = location.y,
+    level = arena.level, data = data}
   else
     print("failed to spawn enemy " .. type .. " at " .. location.x .. ", " .. location.y)
   end

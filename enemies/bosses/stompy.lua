@@ -19,14 +19,21 @@ end
 
 fns['init_enemy'] = function(self)
 
+  --set extra variables from data
+  self.data = self.data or {}
+  self.size = self.data.size or 'boss'
+
   --create shape
   self.color = grey[0]:clone()
-  self:set_as_rectangle(60, 60, 'dynamic', 'enemy')
+  Set_Enemy_Shape(self, self.size)
   
   --set physics 
     self:set_restitution(0.1)
     self:set_as_steerable(self.v, 1000, 2*math.pi, 2)
     self.class = 'boss'
+
+  --set sensors
+    self.attack_sensor = Circle(self.x, self.y, 80)
 
   --add hitbox points
   local step = (self.shape.w - 4) / 5

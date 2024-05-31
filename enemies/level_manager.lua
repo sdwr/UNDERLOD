@@ -50,15 +50,15 @@ function LevelManager.bossThresholds()
 
     elseif boss.type == 'dragon' then
         if activateT1 then
-            Spawn_Enemy(main.current, {'dragonegg'}, SpawnGlobals.corner_spawns[1])
-            Spawn_Enemy(main.current, {'dragonegg'}, SpawnGlobals.corner_spawns[2])
+            Spawn_Enemy(main.current, 'dragonegg', SpawnGlobals.corner_spawns[1])
+            Spawn_Enemy(main.current, 'dragonegg', SpawnGlobals.corner_spawns[2])
         elseif activateT2 then
 
         elseif activateT3 then
-            Spawn_Enemy(main.current, {'dragonegg'}, SpawnGlobals.corner_spawns[1])
-            Spawn_Enemy(main.current, {'dragonegg'}, SpawnGlobals.corner_spawns[2])
-            Spawn_Enemy(main.current, {'dragonegg'}, SpawnGlobals.corner_spawns[3])
-            Spawn_Enemy(main.current, {'dragonegg'}, SpawnGlobals.corner_spawns[4])
+            Spawn_Enemy(main.current, 'dragonegg', SpawnGlobals.corner_spawns[1])
+            Spawn_Enemy(main.current, 'dragonegg', SpawnGlobals.corner_spawns[2])
+            Spawn_Enemy(main.current, 'dragonegg', SpawnGlobals.corner_spawns[3])
+            Spawn_Enemy(main.current, 'dragonegg', SpawnGlobals.corner_spawns[4])
 
         end
 

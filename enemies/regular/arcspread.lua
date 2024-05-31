@@ -1,9 +1,13 @@
 
 local fns = {}
 fns['init_enemy'] = function(self)
+  --set extra variables from data
+  self.data = self.data or {}
+  self.size = self.data.size or 'regular'
+
   --create shape
   self.color = blue2[5]:clone()
-  self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
+  Set_Enemy_Shape(self, self.size)
   
   --set physics 
   self:set_restitution(0.5)
@@ -13,7 +17,7 @@ fns['init_enemy'] = function(self)
   --set attacks
     self.t:cooldown(attack_speeds['slow'], function() return true end, function ()
         sniper_load:play{volume=0.9}
-        Helper.Spell.DamageArc:create_spread(self, Helper.Color.blue, true, false, 10, 30, 3, 4, 50, self.x, self.y)
+        Helper.Spell.DamageArc:create_spread(self, Helper.Color.blue, true, false, self.dmg, 30, 3, 4, 50, self.x, self.y)
     end, nil, nil, 'shoot')
 end
 

@@ -2673,7 +2673,7 @@ function Critter:init(args)
   self:init_game_object(args)
   if tostring(self.x) == tostring(0/0) or tostring(self.y) == tostring(0/0) then self.dead = true; return end
   self:init_unit()
-  self:set_as_rectangle(7, 4, 'dynamic', 'player')
+  Set_Enemy_Shape(self, 'critter')
   self:set_restitution(0.5)
 
   self.aggro_sensor = Circle(self.x, self.y, 125)

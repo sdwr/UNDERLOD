@@ -4,7 +4,6 @@ local fns = {}
 
 fns['attack'] = function(self, mods, color)
   mods = mods or {}
-  self.dmg = 10
   local t = {team = "enemy", group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(20), color = color or self.color, dmg = self.dmg,
     character = self.character, level = self.level, parent = self}
 
@@ -21,9 +20,14 @@ end
 
 fns['init_enemy'] = function(self)
 
+  --load extra data from variables
+  self.data = self.data or {}
+  self.size = self.data.size or 'regular'
+
+
   --create shape
   self.color = red[5]:clone()
-  self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
+  Set_Enemy_Shape(self, self.size)
   
   --set physics 
   self:set_restitution(0.5)

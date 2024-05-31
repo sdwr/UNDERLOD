@@ -1,9 +1,14 @@
 
 local fns = {}
 fns['init_enemy'] = function(self)
+
+  --set extra variables from data
+  self.data = self.data or {}
+  self.size = self.data.size or 'small'
+
   --create shape
   self.color = brown[5]:clone()
-  self:set_as_rectangle(8, 6, 'static', 'enemy')
+  Set_Enemy_Shape(self, self.size)
   
   --set physics 
   self:set_restitution(0.5)

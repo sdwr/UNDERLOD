@@ -19,6 +19,8 @@ function Enemy:init(args)
 end
 
 --load enemy type specific functions from global table
+--note: can't be named any of the base enemy functions
+-- or they will be overwritten (so init_enemy instead of init)
 function Enemy:setExtraFunctions()
   local t = enemy_to_class[self.type]
   for k, v in pairs(t) do

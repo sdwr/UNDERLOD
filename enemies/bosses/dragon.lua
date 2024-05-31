@@ -3,9 +3,14 @@
 local fns = {}
 
 fns['init_enemy'] = function(self)
+
+  --set extra variables from data
+  self.data = self.data or {}
+  self.size = self.data.size or 'boss'
+
   --create shape
   self.color = red[0]:clone()
-  self:set_as_rectangle(60, 60, 'dynamic', 'enemy')
+  Set_Enemy_Shape(self, self.size)
 
   --add hitbox points
   self.hitbox_points_can_rotate = true
@@ -69,7 +74,7 @@ fns['init_enemy'] = function(self)
           Helper.Spell.Flame:end_flame_after(self, self.fireDuration)
         end
       
-      if self.my_target() and not Helper.Spell:target_is_in_range(self, 100) then
+      if self:my_target() and not Helper.Spell:target_is_in_range(self, 100) then
           Helper.Spell.Flame:end_flame_after(self, 0.25)
           Helper.Unit:unclaim_target(self)
       end

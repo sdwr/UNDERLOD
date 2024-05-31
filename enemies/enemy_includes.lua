@@ -1,4 +1,5 @@
 require 'enemies/enemy'
+require 'enemies/enemy_utils'
 require 'enemies/enemy_critter'
 require 'enemies/bosses/dragon'
 require 'enemies/bosses/heigan'

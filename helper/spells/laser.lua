@@ -126,6 +126,7 @@ function Helper.Spell.Laser:draw_aims()
 end
 
 --if target is dead, the laser should fire at the last known location
+--if unit is dead, the laser should cancel
 --complicated by direction lock which goes based on distance(??)
 function Helper.Spell.Laser:update()
     --shoot
@@ -136,6 +137,10 @@ function Helper.Spell.Laser:update()
         if laser.unit and laser.unit:my_target() then
             laser.target_last_x = laser.unit:my_target().x
             laser.target_last_y = laser.unit:my_target().y
+        end
+
+        if not laser.unit or laser.unit.dead then
+            table.remove(Helper.Spell.Laser.list, i)
         end
 
         if Helper.Time.time - laser.start_aim_time > laser.cast_time and not laser.holding_fire then

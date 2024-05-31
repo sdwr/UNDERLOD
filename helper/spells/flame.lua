@@ -76,9 +76,11 @@ function Helper.Spell.Flame:update_direction()
         local target = flame.unit:my_target()
         local x = flame.unit.x + flame.directionx
         local y = flame.unit.y + flame.directiony
-        x, y = Helper.Geometry.rotate_to(flame.unit.x, flame.unit.y, x, y, target.x, target.y, 300)
-        flame.directionx = x - flame.unit.x
-        flame.directiony = y - flame.unit.y
+        if target then
+            x, y = Helper.Geometry.rotate_to(flame.unit.x, flame.unit.y, x, y, target.x, target.y, 300)
+            flame.directionx = x - flame.unit.x
+            flame.directiony = y - flame.unit.y
+        end
     end
 end
 

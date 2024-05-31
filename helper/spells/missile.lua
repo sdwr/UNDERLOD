@@ -4,7 +4,7 @@ Helper.Spell.Missile.list = {}
 Helper.Spell.Missile.prelist = {}
 
 function Helper.Spell.Missile:create(color, missile_length, damage, speed, unit, fly_infinitely, explode_radius, targetx, targety)
-    if unit.my_target() or (targetx and targety) then
+    if unit:my_target() or (targetx and targety) then
         local missile = {
             x = 0,
             y = 0,

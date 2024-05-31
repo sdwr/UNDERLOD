@@ -1,10 +1,15 @@
 
 local fns = {}
 fns['init_enemy'] = function(self)
+
+  --set extra variables from data
+  self.data = self.data or {}
+  self.size = self.data.size or 'regular'
+
   --create shape
   self.color = blue2[0]:clone()
-  self:set_as_rectangle(14, 6, 'dynamic', 'enemy')
-  
+  Set_Enemy_Shape(self, self.size)
+
   --set physics 
   self:set_restitution(0.5)
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
@@ -18,7 +23,7 @@ fns['init_enemy'] = function(self)
       if target then
         self:rotate_towards_object(target, 1)
         sniper_load:play{volume=0.9}
-        Helper.Spell.SpreadMissile:create(Helper.Color.blue, 10, 20, self, 25, true) 
+        Helper.Spell.SpreadMissile:create(Helper.Color.blue, 10, self.dmg, self, 25, true) 
         end
     end, nil, nil, 'shoot')
 end
