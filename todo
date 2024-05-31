@@ -1,5 +1,23 @@
 
 TODO:
+  - make miniboss versions of regular enemies
+    - make them bigger
+    - give them stronger stats
+    - make their special ability better
+
+  - adjust how level_list creation happens
+    - want fewer enemy types per level
+    - minibosses at certain/random levels (displayed on map!)
+
+  - show boss levels on the level map
+    - star, skull, plus text
+    - think of a special reward for beating a boss level
+
+  - make units "move through" rally point instead of stopping before
+  - make rally point disappear properly when all units have gone there
+  
+  - make units not chase towards enemies when they are in range (+ push the enemy away)
+
   - make screen transition circle always white
   - why are unit colors losing saturation? 
     - maybe the global color is being changed in 1 place (zzz)
@@ -10,10 +28,7 @@ TODO:
     -when in combat, not in the shop
 
 SMALL CLEANUP:
-  - add sound effect for buying item
 
-BUG:
-  -swordsman not attacking enemy target (only when free-selecting)
 
 --------------
 NEW FEATURE PLAN:
@@ -23,21 +38,8 @@ get the playthrough to be fun:
     - add item synergies
 
     - figure out phasing (add new ghost Group for objects)
-    - clean up unit stat system
     - pass owner unit to :hit() from helper.spell (already done when possible?)
 
-  - finish level map
-    - hover over to see level effects
-    - fix change level 
-      (performance hit, update buttons instead of destroy/create)
-
-  - change controls, or at least have option
-    - 1 troop selected at a time
-    - LMB move 
-    - shift LMB move to target
-    - RMB attack enemy
-    - space move all
-    
   - add level modifiers (maybe don't need, overlaps with special enemies)
     - berserk
     - infected
