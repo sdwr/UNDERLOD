@@ -1,9 +1,67 @@
 
+--not good but level round power calculated here
+local round_power = 0
+
+
+local function number_of_waves(level)
+  if level <= 2  then
+    return 1
+  elseif level < 4 then
+    return 2
+  else 
+    return 3
+  end
+end
+
+local function special_enemy_tiers(level)
+  if level == 1 then
+    return {}
+  elseif level < 4 then
+    return {1}
+  elseif level < 10 then
+    return {1, 2}
+  elseif level < 16 then
+    return {1, 2, 3}
+  else
+    return {1, 2, 3, 2}
+  end
+end
+
+--only change 1 special enemy per wave, so we can have a mix of enemies
+local function pick_special_enemies(level, previous)
+  local tiers = special_enemy_tiers(level)
+  local special_enemies = {}
+
+
+  --make a new list
+  if not previous or #previous == 0 then
+    for i, tier in ipairs(tiers) do
+      local enemies = special_enemy_by_tier[tier]
+      local enemy = random:table(enemies)
+      table.insert(special_enemies, enemy)
+    end
+    return special_enemies
+  end
+  --or switch out one enemy from the previous wave
+  local swap_index = random:int(1, #previous)
+  local swap_tier = find_tier_of_special_enemy(previous[swap_index])
+
+  --keep swapping until we get a different enemy
+  local new_enemy = random:table(special_enemy_by_tier[swap_tier])
+  while new_enemy == previous[swap_index] do
+    new_enemy = random:table(special_enemy_by_tier[swap_tier])
+  end
+
+  --swap out the enemy
+  previous[swap_index] = new_enemy
+
+  return previous
+end
 
 
 local function find_special_in_wave(wave)
   for i, enemy in ipairs(wave) do
-    if special_enemy_to_round_power[enemy] then
+    if enemy_to_round_power[enemy] and enemy_to_round_power[enemy] > 100 then
       return enemy
     end
   end
@@ -21,7 +79,7 @@ end
 function Build_Level_List(max_level)
   local level_list = {}
   for i = 1, max_level do
-      level_list[i] = {level = i, waves = {}, color = grey[0], environmental_hazards = {}}
+      level_list[i] = {level = i, waves = {}, round_power = 0, color = grey[0], environmental_hazards = {}}
   end
 
   for i = 1, max_level do
@@ -37,6 +95,9 @@ function Build_Level_List(max_level)
 
     local environmental_hazards = Decide_on_Environmental_Hazards(i)
     level_list[i].environmental_hazards = environmental_hazards
+
+    --calculate the round power for the level
+    level_list[i].round_power = round_power
   end
 
   return level_list
@@ -67,51 +128,53 @@ end
 -- but ignore this for now
 
 function Decide_on_Spawns(level)
-  local round_power = level_to_round_power[level]
+  -- local round_power = level_to_round_power[level]
   local waves = {}
   local wave = {}
 
-  while round_power > 0 do
-    wave, round_power = Build_Wave(round_power)
+  local previous = nil
+  for i = 1, number_of_waves(level) do
+    wave, previous = Build_Wave(level, previous)
     table.insert(waves, wave)
   end
 
   return waves
 end
 
-function Build_Wave(round_power)
-  --pick a enemy type that we can afford
+function Build_Wave(level, previous)
   local wave = {}
-  for k, v in pairs(special_enemy_to_round_power) do
-    if v < round_power then
-      table.insert(wave, k)
-    end
-  end
 
-  --pick a special enemy out of the ones we can afford
-  local selected_enemy = random:table(wave)
+  --get the special enemies for this level
+  local special_enemies = pick_special_enemies(level, previous)
+  --make a copy of the list so we can modify it
+  local previous = {}
+  for i, enemy in ipairs(special_enemies) do
+    table.insert(previous, enemy)
+  end
   
-  --add special enemy to list
-  --we need to check for nil because we might not have enough power for any special enemies
-  if selected_enemy then
-    round_power = round_power - special_enemy_to_round_power[selected_enemy]
+  --start with a basic enemy
+  local enemy = random:table(normal_enemy_by_tier[1])
+  Add_Enemy_To_Wave(wave, enemy)
+
+  --and then intersperse special enemies with normal enemies
+  while #special_enemies > 0 do
+    local index = random:int(1, #special_enemies)
+    local special = table.remove(special_enemies, index)
+    Add_Enemy_To_Wave(wave, special)
+    local enemy = random:table(normal_enemy_by_tier[1])
+    Add_Enemy_To_Wave(wave, enemy)
   end
 
-  --add up to 3 normal enemies
-  local num_normal_enemies = random:int(1, 3)
+  return wave, previous
+end
 
-  for i=1, num_normal_enemies do
-    if round_power < 1 then break end
-    local enemy = 'seeker'
-    table.insert(wave, enemy)
-    round_power = round_power - normal_enemy_to_round_power[enemy]
+function Add_Enemy_To_Wave(wave, enemy)
+  --calc round power
+  local power = enemy_to_round_power[enemy] or 0
+  if enemy == 'shooter' or enemy == 'seeker' then
+    power = power * SPAWNS_IN_GROUP
   end
-
-  --we need to make the normal enemies spawn first
-  --so add the special enemy to the end of the list
-  if selected_enemy then
-    table.insert(wave, selected_enemy)
-  end
-
-  return wave, round_power
+  round_power = round_power + power
+  --add to wave
+  table.insert(wave, enemy)
 end

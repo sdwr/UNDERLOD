@@ -120,21 +120,35 @@ end
 
 --if an enemy fails to spawn, the wave will not end
 function Spawn_Wave(arena, wave)
+  arena.wave_finished = false
+
   local wave_index = 1
   local current_group = 1
   arena.t:every(arena.time_between_spawn_groups, function()
+    --wait until the previous enemy is done spawning
+    if arena.spawning_enemies then return end
+
+    --cancel if we're done spawning
+    if wave_index > #wave then
+      arena.wave_finished = true
+      arena.t:cancel('spawnwave')
+      return
+    end
+
     -- need to adjust mod to be 1 indexed
     current_group = (current_group - 1) % #SpawnGlobals.spawn_markers + 1
-    --hardcoded normal enemy types instead of searching for them
+    
+    --
+    arena.spawning_enemies = true
     if wave[wave_index] == 'shooter' or wave[wave_index] == 'seeker' then
-      Spawn_Group(arena, current_group, wave[wave_index])
+      Spawn_Group(arena, current_group, wave[wave_index], SPAWNS_IN_GROUP)
     else
-      Spawn_Enemy(arena, wave[wave_index], SpawnGlobals.spawn_markers[current_group])
+      Spawn_Group(arena, current_group, wave[wave_index], 1)
     end
 
     current_group = current_group + 1
     wave_index = wave_index + 1
-  end, #wave)
+  end, nil, nil, 'spawnwave')
 end
 
 -- possible hazards:
@@ -175,14 +189,24 @@ function Manage_Spawns(arena)
   arena.time_between_spawn_groups = 1.5
   arena.time_between_spawns = 0.2
 
-  arena.time_between_waves = 8
+  -- arena.time_between_waves = 8
   arena.time_between_next_wave_check = 2
 
   arena.start_time = 3
-  arena.spawning_enemies = true
+  arena.wave_finished = true
+  arena.finished = false
 
-  arena.enemypower = (1 + 0.15) ^ (arena.level)
 
+  --new plan - spawn waves after the previous wave is fully killed
+  --don't spawn waves on top of each other
+  --have multiple waves per level, but don't announce them - just use progress bar
+
+  --conditions for wave end:
+  -- 1. done spawning (no more enemies to spawn)
+  -- 2. all enemies are dead
+
+  --conditions for level end:
+  -- 1. all waves are done / progress bar is full
   arena.t:after(arena.entry_delay, function()
     -- --spawn miniboss
     --   Spawn_Enemy(arena, {'bigstomper'}, SpawnGlobals.spawn_markers[6])
@@ -210,6 +234,7 @@ function Manage_Spawns(arena)
       local environmental_hazards = arena.level_list[arena.level].environmental_hazards
       print(waves)
       print(#waves)
+      print('starting spawns')
       arena.max_waves = #waves
       --spawn first wave right off the bat
       Spawn_Wave(arena, waves[arena.wave])
@@ -218,29 +243,29 @@ function Manage_Spawns(arena)
       --and launch the environmental hazards
       Spawn_Hazards(arena, environmental_hazards)
 
-      --then launch a timer that spawns waves
-      --after the previous wave is done
-      --or after a certain amount of time
-      arena.time_until_next_wave = arena.time_between_waves
+      -- arena.time_until_next_wave = arena.time_between_waves
       arena.t:every(arena.time_between_next_wave_check, function()
         --quit if we're done
-        if arena.wave > arena.max_waves or arena.quitting then return end
-        --tick timer towards 0
-        arena.time_until_next_wave = arena.time_until_next_wave - arena.time_between_next_wave_check
+        if arena.wave > arena.max_waves or arena.quitting then
+          print('done spawning waves', arena.wave, arena.max_waves, arena.quitting)
+          arena.finished = true
+          arena.t:cancel('spawn_waves')
+          return 
+        end
 
-        --if timer is up or all enemies are dead, spawn next wave
-        if arena.time_until_next_wave <= 0 or #arena.main:get_objects_by_classes(arena.enemies) <= 0 then
+        --if spawning is done and all enemies are dead, spawn the next wave
+        if arena.wave_finished and #arena.main:get_objects_by_classes(arena.enemies) <= 0 then
           Spawn_Wave(arena, waves[arena.wave])
           arena.wave = arena.wave + 1
-          arena.time_until_next_wave = arena.time_between_waves
+          -- arena.time_until_next_wave = arena.time_between_waves
         end
         
-      end, arena.max_waves)
+      end, nil, nil, 'spawn_waves')
     end
 
     --check for level end
     arena.t:every(function()
-      return #arena.main:get_objects_by_classes(arena.enemies) <= 0 and arena.wave >= arena.max_waves 
+      return #arena.main:get_objects_by_classes(arena.enemies) <= 0 and arena.finished
       and not arena.quitting and not arena.spawning_enemies end, function() arena:quit() end)
 
   end)
@@ -281,39 +306,63 @@ function Spawn_Boss(arena, name)
   
   Spawn_Effect(arena, SpawnGlobals.boss_spawn_point)
   LevelManager.activeBoss = Enemy{type = name, isBoss = true, group = arena.main, x = SpawnGlobals.boss_spawn_point.x, y = SpawnGlobals.boss_spawn_point.y, level = arena.level}
-  SetSpawning(arena, false)
+  arena.spawning_enemies = false
 end
 
+--spawns a single enemy at a location
+--if the location is occupied, the enemy will not spawn
 function Spawn_Enemy(arena, type, location)
-  Spawn_Effect(arena, location)
-  alert1:play{pitch = 1, volume = 0.8}
   local data = {}
   if Can_Spawn(6, location) then
+    Spawn_Effect(arena, location)
+    alert1:play{pitch = 1, volume = 0.8}
     Enemy{type = type, group = arena.main,
     x = location.x, y = location.y,
     level = arena.level, data = data}
+    return true
   else
     print("failed to spawn enemy " .. type .. " at " .. location.x .. ", " .. location.y)
+    return false
   end
 
 end
 
-function Spawn_Group(arena, group_index, type)
+--tries to spawn a group of enemies at a location
+-- if the location is occupied, the group will spawn at the next available location
+-- and the function will hold future spawns until the group is fully spawned
+function Spawn_Group(arena, group_index, type, amount)
+  local amount = amount or 1
   --set twice because of initial delay
   arena.spawning_enemies = true
 
   local spawn_marker = SpawnGlobals.spawn_markers[group_index]
-  Spawn_Effect(arena, spawn_marker)
   local index = 1
+  local total_spawned = 0
   arena.t:every(arena.time_between_spawns, function()
+    --end once we've spawned the amount of enemies we want
+    if total_spawned >= amount then
+      arena.spawning_enemies = false
+      arena.t:cancel('spawning')
+      return
+    end
+
+    --try next spawn group if current one is occupied
+    if index > 9 then 
+      index = 1
+      group_index = group_index + 1
+      spawn_marker = SpawnGlobals.spawn_markers[(group_index % #SpawnGlobals.spawn_markers)]
+    end
 
     local offset = SpawnGlobals.spawn_offsets[index]
     local spawn_x, spawn_y = spawn_marker.x + offset.x, spawn_marker.y + offset.y
 
-    Spawn_Enemy(arena, type, {x = spawn_x, y = spawn_y})
+    local success = Spawn_Enemy(arena, type, {x = spawn_x, y = spawn_y})
+    if success then
+      total_spawned = total_spawned + 1
+    end
 
     index = index+1
-  end, SPAWNS_IN_GROUP, function() SetSpawning(arena, false) end)
+  end, nil, nil, 'spawning')
 
 end
 

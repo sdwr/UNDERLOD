@@ -124,7 +124,7 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
 
   --draw progress bar at the top of the screen
   self.progress_bar = ProgressBar{group = self.ui, x = gw/2, y = 20, w = 200, h = 10, color = yellow[0], progress = 0}
-  self.progress_bar.max_progress = level_to_round_power[self.level]
+  self.progress_bar.max_progress = self.level_list[self.level].round_power or 0
 
   Spawn_Troops(self)
 
@@ -800,6 +800,11 @@ function Arena:process_gold_event()
     self.total_interest = math.floor(gold * INTEREST_AMOUNT * self.stacks_of_interest)
   elseif event.type == 'final' then
     gold = gold + self.gold_gained + self.gold_picked_up + self.bonus_gold + self.total_interest
+    self.gold_gained = 0
+    self.gold_picked_up = 0
+    self.bonus_gold = 0
+    self.stacks_of_interest = 0
+    
     gold = math.floor(gold)
   else
     print('unknown gold event type')

@@ -161,11 +161,7 @@ function Enemy:die()
   self.dead = true
   -- update progress bar in arena, based on enemy value
   local progress_amount = 0
-  if normal_enemy_to_round_power[self.type] then
-    progress_amount = normal_enemy_to_round_power[self.type] / SPAWNS_IN_GROUP
-  elseif special_enemy_to_round_power[self.type] then
-    progress_amount = special_enemy_to_round_power[self.type] / SPAWNS_IN_GROUP
-  end
+  progress_amount = enemy_to_round_power[self.type] or 0
   main.current.progress_bar:increase_progress(progress_amount)
 
   if self.parent and self.parent.summons and self.parent.summons > 0 then

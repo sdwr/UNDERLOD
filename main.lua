@@ -1638,12 +1638,45 @@ function init()
     'seeker',
   }
 
-  normal_enemy_to_round_power = {
-    --regular enemies
+  normal_enemy_by_tier = {
+    [1] = {
+      'shooter',
+      'seeker',
+    }
+  }
+
+  special_enemy_by_tier = {
+    [1] = {
+      'laser',
+      'rager',
+      'stomper',
+      'bomb',
+    },
+    [2] = {
+      'mortar',
+      'spawner',
+      'arcspread',
+    },
+    [3] = {
+      'summoner',
+      'assassin',
+    },
+  }
+
+  function find_tier_of_special_enemy(enemy)
+    for tier, enemies in pairs(special_enemy_by_tier) do
+      for _, e in pairs(enemies) do
+        if e == enemy then
+          return tier
+        end
+      end
+    end
+    return 0
+  end
+
+  enemy_to_round_power = {
     ['shooter'] = 100,
     ['seeker'] = 100,
-  }
-  special_enemy_to_round_power = {
     --special enemies t1
     ['laser'] = 300,
     ['rager'] = 300,
