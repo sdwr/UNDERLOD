@@ -93,6 +93,7 @@ function HotbarButton:init(args)
   self.visible = args.visible or true
 end
 
+--clicking on buttons doesn't work
 function HotbarButton:update(dt)
   if self.visible then
     self:update_game_object(dt)
@@ -148,21 +149,21 @@ function HotbarButton:draw()
   end
 end
 
-
-function HotbarButton:on_mouse_enter()
+function HotbarButton:action_animation()
   if main.current.in_credits and not self.credits_button then return end
   ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
   pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-  self.spring:pull(0.2, 200, 10)
-  if self.mouse_enter then self:mouse_enter() end
+  
+end
 
+function HotbarButton:on_mouse_enter()
   Helper.mouse_on_button = true
+  self:action_animation()
 end
 
 
 function HotbarButton:on_mouse_exit()
   if main.current.in_credits and not self.credits_button then return end
-  if self.mouse_exit then self:mouse_exit() end
 
   Helper.mouse_on_button = false
 end    

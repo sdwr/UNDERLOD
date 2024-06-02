@@ -4,16 +4,16 @@ fns['init_enemy'] = function(self)
 
   --set extra variables from data
   self.data = self.data or {}
-  self.size = self.data.size or 'regular'
+  self.size = self.data.size or 'big'
 
   --create shape
   self.color = purple[0]:clone()
   Set_Enemy_Shape(self, self.size)
-  
+
   --set physics 
   self:set_restitution(0.5)
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
-  self.class = 'regular_enemy'
+  self.class = 'special_enemy'
 
   --set special attrs
   self.maxSummons = 10

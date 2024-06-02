@@ -60,6 +60,9 @@ end
 item_to_item_data = {
 
   --consumable items
+  
+  --rerolls the next level (just the one?)
+  --if using level mods, reroll all the mods or just within the same type?
   ['rerollpotion'] = {
     name = 'rerollpotion',
     colors = {},

@@ -429,12 +429,12 @@ function Helper.Unit:select()
 
     for i = 1, #main.current.units do
         if input[tostring(i)].pressed and main.current.hotbar.hotbar_by_index[i] then
-            main.current.hotbar.hotbar_by_index[i]:on_mouse_enter()
+            main.current.hotbar.hotbar_by_index[i]:action_animation()
             main.current.hotbar:select_by_index(i)
         end
 
         if input[tostring(i)].released and main.current.hotbar.hotbar_by_index[i] then
-            main.current.hotbar.hotbar_by_index[i]:on_mouse_exit()
+            --unnecessary, leave here for now
         end
     end
 end

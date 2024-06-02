@@ -272,8 +272,10 @@ function Arena:quit()
 
   self.quitting = true
   if self.level % 15 == 0 then
+    print('won game')
     self:on_win()
   else
+    print('starting transition')
     if not self.arena_clear_text then self.arena_clear_text = Text2{group = self.ui, x = gw/2, y = gh/2 - 48, lines = {{text = '[wavy_mid, cbyc]arena clear!', font = fat_font, alignment = 'center'}}} end
     self:gain_gold(ARENA_TRANSITION_TIME)
     self.t:after(ARENA_TRANSITION_TIME, function()
@@ -731,6 +733,11 @@ function Arena:gain_gold(duration)
   self.gold_picked_up = self.gold_picked_up or 0
 
   local event = nil
+
+  --base gold gain
+  event = {type = 'gained', amount = GOLD_PER_ROUND}
+  table.insert(self.gold_events, event)
+
   for _, unit in ipairs(self.starting_units) do
     for _, item in ipairs(unit.items) do
       if item.name == 'heartofgold' then
@@ -802,7 +809,7 @@ function Arena:process_gold_event()
 end
 
 function Arena:draw_gold()
-  local text_content = '[wavy_mid, yellow[0]gold: ' .. tostring(gold) ..
+  local text_content = '[wavy_mid, yellow[0] ' .. tostring(gold) .. ' gold ' ..
     ' + ' .. tostring(self.gold_gained or 0) .. ' + ' .. tostring(self.gold_picked_up or 0) ..
     ' + ' .. tostring(self.bonus_gold or 0) .. ' + ' .. tostring(self.total_interest or 0)
   self.gold_text = Text({{text = text_content, font = pixul_font, alignment = 'center'}}, global_text_tags)

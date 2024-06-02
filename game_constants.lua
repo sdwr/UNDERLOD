@@ -17,8 +17,15 @@ MAX_UNITS = 3
 TIME_TO_ROUND_START = 2
 SPAWNS_IN_GROUP = 6
 
+--stat constants
+REGULAR_ENEMY_SCALING = function(level) return math.pow(1.1, level) end
+SPECIAL_ENEMY_SCALING = function(level) return math.pow(1.1, level) end
 
---game constants
+--add 0.25 to the scaling for each boss level (boss levels are every 6 levels)
+BOSS_HP_SCALING = function(level) return 1 + ((level / 6) * 0.25) end
+
+
+--proc constants
 MAX_STACKS_FIRE = 5
 MAX_STACKS_SLOW = 5
 MAX_STACKS_REDSHIELD = 20

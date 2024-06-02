@@ -407,16 +407,20 @@ function Unit:init_stats()
     self.base_dmg = 5 * dmgMod
     self.base_mvspd = 100 * spdMod
   elseif self.class == 'regular_enemy' then
-    self.base_hp = 100 * (math.pow(1.02, level))
-    self.base_dmg = 20  * (math.pow(1.02, level))
+    self.base_hp = 100 * REGULAR_ENEMY_SCALING(level)
+    self.base_dmg = 20  * REGULAR_ENEMY_SCALING(level)
+    self.base_mvspd = 34
+  elseif self.class == 'special_enemy' then
+    self.base_hp = 200 * SPECIAL_ENEMY_SCALING(level)
+    self.base_dmg = 20  * SPECIAL_ENEMY_SCALING(level)
     self.base_mvspd = 34
   elseif self.class == 'miniboss' then
-    self.base_hp = 500 * (math.pow(1.02, level))
-    self.base_dmg = 20  * (math.pow(1.02, level))
+    self.base_hp = 500 * SPECIAL_ENEMY_SCALING(level)
+    self.base_dmg = 20  * SPECIAL_ENEMY_SCALING(level)
     self.base_mvspd = 55
   end
   if self.class == 'boss' then
-    self.base_hp = 1500 * (1 + ((level / 6) * 0.25))
+    self.base_hp = 1500 * BOSS_HP_SCALING(level)
     self.base_dmg = 30
     self.base_mvspd = 34
   end
