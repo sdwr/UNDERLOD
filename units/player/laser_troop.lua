@@ -65,7 +65,7 @@ function Laser_Troop:set_character()
           unit = self,
           target = self.target,
           direction_lock = false,
-          laser_aim_width = 3,
+          laser_aim_width = 6,
           color = Helper.Color.blue,
           damage = self.dmg,
         }

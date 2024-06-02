@@ -152,15 +152,19 @@ function Build_Wave(level, previous)
     table.insert(previous, enemy)
   end
   
-  --start with a basic enemy
-  local enemy = random:table(normal_enemy_by_tier[1])
-  Add_Enemy_To_Wave(wave, enemy)
 
-  --and then intersperse special enemies with normal enemies
+
+  --intersperse special enemies with normal enemies
   while #special_enemies > 0 do
     local index = random:int(1, #special_enemies)
     local special = table.remove(special_enemies, index)
+
+    local enemy = random:table(normal_enemy_by_tier[1])
+    Add_Enemy_To_Wave(wave, enemy)
     Add_Enemy_To_Wave(wave, special)
+  end
+
+  if #wave == 0 then
     local enemy = random:table(normal_enemy_by_tier[1])
     Add_Enemy_To_Wave(wave, enemy)
   end

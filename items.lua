@@ -48,8 +48,61 @@ end
 -- or at least change where it gets the item data from
 
 
---need tiers for items again?
---gate some items behind having other items? like firestacker and firesword
+--preqreqs should be inclusive (any of the prereqs) or exclusive (all of the prereqs)??
+--should maaaaaybe have tag prereqs (like 'can deal fire damage')
+function Get_Random_Item(level, units)
+  local available_items = {}
+  --TODO: change weighting based on level (item tier)
+
+  --for now, find out which items we have the prerequisites for
+  --build a hashtable of the items that are already owned
+  local owned_items = {}
+  if not units then
+    print('no units in Get_Random_Item')
+  end
+
+  for i, unit in ipairs(units) do
+    if not unit.items then
+      print('no items in Get_Random_Item')
+    end
+    for j, item in ipairs(unit.items) do
+      owned_items[item] = true
+      --add item tags as well
+      if item_to_item_data[item].tags then
+        for k, tag in ipairs(item_to_item_data[item].tags) do
+          owned_items[tag] = true
+        end
+      end
+    end
+  end
+
+  --only add items where all prereqs are owned
+  for k, v in pairs(item_to_item_data) do
+    if v.prereqs and #v.prereqs > 0 then
+      local has_prereqs = true
+      for i, prereq in ipairs(v.prereqs) do
+        if not owned_items[prereq] then
+          has_prereqs = false
+          break
+        end
+      end
+      if has_prereqs then
+        table.insert(available_items, k)
+      end
+    else
+      table.insert(available_items, k)
+    end
+  end
+
+  if #available_items == 0 then
+    print('no available items')
+    return nil
+  end
+
+  return get_random_from_table(available_items)
+end
+
+
 
 --how to trigger consumable items?
   --shop effects (reroll levels)
@@ -162,7 +215,8 @@ item_to_item_data = {
     icon = 'medbow',
     desc = 'A bow that shoots chain lightning',
     stats = {aspd = 0.25},
-    procs = {'lightning'}
+    procs = {'lightning'},
+    tags = {'lightningdmg'}
   },
   ['staticboots'] = {
     name = 'staticboots',
@@ -171,7 +225,8 @@ item_to_item_data = {
     icon = 'electricboots',
     desc = 'Increase movespeed and charge up lightning attacks',
     stats = {mvspd = 0.15},
-    procs = {'static'}
+    procs = {'static'},
+    tags = {'lightningdmg'}
   },
   --still need to add
   ['radiance'] = {
@@ -212,7 +267,8 @@ item_to_item_data = {
     icon = 'firesword',
     desc = 'A sword that burns enemies',
     stats = {dmg = 0.5},
-    procs = {'fire'}
+    procs = {'fire'},
+    tags = {'firedmg'}
   },
   ['redshield'] = {
     name = 'redshield',
@@ -237,9 +293,10 @@ item_to_item_data = {
     colors = {'red'},
     cost = 10,
     icon = 'chainexplosion',
-    desc = 'Explodes burning enemies when they die',
+    desc = 'Explodes burning enemies when they die for 10% of their max health',
     stats = {dmg = 0.5},
-    procs = {'chainexplode'}
+    procs = {'chainexplode'},
+    prereqs = {'firedmg'}
   },
   ['firestacker'] = {
     name = 'firestacker',
@@ -248,7 +305,8 @@ item_to_item_data = {
     icon = 'firestacker',
     desc = 'A sword that lets fire damage stack',
     stats = {dmg = 0.5},
-    procs = {'firestack'}
+    procs = {'firestack'},
+    prereqs = {'firedmg'}
   },
   ['blazin'] = {
     name = 'blazin',
@@ -257,7 +315,8 @@ item_to_item_data = {
     icon = 'blazin',
     desc = 'Gain aspd per burning enemy',
     stats = {dmg = 0.5},
-    procs = {'blazin'}
+    procs = {'blazin'},
+    prereqs = {'firedmg'}
   },
 
   --blue items
@@ -268,7 +327,8 @@ item_to_item_data = {
     icon = 'frostorb',
     desc = 'An orb that slows enemies',
     stats = {dmg = 0.5},
-    procs = {'frost'}
+    procs = {'frost'},
+    tags = {'frostslow'}
   },
   ['frostfield'] = {
     name = 'frostbomb',
@@ -277,7 +337,8 @@ item_to_item_data = {
     icon = 'frostbomb',
     desc = 'Creates a slowing field under enemies every few attacks',
     stats = {dmg = 0.5},
-    procs = {'frostfield'}
+    procs = {'frostfield'},
+    tags = {'frostslow'}
   },
   ['reticle'] = {
     name = 'reticle',
@@ -315,7 +376,8 @@ item_to_item_data = {
     icon = 'icefang',
     desc = 'Your slows stack to slow enemies to a crawl',
     stats = {dmg = 0.5},
-    procs = {'slowstack'}
+    procs = {'slowstack'},
+    prereqs = {'frostslow'}
   },
 
   --multicolor items
@@ -326,7 +388,8 @@ item_to_item_data = {
     icon = 'twinflame',
     desc = 'Converts slow to fire damage, and fire damage to slow',
     stats = {dmg = 0.5},
-    procs = {'twinflame'}
+    procs = {'twinflame'},
+    prereqs = {'firedmg', 'frostslow'}
   },
   ['omegastar'] = {
     name = 'omegastar',
@@ -335,6 +398,7 @@ item_to_item_data = {
     icon = 'omegastar',
     desc = 'Increases all elemental damage. You heal for a portion of elemental damage dealt',
     stats = {dmg = 0.5},
-    procs = {'eledmg, elevamp'}
+    procs = {'eledmg, elevamp'},
+    prereqs = {'firedmg', 'frostslow', 'lightningdmg'}
   },
 }

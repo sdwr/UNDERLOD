@@ -144,26 +144,7 @@ function Proc_Overkill:onKill(target)
   end
 end
 
---proc bloodlust
-Proc_Bloodlust = Proc:extend()
-function Proc_Bloodlust:init(args)
-  self.triggers = {PROC_ON_KILL}
-
-  Proc_Bloodlust.super.init(self, args)
-  
-  
-
-  --define the proc's vars
-  self.buff = 'bloodlust'
-  self.buffDuration = self.data.buffDuration or 5
-  self.buffdata = {name = 'bloodlust', color = purple[5], duration = 5, maxDuration = 5,
-    stacks = 1,
-    stats = {attack_speed = 0.1, move_speed = 0.1}
-  }
-
-  trigger:after(TIME_TO_ROUND_START, function() self.unit:add_buff(self.buffdata) end)
-end
-
+--proc berserk
 Proc_Berserk = Proc:extend()
 function Proc_Berserk:init(args)
   self.triggers = {}
@@ -173,13 +154,31 @@ function Proc_Berserk:init(args)
   
 
   --define the proc's vars
+  self.buff = 'berserk'
+  self.buffDuration = self.data.buffDuration or 5
+  self.buffdata = {name = 'berserk', color = purple[5], duration = 5, maxDuration = 5,
+    stats = {attack_speed = 0.1, move_speed = 0.1}
+  }
+
+  trigger:after(TIME_TO_ROUND_START, function() self.unit:add_buff(self.buffdata) end)
+end
+
+Proc_Bloodlust = Proc:extend()
+function Proc_Bloodlust:init(args)
+  self.triggers = {PROC_ON_KILL}
+
+  Proc_Bloodlust.super.init(self, args)
+  
+  
+
+  --define the proc's vars
   --buff defined in objects.lua (unit) :berserk()
-  self.buffname = 'berserk'
+  self.buffname = 'bloodlust'
   self.buffDuration = self.data.buffDuration or 5
 end
 
-function Proc_Berserk:onKill(target)
-  Proc_Berserk.super.onKill(self, target)
+function Proc_Bloodlust:onKill(target)
+  Proc_Bloodlust.super.onKill(self, target)
   self.unit:berserk(self.buffDuration)
 end
 
@@ -386,7 +385,6 @@ function ProcChainExplode:init(args)
   
 
   --define the proc's vars
-  self.damage = self.data.damage or 10
   self.radius = self.data.radius or 25
   self.color = self.data.color or red[0]
 end
@@ -395,7 +393,7 @@ function ProcChainExplode:onKill(target)
   ProcChainExplode.super.onKill(self, target)
   if target:has_buff('burn') then
     local damage_troops = not self.is_troop
-    local damage = self.damage
+    local damage = (target.max_hp or 100) / 10
     local radius = self.radius
 
     cannoneer2:play{pitch = random:float(0.8, 1.2), volume = 1.2}

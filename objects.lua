@@ -295,7 +295,7 @@ function Unit:add_buff(buff)
     end
   else
     if buff.color then
-      local color = buff.color
+      local color = buff.color:clone()
       color.a = 0.6
       buff.color = color
     end
@@ -408,7 +408,7 @@ function Unit:init_stats()
     self.base_mvspd = 100 * spdMod
   elseif self.class == 'regular_enemy' then
     self.base_hp = 100 * REGULAR_ENEMY_SCALING(level)
-    self.base_dmg = 20  * REGULAR_ENEMY_SCALING(level)
+    self.base_dmg = 10  * REGULAR_ENEMY_SCALING(level)
     self.base_mvspd = 34
   elseif self.class == 'special_enemy' then
     self.base_hp = 200 * SPECIAL_ENEMY_SCALING(level)
@@ -806,19 +806,19 @@ function Unit:slow(amount, duration, from)
   self:add_buff(slowBuff)
 end
 
-function Unit:berserk(duration)
-  local berserkBuff = {name = 'berserk', color = purple[5], duration = duration, maxDuration = duration, 
+function Unit:bloodlust(duration)
+  local bloodlustBuff = {name = 'bloodlust', color = purple[5], duration = duration, maxDuration = duration, 
     stats = {aspd = 0.1, mvspd = 0.05}
   }
-  local existing_buff = self.buffs['berserk']
+  local existing_buff = self.buffs['bloodlust']
 
-  berserkBuff.stacks = 1
+  bloodlustBuff.stacks = 1
   if existing_buff then
-    berserkBuff.stacks = math.min((existing_buff.stacks or 1) + 1, MAX_STACKS_BERSERK)
+    bloodlustBuff.stacks = math.min((existing_buff.stacks or 1) + 1, MAX_STACKS_BLOODLUST)
   end
 
-  self:remove_buff('berserk')
-  self:add_buff(berserkBuff)
+  self:remove_buff('bloodlust')
+  self:add_buff(bloodlustBuff)
 end
 
 function Unit:set_as_target()

@@ -100,6 +100,7 @@ function Helper.Geometry:get_point_on_line(x, y, linex1, liney1, linex2, liney2)
     return (b^2*x - a*b*y - a*c) / (a^2 + b^2), (a^2*y - a*b*x - b*c) / (a^2 + b^2)
 end
 
+--should be more generous? does not look like it is working
 function Helper.Geometry:is_on_line(x, y, linex1, liney1, linex2, liney2, line_width)
     local function point_on_line_is_part_of_line(x, y, linex1, liney1, linex2, liney2)
         local pointx = 0

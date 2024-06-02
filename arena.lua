@@ -741,11 +741,11 @@ function Arena:gain_gold(duration)
   for _, unit in ipairs(self.starting_units) do
     for _, item in ipairs(unit.items) do
       if item.name == 'heartofgold' then
-        event = {type = 'bonus_gold', amount = 1}
+        event = {type = 'bonus_gold', amount = item.stats.gold}
         table.insert(self.gold_events, event)
       end
       if item.name == 'stockmarket' then
-        event = {type = 'interest', amount = 1}
+        event = {type = 'interest', amount = item.stats.interest}
         table.insert(self.gold_events, event)
       end
     end

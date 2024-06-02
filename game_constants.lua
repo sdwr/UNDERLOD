@@ -29,7 +29,7 @@ BOSS_HP_SCALING = function(level) return 1 + ((level / 6) * 0.25) end
 MAX_STACKS_FIRE = 5
 MAX_STACKS_SLOW = 5
 MAX_STACKS_REDSHIELD = 20
-MAX_STACKS_BERSERK = 10
+MAX_STACKS_BLOODLUST = 10
 
 
 -- UI constants
