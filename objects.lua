@@ -236,6 +236,23 @@ function Unit:hide_hp()
   self.hp_bar.hidden = true
 end
 
+--have full data passed in instead of just type?
+function Unit:show_damage_number(dmg, damagetype)
+  if not state.show_damage_numbers then return end
+  
+  local color = damage_type_to_color[damagetype] or white[0]
+
+  local data = {
+    group = main.current.effects,
+    color = color,
+    x = self.x + random_offset(4),
+    y = self.y + random_offset(4),
+    rs = 6,
+    lines = {{text =  '' .. dmg, font = pixul_mini}},
+  }
+  FloatingText(data)
+end
+
 function Unit:heal(amount)
   self.hp = math.min(self.hp + amount, self.max_hp)
   self.hfx:use('hit', 0.25, 200, 10)
@@ -341,7 +358,7 @@ function Unit:update_buffs(dt)
     if k == 'burn' then
       if v.duration <= v.nextTick then
         --add a really quiet short sound here, because it'll be playing all the time
-        self:hit(v.dps * (v.stacks or 1), nil)
+        self:hit(v.dps * (v.stacks or 1), nil, 'fire')
         --1 second tick, could be changed
         v.nextTick = v.nextTick - 1
       end
@@ -427,6 +444,11 @@ function Unit:init_stats()
 
   self.baseCooldown = self.baseCooldown or attack_speeds['medium']
   self.baseCast = self.baseCast or attack_speeds['medium-cast']
+  
+  --for enemies
+  if not self.items then
+    self.items = {}
+  end
   
   --add per-attack procs from items here
   self.procs = {}
@@ -933,6 +955,10 @@ function Unit:die()
   --cleanup buffs
   for k, v in pairs(self.buffs) do
     self:remove_buff(k)
+  end
+  --killing the items should kill the procs as well
+  for k, v in pairs(self.items) do
+    v:die()
   end
 
 end

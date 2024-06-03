@@ -236,7 +236,7 @@ item_to_item_data = {
     icon = 'radiance',
     desc = 'Gain a shield and a damage aura',
     stats = {hp = .1},
-    procs = {'radianceburn', 'shield'}
+    procs = {'radiance', 'shield'}
   },
   --still need to add
   ['phantomdancer'] = {

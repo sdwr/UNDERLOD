@@ -9,6 +9,12 @@ TODO:
     - want fewer enemy types per level
     - minibosses at certain/random levels (displayed on map!)
 
+  -add environmental effects to levels
+    -hazards:
+      -laser (fixed position, moves back and forth, rotates slowly
+         rotates towards player, then charges up and fires)
+      -fire wall (moves back and forth)
+
   - show boss levels on the level map
     - star, skull, plus text
     - think of a special reward for beating a boss level
@@ -17,6 +23,10 @@ TODO:
   - make rally point disappear properly when all units have gone there
   
   - make units not chase towards enemies when they are in range (+ push the enemy away)
+  
+  - add new enemy movement patterns
+    - avoid player (for summoners)
+    - move randomly (for bullet hell)
 
   - make screen transition circle always white
   - why are unit colors losing saturation? 

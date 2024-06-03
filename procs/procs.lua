@@ -7,6 +7,7 @@ require 'procs/proc'
 function Create_Proc(name, unit)
   if not proc_name_to_class[name] then
     print('proc not found')
+    print(name)
     return nil
   end
 
@@ -279,24 +280,40 @@ function Proc_Static:onHit(target, damage)
   end
 end
 
---proc radianceburn
+--proc radiance
 --need to add an aura to the unit that follows it around
--- maybe put it on just one, to save processing power
-Proc_RadianceBurn = Proc:extend()
-function Proc_RadianceBurn:init(args)
-  self.triggers = {}
+--but only applies once to each enemy, no matter how many units have the aura
+--best to do with a debuff that is applied to the enemy
+--the radiance debuff should work differently than other debuffs
+--last for a second, reapplied all the time, but only ticks once
+Proc_Radiance = Proc:extend()
+function Proc_Radiance:init(args)
+  self.triggers = {PROC_ON_TICK}
 
-  Proc_RadianceBurn.super.init(self, args)
+  Proc_Radiance.super.init(self, args)
   
   
 
   --define the proc's vars
-  self.buff = 'radiance'
+  self.radius = self.data.radius or 50
+  self.damage = self.data.damage or 10
   self.damageType = 'fire'
-  --need constant for buff duration = infinity
-  self.buffDuration = self.data.buffDuration or 9999
+end
 
-  trigger:after(TIME_TO_ROUND_START, function() self.unit:add_buff(self.buff, self.buffDuration) end)
+function Proc_Radiance:onTick(dt)
+  Proc_Radiance.super.onTick(self, dt)
+  local enemies = main.current.main:get_objects_by_classes(enemy_classes)
+  for i, enemy in ipairs(enemies) do
+    if Helper.Spell:is_in_range(self.unit, enemy, self.radius, false) then
+      --backwards from how it 'should' work, but easier to implement
+      if not enemy:has_buff('radianceburn') then
+        enemy:add_buff({name = 'radianceburn', damage = self.damage, duration = 1})
+        
+        --Helper.Sound:play_radiance()
+        enemy:hit(self.damage, self.unit, self.damageType)
+      end
+    end
+  end
 end
 
 Proc_Shield = Proc:extend()
@@ -311,15 +328,21 @@ function Proc_Shield:init(args)
   self.buffname = 'shield'
   self.color = grey[5]
   self.shield_amount = self.data.shield_amount or 10
-  self.time_between = self.data.time_between or 6
-  self.buff_duration = self.data.buff_duration or 5
+  self.time_between = self.data.time_between or 5
+  self.buff_duration = self.data.buff_duration or 4
 
   self.buffdata = {name = self.buffname, color = self.color, duration = self.buff_duration,
     stats = {shield = self.shield_amount}
   }
 
   --need to have shield amount in buff
-  trigger:every(self.time_between, function() self.unit:add_buff(self.buffdata) end)
+  --no way to cancel the trigger once the unit is dead :( 
+  self.manual_trigger = trigger:every(self.time_between, function() self.unit:add_buff(self.buffdata) end)
+end
+
+function Proc_Shield:die()
+  Proc_Shield.super.die(self)
+  trigger:cancel(self.manual_trigger)
 end
 
 --need a new gameObject group that collides with walls but not units
@@ -642,7 +665,7 @@ proc_name_to_class = {
   ['bloodlust'] = Proc_Bloodlust,
   ['lightning'] = Proc_Lightning,
   ['static'] = Proc_Static,
-  ['radianceburn'] = Proc_RadianceBurn,
+  ['radiance'] = Proc_Radiance,
   ['shield'] = Proc_Shield,
   ['phasing'] = Proc_Phasing,
   --red procs

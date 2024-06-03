@@ -7,6 +7,7 @@ require 'helper/helper_color'
 require 'helper/helper_lua'
 require 'helper/helper_unit'
 require 'helper/helper_graphics'
+require 'helper/helper_sound'
 
 Helper.initialized = false
 Helper.mousex = 0
@@ -60,6 +61,8 @@ function Helper:update(dt)
     Helper.Unit:run_state_change_functions()
     Helper.Unit:run_state_always_run_functions()
     Helper.Unit:select()
+
+    Helper.Sound:update()
 
     --update spells
 

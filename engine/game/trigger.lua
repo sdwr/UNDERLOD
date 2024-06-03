@@ -14,6 +14,7 @@ function Trigger:run(action, after, tag)
   local tag = tag or random:uid()
   local after = after or function() end
   self.triggers[tag] = {type = "run", timer = 0, after = after, action = action}
+  return tag
 end
 
 
@@ -29,6 +30,7 @@ function Trigger:after(delay, action, tag)
   else
     self.triggers[tag] = {type = "conditional_after", condition = delay, action = action}
   end
+  return tag
 end
 
 
@@ -43,6 +45,7 @@ function Trigger:cooldown(delay, condition, action, times, after, tag)
   local after = after or function() end
   local tag = tag or random:uid()
   self.triggers[tag] = {type = "cooldown", timer = 0, unresolved_delay = delay, delay = self:resolve_delay(delay), condition = condition, action = action, times = times, max_times = times, after = after, multiplier = 1}
+  return tag
 end
 
 
@@ -66,6 +69,7 @@ function Trigger:every(delay, action, times, after, tag)
   else
     self.triggers[tag] = {type = "conditional_every", condition = delay, last_condition = false, action = action, times = times, max_times = times, after = after}
   end
+  return tag
 end
 
 
@@ -76,6 +80,7 @@ function Trigger:every_immediate(delay, action, times, after, tag)
   local tag = tag or random:uid()
   self.triggers[tag] = {type = "every", timer = 0, unresolved_delay = delay, delay = self:resolve_delay(delay), action = action, times = times, max_times = times, after = after, multiplier = 1}
   action()
+  return tag
 end
 
 
@@ -93,6 +98,7 @@ function Trigger:during(delay, action, after, tag)
   elseif type(delay) == "function" then
     self.triggers[tag] = {type = "conditional_during", condition = delay, last_condition = false, action = action, after = after}
   end
+  return tag
 end
 
 
@@ -109,6 +115,7 @@ function Trigger:tween(delay, target, source, method, after, tag)
   local initial_values = {}
   for k, _ in pairs(source) do initial_values[k] = target[k] end
   self.triggers[tag] = {type = "tween", timer = 0, unresolved_delay = delay, delay = self:resolve_delay(delay), target = target, initial_values = initial_values, source = source, method = method, after = after}
+  return tag
 end
 
 

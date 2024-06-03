@@ -29,12 +29,13 @@ fns['init_enemy'] = function(self)
   self.triggered = false
   self.exploded = false
   self.trigger_radius = 40
-  self.time_to_explode = 3
+  self.time_to_explode = 4
   self.explosion_radius = 45
   self.explosion_damage = 100 
   self.area_sensor = Circle(self.x, self.y, self.trigger_radius)
 
-  self.beep_times = {2, 1, 0.75, 0.5, 0.25}
+  --first beep is a different sound
+  self.beep_times = {3, 2, 1.5, 1, 0.5}
 
   --explode on death
   self.state_change_functions['death'] = function()
@@ -57,6 +58,7 @@ fns['init_enemy'] = function(self)
       for i, friendly in ipairs(friendlies) do
         if not friendly.dead then
           self.triggered = true
+          metal_click:play{pitch = random:float(0.95, 1.05), volume = 1.2}
           break
         end
       end
@@ -71,14 +73,27 @@ end
 
 fns['try_to_beep'] = function(self)
   if #self.beep_times > 0 and self.time_to_explode < self.beep_times[1] then
-    alert1:play{pitch = random:float(0.95, 1.05), volume = 1.2}
     table.remove(self.beep_times, 1)
+    tick_new:play{pitch = random:float(0.95, 1.05), volume = 1.2}
+    --draw transparent red circle to show where it will explode
+    --under the bomb (floor level)
+    local data = {
+      group = main.current.floor,
+      unit = self,
+      x = self.x,
+      y = self.y,
+      rs = self.explosion_radius,
+      duration = 0.2,
+      color= Helper.Color:set_transparency(Helper.Color.red, 0.3)
+    }
+    TimedCircle(data)
+    
   end
 end
 
 fns['explode'] = function(self)
   self.exploded = true
-  cannoneer2:play{pitch = random:float(0.95, 1.05), volume = 0.8}
+  explosion_new:play{pitch = random:float(0.95, 1.05), volume = 0.8}
   Helper.Spell.DamageCircle:create(self, Helper.Color.red, true,
     self.explosion_damage, self.explosion_radius, self.x, self.y)
   self:die()

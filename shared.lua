@@ -45,6 +45,7 @@ function shared_init()
 
   fat_font = Font('FatPixelFont', 8)
   pixul_font = Font('PixulBrush', 8)
+  pixul_mini = Font('PixulBrush', 5)
   background_canvas = Canvas(gw, gh)
   main_canvas = Canvas(gw, gh, {stencil = true})
   full_res_canvas = Canvas(ww, wh)
@@ -554,7 +555,7 @@ global_text_tags = {
   wavy_mid = TextTag{update = function(c, dt, i, text) c.oy = 0.75*math.sin(3*time + i) end},
   wavy_mid2 = TextTag{update = function(c, dt, i, text) c.oy = 0.5*math.sin(3*time + i) end},
   wavy_lower = TextTag{update = function(c, dt, i, text) c.oy = 0.25*math.sin(2*time + i) end},
-
+  
   steam_link = TextTag{
     init = function(c, i, text)
       c.color = blue[0]

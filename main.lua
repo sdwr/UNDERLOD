@@ -143,6 +143,14 @@ function init()
   sweep_sound = Sound('spell_sweep_saber.mp3', s)
   sweep_sound_2 = Sound('spell_sweep_saber_2.mp3', s)
   
+  explosion_new = Sound('explosion_new.wav', s)
+  metal_click = Sound('metal_click.wav', s)
+  tick_new = Sound('tick_new.wav', s)
+
+  campfire = Sound('campfire.wav', s)
+
+
+
   song1 = Sound('gunnar - 26 hours and I feel Fine.mp3', {tags = {music}})
   song2 = Sound('gunnar - Back On Track.mp3', {tags = {music}})
   song3 = Sound('gunnar - Chrysalis.mp3', {tags = {music}})
@@ -1704,6 +1712,15 @@ function init()
     ['assassin'] = purple[3],
   }
 
+  damage_type_to_color = {
+    ['physical'] = white[3],
+    ['fire'] = red[3],
+    ['ice'] = blue[3],
+    ['lightning'] = yellow[3],
+    ['poison'] = green[3],
+    ['dark'] = purple[3],
+  }
+
   level_to_tier_weights = {
     [1] = {90, 10, 0, 0},
     [2] = {80, 15, 5, 0},
@@ -2103,7 +2120,7 @@ function open_options(self)
         if self.screen_shake_button then self.screen_shake_button.dead = true; self.screen_shake_button = nil end
         if self.screen_movement_button then self.screen_movement_button.dead = true; self.screen_movement_button = nil end
         if self.cooldown_snake_button then self.cooldown_snake_button.dead = true; self.cooldown_snake_button = nil end
-        if self.arrow_snake_button then self.arrow_snake_button.dead = true; self.arrow_snake_button = nil end
+        if self.show_damage_numbers then self.show_damage_numbers.dead = true; self.show_damage_numbers = nil end
         if self.ng_plus_plus_button then self.ng_plus_plus_button.dead = true; self.ng_plus_plus_button = nil end
         if self.ng_plus_minus_button then self.ng_plus_minus_button.dead = true; self.ng_plus_minus_button = nil end
         if self.main_menu_button then self.main_menu_button.dead = true; self.main_menu_button = nil end
@@ -2264,11 +2281,11 @@ function open_options(self)
       b:set_text('cooldowns on snake: ' .. tostring(state.cooldown_snake and 'yes' or 'no'))
     end}
 
-    self.arrow_snake_button = Button{group = self.ui, x = gw/2 + 65, y = gh - 75, w = 125, force_update = true, button_text = '[bg10]arrow on snake: ' .. tostring(state.arrow_snake and 'yes' or 'no'),
+    self.show_damage_numbers = Button{group = self.ui, x = gw/2 + 65, y = gh - 75, w = 125, force_update = true, button_text = '[bg10]show damage numbers: ' .. tostring(state.show_damage_numbers and 'yes' or 'no'),
     fg_color = 'bg10', bg_color = 'bg', action = function(b)
       ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-      state.arrow_snake = not state.arrow_snake
-      b:set_text('arrow on snake: ' .. tostring(state.arrow_snake and 'yes' or 'no'))
+      state.show_damage_numbers = not state.show_damage_numbers
+      b:set_text('show damage numbers: ' .. tostring(state.show_damage_numbers and 'yes' or 'no'))
     end}
 
     self.screen_movement_button = Button{group = self.ui, x = gw/2 - 69, y = gh - 75, w = 135, force_update = true, button_text = '[bg10]screen movement: ' .. tostring(state.no_screen_movement and 'no' or 'yes'), 
@@ -2349,7 +2366,7 @@ function close_options(self)
     if self.screen_shake_button then self.screen_shake_button.dead = true; self.screen_shake_button = nil end
     if self.screen_movement_button then self.screen_movement_button.dead = true; self.screen_movement_button = nil end
     if self.cooldown_snake_button then self.cooldown_snake_button.dead = true; self.cooldown_snake_button = nil end
-    if self.arrow_snake_button then self.arrow_snake_button.dead = true; self.arrow_snake_button = nil end
+    if self.show_damage_numbers then self.show_damage_numbers.dead = true; self.show_damage_numbers = nil end
     if self.quit_button then self.quit_button.dead = true; self.quit_button = nil end
     if self.ng_plus_plus_button then self.ng_plus_plus_button.dead = true; self.ng_plus_plus_button = nil end
     if self.ng_plus_minus_button then self.ng_plus_minus_button.dead = true; self.ng_plus_minus_button = nil end

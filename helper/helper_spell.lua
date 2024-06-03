@@ -159,10 +159,9 @@ function Helper.Spell:get_nearest_least_targeted(unit, range, points)
     return Helper.Spell:get_nearest_target(unit, least_targeted_units)
 end
 
-function Helper.Spell:target_is_in_range(unit, range, points)
+function Helper.Spell:is_in_range(unit, target, range, points)
     points = points or false
     range = range + 40
-    local target = unit:my_target()
 
     if not points then
         if target and Helper.Geometry:distance(unit.x, unit.y, target.x, target.y) <= range then
@@ -177,6 +176,11 @@ function Helper.Spell:target_is_in_range(unit, range, points)
     end
 
     return false
+end
+
+function Helper.Spell:target_is_in_range(unit, range, points)
+    local target = unit:my_target()
+    return Helper.Spell:is_in_range(unit, target, range, points)
 end
 
 function Helper.Spell:there_is_target_in_range(unit, range, points)

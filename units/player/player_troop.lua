@@ -450,7 +450,7 @@ function Troop:set_character()
   end
 end
 
-function Troop:hit(damage, from)
+function Troop:hit(damage, from, damagetype)
   if self.bubbled then return end
   if self.dead then return end
   if self.magician_invulnerable then return end

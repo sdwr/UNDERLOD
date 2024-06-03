@@ -37,3 +37,7 @@ function table.extend(t, t2)
   end
 end
 
+function random_offset(offset)
+  return math.random(-offset, offset)
+end
+

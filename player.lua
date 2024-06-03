@@ -200,8 +200,6 @@ end
 
 function Player:hit(damage, from_undead)
   if self.dead then return end
-  if self.magician_invulnerable then return end
-  if self.undead and not from_undead then return end
   self.hfx:use('hit', 0.25, 200, 10)
   self:show_hp()
 
@@ -210,68 +208,6 @@ function Player:hit(damage, from_undead)
   _G[random:table{'player_hit1', 'player_hit2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
   camera:shake(4, 0.5)
   main.current.damage_taken = main.current.damage_taken + actual_damage
-
-  if self.payback and self.class == 'enchanter' then
-    local units = self:get_all_units()
-    for _, unit in ipairs(units) do
-      if not unit.payback_dmg_m then unit.payback_dmg_m = 1 end
-      unit.payback_dmg_m = unit.payback_dmg_m + ((self.payback == 1 and 0.02) or (self.payback == 2 and 0.05) or (self.payback == 3 and 0.08) or 0)
-    end
-  end
-
-  if self.unrelenting_stance and self.class == 'warrior' then
-    local units = self:get_all_units()
-    for _, unit in ipairs(units) do
-      if not unit.unrelenting_stance_def_m then unit.unrelenting_stance_def_m = 1 end
-      unit.unrelenting_stance_def_m = unit.unrelenting_stance_def_m + ((self.unrelenting_stance == 1 and 0.02) or (self.unrelenting_stance == 2 and 0.05) or (self.unrelenting_stance == 3 and 0.08) or 0)
-    end
-  end
-
-  if self.character == 'beastmaster' and self.level == 3 then
-    critter1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-    trigger:after(0.01, function()
-      for i = 1, 4 do
-        Critter{group = main.current.main, x = self.x, y = self.y, color = orange[0], r = random:float(0, 2*math.pi), v = 20, dmg = self.dmg, parent = self}
-      end
-    end)
-  end
-
-  if self.crucio then
-    local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
-    for _, enemy in ipairs(enemies) do
-      enemy:hit(((self.crucio == 1 and 0.2) or (self.crucio == 2 and 0.3) or (self.crucio == 3 and 0.4))*actual_damage)
-      HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 6, color = fg[0], duration = 0.1}
-    end
-  end
-
-  if self.character == 'psykeeper' then
-    self.stored_heal = self.stored_heal + actual_damage
-    if self.stored_heal > (0.25*self.max_hp) then
-      self.stored_heal = 0
-      local check_circle = Circle(random:float(main.current.x1 + 16, main.current.x2 - 16), random:float(main.current.y1 + 16, main.current.y2 - 16), 2)
-      local objects = main.current.main:get_objects_in_shape(check_circle, {Enemy, EnemyCritter, Critter, Volcano, Saboteur, Bomb, Pet, Turret, Sentry, Automaton})
-      while #objects > 0 do
-        check_circle:move_to(random:float(main.current.x1 + 16, main.current.x2 - 16), random:float(main.current.y1 + 16, main.current.y2 - 16))
-        objects = main.current.main:get_objects_in_shape(check_circle, {Enemy, EnemyCritter, Critter, Volcano, Saboteur, Bomb, Pet, Turret, Sentry, Automaton})
-      end
-      for i = 1, 3 do
-        SpawnEffect{group = main.current.effects, x = check_circle.x, y = check_circle.y, color = green[0], action = function(x, y)
-          local check_circle = Circle(x, y, 2)
-          local objects = main.current.main:get_objects_in_shape(check_circle, {Enemy, EnemyCritter, Critter, Sentry, Volcano, Saboteur, Bomb, Pet, Turret, Automaton})
-          if #objects == 0 then
-            HealingOrb{group = main.current.main, x = x, y = y}
-          end
-        end}
-      end
-    end
-
-    if self.level == 3 then
-      local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
-      for _, enemy in ipairs(enemies) do
-        enemy:hit(2*actual_damage/#enemies)
-      end
-    end
-  end
 
   if self.hp <= 0 then
     if self.divined then
@@ -1755,8 +1691,31 @@ function Vanish:draw()
 
   elseif self.state == 'over' then
   end
+end
 
-  
+TimedCircle = Object:extend()
+TimedCircle:implement(GameObject)
+function TimedCircle:init(args)
+  self:init_game_object(args)
+  self.duration = args.duration or 1
+  self.rs = args.rs or 16
+
+  self.time_started = Helper.Time.time
+end
+
+function TimedCircle:update(dt)
+  self:update_game_object(dt)
+  if self.unit and self.unit.x and self.unit.y then
+    self.x = self.unit.x
+    self.y = self.unit.y
+  end
+  if Helper.Time.time - self.time_started > self.duration then self.dead = true end
+end
+
+function TimedCircle:draw()
+  graphics.push(self.x, self.y)
+  graphics.circle(self.x, self.y, self.rs, self.color, nil)
+  graphics.pop()
 end
 
 
@@ -1804,6 +1763,7 @@ function RallyCircle:draw()
     graphics.pop()
   end
 end
+
 
 
 Volcano = Object:extend()

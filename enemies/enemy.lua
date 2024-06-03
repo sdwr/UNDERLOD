@@ -100,7 +100,7 @@ function Enemy:on_collision_enter(other, contact)
     end
 end
 
-function Enemy:hit(damage, from)
+function Enemy:hit(damage, from, damagetype)
     if self.invulnerable then return end
     if self.dead then return end
     if self.isBoss then
@@ -117,6 +117,7 @@ function Enemy:hit(damage, from)
     self:show_hp()
   
     local actual_damage = math.max(self:calculate_damage(damage)*(self.stun_dmg_m or 1), 0)
+    self:show_damage_number(actual_damage, damagetype)
 
     self.hp = self.hp - actual_damage
     if self.hp > self.max_hp then self.hp = self.max_hp end
