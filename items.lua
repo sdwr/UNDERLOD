@@ -25,6 +25,9 @@ function Item:init(data)
   self.procs = {}
   --creates procs from the data, but this doesnt work on the unit
   -- (because the unit doesn't exist yet)
+
+  --hack that this loads during combat and in the shop
+  --combat expects the unit to exist, but the shop doesn't
   for k, v in pairs(data.procs) do
     table.insert(self.procs, Create_Proc(v, self.unit))
   end

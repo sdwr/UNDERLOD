@@ -449,7 +449,7 @@ function Unit:init_stats()
   if not self.items then
     self.items = {}
   end
-  
+
   --add per-attack procs from items here
   self.procs = {}
 
@@ -729,6 +729,7 @@ function Unit:calculate_stats(first_run)
 end
 
 function Unit:onTickCallbacks(dt)
+  if not main.current:is(Arena) then return end
   for k, proc in ipairs(self.onTickProcs) do
     proc:onTick(dt)
   end
@@ -956,10 +957,14 @@ function Unit:die()
   for k, v in pairs(self.buffs) do
     self:remove_buff(k)
   end
-  --killing the items should kill the procs as well
-  for k, v in pairs(self.items) do
+  for k, v in pairs(self.procs) do
     v:die()
   end
+  --killing the items should kill the procs as well
+  --but it is only the itemdata on the unit, not the actual item
+  -- for k, v in pairs(self.items) do
+  --   v:die()
+  -- end
 
 end
 

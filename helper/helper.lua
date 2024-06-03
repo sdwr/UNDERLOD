@@ -16,6 +16,7 @@ Helper.window_width = 0
 Helper.window_height = 0
 Helper.mouse_on_button = false
 
+--helper fns only work in arena, not in buy screen
 function Helper:init()
     Helper.Time.time = love.timer.getTime()
     math.randomseed(Helper.Time.time)

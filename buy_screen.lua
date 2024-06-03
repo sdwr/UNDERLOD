@@ -30,7 +30,6 @@ function BuyScreen:on_exit()
   self.items_text = nil
   self.characters = nil
   self.sets = nil
-  self.cards = nil
   self.info_text = nil
   self.units = nil
   self.active_inventory_slot = nil
@@ -77,7 +76,6 @@ function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, pas
   self.locked = locked_state and locked_state.locked
   LockButton{group = self.main, x = 205, y = 18, parent = self}
 
-  self:set_cards(self.shop_level, nil)
   self:set_party()
   self:set_items(self.shop_level)
 
@@ -90,6 +88,14 @@ function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, pas
   self.level_buttons = {}
 
   self:build_level_map()
+
+  --builds characters from units?
+  if not self.characters or #self.characters == 0 then
+    self.characters = {}
+    self.select_character_overlay = CharacterSelectOverlay{
+      group = self.ui
+    }
+  end
 
   RerollButton{group = self.main, x = 150, y = 18, parent = self}
   GoButton{group = self.main, x = gw - 90, y = gh - 20, parent = self}
@@ -184,7 +190,6 @@ function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, pas
 
   trigger:tween(1, main_song_instance, {volume = 0.2, pitch = 1}, math.linear)
 
-  locked_state = {locked = self.locked, cards = {self.cards[1] and self.cards[1].unit, self.cards[2] and self.cards[2].unit, self.cards[3] and self.cards[3].unit}} 
   buyScreen:save_run()
 end
 
@@ -252,7 +257,7 @@ end
 
 function BuyScreen:build_level_map()
   if self.level_map then self.level_map:die() end
-  self.level_map = BuildLevelMap(self.main, 265, gh - 20, self, self.level, self.loop, self.level_list)
+  self.level_map = BuildLevelMap(self.main, gw/2, gh - 20, self, self.level, self.loop, self.level_list)
   self:create_level_buttons()
 end
 
@@ -263,6 +268,14 @@ function BuyScreen:create_level_buttons()
   table.insert(self.level_buttons, button)
   button = ArenaLevelButton{group = self.main, x = 305, y = gh - 20, up = true, parent = self}
   table.insert(self.level_buttons, button)
+end
+
+--buy functions
+
+function BuyScreen:buy_unit(character)
+  table.insert(self.units, {character = character, level = 1, reserve = {0, 0}, items = {nil, nil, nil}, numItems = 6})
+  self:set_party()
+  self:save_run()
 end
 
 --item functions
@@ -336,99 +349,10 @@ function BuyScreen:draw()
   self.tutorial:draw()
 end
 
-
-function BuyScreen:buy(character, i)
-  local bought
-  if table.any(self.units, function(v) return v.character == character end) and gold >= tier_to_cost[character_tiers[character]] then
-    if table.any(self.units, function(v) return v.character == character and v.level == 3 end) then
-      if not self.info_text then
-        self.info_text = InfoText{group = main.current.ui}
-        self.info_text:activate({
-          {text = "[fg]this unit has already reached max level", font = pixul_font, alignment = 'center'},
-        }, nil, nil, nil, nil, 16, 4, nil, 2)
-        self.info_text.x, self.info_text.y = gw - 140, gh - 20
-      end
-      self.t:after(2, function() self.info_text:deactivate(); self.info_text.dead = true; self.info_text = nil end, 'info_text')
-    else
-      gold = gold - tier_to_cost[character_tiers[character]]
-      self.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
-      for _, unit in ipairs(self.units) do
-        if unit.character == character then
-          if unit.level == 1 then
-            unit.reserve[1] = unit.reserve[1] + 1
-            if unit.reserve[1] > 1 then
-              unit.reserve[1] = 0
-              unit.level = 2
-              unit.spawn_effect = true
-            end
-          elseif unit.level == 2 then
-            unit.reserve[1] = unit.reserve[1] + 1
-            if unit.reserve[1] > 2 then
-              if unit.reserve[2] == 1 then
-                unit.reserve[2] = 0
-                unit.reserve[1] = 0
-                unit.level = 3
-                unit.spawn_effect = true
-              else
-                unit.reserve[2] = unit.reserve[2] + 1
-                unit.reserve[1] = 0
-              end
-            end
-          end
-        end
-      end
-      bought = true
-    end
-  else
-    if #self.units >= self.max_units then
-      if not self.info_text then
-        self.info_text = InfoText{group = main.current.ui}
-        self.info_text:activate({
-          {text = '[fg]maximum number of units [yellow](' .. self.max_units .. ') [fg]reached', font = pixul_font, alignment = 'center'},
-        }, nil, nil, nil, nil, 16, 4, nil, 2)
-        self.info_text.x, self.info_text.y = gw - 140, gh - 20
-      end
-      self.t:after(2, function() self.info_text:deactivate(); self.info_text.dead = true; self.info_text = nil end, 'info_text')
-    else
-      if gold >= tier_to_cost[character_tiers[character]] then
-        gold = gold - tier_to_cost[character_tiers[character]]
-        self.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
-        table.insert(self.units, {character = character, level = 1, reserve = {0, 0}, items = {nil, nil, nil}, numItems = 6})
-        bought = true
-      end
-    end
-  end
-  self:set_party()
-  return bought
-end
-
-
 function BuyScreen:gain_gold(amount)
   gold = (gold + amount) or 0
   self.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
 end
-
-
-function BuyScreen:set_cards(shop_level, dont_spawn_effect)
-  if self.cards then for i = 1, 3 do if self.cards[i] then self.cards[i]:die(dont_spawn_effect) end end end
-  self.cards = {}
-  local all_units = {}
-  local unit_1
-  local unit_2
-  local unit_3
-  local shop_level = shop_level or 1
-  local tier_weights = level_to_shop_odds[shop_level]
-  repeat 
-    unit_1 = random:table(tier_to_characters[random:weighted_pick(unpack(tier_weights))])
-    unit_2 = random:table(tier_to_characters[random:weighted_pick(unpack(tier_weights))])
-    unit_3 = random:table(tier_to_characters[random:weighted_pick(unpack(tier_weights))])
-    all_units = {unit_1, unit_2, unit_3}
-  until not table.all(all_units, function(v) return table.any(non_attacking_characters, function(u) return v == u end) end)
-  self.cards[1] = ShopCard{group = self.main, x = 60, y = 75, w = 80, h = 90, unit = unit_1, parent = self, i = 1}
-  self.cards[2] = ShopCard{group = self.main, x = 140, y = 75, w = 80, h = 90, unit = unit_2, parent = self, i = 2}
-  self.cards[3] = ShopCard{group = self.main, x = 220, y = 75, w = 80, h = 90, unit = unit_3, parent = self, i = 3}
-end
-
 
 function BuyScreen:set_party()
   if self.characters then for _, part in ipairs(self.characters) do part:die() end end
@@ -1014,7 +938,6 @@ function GoButton:update(dt)
       self.t:after(2, function() self.info_text:deactivate(); self.info_text.dead = true; self.info_text = nil end, 'info_text')
 
     else
-      locked_state = {locked = self.parent.locked, cards = {self.parent.cards[1] and self.parent.cards[1].unit, self.parent.cards[2] and self.parent.cards[2].unit, self.parent.cards[3] and self.parent.cards[3].unit}} 
       ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
       self.spring:pull(0.2, 200, 10)
       self.selected = true
@@ -1078,7 +1001,6 @@ function LockButton:update(dt)
     self.parent.locked = not self.parent.locked
     if not self.parent.locked then locked_state = nil end
     if self.parent.locked then
-      locked_state = {locked = true, cards = {self.parent.cards[1] and self.parent.cards[1].unit, self.parent.cards[2] and self.parent.cards[2].unit, self.parent.cards[3] and self.parent.cards[3].unit}}
       buyScreen:save_run()
     end
     ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
@@ -1878,7 +1800,6 @@ function CharacterPart:update(dt)
       table.remove(self.parent.units, self.i)
       self:die()
       self.parent:set_party()
-      self.parent:refresh_cards()
       self.parent.party_text:set_text({{text = '[wavy_mid, fg]party ' .. tostring(#self.parent.units) .. '/' .. tostring(self.parent.max_units), font = pixul_font, alignment = 'center'}})
       buyScreen:save_run()
     else
@@ -1886,7 +1807,6 @@ function CharacterPart:update(dt)
       self.parent.parent.units[self.i].reserve[self.level] = self.parent.parent.units[self.i].reserve[self.level] - 1
       self:die()
       self.parent.parent:set_party()
-      self.parent.parent:refresh_cards()
       buyScreen:save_run()
     end
   end
@@ -2051,8 +1971,10 @@ function ItemCard:init(args)
   self.text = item_text[self.item]
   self.stats = self.item.stats
 
+  self.cost_text = Text({{text = '[yellow]' .. self.cost, font = pixul_font, alignment = 'center'}}, global_text_tags)
+
   self.timeGrabbed = 0
-  self.buyTimer = 0.25
+  self.buyTimer = 0.2
   
 end
 
@@ -2064,7 +1986,7 @@ function ItemCard:buy_item(slot)
   gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
   slot:addItem(self.item)
   gold = gold - self.cost
-  self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
+  self.parent.shop_text:set_text{{text = '[yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'right'}}
   buyScreen:save_run()
   self:die()
 end
@@ -2075,8 +1997,10 @@ function ItemCard:update(dt)
   if self.parent:is(Arena) then return end
 
   if input.m1.pressed and self.colliding_with_mouse and gold >= self.cost then
+    if not self.grabbed then
+      self.timeGrabbed = love.timer.getTime()
+    end
     self.grabbed = true
-    self.timeGrabbed = Helper.Time.time
     --remove item text when grabbed
     self:remove_info_text()
   end
@@ -2090,7 +2014,7 @@ function ItemCard:update(dt)
     self.grabbed = false
     if self.parent.active_inventory_slot and not self.parent.active_inventory_slot:hasItem() then
       self:buy_item(self.parent.active_inventory_slot)
-    elseif Helper.Time.time - self.timeGrabbed < self.buyTimer then
+    elseif love.timer.getTime() - self.timeGrabbed < self.buyTimer then
       --buy the item if the mouse is released within the buyTimer
       local firstEmptySlot = self.parent:get_first_available_inventory_slot()
       if firstEmptySlot then
@@ -2130,6 +2054,7 @@ function ItemCard:draw()
       end
     end
     graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, self.tier_color, 2)
+    self.cost_text:draw(self.x + self.w/2, self.y - self.h/2)
     if self.image then
       self.image:drawFullRes(self.x, self.y)
     end
@@ -2174,171 +2099,9 @@ end
 
 function ItemCard:die()
   self.dead = true
+  self.cost_text = nil
   self:remove_info_text()
 end
-
-
-function BuyScreen:refresh_cards()
-  for i = 1, 3 do
-    if self.cards[i] then
-      self.cards[i]:refresh()
-    end
-  end
-end
-
-
-
-ShopCard = Object:extend()
-ShopCard:implement(GameObject)
-function ShopCard:init(args)
-  self:init_game_object(args)
-  self.shape = Rectangle(self.x, self.y, self.w, self.h)
-  self.interact_with_mouse = true
-  self.character_icon = CharacterIcon{group = main.current.effects, x = self.x, y = self.y - 26, character = self.unit, parent = self}
-  self.type_icons = {}
-  local type = character_types[self.unit]
-  local x = self.x
-  table.insert(self.type_icons, TypeIcon{group = main.current.effects, x = x + (0-1)*20, y = self.y + 6, type = type, character = self.unit, units = self.parent.units, parent = self})
-
-  self.cost = tier_to_cost[character_tiers[self.unit]]
-  self.spring:pull(0.2, 200, 10)
-  self:refresh()
-end
-
-
-function ShopCard:refresh()
-  self.owned = table.any(self.parent.units, function(v) return v.character == self.unit end)
-  if self.owned then
-    self.owned_n = 0
-    for _, unit in ipairs(self.parent.units) do
-      if unit.character == self.unit then
-        self.owned_n = self.owned_n + ((unit.level == 1 and 1) or (unit.level == 2 and 3) or (unit.level == 3 and 9))
-        if unit.reserve then
-          self.owned_n = self.owned_n + (unit.reserve[2] or 0)*3
-          self.owned_n = self.owned_n + (unit.reserve[1] or 0)
-        end
-      end
-    end
-  end
-end
-
-
-function ShopCard:update(dt)
-  self:update_game_object(dt)
-
-  if (self.selected and input.m1.pressed) or input[tostring(self.i)].pressed then
-    if self.parent:buy(self.unit, self.i) then
-      ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-      _G[random:table{'coins1', 'coins2', 'coins3'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-      self:die()
-      self.parent.cards[self.i] = nil
-      self.parent:refresh_cards()
-      self.parent.party_text:set_text({{text = '[wavy_mid, fg]party ' .. tostring(#self.parent.units) .. '/' .. tostring(self.parent.max_units), font = pixul_font, alignment = 'center'}})
-      locked_state = {locked = self.parent.locked, cards = {self.parent.cards[1] and self.parent.cards[1].unit, self.parent.cards[2] and self.parent.cards[2].unit, self.parent.cards[3] and self.parent.cards[3].unit}} 
-      buyScreen:save_run()
-    else
-      error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-      self.spring:pull(0.2, 200, 10)
-      self.character_icon.spring:pull(0.2, 200, 10)
-      for _, ci in ipairs(self.type_icons) do ci.spring:pull(0.2, 200, 10) end
-    end
-  end
-end
-
-
-function ShopCard:select()
-  self.selected = true
-  self.spring:pull(0.2, 200, 10)
-  self.t:every_immediate(1.4, function()
-    if self.selected then
-      self.t:tween(0.7, self, {sx = 0.97, sy = 0.97, plus_r = -math.pi/32}, math.linear, function()
-        self.t:tween(0.7, self, {sx = 1.03, sy = 1.03, plus_r = math.pi/32}, math.linear, nil, 'pulse_1')
-      end, 'pulse_2')
-    end
-  end, nil, nil, 'pulse')
-end
-
-
-function ShopCard:unselect()
-  self.selected = false
-  self.t:cancel'pulse'
-  self.t:cancel'pulse_1'
-  self.t:cancel'pulse_2'
-  self.t:tween(0.1, self, {sx = 1, sy = 1, plus_r = 0}, math.linear, function() self.sx, self.sy, self.plus_r = 1, 1, 0 end, 'pulse')
-end
-
-
-function ShopCard:draw()
-  graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
-    if self.selected then
-      graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, bg[-1])
-    end
-    if self.owned then
-      local x, y = self.x + self.w/5, self.y - self.h/2 + 12
-      if self.owned_n == 1 then
-        graphics.rectangle(x, y, 2, 2, nil, nil, character_colors[self.unit])
-      elseif self.owned_n == 2 then
-        graphics.rectangle(x, y, 2, 2, nil, nil, character_colors[self.unit])
-        graphics.rectangle(x + 4, y, 2, 2, nil, nil, character_colors[self.unit])
-      elseif self.owned_n == 3 then
-        graphics.rectangle(x, y, 4, 4, nil, nil, character_colors[self.unit])
-      elseif self.owned_n == 4 then
-        graphics.rectangle(x, y, 4, 4, nil, nil, character_colors[self.unit])
-        graphics.rectangle(x + 5, y, 2, 2, nil, nil, character_colors[self.unit])
-      elseif self.owned_n == 5 then
-        graphics.rectangle(x, y, 4, 4, nil, nil, character_colors[self.unit])
-        graphics.rectangle(x + 5, y, 2, 2, nil, nil, character_colors[self.unit])
-        graphics.rectangle(x + 9, y, 2, 2, nil, nil, character_colors[self.unit])
-      elseif self.owned_n == 6 then
-        graphics.rectangle(x, y, 4, 4, nil, nil, character_colors[self.unit])
-        graphics.rectangle(x + 6, y, 4, 4, nil, nil, character_colors[self.unit])
-      elseif self.owned_n == 7 then
-        graphics.rectangle(x, y, 4, 4, nil, nil, character_colors[self.unit])
-        graphics.rectangle(x + 6, y, 4, 4, nil, nil, character_colors[self.unit])
-        graphics.rectangle(x + 11, y, 2, 2, nil, nil, character_colors[self.unit])
-      elseif self.owned_n == 8 then
-        graphics.rectangle(x, y, 4, 4, nil, nil, character_colors[self.unit])
-        graphics.rectangle(x + 6, y, 4, 4, nil, nil, character_colors[self.unit])
-        graphics.rectangle(x + 11, y, 2, 2, nil, nil, character_colors[self.unit])
-        graphics.rectangle(x + 15, y, 2, 2, nil, nil, character_colors[self.unit])
-      end
-    end
-  graphics.pop()
-end
-
-
-function ShopCard:on_mouse_enter()
-  ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
-  pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-  self.selected = true
-  self.spring:pull(0.1)
-  self.character_icon.spring:pull(0.1, 200, 10)
-  for _, type_icon in ipairs(self.type_icons) do
-    type_icon.selected = true
-    type_icon.spring:pull(0.1, 200, 10)
-  end
-end
-
-
-function ShopCard:on_mouse_exit()
-  self.selected = false
-  for _, type_icon in ipairs(self.type_icons) do type_icon.selected = false end
-end
-
-
-function ShopCard:die(dont_spawn_effect)
-  self.dead = true
-  self.character_icon:die(dont_spawn_effect)
-  for _, type_icon in ipairs(self.type_icons) do type_icon:die(dont_spawn_effect) end
-  if self.info_text then
-    self.info_text:deactivate()
-    self.info_text.dead = true
-    self.info_text = nil
-  end
-end
-
-
-
 
 CharacterIcon = Object:extend()
 CharacterIcon:implement(GameObject)

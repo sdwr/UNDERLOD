@@ -2107,7 +2107,6 @@ function open_options(self)
         if self.ng_t then self.ng_t.dead = true; self.ng_t = nil end
         if self.resume_button then self.resume_button.dead = true; self.resume_button = nil end
         if self.restart_button then self.restart_button.dead = true; self.restart_button = nil end
-        if self.mouse_button then self.mouse_button.dead = true; self.mouse_button = nil end
         if self.dark_transition_button then self.dark_transition_button.dead = true; self.dark_transition_button = nil end
         if self.run_timer_button then self.run_timer_button.dead = true; self.run_timer_button = nil end
         if self.sfx_button then self.sfx_button.dead = true; self.sfx_button = nil end
@@ -2118,8 +2117,6 @@ function open_options(self)
         if self.video_button_4 then self.video_button_4.dead = true; self.video_button_4 = nil end
         if self.quit_button then self.quit_button.dead = true; self.quit_button = nil end
         if self.screen_shake_button then self.screen_shake_button.dead = true; self.screen_shake_button = nil end
-        if self.screen_movement_button then self.screen_movement_button.dead = true; self.screen_movement_button = nil end
-        if self.cooldown_snake_button then self.cooldown_snake_button.dead = true; self.cooldown_snake_button = nil end
         if self.show_damage_numbers then self.show_damage_numbers.dead = true; self.show_damage_numbers = nil end
         if self.ng_plus_plus_button then self.ng_plus_plus_button.dead = true; self.ng_plus_plus_button = nil end
         if self.ng_plus_minus_button then self.ng_plus_minus_button.dead = true; self.ng_plus_minus_button = nil end
@@ -2161,12 +2158,6 @@ function open_options(self)
       end}
     end
 
-    self.mouse_button = Button{group = self.ui, x = gw/2 - 113, y = gh - 150, force_update = true, button_text = 'mouse control: ' .. tostring(state.mouse_control and 'yes' or 'no'), fg_color = 'bg10', bg_color = 'bg',
-    action = function(b)
-      ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-      state.mouse_control = not state.mouse_control
-      b:set_text('mouse control: ' .. tostring(state.mouse_control and 'yes' or 'no'))
-    end}
 
     self.dark_transition_button = Button{group = self.ui, x = gw/2 + 13, y = gh - 150, force_update = true, button_text = 'dark transitions: ' .. tostring(state.dark_transitions and 'yes' or 'no'),
     fg_color = 'bg10', bg_color = 'bg', action = function(b)
@@ -2274,29 +2265,11 @@ function open_options(self)
       b:set_text('screen shake: ' .. tostring(state.no_screen_shake and 'no' or 'yes'))
     end}
 
-    self.cooldown_snake_button = Button{group = self.ui, x = gw/2 + 75, y = gh - 100, w = 145, force_update = true, button_text = '[bg10]cooldowns on snake: ' .. tostring(state.cooldown_snake and 'yes' or 'no'), 
-    fg_color = 'bg10', bg_color = 'bg', action = function(b)
-      ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-      state.cooldown_snake = not state.cooldown_snake
-      b:set_text('cooldowns on snake: ' .. tostring(state.cooldown_snake and 'yes' or 'no'))
-    end}
-
     self.show_damage_numbers = Button{group = self.ui, x = gw/2 + 65, y = gh - 75, w = 125, force_update = true, button_text = '[bg10]show damage numbers: ' .. tostring(state.show_damage_numbers and 'yes' or 'no'),
     fg_color = 'bg10', bg_color = 'bg', action = function(b)
       ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
       state.show_damage_numbers = not state.show_damage_numbers
       b:set_text('show damage numbers: ' .. tostring(state.show_damage_numbers and 'yes' or 'no'))
-    end}
-
-    self.screen_movement_button = Button{group = self.ui, x = gw/2 - 69, y = gh - 75, w = 135, force_update = true, button_text = '[bg10]screen movement: ' .. tostring(state.no_screen_movement and 'no' or 'yes'), 
-    fg_color = 'bg10', bg_color = 'bg', action = function(b)
-      ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-      state.no_screen_movement = not state.no_screen_movement
-      if state.no_screen_movement then
-        camera.x, camera.y = gw/2, gh/2
-        camera.r = 0
-      end
-      b:set_text('screen movement: ' .. tostring(state.no_screen_movement and 'no' or 'yes'))
     end}
 
     if self:is(MainMenu) then
@@ -2354,7 +2327,6 @@ function close_options(self)
     if self.ng_t then self.ng_t.dead = true; self.ng_t = nil end
     if self.resume_button then self.resume_button.dead = true; self.resume_button = nil end
     if self.restart_button then self.restart_button.dead = true; self.restart_button = nil end
-    if self.mouse_button then self.mouse_button.dead = true; self.mouse_button = nil end
     if self.dark_transition_button then self.dark_transition_button.dead = true; self.dark_transition_button = nil end
     if self.run_timer_button then self.run_timer_button.dead = true; self.run_timer_button = nil end
     if self.sfx_button then self.sfx_button.dead = true; self.sfx_button = nil end
@@ -2364,8 +2336,6 @@ function close_options(self)
     if self.video_button_3 then self.video_button_3.dead = true; self.video_button_3 = nil end
     if self.video_button_4 then self.video_button_4.dead = true; self.video_button_4 = nil end
     if self.screen_shake_button then self.screen_shake_button.dead = true; self.screen_shake_button = nil end
-    if self.screen_movement_button then self.screen_movement_button.dead = true; self.screen_movement_button = nil end
-    if self.cooldown_snake_button then self.cooldown_snake_button.dead = true; self.cooldown_snake_button = nil end
     if self.show_damage_numbers then self.show_damage_numbers.dead = true; self.show_damage_numbers = nil end
     if self.quit_button then self.quit_button.dead = true; self.quit_button = nil end
     if self.ng_plus_plus_button then self.ng_plus_plus_button.dead = true; self.ng_plus_plus_button = nil end

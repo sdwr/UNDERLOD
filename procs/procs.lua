@@ -4,6 +4,10 @@ require 'procs/proc'
 
 --need to pass unit into proc, some procs need to know who they are on (without callbacks)
 
+--need a type of proc that exists on for the whole unit, not just per troop
+--bloodlust (otherwise they get out of sync)
+--frostfield (otherwise they get out of sync)
+
 function Create_Proc(name, unit)
   if not proc_name_to_class[name] then
     print('proc not found')
@@ -161,6 +165,7 @@ function Proc_Berserk:init(args)
     stats = {attack_speed = 0.1, move_speed = 0.1}
   }
 
+  if not self.unit then return end
   trigger:after(TIME_TO_ROUND_START, function() self.unit:add_buff(self.buffdata) end)
 end
 
@@ -180,7 +185,7 @@ end
 
 function Proc_Bloodlust:onKill(target)
   Proc_Bloodlust.super.onKill(self, target)
-  self.unit:berserk(self.buffDuration)
+  self.unit:bloodlust(self.buffDuration)
 end
 
 
@@ -337,6 +342,7 @@ function Proc_Shield:init(args)
 
   --need to have shield amount in buff
   --no way to cancel the trigger once the unit is dead :( 
+    if not self.unit then return end
   self.manual_trigger = trigger:every(self.time_between, function() self.unit:add_buff(self.buffdata) end)
 end
 
@@ -363,6 +369,7 @@ function Proc_Phasing:init(args)
     toggles = {phasing = 1}
   }
 
+  if not self.unit then return end
   self.unit:add_buff(self.buffdata)
 end
 
@@ -395,6 +402,7 @@ function Proc_Firestack:init(args)
     toggles = {firestack = 1}
   }
   --add ability to stack firedmg on hit to unit
+  if not self.unit then return end
   self.unit:add_buff(self.buffdata)
 end
 
@@ -462,6 +470,7 @@ function Proc_Blazin:onTick(dt)
   self.buffdata.stats.aspd = math.min(count * self.aspd_per_enemy, self.max_aspd)
   
   --remove buff before reapplying (otherwise will not change stats)
+  if not self.unit then return end
   self.unit:remove_buff(self.buff)
   self.unit:add_buff(self.buffdata)
 end
@@ -497,6 +506,8 @@ function Proc_Redsword:init(args)
     duration = 9999,
     stats = {dmg_per_def = 2}
   }
+
+  if not self.unit then return end
   self.unit:add_buff(self.buffdata)
 end
 
