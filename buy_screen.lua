@@ -90,8 +90,14 @@ function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, pas
   self:build_level_map()
 
   --builds characters from units?
+  --open once at the start of the game
   if not self.characters or #self.characters == 0 then
     self.characters = {}
+    self.select_character_overlay = CharacterSelectOverlay{
+      group = self.ui
+    }
+  --and again at round 5
+  elseif self.level == 5 and #self.characters == 1 then
     self.select_character_overlay = CharacterSelectOverlay{
       group = self.ui
     }
@@ -1243,7 +1249,6 @@ function RerollButton:update(dt)
         self.t:after(2, function() self.info_text:deactivate(); self.info_text.dead = true; self.info_text = nil end, 'info_text')
       else
         ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-        self.parent:set_cards(self.parent.shop_level)
         self.parent:set_items(self.parent.shop_level)
         self.selected = true
         self.spring:pull(0.2, 200, 10)
@@ -1467,7 +1472,7 @@ end
 
 function LooseItem:draw()
   if item_images[self.item] then
-    item_images[self.item]:drawFullRes(self.x, self.y, 0, 0.4, 0.4)
+    item_images[self.item]:draw(self.x, self.y, 0, 0.4, 0.4)
   end
 
 end
@@ -1617,10 +1622,10 @@ function ItemPart:draw(y)
 
       local image = item_images[item] or item_images['default']
       if not self.itemGrabbed then
-        image:drawFullRes(self.x, self.y, 0, 0.2, 0.2)
+        image:draw(self.x, self.y, 0, 0.2, 0.2)
       else
         local mouseX, mouseY = camera:get_mouse_position()
-        image:drawFullRes(mouseX, mouseY, 0, 0.2, 0.2)
+        image:draw(mouseX, mouseY, 0, 0.2, 0.2)
       end
     end
     
@@ -1986,7 +1991,7 @@ function ItemCard:buy_item(slot)
   gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
   slot:addItem(self.item)
   gold = gold - self.cost
-  self.parent.shop_text:set_text{{text = '[yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'right'}}
+  self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'right'}}
   buyScreen:save_run()
   self:die()
 end
@@ -2056,7 +2061,7 @@ function ItemCard:draw()
     graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, self.tier_color, 2)
     self.cost_text:draw(self.x + self.w/2, self.y - self.h/2)
     if self.image then
-      self.image:drawFullRes(self.x, self.y)
+      self.image:draw(self.x, self.y)
     end
 
 
@@ -2131,17 +2136,19 @@ end
 function CharacterIcon:on_mouse_enter()
   ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
   self.spring:pull(0.2, 200, 10)
-  self.info_text = InfoText{group = main.current.ui}
-  self.info_text:activate({
-    {text = '[' .. character_color_strings[self.character] .. ']' .. self.character:capitalize() .. '[fg] - cost: [yellow]' .. self.parent.cost, font = pixul_font, alignment = 'center', height_multiplier = 1.25},
-    {text = '[fg]Types: ' .. character_type_strings[self.character], font = pixul_font, alignment = 'center', height_multiplier = 1.25},
-    {text = character_descriptions[self.character](1), font = pixul_font, alignment = 'center', height_multiplier = 2},
-    {text = '[' .. (self.level == 3 and 'yellow' or 'light_bg') .. ']Lv.3 [' .. (self.level == 3 and 'fg' or 'light_bg') .. ']Effect - ' .. 
-      (self.level == 3 and character_effect_names[self.character] or character_effect_names_gray[self.character]), font = pixul_font, alignment = 'center', height_multiplier = 1.25},
-    {text = (self.level == 3 and character_effect_descriptions[self.character]() or character_effect_descriptions_gray[self.character]()), font = pixul_font, alignment = 'center'},
-    -- {text = character_stats[self.character](1), font = pixul_font, alignment = 'center'},
-  }, nil, nil, nil, nil, 16, 4, nil, 2)
-  self.info_text.x, self.info_text.y = gw/2, gh/2 + 10
+  if self.text_on_mouseover then
+    self.info_text = InfoText{group = main.current.ui}
+    self.info_text:activate({
+      {text = '[' .. character_color_strings[self.character] .. ']' .. self.character:capitalize() .. '[fg] - cost: [yellow]' .. self.parent.cost, font = pixul_font, alignment = 'center', height_multiplier = 1.25},
+      {text = '[fg]Types: ' .. character_type_strings[self.character], font = pixul_font, alignment = 'center', height_multiplier = 1.25},
+      {text = character_descriptions[self.character](1), font = pixul_font, alignment = 'center', height_multiplier = 2},
+      {text = '[' .. (self.level == 3 and 'yellow' or 'light_bg') .. ']Lv.3 [' .. (self.level == 3 and 'fg' or 'light_bg') .. ']Effect - ' .. 
+        (self.level == 3 and character_effect_names[self.character] or character_effect_names_gray[self.character]), font = pixul_font, alignment = 'center', height_multiplier = 1.25},
+      {text = (self.level == 3 and character_effect_descriptions[self.character]() or character_effect_descriptions_gray[self.character]()), font = pixul_font, alignment = 'center'},
+      -- {text = character_stats[self.character](1), font = pixul_font, alignment = 'center'},
+    }, nil, nil, nil, nil, 16, 4, nil, 2)
+    self.info_text.x, self.info_text.y = gw/2, gh/2 + 10
+  end
 end
 
 

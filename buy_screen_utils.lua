@@ -18,13 +18,17 @@ function BuildLevelText(level_list, level, x, y)
   if level_list[level].environmental_hazards and level_list[level].environmental_hazards.type then
     table.insert(info_text_content, {text = '[fg]Hazards ' .. level_list[level].environmental_hazards.type .. 'Lv. ' .. level_list[level].environmental_hazards.level, font = pixul_font, alignment = 'center', height_multiplier = 1.5})
   end
-  table.insert(info_text_content, {text = '[fg]Waves ' .. #level_list[level].waves, font = pixul_font, alignment = 'center', height_multiplier = 1.5})
-  for i, wave in ipairs(level_list[level].waves) do
-    local wave_text = ''
-    for j, enemy in ipairs(wave) do
-      wave_text = wave_text .. enemy .. ', '
+  if level_list[level].boss then
+    table.insert(info_text_content, {text = '[fg]' .. level_list[level].boss, font = pixul_font, alignment = 'center', height_multiplier = 1.5})
+  else
+    table.insert(info_text_content, {text = '[fg]Waves ' .. #level_list[level].waves, font = pixul_font, alignment = 'center', height_multiplier = 1.5})
+    for i, wave in ipairs(level_list[level].waves) do
+      local wave_text = ''
+      for j, enemy in ipairs(wave) do
+        wave_text = wave_text .. enemy .. ', '
+      end
+      table.insert(info_text_content, {text = wave_text, font = pixul_font, alignment = 'center', height_multiplier = 1.5})
     end
-    table.insert(info_text_content, {text = wave_text, font = pixul_font, alignment = 'center', height_multiplier = 1.5})
   end
 
   local info_text = InfoText{group = main.current.ui}

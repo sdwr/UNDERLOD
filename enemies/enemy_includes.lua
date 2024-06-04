@@ -1,4 +1,5 @@
 require 'enemies/enemy'
+require 'enemies/enemy_movement'
 require 'enemies/enemy_utils'
 require 'enemies/enemy_critter'
 require 'enemies/bosses/dragon'
@@ -16,6 +17,7 @@ require 'enemies/regular/spread'
 require 'enemies/regular/stomper'
 require 'enemies/regular/summoner'
 require 'enemies/regular/bomb'
+require 'enemies/regular/charger'
 
 require 'enemies/miniboss/bigstomper'
 

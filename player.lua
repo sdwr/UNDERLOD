@@ -1539,6 +1539,84 @@ end
 function ChainLightning:draw()
 end
 
+Charge = Object:extend()
+Charge:implement(GameObject)
+Charge:implement(Physics)
+function Charge:init(args)
+  self:init_game_object(args)
+  self.currentTime = 0
+
+  self.state = "charging"
+
+  self.parent.state = 'frozen'
+
+  orb1:play({volume = 0.9})
+
+  self.chargeDamage = self.damage or 20
+  self.chargeDistance = self.chargeDistance or 100
+  self.chargeSpeed = self.chargeSpeed or 200
+
+  self.chargeTime = self.chargeTime or 1
+  self.chargeDuration = self.chargeDuration or 0.5
+  self.recoveryTime = self.recoveryTime or 1.5
+
+  self.color = self.color or red[0]
+  self.transparency = self.transparency or 0.2
+  self.lineWidth = self.lineWidth or 8
+
+  self.destX = self.x
+  self.destY = self.y
+end
+
+function Charge:update(dt)
+  if self.parent and self.parent.dead then self.dead = true; return end
+  self:update_game_object(dt)
+  self.currentTime = self.currentTime + dt
+
+  if self.state == 'charging' and self.currentTime > self.chargeTime then
+    self:charge()
+  elseif self.state == 'mid_charge' then
+    local timeRemaining = self.chargeTime - self.currentTime
+    self.parent:move_towards_point(self.destX, self.destY, self.chargeSpeed, timeRemaining)
+    if timeRemaining < 0 then
+      self:recover()
+    end
+  elseif self.state == 'recovering' and self.currentTime > self.recoveryTime then
+    if self.parent and self.parent.state == 'frozen' then self.parent.state = 'normal' end
+    self.dead = true
+  end
+end
+
+function Charge:charge()
+  self.currentTime = 0
+  self.state = "mid_charge"
+  usurer1:play{pitch = random:float(0.95, 1.05), volume = 1.7}
+  
+
+  --try seek_point or move_towrads_point
+  --need to launch the unit forward here
+  --don't really know how collisions work with this
+  --can maybe set the unit to a kinematic body and then apply a force to it
+end
+
+function Charge:recover()
+  self.currentTime = 0
+  self.state = "recovering"
+end
+
+function Charge:draw()
+  --just targets whichever direction the unit is facing
+  if self.state == 'charging' then
+    local lengthPerc = math.min(self.currentTime / self.chargeTime, 1)
+    local length = self.chargeDistance * lengthPerc
+    self.destX = self.x + length * math.cos(self.parent.r)
+    self.destY = self.y + length * math.sin(self.parent.r)
+    local color = self.color:clone()
+    color.a = self.transparency
+    graphics.line(self.x, self.y, self.destX, self.destY, self.color, self.lineWidth)
+  end
+end
+
 Stomp = Object:extend()
 Stomp:implement(GameObject)
 Stomp:implement(Physics)

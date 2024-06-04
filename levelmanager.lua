@@ -6,7 +6,7 @@ local round_power = 0
 local function number_of_waves(level)
   if level <= 2  then
     return 1
-  elseif level < 4 then
+  elseif level < 6 then
     return 2
   else 
     return 3
@@ -24,6 +24,18 @@ local function special_enemy_tiers(level)
     return {1, 2, 3}
   else
     return {1, 2, 3, 2}
+  end
+end
+
+local function boss_level(level)
+  if level == 6 then
+    return 'stompy'
+  elseif level == 11 then
+    return 'dragon'
+  elseif level == 16 then
+    return 'heigan'
+  else
+    return nil
   end
 end
 
@@ -83,21 +95,28 @@ function Build_Level_List(max_level)
   end
 
   for i = 1, max_level do
-    local waves = Decide_on_Spawns(i)
-    level_list[i].waves = waves
+    if boss_level(i) then
+      level_list[i].boss = boss_level(i)
+      level_list[i].color = black[0]
+      level_list[i].round_power = BOSS_ROUND_POWER
 
-    --find the first special enemy in the wave
-    -- to use as the level color on the buy screen
-    local first_special = find_first_special(waves)
-    if first_special then
-      level_list[i].color = enemy_to_color[first_special]
+    else
+      local waves = Decide_on_Spawns(i)
+      level_list[i].waves = waves
+
+      --find the first special enemy in the wave
+      -- to use as the level color on the buy screen
+      local first_special = find_first_special(waves)
+      if first_special then
+        level_list[i].color = enemy_to_color[first_special]
+      end
+
+      local environmental_hazards = Decide_on_Environmental_Hazards(i)
+      level_list[i].environmental_hazards = environmental_hazards
+
+      --calculate the round power for the level
+      level_list[i].round_power = round_power
     end
-
-    local environmental_hazards = Decide_on_Environmental_Hazards(i)
-    level_list[i].environmental_hazards = environmental_hazards
-
-    --calculate the round power for the level
-    level_list[i].round_power = round_power
   end
 
   return level_list

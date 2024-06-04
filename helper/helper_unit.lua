@@ -444,12 +444,6 @@ function Helper.Unit:draw_selection()
         Helper.Graphics:draw_dashed_rectangle(Helper.Color.white, 2, 8, 4, Helper.Time.time * 80, self.x1, self.y1, self.x2, self.y2)
     end
     love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.setLineWidth(2)
-    for i, unit in ipairs(self:get_list(true)) do
-        if unit.selected then
-            love.graphics.circle('line', unit.x, unit.y, 5)
-        end
-    end
 
     if self.flagged_enemy ~= -1 then
         love.graphics.setLineWidth(1)

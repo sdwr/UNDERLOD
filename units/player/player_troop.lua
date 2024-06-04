@@ -151,7 +151,14 @@ function Troop:draw()
   --graphics.circle(self.x, self.y, self.attack_sensor.rs, orange[0], 1)
   graphics.push(self.x, self.y, self.r, self.hfx.hit.x, self.hfx.hit.x)
   self:draw_buffs()
-  graphics.rectangle(self.x, self.y, self.shape.w*.66, self.shape.h*.66, 3, 3, self.hfx.hit.f and fg[0] or self.color)
+
+  --change color based on selected
+  local color = self.color:clone()
+  if self.selected then
+    color = color:lighten(SELECTED_PLAYER_LIGHTEN)
+  end
+  --draw unit model (rectangle not circle??)
+  graphics.rectangle(self.x, self.y, self.shape.w*.66, self.shape.h*.66, 3, 3, self.hfx.hit.f and fg[0] or color)
   if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
     self:draw_cast_timer()
   end

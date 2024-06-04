@@ -1154,6 +1154,7 @@ function init()
     ['rager'] = {dmg = 0.5, mvspd = 2},
     ['spawner'] = {},
     ['stomper'] = {dmg = 2.5},
+    ['charger'] = {dmg = 1.5, mvspd = 0.5},
     ['summoner'] = {},
     ['bomb'] = {hp = -0.25},
     
@@ -1648,8 +1649,10 @@ function init()
 
   normal_enemy_by_tier = {
     [1] = {
-      'shooter',
       'seeker',
+    },
+    [2] = {
+      'shooter'
     }
   }
 
@@ -1658,6 +1661,7 @@ function init()
       'laser',
       'rager',
       'stomper',
+      'charger',
       'bomb',
     },
     [2] = {
@@ -1689,6 +1693,7 @@ function init()
     ['laser'] = 300,
     ['rager'] = 300,
     ['stomper'] = 300,
+    ['charger'] = 300,
     ['bomb'] = 300,
     --special enemies t2
     ['mortar'] = 500,
@@ -1697,6 +1702,11 @@ function init()
     --special enemies t3
     ['summoner'] = 1000,
     ['assassin'] = 1000,
+
+    --bosses
+    ['stompy'] = BOSS_ROUND_POWER,
+    ['dragon'] = BOSS_ROUND_POWER,
+    ['heigan'] = BOSS_ROUND_POWER,
   }
 
   enemy_to_color = {
@@ -1704,6 +1714,7 @@ function init()
     ['seeker'] = grey[0],
     ['rager'] = red[3],
     ['stomper'] = red[3],
+    ['charger'] = red[3],
     ['mortar'] = orange[3],
     ['spawner'] = orange[3],
     ['bomb'] = orange[3],

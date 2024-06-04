@@ -80,7 +80,8 @@ function ShopCard:init(args)
   self:init_game_object(args)
   self.shape = Rectangle(self.x, self.y, self.w, self.h)
   self.interact_with_mouse = true
-  self.character_icon = CharacterIcon{group = self.group, x = self.x, y = self.y - 26, character = self.unit, parent = self}
+  self.character_icon = CharacterIcon{group = self.group, x = self.x, y = self.y - 26, character = self.unit, parent = self,
+    text_on_mouseover = false}
   self.type_icons = {}
   local type = character_types[self.unit]
   local x = self.x
