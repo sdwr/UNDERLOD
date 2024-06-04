@@ -32,7 +32,9 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
   self.lock = lock
 
   self.gold_text = nil
-  
+  self.timer_text = nil
+  self.time_elapsed = 0
+
   main_song_instance:stop()
 
   self.starting_units = table.copy(units)
@@ -110,7 +112,7 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
                           y = gh - 20, force_update = true, button_text = tostring(i), w = Helper.Unit.team_button_width, fg_color = 'white', bg_color = 'bg',
                           color_marks = {[1] = character_colors[character]}, character = character,
                           action = function() 
-                            Helper.Unit.selected_team = number
+                            Helper.Unit.selected_team_index = number
                             Helper.Unit:deselect_all_troops()
                             for i, troop in ipairs(Helper.Unit:get_list(true)) do
                               if troop.character == character then
@@ -126,7 +128,7 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
   self.progress_bar = ProgressBar{group = self.ui, x = gw/2, y = 20, w = 200, h = 10, color = yellow[0], progress = 0}
   self.progress_bar.max_progress = self.level_list[self.level].round_power or 0
 
-  Spawn_Troops(self)
+  Spawn_Teams(self)
 
   --select first character by default
   self:select_character_by_index(1)
@@ -181,6 +183,9 @@ function Arena:update(dt)
 
   if not self.paused and not self.died and not self.won then
     run_time = run_time + dt
+    self.time_elapsed = self.time_elapsed + dt
+
+    self:set_timer_text()
   end
 
   if not self.paused then
@@ -555,6 +560,7 @@ function Arena:draw()
 
   if self.shop_text then self.shop_text:draw(gw - 40, gh - 17) end
   if self.gold_text then self.gold_text:draw(gw / 2, gh / 2) end
+  if self.timer_text then self.timer_text:draw(gw - 30, 20) end
 
   if self.in_credits then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent_2) end
   self.credits:draw()
@@ -822,6 +828,10 @@ end
 
 function Arena:clear_gold()
   self.gold_text = nil
+end
+
+function Arena:set_timer_text()
+  self.timer_text = Text({{text = '[wavy_mid, yellow[0] ' .. tostring(math.floor(self.time_elapsed)) .. 's', font = pixul_font, alignment = 'center'}}, global_text_tags)
 end
 
 

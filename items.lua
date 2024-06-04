@@ -50,9 +50,11 @@ end
 --TODO: put buy_screen draw in here?
 -- or at least change where it gets the item data from
 
-
 --preqreqs should be inclusive (any of the prereqs) or exclusive (all of the prereqs)??
 --should maaaaaybe have tag prereqs (like 'can deal fire damage')
+
+--consumes units as unit_data (probably)
+--returns items as item_data
 function Get_Random_Item(level, units)
   local available_items = {}
   --TODO: change weighting based on level (item tier)
@@ -69,10 +71,11 @@ function Get_Random_Item(level, units)
       print('no items in Get_Random_Item')
     end
     for j, item in ipairs(unit.items) do
-      owned_items[item] = true
+      
+      owned_items[item.name] = true
       --add item tags as well
-      if item_to_item_data[item].tags then
-        for k, tag in ipairs(item_to_item_data[item].tags) do
+      if item.tags then
+        for k, tag in ipairs(item.tags) do
           owned_items[tag] = true
         end
       end
@@ -90,10 +93,10 @@ function Get_Random_Item(level, units)
         end
       end
       if has_prereqs then
-        table.insert(available_items, k)
+        table.insert(available_items, v)
       end
     else
-      table.insert(available_items, k)
+      table.insert(available_items, v)
     end
   end
 

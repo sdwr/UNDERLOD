@@ -341,6 +341,12 @@ function Unit:draw_buffs()
   end
 end
 
+function Unit:draw_targeted()
+  if self:has_buff('targeted') then
+    graphics.circle(self.x, self.y, ((self.shape.w) / 2) + 3, yellow[0], 1)
+  end
+end
+
 --should move this somewhere, maybe to the proc class
 -- dont want to have a bunch of if statements in here
 -- with special logic for each buff

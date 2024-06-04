@@ -215,14 +215,22 @@ Helper.Unit.selection = {
 Helper.Unit.do_draw_selection = false
 Helper.Unit.number_of_teams = 0
 Helper.Unit.teams = {}
-Helper.Unit.team_targets = {}
 Helper.Unit.team_rally_points = {}
-Helper.Unit.selected_team = 0
+Helper.Unit.selected_team_index = 0
 Helper.Unit.flagged_enemy = -1
 Helper.Unit.number_of_troop_types = 0
 Helper.Unit.troop_type_button_width = 0
 Helper.Unit.team_button_width = 0
 
+function Helper.Unit:get_team_by_index(index)
+    if index < 1 or index > #Helper.Unit.teams then
+        print('no team with index ' .. index)
+        return nil
+    end
+    return Helper.Unit.teams[index]
+end
+
+--rally point fns
 function Helper.Unit.set_team_rally_point(team_number, x, y)
     local existing_rally = Helper.Unit.team_rally_points[team_number]
     if existing_rally then
@@ -261,35 +269,15 @@ function Helper.Unit:clear_all_rally_points()
 end
 
 
-function Helper.Unit:set_team_target(team_number, target)
-    if team_number < 1 or team_number > 4 then
-        return
-    end
-    for i, troop in ipairs(Helper.Unit.teams[team_number]) do
-        troop:set_assigned_target(target)
-    end
-    Helper.Unit.team_targets[team_number] = target
-
-    --set a targeting ring around the target
+--target ring fns
+function Helper.Unit:set_target_ring(target)
     if target then
-        local targetBuff = {name = 'targeted', duration = 9999, color = yellow[0]}
+        local targetBuff = {name = 'targeted', duration = 9999, color = Helper.Color.yellow}
         target:add_buff(targetBuff)
     end
 end
 
---need to clear target when all troops are dead as well
-function Helper.Unit:clear_team_target(team_number)
-    if team_number < 1 or team_number > 4 then
-        return
-    end
-
-    local target = Helper.Unit.team_targets[team_number]
-    for i, troop in ipairs(Helper.Unit.teams[team_number]) do
-        --can't clear the unit target here, because this gets called when the target dies
-        troop:clear_assigned_target()
-    end
-    Helper.Unit.team_targets[team_number] = nil
-
+function Helper.Unit:clear_target_ring(target)
     --clear the targeting ring around the target, if no other team is targeting it
     if not Helper.Unit:is_a_team_target(target) then
         if target then
@@ -303,58 +291,22 @@ function Helper.Unit:is_a_team_target(target)
         return false
     end
 
-    for i = 1, 4 do
-        if Helper.Unit.team_targets[i] == target then
+    for i, team in ipairs(Helper.Unit.teams) do
+        if team.target == target then
             return true
         end
     end
     return false
 end
 
-function Helper.Unit:set_team(team_number)
-    local team = {}
-    for i, troop in ipairs(self:get_list(true)) do
-        if troop.selected then
-            table.insert(team, troop)
-        end
-    end
-    if #team ~= 0 then
-        self.teams[team_number] = team
-        self:refresh_button(team_number)
-        main.current.hotbar.hotbar_by_index[team_number + self.number_of_troop_types]:action()
-    end
-end
 
-function Helper.Unit:add_to_team(team_number)
-    local added = false
-    for i, troop in ipairs(self:get_list(true)) do
-        if troop.selected and not is_in_list(self.teams[team_number], troop) then
-            table.insert(self.teams[team_number], troop)
-            added = true
-        end
-    end
-    if added then
-        self:refresh_button(team_number)
-        main.current.hotbar.hotbar_by_index[team_number + self.number_of_troop_types]:action()
-    end
-end
-
-function Helper.Unit:refresh_button(team_number)
-    local color_marks = {}
-    for i, troop in ipairs(self.teams[team_number]) do
-        if not is_in_list(color_marks, character_colors[troop.character]) then
-            table.insert(color_marks, character_colors[troop.character])
-        end
-    end
-    main.current.hotbar.hotbar_by_index[team_number + self.number_of_troop_types].color_marks = color_marks
-end
-
+--select + target from input
 function Helper.Unit:select()
     if not Helper.mouse_on_button then
         local flag = false
         --should be on key release, not press? or at least only check the first press
         if input['m2'].pressed then
-            Helper.Unit:clear_team_rally_point(self.selected_team)
+            Helper.Unit:clear_team_rally_point(self.selected_team_index)
 
             for i, enemy in ipairs(self:get_list(false)) do
                 if Helper.Geometry:distance(Helper.mousex, Helper.mousey, enemy.x, enemy.y) < 9 then 
@@ -365,8 +317,8 @@ function Helper.Unit:select()
             --target the flagged enemy with the selected troop
             if flag then
                 local flagged_enemy = Helper.Spell:get_nearest_target_from_point(Helper.mousex, Helper.mousey, false)
-                Helper.Unit:clear_team_target(self.selected_team)
-                Helper.Unit:set_team_target(self.selected_team, flagged_enemy)
+                Helper.Unit:get_team_by_index(self.selected_team_index):clear_team_target()
+                Helper.Unit:get_team_by_index(self.selected_team_index):set_team_target(flagged_enemy)
                 --set the selected troops to 'normal', so they can attack the target
                 for i, unit in ipairs(self:get_list(true)) do
                     if unit.selected then
@@ -375,10 +327,10 @@ function Helper.Unit:select()
                 end
             else
                 --untarget the flagged enemy for the selected troop, if there is one
-                Helper.Unit:clear_team_target(self.selected_team)
+                Helper.Unit:get_team_by_index(self.selected_team_index):clear_team_target()
 
                 --draw a rally point for the selected troops
-                Helper.Unit.set_team_rally_point(self.selected_team, Helper.mousex, Helper.mousey)
+                Helper.Unit.set_team_rally_point(self.selected_team_index, Helper.mousex, Helper.mousey)
                 --rally the selected troops to the mouse location
                 for i, unit in ipairs(self:get_list(true)) do
                     if unit.selected then
@@ -392,7 +344,7 @@ function Helper.Unit:select()
         --switched to down, but need a longer term solution? same thing will happen with m2 prob
         elseif input['m1'].down then
             --clear rally point for the selected team
-            Helper.Unit:clear_team_rally_point(self.selected_team)
+            Helper.Unit:clear_team_rally_point(self.selected_team_index)
 
             for i, unit in ipairs(self:get_list(true)) do
                 if unit.selected then

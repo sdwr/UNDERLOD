@@ -73,7 +73,7 @@ end
 
 
 --spawns troops in centre of arena, two rows if over 4 units
-function Spawn_Troops(arena)
+function Spawn_Teams(arena)
   local spawn_y
   if #arena.units > 4 then
     spawn_y = gh/2 - 50
@@ -85,12 +85,11 @@ function Spawn_Troops(arena)
 
   --clear Helper.Unit.teams
   Helper.Unit.teams = {}
-  Helper.Unit.team_targets = {}
   
   for i, unit in ipairs(arena.units) do
     --add a new team
-    table.insert(Helper.Unit.teams, i, {})
-    table.insert(Helper.Unit.team_targets, i, nil)
+    local team = Team(i)
+    table.insert(Helper.Unit.teams, i, team)
 
     local column_offset = (i-1) % 4
 
@@ -102,11 +101,13 @@ function Spawn_Troops(arena)
 
 
     for row_offset=0, 4 do
-      troop_data = {group = arena.main, x = spawn_x + (column_offset*20), y = spawn_y + (row_offset*10), level = unit.level, character = unit.character, items = unit.items, passives = arena.passives}
-      local troop = Create_Troop(troop_data)
-      --add the troop to the team
-      table.insert(Helper.Unit.teams[i], troop)
+      local troop_data = {group = arena.main, x = spawn_x + (column_offset*20), y = spawn_y + (row_offset*10), level = unit.level, character = unit.character, items = unit.items, passives = arena.passives}
+      team:add_troop(troop_data)
     end
+
+    --add items to team / troops here
+    --instead of in the unit creation
+    -- that way we can distinguish between global/team/troop items
     
   end
 end

@@ -389,9 +389,9 @@ function BuyScreen:set_items(shop_level)
   -- item_1 = random:table(tier_to_items[random:weighted_pick(unpack(tier_weights))])
   -- item_2 = random:table(tier_to_items[random:weighted_pick(unpack(tier_weights))])
   -- item_3 = random:table(tier_to_items[random:weighted_pick(unpack(tier_weights))])
-  item_1 = get_random_from_table(item_to_item_data)
-  item_2 = get_random_from_table(item_to_item_data)
-  item_3 = get_random_from_table(item_to_item_data)
+  item_1 = Get_Random_Item(self.level, self.units)
+  item_2 = Get_Random_Item(self.level, self.units)
+  item_3 = Get_Random_Item(self.level, self.units)
 
   all_items = {item_1, item_2, item_3}
   
