@@ -29,7 +29,7 @@ function Item:init(data)
   --hack that this loads during combat and in the shop
   --combat expects the unit to exist, but the shop doesn't
   for k, v in pairs(data.procs) do
-    table.insert(self.procs, Create_Proc(v, self.unit))
+    table.insert(self.procs, Create_Proc(v, nil, nil))
   end
 end
 
@@ -44,6 +44,7 @@ function Item:die()
   for i, proc in ipairs(self.procs) do
     proc:die()
   end
+  self.procs = nil
   self.dead = true
 end
 
@@ -158,15 +159,6 @@ item_to_item_data = {
     desc = 'Gain interest on your gold (1 gold per 10 gold)',
     stats = {hp = 0.2, interest = 1}
   },
-  ['berserk'] = {
-    name = 'berserk',
-    colors = {},
-    cost = 5,
-    icon = 'berserk',
-    desc = 'Increases damage when low on health',
-    stats = {dmg = 0.5},
-    procs = {'berserk'}
-  },
   ['basher'] = {
   name = 'basher',
     colors = {},
@@ -245,16 +237,6 @@ item_to_item_data = {
     procs = {'radiance', 'shield'}
   },
   --still need to add
-  ['phantomdancer'] = {
-    name = 'phantomdancer',
-    colors = {'yellow'},
-    cost = 5,
-    icon = 'phantomdancer',
-    desc = 'Gain mspd and aspd and phasing',
-    stats = {aspd = 0.25, ms = 0.15},
-    procs = {'phasing'}
-  },
-  --still need to add
   ['bubble'] = {
     name = 'bubble',
     colors = {'yellow'},
@@ -275,24 +257,6 @@ item_to_item_data = {
     stats = {dmg = 0.5},
     procs = {'fire'},
     tags = {'firedmg'}
-  },
-  ['redshield'] = {
-    name = 'redshield',
-    colors = {'red'},
-    cost = 5,
-    icon = 'redshield',
-    desc = 'Gain armor for each hit taken',
-    stats = {hp = 0.25},
-    procs = {'redshield'}
-  },
-  ['redsword'] = {
-    name = 'redsword',
-    colors = {'red'},
-    cost = 5,
-    icon = 'redsword',
-    desc = 'Gain damage based on your armor',
-    stats = {dmg = 0.5},
-    procs = {'redsword'}
   },
   ['chainexplosion'] = {
     name = 'chainexplosion',

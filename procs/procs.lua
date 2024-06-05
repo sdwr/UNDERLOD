@@ -8,14 +8,19 @@ require 'procs/proc'
 --bloodlust (otherwise they get out of sync)
 --frostfield (otherwise they get out of sync)
 
-function Create_Proc(name, unit)
+
+--either unit or team will be nil (or both!)
+--need to make sure the procs will not crash when they are created on the wrong object
+--move the proc startup to an 'activate' function? and only call if the unit/team exists
+function Create_Proc(name, unit, team)
   if not proc_name_to_class[name] then
     print('proc not found')
     print(name)
     return nil
   end
 
-  return proc_name_to_class[name]({unit = unit, data = {name = name}})
+  local procObj = proc_name_to_class[name]({unit = unit, team = team, data = {name = name}})
+  
 end
 
 
@@ -23,6 +28,7 @@ end
 Proc_Reroll = Proc:extend()
 function Proc_Reroll:init(args)
   self.triggers = {}
+  self.scope = 'global'
 
   Proc_Reroll.super.init(self, args)
   
@@ -43,6 +49,7 @@ end
 Proc_Craggy = Proc:extend()
 function Proc_Craggy:init(args)
   self.triggers = {PROC_ON_GOT_HIT}
+  self.scope = 'troop'
 
   
   Proc_Craggy.super.init(self, args)
@@ -74,7 +81,7 @@ end
 Proc_Bash = Proc:extend()
 function Proc_Bash:init(args)
   self.triggers = {PROC_ON_HIT}
-
+  self.scope = 'troop'
   
   Proc_Bash.super.init(self, args)
   
@@ -104,6 +111,7 @@ end
 Proc_Heal = Proc:extend()
 function Proc_Heal:init(args)
   self.triggers = {}
+  self.scope = 'troop'
 
   Proc_Heal.super.init(self, args)
   
@@ -127,6 +135,7 @@ end
 Proc_Overkill = Proc:extend()
 function Proc_Overkill:init(args)
   self.triggers = {PROC_ON_KILL}
+  self.scope = 'troop'
 
   Proc_Overkill.super.init(self, args)
   
@@ -149,29 +158,10 @@ function Proc_Overkill:onKill(target)
   end
 end
 
---proc berserk
-Proc_Berserk = Proc:extend()
-function Proc_Berserk:init(args)
-  self.triggers = {}
-
-  Proc_Berserk.super.init(self, args)
-  
-  
-
-  --define the proc's vars
-  self.buff = 'berserk'
-  self.buffDuration = self.data.buffDuration or 5
-  self.buffdata = {name = 'berserk', color = purple[5], duration = 5, maxDuration = 5,
-    stats = {attack_speed = 0.1, move_speed = 0.1}
-  }
-
-  if not self.unit then return end
-  trigger:after(TIME_TO_ROUND_START, function() self.unit:add_buff(self.buffdata) end)
-end
-
 Proc_Bloodlust = Proc:extend()
 function Proc_Bloodlust:init(args)
   self.triggers = {PROC_ON_KILL}
+  self.scope = 'team'
 
   Proc_Bloodlust.super.init(self, args)
   
@@ -185,7 +175,10 @@ end
 
 function Proc_Bloodlust:onKill(target)
   Proc_Bloodlust.super.onKill(self, target)
-  self.unit:bloodlust(self.buffDuration)
+  local units = self.team.troops
+  for i, unit in ipairs(units) do
+    unit:bloodlust(self.buffDuration)
+  end
 end
 
 
@@ -194,6 +187,7 @@ end
 Proc_Lightning = Proc:extend()
 function Proc_Lightning:init(args)
   self.triggers = {PROC_ON_ATTACK, PROC_ON_HIT}
+  self.scope = 'troop'
 
   Proc_Lightning.super.init(self, args)
   
@@ -244,16 +238,17 @@ end
 Proc_Static = Proc:extend()
 function Proc_Static:init(args)
   self.triggers = {PROC_ON_MOVE, PROC_ON_HIT}
+  self.scope = 'team'
 
   Proc_Static.super.init(self, args)
   
   
 
   --define the proc's vars
-  self.damage = self.data.damage or 10
+  self.damage = self.data.damage or 20
   self.damageType = 'lightning'
-  self.chain = self.data.chain or 8
-  self.every_moves = self.data.every_moves or 100
+  self.chain = self.data.chain or 6
+  self.every_moves = self.data.every_moves or 500
   self.radius = self.data.radius or 100
   self.color = self.data.color or blue[0]
 
@@ -268,7 +263,7 @@ function Proc_Static:onMove(distance)
   self.moves_left = math.max(0, self.moves_left - distance)
   if self.moves_left == 0 then
     --play sound
-    pop2:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+    pop2:play{pitch = random:float(0.8, 1.2), volume = 1.2}
   end
 end
 
@@ -280,7 +275,8 @@ function Proc_Static:onHit(target, damage)
       group = main.current.main, 
       target = target, rs = self.radius, 
       dmg = self.damage, color = self.color, 
-      parent = self.unit, 
+      parent = self.unit,
+      chain = self.chain,
       level = 1}
   end
 end
@@ -294,6 +290,7 @@ end
 Proc_Radiance = Proc:extend()
 function Proc_Radiance:init(args)
   self.triggers = {PROC_ON_TICK}
+  self.scope = 'troop'
 
   Proc_Radiance.super.init(self, args)
   
@@ -324,6 +321,7 @@ end
 Proc_Shield = Proc:extend()
 function Proc_Shield:init(args)
   self.triggers = {}
+  self.scope = 'troop'
 
   Proc_Shield.super.init(self, args)
   
@@ -348,34 +346,14 @@ end
 
 function Proc_Shield:die()
   Proc_Shield.super.die(self)
+  if not self.manual_trigger then return end
   trigger:cancel(self.manual_trigger)
-end
-
---need a new gameObject group that collides with walls but not units
---to make phasing work
---looks like 'ghost' tag doesn't work, or can't be set mid-game
-Proc_Phasing = Proc:extend()
-function Proc_Phasing:init(args)
-  self.triggers = {}
-
-  Proc_Phasing.super.init(self, args)
-  
-  
-
-  --define the proc's vars
-  self.buffname = 'phasing'
-  self.buff_duration = self.data.buff_duration or 9999
-  self.buffdata = {name = self.buffname, color = purple[5], duration = self.buff_duration,
-    toggles = {phasing = 1}
-  }
-
-  if not self.unit then return end
-  self.unit:add_buff(self.buffdata)
 end
 
 Proc_Fire = Proc:extend()
 function Proc_Fire:init(args)
   self.triggers = {PROC_ON_HIT}
+  self.scope = 'troop'
 
   Proc_Fire.super.init(self, args)
   
@@ -395,6 +373,7 @@ end
 Proc_Firestack = Proc:extend()
 function Proc_Firestack:init(args)
   self.triggers = {}
+  self.scope = 'troop'
 
   Proc_Firestack.super.init(self, args)
 
@@ -410,6 +389,7 @@ end
 ProcChainExplode = Proc:extend()
 function ProcChainExplode:init(args)
   self.triggers = {PROC_ON_KILL}
+  self.scope = 'troop'
 
   ProcChainExplode.super.init(self, args)
   
@@ -436,6 +416,7 @@ end
 Proc_Blazin = Proc:extend()
 function Proc_Blazin:init(args)
   self.triggers = {PROC_ON_TICK}
+  self.scope = 'troop'
 
   Proc_Blazin.super.init(self, args)
   
@@ -475,46 +456,10 @@ function Proc_Blazin:onTick(dt)
   self.unit:add_buff(self.buffdata)
 end
 
-Proc_Redshield = Proc:extend()
-function Proc_Redshield:init(args)
-  self.triggers = {PROC_ON_GOT_HIT}
-
-  Proc_Redshield.super.init(self, args)
-
-  --define the proc's vars
-  -- proc stats, 
-  self.buffdata = {name = 'redshield', color = grey[5], duration = 5, maxDuration = 5, stacks = 1}
-
-end
-
-function Proc_Redshield:onGotHit(from, damage)
-  Proc_Redshield.super.onGotHit(self, from, damage)
-
-  self.unit:redshield(self.buffdata.duration)
-end
-
-Proc_Redsword = Proc:extend()
-function Proc_Redsword:init(args)
-  self.triggers = {}
-
-  Proc_Redsword.super.init(self, args)
-
-  --define the proc's vars
-  -- gain damage based on your bonus defense
-  self.buffdata = {
-    name = 'redsword',
-    duration = 9999,
-    stats = {dmg_per_def = 2}
-  }
-
-  if not self.unit then return end
-  self.unit:add_buff(self.buffdata)
-end
-
-
 Proc_Frost = Proc:extend()
 function Proc_Frost:init(args)
   self.triggers = {PROC_ON_HIT}
+  self.scope = 'troop'
 
   Proc_Frost.super.init(self, args)
 
@@ -571,6 +516,7 @@ end
 Proc_Icenova = Proc:extend()
 function Proc_Icenova:init(args)
   self.triggers = {PROC_ON_TICK}
+  self.scope = 'troop'
 
   Proc_Icenova.super.init(self, args)
 
@@ -619,6 +565,7 @@ end
 Proc_Slowstack = Proc:extend()
 function Proc_Slowstack:init(args)
   self.triggers = {}
+  self.scope = 'troop'
 
   Proc_Slowstack.super.init(self, args)
 
@@ -636,6 +583,7 @@ end
 Proc_Eledmg = Proc:extend()
 function Proc_Eledmg:init(args)
   self.triggers = {}
+  self.scope = 'troop'
 
   Proc_Eledmg.super.init(self, args)
 
@@ -653,6 +601,7 @@ end
 Proc_Elevamp = Proc:extend()
 function Proc_Elevamp:init(args)
   self.triggers = {}
+  self.scope = 'troop'
 
   Proc_Elevamp.super.init(self, args)
 
@@ -672,18 +621,14 @@ proc_name_to_class = {
   ['bash'] = Proc_Bash,
   ['heal'] = Proc_Heal,
   ['overkill'] = Proc_Overkill,
-  ['berserk'] = Proc_Berserk,
   ['bloodlust'] = Proc_Bloodlust,
   ['lightning'] = Proc_Lightning,
   ['static'] = Proc_Static,
   ['radiance'] = Proc_Radiance,
   ['shield'] = Proc_Shield,
-  ['phasing'] = Proc_Phasing,
   --red procs
   ['fire'] = Proc_Fire,
   ['firestack'] = Proc_Firestack,
-  ['redshield'] = Proc_Redshield,
-  ['redsword'] = Proc_Redsword,
   ['chainexplode'] = ProcChainExplode,
   ['blazin'] = Proc_Blazin,
   --blue procs

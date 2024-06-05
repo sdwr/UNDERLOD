@@ -108,6 +108,17 @@ function Spawn_Teams(arena)
     --add items to team / troops here
     --instead of in the unit creation
     -- that way we can distinguish between global/team/troop items
+
+    --a team item still needs to have triggers when the troop does stuff (ATTACK, KILL, MOVE)
+    --but it should apply to all troops in the team
+
+    --the proc on the troop will be the same, only difference is there is 1 copy of the proc
+    --and not 5
+
+    --only problem is that the item needs to be applied to the troops before its first tick
+
+    team:apply_item_procs()
+
     
   end
 end

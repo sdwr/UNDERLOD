@@ -859,38 +859,8 @@ function Arena:transition()
     main:add(BuyScreen'buy_screen')
     system.save_run(self.level+1, self.level_list, self.loop, gold, self.units, self.max_units, self.passives, self.shop_level, self.shop_xp, run_passive_pool, locked_state)
     main:go_to('buy_screen', self.level+1, self.level_list, self.loop, self.units, self.max_units, self.passives, self.shop_level, self.shop_xp)
-    t.t:after(0.1, function()
-      t.text:set_text({
-        {text = '[nudge_down, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']gold gained: ' .. tostring(self.gold_gained or 0) .. ' + ' .. tostring(self.gold_picked_up or 0), font = pixul_font, 
-          alignment = 'center', height_multiplier = 1.5},
-        {text = '[wavy_lower, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']bonus gold: 0', font = pixul_font, alignment = 'center', height_multiplier = 1.5},
-        {text = '[wavy_lower, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']total: 0', font = pixul_font, alignment = 'center'}
-      })
-      _G[random:table{'coins1', 'coins2', 'coins3'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-      t.t:after(0.2, function()
-        t.text:set_text({
-          {text = '[wavy_lower, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']gold gained: ' .. tostring(self.gold_gained or 0) .. ' + ' .. tostring(self.gold_picked_up or 0), font = pixul_font,
-            alignment = 'center', height_multiplier = 1.5},
-          {text = '[nudge_down, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']bonus gold: ' .. tostring(self.bonus_gold or 0), font = pixul_font, alignment = 'center', height_multiplier = 1.5},
-          {text = '[wavy_lower, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']total: 0', font = pixul_font, alignment = 'center'}
-        })
-        _G[random:table{'coins1', 'coins2', 'coins3'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-        t.t:after(0.2, function()
-          t.text:set_text({
-            {text = '[wavy_lower, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']gold gained: ' .. tostring(self.gold_gained or 0) .. ' + ' .. tostring(self.gold_picked_up or 0), font = pixul_font,
-              alignment = 'center', height_multiplier = 1.5},
-            {text = '[wavy_lower, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']bonus gold: ' .. tostring(self.bonus_gold or 0), font = pixul_font, alignment = 'center', height_multiplier = 1.5},
-            {text = '[nudge_down, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']total: ' .. tostring((self.gold_gained or 0) + (self.bonus_gold or 0) + (self.gold_picked_up or 0)), font = pixul_font, alignment = 'center'}
-          })
-          _G[random:table{'coins1', 'coins2', 'coins3'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-        end)
-      end)
-    end)
-  end, text = Text({
-    {text = '[wavy_lower, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']gold gained: 0 + 0', font = pixul_font, alignment = 'center', height_multiplier = 1.5},
-    {text = '[wavy_lower, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']bonus gold: 0', font = pixul_font, alignment = 'center', height_multiplier = 1.5},
-    {text = '[wavy_lower, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']total: 0', font = pixul_font, alignment = 'center'}
-  }, global_text_tags)}
+
+  end, nil}
 end
 
 function Arena:spawn_n_critters(p, j, n, pass, parent)

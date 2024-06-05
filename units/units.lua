@@ -29,6 +29,7 @@ table.extend(all_unit_classes, enemy_classes)
 Team = Object:extend()
 function Team:init(i)
   self.troops = {}
+  self.procs = {}
   self.target = nil
   self.index = i
 end
@@ -39,6 +40,7 @@ function Team:add_troop(args)
   table.insert(self.troops, troop)
 end
 
+--target functions
 function Team:set_team_target(target)
   self.target = target
   for i, troop in ipairs(self.troops) do
@@ -56,6 +58,7 @@ function Team:clear_team_target()
   Helper.Unit:clear_target_ring(target)
 end
 
+--buff functions
 function Team:add_buff(buff)
   for i, troop in ipairs(self.troops) do
     troop:add_buff(buff)
@@ -73,6 +76,35 @@ function Team:remove_and_add_buff(buff)
   for i, troop in ipairs(self.troops) do
     troop:remove_buff(buffName)
     troop:add_buff(buff)
+  end
+end
+
+--item functions
+
+--needs troops to be added to team first (should be done in init?
+function Team:apply_item_procs()
+  --assume all items are the same between troops, so just grab the first one
+  if not self.troops or #self.troops == 0 then
+    print('no troops in team')
+    return
+  end
+
+  --add 1 copy of 'team' procs to the team
+  local team_items = self.troops[1].items
+
+  if team_items and #team_items > 0 then
+    for k,item in ipairs(team_items) do
+      if item.procs then
+        for _, proc in ipairs(item.procs) do
+          local procname = proc
+          --can fill data from item here, but defaults should be ok
+          local procObj = Create_Proc(procname, nil, self)
+          if procObj then
+            table.insert(self.procs, procObj)
+          end
+        end
+      end
+    end
   end
 end
 

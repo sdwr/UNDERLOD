@@ -12,30 +12,42 @@
 -- define the proc's vars (and bring stats in from data)
 -- define the proc's timers
 
-PROC_ON_TICK = 'onTick'
-PROC_ON_HIT = 'onHit'
-PROC_ON_GOT_HIT = 'onGotHit'
-PROC_ON_ATTACK = 'onAttack'
-PROC_ON_MOVE = 'onMove'
-PROC_ON_DEATH = 'onDeath'
-PROC_ON_KILL = 'onKill'
+PROC_ON_TICK = 'onTickProcs'
+PROC_ON_HIT = 'onHitProcs'
+PROC_ON_GOT_HIT = 'onGotHitProcs'
+PROC_ON_ATTACK = 'onAttackProcs'
+PROC_ON_MOVE = 'onMoveProcs'
+PROC_ON_DEATH = 'onDeathProcs'
+PROC_ON_KILL = 'onKillProcs'
+
+LIST_OF_PROC_TYPES = {
+  PROC_ON_TICK,
+  PROC_ON_HIT,
+  PROC_ON_GOT_HIT,
+  PROC_ON_ATTACK,
+  PROC_ON_MOVE,
+  PROC_ON_DEATH,
+  PROC_ON_KILL
+}
 
 
 --name is passed in from the item data
 Proc = Object:extend()
 function Proc:init(args)
-  if not args or not args.unit or not args.data then
-    print('error: proc needs unit and data to init')
+  if not args or not args.data then
+    print('error: proc needs and data to init')
   end
 
   self.unit = args.unit
+  self.team = args.team
   self.data = args.data
 
   if DEBUG_PROCS then
-    print('creating proc: ', self.unit, self.data)
+    print('creating proc: ', self.unit, self.team, self.data)
   end
 
   self.name = self.data.name
+  self:addTriggers()
 end
 
 function Proc:hasTrigger(trigger)
@@ -45,6 +57,62 @@ function Proc:hasTrigger(trigger)
     end
   end
   return false
+end
+
+function Proc:addTriggers()
+  if self.scope == 'team' and self.team then
+    self:addTriggersToTeam()
+  elseif self.scope == 'troop' and self.unit then
+    self:addTriggersToTroop()
+  elseif self.scope == 'global' then
+    --do global stuff
+  else
+    print('proc not on team or troop')
+    self:die()
+  end
+end
+
+--sets procs for all the units in the team
+function Proc:addTriggersToTeam()
+  if not self.team then
+    print('proc needs a team to add team triggers')
+    return
+  end
+
+  local team = self.team
+  table.insert(team.procs, self)
+  for i, triggerName in ipairs(LIST_OF_PROC_TYPES) do
+    if self:hasTrigger(triggerName) then
+      self:addTriggerToAllTroops(triggerName)
+    end
+  end
+end
+
+function Proc:addTriggerToAllTroops(triggerName)
+  for i, troop in ipairs(self.team.troops) do
+    local list = troop[triggerName]
+    table.insert(list, self)
+  end
+end
+
+function Proc:addTriggersToTroop()
+  if not self.unit then
+    print('proc needs a unit to add troop triggers')
+    return
+  end
+
+  local unit = self.unit
+  table.insert(unit.procs, self)
+
+  --add procs to the unit callback lists here
+  -- still need to deal with proc deletion, right now they should be cleared at end of round (I hope??)
+  for i, triggerName in ipairs(LIST_OF_PROC_TYPES) do
+    if self:hasTrigger(triggerName) then
+      local list = unit[triggerName]
+      table.insert(list, self)
+    end
+  end
+  
 end
 
 function Proc:die()
