@@ -26,6 +26,7 @@ function BuyScreen:on_exit()
   self.main = nil
   self.effects = nil
   self.ui = nil
+  self.ui_top = nil
   self.shop_text = nil
   self.items_text = nil
   self.sets = nil
@@ -69,6 +70,7 @@ function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, pas
   self.main = Group()
   self.effects = Group()
   self.ui = Group()
+  self.ui_top = Group()
   self.tutorial = Group()
 
   self.locked = locked_state and locked_state.locked
@@ -161,10 +163,12 @@ function BuyScreen:update(dt)
     self.main:update(dt*slow_amount)
     self.effects:update(dt*slow_amount)
     self.ui:update(dt*slow_amount)
+    self.ui_top:update(dt*slow_amount)
     if self.shop_text then self.shop_text:update(dt) end
     if self.items_text then self.items_text:update(dt) end
   else
     self.ui:update(dt*slow_amount)
+    self.ui_top:update(dt*slow_amount)
     self.tutorial:update(dt*slow_amount)
   end
 
@@ -204,7 +208,7 @@ end
 
 function BuyScreen:build_level_map()
   if self.level_map then self.level_map:die() end
-  self.level_map = BuildLevelMap(self.main, gw/2, 30, self, self.level, self.loop, self.level_list)
+  self.level_map = BuildLevelMap(self.ui_top, gw/2, 30, self, self.level, self.loop, self.level_list)
   self:create_level_buttons()
 end
 
@@ -274,6 +278,7 @@ function BuyScreen:draw()
 
   if self.paused then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
   self.ui:draw()
+  self.ui_top:draw()
 
   if self.in_tutorial then
     graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent_2)
@@ -667,12 +672,12 @@ function LevelMap:build()
   self.level_connections = {}
   for i = 1, #self.levels - 1 do
     if i == 1 and self.level > 1 then
-      table.insert(self.level_connections, LevelMapConnection{group = self.group, x = self.levels[i].x - 15, y = self.levels[i].y, w = 20, h = 3, color = fg[1]})
+      table.insert(self.level_connections, LevelMapConnection{group = main.current.ui, x = self.levels[i].x - 15, y = self.levels[i].y, w = 20, h = 3, color = fg[1]})
     end
-    table.insert(self.level_connections, LevelMapConnection{group = self.group, x = self.levels[i].x + 15, y = self.levels[i].y, w = 20, h = 3, color = fg[1]})
+    table.insert(self.level_connections, LevelMapConnection{group = main.current.ui, x = self.levels[i].x + 15, y = self.levels[i].y, w = 20, h = 3, color = fg[1]})
   end
   if self.level < NUMBER_OF_ROUNDS then
-    table.insert(self.level_connections, LevelMapConnection{group = self.group, x = self.levels[#self.levels].x + 15, y = self.levels[#self.levels].y, w = 20, h = 3, color = fg[1]})
+    table.insert(self.level_connections, LevelMapConnection{group = main.current.ui, x = self.levels[#self.levels].x + 15, y = self.levels[#self.levels].y, w = 20, h = 3, color = fg[1]})
   end
 end
 
@@ -682,7 +687,7 @@ end
 
 function LevelMap:draw()
   graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
-    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, self.selected and fg[0] or bg[1])
+    --graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, self.selected and fg[0] or bg[1])
     self.text:draw(self.x, self.y - 15, 0, 1, 1)
   graphics.pop()
 end
@@ -716,6 +721,10 @@ function LevelMapLevel:init(args)
   self.fill_color = args.fill_color
   self.level = args.level
   self.parent = args.parent
+
+  if Is_Boss_Level(self.level) then
+    self.is_boss = true
+  end
 end
 
 function LevelMapLevel:update(dt)
@@ -725,8 +734,13 @@ end
 function LevelMapLevel:draw()
   graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
     graphics.circle(self.x, self.y, 9, self.fill_color)
-    graphics.circle(self.x, self.y, 10, self.line_color, 3)
-    graphics.print_centered(self.level, pixul_font, self.x, self.y +2, 0, 1, 1, 0, 0, (self.level == self.parent.level) and yellow[2] or fg[0])
+    if self.is_boss then
+      skull:draw(self.x, self.y, 0, 0.7, 0.7)
+    else
+      graphics.circle(self.x, self.y, 10, self.line_color, 3)
+      graphics.print_centered(self.level, pixul_font, self.x, self.y +2, 0, 1, 1, 0, 0, (self.level == self.parent.level) and yellow[2] or fg[0])
+    end
+
   graphics.pop()
 end
 

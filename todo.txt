@@ -1,6 +1,12 @@
 
 TODO:
   
+  - add attack picker for enemies
+    - have multiple attacks
+    - with individual cooldowns, or 1 global?
+    - random selection or conditional (ex. target within range)
+
+    
   - add more dodgeable attacks / enemies
     - laser is good
     - spread laser

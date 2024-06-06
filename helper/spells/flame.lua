@@ -61,7 +61,7 @@ function Helper.Spell.Flame:damage()
     for __, flame in ipairs(Helper.Spell.Flame.list) do
         for _, target in ipairs(Helper.Unit:get_list(not flame.unit.is_troop)) do
             if Helper.Geometry:is_inside_triangle(target.x, target.y, Helper.Geometry:get_triangle_from_height_and_width(flame.unit.x, flame.unit.y, flame.unit.x + flame.directionx, flame.unit.y + flame.directiony, flame.flameheight, flame.flamewidth)) 
-            and Helper.Geometry:distance(flame.unit.x, flame.unit.y, flame.unit.target.x, flame.unit.target.y) < flame.flameheight then
+            and Helper.Geometry:distance(flame.unit.x, flame.unit.y, target.x, target.y) < flame.flameheight then
                 target:hit(flame.damage, flame.unit)
                 HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
                 --for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = blue[0]} end

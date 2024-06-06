@@ -7,6 +7,7 @@ Enemy:implement(Physics)
 function Enemy:init(args)
   self:init_game_object(args)
 
+  self.state = 'normal'
   self:init_unit()
   self:setExtraFunctions()
 
@@ -15,7 +16,6 @@ function Enemy:init(args)
   
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20 + self.shape.w / 2)
   self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 1000)
-  self.state = 'normal'
 end
 
 --load enemy type specific functions from global table

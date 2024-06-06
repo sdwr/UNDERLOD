@@ -1,5 +1,5 @@
 
-local function boss_level(level)
+function Is_Boss_Level(level)
   if level == 6 then
     return 'stompy'
   elseif level == 11 then
@@ -18,8 +18,8 @@ function Build_Level_List(max_level)
   end
 
   for i = 1, max_level do
-    if boss_level(i) then
-      level_list[i].boss = boss_level(i)
+    if Is_Boss_Level(i) then
+      level_list[i].boss = Is_Boss_Level(i)
       level_list[i].color = black[0]
       level_list[i].round_power = BOSS_ROUND_POWER
 

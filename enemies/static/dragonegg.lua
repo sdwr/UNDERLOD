@@ -20,6 +20,8 @@ fns['init_enemy'] = function(self)
 
   self.castTime = 3
 
+  self.state = unit_states['frozen']
+
   --set attacks
     self.t:after(attack_speeds['medium-fast'], function ()
         Summon{group = main.current.main, team = "enemy", type = "enemy_critter", amount = 6, suicide = true,
