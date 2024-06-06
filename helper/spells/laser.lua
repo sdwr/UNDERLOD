@@ -36,6 +36,10 @@ function Helper.Spell.Laser:create(color, laser_aim_width, direction_lock, damag
         laser.target_last_x = unit:my_target().x
         laser.target_last_y = unit:my_target().y
 
+        if laser.damage_troops then
+            laser.charge_sound = laser_charging:play{volume=0.9}
+        end
+
         table.insert(Helper.Spell.Laser.list, laser)
     end
 end
@@ -110,8 +114,8 @@ end
 
 function Helper.Spell.Laser:draw_aims()
     for i, laser in ipairs(Helper.Spell.Laser.list) do
-        love.graphics.setLineWidth(laser.laser_aim_width)
-        love.graphics.setColor(laser.color.r, laser.color.g, laser.color.b, 0.5)
+        love.graphics.setLineWidth(laser.laser_aim_width / 2)
+        love.graphics.setColor(laser.color.r, laser.color.g, laser.color.b, 0.3)
         if laser.direction_lock then
             love.graphics.line(laser.unit.x, laser.unit.y, Helper.Spell.Laser:get_end_location(laser.unit.x, laser.unit.y, laser.unit.x + laser.direction_targetx, laser.unit.y + laser.direction_targety))
         else
@@ -140,7 +144,7 @@ function Helper.Spell.Laser:update()
         end
 
         if not laser.unit or laser.unit.dead then
-            table.remove(Helper.Spell.Laser.list, i)
+            Helper.Spell.Laser:die(i)
         end
 
         if Helper.Time.time - laser.start_aim_time > laser.cast_time and not laser.holding_fire then
@@ -154,7 +158,7 @@ function Helper.Spell.Laser:update()
                 end
                 Helper.Spell.DamageLine:create(laser.unit, laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.unit.x, laser.unit.y, Helper.Spell.Laser:get_end_location(laser.unit.x, laser.unit.y, x, y))
             end
-            table.remove(Helper.Spell.Laser.list, i)
+            Helper.Spell.Laser:die(i)
             shoot1:play{volume=0.7}
 
             laser.unit.last_attack_finished = Helper.Time.time
@@ -162,6 +166,36 @@ function Helper.Spell.Laser:update()
             Helper.Unit:finish_casting(laser.unit)
         end
     end
+end
+
+function Helper.Spell.Laser:create_damage(i)
+    local laser = Helper.Spell.Laser.list[i]
+    if not laser then return end
+
+    local target_x, target_y = Helper.Spell:get_target_nearest_point(laser.unit)
+    if x == 0 or y == 0 then
+        target_x = laser.target_last_x
+        target_y = laser.target_last_y
+    end
+
+    local end_x, end_y = 0, 0
+
+    if laser.direction_lock then
+        end_x, end_y = Helper.Spell.Laser:get_end_location(laser.unit.x, laser.unit.y, laser.unit.x + laser.direction_targetx, laser.unit.y + laser.direction_targety)
+    else
+        end_x, end_y = Helper.Spell.Laser:get_end_location(laser.unit.x, laser.unit.y, target_x, target_y)
+    end
+
+    local length = math.sqrt((end_x - laser.unit.x) ^ 2 + (end_y - laser.unit.y) ^ 2)
+    Area{group = main.current.main, 
+        x = laser.unit.x, y= laser.unit.y,
+        w = laser.laser_aim_width * 3, h = length,
+        r = math.atan2(laser.direction_targety, laser.direction_targetx),
+        color = laser.color,
+        dmg = laser.damage,
+        parent = laser.unit,
+        team = laser.unit.is_troop and 'friend' or 'enemy',
+    }
 end
 
 function Helper.Spell.Laser:clear_all()
@@ -188,6 +222,17 @@ end
 function Helper.Spell.Laser:stop_aiming(unit)
     local i, laser = find_in_list(Helper.Spell.Laser.list, unit, function(value) return value.unit end)
     if i ~= -1 then
+        Helper.Spell.Laser:die(i)
+    end
+end
+
+function Helper.Spell.Laser:die(i)
+    local laser = Helper.Spell.Laser.list[i]
+    if laser then
+        if laser.charge_sound then
+            laser.charge_sound:stop()
+        end
         table.remove(Helper.Spell.Laser.list, i)
     end
+
 end

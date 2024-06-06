@@ -1,5 +1,6 @@
 Helper.Spell = {}
 
+
 require 'helper/spells/flame'
 require 'helper/spells/missile'
 require 'helper/spells/damage_circle'

@@ -95,7 +95,7 @@ end
 function ShopCard:update(dt)
   self:update_game_object(dt)
 
-  if (self.selected and input.m1.pressed) or input[tostring(self.i)].pressed then
+  if (self.selected and input.m1.pressed) then
     if not main.current.buy_unit then
       print('cant buy unit')
       return

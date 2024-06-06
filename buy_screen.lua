@@ -295,7 +295,6 @@ function BuyScreen:set_party()
   local x = gw/2
   --center single unit, otherwise start on the left
   if #self.units == 2 then
-    print("more than 1 unit)")
     x = gw/2 - CHARACTER_CARD_WIDTH/2 - CHARACTER_CARD_SPACING
   elseif #self.units == 3 then
     x = gw/2 - CHARACTER_CARD_WIDTH - CHARACTER_CARD_SPACING
@@ -671,6 +670,9 @@ function LevelMap:build()
       table.insert(self.level_connections, LevelMapConnection{group = self.group, x = self.levels[i].x - 15, y = self.levels[i].y, w = 20, h = 3, color = fg[1]})
     end
     table.insert(self.level_connections, LevelMapConnection{group = self.group, x = self.levels[i].x + 15, y = self.levels[i].y, w = 20, h = 3, color = fg[1]})
+  end
+  if self.level < NUMBER_OF_ROUNDS then
+    table.insert(self.level_connections, LevelMapConnection{group = self.group, x = self.levels[#self.levels].x + 15, y = self.levels[#self.levels].y, w = 20, h = 3, color = fg[1]})
   end
 end
 
@@ -1108,76 +1110,6 @@ function RerollButton:on_mouse_exit()
     end
   end
   self.selected = false
-end
-
-MaxUnitButton = Object:extend()
-MaxUnitButton:implement(GameObject)
-function MaxUnitButton:init(args)
-  self:init_game_object(args)
-  self.cost = max_units_to_cost[self.parent.max_units]
-  self.shape = Rectangle(self.x, self.y, self.sx*50, self.sy*20)
-  self.interact_with_mouse = true
-  self.spring:pull(0.2, 200, 10)
-
-  self.text = Text({{text = '[bg10]+ max: [yellow]' .. self.cost, font = pixul_font, alignment = 'center'}}, global_text_tags)
-end
-
-function MaxUnitButton:update(dt)
-  self:update_game_object(dt)
-  self.cost = max_units_to_cost[self.parent.max_units]
-
-  if (self.selected and input.m1.pressed) then
-    if gold < self.cost then
-      self.spring:pull(0.2, 200, 10)
-      error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-      if not self.info_text then
-        self.info_text = InfoText{group = main.current.ui}
-        self.info_text:activate({
-          {text = '[fg]not enough gold', font = pixul_font, alignment = 'center'},
-        }, nil, nil, nil, nil, 16, 4, nil, 2)
-        self.info_text.x, self.info_text.y = gw/2, gh/2 + 10
-      end
-      self.t:after(2, function() self.info_text:deactivate(); self.info_text.dead = true; self.info_text = nil end, 'info_text')
-    else
-      ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-      self.parent.max_units = self.parent.max_units + 1
-      self.spring:pull(0.2, 200, 10)
-      gold = gold - self.cost
-      self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
-      buyScreen:save_run()
-      self.parent:set_party()
-    end
-  end
-end
-
-
-function MaxUnitButton:draw()
-  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
-  graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, self.selected and fg[0] or bg[1])
-  self.text:draw(self.x, self.y + 1)
-  graphics.pop()
-end
-
-
-function MaxUnitButton:on_mouse_enter()
-  ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
-  pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-  self.selected = true
-  self.spring:pull(0.2, 200, 10)
-end
-
-
-function MaxUnitButton:on_mouse_exit()
-  self.selected = false
-end
-
-function MaxUnitButton:die()
-  self.dead = true
-  if self.info_text then
-    self.info_text:deactivate()
-    self.info_text.dead = true
-    self.info_text = nil
-  end
 end
 
 LooseItem = Object:extend()

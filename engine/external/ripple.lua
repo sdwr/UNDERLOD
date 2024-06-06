@@ -433,6 +433,7 @@ function Sound:__index(key)
 	return Taggable.__index(self, key)
 end
 
+
 function Sound:__newindex(key, value)
 	if key == 'loop' then
 		self._source:setLooping(value)

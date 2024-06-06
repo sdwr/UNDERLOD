@@ -853,7 +853,9 @@ Area = Object:extend()
 Area:implement(GameObject)
 function Area:init(args)
   self:init_game_object(args)
-  self.shape = Rectangle(self.x, self.y, 1.5*self.w, 1.5*self.w, self.r)
+  local w = 1.5*self.w
+  local h = self.h and 1.5*self.h or 1.5*w
+  self.shape = Rectangle(self.x, self.y, w, h, self.r)
   local targets = {}
   if self.team == "enemy" then 
     targets = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)

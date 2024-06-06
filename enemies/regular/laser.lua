@@ -27,7 +27,6 @@ fns['init_enemy'] = function(self)
       if target then
         self:rotate_towards_object(target, 1)
         Helper.Unit:claim_target(self, target)
-        sniper_load:play{volume=0.9}
         self.state = unit_states['casting']
         Helper.Spell.Laser:create(Helper.Color.blue, 7, true, self.dmg, self, nil, nil)
         end

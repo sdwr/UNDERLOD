@@ -145,6 +145,7 @@ function init()
   explosion_new = Sound('explosion_new.wav', s)
   metal_click = Sound('metal_click.wav', s)
   tick_new = Sound('tick_new.wav', s)
+  laser_charging = Sound('laser_charging.mp3', s)
 
   campfire = Sound('campfire.wav', s)
 
