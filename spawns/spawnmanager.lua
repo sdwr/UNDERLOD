@@ -47,6 +47,36 @@ function SpawnGlobals.Init()
 
   SpawnGlobals.boss_spawn_point = {x = right_x, y = mid_y}
 
+  SpawnGlobals.last_spawn_point = nil
+
+end
+
+function Get_Close_Spawn(index)
+  if index == 1 then
+    return 2
+  elseif index == 5 then
+    return 4
+  elseif index < 6 then
+    local choices = {index -1, index + 1}
+    return random:table(choices)
+  elseif index == 6 then
+    return 7
+  elseif index == 10 then
+    return 9
+  else
+    local choices = {index -1, index + 1}
+    return random:table(choices)
+  end
+end
+
+function Get_Far_Spawn(index)
+  if index < 6 then
+    local choices = {6,7,8,9,10}
+    return random:table(choices)
+  else
+    local choices = {1,2,3,4,5}
+    return random:table(choices)
+  end
 end
 
 function Can_Spawn(rs, location)
@@ -147,16 +177,23 @@ function Spawn_Wave(arena, wave)
       return
     end
 
-    -- need to adjust mod to be 1 indexed
-    current_group = (current_group - 1) % #SpawnGlobals.spawn_markers + 1
-    
-    --
     arena.spawning_enemies = true
-    if wave[wave_index] == 'shooter' or wave[wave_index] == 'seeker' then
-      Spawn_Group(arena, current_group, wave[wave_index], SPAWNS_IN_GROUP)
+    --wave is in format (enemy, amount, location)
+    local wave = wave[wave_index]
+    --get spawn location from previous and location type
+    local location_index = 1
+    if not SpawnGlobals.last_spawn_point then
+      location_index = 1
     else
-      Spawn_Group(arena, current_group, wave[wave_index], 1)
+      if wave[3] == 'close' then
+        location_index = Get_Close_Spawn(SpawnGlobals.last_spawn_point)
+      elseif wave[3] == 'far' then
+        location_index = Get_Far_Spawn(SpawnGlobals.last_spawn_point)
+      elseif wave[3] == 'random' then
+        location_index = random:int(1, #SpawnGlobals.spawn_markers)
+      end
     end
+    Spawn_Group(arena, location_index, wave[1], wave[2])
 
     current_group = current_group + 1
     wave_index = wave_index + 1
@@ -198,11 +235,11 @@ function Manage_Spawns(arena)
 
   arena.entry_delay = 0.5
 
-  arena.time_between_spawn_groups = 1.5
+  arena.time_between_spawn_groups = 0.4
   arena.time_between_spawns = 0.2
 
   -- arena.time_between_waves = 8
-  arena.time_between_next_wave_check = 2
+  arena.time_between_next_wave_check = 1
 
   arena.start_time = 3
   arena.wave_finished = true
@@ -248,6 +285,7 @@ function Manage_Spawns(arena)
       print(#waves)
       print('starting spawns')
       arena.max_waves = #waves
+      SpawnGlobals.last_spawn_point = nil
       --spawn first wave right off the bat
       Spawn_Wave(arena, waves[arena.wave])
       arena.wave = arena.wave + 1
@@ -267,6 +305,7 @@ function Manage_Spawns(arena)
 
         --if spawning is done and all enemies are dead, spawn the next wave
         if arena.wave_finished and #arena.main:get_objects_by_classes(arena.enemies) <= 0 then
+          ui_switch1:play{pitch = 1, volume = 0.9}
           Spawn_Wave(arena, waves[arena.wave])
           arena.wave = arena.wave + 1
           -- arena.time_until_next_wave = arena.time_between_waves
@@ -315,10 +354,13 @@ end
 function Spawn_Boss(arena, name)
   --set twice because of initial delay
   arena.spawning_enemies = true
+  arena.wave_finished = false
   
   Spawn_Effect(arena, SpawnGlobals.boss_spawn_point)
   LevelManager.activeBoss = Enemy{type = name, isBoss = true, group = arena.main, x = SpawnGlobals.boss_spawn_point.x, y = SpawnGlobals.boss_spawn_point.y, level = arena.level}
   arena.spawning_enemies = false
+  arena.wave_finished = true
+  arena.finished = true
 end
 
 --spawns a single enemy at a location
@@ -343,6 +385,7 @@ end
 -- if the location is occupied, the group will spawn at the next available location
 -- and the function will hold future spawns until the group is fully spawned
 function Spawn_Group(arena, group_index, type, amount)
+  SpawnGlobals.last_spawn_point = group_index
   local amount = amount or 1
   --set twice because of initial delay
   arena.spawning_enemies = true

@@ -13,8 +13,7 @@ require 'buy_screen'
 require 'objects'
 require 'player'
 require 'media'
-require 'spawnmanager'
-require 'levelmanager'
+require 'spawns/spawn_includes'
 require 'enemies/level_manager'
 require 'enemies/enemy_includes'
 require 'units/units'
@@ -712,6 +711,26 @@ function init()
     info_text:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
 
     return info_text
+  end
+
+  build_character_text = function (unit)
+    local item_stats = get_unit_stats(unit)
+    local buffs = get_unit_buffs(unit)
+
+    local text_lines = {}
+    local next_line = {text = '', font = pixul_font, alignment = 'center'}
+    for k, v in pairs(item_stats) do
+      next_line = {text = '', font = pixul_font, alignment = 'center'}
+      next_line.text = '[yellow[0]]+' .. (v*100) .. '% ' .. k:capitalize()
+      table.insert(text_lines, next_line)
+    end
+
+    local text2 = Text2{group = main.current.ui, x = 0, y = 0, 
+    lines = text_lines, font = pixul_font, alignment = 'center',
+    force_update = false}
+
+
+    return text2
   end
 
   character_descriptions = {
@@ -1659,15 +1678,14 @@ function init()
   special_enemy_by_tier = {
     [1] = {
       'laser',
-      'rager',
       'stomper',
-      'charger',
       'bomb',
     },
     [2] = {
       'mortar',
       'spawner',
       'arcspread',
+      'laser',
     },
     [3] = {
       'summoner',

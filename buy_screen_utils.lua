@@ -25,7 +25,7 @@ function BuildLevelText(level_list, level, x, y)
     for i, wave in ipairs(level_list[level].waves) do
       local wave_text = ''
       for j, enemy in ipairs(wave) do
-        wave_text = wave_text .. enemy .. ', '
+        wave_text = wave_text .. enemy[2] .. enemy[1] .. ', '
       end
       table.insert(info_text_content, {text = wave_text, font = pixul_font, alignment = 'center', height_multiplier = 1.5})
     end

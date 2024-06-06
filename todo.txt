@@ -1,7 +1,6 @@
 
 TODO:
-
-  - make summoners only spawn after round 5
+  
   - add more dodgeable attacks / enemies
     - laser is good
     - spread laser
@@ -11,10 +10,6 @@ TODO:
     - make them bigger
     - give them stronger stats
     - make their special ability better
-
-  - adjust how level_list creation happens
-    - want fewer enemy types per level
-    - minibosses at certain/random levels (displayed on map!)
 
   -add environmental effects to levels
     -hazards:
@@ -31,8 +26,6 @@ TODO:
   
   - make units not chase towards enemies when they are in range (+ push the enemy away)
   
-  -make enemies spawn in different locations
-
   - add new enemy movement patterns
     - avoid player (for summoners)
     - move randomly (for bullet hell)
@@ -40,15 +33,16 @@ TODO:
   - make screen transition circle always white
 
   -add "on round start" to proc
-    -now that items are being created in the shop
-    -we need to make sure that the proc effects only trigger
-    -when in combat, not in the shop
-
-  -make procs that are unit-based, not per troop
-    (bloodlust, static charge, etc)
 
 SMALL CLEANUP:
+   --hotkeys dont work with mulitple of the same unit
   --boss levels do not end when boss dies
+  
+  --laser secondary hit detection is stingy (maybe not registering points?)
+
+  --some item text not disappearing properly on death
+  --all items are destroyed exiting buy screen, will trigger consumable effects
+  --grabbed item draws behind item boxes, should be in front (moving to tutorial group doesn't fix)
 
 --------------
 NEW FEATURE PLAN:

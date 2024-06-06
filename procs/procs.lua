@@ -20,7 +20,7 @@ function Create_Proc(name, unit, team)
   end
 
   local procObj = proc_name_to_class[name]({unit = unit, team = team, data = {name = name}})
-  
+  return procObj
 end
 
 

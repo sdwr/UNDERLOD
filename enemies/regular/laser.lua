@@ -5,6 +5,7 @@ fns['init_enemy'] = function(self)
   --set extra variables from data
   self.data = self.data or {}
   self.size = self.data.size or 'big'
+  self.tracks = self.data.tracks or false
 
   --create shape
   self.color = blue[0]:clone()

@@ -434,11 +434,11 @@ function Unit:init_stats()
     self.base_dmg = 10  * REGULAR_ENEMY_SCALING(level)
     self.base_mvspd = 34
   elseif self.class == 'special_enemy' then
-    self.base_hp = 200 * SPECIAL_ENEMY_SCALING(level)
+    self.base_hp = 350 * SPECIAL_ENEMY_SCALING(level)
     self.base_dmg = 20  * SPECIAL_ENEMY_SCALING(level)
     self.base_mvspd = 34
   elseif self.class == 'miniboss' then
-    self.base_hp = 500 * SPECIAL_ENEMY_SCALING(level)
+    self.base_hp = 1000 * SPECIAL_ENEMY_SCALING(level)
     self.base_dmg = 20  * SPECIAL_ENEMY_SCALING(level)
     self.base_mvspd = 55
   end
@@ -474,28 +474,26 @@ end
 function Unit:get_item_stats()
   local stats = {}
 
-  if self.items and #self.items > 0 then
-    for k,v in ipairs(self.items) do
-      local item = v
-      if item.stats then
-        for stat, amt in pairs(item.stats) do
-          if stat == buff_types['dmg'] then
-            stats.dmg = (stats.dmg or 0) + amt
-          elseif stat == buff_types['def'] then
-            stats.def = (stats.def or 0) + amt
-          elseif stat == buff_types['mvspd'] then
-            stats.mvspd = (stats.mvspd or 0) + amt
-          elseif stat == buff_types['aspd'] then
-            stats.aspd = (stats.aspd or 0) + amt
-          elseif stat == buff_types['attack_range'] then
-            stats.attack_range = (stats.attack_range or 0) + amt
-          elseif stat == buff_types['area_dmg'] then
-            stats.area_dmg = (stats.area_dmg or 0) + amt
-          elseif stat == buff_types['area_size'] then
-            stats.area_size = (stats.area_size or 0) + amt
-          elseif stat == buff_types['hp'] then
-            stats.hp = (stats.hp or 0) + amt
-          end
+  for i = 1, 6 do
+    local item = self.items[i]
+    if item and item.stats then
+      for stat, amt in pairs(item.stats) do
+        if stat == buff_types['dmg'] then
+          stats.dmg = (stats.dmg or 0) + amt
+        elseif stat == buff_types['def'] then
+          stats.def = (stats.def or 0) + amt
+        elseif stat == buff_types['mvspd'] then
+          stats.mvspd = (stats.mvspd or 0) + amt
+        elseif stat == buff_types['aspd'] then
+          stats.aspd = (stats.aspd or 0) + amt
+        elseif stat == buff_types['attack_range'] then
+          stats.attack_range = (stats.attack_range or 0) + amt
+        elseif stat == buff_types['area_dmg'] then
+          stats.area_dmg = (stats.area_dmg or 0) + amt
+        elseif stat == buff_types['area_size'] then
+          stats.area_size = (stats.area_size or 0) + amt
+        elseif stat == buff_types['hp'] then
+          stats.hp = (stats.hp or 0) + amt
         end
       end
     end
