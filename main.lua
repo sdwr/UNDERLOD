@@ -2721,5 +2721,7 @@ function love.run()
     game_name = 'UNDERLOD',
     window_width = 'max',
     window_height = 'max',
+    game_width = 480*2,
+    game_height = 270*2,
   })
 end

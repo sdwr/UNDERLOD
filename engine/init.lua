@@ -65,13 +65,18 @@ function engine_run(config)
     sx, sy = window_width/(config.game_width or 480), window_height/(config.game_height or 270)
     ww, wh = window_width, window_height
 
-    if state.sx and state.sy then
-      sx, sy = state.sx, state.sy
-      love.window.setMode(state.sx*gw, state.sy*gh, {vsync = config.vsync, msaa = msaa or 0, display = config.display})
-    else
+    print(gw, gh)
+    print(sx, sy)
+    print(ww, wh)
+
+    -- if state.sx and state.sy then
+    --   print('whee')
+    --   sx, sy = state.sx, state.sy
+    --   love.window.setMode(state.sx*gw, state.sy*gh, {vsync = config.vsync, msaa = msaa or 0, display = config.display})
+    -- else
       state.sx, state.sy = sx, sy
       love.window.setMode(window_width, window_height, {vsync = config.vsync, msaa = msaa or 0, display = config.display})
-    end
+    -- end
     love.window.setTitle(config.game_name)
 
   else
