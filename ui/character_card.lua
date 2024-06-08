@@ -134,7 +134,7 @@ function ItemPart:sellItem()
         local sell_value = math.ceil(item.cost / 3)
         main.current:gain_gold(sell_value)
       end
-      item:die()
+      item:sell()
     end
   end
 
@@ -166,7 +166,7 @@ function ItemPart:update(dt)
 
   if input.m1.pressed and self.colliding_with_mouse and self:hasItem() then
     self.itemGrabbed = true
-    self.looseItem = LooseItem{group = main.current.tutorial, item = self:getItem(), parent = self}
+    self.looseItem = LooseItem{group = main.current.ui, item = self:getItem(), parent = self}
     --remove item text
     self:remove_item_text()
   end
@@ -229,7 +229,7 @@ function ItemPart:draw(y)
         end
       end
 
-      local image = item_images[item] or item_images['default']
+      local image = item_images[item.name] or item_images[item.icon] or item_images['default']
       if not self.itemGrabbed then
         image:draw(self.x, self.y, 0, 0.2, 0.2)
       else

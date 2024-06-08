@@ -11,7 +11,9 @@ end
 function HotbarGlobals:clear_hotbar()
   if self.hotbar_by_index then
     for i, button in ipairs(self.hotbar_by_index) do
-      button:destroy()
+      if button then
+        button.dead = true
+      end
     end
   end
   self.hotbar_by_index = {}

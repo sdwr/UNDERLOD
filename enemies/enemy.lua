@@ -162,9 +162,12 @@ function Enemy:die()
   self.super.die(self)
   self.dead = true
   -- update progress bar in arena, based on enemy value
-  local progress_amount = 0
-  progress_amount = enemy_to_round_power[self.type] or 0
-  main.current.progress_bar:increase_progress(progress_amount)
+  --progress bar is hidden for bosses
+  if main.current.progress_bar then
+    local progress_amount = 0
+    progress_amount = enemy_to_round_power[self.type] or 0
+    main.current.progress_bar:increase_progress(progress_amount)
+  end
 
   if self.parent and self.parent.summons and self.parent.summons > 0 then
     self.parent.summons = self.parent.summons - 1

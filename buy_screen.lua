@@ -336,7 +336,7 @@ function BuyScreen:set_items(shop_level)
   local y = gh - (item_h / 2) - 10
   local x = gw/2 - 60
   for i, item in ipairs(all_items) do
-    table.insert(self.items, ItemCard{group = self.main, x = x + (i-1)*60, y = y, w = 40, h = 50, 
+    table.insert(self.items, ItemCard{group = self.ui, x = x + (i-1)*60, y = y, w = 40, h = 50, 
                   item = item, parent = self, i = i})
   end
 end
@@ -1225,7 +1225,7 @@ function ItemCard:init(args)
 
   self.cost = self.item.cost
   -- putin item data?
-  self.image = item_images[self.item.name] or item_images['default']
+  self.image = item_images[self.item.name] or item_images[self.item.icon] or item_images['default']
   self.colors = self.item.colors
 
   self.tier_color = item_to_color(self.item)

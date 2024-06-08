@@ -40,6 +40,13 @@ function Item:add_proc(unit)
   end
 end
 
+function Item:sell()
+  for i, proc in ipairs(self.procs) do
+    proc:onSell()
+  end
+  self:die()
+end
+
 function Item:die()
   for i, proc in ipairs(self.procs) do
     proc:die()
@@ -128,10 +135,20 @@ item_to_item_data = {
     colors = {},
     cost = 2,
     consumable = true,
-    icon = 'rerollpotion',
+    icon = 'potion2',
     desc = 'Reroll the upcoming levels when you drink this potion',
     stats = {},
     procs = {'reroll'}
+  },
+  ['berserkpotion'] = {
+    name = 'berserkpotion',
+    colors = {},
+    cost = 2,
+    consumable = true,
+    icon = 'potion2',
+    desc = 'Gain attack speed and damage for the first 10 seconds of the next round when you drink this potion',
+    stats = {},
+    procs = {'berserk'}
   },
   --colorless items
   ['craggyvest'] = {

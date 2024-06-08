@@ -257,6 +257,13 @@ function Manage_Spawns(arena)
   --conditions for level end:
   -- 1. all waves are done / progress bar is full
   arena.t:after(arena.entry_delay, function()
+    --trigger onRoundStart
+    local troops = Helper.Unit:get_list(true)
+    if troops and #troops > 0 then
+      for i, troop in ipairs(troops) do
+        troop:onRoundStartCallbacks()
+      end
+    end
     -- --spawn miniboss
     --   Spawn_Enemy(arena, {'bigstomper'}, SpawnGlobals.spawn_markers[6])
     -- arena.wave = arena.wave + 1

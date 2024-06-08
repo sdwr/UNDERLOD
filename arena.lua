@@ -116,9 +116,12 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
   end
 
   --draw progress bar at the top of the screen
-  self.progress_bar = ProgressBar{group = self.ui, x = gw/2, y = 20, w = 200, h = 10, color = yellow[0], progress = 0}
-  self.progress_bar.max_progress = self.level_list[self.level].round_power or 0
-
+  if Is_Boss_Level(self.level) then
+    
+  else
+    self.progress_bar = ProgressBar{group = self.ui, x = gw/2, y = 20, w = 200, h = 10, color = yellow[0], progress = 0}
+    self.progress_bar.max_progress = self.level_list[self.level].round_power or 0
+  end
   Spawn_Teams(self)
 
   --select first character by default

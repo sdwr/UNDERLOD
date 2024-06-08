@@ -282,6 +282,7 @@ function init()
   --new items
   local d               = 'newItems/'
   skull                 = Image(d .. 'skull-small')
+  potion2               = Image(d .. 'potion2')
   arrows                = Image(d .. 'arrows')
   bear                  = Image(d .. 'bear')
   bomb                  = Image(d .. 'bomb')
@@ -1453,6 +1454,8 @@ function init()
     ['healingleaf'] = healer,
 
     ['corpseexplode'] = seeping,
+
+    ['potion2'] = potion2,
 
   }
 

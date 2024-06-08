@@ -203,7 +203,7 @@ function Unit:init_unit()
   self.toggles = {}
   self.hfx:add('hit', 1)
   self.hfx:add('shoot', 1)
-  self.hp_bar = HPBar{group = main.current.effects, parent = self}
+  self.hp_bar = HPBar{group = main.current.effects, parent = self, isBoss = self.isBoss}
   self.effect_bar = EffectBar{group = main.current.effects, parent = self}
 
   self.state = unit_states['normal']
@@ -466,6 +466,7 @@ function Unit:init_stats()
   self.onKillProcs = {}
   self.onDeathProcs = {}
   self.onMoveProcs = {}
+  self.onRoundStartProcs = {}
   
 end
 
@@ -737,6 +738,12 @@ function Unit:onMoveCallbacks(distance)
   end
 end
 
+function Unit:onRoundStartCallbacks()
+  for k, proc in ipairs(self.onRoundStartProcs) do
+    proc:onRoundStart()
+  end
+end
+
 --add custom UI later, so it doesn't stack with the buff circles
 --check firestack on from unit to see if it can stack
 function Unit:burn(dps, duration, from)
@@ -969,24 +976,90 @@ HPBar:implement(Parent)
 function HPBar:init(args)
   self:init_game_object(args)
   self.hidden = true
+  if self.isBoss then
+    self.hidden = false
+  end
+
+  self.last_hp = self.parent.hp
 end
 
 
 function HPBar:update(dt)
   self:update_game_object(dt)
   self:follow_parent_exclusively()
+
+  --update "last hp" for the hp bar effect
+  --messy AF!
+  if self.isBoss and self.parent and self.last_hp ~= self.parent.hp then
+    local w = 200
+    local x = gw/2 - w/2
+
+    local x1 = self:get_percent_hp() * w + x 
+    local x2 = self:get_percent_hp(self.last_hp) * w + x
+    
+    HPBar_Damage_Chunk{
+      group = main.current.effects,
+      x1 = x1,
+      y1 = 20,
+      x2 = x2,
+      y2 = 20,
+    }
+    self.last_hp = self.parent.hp
+  end
+end
+
+function HPBar:get_percent_hp(hp)
+  local p = self.parent
+  return math.remap(hp or p.hp, 0, p.max_hp, 0, 1)
 end
 
 
 function HPBar:draw()
   if self.hidden then return end
+  
   local p = self.parent
-  if p.hp < p.max_hp then
-    graphics.push(p.x, p.y, 0, p.hfx.hit.x, p.hfx.hit.x)
-      graphics.line(p.x - 0.5*p.shape.w, p.y - p.shape.h, p.x + 0.5*p.shape.w, p.y - p.shape.h, bg[-3], 2)
-      local n = math.remap(p.hp, 0, p.max_hp, 0, 1)
-      graphics.line(p.x - 0.5*p.shape.w, p.y - p.shape.h, p.x - 0.5*p.shape.w + n*p.shape.w, p.y - p.shape.h,
-      p.hfx.hit.f and fg[0] or (((p:is(Player) or p.is_troop) and green[0]) or (table.any(main.current.enemies, function(v) return p:is(v) end) and red[0])), 2)
-    graphics.pop()
+  local n = self:get_percent_hp()
+
+  if self.isBoss then
+    local w = 200
+    local h = 10
+    local x = gw/2 - w/2
+    local y = 20
+    graphics.line(x, y, x + w, y, bg[-3], h)
+    graphics.line(x, y, x + n*w, y, red[0], h)
+  else
+    if p.hp < p.max_hp then
+      graphics.push(p.x, p.y, 0, p.hfx.hit.x, p.hfx.hit.x)
+        graphics.line(p.x - 0.5*p.shape.w, p.y - p.shape.h, p.x + 0.5*p.shape.w, p.y - p.shape.h, bg[-3], 2)
+        graphics.line(p.x - 0.5*p.shape.w, p.y - p.shape.h, p.x - 0.5*p.shape.w + n*p.shape.w, p.y - p.shape.h,
+        p.hfx.hit.f and fg[0] or (((p:is(Player) or p.is_troop) and green[0]) or (table.any(main.current.enemies, function(v) return p:is(v) end) and red[0])), 2)
+      graphics.pop()
+    end
   end
 end
+
+HPBar_Damage_Chunk = Object:extend()
+HPBar_Damage_Chunk:implement(GameObject)
+function HPBar_Damage_Chunk:init(args)
+  self:init_game_object(args)
+  self.start_time = Helper.Time.time
+  self.duration = 1
+  self.a = 1
+  self.color = white[0]
+end
+
+function HPBar_Damage_Chunk:update(dt)
+  self:update_game_object(dt)
+  if Helper.Time.time - self.start_time > self.duration then
+    self.dead = true
+  end
+  self.a = math.remap(Helper.Time.time - self.start_time, 0, self.duration, 1, 0)
+end
+
+function HPBar_Damage_Chunk:draw()
+  local color = self.color:clone()
+  color.a = self.a
+  graphics.line(self.x1, self.y1, self.x2, self.y2, color, 10)
+end
+
+

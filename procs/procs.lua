@@ -27,7 +27,7 @@ end
 --proc reroll
 Proc_Reroll = Proc:extend()
 function Proc_Reroll:init(args)
-  self.triggers = {}
+  self.triggers = {PROC_ON_SELL}
   self.scope = 'global'
 
   Proc_Reroll.super.init(self, args)
@@ -36,12 +36,35 @@ end
 
 --when sold in the shop, reroll the upcoming levels
 --make sure this doesn't trigger at the end of rounds, when the unit is removed
-function Proc_Reroll:die()
-  Proc_Reroll.super.die(self)
+function Proc_Reroll:onSell()
   --should only trigger in buy_screen
   if main.current and main.current.roll_levels then
     main.current:roll_levels()
   end
+end
+
+
+--need to make the sell trigger onroundstart
+--and add the onroundstart to the unit somehow
+--because the unit doesn't exist until the round starts
+Proc_Berserk = Proc:extend()
+function Proc_Berserk:init(args)
+  self.triggers = {PROC_ON_ROUND_START}
+  self.scope = 'troop'
+
+  Proc_Berserk.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  self.buffname = 'berserk'
+  self.buffDuration = self.data.buffDuration or 5
+  self.aspdMulti = self.data.aspdMulti or 1.5
+end
+
+function Proc_Berserk:onRoundStart()
+  Proc_Berserk.super.onRoundStart(self)
+  self.unit:berserk(self.buffDuration, self.aspdMulti)
 end
 
 
@@ -616,6 +639,7 @@ end
 
 proc_name_to_class = {
   ['reroll'] = Proc_Reroll,
+  ['berserk'] = Proc_Berserk,
 
   ['craggy'] = Proc_Craggy,
   ['bash'] = Proc_Bash,

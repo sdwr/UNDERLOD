@@ -20,6 +20,10 @@ PROC_ON_MOVE = 'onMoveProcs'
 PROC_ON_DEATH = 'onDeathProcs'
 PROC_ON_KILL = 'onKillProcs'
 
+PROC_ON_ROUND_START = 'onRoundStartProcs'
+PROC_ON_SELL = 'onSellProcs'
+
+--does not include onSell, as that doesn't go in the unit's callback lists
 LIST_OF_PROC_TYPES = {
   PROC_ON_TICK,
   PROC_ON_HIT,
@@ -27,7 +31,8 @@ LIST_OF_PROC_TYPES = {
   PROC_ON_ATTACK,
   PROC_ON_MOVE,
   PROC_ON_DEATH,
-  PROC_ON_KILL
+  PROC_ON_KILL,
+  PROC_ON_ROUND_START,
 }
 
 
@@ -167,5 +172,19 @@ end
 function Proc:onKill(target)
   if DEBUG_PROCS then
     print('onKill', target, self.name)
+  end
+end
+
+--onRoundStart is called at the start of the round
+function Proc:onRoundStart()
+  if DEBUG_PROCS then
+    print('onRoundStart', self.name)
+  end
+end
+
+--onSell is called when the item is sold
+function Proc:onSell()
+  if DEBUG_PROCS then
+    print('onSell', self.name)
   end
 end
