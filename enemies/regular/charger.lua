@@ -29,7 +29,7 @@ fns['init_enemy'] = function(self)
     end, nil, nil, 'attack')
 end
 
-fns['draw_enemy'] = function(self)   
+fns['draw_enemy'] = function(self)
   graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
 end
 

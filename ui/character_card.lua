@@ -231,10 +231,10 @@ function ItemPart:draw(y)
 
       local image = item_images[item.name] or item_images[item.icon] or item_images['default']
       if not self.itemGrabbed then
-        image:draw(self.x, self.y, 0, 0.2, 0.2)
+        image:draw(self.x, self.y, 0, 0.4, 0.4)
       else
         local mouseX, mouseY = camera:get_mouse_position()
-        image:draw(mouseX, mouseY, 0, 0.2, 0.2)
+        image:draw(mouseX, mouseY, 0, 0.4, 0.4)
       end
     end
     

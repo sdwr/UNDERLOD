@@ -150,7 +150,12 @@ function Helper.Unit:is_attack_on_cooldown(unit)
 end
 
 function Helper.Unit:add_default_state_change_functions(unit)
-    unit.state_change_functions['normal'] = function() end
+    unit.state_change_functions['normal'] = function() 
+        if unit.base_castcooldown and not unit.castcooldown then
+            print('setting cast cooldown')
+            unit.castcooldown = unit.base_castcooldown
+        end
+    end
     unit.state_change_functions['frozen'] = function() end
     unit.state_change_functions['casting'] = function() end
     unit.state_change_functions['channeling'] = function() end
@@ -186,6 +191,12 @@ end
 
 function Helper.Unit:run_state_change_functions()
     for i, unit in ipairs(Helper.Unit:get_list(true)) do
+        if unit.previous_state ~= unit.state then
+            unit.state_change_functions[unit.state]()
+        end
+        unit.previous_state = unit.state
+    end
+    for i, unit in ipairs(Helper.Unit:get_list(false)) do
         if unit.previous_state ~= unit.state then
             unit.state_change_functions[unit.state]()
         end
@@ -235,25 +246,6 @@ function Helper.Unit:select_team(index)
     if team then
         team:select()
     end
-end
-
---rally point fns
-function Helper.Unit.set_team_rally_point(team_number, x, y)
-    local existing_rally = Helper.Unit.team_rally_points[team_number]
-    if existing_rally then
-        existing_rally.dead = true
-    end
-
-    --show the rally point for a few seconds
-    --only clear this rally point, not any new ones that are set afterwards
-    local rallyCircle = RallyCircle{
-        x = x,
-        y = y,
-        group = main.current.floor
-    }
-    --add clearing the rally point when all units have reached it
-    --or when all units are dead
-    Helper.Unit.team_rally_points[team_number] = rallyCircle
 end
 
 function Helper.Unit:clear_all_rally_points()

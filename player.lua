@@ -1492,6 +1492,8 @@ function Avalanche:init(args)
     Stomp{group = main.current.main, unit = self.unit, team = self.team, x = x, y = y,
     rs = self.rs, color = self.color, dmg = self.dmg, chargeTime = 1.5, parent = self}
   end, self.timesToCast, function() self:die() end, 'avalanche')
+
+  self.unit.state = unit_states['normal']
 end
 
 function Avalanche:update(dt)

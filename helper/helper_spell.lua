@@ -101,6 +101,28 @@ function Helper.Spell:get_nearest_target(unit, include_list)
     end
 end
 
+function Helper.Spell:get_random_target_in_range(unit, range)
+    local unit_list = Helper.Unit:get_list(not unit.is_troop)
+    if #unit_list > 0 then
+        local target = {}
+        local distance = 0
+        local target_list = {}
+
+        for _, value in ipairs(unit_list) do
+            distance = Helper.Geometry:distance(unit.x, unit.y, value.x, value.y)
+            if distance < range then
+                table.insert(target_list, value)
+            end
+        end
+
+        if #target_list > 0 then
+            return target_list[get_random(1, #target_list)]
+        end
+    end
+
+    return -1
+end
+
 function Helper.Spell:get_nearest_target_from_point(x, y, target_is_troop)
     local unit = {
         x = x,

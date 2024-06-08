@@ -16,6 +16,9 @@ function Enemy:init(args)
   
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20 + self.shape.w / 2)
   self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 1000)
+
+  self.base_castcooldown = self.base_castcooldown or 3
+  self.last_attack_started = 0
 end
 
 --load enemy type specific functions from global table
@@ -28,6 +31,25 @@ function Enemy:setExtraFunctions()
   end
 end
 
+function Enemy:manage_cooldowns(dt)
+  if self.state == unit_states['casting'] then
+    local time = love.timer.getTime() - self.last_attack_started
+    if time > self.castTime and self.currentcast then
+      --let the spell handle the unit state change (might be different for each spell)
+      self:currentcast()
+      --this should be set by the spell, after it finishes!
+      self.castcooldown = self.base_castcooldown
+    end
+  end
+  --update / clear cast cooldown
+  if self.castcooldown and self.castcooldown > 0 then
+    self.castcooldown = self.castcooldown - dt
+  elseif self.castcooldown and self.castcooldown <= 0 then
+    self.castcooldown = nil
+  end
+
+end
+
 function Enemy:update(dt)
     self:update_game_object(dt)
 
@@ -35,10 +57,26 @@ function Enemy:update(dt)
     self:update_buffs(dt)
 
     self:calculate_stats()
+
+    self:manage_cooldowns(dt)
   
     --get target / rotate to target
     if self.target and self.target.dead then self.target = nil end
+    
     if self.state == unit_states['normal'] then
+
+      --this needs to work with movement options (some attacks will require target in range, others will not)
+      --some will want to chase target (fire breath)
+      --when a cast concludes, enemy should return to normal movement, set castcooldown in there from
+      --the enemy cooldown
+      if self.attack_options and not self.castcooldown then
+        Enemy_Pick_Attack(self)
+      end
+    end
+
+    --do movement and target selection only if not casting
+    if self.state == unit_states['normal'] then
+
       if not self:in_range()() then
         self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.friendlies)
       end
@@ -80,6 +118,26 @@ function Enemy:draw()
   self:draw_targeted()
   self:draw_buffs()
   self.draw_enemy(self)
+  self:draw_cast_timer()
+end
+
+--this is for bosses
+--not all attacks will be viable (target in range)
+function Enemy:pick_attack()
+
+  local viable_attacks = {}
+  for k, v in pairs(self.attack_options) do
+    if v.viable() then
+      table.insert(viable_attacks, v)
+    end
+  end
+
+  if #viable_attacks == 0 then return end
+
+  local attack = random:table(viable_attacks)
+
+  
+
 end
 
 function Enemy:on_collision_enter(other, contact)

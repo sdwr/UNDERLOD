@@ -283,6 +283,14 @@ function init()
   local d               = 'newItems/'
   skull                 = Image(d .. 'skull-small')
   potion2               = Image(d .. 'potion2')
+  fancyarmor            = Image(d .. 'fancyarmor')
+  turtle                = Image(d .. 'turtle')
+  leaf                  = Image(d .. 'leaf')
+  simpleshield          = Image(d .. 'simpleshield')
+  linegoesup            = Image(d .. 'linegoesup')
+  orb                   = Image(d .. 'orb')
+  sword                 = Image(d .. 'sword')
+  
   arrows                = Image(d .. 'arrows')
   bear                  = Image(d .. 'bear')
   bomb                  = Image(d .. 'bomb')
@@ -1418,7 +1426,7 @@ function init()
   }
 
   item_images = {
-    ['default'] = warrior,
+    ['default'] = sword,
 
     ['smallsword'] = warrior,
     ['medsword'] = warrior,
@@ -1446,16 +1454,17 @@ function init()
 
     ['vampirism'] = hextouch,
     ['ghostboots'] = temporal_chains,
-    ['frostorb'] = freezing_field,
     ['spikedcollar'] = exploder_elite,
     ['basher'] = forcer_elite,
     ['berserkerbelt'] = awakening,
-    ['heartofgold'] = star,
-    ['healingleaf'] = healer,
-
     ['corpseexplode'] = seeping,
-
+    
     ['potion2'] = potion2,
+    ['stockmarket'] = linegoesup,
+    ['healingleaf'] = leaf,
+    ['heartofgold'] = turtle,
+    ['frostorb'] = orb,
+
 
   }
 

@@ -347,6 +347,20 @@ function Unit:draw_targeted()
   end
 end
 
+function Unit:draw_cast_timer()
+  if self.state == unit_states['casting'] then
+
+    local currentTime = love.timer.getTime()
+    local time = currentTime - self.last_attack_started
+    local pct = time / self.castTime
+    local bodySize = self.shape.rs or self.shape.w/2 or 5
+    local rs = pct * bodySize
+    if pct < 1 then
+      graphics.circle(self.x, self.y, rs, white_transparent)
+    end
+  end
+end
+
 --should move this somewhere, maybe to the proc class
 -- dont want to have a bunch of if statements in here
 -- with special logic for each buff
@@ -443,7 +457,7 @@ function Unit:init_stats()
     self.base_mvspd = 55
   end
   if self.class == 'boss' then
-    self.base_hp = 1500 * BOSS_HP_SCALING(level)
+    self.base_hp = 3500 * BOSS_HP_SCALING(level)
     self.base_dmg = 30
     self.base_mvspd = 34
   end

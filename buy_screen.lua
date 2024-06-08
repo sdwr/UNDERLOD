@@ -208,7 +208,7 @@ end
 
 function BuyScreen:build_level_map()
   if self.level_map then self.level_map:die() end
-  self.level_map = BuildLevelMap(self.ui_top, gw/2, 30, self, self.level, self.loop, self.level_list)
+  self.level_map = BuildLevelMap(self.main, gw/2, 30, self, self.level, self.loop, self.level_list)
   self:create_level_buttons()
 end
 

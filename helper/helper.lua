@@ -69,7 +69,7 @@ function Helper:update(dt)
 
     for i, spell in ipairs(Helper.Spell.spells) do
         if spell.update ~= nil then
-            spell.update()
+            spell.update(dt)
         end
     end
 

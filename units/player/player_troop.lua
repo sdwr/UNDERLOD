@@ -158,17 +158,6 @@ function Troop:draw()
   graphics.pop()
 end
 
-function Troop:draw_cast_timer()
-  local currentTime = Helper.Time.time
-  local time = currentTime - self.last_attack_started
-  local pct = time / self.castTime
-  local bodySize = self.shape.rs or self.shape.w/2 or 5
-  local rs = pct * bodySize
-  if pct < 1 then
-    graphics.circle(self.x, self.y, rs, white_transparent)
-  end
-end
-
 function Troop:draw_cooldown_timer()
   local currentTime = Helper.Time.time
   local time = currentTime - self.last_attack_finished

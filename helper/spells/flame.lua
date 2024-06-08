@@ -4,7 +4,7 @@ Helper.Spell.Flame.do_draw_hitbox = false
 Helper.Spell.Flame.do_draw_particles = true
 Helper.Spell.Flame.list = {}
 
-function Helper.Spell.Flame:create(color, flamewidth, flameheight, damage, unit)
+function Helper.Spell.Flame:create(color, flamewidth, flameheight, damage, unit, follow_target)
     if unit:my_target() then
         local i, flame = find_in_list(Helper.Spell.Flame.list, unit, function(value) return value.unit end)
         if flame == -1 then
@@ -19,7 +19,8 @@ function Helper.Spell.Flame:create(color, flamewidth, flameheight, damage, unit)
                 color = color,
                 flamewidth = flamewidth,
                 flameheight = flameheight,
-                damage = damage
+                damage = damage,
+                follow_target = follow_target or true
             }
 
             if unit and unit.area_size_m then
@@ -52,8 +53,8 @@ function Helper.Spell.Flame:create(color, flamewidth, flameheight, damage, unit)
     end
 end
 
-function Helper.Spell.Flame:update()
-    Helper.Spell.Flame:update_direction()
+function Helper.Spell.Flame:update(dt)
+    Helper.Spell.Flame:update_direction(dt)
     Helper.Spell.Flame:end_flames()
 end
 
@@ -71,15 +72,17 @@ function Helper.Spell.Flame:damage()
     end
 end
 
-function Helper.Spell.Flame:update_direction()
+function Helper.Spell.Flame:update_direction(dt)
     for __, flame in ipairs(Helper.Spell.Flame.list) do
-        local target = flame.unit:my_target()
-        local x = flame.unit.x + flame.directionx
-        local y = flame.unit.y + flame.directiony
-        if target then
-            x, y = Helper.Geometry.rotate_to(flame.unit.x, flame.unit.y, x, y, target.x, target.y, 300)
-            flame.directionx = x - flame.unit.x
-            flame.directiony = y - flame.unit.y
+        if flame.follow_target then
+            local target = flame.unit:my_target()
+            local x = flame.unit.x + flame.directionx
+            local y = flame.unit.y + flame.directiony
+            if target then
+                x, y = Helper.Geometry.rotate_to(flame.unit.x, flame.unit.y, x, y, target.x, target.y, 300)
+                flame.directionx = x - flame.unit.x
+                flame.directiony = y - flame.unit.y
+            end
         end
     end
 end
@@ -99,10 +102,12 @@ end
 
 function Helper.Spell.Flame:end_flames()
     for i = #Helper.Spell.Flame.list, 1, -1 do
-        if Helper.Spell.Flame.list[i].set_to_end then
-            if Helper.Time.time - Helper.Spell.Flame.list[i].start_ending_at > Helper.Spell.Flame.list[i].end_after then
-                Helper.Spell.Flame.list[i].unit.last_attack_finished = Helper.Time.time
-                Helper.Time:stop_interval(Helper.Spell.Flame.list[i].particle_interval_id)
+        local flame = Helper.Spell.Flame.list[i]
+        if flame.set_to_end then
+            if Helper.Time.time - flame.start_ending_at > flame.end_after then
+                print('fire done')
+                Helper.Unit:finish_casting(flame.unit)
+                Helper.Time:stop_interval(flame.particle_interval_id)
                 table.remove(Helper.Spell.Flame.list, i)
             end
         end
@@ -121,6 +126,7 @@ end
 function Helper.Spell.Flame:end_flame_after(unit, duration)
     local i, flame = find_in_list(Helper.Spell.Flame.list, unit, function(value) return value.unit end)
     if i ~= -1 then
+        print('setting end time')
         flame.set_to_end = true
         flame.end_after = duration
         flame.start_ending_at = Helper.Time.time

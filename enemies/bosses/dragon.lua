@@ -61,33 +61,55 @@ fns['init_enemy'] = function(self)
 
   --set attacks
   self.fireDmg = 5
-  self.fireDuration = 2
+  self.fireDuration = 3
   self.fireRange = 100
+
+  self.fireSweepRange = 200
+  
+  self.attack_options = {}
+  local fire = {
+    name = 'fire',
+    viable = function() return Helper.Spell:there_is_target_in_range(self, 100) end,
+    casttime = 0.5,
+    oncaststart = function() turret_hit_wall2:play{volume = 0.9} end,
+    cast = function()
+      print('starting fire cast')
+      Helper.Unit:claim_target(self, Helper.Spell:get_nearest_target(self))
+      Helper.Spell.Flame:create(Helper.Color.orange, 60, 100, self.fireDmg, self)
+      self.state = unit_states['frozen']
+      Helper.Spell.Flame:end_flame_after(self, self.fireDuration)
+    end,
+  }
+
+  local fire_sweep = {
+    name = 'fire_sweep',
+    viable = function() return true end,
+    casttime = 1,
+    oncaststart = function() turret_hit_wall2:play{volume = 0.9} end,
+    cast = function()
+      print('starting fire sweep cast')
+      --pick a random target, then rotate in a direction
+      local target = Helper.Spell:get_random_target_in_range(self, self.fireSweepRange)
+      if not target then target = Helper.Spell:get_nearest_target(self) end
+      Helper.Unit:claim_target(self, target)
+      Helper.Spell.Flame:create(Helper.Color.orange, 30, self.fireSweepRange, self.fireDmg, self, false)
+      self.state = unit_states['frozen']
+      Helper.Spell.Flame:end_flame_after(self, self.fireDuration)
+    end, 
+  }
+
+  table.insert(self.attack_options, fire)
+  table.insert(self.attack_options, fire_sweep)
 
   self.state_always_run_functions['always_run'] = function()
       self.hitbox_points_rotation = math.deg(self:get_angle())
-
-      if Helper.Spell:there_is_target_in_range(self, 100) 
-      and Helper.Time.time - self.last_attack_finished > 1 then
-          Helper.Unit:claim_target(self, Helper.Spell:get_nearest_target(self))
-          Helper.Spell.Flame:create(Helper.Color.orange, 60, 100, self.fireDmg, self)
-          Helper.Spell.Flame:end_flame_after(self, self.fireDuration)
-        end
-      
-      if self:my_target() and not Helper.Spell:target_is_in_range(self, 100) then
-          Helper.Spell.Flame:end_flame_after(self, 0.25)
-          Helper.Unit:unclaim_target(self)
-      end
   end
 
   self.state_change_functions['target_death'] = function()
-      Helper.Spell.Flame:end_flame_after(self, 0.25)
-      Helper.Unit:unclaim_target(self)
   end
 
     self.state_change_functions['death'] = function()
       Helper.Spell.Flame:end_flame_after(self, 0)
-      Helper.Unit:unclaim_target(self)
   end
 end
 
