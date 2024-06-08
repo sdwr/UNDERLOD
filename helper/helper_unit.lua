@@ -215,7 +215,6 @@ Helper.Unit.selection = {
 Helper.Unit.do_draw_selection = false
 Helper.Unit.number_of_teams = 0
 Helper.Unit.teams = {}
-Helper.Unit.team_rally_points = {}
 Helper.Unit.selected_team_index = 0
 Helper.Unit.flagged_enemy = -1
 Helper.Unit.number_of_troop_types = 0
@@ -257,17 +256,9 @@ function Helper.Unit.set_team_rally_point(team_number, x, y)
     Helper.Unit.team_rally_points[team_number] = rallyCircle
 end
 
-function Helper.Unit:clear_team_rally_point(team_number)
-    local existing_rally = Helper.Unit.team_rally_points[team_number]
-    if existing_rally then
-        existing_rally.dead = true
-    end
-    Helper.Unit.team_rally_points[team_number] = nil
-end
-
 function Helper.Unit:clear_all_rally_points()
-    for i = 1, 4 do
-        Helper.Unit:clear_team_rally_point(i)
+    for i, team in ipairs(Helper.Unit.teams) do
+        team:clear_rally_point()
     end
 end
 

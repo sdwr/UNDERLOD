@@ -918,6 +918,9 @@ end
 -- RMB- target enemy OR attack move to location
 function Unit:should_follow()
   local input = input['space'].down
+  if input then
+    Helper.Unit:clear_all_rally_points()
+  end
   local canMove = (self.state == unit_states['normal'] or self.state == unit_states['stopped'] or self.state == unit_states['rallying'] or self.state == unit_states['following'] or self.state == unit_states['casting'])
 
   return input and canMove

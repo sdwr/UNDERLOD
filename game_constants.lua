@@ -25,7 +25,7 @@ REGULAR_ENEMY_SCALING = function(level) return math.pow(1.1, level) end
 SPECIAL_ENEMY_SCALING = function(level) return math.pow(1.1, level) end
 
 --add 0.25 to the scaling for each boss level (boss levels are every 6 levels)
-BOSS_HP_SCALING = function(level) return 1 + ((level / 6) * 0.25) end
+BOSS_HP_SCALING = function(level) return 1 + ((level / 6) - 1) end
 
 
 --proc constants
