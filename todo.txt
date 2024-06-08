@@ -6,10 +6,20 @@ TODO:
     - with individual cooldowns, or 1 global?
     - random selection or conditional (ex. target within range)
 
-    
+  -add cast time/visual cast indicator to enemies/bosses
+    -difference between interruptable casts and uninterruptable (can stun)
+  -move boss hp bar to where progress bar is
+    -boss hp bar segments for phases
+
+  -boss moves:
+    -dragon has flame breath sweep
+      -charge up, shoots further, sweeps in a direction
+
   - add more dodgeable attacks / enemies
     - laser is good
-    - spread laser
+    - spread laser 
+      - shoots in star pattern all at once
+      - or rotating around unit
     - homing missile (slow, dodgeable)
 
   - make miniboss versions of regular enemies
@@ -21,6 +31,8 @@ TODO:
     -hazards:
       -laser (fixed position, moves back and forth, rotates slowly
          rotates towards player, then charges up and fires)
+      -laser grid (spaced, at intervals, sweep across screen or out from center)
+        -vertical or horizontal
       -fire wall (moves back and forth)
 
   - show boss levels on the level map
@@ -28,8 +40,12 @@ TODO:
     - think of a special reward for beating a boss level
 
   - make units "move through" rally point instead of stopping before
+    -easiest way is to assign each unit a random offset from rally
+
   - make rally point disappear properly when all units have gone there
-  
+    - or just pin all unit to rally until it ends
+    - and have animated rally point (circles moving inwards)
+    
   - make units not chase towards enemies when they are in range (+ push the enemy away)
   
   - add new enemy movement patterns

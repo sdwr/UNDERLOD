@@ -32,7 +32,7 @@ function Troop:init(args)
 
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 40)
   
-  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 200)
+  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 300)
   self:set_character()
 
   self.state = unit_states['normal']
@@ -76,18 +76,6 @@ function Troop:update(dt)
     --dont clear assigned target here
     self.target = nil
     self.target_pos = nil
-  -- elseif (input["m2"].pressed and main.selectedCharacter == self.character) and (self.state == unit_states['normal'] or self.state == unit_states['stopped'] or self.state == unit_states['rallying'] or self.state == unit_states['following']) then
-  --   self.state = unit_states['rallying']
-  --   local mx, my = self.group.camera:get_mouse_position()
-  --   RallyEffect{group = main.current.effects, x = mx, y = my}
-
-  --   self:seek_mouse()
-  --   self:wander(15,50,5)
-  --   self:rotate_towards_velocity(1)
-
-  --   self.target = nil
-  --   local tx, ty = self.group.camera:get_mouse_position()
-  --   self.target_pos = {x = tx, y = ty}
   end
 
   --cancel follow if no longer pressing button
@@ -104,15 +92,11 @@ function Troop:update(dt)
     self:wander(15,50,5)
     self:rotate_towards_velocity(1)
 
+    --change rallying to be based on time instead of distance
   elseif self.state == unit_states['rallying'] then
-    if self:distance_to_point(self.target_pos.x, self.target_pos.y) < 20 then
-      self.target_pos = nil
-      self.state = unit_states['normal']
-    else
-      self:seek_point(self.target_pos.x, self.target_pos.y)
-      self:wander(15,50,5)
-      self:rotate_towards_velocity(1)
-    end
+    self:seek_point(self.target_pos.x, self.target_pos.y)
+    self:wander(15,50,5)
+    self:rotate_towards_velocity(1)
 
   --then find target if not already moving
   elseif self.state == unit_states['normal'] then

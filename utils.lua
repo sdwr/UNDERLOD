@@ -41,3 +41,28 @@ function random_offset(offset)
   return math.random(-offset, offset)
 end
 
+
+function rally_offsets(i)
+  --up to 10 units away, just fixed values for now
+  if i > 10 then 
+    print('too many units for rally offset')
+    return {x = 0, y = 0}
+  end
+  local offsets = {
+    {x = -10, y = 0},
+    {x = 6, y = 1},
+    {x = -3, y = 7},
+    {x = 0, y = -6},
+    {x = 6, y = -8},
+    {x = 3, y = -1},
+    {x = -7, y = 6},
+    {x = 3, y = 5},
+    {x = -6, y = -4},
+    {x = -1, y = 10}
+  }
+  return offsets[i]
+end
+
+function sum_vectors(v1, v2)
+  return {x = v1.x + v2.x, y = v1.y + v2.y}
+end

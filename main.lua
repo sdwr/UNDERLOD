@@ -421,7 +421,7 @@ function init()
 
   character_colors = {
     ['vagrant'] = fg[0],
-    ['swordsman'] = yellow[0],
+    ['swordsman'] = orange[0],
     ['wizard'] = blue[0],
     ['magician'] = blue[0],
     ['pyro'] = red[0],
@@ -490,7 +490,7 @@ function init()
 
   character_color_strings = {
     ['vagrant'] = 'fg',
-    ['swordsman'] = 'yellow',
+    ['swordsman'] = 'orange',
     ['wizard'] = 'blue',
     ['magician'] = 'blue',
     ['pyro'] = 'red',
@@ -578,7 +578,7 @@ function init()
 
   character_type_strings = {
     ['vagrant'] = '[fg]Explorer, Psyker',
-    ['swordsman'] = '[yellow]Warrior',
+    ['swordsman'] = '[orange]Warrior',
     ['wizard'] = '[blue]Mage, [red]Nuker',
     ['magician'] = '[blue]Mage',
     ['pyro'] = '[red]Nuker',
@@ -873,7 +873,7 @@ function init()
 
   character_effect_names = {
     ['vagrant'] = '[fg]Experience',
-    ['swordsman'] = '[yellow]Cleave',
+    ['swordsman'] = '[orange]Cleave',
     ['wizard'] = '[blue]',
     ['magician'] = '[blue]Quick Cast',
     ['pyro'] = '[red]Flamethrower',

@@ -1472,6 +1472,40 @@ function BreatheFire:draw()
   --happens in dotArea
 end
 
+Avalanche = Object:extend()
+Avalanche:implement(GameObject)
+Avalanche:implement(Physics)
+function Avalanche:init(args)
+  self:init_game_object(args)
+  if not self.group.world then self.dead = true; return end
+  self.color = grey[0]
+  self.rs = self.rs or 25
+  self.dmg = self.dmg or 30
+
+  self.timesToCast = 15
+
+
+  self.t:every(0.7, function()
+    if not self.unit then self:die(); return end
+    if self.unit and self.unit.dead then self:die(); return end
+    local x, y = math.random(self.rs, gw - self.rs), math.random(self.rs, gh - self.rs)
+    Stomp{group = main.current.main, unit = self.unit, team = self.team, x = x, y = y,
+    rs = self.rs, color = self.color, dmg = self.dmg, chargeTime = 1.5, parent = self}
+  end, self.timesToCast, function() self:die() end, 'avalanche')
+end
+
+function Avalanche:update(dt)
+  self:update_game_object(dt)
+end
+
+function Avalanche:draw()
+end
+
+function Avalanche:die()
+  self.dead = true
+  self.t:cancel('avalanche')
+end
+
 
 ChainLightning = Object:extend()
 ChainLightning:implement(GameObject)
@@ -1633,6 +1667,10 @@ function Stomp:init(args)
 
   orb1:play({volume = 0.5})
 
+  self.color = self.color or red[0]
+  self.color_transparent = self.color:clone()
+  self.color_transparent.a = 0.2
+
   self.recoveryTime = self.chargeTime or 1
   self.recoveryTime = self.recoveryTime + 0.25
   
@@ -1681,8 +1719,8 @@ function Stomp:draw()
   if self.state == 'charging' then
     graphics.push(self.x, self.y, self.r + (self.vr or 0), self.spring.x, self.spring.x)
       -- graphics.circle(self.x, self.y, self.shape.rs + random:float(-1, 1), self.color, 2)
-      graphics.circle(self.x, self.y, self.attack_sensor.rs * math.min(self.currentTime / (self.chargeTime or 1), 1) , red_transparent)
-      graphics.circle(self.x, self.y, self.attack_sensor.rs, red[0], 1)
+      graphics.circle(self.x, self.y, self.attack_sensor.rs * math.min(self.currentTime / (self.chargeTime or 1), 1) , self.color_transparent)
+      graphics.circle(self.x, self.y, self.attack_sensor.rs, self.color, 1)
     graphics.pop()
   end
 end
@@ -1829,19 +1867,66 @@ RallyCircle = Object:extend()
 RallyCircle:implement(GameObject)
 function RallyCircle:init(args)
   self:init_game_object(args)
-  self.rs = 3
+  
+  self.rs = 8
+  self.speed = 0.5
+
+  
+  self.duration = RALLY_DURATION
+  self.current_duration = 0
+  
+  self.time_started = Helper.Time.time
+  self.color = self.color or yellow[0]
 end
 
 function RallyCircle:update(dt)
   self:update_game_object(dt)
+  self.current_duration = Helper.Time.time - self.time_started
+  if self.current_duration > self.duration then 
+    --only clear unit state if the rally expires naturally
+    --if something else kills this object, they will have to clear the state themselves
+    if self.team then
+      self.team:clear_rally_point()
+    else
+      self:die() 
+    end
+  end
+  self.current_rs = self.current_duration * self.speed
 end
 
 function RallyCircle:draw()
   if not self.hidden then
     graphics.push(self.x, self.y)
-    graphics.circle(self.x, self.y, self.rs, yellow[0])
+    local radii = self:findRadiuses()
+    for _, radius in ipairs(radii) do
+      graphics.circle(self.x, self.y, radius, self.color, 1)
+    end
+    
     graphics.pop()
   end
+end
+
+--draw 2 circles with sizes based on current_rs, which will move over time
+function RallyCircle:findRadiuses()
+  local initial_size = self.rs
+  local final_size = 1
+  local size_diff = initial_size - final_size
+  
+  local radii = {}
+  for i = 1, 2 do
+    local starting_size = i * (initial_size / 2)
+    local circle_size = starting_size - (self.current_duration * size_diff * self.speed)
+    while circle_size < 1 do
+      circle_size = circle_size + (initial_size - 1)
+    end
+    table.insert(radii, circle_size)
+  end
+
+  return radii
+end
+
+function RallyCircle:die()
+  self.dead = true
 end
 
 

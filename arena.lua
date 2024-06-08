@@ -8,10 +8,6 @@ function Arena:init(name)
   self.hotbar = HotbarGlobals()
 end
 
-function Arena:select_character(character)
-  self.hotbar:select_by_character(character)
-end
-
 function Arena:select_character_by_index(i)
   self.hotbar:select_by_index(i)
 end
@@ -113,12 +109,7 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
                           color_marks = {[1] = character_colors[character]}, character = character,
                           action = function() 
                             Helper.Unit.selected_team_index = number
-                            Helper.Unit:deselect_all_troops()
-                            for i, troop in ipairs(Helper.Unit:get_list(true)) do
-                              if troop.character == character then
-                                troop.selected = true
-                              end
-                            end
+                            Helper.Unit:select_team(number)
                           end
                         }
     self.hotbar:add_button(i, b)

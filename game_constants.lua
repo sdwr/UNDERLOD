@@ -13,6 +13,8 @@ NUMBER_OF_ROUNDS = 25
 
 MAX_UNITS = 3
 
+RALLY_DURATION = 3
+
 --used in the spawn manager
 --and also used by procs to know when to start buffs
 TIME_TO_ROUND_START = 2

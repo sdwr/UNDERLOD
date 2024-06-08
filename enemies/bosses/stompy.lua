@@ -54,6 +54,9 @@ fns['init_enemy'] = function(self)
   end
 
   --set attacks
+    self.t:every_immediate(12, function() 
+      Avalanche{group = main.current.main, unit = self, team = "enemy", x = self.x, y = self.y, dmg = 30}
+    end, nil, nil,'avalanche')
     self.t:cooldown(attack_speeds['ultra-slow'], function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target and self.state == unit_states['normal'] end, function ()
         local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
         if target then

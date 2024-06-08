@@ -3,55 +3,30 @@
 --hotbar helper functions
 HotbarGlobals = Object:extend()
 function HotbarGlobals:init(args)
-  self.hotbar = {}
   self.hotbar_by_index = {}
   self.selected_character = nil
   self.selected_index = nil
 end
 
 function HotbarGlobals:clear_hotbar()
-  if self.hotbar then
-    for i, button in ipairs(self.hotbar) do
+  if self.hotbar_by_index then
+    for i, button in ipairs(self.hotbar_by_index) do
       button:destroy()
     end
   end
-  self.hotbar = {}
   self.hotbar_by_index = {}
   
 end
 
 function HotbarGlobals:add_button(i, b)
-  if not self.hotbar then self.hotbar = {} end
   if not self.hotbar_by_index then self.hotbar_by_index = {} end
 
-  if self.hotbar[b.character] then
-    print('hotbar button already exists for ' .. b.character)
-    return
-  end
   if self.hotbar_by_index[i] then
     print('hotbar button already exists for index ' .. i)
     return
   end
 
-  self.hotbar[b.character] = b
   self.hotbar_by_index[i] = b
-end
-
-function HotbarGlobals:select_by_character(character)
-  if not self.hotbar[character] then
-    print('hotbar button does not exist for ' .. character)
-    return
-  end
-
-  if self.selected_character then
-    self.hotbar[self.selected_character].selected = false
-    self.hotbar[self.selected_character]:update_text()
-  end
-  self.selected_character = character
-  self.selected_index = self.hotbar[character].index
-  self.hotbar[character].selected = true
-  self.hotbar[character]:action()
-  self.hotbar[character]:update_text()
 end
 
 --need to deselect the previous button as well
@@ -70,7 +45,6 @@ function HotbarGlobals:select_by_index(index)
     self.hotbar_by_index[self.selected_index]:update_text()
   end
   self.selected_index = index
-  self.selected_character = self.hotbar_by_index[index].character
   self.hotbar_by_index[index].selected = true
   self.hotbar_by_index[index]:action()
   self.hotbar_by_index[index]:update_text()

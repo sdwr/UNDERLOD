@@ -118,7 +118,7 @@ function Spawn_Teams(arena)
   
   for i, unit in ipairs(arena.units) do
     --add a new team
-    local team = Team(i)
+    local team = Team(i, unit)
     table.insert(Helper.Unit.teams, i, team)
 
     local column_offset = (i-1) % 4

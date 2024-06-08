@@ -230,6 +230,14 @@ function Helper.Unit:get_team_by_index(index)
     return Helper.Unit.teams[index]
 end
 
+function Helper.Unit:select_team(index)
+    Helper.Unit:deselect_all_troops()
+    local team = Helper.Unit:get_team_by_index(index)
+    if team then
+        team:select()
+    end
+end
+
 --rally point fns
 function Helper.Unit.set_team_rally_point(team_number, x, y)
     local existing_rally = Helper.Unit.team_rally_points[team_number]
@@ -247,11 +255,6 @@ function Helper.Unit.set_team_rally_point(team_number, x, y)
     --add clearing the rally point when all units have reached it
     --or when all units are dead
     Helper.Unit.team_rally_points[team_number] = rallyCircle
-    trigger:after(3, function()
-        if rallyCircle then
-            rallyCircle.dead = true
-        end
-    end)
 end
 
 function Helper.Unit:clear_team_rally_point(team_number)
@@ -306,7 +309,6 @@ function Helper.Unit:select()
         local flag = false
         --should be on key release, not press? or at least only check the first press
         if input['m2'].pressed then
-            Helper.Unit:clear_team_rally_point(self.selected_team_index)
 
             for i, enemy in ipairs(self:get_list(false)) do
                 if Helper.Geometry:distance(Helper.mousex, Helper.mousey, enemy.x, enemy.y) < 9 then 
@@ -317,40 +319,41 @@ function Helper.Unit:select()
             --target the flagged enemy with the selected troop
             if flag then
                 local flagged_enemy = Helper.Spell:get_nearest_target_from_point(Helper.mousex, Helper.mousey, false)
-                Helper.Unit:get_team_by_index(self.selected_team_index):clear_team_target()
-                Helper.Unit:get_team_by_index(self.selected_team_index):set_team_target(flagged_enemy)
-                --set the selected troops to 'normal', so they can attack the target
-                for i, unit in ipairs(self:get_list(true)) do
-                    if unit.selected then
-                        unit.state = unit_states['normal']
-                    end
+                local selected_team = Helper.Unit:get_team_by_index(self.selected_team_index)
+
+                if selected_team then
+                    selected_team:clear_team_target()
+                    selected_team:clear_rally_point()
+                    selected_team:set_team_target(flagged_enemy)
                 end
+
             else
                 --untarget the flagged enemy for the selected troop, if there is one
-                Helper.Unit:get_team_by_index(self.selected_team_index):clear_team_target()
+                local selected_team = Helper.Unit:get_team_by_index(self.selected_team_index)
 
-                --draw a rally point for the selected troops
-                Helper.Unit.set_team_rally_point(self.selected_team_index, Helper.mousex, Helper.mousey)
-                --rally the selected troops to the mouse location
-                for i, unit in ipairs(self:get_list(true)) do
-                    if unit.selected then
-                        unit.state = unit_states['rallying']
-                        unit.target_pos = {x = Helper.mousex, y = Helper.mousey}
-                    end
+                if selected_team then
+                    selected_team:clear_team_target()
+                    selected_team:clear_rally_point()
+                    
+                    --draw a rally point for the selected troops
+                    --and rally the selected troops to the point
+                    selected_team:set_rally_point(Helper.mousex, Helper.mousey)
                 end
+
             end
         --bug with not moving if you start holding m1 while a unit is casting
         --it will not move until you release m1 and press it again
         --switched to down, but need a longer term solution? same thing will happen with m2 prob
         elseif input['m1'].down then
             --clear rally point for the selected team
-            Helper.Unit:clear_team_rally_point(self.selected_team_index)
-
-            for i, unit in ipairs(self:get_list(true)) do
-                if unit.selected then
-                    unit.state = unit_states['following']
-                end
+            local selected_team = Helper.Unit:get_team_by_index(self.selected_team_index)
+            if selected_team then
+                selected_team:clear_rally_point()
+                selected_team:set_troop_state('following')
             end
+        elseif input['space'].down then
+            --move "move all units" in here?
+            -- still split between troop update and here
         end
     end
 

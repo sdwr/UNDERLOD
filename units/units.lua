@@ -27,11 +27,14 @@ table.extend(all_unit_classes, enemy_classes)
 --2. buffs that charge per unit but proc on control group (like static, bloodlust, etc)
 
 Team = Object:extend()
-function Team:init(i)
+function Team:init(i, unit)
   self.troops = {}
   self.procs = {}
   self.target = nil
+  self.rallyCircle = nil
   self.index = i
+  self.unit = unit
+  self.color = character_colors[unit.character]
 end
 
 function Team:add_troop(args)
@@ -40,11 +43,18 @@ function Team:add_troop(args)
   table.insert(self.troops, troop)
 end
 
+function Team:set_troop_state(state)
+  for i, troop in ipairs(self.troops) do
+    troop.state = state
+  end
+end
+
 --target functions
 function Team:set_team_target(target)
   self.target = target
   for i, troop in ipairs(self.troops) do
     troop:set_assigned_target(target)
+    troop.state = unit_states['normal']
   end
   Helper.Unit:set_target_ring(target)
 end
@@ -56,6 +66,42 @@ function Team:clear_team_target()
     troop:clear_assigned_target()
   end
   Helper.Unit:clear_target_ring(target)
+end
+
+--rally functions
+function Team:set_rally_point(x, y)
+  self.rallyCircle = RallyCircle{
+    x = x,
+    y = y,
+    group = main.current.floor,
+    team = self,
+    color = self.color
+  }
+  for i, troop in ipairs(self.troops) do
+    troop.state = unit_states['rallying']
+    troop.target_pos = sum_vectors({x = Helper.mousex, y = Helper.mousey}, rally_offsets(i))
+  end
+end
+
+function Team:clear_rally_point()
+  if self.rallyCircle then
+    self.rallyCircle:die()
+    self.rallyCircle = nil
+  end
+  for i, troop in ipairs(self.troops) do
+    troop.target_pos = nil
+    --only clear state if rallying (might be attacking somehow)
+    if troop.state == unit_states['rallying'] then
+      troop.state = unit_states['normal']
+    end
+  end
+end
+
+--selection functions
+function Team:select()
+  for i, troop in ipairs(self.troops) do
+    troop.selected = true
+  end
 end
 
 --buff functions
