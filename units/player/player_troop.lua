@@ -92,12 +92,17 @@ function Troop:update(dt)
     self:wander(15,50,5)
     self:rotate_towards_velocity(1)
 
-    --change rallying to be based on time instead of distance
   elseif self.state == unit_states['rallying'] then
-    self:seek_point(self.target_pos.x, self.target_pos.y)
-    self:wander(15,50,5)
-    self:rotate_towards_velocity(1)
-
+      self:seek_point(self.target_pos.x, self.target_pos.y)
+      self:wander(15,50,5)
+      self:rotate_towards_velocity(1)
+      local distance_to_target_pos = math.distance(self.x, self.y, self.target_pos.x, self.target_pos.y)
+      --if close enough, stop (which enables attacking)
+      --when the rally circle disappears, it sets the unit back to 'normal' state
+      if distance_to_target_pos < 5 then
+        self.state = unit_states['stopped']
+      end
+  
   --then find target if not already moving
   elseif self.state == unit_states['normal'] then
 
@@ -219,7 +224,7 @@ function Troop:set_character()
     -- self.cooldownTime = 2
     self.castTime = 0
 
-    self.state_always_run_functions['normal'] = function()
+    self.state_always_run_functions['normal_or_stopped'] = function()
       if Helper.Spell:there_is_target_in_range(self, attack_ranges['long'], true) 
       and Helper.Time.time - self.last_attack_finished > 2 
       and Helper.Time.time - self.last_attack_started > 2 then
@@ -523,7 +528,11 @@ function Troop:shootAnimation(angle)
     self.casting = false
     self.state = unit_states['stopped']
     self:shoot(angle)
-    self.t:after(backswing, function() self.state = unit_states['normal'] end, 'castAnimationEnd')
+    self.t:after(backswing, function() 
+      if self.state == unit_states['stopped'] then
+        self.state = unit_states['normal']
+      end
+    end, 'castAnimationEnd')
   end, 'castAnimation')
 end
 
@@ -535,9 +544,15 @@ function Troop:castAnimation()
     self.state = unit_states['frozen']
     self.t:after(castTime, function() 
       self.casting = false
-      self.state = unit_states['stopped']
+      if self.state == unit_states['frozen'] then
+        self.state = unit_states['stopped']
+      end
       self:cast()
-      self.t:after(backswing, function() self.state = unit_states['normal'] end, 'castAnimationEnd')
+      self.t:after(backswing, function() 
+        if self.state == unit_states['stopped'] then
+          self.state = unit_states['normal']
+        end
+      end, 'castAnimationEnd')
     end, 'castAnimation')
 end
 

@@ -95,7 +95,7 @@ function Archer_Troop:set_state_functions()
 
   --here is where the logic for finding a new target/chasing an existing target should go
   --once an attack is started, the unit will be in 'casting' state
-  self.state_always_run_functions['normal'] = function()
+  self.state_always_run_functions['normal_or_stopped'] = function()
     --check if is good, otherwise find a new target
     self:check_target()
 

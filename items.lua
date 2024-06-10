@@ -28,8 +28,10 @@ function Item:init(data)
 
   --hack that this loads during combat and in the shop
   --combat expects the unit to exist, but the shop doesn't
-  for k, v in pairs(data.procs) do
-    table.insert(self.procs, Create_Proc(v, nil, nil))
+  if data.procs then
+    for k, v in pairs(data.procs) do
+      table.insert(self.procs, Create_Proc(v, nil, nil))
+    end
   end
 end
 

@@ -124,6 +124,8 @@ function ItemPart:sellItem()
   --have to create the item first to remove it
   -- unit.items is just the item data, not the item object
   if self.parent.unit.items[self.i] then
+    print('selling item')
+    print (self.parent.unit.items[self.i].name)
     local item = Create_Item(self.parent.unit.items[self.i].name)
     if item then
       if item.consumable then

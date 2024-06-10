@@ -79,6 +79,7 @@ function Team:set_rally_point(x, y)
   }
   for i, troop in ipairs(self.troops) do
     troop.state = unit_states['rallying']
+    troop.rallying = true
     troop.target_pos = sum_vectors({x = Helper.mousex, y = Helper.mousey}, rally_offsets(i))
   end
 end
@@ -91,7 +92,7 @@ function Team:clear_rally_point()
   for i, troop in ipairs(self.troops) do
     troop.target_pos = nil
     --only clear state if rallying (might be attacking somehow)
-    if troop.state == unit_states['rallying'] then
+    if troop.state == unit_states['rallying'] or troop.state == unit_states['stopped'] then
       troop.state = unit_states['normal']
     end
   end

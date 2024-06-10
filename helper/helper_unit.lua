@@ -103,7 +103,7 @@ function Helper.Unit:can_cast(unit, points)
 
     --still missing is chasing down a target that moves out of range
     if unit then
-        return unit.state == unit_states['normal']
+        return (unit.state == unit_states['normal'] or unit.state == unit_states['stopped'])
         and Helper.Time.time - unit.last_attack_finished > unit.cooldownTime
         and Helper.Spell:there_is_target_in_range(unit, unit.attack_sensor.rs, points)
     end
@@ -114,7 +114,7 @@ end
 function Helper.Unit:can_attack(unit, points)
     points = points or false
     if unit then
-        return unit.state == unit_states['normal']
+        return (unit.state == unit_states['normal'] or unit.state == unit_states['stopped'] )
         and Helper.Spell:target_is_in_range(unit, unit.attack_sensor.rs, points)
         and Helper.Time.time - unit.last_attack_finished > unit.cooldownTime
     end
@@ -173,11 +173,15 @@ function Helper.Unit:add_default_state_change_functions(unit)
 end
 
 function Helper.Unit:add_default_state_always_run_functions(unit)
-    unit.state_always_run_functions['normal'] = function() end
+    unit.state_always_run_functions['normal'] = function() 
+        unit.state_always_run_functions['normal_or_stopped']()
+    end
     unit.state_always_run_functions['frozen'] = function() end
     unit.state_always_run_functions['casting'] = function() end
     unit.state_always_run_functions['channeling'] = function() end
-    unit.state_always_run_functions['stopped'] = function() end
+    unit.state_always_run_functions['stopped'] = function() 
+        unit.state_always_run_functions['normal_or_stopped']()
+    end
     unit.state_always_run_functions['following'] = function() 
         unit.state_always_run_functions['following_or_rallying']()
     end
@@ -185,6 +189,7 @@ function Helper.Unit:add_default_state_always_run_functions(unit)
         unit.state_always_run_functions['following_or_rallying']()
     end
 
+    unit.state_always_run_functions['normal_or_stopped'] = function() end
     unit.state_always_run_functions['following_or_rallying'] = function() end
     unit.state_always_run_functions['always_run'] = function() end
 end

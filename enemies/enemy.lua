@@ -96,8 +96,9 @@ function Enemy:update(dt)
         if self:in_range()() then
             -- dont need to move
         elseif self.target then
-            self:seek_point(self.target.x, self.target.y)
-            self:rotate_towards_velocity(0.5)
+          --can't change speed?
+            self:seek_point(self.target.x, self.target.y, 1, 7)
+            -- self:rotate_towards_velocity(0.5)
         else
             -- dont need to move
         end

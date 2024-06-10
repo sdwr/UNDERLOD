@@ -305,8 +305,8 @@ function init()
   frostorb              = Image(d .. 'frostorb')
 
 
-
-
+-- normal and stopped are tied together for the purpose of attacking
+-- rallying and following are tied together for the purpose of moving
   unit_states = {
     ['normal'] = 'normal',
     ['frozen'] = 'frozen',
