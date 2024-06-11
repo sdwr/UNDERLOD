@@ -32,7 +32,7 @@ function Troop:init(args)
 
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 40)
   
-  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 300)
+  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 500)
   self:set_character()
 
   self.state = unit_states['normal']
@@ -141,13 +141,17 @@ function Troop:draw()
   graphics.push(self.x, self.y, self.r, self.hfx.hit.x, self.hfx.hit.x)
   self:draw_buffs()
 
-  --change color based on selected
+  -- darken the non-selected units
   local color = self.color:clone()
-  if self.selected then
-    color = color:lighten(SELECTED_PLAYER_LIGHTEN)
-  end
+  color = color:lighten(SELECTED_PLAYER_LIGHTEN)
+
   --draw unit model (rectangle not circle??)
-  graphics.rectangle(self.x, self.y, self.shape.w*.66, self.shape.h*.66, 3, 3, self.hfx.hit.f and fg[0] or color)
+  graphics.rectangle(self.x, self.y, self.shape.w*.66, self.shape.h*.66, 3, 3, self.hfx.hit.f and fg[0] or self.color)
+
+  if not self.selected then
+    graphics.rectangle(self.x, self.y, 3, 3, 1, 1, color)
+  end
+
   if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
     self:draw_cast_timer()
   end
@@ -157,8 +161,11 @@ function Troop:draw()
   if self.bubbled then 
     graphics.circle(self.x, self.y, self.shape.w, yellow_transparent_weak)
   end
-  if self.shielded then
-    graphics.circle(self.x, self.y, self.shape.w*0.8, white_transparent_weak)
+  --not going very transparent
+  if self:isShielded() then
+    local color = yellow[5]:clone()
+    color.a = 0.3
+    graphics.circle(self.x, self.y, self.shape.w*0.6, color)
   end
   graphics.pop()
 end
@@ -202,14 +209,9 @@ end
 
 function Troop:bubble(duration)
   self.bubbled = true
-  self.shielded = false
   self.t:after(duration, function() self.bubbled = false end)
 end
 
-function Troop:shield(amount, duration)
-  self.shielded = amount
-  self.t:after(duration, function() self.shielded = false end)
-end
 
 function Troop:onDeath()
   self.state_change_functions['death']()
@@ -448,13 +450,14 @@ function Troop:hit(damage, from, damagetype)
   self.hfx:use('hit', 0.25 * hitStrength, 200, 10)
   self:show_hp()
 
-  if self.shielded then
+  --this should really be on the base unit class (objects.lua)!
+  if self:isShielded() then
     if self.shielded > damage then 
       self.shielded = self.shielded - damage
       damage = 0
     else
       damage = damage - self.shielded
-      self.shielded = false
+      self.shielded = 0
     end
   end
 

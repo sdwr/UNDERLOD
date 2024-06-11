@@ -6,10 +6,7 @@ TODO:
     - with individual cooldowns, or 1 global?
     - random selection or conditional (ex. target within range)
 
-  -add cast time/visual cast indicator to enemies/bosses
-    -difference between interruptable casts and uninterruptable (can stun)
-  -move boss hp bar to where progress bar is
-    -boss hp bar segments for phases
+  -boss hp bar segments for phases
 
   -boss moves:
     -dragon has flame breath sweep
@@ -45,7 +42,7 @@ TODO:
   - make rally point disappear properly when all units have gone there
     - or just pin all unit to rally until it ends
     - and have animated rally point (circles moving inwards)
-    
+
   - make units not chase towards enemies when they are in range (+ push the enemy away)
   
   - add new enemy movement patterns
@@ -57,8 +54,8 @@ TODO:
   -add "on round start" to proc
 
 SMALL CLEANUP:
-   --hotkeys dont work with mulitple of the same unit
   --boss levels do not end when boss dies
+  --troops aggro towards enemies, but not quite close enough to attack
   
   --laser secondary hit detection is stingy (maybe not registering points?)
 

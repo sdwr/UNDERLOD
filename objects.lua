@@ -390,6 +390,8 @@ function Unit:update_buffs(dt)
         self.canBash = true
       elseif k == 'stunned' then
         self.state = unit_states['normal']
+      elseif k == 'shield' then
+        self.shielded = 0
       end
       --this is where buff stacks tick down
       if v.stacks and v.stacks > 1 then
@@ -429,6 +431,8 @@ function Unit:init_stats()
   local hpMod = 1 + ((level - 1) / 2)
   local dmgMod = 1 + ((level - 1) / 2)
   local spdMod = 1
+
+  self.shielded = 0
   
   --init base stats
   if self:is(Player) then
@@ -621,6 +625,9 @@ function Unit:calculate_stats(first_run)
           elseif stat == buff_types['attack_range'] then
             self.buff_attack_range_m = self.buff_attack_range_m + amtWithStacks
 
+          elseif stat == buff_types['shield'] then
+            self.shielded = self.shielded + amtWithStacks
+
           elseif stat == buff_types['eledmg'] then
             self.eledmg_m = self.eledmg_m + amtWithStacks
           elseif stat == buff_types['elevamp'] then
@@ -758,6 +765,14 @@ function Unit:onRoundStartCallbacks()
   end
 end
 
+--seems like body.v does not chagne from nil
+function Unit:isMoving(dt)
+  local diff = math.distance(self.x, self.y, self.last_x or self.x, self.last_y or self.y)
+  self.last_x = self.x
+  self.last_y = self.y
+  return diff > 0.1
+end
+
 --add custom UI later, so it doesn't stack with the buff circles
 --check firestack on from unit to see if it can stack
 function Unit:burn(dps, duration, from)
@@ -774,6 +789,16 @@ function Unit:burn(dps, duration, from)
   --handle dps * stacks and stacks falling off in the update function
   self:remove_buff('burn')
   self:add_buff(burnBuff)
+end
+
+function Unit:isShielded()
+  return self.shielded > 0
+end
+
+function Unit:shield(amount, duration)
+  local shieldBuff = {name = 'shield', duration = duration, maxDuration = duration, stats = {shield = amount}}
+  self:remove_buff('shield')
+  self:add_buff(shieldBuff)
 end
 
 function Unit:redshield(duration)
@@ -868,7 +893,7 @@ function Unit:start_backswing()
   if self.state == unit_states['casting'] then
     self.state = unit_states['stopped']
   else
-    print('error: unit not casting when start_backswing called')
+    print('error: unit not casting when start_backswing called', self.type)
   end
 end
 

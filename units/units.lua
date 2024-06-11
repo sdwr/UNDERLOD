@@ -139,19 +139,39 @@ function Team:apply_item_procs()
   --add 1 copy of 'team' procs to the team
   local team_items = self.troops[1].items
 
-  if team_items and #team_items > 0 then
-    for k,item in ipairs(team_items) do
-      if item.procs then
+  if team_items then
+    for i = 1,6 do
+      local item = team_items[i]
+      if item and item.procs then
         for _, proc in ipairs(item.procs) do
           local procname = proc
           --can fill data from item here, but defaults should be ok
-          local procObj = Create_Proc(procname, nil, self)
-          if procObj then
-            table.insert(self.procs, procObj)
-          end
+          local procObj = Create_Proc(procname, self, nil)
+          self:add_proc(procObj)
         end
       end
     end
+  end
+end
+
+function Team:add_proc(proc)
+  if not proc then
+    print('no proc to add to team')
+    return
+  end
+
+  if proc.scope == 'team' then
+    table.insert(self.procs, proc)
+  elseif proc.scope == 'troop' then
+    for i, troop in ipairs(self.troops) do
+      Create_Proc(proc.name, nil, troop)
+    end
+    proc:die()
+  elseif proc.scope == 'global' then
+    --do global stuff
+  else
+    print('proc not on team or troop (in team)', self.name)
+    proc:die()
   end
 end
 

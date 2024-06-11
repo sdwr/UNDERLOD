@@ -4,7 +4,7 @@ Helper.Spell.Flame.do_draw_hitbox = false
 Helper.Spell.Flame.do_draw_particles = true
 Helper.Spell.Flame.list = {}
 
-function Helper.Spell.Flame:create(color, flamewidth, flameheight, damage, unit, follow_target)
+function Helper.Spell.Flame:create(color, flamewidth, flameheight, damage, unit, follow_target, follow_speed)
     if unit:my_target() then
         local i, flame = find_in_list(Helper.Spell.Flame.list, unit, function(value) return value.unit end)
         if flame == -1 then
@@ -20,7 +20,8 @@ function Helper.Spell.Flame:create(color, flamewidth, flameheight, damage, unit,
                 flamewidth = flamewidth,
                 flameheight = flameheight,
                 damage = damage,
-                follow_target = follow_target or true
+                follow_target = follow_target or true,
+                follow_speed = follow_speed or 60
             }
 
             if unit and unit.area_size_m then
@@ -79,7 +80,7 @@ function Helper.Spell.Flame:update_direction(dt)
             local x = flame.unit.x + flame.directionx
             local y = flame.unit.y + flame.directiony
             if target then
-                x, y = Helper.Geometry.rotate_to(flame.unit.x, flame.unit.y, x, y, target.x, target.y, 300)
+                x, y = Helper.Geometry.rotate_to(flame.unit.x, flame.unit.y, x, y, target.x, target.y, flame.follow_speed)
                 flame.directionx = x - flame.unit.x
                 flame.directiony = y - flame.unit.y
             end
@@ -105,7 +106,6 @@ function Helper.Spell.Flame:end_flames()
         local flame = Helper.Spell.Flame.list[i]
         if flame.set_to_end then
             if Helper.Time.time - flame.start_ending_at > flame.end_after then
-                print('fire done')
                 Helper.Unit:finish_casting(flame.unit)
                 Helper.Time:stop_interval(flame.particle_interval_id)
                 table.remove(Helper.Spell.Flame.list, i)
@@ -126,7 +126,6 @@ end
 function Helper.Spell.Flame:end_flame_after(unit, duration)
     local i, flame = find_in_list(Helper.Spell.Flame.list, unit, function(value) return value.unit end)
     if i ~= -1 then
-        print('setting end time')
         flame.set_to_end = true
         flame.end_after = duration
         flame.start_ending_at = Helper.Time.time

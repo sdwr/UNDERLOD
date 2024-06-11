@@ -72,18 +72,13 @@ function Proc:addTriggers()
   elseif self.scope == 'global' then
     --do global stuff
   else
-    print('proc not on team or troop')
+    print('proc not on team or troop (in proc)', self.name)
     self:die()
   end
 end
 
 --sets procs for all the units in the team
 function Proc:addTriggersToTeam()
-  if not self.team then
-    print('proc needs a team to add team triggers')
-    return
-  end
-
   local team = self.team
   table.insert(team.procs, self)
   for i, triggerName in ipairs(LIST_OF_PROC_TYPES) do
@@ -101,11 +96,6 @@ function Proc:addTriggerToAllTroops(triggerName)
 end
 
 function Proc:addTriggersToTroop()
-  if not self.unit then
-    print('proc needs a unit to add troop triggers')
-    return
-  end
-
   local unit = self.unit
   table.insert(unit.procs, self)
 
@@ -117,7 +107,6 @@ function Proc:addTriggersToTroop()
       table.insert(list, self)
     end
   end
-  
 end
 
 function Proc:die()

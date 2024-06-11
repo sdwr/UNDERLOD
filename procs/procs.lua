@@ -12,14 +12,14 @@ require 'procs/proc'
 --either unit or team will be nil (or both!)
 --need to make sure the procs will not crash when they are created on the wrong object
 --move the proc startup to an 'activate' function? and only call if the unit/team exists
-function Create_Proc(name, unit, team)
+function Create_Proc(name, team, unit)
   if not proc_name_to_class[name] then
     print('proc not found')
     print(name)
     return nil
   end
 
-  local procObj = proc_name_to_class[name]({unit = unit, team = team, data = {name = name}})
+  local procObj = proc_name_to_class[name]({team = team, unit = unit, data = {name = name}})
   return procObj
 end
 
@@ -130,10 +130,10 @@ function Proc_Bash:onHit(target, damage)
   end
 end
 
---proc heal
+--works the same way as shield
 Proc_Heal = Proc:extend()
 function Proc_Heal:init(args)
-  self.triggers = {}
+  self.triggers = {PROC_ON_ROUND_START}
   self.scope = 'troop'
 
   Proc_Heal.super.init(self, args)
@@ -141,12 +141,18 @@ function Proc_Heal:init(args)
   
 
   --define the proc's vars
-  self.every_time = self.data.every_time or 5
+  self.time_between = self.data.time_between or 5
   self.healAmount = self.data.healAmount or 10
-  trigger:every(self.every_time, function() self:heal() end)
 end
 
--- :heal() is on troop, but should be on unit instead
+function Proc_Heal:onRoundStart()
+  Proc_Heal.super.onRoundStart(self)
+  if not self.unit then return end
+  self.manual_trigger = trigger:every(self.time_between, function()
+    self:heal()
+  end)
+end
+
 function Proc_Heal:heal()
   if self.unit and self.unit.heal then
     heal1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
@@ -341,9 +347,11 @@ function Proc_Radiance:onTick(dt)
   end
 end
 
+--can only have 1 shield at a time, no stack for now
+--any new shield will overwrite the old one
 Proc_Shield = Proc:extend()
 function Proc_Shield:init(args)
-  self.triggers = {}
+  self.triggers = {PROC_ON_ROUND_START}
   self.scope = 'troop'
 
   Proc_Shield.super.init(self, args)
@@ -352,21 +360,21 @@ function Proc_Shield:init(args)
 
   --define the proc's vars
   self.buffname = 'shield'
-  self.color = grey[5]
   self.shield_amount = self.data.shield_amount or 10
   self.time_between = self.data.time_between or 5
   self.buff_duration = self.data.buff_duration or 4
 
-  self.buffdata = {name = self.buffname, color = self.color, duration = self.buff_duration,
-    stats = {shield = self.shield_amount}
-  }
-
-  --need to have shield amount in buff
-  --no way to cancel the trigger once the unit is dead :( 
-    if not self.unit then return end
-  self.manual_trigger = trigger:every(self.time_between, function() self.unit:add_buff(self.buffdata) end)
 end
 
+function Proc_Shield:onRoundStart()
+  Proc_Shield.super.onRoundStart(self)
+  if not self.unit then return end
+  self.manual_trigger = trigger:every_immediate(self.time_between, function()
+    self.unit:shield(self.shield_amount, self.buff_duration)
+  end)
+end
+
+--should cancel the trigger when the unit dies
 function Proc_Shield:die()
   Proc_Shield.super.die(self)
   if not self.manual_trigger then return end
@@ -536,6 +544,49 @@ function Proc_Frostfield:onHit(target, damage)
   end
 end
 
+Proc_Holduground = Proc:extend()
+function Proc_Holduground:init(args)
+  self.triggers = {PROC_ON_TICK}
+  self.scope = 'troop'
+
+  Proc_Holduground.super.init(self, args)
+
+  --define the proc's vars
+  self.buffname = 'holduground'
+  self.aspd_per_second = self.data.aspd_per_second or 0.2
+  self.max_aspd = self.data.max_aspd or 1
+
+  --define the procs memory
+  self.time_elapsed = 0
+end
+
+--could be a buff, but lets do everything in the proc
+--think about adding 'per second' procs instead of onTick
+--not sure what performance is like, but we could save some calculations
+function Proc_Holduground:onTick(dt)
+  Proc_Holduground.super.onTick(self, dt)
+  if not self.unit then return end
+  if self.unit:isMoving() then
+    self.time_elapsed = 0
+    self.unit:remove_buff(self.buffname)
+  else
+    self.time_elapsed = self.time_elapsed + dt
+    local aspd = math.min(self.time_elapsed * self.aspd_per_second, self.max_aspd)
+    local buffdata = {name = 'holduground', color = blue[5], duration = 1,
+      stats = {aspd = aspd}
+    }
+    self.unit:remove_buff(self.buffname)
+    self.unit:add_buff(buffdata)
+  end
+end
+
+--only lasts a second so not really necessary to remove (and no timer involved)
+function Proc_Holduground:die()
+  Proc_Holduground.super.die(self)
+  if not self.unit then return end
+  self.unit:remove_buff(self.buffname)
+end
+
 Proc_Icenova = Proc:extend()
 function Proc_Icenova:init(args)
   self.triggers = {PROC_ON_TICK}
@@ -658,6 +709,7 @@ proc_name_to_class = {
   --blue procs
   ['frost'] = Proc_Frost,
   ['frostfield'] = Proc_Frostfield,
+  ['holduground'] = Proc_Holduground,
   ['icenova'] = Proc_Icenova,
   ['slowstack'] = Proc_Slowstack,
 

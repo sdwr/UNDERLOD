@@ -1654,6 +1654,8 @@ function init()
     ['attack_range'] = 'attack_range',
     ['dmg_per_def'] = 'dmg_per_def',
 
+    ['shield'] = 'shield',
+
     ['eledmg'] = 'eledmg',
     ['elevamp'] = 'elevamp',
     ['vamp'] = 'vamp',

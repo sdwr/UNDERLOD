@@ -42,7 +42,7 @@ function Enemy:manage_cooldowns(dt)
     end
   end
   --update / clear cast cooldown
-  if self.castcooldown and self.castcooldown > 0 then
+  if self.castcooldown and self.castcooldown > 0 and self.state ~= unit_states['frozen'] then
     self.castcooldown = self.castcooldown - dt
   elseif self.castcooldown and self.castcooldown <= 0 then
     self.castcooldown = nil

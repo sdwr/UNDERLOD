@@ -183,7 +183,7 @@ item_to_item_data = {
     colors = {},
     cost = 5,
     icon = 'basher',
-    desc = 'A shield that stuns enemies',
+    desc = 'A weapon that stuns enemies',
     stats = {bash = 0.2, dmg = 0.5},
     procs = {'bash'}
   },
@@ -192,7 +192,7 @@ item_to_item_data = {
     colors = {},
     cost = 5,
     icon = 'healingleaf',
-    desc = 'A leaf that heals you',
+    desc = 'Heals this unit every 5 seconds',
     stats = {hp = 0.2},
     procs = {'heal'}
   },
@@ -245,7 +245,6 @@ item_to_item_data = {
     procs = {'static'},
     tags = {'lightningdmg'}
   },
-  --still need to add
   ['radiance'] = {
     name = 'radiance',
     colors = {'yellow'},
@@ -338,14 +337,12 @@ item_to_item_data = {
     stats = {attack_range = 0.1, dmg = 0.5},
     procs = {}
   },
-  --save this for later - best example of why procs should have buff-style ticks
-  -- right now would have to put in objects.lua as a buff
   ['holduground'] = {
     name = 'holduground',
     colors = {'blue'},
     cost = 5,
     icon = 'holduground',
-    desc = 'Increases damage the longer you stand still',
+    desc = 'Increases attackspeed the longer you stand still',
     stats = {},
     procs = {'holduground'}
   },
@@ -368,6 +365,21 @@ item_to_item_data = {
     procs = {'slowstack'},
     prereqs = {'frostslow'}
   },
+
+  --not yet implemented
+  --------------------
+
+  --repeated attacks on the same target are faster / do more damage / build vuln
+
+  --burning enemies have a chance to explode for % max hp (global) (+burn dmg, tier 2/3)
+
+  --enemies that are slowed take more damage from all sources (global) (+slow dmg, tier 2/3)
+
+  --enemies that are stunned are vulnerable to all damage (global) (+stun dmg, tier 2/3)
+  --enemies that are stunned are slowed when they recover from stun (global) (+stun slow, tier 2/3)
+
+
+
 
   --multicolor items
   ['twinflame'] = {

@@ -18,14 +18,14 @@ fns['init_enemy'] = function(self)
   self.maxSummons = 10
   self.summons = 0
 
-  self.castTime = 3
+  self.time_to_cast = 3
 
   self.state = unit_states['frozen']
 
   --set attacks
     self.t:after(attack_speeds['medium-fast'], function ()
         Summon{group = main.current.main, team = "enemy", type = "enemy_critter", amount = 6, suicide = true,
-                x = self.x, y = self.y, rs = 15, castTime = 3, color = brown[5], level = self.level, parent = self}
+                x = self.x, y = self.y, rs = 15, castTime = self.time_to_cast, color = brown[5], level = self.level, parent = self}
     end, 'spawn')
 end
 
