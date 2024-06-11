@@ -290,7 +290,14 @@ function init()
   linegoesup            = Image(d .. 'linegoesup')
   orb                   = Image(d .. 'orb')
   sword                 = Image(d .. 'sword')
-  
+  rock                  = Image(d .. 'rock')
+  flask                 = Image(d .. 'flask')
+  gem                   = Image(d .. 'gem')
+  sun                   = Image(d .. 'sun')
+  simpleboots           = Image(d .. 'simpleboots')
+  mace                  = Image(d .. 'mace')
+  fire                  = Image(d .. 'fire')
+
   arrows                = Image(d .. 'arrows')
   bear                  = Image(d .. 'bear')
   bomb                  = Image(d .. 'bomb')
@@ -1427,45 +1434,22 @@ function init()
 
   item_images = {
     ['default'] = sword,
-
-    ['smallsword'] = warrior,
-    ['medsword'] = warrior,
-    ['largesword'] = warrior,
-
-    ['smallboots'] = boots,
-    ['medboots'] = boots,
-    ['largeboots'] = boots,
-
-    ['smallbow'] = berserking,
-    ['medbow'] = berserking,
-    ['largebow'] = berserking,
-
-    ['smallvest'] = amplify,
-    ['medvest'] = amplify,
-    ['largevest'] = amplify,
-
-    ['smallshield'] = curser,
-    ['medshield'] = curser,
-    ['largeshield'] = curser,
-
-    ['smallbomb'] = bomb,
-    ['medbomb'] = bomb,
-    ['largebomb'] = bomb,
-
-    ['vampirism'] = hextouch,
-    ['ghostboots'] = temporal_chains,
-    ['spikedcollar'] = exploder_elite,
-    ['basher'] = forcer_elite,
-    ['berserkerbelt'] = awakening,
-    ['corpseexplode'] = seeping,
     
     ['potion2'] = potion2,
-    ['stockmarket'] = linegoesup,
-    ['healingleaf'] = leaf,
-    ['heartofgold'] = turtle,
-    ['frostorb'] = orb,
-
-
+    ['linegoesup'] = linegoesup,
+    ['fancyarmor'] = fancyarmor,
+    ['turtle'] = turtle,
+    ['leaf'] = leaf,
+    ['orb'] = orb,
+    ['simpleshield'] = simpleshield,
+    ['sword'] = sword,
+    ['rock'] = rock,
+    ['flask'] = flask,
+    ['gem'] = gem,
+    ['sun'] = sun,
+    ['simpleboots'] = simpleboots,
+    ['mace'] = mace,
+    ['fire'] = fire,
   }
 
   item_costs = {
