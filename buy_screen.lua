@@ -52,7 +52,7 @@ function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, pas
   self.units = units
   self.max_units = max_units
   self.passives = passives
-  self.shop_level = shop_level
+  self.shop_level = level_to_shop_tier(level)
   self.shop_xp = shop_xp
   camera.x, camera.y = gw/2, gh/2
 
@@ -81,7 +81,7 @@ function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, pas
   self.show_level_buttons = false
   
   self.shop_text = Text({{text = '[wavy_mid, fg]shop [fg]- gold: [yellow]' .. gold, font = pixul_font, alignment = 'center'}}, global_text_tags)
-  self.items_text = Text({{text = '[wavy_mid, fg]items', font = pixul_font, alignment = 'center'}}, global_text_tags)
+  self.items_text = Text({{text = '[wavy_mid, fg]items - Lv. ' .. self.shop_level, font = pixul_font, alignment = 'center'}}, global_text_tags)
   
   self.level_buttons = {}
   
@@ -323,9 +323,9 @@ function BuyScreen:set_items(shop_level)
   local item_3
   local all_items = {}
 
-  item_1 = Get_Random_Item(self.level, self.units)
-  item_2 = Get_Random_Item(self.level, self.units)
-  item_3 = Get_Random_Item(self.level, self.units)
+  item_1 = Get_Random_Item(shop_level, self.units)
+  item_2 = Get_Random_Item(shop_level, self.units)
+  item_3 = Get_Random_Item(shop_level, self.units)
 
   all_items = {item_1, item_2, item_3}
   

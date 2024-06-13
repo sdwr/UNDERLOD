@@ -453,11 +453,11 @@ function Unit:init_stats()
   elseif self.class == 'regular_enemy' then
     self.base_hp = 100 * REGULAR_ENEMY_SCALING(level)
     self.base_dmg = 10  * REGULAR_ENEMY_SCALING(level)
-    self.base_mvspd = 34
+    self.base_mvspd = 50
   elseif self.class == 'special_enemy' then
     self.base_hp = 350 * SPECIAL_ENEMY_SCALING(level)
     self.base_dmg = 20  * SPECIAL_ENEMY_SCALING(level)
-    self.base_mvspd = 34
+    self.base_mvspd = 40
   elseif self.class == 'miniboss' then
     self.base_hp = 1000 * SPECIAL_ENEMY_SCALING(level)
     self.base_dmg = 20  * SPECIAL_ENEMY_SCALING(level)

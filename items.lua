@@ -65,7 +65,7 @@ end
 
 --consumes units as unit_data (probably)
 --returns items as item_data
-function Get_Random_Item(level, units)
+function Get_Random_Item(shop_level, units)
   local available_items = {}
   --TODO: change weighting based on level (item tier)
 

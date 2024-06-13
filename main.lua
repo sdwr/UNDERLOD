@@ -1878,6 +1878,18 @@ function init()
     [5] = 40,
   }
 
+  function level_to_shop_tier(lvl)
+    if lvl <= 6 then
+      return 1
+    elseif lvl <= 12 then
+      return 2
+    elseif lvl <= 16 then
+      return 3
+    else
+      return 4
+    end
+  end
+
   level_to_round_power = {
     [1] = 100,
     [2] = 300,    -- Base round
