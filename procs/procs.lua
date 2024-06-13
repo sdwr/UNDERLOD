@@ -91,7 +91,7 @@ function Proc_Craggy:onGotHit(from, damage)
   Proc_Craggy.super.onGotHit(self, from)
   if self.canProc and math.random() < self.chance then
     self.canProc = false
-    trigger:after(self.cooldown, function() self.canProc = true end)
+    self.timer:after(self.cooldown, function() self.canProc = true end)
 
     arrow_hit_wall2:play{pitch = random:float(0.8, 1.2), volume = 0.9}
     
@@ -123,7 +123,7 @@ function Proc_Bash:onHit(target, damage)
   Proc_Bash.super.onHit(self, target, damage)
   if self.canProc and math.random() < self.chance then
     self.canProc = false
-    trigger:after(self.cooldown, function() self.canProc = true end)
+    self.timer:after(self.cooldown, function() self.canProc = true end)
 
     arrow_hit_wall2:play{pitch = random:float(0.8, 1.2), volume = 0.9}
 
@@ -140,7 +140,6 @@ function Proc_Heal:init(args)
 
   Proc_Heal.super.init(self, args)
   
-  
 
   --define the proc's vars
   self.time_between = self.data.time_between or 5
@@ -150,13 +149,15 @@ end
 function Proc_Heal:onRoundStart()
   Proc_Heal.super.onRoundStart(self)
   if not self.unit then return end
-  self.manual_trigger = trigger:every(self.time_between, function()
+  self.timer:every(self.time_between, function()
     self:heal()
   end)
 end
 
 function Proc_Heal:heal()
   if self.unit and self.unit.heal then
+    print('healing')
+    print(self.unit, self.unit.dead)
     heal1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
     self.unit:heal(self.healAmount)
   end
@@ -371,16 +372,9 @@ end
 function Proc_Shield:onRoundStart()
   Proc_Shield.super.onRoundStart(self)
   if not self.unit then return end
-  self.manual_trigger = trigger:every_immediate(self.time_between, function()
+  self.manual_trigger = self.timer:every_immediate(self.time_between, function()
     self.unit:shield(self.shield_amount, self.buff_duration)
   end)
-end
-
---should cancel the trigger when the unit dies
-function Proc_Shield:die()
-  Proc_Shield.super.die(self)
-  if not self.manual_trigger then return end
-  trigger:cancel(self.manual_trigger)
 end
 
 Proc_Fire = Proc:extend()
@@ -617,8 +611,8 @@ function Proc_Icenova:onTick(dt)
     --check for nearby enemies
     if Helper.Spell:there_is_target_in_range(self.unit, self.radius, nil) then
       self.canProc = false
-      trigger:after(self.cooldown + self.procDelay, function() self.canProc = true end)
-      trigger:after(self.procDelay, function() self:cast() end) 
+      self.timer:after(self.cooldown + self.procDelay, function() self.canProc = true end)
+      self.timer:after(self.procDelay, function() self:cast() end) 
     end
   end
 end

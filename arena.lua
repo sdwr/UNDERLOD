@@ -52,6 +52,7 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
   self.effects = Group()
   self.ui = Group()
   self.credits = Group()
+  self.proc_group = Group()
   self.main:disable_collision_between('troop', 'projectile')
   self.main:disable_collision_between('projectile', 'projectile')
   self.main:disable_collision_between('projectile', 'enemy_projectile')
@@ -143,6 +144,7 @@ function Arena:on_exit()
   self.effects:destroy()
   self.ui:destroy()
   self.credits:destroy()
+  self.proc_group()
   self.t:destroy()
   self.floor = nil
   self.main = nil
@@ -158,6 +160,7 @@ function Arena:on_exit()
   self.flashes = nil
   self.hfx = nil
 
+  Helper.Unit:clear_teams()
   self.hotbar:clear_hotbar()
   Helper:release()
 end

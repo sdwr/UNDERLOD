@@ -855,7 +855,6 @@ function Area:init(args)
   self:init_game_object(args)
   local w = 1.5*self.w
   local h = self.h and 1.5*self.h or 1.5*w
-  print(self.x, self.y, w, h, self.r)
   self.shape = Rectangle(self.x, self.y, w, h, self.r)
 
   local flashFactor = self.dmg / 30

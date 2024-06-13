@@ -54,7 +54,14 @@ TODO:
   -add "on round start" to proc
 
 SMALL CLEANUP:
-  --boss levels do not end when boss dies
+  --heal doesn't get cleaned up when exiting arena (on quit from settings?)
+    --units persisting after round end ??
+    -- how is garbage collection working on units/teams/procs?
+    -- i thought game objects were naturally culled
+    -- procs aren't game objects
+    -- and are definitely sticking around (at least with active timers)
+  -- swordsman doesn't target enemy critters
+
   --troops aggro towards enemies, but not quite close enough to attack
   
   --laser secondary hit detection is stingy (maybe not registering points?)

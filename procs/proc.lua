@@ -47,6 +47,8 @@ function Proc:init(args)
   self.team = args.team
   self.data = args.data
 
+  self.timer = Trigger()
+
   if DEBUG_PROCS then
     print('creating proc: ', self.unit, self.team, self.data)
   end
@@ -113,6 +115,8 @@ function Proc:die()
   if DEBUG_PROCS then
     print('destroying proc: ', self.name)
   end
+
+  self.timer:destroy()
   self.dead = true
 end
 

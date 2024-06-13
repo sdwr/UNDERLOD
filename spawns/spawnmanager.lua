@@ -114,7 +114,7 @@ function Spawn_Teams(arena)
   local spawn_x = gw/2 - 50
 
   --clear Helper.Unit.teams
-  Helper.Unit.teams = {}
+  Helper.Unit:clear_teams()
   
   for i, unit in ipairs(arena.units) do
     --add a new team

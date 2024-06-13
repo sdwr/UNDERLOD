@@ -237,6 +237,13 @@ Helper.Unit.number_of_troop_types = 0
 Helper.Unit.troop_type_button_width = 0
 Helper.Unit.team_button_width = 0
 
+function Helper.Unit:clear_teams()
+    for i, team in ipairs(Helper.Unit.teams) do
+        team:die()
+    end
+    Helper.Unit.teams = {}
+end
+
 function Helper.Unit:get_team_by_index(index)
     if index < 1 or index > #Helper.Unit.teams then
         print('no team with index ' .. index)

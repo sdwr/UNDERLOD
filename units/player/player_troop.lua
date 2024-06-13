@@ -502,6 +502,10 @@ function Troop:die()
     self.parent.summons = self.parent.summons - 1
   end
 
+  for i, proc in ipairs(self.procs) do
+    proc:die()
+  end
+
   self.state_change_functions['death']()
   self.death_function()
 end

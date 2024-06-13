@@ -128,6 +128,13 @@ end
 
 --item functions
 
+function Team:clear_procs()
+  for i, proc in ipairs(self.procs) do
+    proc:die()
+  end
+  self.procs = {}
+end
+
 --needs troops to be added to team first (should be done in init?
 function Team:apply_item_procs()
   --assume all items are the same between troops, so just grab the first one
@@ -146,6 +153,7 @@ function Team:apply_item_procs()
         for _, proc in ipairs(item.procs) do
           local procname = proc
           --can fill data from item here, but defaults should be ok
+          print('adding proc: ', procname)
           local procObj = Create_Proc(procname, self, nil)
           self:add_proc(procObj)
         end
