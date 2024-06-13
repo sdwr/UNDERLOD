@@ -212,14 +212,16 @@ function Helper.Geometry:is_off_screen(x, y, angle, radius)
     end
 end
 
+--internal love.graphics uses a coordinate system where the origin is at the top left corner
+--graphics.rectangle uses the center of the rectangle as the origin
 function Helper.Geometry:get_arena_rect(index, total)
     local aw = gw - (2 * SpawnGlobals.wall_width)
     local ah = gh - (2 * SpawnGlobals.wall_height)
-    local x_offset = (aw * 1.0) / total
     local y_offset = (ah * 1.0) / total
+    local base_y = SpawnGlobals.wall_height + (y_offset / 2)
 
-    local x = SpawnGlobals.wall_width
-    local y = SpawnGlobals.wall_height + (y_offset * (index - 1))
+    local x = gw/2
+    local y = base_y + (y_offset * (index - 1))
 
     return x, y, aw, y_offset
 end

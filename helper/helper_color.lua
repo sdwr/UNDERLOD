@@ -19,3 +19,13 @@ end
 function Helper.Color:set_color(color)
     love.graphics.setColor(color.r, color.g, color.b, color.a)
 end
+
+function Helper.Color:clone(color)
+    local new_color = {
+        r = color.r,
+        g = color.g,
+        b = color.b,
+        a = color.a
+    }
+    return new_color
+end

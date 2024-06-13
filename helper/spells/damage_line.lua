@@ -54,6 +54,7 @@ function Helper.Spell.DamageLine:update()
     Helper.Spell.DamageLine:delete()
 end
 
+--update to optionally do ticks of damage
 function Helper.Spell.DamageLine:damage()
     for i, damage_line in ipairs(Helper.Spell.DamageLine.list) do
         if not damage_line.damage_dealt then

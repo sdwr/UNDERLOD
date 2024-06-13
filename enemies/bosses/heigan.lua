@@ -2,10 +2,6 @@
 
 local fns = {}
 
-fns['safety_dance'] = function(self)
-    Helper.Spell.SafetyDance:create_all(self, orange[-5], true, 'one_safe', 4, 20)
-end
-
 fns['init_enemy'] = function(self)
 
   --set extra variables from data
@@ -21,11 +17,61 @@ fns['init_enemy'] = function(self)
   self:set_as_steerable(self.v, 1000, 2*math.pi, 2)
   self.class = 'boss'
 
+  --set sensors
+  self.attack_sensor = Circle(self.x, self.y, 80)
+
   --set attacks
-  self.cycle_index = 0
-  self.t:cooldown(attack_speeds['slow'], function() return true end, function()
-    fns['safety_dance'](self)
-  end, nil, nil, 'cast')
+  self.attack_options = {}
+
+  local safety_dance = {
+    name = 'safety_dance',
+    viable = function () return true end,
+    casttime = 1,
+    cast = function()
+      Helper.Spell.SafetyDance:create_all(self, orange[-5], true, 'one_safe', 4, 25)
+    end
+  }
+
+  local laser_ball = {
+    name = 'laser_ball',
+    viable = function () return true end,
+    casttime = 1,
+    cast = function()
+      LaserBall{
+        group = main.current.main,
+        unit = self,
+        team = "enemy",
+        x = self.x,
+        y = self.y,
+        color = orange[-5],
+        damage = 20,
+        parent = self
+      }
+    end
+  }
+
+  local quick_stomp = {
+    name = 'quick_stomp',
+    viable = function() return self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies) end,
+    casttime = 1,
+    cast = function()
+      Stomp{
+        group = main.current.main,
+        unit = self,
+        team = "enemy",
+        x = self.x,
+        y = self.y,
+        color = orange[-5],
+        rs = self.attack_sensor.rs,
+        damage = 50,
+        parent = self,
+      }
+    end
+  }
+
+  table.insert(self.attack_options, safety_dance)
+  table.insert(self.attack_options, laser_ball)
+  table.insert(self.attack_options, quick_stomp)
 end
 
 fns['draw_enemy'] = function(self)

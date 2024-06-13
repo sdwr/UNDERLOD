@@ -60,16 +60,15 @@ function Laser_Troop:set_character()
           self:onAttackCallbacks(self.target)
         end
         sniper_load:play{volume=0.7}
-        local data = {
-          group = main.current.effects, 
+        local args = { 
           unit = self,
-          target = self.target,
           direction_lock = false,
-          laser_aim_width = 6,
-          color = Helper.Color.blue,
+          laser_aim_width = 1,
+          damage_troops = false,
           damage = self.dmg,
+          color = Helper.Color.blue,
         }
-        Helper.Spell.Laser:create(Helper.Color.blue, 1, false, 20, self, true)
+        Helper.Spell.Laser:create(args)
       end)
     end
     

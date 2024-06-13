@@ -60,7 +60,9 @@ Enemy_Cast = function(enemy, attackdata)
   enemy.baseCast = attackdata.casttime
   enemy.last_attack_started = love.timer.getTime()
   enemy.currentcast = attackdata.cast
-  attackdata.oncaststart(enemy)
+  if attackdata.oncaststart then
+    attackdata.oncaststart(enemy)
+  end
 end
 
 Enemy_Pick_Attack = function(enemy)

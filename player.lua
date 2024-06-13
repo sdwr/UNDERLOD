@@ -855,13 +855,43 @@ function Area:init(args)
   self:init_game_object(args)
   local w = 1.5*self.w
   local h = self.h and 1.5*self.h or 1.5*w
+  print(self.x, self.y, w, h, self.r)
   self.shape = Rectangle(self.x, self.y, w, h, self.r)
+
+  local flashFactor = self.dmg / 30
+
+  self.color = fg[0]
+  self.color_transparent = Color(args.color.r, args.color.g, args.color.b, 0.08)
+
+  self.w = 0
+  self.hidden = false
+
+  self.duration = args.duration or 0.2
+  self.current_time = 0
+  self.damage_ticks = args.damage_ticks or false
+  self.tick_rate = args.tick_rate or 0.1
+  self.active = true
+
+  if not self.damage_ticks then
+    self:damage()
+  end
+
+  self.t:tween(0.05, self, {w = args.w}, math.cubic_in_out, function() self.spring:pull(0.15 * flashFactor) end)
+  self.t:after(self.duration, function()
+    self.color = args.color
+    self.active = false
+    self.t:every_immediate(0.05, function() self.hidden = not self.hidden end, 7, function() self.dead = true end)
+  end)
+end
+
+function Area:damage()
   local targets = {}
   if self.team == "enemy" then 
     targets = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
   else
     targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
   end
+
   for _, target in ipairs(targets) do
     if self.character == 'freezing_field' then
       --make slow for troops as well
@@ -875,23 +905,22 @@ function Area:init(args)
     hit2:play{pitch = random:float(0.95, 1.05), volume = 0.35}
 
   end
-
-  local flashFactor = self.dmg / 30
-
-  self.color = fg[0]
-  self.color_transparent = Color(args.color.r, args.color.g, args.color.b, 0.08)
-  self.w = 0
-  self.hidden = false
-  self.t:tween(0.05, self, {w = args.w}, math.cubic_in_out, function() self.spring:pull(0.15 * flashFactor) end)
-  self.t:after(0.2, function()
-    self.color = args.color
-    self.t:every_immediate(0.05, function() self.hidden = not self.hidden end, 7, function() self.dead = true end)
-  end)
 end
 
 
 function Area:update(dt)
   self:update_game_object(dt)
+  if self.damage_ticks and self.active then
+    self:update_ticks(dt)
+  end
+end
+
+function Area:update_ticks(dt)
+  self.current_time = self.current_time + dt
+  if self.current_time >= self.tick_rate then
+    self:damage()
+    self.current_time = 0
+  end
 end
 
 
@@ -1712,7 +1741,7 @@ end
 
 function Stomp:recover()
   if self then self.dead = true else return end
-  if self.parent then self.parent.state = 'normal' end
+  if self.parent and self.parent.state == 'frozen' then self.parent.state = 'normal' end
 end
 
 function Stomp:draw()
@@ -1760,6 +1789,200 @@ function Mortar:recover()
 end
 
 function Mortar:draw()
+end
+
+LaserBall = Object:extend()
+LaserBall:implement(GameObject)
+LaserBall:implement(Physics)
+function LaserBall:init(args)
+  --init game object, physics shape + body, world tag
+  self:init_game_object(args)
+  self.radius = 8
+  self:set_as_circle(self.radius, 'dynamic', 'ghost')
+  self.shape = Circle(self.x, self.y, self.radius)
+
+  self.color = red[0]
+
+  --boss state
+  self.parent.state = 'frozen'
+  self.t:after(1, function()
+    if self.parent and self.parent.state == 'frozen' then self.parent.state = 'normal' end
+  end)
+
+  --set the velocity and rotation speed
+  self.rotation_speed = 1
+  self.speed = 100
+
+  self.r = math.random(2*math.pi)
+  self:set_angle(self.r)
+
+
+  --set the duration, laser firing
+  self.duration = 12
+  self.elapsed = 0
+  
+  self.duration_init = 2
+  self.duration_prefire = 1
+  self.duration_fire = 1.5
+  self.duration_wait = 2
+  
+  self.nextLaser = self.duration_init
+  --play init sound
+  illusion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+end
+
+function LaserBall:update(dt)
+  if self.parent and self.parent.dead then self.dead = true; return end
+
+  self:update_game_object(dt)
+  
+  --get velocity based on rotation and speed
+  local vx = math.cos(self.r) * self.speed
+  local vy = math.sin(self.r) * self.speed
+  self:set_velocity(vx, vy)
+  self:set_angular_velocity(self.rotation_speed)
+
+
+  self.duration = self.duration - dt
+  if self.duration < 0 then self.dead = true end
+  self.elapsed = self.elapsed + dt
+  self:update_fire()
+end
+
+function LaserBall:update_fire()
+  -- create the laser beams here
+  if self.elapsed > self.nextLaser then
+    self.nextLaser = self.nextLaser + self.duration_prefire + self.duration_fire + self.duration_wait
+    self:fire_lasers()
+  end
+end
+
+function LaserBall:fire_lasers()
+  for i = 0, 3 do
+    --Laser{group = main.current.effects, parent = self, color = self.color, initial_rotation = (i-1)*math.pi/2}
+    local args = {
+      unit = self,
+      rotation_lock = true,
+      rotation_angle = i * math.pi/2,
+      laser_aim_width = 4,
+      damage = 20,
+      damage_troops = true,
+      prefire = self.duration_prefire
+
+    }
+    Helper.Spell.Laser:create(args)
+  end
+end
+
+function LaserBall:draw()
+  graphics.push(self.x, self.y, self:get_angle(), self.spring.x, self.spring.x)
+    graphics.circle(self.x, self.y, self.shape.rs, self.color, 2)
+    --draw a cross in the middle of the circle
+    graphics.line(self.x - 5, self.y, self.x + 5, self.y, self.color, 2)
+    graphics.line(self.x, self.y - 5, self.x, self.y + 5, self.color, 2)
+  graphics.pop()
+end
+
+function LaserBall:on_collision_enter(other, contact)
+  self:bounce(contact:getNormal())
+end
+
+function LaserBall:bounce(nx, ny)
+  local vx, vy = self:get_velocity()
+  if nx == 0 then
+    self:set_velocity(vx, -vy)
+    self.r = 2*math.pi - self.r
+  end
+  if ny == 0 then
+    self:set_velocity(-vx, vy)
+    self.r = math.pi - self.r
+  end
+  return self.r
+end
+
+Laser = Object:extend()
+Laser:implement(GameObject)
+function Laser:init(args)
+  self:init_game_object(args)
+  self.damage_troops = args.damage_troops or true
+  self.pre_color = args.pre_color or red[0]
+  self.color = blue[0]
+  self.w = 4
+  self.initial_rotation = args.initial_rotation or 0
+
+  self.x = self.parent.x or args.x or 0
+  self.y = self.parent.y or args.y or 0
+
+  self.shape = Rectangle(self.x, self.y, self.w, 500, self:get_rotation())
+
+  self.dps = args.dps or 10
+  self.tick = args.tick or 0.1
+
+  self.startup_duration = args.startup_duration or 0.1
+  self.pre_duration = args.pre_duration or 0.5
+  self.duration = args.duration or 1
+
+  self.charge_sound = nil
+  self.fire_sound = nil
+
+  self.t:after(self.startup_duration, function() self:startup() end)
+  self.t:after(self.startup_duration + self.pre_duration, function() self:fire() end)
+  self.t:after(self.startup_duration + self.pre_duration + self.duration, function() self:die() end)
+end
+
+function Laser:get_rotation()
+  return self.parent.r + self.initial_rotation
+end
+
+function Laser:startup()
+  self.state = 'pre'
+  -- play warmup sound
+  self.charge_sound = laser_charging:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+end
+
+function Laser:fire()
+  self.state = 'firing'
+  self:stopSound()
+  self.fire_sound = shoot1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+  self.t:every(self.tick, function() self:damage() end)
+end
+
+function Laser:stopSound()
+  if self.charge_sound then self.charge_sound:stop() end
+  if self.fire_sound then self.fire_sound:stop() end
+end
+
+function Laser:damage()
+  local target_classes = self.damage_troops and main.current.friendlies or main.current.enemies
+  local targets = main.current.main:get_objects_in_shape(self.shape, target_classes)
+  for _, target in ipairs(targets) do
+    target:hit(self.dps * self.tick, self.parent)
+  end
+
+end
+
+function Laser:update(dt)
+  self:update_game_object(dt)
+  if not self.parent or self.parent.dead then self:die(); return end
+  --location follows the parent
+  self.x = self.parent.x
+  self.y = self.parent.y
+  self.r = self:get_rotation()
+end
+
+function Laser:draw()
+  graphics.push(self.x, self.y, self.r, self.spring.x, self.spring.x)
+  if self.state == 'pre' then
+    graphics.rectangle(0, 0, self.shape.w, self.shape.h, 2, 2, self.pre_color)
+  elseif self.state == 'firing' then
+    graphics.rectangle(0, 0, 1.5*self.shape.w, self.shape.h, 2, 2, self.color)
+  end
+  graphics.pop()
+end
+
+function Laser:die()
+  self:stopSound()
+  self.dead = true
 end
 
 Vanish = Object:extend()

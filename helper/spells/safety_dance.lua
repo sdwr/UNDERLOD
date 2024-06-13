@@ -19,7 +19,9 @@ function Helper.Spell.SafetyDance:create(unit, color, damage_troops, damage, x, 
         damage_troops = damage_troops,
         color = Helper.Color:set_transparency(color, 0.8),
         -- line_width = radius / 15,
-        damage = damage
+        damage = damage,
+        tick_rate = 0.1,
+        next_tick = Helper.Time.time,
     }
 
     spell.targets_hit = {}
@@ -28,6 +30,15 @@ function Helper.Spell.SafetyDance:create(unit, color, damage_troops, damage, x, 
 end
 
 function Helper.Spell.SafetyDance:create_all(unit, color, damage_troops, pattern, total, damage)
+
+    --set unit state
+    unit.state = unit_states['frozen']
+    trigger:after(Helper.Spell.SafetyDance.chargeTime, function() 
+        if unit and unit.state == unit_states['frozen'] then
+            unit.state = unit_states['normal']
+        end
+    end)
+
     if pattern == 'one_safe' then
         for i = 1, total do
             if i ~= Helper.Spell.SafetyDance.index then
@@ -49,17 +60,20 @@ function Helper.Spell.SafetyDance:draw_aims()
     for i, spell in ipairs(Helper.Spell.SafetyDance.prelist) do
         local pctCharged = (Helper.Time.time - spell.creation_time) / Helper.Spell.SafetyDance.chargeTime
         local alpha = pctCharged * 0.4
-        love.graphics.setColor(spell.color.r, spell.color.g, spell.color.b, alpha)
-        love.graphics.rectangle("line", spell.x, spell.y, spell.w, spell.h)
-        love.graphics.rectangle("fill", spell.x + 5, spell.y + 5, spell.w - 10, spell.h - 10)
-
+        local color = Helper.Color:clone(spell.color)
+        color.a = alpha
+        graphics.push(spell.x, spell.y, 0, 1, 1)
+        graphics.rectangle(spell.x, spell.y, spell.w, spell.h, 0, 0, color, 1)
+        graphics.rectangle(spell.x, spell.y, spell.w - 10, spell.h - 10, 0, 0, color)
+        graphics.pop()
     end
 end
 
 function Helper.Spell.SafetyDance:draw()
     for i, spell in ipairs(Helper.Spell.SafetyDance.list) do
-        love.graphics.setColor(spell.color.r, spell.color.g, spell.color.b, spell.color.a)
-        love.graphics.rectangle("fill", spell.x, spell.y, spell.w, spell.h)
+        graphics.push(spell.x, spell.y, 0, 1, 1)
+        graphics.rectangle(spell.x, spell.y, spell.w, spell.h, 0, 0, spell.color)
+        graphics.pop()
     end
 end
 
@@ -88,25 +102,32 @@ function Helper.Spell.SafetyDance:damage()
     local troops = main.current.main:get_objects_by_classes(main.current.friendlies)
 
     for i, spell in ipairs(Helper.Spell.SafetyDance.list) do
-        --print(#spell.targets_hit)
+        --process tick
+        if spell.next_tick < Helper.Time.time then
+            Helper.Spell.SafetyDance:hit(spell)
+            spell.next_tick = Helper.Time.time + spell.tick_rate
+        end
+    end
+end
 
-        local x, y, w, h = Helper.Spell.SafetyDance:getRect(spell)
-        local rect = Rectangle(x, y, w, h)
-        local targets = nil
-            if not spell.damage_troops then
-                targets = main.current.main:get_objects_in_shape(rect, main.current.enemies, spell.targets_hit)
+function Helper.Spell.SafetyDance:hit(spell)
+        --the rect isnt working
+    local x, y, w, h = Helper.Spell.SafetyDance:getRect(spell)
+    local rect = Rectangle(x, y, w, h)
+    local targets = nil
+    if not spell.damage_troops then
+        targets = main.current.main:get_objects_in_shape(rect, main.current.enemies)
 
-            else
-                targets = main.current.main:get_objects_in_shape(rect, main.current.friendlies, spell.targets_hit)
-            end
-            for _, target in ipairs(targets) do
-                target:hit(spell.damage, spell.unit)
-                table.insert(spell.targets_hit, target)
+    else
+        targets = main.current.main:get_objects_in_shape(rect, main.current.friendlies)
+    end
+    for _, target in ipairs(targets) do
+        target:hit(spell.damage, spell.unit)
+        table.insert(spell.targets_hit, target)
 
-                HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
-                for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = blue[0]} end
-                for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
-            end
+        HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
+        for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = blue[0]} end
+        for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
     end
 end
 

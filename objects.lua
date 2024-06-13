@@ -326,6 +326,9 @@ function Unit:remove_buff(buffName)
   if existing_buff then
     self.buffs[buffName] = nil
   end
+  if buffName == 'shield' then
+    self:remove_shield()
+  end
   if existing_buff then
     self:decrement_buff_toggles(existing_buff)
   end
@@ -391,7 +394,7 @@ function Unit:update_buffs(dt)
       elseif k == 'stunned' then
         self.state = unit_states['normal']
       elseif k == 'shield' then
-        self.shielded = 0
+        self:remove_shield()
       end
       --this is where buff stacks tick down
       if v.stacks and v.stacks > 1 then
@@ -625,8 +628,6 @@ function Unit:calculate_stats(first_run)
           elseif stat == buff_types['attack_range'] then
             self.buff_attack_range_m = self.buff_attack_range_m + amtWithStacks
 
-          elseif stat == buff_types['shield'] then
-            self.shielded = self.shielded + amtWithStacks
 
           elseif stat == buff_types['eledmg'] then
             self.eledmg_m = self.eledmg_m + amtWithStacks
@@ -795,10 +796,15 @@ function Unit:isShielded()
   return self.shielded > 0
 end
 
+function Unit:remove_shield()
+  self.shielded = 0
+end
+
 function Unit:shield(amount, duration)
-  local shieldBuff = {name = 'shield', duration = duration, maxDuration = duration, stats = {shield = amount}}
+  local shieldBuff = {name = 'shield', duration = duration, maxDuration = duration, stats = {}}
   self:remove_buff('shield')
   self:add_buff(shieldBuff)
+  self.shielded = amount
 end
 
 function Unit:redshield(duration)
@@ -823,6 +829,10 @@ function Unit:explode(enemy)
 end
 
 function Unit:stun(duration)
+  --dont stun bosses
+  if self.class == 'boss' then
+    return
+  end
   local stunBuff = {name = 'stunned', color = black[0], duration = duration}
   self:add_buff(stunBuff)
 end

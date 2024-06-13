@@ -28,7 +28,14 @@ fns['init_enemy'] = function(self)
         self:rotate_towards_object(target, 1)
         Helper.Unit:claim_target(self, target)
         self.state = unit_states['casting']
-        Helper.Spell.Laser:create(Helper.Color.blue, 7, true, self.dmg, self, nil, nil)
+        local args = {
+          unit = self,
+          direction_lock = true,
+          laser_aim_width = 6,
+          damage = self.dmg,
+          damage_troops = true
+        }
+        Helper.Spell.Laser:create(args)
         end
     end, nil, nil, 'shoot')
 end
