@@ -38,17 +38,11 @@ TODO:
   -add title card + hp bar animation to start of boss battles
     -black transition wipe?
 
-  -add "on round start" to proc
 
 SMALL CLEANUP:
   --stunned laser enemy still fires laser, and has no cooldown ("cast" never triggers, but laser happens in precast)
-  --heal doesn't get cleaned up when exiting arena (on quit from settings?)
-    --units persisting after round end ??
-    -- how is garbage collection working on units/teams/procs?
-    -- i thought game objects were naturally culled
-    -- procs aren't game objects
-    -- and are definitely sticking around (at least with active timers)
 
+  --dragon fire particles don't go far enough (and stay after fire ends)
   -- swordsman doesn't target enemy critters
 
   --Helper.DamageCircle is hurting troops (overkill)

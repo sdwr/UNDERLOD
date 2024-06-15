@@ -158,6 +158,7 @@ function Arena:on_exit()
   self.flashes = nil
   self.hfx = nil
 
+  Kill_Teams()
   self.hotbar:clear_hotbar()
   Helper:release()
 end
@@ -585,16 +586,6 @@ function Arena:die()
     }}
     trigger:tween(2, camera, {x = gw/2, y = gh/2, r = 0}, math.linear, function() camera.x, camera.y, camera.r = gw/2, gh/2, 0 end)
     self.t:after(2, function()
-      self.build_text = Text2{group = self.ui, x = 40, y = 20, force_update = true, lines = {{text = "[wavy_mid, fg]your build", font = pixul_font, alignment = 'center'}}}
-      for i, unit in ipairs(self.units) do
-        CharacterPart{group = self.ui, x = 20, y = 40 + (i-1)*19, character = unit.character, unit = unit, level = unit.level, force_update = true, cant_click = true, parent = self}
-        Text2{group = self.ui, x = 20 + 14 + pixul_font:get_text_width(unit.character)/2, y = 40 + (i-1)*19, force_update = true, lines = {
-          {text = '[' .. character_color_strings[unit.character] .. ']' .. unit.character, font = pixul_font, alignment = 'left'}
-        }}
-      end
-      for i, passive in ipairs(self.passives) do
-        ItemCard{group = self.ui, x = 120 + (i-1)*30, y = 30, w = 30, h = 45, sx = 0.75, sy = 0.75, force_update = true, passive = passive.passive , level = passive.level, xp = passive.xp, parent = self}
-      end
       self.death_info_text = Text2{group = self.ui, x = gw/2, y = gh/2, sx = 0.7, sy = 0.7, lines = {
         {text = '[wavy_mid, fg]level reached: [wavy_mid, yellow]' .. self.level, font = fat_font, alignment = 'center'},
       }}

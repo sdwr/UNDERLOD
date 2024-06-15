@@ -162,6 +162,12 @@ function Proc_Heal:heal()
   end
 end
 
+function Proc_Heal:die()
+  Proc_Heal.super.die(self)
+  if not self.manual_trigger then return end
+  trigger:cancel(self.manual_trigger)
+end
+
 --proc overkill
 Proc_Overkill = Proc:extend()
 function Proc_Overkill:init(args)

@@ -179,6 +179,9 @@ function Team:die()
   for i, troop in ipairs(self.troops) do
     troop:die()
   end
+  for i, proc in ipairs(self.procs) do
+    proc:die()
+  end
 end
 
 -- character = name of unit (on buy screen)

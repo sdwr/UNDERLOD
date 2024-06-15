@@ -1801,7 +1801,7 @@ function FireWall:init(args)
   
   self.dmg = self.dmg or 50
   --starts on one side of the screen and moves to the other
-  self.speed = 100
+  self.speed = 60
   self.direction = self.direction or -1
   
   if self.direction == -1 then

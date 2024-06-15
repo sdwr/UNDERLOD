@@ -101,6 +101,11 @@ function Outside_Arena(location)
   end 
 end
 
+function Kill_Teams()
+  for i, team in ipairs(Helper.Unit.teams) do
+    team:die()
+  end
+end
 
 --spawns troops in centre of arena, two rows if over 4 units
 function Spawn_Teams(arena)

@@ -53,6 +53,9 @@ function Helper.Spell.Laser:create(args)
 end
 
 function Helper.Spell.Laser:get_end_location(x, y, targetx, targety)
+    if (not targetx) or (not targety) then
+        return x, y
+    end
     local deltax = math.abs(targetx - x)
     local deltay = math.abs(targety - y)
     local length_to_window_width = 0
