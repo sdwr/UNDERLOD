@@ -122,6 +122,8 @@ end
 
 function Helper.Spell.Laser:draw_aims()
     for i, laser in ipairs(Helper.Spell.Laser.list) do
+
+        
         love.graphics.setLineWidth(laser.laser_aim_width / 2)
         love.graphics.setColor(laser.precolor.r, laser.precolor.g, laser.precolor.b, 0.3)
         if laser.rotation_lock then

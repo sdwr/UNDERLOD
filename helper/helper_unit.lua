@@ -150,12 +150,7 @@ function Helper.Unit:is_attack_on_cooldown(unit)
 end
 
 function Helper.Unit:add_default_state_change_functions(unit)
-    unit.state_change_functions['normal'] = function() 
-        if unit.base_castcooldown and not unit.castcooldown then
-            print('setting cast cooldown')
-            unit.castcooldown = unit.base_castcooldown
-        end
-    end
+    unit.state_change_functions['normal'] = function() end
     unit.state_change_functions['frozen'] = function() end
     unit.state_change_functions['casting'] = function() end
     unit.state_change_functions['channeling'] = function() end

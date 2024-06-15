@@ -49,6 +49,8 @@ function Troop:update(dt)
   --shouldn't be in here, but update the unit targets as well
   self:update_targets()
 
+  --add for players too?
+  --self:update_cast()
 
   --[[
   --steps should be:

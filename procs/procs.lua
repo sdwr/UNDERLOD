@@ -343,7 +343,7 @@ function Proc_Radiance:onTick(dt)
         enemy:add_buff({name = 'radianceburn', damage = self.damage, duration = 1})
         
         --Helper.Sound:play_radiance()
-        enemy:hit(self.damage, self.unit, self.damageType)
+        enemy:hit(self.damage, nil, self.damageType)
       end
     end
   end

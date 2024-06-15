@@ -835,6 +835,7 @@ function Unit:stun(duration)
   end
   local stunBuff = {name = 'stunned', color = black[0], duration = duration}
   self:add_buff(stunBuff)
+  self:interrupt_cast()
 end
 
 function Unit:slow(amount, duration, from)
@@ -973,6 +974,129 @@ function Unit:should_follow()
   local canMove = (self.state == unit_states['normal'] or self.state == unit_states['stopped'] or self.state == unit_states['rallying'] or self.state == unit_states['following'] or self.state == unit_states['casting'])
 
   return input and canMove
+end
+
+--casting functions
+-- uses 
+-- self.castcooldown as the cooldown until the next spell
+-- self.base_castcooldown as the base cooldown for the unit
+-- self.baseCast ?? as the cast time for the spell (unless otherwise specified)
+
+-- in update(), calls pick_cast() if the unit has spells and is ready to cast
+-- 'normal' and castcooldown exists and is <= 0
+
+-- pick_cast() calls start_cast()
+-- which sets the unit state to 'casting'
+-- sets currentcast to be the spell.cast()
+-- casts the spell.oncaststart()
+-- and sets currentcast to be the spell casttime
+
+--then the update_cast()
+-- ticks based on last_attack_started
+-- and calls the currentcast() when the time is up
+
+--confusing between castTime, baseCast, currentcast, and current_castcooldown
+-- need baseCast and castTime for player units w aspd
+-- spell casttime should be modified by aspd as well
+
+-- currentcast is the function that is called when the cast is finished
+-- castcooldown is the unit's cooldown until the next cast
+--and current_castcooldown is what the castcooldown will be set to when the cast is finished
+
+local example_spelldata = {
+  viable = function(unit) return unit:in_range()() end,
+  casttime = 1,
+  oncaststart = function(unit) 
+    unit:rotate_towards_object(unit.target, 1)
+    alert1:play{volume = 0.5}
+  end,
+  cast = function(unit) 
+    unit:rotate_towards_object(unit.target, 1)
+    unit:attack(20, {x = unit.target.x, y = unit.target.y})
+  end,
+}
+
+--call this in the update function (split between player_troop, enemy, enemycritter, critter right now)
+function Unit:update_cast(dt)
+  if self.state == unit_states['casting'] then
+    local time = love.timer.getTime() - self.last_attack_started
+    if time >= self.castTime then
+      --let the spell handle the unit state change (might be different for each spell)
+      self:currentcast()
+      self:end_cast()
+    end
+  end
+  --update / clear cast cooldown
+  --frozen state is used here as the state where the unit is following through on the cast (stomp for example)
+  if self.castcooldown and self.castcooldown > 0 and self.state ~= unit_states['frozen'] then
+    self.castcooldown = self.castcooldown - dt
+  elseif self.castcooldown and self.castcooldown <= 0 then
+    self.castcooldown = nil
+  end
+
+
+end
+
+function Unit:pick_cast()
+  if not self.attack_options then return end
+
+  local viable_attacks = {}
+  for k, v in pairs(self.attack_options) do
+    if v.viable(self) then
+      table.insert(viable_attacks, v)
+    end
+  end
+
+  if #viable_attacks == 0 then return end
+
+  local attack = random:table(viable_attacks)
+
+  print('unit ', self.type, ' picked cast: ' .. attack.name)
+  self:start_cast(attack)
+
+end
+
+function Unit:start_cast(spelldata)
+  self.state = unit_states['casting']
+  self.last_attack_started = love.timer.getTime()
+  self.currentcast = spelldata.cast
+  self.current_castcooldown = spelldata.casttime or self.base_castcooldown
+  if spelldata.oncaststart then
+    spelldata.oncaststart(self)
+  end
+
+end
+
+function Unit:end_cast()
+  self.castcooldown = self.current_castcooldown
+  self.current_castcooldown = nil
+  self.spelldata = nil
+  if self.state == unit_states['casting'] then
+    self.state = unit_states['normal']
+  end
+end
+
+function Unit:cancel_cast()
+  if self.state == unit_states['casting'] then
+    self.state = unit_states['normal']
+  end
+  self.current_castcooldown = nil
+  self.castcooldown = nil
+  self.spelldata = nil
+end
+
+--if cast is interrupted, set the cooldown to half
+function Unit:interrupt_cast()
+  if self.state == unit_states['casting'] then
+    self.state = unit_states['normal']  
+    self.castcooldown = self.current_castcooldown / 2
+    self.current_castcooldown = nil
+    self.spelldata = nil
+  end
+end
+
+--for channeling spells, if they are hit while casting
+function Unit:delay_cast()
 
 end
 

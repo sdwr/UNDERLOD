@@ -13,6 +13,9 @@ function Enemy:init(args)
 
   self.init_enemy(self)
   self:calculate_stats(true)
+
+  print('enemy init', self.type, self.base_castcooldown, self.baseCast)
+  self.castcooldown = math.random() * (self.base_castcooldown or self.baseCast)
   
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20 + self.shape.w / 2)
   self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 1000)
@@ -31,25 +34,7 @@ function Enemy:setExtraFunctions()
   end
 end
 
-function Enemy:manage_cooldowns(dt)
-  if self.state == unit_states['casting'] then
-    local time = love.timer.getTime() - self.last_attack_started
-    if time > self.castTime and self.currentcast then
-      --let the spell handle the unit state change (might be different for each spell)
-      self:currentcast()
-      --this should be set by the spell, after it finishes!
-      self.castcooldown = self.base_castcooldown
-    end
-  end
-  --update / clear cast cooldown
-  if self.castcooldown and self.castcooldown > 0 and self.state ~= unit_states['frozen'] then
-    self.castcooldown = self.castcooldown - dt
-  elseif self.castcooldown and self.castcooldown <= 0 then
-    self.castcooldown = nil
-  end
-
-end
-
+--set castcooldown and self.base_castcooldown in the enemy file (init)
 function Enemy:update(dt)
     self:update_game_object(dt)
 
@@ -58,7 +43,7 @@ function Enemy:update(dt)
 
     self:calculate_stats()
 
-    self:manage_cooldowns(dt)
+    self:update_cast(dt)
   
     --get target / rotate to target
     if self.target and self.target.dead then self.target = nil end
@@ -69,8 +54,8 @@ function Enemy:update(dt)
       --some will want to chase target (fire breath)
       --when a cast concludes, enemy should return to normal movement, set castcooldown in there from
       --the enemy cooldown
-      if self.attack_options and not self.castcooldown then
-        Enemy_Pick_Attack(self)
+      if self.attack_options and self.castcooldown ~= nil and self.castcooldown <= 0 then
+        self:pick_cast()
       end
     end
 

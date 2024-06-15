@@ -45,6 +45,7 @@ TODO:
   -add "on round start" to proc
 
 SMALL CLEANUP:
+  --stunned laser enemy still fires laser, and has no cooldown ("cast" never triggers, but laser happens in precast)
   --heal doesn't get cleaned up when exiting arena (on quit from settings?)
     --units persisting after round end ??
     -- how is garbage collection working on units/teams/procs?

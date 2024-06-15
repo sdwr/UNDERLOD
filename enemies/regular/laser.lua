@@ -22,7 +22,19 @@ fns['init_enemy'] = function(self)
   self.baseCast = attack_speeds['medium-fast']
 
   --set attacks
-    self.t:cooldown(attack_speeds['slow'], function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end, function ()
+
+  --laser has stuff happen during the cast (in prelist)
+  --so can't use the normal cast function
+  --the laser helper spell has to be split into two parts
+  -- so that the laser can be drawn before the cast is finished
+  -- and the spell can be cancelled properly if the unit dies or is stunned
+  self.attack_options = {}
+  local laser = {
+    name = 'laser',
+    viable = function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end,
+    casttime = self.castTime,
+    castcooldown = attack_speeds['medium'],
+    oncaststart = function()
       local target = Helper.Spell:get_furthest_target(self)
       if target then
         self:rotate_towards_object(target, 1)
@@ -36,8 +48,16 @@ fns['init_enemy'] = function(self)
           damage_troops = true
         }
         Helper.Spell.Laser:create(args)
-        end
-    end, nil, nil, 'shoot')
+      end
+    end,
+    cast = function()
+      if self.state == unit_states['casting'] then
+        self.state = unit_states['normal']
+      end
+    end,
+  }
+
+  table.insert(self.attack_options, laser)
 end
 
 fns['draw_enemy'] = function(self)
