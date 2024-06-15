@@ -24,3 +24,4 @@ require 'enemies/miniboss/bigstomper'
 require 'enemies/static/dragonegg'
 
 require 'enemies/environmental/laser'
+require 'enemies/environmental/fire_wall'

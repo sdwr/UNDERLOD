@@ -1,9 +1,5 @@
 
 TODO:
-
-  -let special enemies use abilities before full cooldown after spawn
-    - cooldown starts at random 0-cooldown
-    - or shorter
   
   -boss hp bar segments for phases
 

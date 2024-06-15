@@ -1790,6 +1790,138 @@ end
 function Mortar:draw()
 end
 
+FireWall = Object:extend()
+FireWall:implement(GameObject)
+FireWall:implement(Physics)
+function FireWall:init(args)
+  self:init_game_object(args)
+  
+  self.color = red[0]:clone()
+  self.color.a = 0.7
+  
+  self.dmg = self.dmg or 50
+  --starts on one side of the screen and moves to the other
+  self.speed = 100
+  self.direction = self.direction or -1
+  
+  if self.direction == -1 then
+    self.start_x = gw
+  else
+    self.start_x = 0
+  end
+  self.x = self.start_x
+
+  --hole in the wall
+  self.num_segments = self.num_segments or 4
+  self.num_holes = self.num_holes or 1
+  
+  self:create_hole_indexes()
+
+  self:create_segments()
+
+  --can only damage a unit once
+  --maybe change to once per second, by keeping 2 lists of damaged units
+  -- and swapping them out every second (otherwise you could get hit twice in a row on the overlap)
+  self.damaged_units = {}
+
+end
+
+function FireWall:try_damage(unit)
+  if not table.contains(self.damaged_units, unit) then
+    table.insert(self.damaged_units, unit)
+    unit:hit(self.dmg, self.unit)
+  end
+end
+
+function FireWall:create_hole_indexes()
+  self.hole_indexes = {}
+  local all_indexes = {}
+  for i = 1, self.num_segments do
+    table.insert(all_indexes, i)
+  end
+  for i = 1, self.num_holes do
+    local index = random:table_remove(all_indexes)
+    table.insert(self.hole_indexes, index)
+  end
+end
+
+function FireWall:create_segments()
+  self.segments = {}
+  local segment_width = 10
+  local segment_height = gh / self.num_segments
+
+  for i = 1, self.num_segments do
+    if not table.contains(self.hole_indexes, i) then
+      local segment = FireSegment{
+          group = main.current.effects, 
+          x = self.x,
+          y = (segment_height / 2) + ((i - 1) * segment_height),
+          w = segment_width,
+          h = segment_height,
+          speed = self.speed,
+          direction = self.direction,
+          color = self.color,
+          dmg = self.dmg,
+          parent = self}
+      table.insert(self.segments, segment)
+    end
+  end
+end
+
+function FireWall:update(dt)
+  self:update_game_object(dt)
+end
+
+function FireWall:draw()
+end
+
+function FireWall:die()
+  self.dead = true
+  for _, segment in ipairs(self.segments) do
+    segment.dead = true
+  end
+end
+
+FireSegment = Object:extend()
+FireSegment:implement(GameObject)
+FireSegment:implement(Physics)
+function FireSegment:init(args)
+  self:init_game_object(args)
+
+  self.shape = Rectangle(self.x, self.y, self.w, self.h)
+  self.currentTime = 0
+  self.speed = self.speed or 100
+  self.dmg = self.dmg or 50
+end
+
+function FireSegment:update(dt)
+  self:update_game_object(dt)
+  self:check_hits()
+  self.currentTime = self.currentTime + dt
+  self.x = self.x + self.speed * self.direction * dt
+  self.shape:move_to(self.x, self.y)
+  if self.x < 0 or self.x > gw then self:die() end
+end
+
+function FireSegment:draw()
+  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.x)
+    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 2, 2, self.color)
+  graphics.pop()
+end
+
+function FireSegment:check_hits()
+  local friendlies = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
+  for _, troop in ipairs(friendlies) do
+    self.parent:try_damage(troop)
+  end
+end
+
+function FireSegment:die()
+  self.dead = true
+end
+
+
+
 LaserBall = Object:extend()
 LaserBall:implement(GameObject)
 LaserBall:implement(Physics)

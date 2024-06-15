@@ -98,8 +98,20 @@ fns['init_enemy'] = function(self)
     end, 
   }
 
+  local fire_wall = {
+    name = 'fire_wall',
+    viable = function() return true end,
+    casttime = 1,
+    oncaststart = function() turret_hit_wall2:play{volume = 0.9} end,
+    cast = function()
+      print('starting fire wall cast')
+      FireWall{unit = self}
+    end,
+  }
+
   table.insert(self.attack_options, fire)
   table.insert(self.attack_options, fire_sweep)
+  table.insert(self.attack_options, fire_wall)
 
   self.state_always_run_functions['always_run'] = function()
       self.hitbox_points_rotation = math.deg(self:get_angle())
