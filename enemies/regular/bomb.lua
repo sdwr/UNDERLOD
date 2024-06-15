@@ -77,16 +77,20 @@ fns['try_to_beep'] = function(self)
     tick_new:play{pitch = random:float(0.95, 1.05), volume = 1.2}
     --draw transparent red circle to show where it will explode
     --under the bomb (floor level)
-    local data = {
+    Area{
       group = main.current.floor,
       unit = self,
+      follow_unit = true,
       x = self.x,
       y = self.y,
-      rs = self.explosion_radius,
-      duration = 0.2,
-      color= Helper.Color:set_transparency(Helper.Color.red, 0.3)
+      r = self.explosion_radius,
+      pick_shape = 'circle',
+      duration = 0.15,
+      dmg = 0,
+      is_troop = false,
+      color = red[0]
     }
-    TimedCircle(data)
+
     
   end
 end
@@ -94,8 +98,18 @@ end
 fns['explode'] = function(self)
   self.exploded = true
   explosion_new:play{pitch = random:float(0.95, 1.05), volume = 0.8}
-  Helper.Spell.DamageCircle:create(self, Helper.Color.red, true,
-    self.explosion_damage, self.explosion_radius, self.x, self.y)
+  Area{
+    group = main.current.effects,
+    unit = self,
+    x = self.x,
+    y = self.y,
+    r = self.explosion_radius,
+    pick_shape = 'circle',
+    duration = 0.15,
+    dmg = self.explosion_damage,
+    is_troop = false,
+    color = red[0]
+  }
   self:die()
 end
 

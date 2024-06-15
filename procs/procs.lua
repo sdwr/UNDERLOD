@@ -179,20 +179,24 @@ function Proc_Overkill:init(args)
   
 
   --define the proc's vars
-  self.overkillMulti = self.data.overkillMulti or 2
+  self.overkillMulti = self.data.overkillMulti or 0.2
   self.radius = self.data.sizeMulti or 2
+  self.is_troop = (self.unit and self.unit.is_troop) or false
 end
 function Proc_Overkill:onKill(target)
   Proc_Overkill.super.onKill(self, target)
-  if target.hp <= 0 then
-    local damage_troops = not self.is_troop
-    local damage = math.abs(target.hp) * self.overkillMulti
-    local radius = target.shape.w * self.radius
+  local damage = target.max_hp * self.overkillMulti
+  local radius = target.shape.w * self.radius
 
-    cannoneer2:play{pitch = random:float(0.8, 1.2), volume = 0.5}
-    Helper.Spell.DamageCircle:create(self, black[0], damage_troops, damage,
-      radius, target.x, target.y)
-  end
+  cannoneer2:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+  Area{
+    group = main.current.effects, 
+    x = target.x, y = target.y,
+    pick_shape = 'circle',
+    dmg = damage,
+    r = radius, duration = 0.2, color = black[0],
+    is_troop = self.is_troop,
+  }
 end
 
 Proc_Bloodlust = Proc:extend()
@@ -447,8 +451,14 @@ function ProcChainExplode:onKill(target)
     local radius = self.radius
 
     cannoneer2:play{pitch = random:float(0.8, 1.2), volume = 1.2}
-    Helper.Spell.DamageCircle:create(self, self.color, damage_troops, damage,
-      radius, target.x, target.y)
+    Area{
+      group = main.current.effects, 
+      x = target.x, y = target.y,
+      pick_shape = 'circle',
+      dmg = damage,
+      r = radius, duration = 0.2, color = self.color,
+      is_troop = self.is_troop,
+    }
   end
 end
 
@@ -516,10 +526,14 @@ end
 Proc_Frostfield = Proc:extend()
 function Proc_Frostfield:init(args)
   self.triggers = {PROC_ON_ATTACK, PROC_ON_HIT}
+  self.scope = 'troop'
 
   Proc_Frostfield.super.init(self, args)
 
   --define the proc's vars
+  self.duration = self.data.duration or 3
+  self.color = self.data.color or blue[0]
+
   self.slow_amount = self.data.slow_amount or 0.3
   self.slow_duration = self.data.slow_duration or 2
   self.radius = self.data.radius or 20
@@ -547,7 +561,18 @@ function Proc_Frostfield:onHit(target, damage)
       self.attacks_left = self.every_attacks
 
       --remove level from spell
-      Helper.Spell.Frostfield:create(self.unit, blue[0], false, 5, self.radius, 2, target.x, target.y)
+      Area{
+        group = main.current.floor,
+        unit = self.unit,
+        x= target.x, y = target.y,
+        pick_shape = 'circle',
+        damage_ticks = true,
+        dmg = 0,
+        r = self.radius, duration = self.duration, color = self.color,
+        is_troop = self.unit.is_troop,
+        slowAmount = self.slow_amount,
+        slowDuration = self.slow_duration
+      }
     end
   end
 end
@@ -605,7 +630,7 @@ function Proc_Icenova:init(args)
   --define the proc's vars
   self.damage = self.data.damage or 10
   self.radius = self.data.radius or 30
-  self.duration = self.data.duration or 0.1
+  self.duration = self.data.duration or 0.2
   self.slowAmount = self.data.slowAmount or 0.5
   self.slowDuration = self.data.slowDuration or 3
   self.color = self.data.color or blue[0]
@@ -613,28 +638,71 @@ function Proc_Icenova:init(args)
   --define the procs memory
   self.canProc = true
   self.cooldown = self.data.cooldown or 5
-  self.procDelay = self.data.procDelay or 0.8
+  self.procDelay = self.data.procDelay or 0.4
+
+  self:reset_tryProc()
 end
 
 function Proc_Icenova:onTick(dt)
   Proc_Icenova.super.onTick(self, dt)
+  
 
   if self.canProc then
     --check for nearby enemies
-    if Helper.Spell:there_is_target_in_range(self.unit, self.radius, nil) then
+    if Helper.Spell:there_is_target_in_range(self.unit, self.radius - 8, nil) then
       self.canProc = false
-      trigger:after(self.cooldown + self.procDelay, function() self.canProc = true end)
-      trigger:after(self.procDelay, function() self:cast() end) 
+      self:start_proc_delay()
     end
+  elseif self.tryProc then
+    self.active_procDelay = self.active_procDelay - dt
+    if self.active_procDelay <= 0 then
+      self:try_proc()
+    end
+  
   end
+end
+
+--wait a bit before casting, to see if the unit is still in range
+function Proc_Icenova:start_proc_delay()
+  alert1:play{pitch = random:float(0.8, 1.2), volume = 0.6}
+  self.canProc = false
+  self.tryProc = true
+  self.active_procDelay = self.procDelay
+end
+
+function Proc_Icenova:try_proc()
+  if Helper.Spell:there_is_target_in_range(self.unit, self.radius, nil) then
+    self:cast()
+    trigger:after(self.cooldown, function() self.canProc = true end)
+    self:reset_tryProc()
+  else
+    --reset the proc
+    self.canProc = true
+    self:reset_tryProc()
+  end
+end
+
+function Proc_Icenova:reset_tryProc()
+  self.tryProc = false
+  self.active_procDelay = 0
 end
 
 function Proc_Icenova:cast()
   --play sound
-  pop2:play{pitch = random:float(0.8, 1.2), volume = 0.9}
+  glass_shatter:play{pitch = random:float(0.8, 1.2), volume = 0.8}
 
   --cast here, note that the spell has duration, but we only want it to trigger once
-  Helper.Spell.Frostfield:create(self.unit, self.color, false, self.damage, self.radius, self.duration, self.unit.x, self.unit.y)
+  Area{
+    group = main.current.effects,
+    unit = self.unit,
+    x = self.unit.x, y = self.unit.y,
+    pick_shape = 'circle',
+    dmg = self.damage,
+    r = self.radius, duration = self.duration, color = self.color,
+    is_troop = self.unit.is_troop,
+    slowAmount = self.slowAmount,
+    slowDuration = self.slowDuration
+  }
 end
 
 

@@ -181,7 +181,7 @@ item_to_item_data = {
   ['basher'] = {
   name = 'basher',
     colors = {},
-    cost = 5,
+    cost = 10,
     icon = 'mace',
     desc = 'A weapon that stuns enemies',
     stats = {bash = 0.2, dmg = 0.5},
@@ -199,9 +199,9 @@ item_to_item_data = {
   ['overkill'] = {
     name = 'overkill',
     colors = {},
-    cost = 5,
+    cost = 10,
     icon = 'overkill',
-    desc = 'Enemies that are overkilled explode for the overkill amount of damage',
+    desc = 'Enemies that are overkilled explode for a % of their max health',
     stats = {dmg = 0.5},
     procs = {'overkill'}
   },

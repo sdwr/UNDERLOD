@@ -96,11 +96,11 @@ function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, pas
       group = self.ui
     }
   --and again at round 5
-  elseif self.level == 5 and #Character_Cards == 1 then
+  elseif self.level == PICK_SECOND_CHARACTER and #Character_Cards == 1 then
     self.select_character_overlay = CharacterSelectOverlay{
       group = self.ui
     }
-  elseif self.level == 10 and #Character_Cards == 2 then
+  elseif self.level == PICK_THIRD_CHARACTER and #Character_Cards == 2 then
     self.select_character_overlay = CharacterSelectOverlay{
       group = self.ui
     }
@@ -719,6 +719,7 @@ function LevelMapLevel:init(args)
   self.shape = Circle(self.x, self.y, 10, 3)
   self.line_color = args.line_color
   self.fill_color = args.fill_color
+  self.text_color = fg[0]
   self.level = args.level
   self.parent = args.parent
 
@@ -732,13 +733,23 @@ function LevelMapLevel:update(dt)
 end
 
 function LevelMapLevel:draw()
+  if self.level == PICK_SECOND_CHARACTER or self.level == PICK_THIRD_CHARACTER then
+    self.fill_color = yellow[0]
+    self.text_color = bg[0]
+    if self.level == self.parent.level then
+      
+    else
+
+    end
+  end
+
   graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
     graphics.circle(self.x, self.y, 9, self.fill_color)
     if self.is_boss then
       skull:draw(self.x, self.y, 0, 0.7, 0.7)
     else
       graphics.circle(self.x, self.y, 10, self.line_color, 3)
-      graphics.print_centered(self.level, pixul_font, self.x, self.y +2, 0, 1, 1, 0, 0, (self.level == self.parent.level) and yellow[2] or fg[0])
+      graphics.print_centered(self.level, pixul_font, self.x, self.y +2, 0, 1, 1, 0, 0, self.text_color)
     end
 
   graphics.pop()

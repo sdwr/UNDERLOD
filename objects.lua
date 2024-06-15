@@ -819,15 +819,6 @@ function Unit:redshield(duration)
   self:add_buff(redshieldBuff)
 end
 
-
-function Unit:explode(enemy)
-  local damage_troops = not self.is_troop
-  local radius = enemy.shape.w * self.area_size_m
-  explosion1:play{volume = 0.7}
-  Helper.Spell.DamageCircle:create(self, black[0], damage_troops, enemy.max_hp * 0.2, 
-  radius, enemy.x, enemy.y)
-end
-
 function Unit:stun(duration)
   --dont stun bosses
   if self.class == 'boss' then

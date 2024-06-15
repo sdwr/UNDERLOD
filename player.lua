@@ -853,17 +853,27 @@ Area = Object:extend()
 Area:implement(GameObject)
 function Area:init(args)
   self:init_game_object(args)
-  local w = 1.5*self.w
-  local h = self.h and 1.5*self.h or 1.5*w
-  self.shape = Rectangle(self.x, self.y, w, h, self.r)
+  
+  if self.pick_shape == 'circle' then
+    local w = 1.5*self.r
+    self.shape = Circle(self.x, self.y, w)
+  else
+    local w = 1.5*self.w
+    local h = self.h and 1.5*self.h or 1.5*w
+    self.shape = Rectangle(self.x, self.y, w, h, self.r)
+  end
 
-  local flashFactor = self.dmg / 30
+  self.dmg = self.dmg
+  self.flashFactor = self.dmg / 30
+  if self.flashFactor == 0 then self.flashFactor = 0.5 end
 
-  self.color = fg[0]
+  self.color = self.color or fg[0]
   self.color_transparent = Color(args.color.r, args.color.g, args.color.b, 0.08)
 
   self.w = 0
   self.hidden = false
+
+  self.is_troop = args.is_troop or false
 
   self.duration = args.duration or 0.2
   self.current_time = 0
@@ -875,7 +885,7 @@ function Area:init(args)
     self:damage()
   end
 
-  self.t:tween(0.05, self, {w = args.w}, math.cubic_in_out, function() self.spring:pull(0.15 * flashFactor) end)
+  self.t:tween(0.05, self, {w = args.w}, math.cubic_in_out, function() self.spring:pull(0.15 * self.flashFactor) end)
   self.t:after(self.duration, function()
     self.color = args.color
     self.active = false
@@ -885,23 +895,24 @@ end
 
 function Area:damage()
   local targets = {}
-  if self.team == "enemy" then 
-    targets = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
-  else
+  if self.is_troop then 
     targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
+  else
+    targets = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
   end
 
   for _, target in ipairs(targets) do
-    if self.character == 'freezing_field' then
+    if self.slowAmount then
       --make slow for troops as well
-      target:slow(0.5, 2, self.parent)
-    else
-      target:hit(self.dmg, self.parent)
+      target:slow(self.slowAmount, self.slowDuration, self.unit)
     end
-    HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
-    for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
-    for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
-    hit2:play{pitch = random:float(0.95, 1.05), volume = 0.35}
+    if self.dmg > 0 then
+      target:hit(self.dmg, self.unit)
+      HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
+      for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
+      for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
+      hit2:play{pitch = random:float(0.95, 1.05), volume = 0.35}
+    end
 
   end
 end
@@ -911,6 +922,9 @@ function Area:update(dt)
   self:update_game_object(dt)
   if self.damage_ticks and self.active then
     self:update_ticks(dt)
+  end
+  if self.unit and self.unit.dead ~= true and self.follow_unit then
+    self.x, self.y = self.unit.x, self.unit.y
   end
 end
 
@@ -926,22 +940,25 @@ end
 function Area:draw()
   if self.hidden then return end
   graphics.push(self.x, self.y, self.r, self.spring.x, self.spring.x)
-  local flashFactor = self.dmg / 30
+
   local w = self.w/2
   local w10 = self.w/10
   local x1, y1 = self.x - w, self.y - w
   local x2, y2 = self.x + w, self.y + w
   local lw = math.remap(w, 32, 256, 2, 4)
-  graphics.polyline(self.color, lw, x1, y1 + w10, x1, y1, x1 + w10, y1)
-  graphics.polyline(self.color, lw, x2 - w10, y1, x2, y1, x2, y1 + w10)
-  graphics.polyline(self.color, lw, x2 - w10, y2, x2, y2, x2, y2 - w10)
-  graphics.polyline(self.color, lw, x1, y2 - w10, x1, y2, x1 + w10, y2)
-  graphics.rectangle((x1+x2)/2, (y1+y2)/2, x2-x1, y2-y1, nil, nil, self.color_transparent)
-  graphics.rectangle((x1+x2)/2, (y1+y2)/2, x2-x1, y2-y1, nil, nil, self.color, 1 * flashFactor)
+  if self.pick_shape == 'circle' then
+    graphics.circle(self.x, self.y, self.r, self.color_transparent)
+    graphics.circle(self.x, self.y, self.r, self.color, 1 * self.flashFactor)
+  else
+    graphics.polyline(self.color, lw, x1, y1 + w10, x1, y1, x1 + w10, y1)
+    graphics.polyline(self.color, lw, x2 - w10, y1, x2, y1, x2, y1 + w10)
+    graphics.polyline(self.color, lw, x2 - w10, y2, x2, y2, x2, y2 - w10)
+    graphics.polyline(self.color, lw, x1, y2 - w10, x1, y2, x1 + w10, y2)
+    graphics.rectangle((x1+x2)/2, (y1+y2)/2, x2-x1, y2-y1, nil, nil, self.color_transparent)
+    graphics.rectangle((x1+x2)/2, (y1+y2)/2, x2-x1, y2-y1, nil, nil, self.color, 1 * self.flashFactor)
+  end
   graphics.pop()
 end
-
-
 
 
 DotArea = Object:extend()
@@ -1920,8 +1937,6 @@ function FireSegment:die()
   self.dead = true
 end
 
-
-
 LaserBall = Object:extend()
 LaserBall:implement(GameObject)
 LaserBall:implement(Physics)
@@ -2114,6 +2129,7 @@ end
 function Laser:die()
   self:stopSound()
   self.dead = true
+  self.t:destroy()
 end
 
 Vanish = Object:extend()

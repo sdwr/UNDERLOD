@@ -1,6 +1,9 @@
 
 TODO:
   
+  -level icon for when you get a new unit (5 and 10)
+    - restrict to one of each unit?
+    
   -boss hp bar segments for phases
 
   - do ranged enemies need a melee attack? (can sit on them right now)
@@ -26,6 +29,19 @@ TODO:
       -laser grid (spaced, at intervals, sweep across screen or out from center)
         -vertical or horizontal
       -fire wall (moves back and forth)
+
+  -add NG+ modifier system, each mod has a beneficial effect and a negative one
+    --(or just gets harder for each mod added)
+    - new unit choices
+      - melee that attacks or does constant AoE in circle around self
+      - medium range crescent attack
+      - buff unit
+      - very slow unit
+
+    - new items (void color)
+    - different bosses
+    - environmental hazards in rooms
+    - enemies get random buffs (aspd, shield, second attack)
 
   - make units not chase towards enemies when they are in range (+ push the enemy away)
   
