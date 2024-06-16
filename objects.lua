@@ -301,6 +301,10 @@ function Unit:has_buff(buffName)
   return self.buffs[buffName] ~= nil
 end
 
+function Unit:get_buff(buffName)
+  return self.buffs[buffName]
+end
+
 function Unit:add_buff(buff)
   local existing_buff = self.buffs[buff.name]
 
@@ -781,7 +785,10 @@ function Unit:burn(dps, duration, from)
   local existing_buff = self.buffs['burn']
   
   burnBuff.stacks = 1
-  if from and from:has_toggle('firestack') and existing_buff then
+  if from and from:has_toggle('fireexplode') and existing_buff
+  and existing_buff.stacks == MAX_STACKS_FIRE then
+      from:get_buff('fireexplode').onExplode(self)
+  elseif from and from:has_toggle('firestack') and existing_buff then
     burnBuff.stacks = math.min((existing_buff.stacks or 1) + 1, MAX_STACKS_FIRE)
   end
 

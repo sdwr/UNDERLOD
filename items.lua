@@ -276,15 +276,35 @@ item_to_item_data = {
     procs = {'fire'},
     tags = {'firedmg'}
   },
-  ['chainexplosion'] = {
-    name = 'chainexplosion',
+  ['lavaman'] = {
+    name = 'lavaman',
+    colors = {'red'},
+    cost = 5,
+    icon = 'lavaman',
+    desc = 'Has a chance to create flaming minions when you kill an enemy',
+    stats = {dmg = 0.5},
+    procs = {'lavaman'},
+    tags = {'firedmg'}
+  },
+  ['lavapool'] = {
+    name = 'lavapool',
+    colors = {'red'},
+    cost = 10,
+    icon = 'lavapool',
+    desc = 'Creates a pool of lava under enemies every few attacks',
+    stats = {dmg = 0.5},
+    procs = {'lavapool'},
+    tags = {'firedmg'}
+  },
+  ['fireexplode'] = {
+    name = 'fireexplode',
     colors = {'red'},
     cost = 10,
     icon = 'sun',
-    desc = 'Explodes burning enemies when they die for 10% of their max health',
+    desc = 'When burning enemies reach max stacks, they explode for % max health',
     stats = {dmg = 0.5},
-    procs = {'chainexplode'},
-    prereqs = {'firedmg'}
+    procs = {'fireexplode'},
+    prereqs = {'firestack'}
   },
   ['firestacker'] = {
     name = 'firestacker',
@@ -294,7 +314,8 @@ item_to_item_data = {
     desc = 'A sword that lets fire damage stack',
     stats = {dmg = 0.5},
     procs = {'firestack'},
-    prereqs = {'firedmg'}
+    prereqs = {'firedmg'},
+    tags = {'firestack'}
   },
   ['blazin'] = {
     name = 'blazin',

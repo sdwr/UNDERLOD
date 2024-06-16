@@ -906,6 +906,9 @@ function Area:damage()
       --make slow for troops as well
       target:slow(self.slowAmount, self.slowDuration, self.unit)
     end
+    if self.burnDps then
+      target:burn(self.burnDps, self.burnDuration, self.unit)
+    end
     if self.dmg > 0 then
       target:hit(self.dmg, self.unit)
       HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}

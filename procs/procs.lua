@@ -413,6 +413,60 @@ function Proc_Fire:onHit(target, damage)
   target:burn(self.burnDps, self.burnDuration, self.unit)
 end
 
+Proc_Lavapool = Proc:extend()
+function Proc_Lavapool:init(args)
+  self.triggers = {PROC_ON_ATTACK, PROC_ON_HIT}
+  self.scope = 'troop'
+
+  Proc_Lavapool.super.init(self, args)
+  
+
+  --define the proc's vars
+  self.duration = self.data.duration or 3
+  self.color = self.data.color or red[0]
+  self.damage = self.data.damage or 10
+  self.tick_rate = self.data.tick_rate or 0.5
+  self.radius = self.data.radius or 25
+  self.every_attacks = self.data.every_attacks or 4
+
+  --define the procs memory
+  self.has_attacked = false
+  self.attacks_left = math.random(1, self.every_attacks)
+end
+
+function Proc_Lavapool:onAttack(target)
+  Proc_Lavapool.super.onAttack(self, target)
+  if self.attacks_left > 0 then
+    self.has_attacked = true
+  end
+end
+
+function Proc_Lavapool:onHit(target, damage)
+  Proc_Lavapool.super.onHit(self, target, damage)
+  if self.has_attacked then
+    self.has_attacked = false
+    self.attacks_left = self.attacks_left - 1
+    if self.attacks_left == 0 then
+      self.attacks_left = self.every_attacks
+
+      --remove level from spell
+      Area{
+        group = main.current.floor,
+        unit = self.unit,
+        x= target.x, y = target.y,
+        pick_shape = 'circle',
+        damage_ticks = true,
+        tick_rate = self.tick_rate,
+        dmg = self.damage,
+        r = self.radius, duration = self.duration, color = self.color,
+        is_troop = self.unit.is_troop,
+        burnDps = 10,
+        burnDuration = 2
+      }
+    end
+  end
+end
+
 Proc_Firestack = Proc:extend()
 function Proc_Firestack:init(args)
   self.triggers = {}
@@ -428,38 +482,63 @@ function Proc_Firestack:init(args)
   self.unit:add_buff(self.buffdata)
 end
 
+Proc_Lavaman = Proc:extend()
+function Proc_Lavaman:init(args)
+  self.triggers = {PROC_ON_ROUND_START}
+  self.scope = 'team'
 
-ProcChainExplode = Proc:extend()
-function ProcChainExplode:init(args)
-  self.triggers = {PROC_ON_KILL}
-  self.scope = 'troop'
-
-  ProcChainExplode.super.init(self, args)
+  Proc_Lavaman.super.init(self, args)
   
   
 
   --define the proc's vars
-  self.radius = self.data.radius or 25
+  self.buffname = 'lavaman'
+  self.buffDuration = self.data.buffDuration or 5
+  self.damage = self.data.damage or 10
+  self.radius = self.data.radius or 30
   self.color = self.data.color or red[0]
+
+  --do nothing for now
 end
 
-function ProcChainExplode:onKill(target)
-  ProcChainExplode.super.onKill(self, target)
-  if target:has_buff('burn') then
-    local damage_troops = not self.is_troop
-    local damage = (target.max_hp or 100) / 10
-    local radius = self.radius
 
-    cannoneer2:play{pitch = random:float(0.8, 1.2), volume = 1.2}
-    Area{
-      group = main.current.effects, 
-      x = target.x, y = target.y,
-      pick_shape = 'circle',
-      dmg = damage,
-      r = radius, duration = 0.2, color = self.color,
-      is_troop = self.is_troop,
-    }
-  end
+Proc_FireExplode = Proc:extend()
+function Proc_FireExplode:init(args)
+  self.triggers = {}
+  self.scope = 'troop'
+
+  Proc_FireExplode.super.init(self, args)
+
+  self.buffdata = {name = 'fireexplode', duration = 9999,
+  toggles = {fireexplode = 1}, onExplode = function(target) self.explode(self, target) end
+  }
+
+  if not self.unit then return end
+  self.unit:add_buff(self.buffdata)
+
+  --define the proc's vars
+  self.radius = self.data.radius or 25
+  self.color = self.data.color or red[0]
+  self.dmgMulti = self.data.dmgMulti or 0.2
+  self.sizeMulti = self.data.sizeMulti or 2
+
+  self.is_troop = (self.unit and self.unit.is_troop) or false
+
+end
+
+function Proc_FireExplode:explode(target)
+  local damage = (target.max_hp * self.dmgMulti)
+  local radius = target.shape.w * self.sizeMulti
+
+  cannoneer2:play{pitch = random:float(0.8, 1.2), volume = 1.2}
+  Area{
+    group = main.current.effects, 
+    x = target.x, y = target.y,
+    pick_shape = 'circle',
+    dmg = damage,
+    r = radius, duration = 0.2, color = self.color,
+    is_troop = self.is_troop,
+  }
 end
 
 Proc_Blazin = Proc:extend()
@@ -779,8 +858,10 @@ proc_name_to_class = {
   ['shield'] = Proc_Shield,
   --red procs
   ['fire'] = Proc_Fire,
+  ['lavapool'] = Proc_Lavapool,
+  ['lavaman'] = Proc_Lavaman,
   ['firestack'] = Proc_Firestack,
-  ['chainexplode'] = ProcChainExplode,
+  ['fireexplode'] = Proc_FireExplode,
   ['blazin'] = Proc_Blazin,
   --blue procs
   ['frost'] = Proc_Frost,
