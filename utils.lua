@@ -66,3 +66,9 @@ end
 function sum_vectors(v1, v2)
   return {x = v1.x + v2.x, y = v1.y + v2.y}
 end
+
+--UI utils
+function find_item_image(item)
+  local image = item_images[item.name] or item_images[item.icon] or item_images['default']
+  return image
+end

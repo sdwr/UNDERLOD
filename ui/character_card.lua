@@ -28,10 +28,25 @@ function CharacterCard:init(args)
   
   self.interact_with_mouse = true
 
+  self.procIcons = {}
+
   self.parts = {}
   self.items = {}
   
   --items
+  self:createItemParts()
+
+  --texts
+  self:initText()
+
+  self:addProcIcon()
+  self:addProcIcon()
+
+  
+  if self.spawn_effect then SpawnEffect{group = main.current.effects, x = self.x, y = self.y, color = self.character_color} end
+end
+
+function CharacterCard:createItemParts()
   local item_x = self.x + CHARACTER_CARD_ITEM_X
   local item_y = self.y + CHARACTER_CARD_ITEM_Y
 
@@ -44,23 +59,39 @@ function CharacterCard:init(args)
        y = item_y + (i > 3 and 25 or 0),
        i = i, parent = self})
   end
+end
 
-  --texts
+function CharacterCard:initText()
   self.name_text = Text({{text = '[yellow[3]]' .. self.character, font = pixul_font, alignment = 'center'}}, global_text_tags)
   self.stat_text = build_character_text(self.unit)
   self.stat_text.x = self.x
   self.stat_text.y = self.y - self.h/2 + 25 + self.stat_text.h/2
   
   self.proc_text = nil
+end
 
-  if self.spawn_effect then SpawnEffect{group = main.current.effects, x = self.x, y = self.y, color = self.character_color} end
+function CharacterCard:addProcIcon()
+  local proc_x = self.x + CHARACTER_CARD_PROC_X
+  local proc_y = self.y + CHARACTER_CARD_PROC_Y
+
+  local x = proc_x + (#self.procIcons * CHARACTER_CARD_PROC_X_SPACING)
+
+  local procIcon = ProcIcon{
+    group = main.current.main, 
+    x = x, 
+    y = proc_y, 
+    text = 'proc text', 
+    color = red[0],
+    proc = {name = 'proc', desc = 'proc description'}
+  }
+  table.insert(self.procIcons, procIcon)
 end
 
 function CharacterCard:refreshText()
   self.stat_text.dead = true
   self.stat_text = build_character_text(self.unit)
   self.stat_text.x = self.x
-  self.stat_text.y = self.y - self.h/2 + 25 + self.stat_text.h/2
+  self.stat_text.y = self.y - self.h/2 + 35 + self.stat_text.h/2
 end
 
 function CharacterCard:draw()
@@ -89,6 +120,53 @@ function CharacterCard:die()
   self.name_text.dead = true
   self.stat_text.dead = true
   self.dead = true
+end
+
+ProcIcon = Object:extend()
+ProcIcon:implement(GameObject)
+function ProcIcon:init(args)
+  self:init_game_object(args)
+  self.shape = Circle(self.x, self.y, 10)
+  self.interact_with_mouse = true
+  self.text = build_proc_text(self.proc)
+  self.info_text = nil
+end
+
+function ProcIcon:update(dt)
+  self:update_game_object(dt)
+  if self.colliding_with_mouse then
+    if not self.info_text then
+      self:create_info_text()
+    end
+  else
+    if self.info_text then
+      self.info_text:deactivate()
+      self.info_text.dead = true
+      self.info_text = nil
+    end
+  end
+end
+
+function ProcIcon:draw()
+  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.x)
+  graphics.circle(self.x, self.y, 5, self.color)
+  graphics.pop()
+end
+
+function ProcIcon:create_info_text()
+  self.info_text = InfoText{group = main.current.ui, force_update = true}
+  self.info_text:activate(self.text, nil, nil, nil, nil, 16, 4, nil, 2)
+  --set the position of the info text
+  self.info_text.x, self.info_text.y = gw/2, gh/2 + 10
+end
+
+function ProcIcon:die()
+  self.dead = true
+  if self.info_text then
+    self.info_text:deactivate()
+    self.info_text.dead = true
+    self.info_text = nil
+  end
 end
 
 
@@ -231,12 +309,13 @@ function ItemPart:draw(y)
         end
       end
 
-      local image = item_images[item.name] or item_images[item.icon] or item_images['default']
+      local image = find_item_image(item)
       if not self.itemGrabbed then
         image:draw(self.x, self.y, 0, 0.4, 0.4)
       else
-        local mouseX, mouseY = camera:get_mouse_position()
-        image:draw(mouseX, mouseY, 0, 0.4, 0.4)
+        --draw loose item instead
+        -- local mouseX, mouseY = camera:get_mouse_position()
+        -- image:draw(mouseX, mouseY, 0, 0.4, 0.4)
       end
     end
     

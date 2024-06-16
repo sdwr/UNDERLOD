@@ -1156,8 +1156,9 @@ function LooseItem:update(dt)
 end
 
 function LooseItem:draw()
-  if item_images[self.item] then
-    item_images[self.item]:draw(self.x, self.y, 0, 0.4, 0.4)
+  local image = find_item_image(self.item)
+  if image then
+    image:draw(self.x, self.y, 0, 0.4, 0.4)
   end
 
 end
@@ -1236,7 +1237,7 @@ function ItemCard:init(args)
 
   self.cost = self.item.cost
   -- putin item data?
-  self.image = item_images[self.item.name] or item_images[self.item.icon] or item_images['default']
+  self.image = find_item_image(self.item)
   self.colors = self.item.colors
 
   self.tier_color = item_to_color(self.item)

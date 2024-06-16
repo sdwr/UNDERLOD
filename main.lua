@@ -1540,10 +1540,23 @@ function init()
   }
 
 
+  build_proc_text = function(proc)
+    local name = proc.name or 'proc name'
+    name = name:upper()
+    local desc = proc.desc or 'proc desc'
+
+    local out = {}
+    table.insert(out, { text = '[fg]' .. name, font = pixul_font, alignment = 'center', height_multiplier = 1.25 })
+    table.insert(out, { text = '[fg]' .. desc, font = pixul_font, alignment = 'center', height_multiplier = 1.25 })
+    return out
+  end
 
   build_item_text = function(item)
+    local name = item.name or 'item name'
+    name = name:upper()
+
     local out = {}
-    table.insert(out, { text = '[fg]' .. item.name, font = pixul_font, alignment = 'center', height_multiplier = 1.25 })
+    table.insert(out, { text = '[fg]' .. name, font = pixul_font, alignment = 'center', height_multiplier = 1.25 })
     table.insert(out, {
       text = '[fg]' .. item.desc .. ', costs: ' .. item.cost,
       font = pixul_font,
