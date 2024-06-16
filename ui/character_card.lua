@@ -70,6 +70,19 @@ function CharacterCard:initText()
   self.proc_text = nil
 end
 
+function CharacterCard:add_next_round_procs(item)
+  if item.nextroundprocnames then
+    for i, proc in ipairs(item.nextroundprocnames) do
+      if proc then
+        local proc = Create_Proc(proc)
+        if proc then
+          self.unit:add_proc(proc)
+        end
+    end
+    end
+  end
+end
+
 function CharacterCard:addProcIcon()
   local proc_x = self.x + CHARACTER_CARD_PROC_X
   local proc_y = self.y + CHARACTER_CARD_PROC_Y
@@ -214,6 +227,7 @@ function ItemPart:sellItem()
         local sell_value = math.ceil(item.cost / 3)
         main.current:gain_gold(sell_value)
       end
+      self.parent:add_next_round_procs(item)
       item:sell()
     end
   end

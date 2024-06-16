@@ -26,6 +26,8 @@ function Item:init(data)
   --creates procs from the data, but this doesnt work on the unit
   -- (because the unit doesn't exist yet)
 
+  self.nextroundprocnames = data.nextroundprocs
+
   --hack that this loads during combat and in the shop
   --combat expects the unit to exist, but the shop doesn't
   if data.procs then
@@ -147,10 +149,10 @@ item_to_item_data = {
     colors = {},
     cost = 2,
     consumable = true,
+    nextroundprocnames = {'berserk'},
     icon = 'potion2',
     desc = 'Gain attack speed and damage for the first 10 seconds of the next round when you drink this potion',
     stats = {},
-    procs = {'berserk'}
   },
   --colorless items
   ['craggyvest'] = {

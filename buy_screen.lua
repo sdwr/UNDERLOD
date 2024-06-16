@@ -224,7 +224,7 @@ end
 --buy functions
 
 function BuyScreen:buy_unit(character)
-  table.insert(self.units, {character = character, level = 1, reserve = {0, 0}, items = {nil, nil, nil, nil, nil, nil}, numItems = 6})
+  table.insert(self.units, {character = character, level = 1, reserve = {0, 0}, items = {nil, nil, nil, nil, nil, nil}, numItems = 6, shop_procs = {}})
   self:set_party()
   self:save_run()
 end
