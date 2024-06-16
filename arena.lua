@@ -25,7 +25,6 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
   self.passives = passives
   self.shop_level = shop_level or 1
   self.shop_xp = shop_xp or 0
-  self.lock = lock
 
   self.gold_text = nil
   self.timer_text = nil
@@ -236,7 +235,6 @@ function Arena:update(dt)
         }
         max_units = MAX_UNITS
         main:add(BuyScreen'buy_screen')
-        locked_state = nil
         system.save_run()
         main:go_to('buy_screen', 1, self.level_list, 0, {}, max_units, passives, 1, 0)
       end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
@@ -316,7 +314,7 @@ function Arena:on_win()
   if not self.win_text and not self.win_text2 then
     input:set_mouse_visible(true)
     self.won = true
-    locked_state = nil
+    locked_state = false
 
     if current_new_game_plus == new_game_plus then
       new_game_plus = new_game_plus + 1
@@ -577,7 +575,7 @@ function Arena:die()
     input:set_mouse_visible(true)
     self.t:cancel('divine_punishment')
     self.died = true
-    locked_state = nil
+    locked_state = false
     system.save_run()
     self.t:tween(2, self, {main_slow_amount = 0}, math.linear, function() self.main_slow_amount = 0 end)
     self.t:tween(2, _G, {music_slow_amount = 0}, math.linear, function() music_slow_amount = 0 end)
@@ -822,7 +820,6 @@ end
 
 function Arena:transition()
   self.transitioning = true
-  if not self.lock then locked_state = nil end
   ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
   TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or self.color, transition_action = function(t)
     if self.level % 2 == 0 and self.shop_level < 5 then

@@ -57,3 +57,7 @@ CHARACTER_CARD_PROC_Y = (CHARACTER_CARD_HEIGHT / 2) - 115
 
 -- Spell constants
 LASER_FIRE_TYPES = {'target', 'fixed_angle', 'rotating'}
+
+-- global state :o
+--hack
+STORE_ITEMS = {}

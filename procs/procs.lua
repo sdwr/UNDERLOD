@@ -95,7 +95,7 @@ function Proc_Craggy:onGotHit(from, damage)
 
     arrow_hit_wall2:play{pitch = random:float(0.8, 1.2), volume = 0.9}
     
-    if from.hp and from.hp > 0 then
+    if from and from.hp and from.hp > 0 then
       from:stun(self.stunDuration)
       from:hit(self.damage, self.unit)
     end

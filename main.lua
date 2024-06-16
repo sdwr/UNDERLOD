@@ -2500,7 +2500,7 @@ function open_options(self)
           }
           max_units = MAX_UNITS
           main:add(BuyScreen 'buy_screen')
-          locked_state = nil
+          locked_state = false
           system.save_run()
           main:go_to('buy_screen', 1, {}, 0, {}, max_units, passives, 1, 0, max_units)
         end, text = Text({ { text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center' } }, global_text_tags) }

@@ -73,10 +73,9 @@ function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, pas
   self.ui_top = Group()
   self.tutorial = Group()
 
-  self.locked = locked_state and locked_state.locked
-  --LockButton{group = self.main, x = 205, y = 18, parent = self}
+  LockButton{group = self.main, x = gw/2 - 150, y = gh - 40, parent = self}
 
-  self:set_items(self.shop_level)
+  self:try_roll_items()
   
   self.show_level_buttons = false
   
@@ -106,6 +105,7 @@ function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, pas
     }
   end
 
+  
   RerollButton{group = self.main, x = 90, y = gh - 20, parent = self}
   GoButton{group = self.main, x = gw - 90, y = gh - 20, parent = self}
   self.tutorial_button = Button{group = self.main, x = gw/2 + 129, y = 18, button_text = '?', fg_color = 'bg10', bg_color = 'bg', action = function()
@@ -272,7 +272,7 @@ end
 function BuyScreen:draw()
   self.main:draw()
   self.effects:draw()
-  if self.items_text then self.items_text:draw(gw/2 - 100, gh - 60) end
+  if self.items_text then self.items_text:draw(gw/2 - 150, gh - 60) end
 
   if self.shop_text then self.shop_text:draw(64, 20) end
 
@@ -311,33 +311,41 @@ function BuyScreen:set_party()
   end
 end
 
+function BuyScreen:try_roll_items()
+  if not locked_state then
+    self:set_items(self.shop_level)
+    return true
+  else
+    return false
+  end
+end
+
 
 function BuyScreen:set_items(shop_level)
-  
   if self.items then for _, item in ipairs(self.items) do item:die() end end
-  self.items = {}
-  local shop_level = shop_level or 1
-  local tier_weights = level_to_item_odds[shop_level]
-  local item_1
-  local item_2
-  local item_3
-  local all_items = {}
+    self.items = {}
+    local shop_level = shop_level or 1
+    local tier_weights = level_to_item_odds[shop_level]
+    local item_1
+    local item_2
+    local item_3
+    local all_items = {}
 
-  item_1 = Get_Random_Item(shop_level, self.units)
-  item_2 = Get_Random_Item(shop_level, self.units)
-  item_3 = Get_Random_Item(shop_level, self.units)
+    item_1 = Get_Random_Item(shop_level, self.units)
+    item_2 = Get_Random_Item(shop_level, self.units)
+    item_3 = Get_Random_Item(shop_level, self.units)
 
-  all_items = {item_1, item_2, item_3}
-  
+    all_items = {item_1, item_2, item_3}
+    
 
-  local item_h = 50
-  local item_w = 40
+    local item_h = 50
+    local item_w = 40
 
-  local y = gh - (item_h / 2) - 10
-  local x = gw/2 - 60
-  for i, item in ipairs(all_items) do
-    table.insert(self.items, ItemCard{group = self.ui, x = x + (i-1)*60, y = y, w = 40, h = 50, 
-                  item = item, parent = self, i = i})
+    local y = gh - (item_h / 2) - 10
+    local x = gw/2 - 60
+    for i, item in ipairs(all_items) do
+      table.insert(self.items, ItemCard{group = self.ui, x = x + (i-1)*60, y = y, w = 40, h = 50,
+                    item = item, parent = self, i = i})
   end
 end
 
@@ -926,7 +934,7 @@ function GoButton:update(dt)
         print('starting arena')
         print(#self.parent.units)
         main:add(Arena'arena')
-        main:go_to('arena', self.parent.level, self.parent.level_list, self.parent.loop, self.parent.units, self.parent.max_units, self.parent.passives, self.parent.shop_level, self.parent.shop_xp, self.parent.locked)
+        main:go_to('arena', self.parent.level, self.parent.level_list, self.parent.loop, self.parent.units, self.parent.max_units, self.parent.passives, self.parent.shop_level, self.parent.shop_xp, locked_state)
       end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']level ' .. tostring(self.parent.level) .. '/' .. tostring(25*(self.parent.loop+1)), font = pixul_font, alignment = 'center'}}, global_text_tags)}
     end
 
@@ -964,10 +972,10 @@ function LockButton:init(args)
   self:init_game_object(args)
   self.shape = Rectangle(self.x, self.y, 32, 16)
   self.interact_with_mouse = true
-  if self.parent.locked then self.shape.w = 44
+  if locked_state then self.shape.w = 44
   else self.shape.w = 32 end
-  if self.parent.locked then self.text = Text({{text = '[fgm5]' .. tostring(self.parent.locked and 'unlock' or 'lock'), font = pixul_font, alignment = 'center'}}, global_text_tags)
-  else self.text = Text({{text = '[bg10]' .. tostring(self.parent.locked and 'unlock' or 'lock'), font = pixul_font, alignment = 'center'}}, global_text_tags) end
+  if locked_state then self.text = Text({{text = '[fgm5]' .. tostring(locked_state and 'unlock' or 'lock'), font = pixul_font, alignment = 'center'}}, global_text_tags)
+  else self.text = Text({{text = '[bg10]' .. tostring(locked_state and 'unlock' or 'lock'), font = pixul_font, alignment = 'center'}}, global_text_tags) end
 end
 
 
@@ -975,16 +983,13 @@ function LockButton:update(dt)
   self:update_game_object(dt)
 
   if self.selected and input.m1.pressed then
-    self.parent.locked = not self.parent.locked
-    if not self.parent.locked then locked_state = nil end
-    if self.parent.locked then
-      buyScreen:save_run()
-    end
+    locked_state = not locked_state
+    buyScreen:save_run()
     ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     self.selected = true
     self.spring:pull(0.2, 200, 10)
-    self.text:set_text{{text = '[fgm5]' .. tostring(self.parent.locked and 'unlock' or 'lock'), font = pixul_font, alignment = 'center'}}
-    if self.parent.locked then self.shape.w = 44
+    self.text:set_text{{text = '[fgm5]' .. tostring(locked_state and 'unlock' or 'lock'), font = pixul_font, alignment = 'center'}}
+    if locked_state then self.shape.w = 44
     else self.shape.w = 32 end
   end
 end
@@ -992,7 +997,7 @@ end
 
 function LockButton:draw()
   graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
-    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, (self.selected or self.parent.locked) and fg[0] or bg[1])
+    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, (self.selected or locked_state) and fg[0] or bg[1])
     self.text:draw(self.x, self.y + 1)
   graphics.pop()
 end
@@ -1002,13 +1007,13 @@ function LockButton:on_mouse_enter()
   ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
   pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
   self.selected = true
-  self.text:set_text{{text = '[fgm5]' .. tostring(self.parent.locked and 'unlock' or 'lock'), font = pixul_font, alignment = 'center'}}
+  self.text:set_text{{text = '[fgm5]' .. tostring(locked_state and 'unlock' or 'lock'), font = pixul_font, alignment = 'center'}}
   self.spring:pull(0.2, 200, 10)
 end
 
 
 function LockButton:on_mouse_exit()
-  if not self.parent.locked then self.text:set_text{{text = '[bg10]' .. tostring(self.parent.locked and 'unlock' or 'lock'), font = pixul_font, alignment = 'center'}} end
+  if not locked_state then self.text:set_text{{text = '[bg10]' .. tostring(locked_state and 'unlock' or 'lock'), font = pixul_font, alignment = 'center'}} end
   self.selected = false
 end
 
@@ -1057,12 +1062,16 @@ function RerollButton:update(dt)
         end
         self.t:after(2, function() self.info_text:deactivate(); self.info_text.dead = true; self.info_text = nil end, 'info_text')
       else
-        ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-        self.parent:set_items(self.parent.shop_level)
-        self.selected = true
-        self.spring:pull(0.2, 200, 10)
-        gold = gold - 2
-        self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
+        local rerolled = self.parent:try_roll_items()
+        if rerolled then
+          ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+          self.selected = true
+          self.spring:pull(0.2, 200, 10)
+          gold = gold - 2
+          self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
+        else
+          error1:play{pitch = random:float(0.95, 1.05), volume = 1}
+        end
         buyScreen:save_run()
       end
     elseif self.parent:is(Arena) then
