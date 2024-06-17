@@ -3,6 +3,15 @@ function GameState:init(...)
   self:import(...)
 end
 
+function GameState:save_run()
+  system.save_run(self.level, self.level_list, self.loop, gold, self.units, self.max_units, self.passives, self.shop_level, self.shop_xp, self.shop_item_data)
+end
+
+function GameState:load_run()
+  local run = system.load_run()
+  self:import(run)
+end
+
 
 buyScreen = nil
 
@@ -44,8 +53,17 @@ function BuyScreen:on_exit()
   self.level_button = nil
 end
 
-function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, passives, shop_level, shop_xp)
-  self.gameState = GameState({level = level, loop = loop, units = units, max_units = max_units, passives = passives, shop_level = shop_level, shop_xp = shop_xp})
+function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, passives, shop_level, shop_xp, shop_item_data)
+  self.gameState = GameState({
+    level = level, 
+    loop = loop, 
+    units = units, 
+    max_units = max_units, 
+    passives = passives, 
+    shop_level = shop_level, 
+    shop_xp = shop_xp,
+    shop_item_data = shop_item_data,
+  })
   self.level = level
   self.level_list = level_list
   self.loop = loop
@@ -54,6 +72,11 @@ function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, pas
   self.passives = passives
   self.shop_level = level_to_shop_tier(level)
   self.shop_xp = shop_xp
+  self.shop_item_data = shop_item_data
+
+  if not locked_state then
+    self.shop_item_data = {}
+  end
   camera.x, camera.y = gw/2, gh/2
 
   --decide on enemies for every level here
@@ -73,7 +96,8 @@ function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, pas
   self.ui_top = Group()
   self.tutorial = Group()
 
-  LockButton{group = self.main, x = gw/2 - 150, y = gh - 40, parent = self}
+  self.lock_button = LockButton{group = self.main, x = gw/2 - 150, y = gh - 40, parent = self}
+
 
   self:try_roll_items()
   
@@ -196,7 +220,15 @@ function BuyScreen:update(dt)
 end
 
 function BuyScreen:save_run()
-  system.save_run(self.level, self.level_list, self.loop, gold, self.units,  self.max_units, self.passives, self.shop_level, self.shop_xp, run_passive_pool, locked_state)
+  system.save_run(self.level, self.level_list, self.loop, gold, self.units,  self.max_units, self.passives, self.shop_level, self.shop_xp, self.shop_item_data)
+end
+
+function BuyScreen:set_locked_state(state)
+  locked_state = state
+  if self.lock_button then
+    self.lock_button:update_text()
+  end
+  self:save_run()
 end
 
 --level map /level list functions
@@ -312,40 +344,48 @@ function BuyScreen:set_party()
 end
 
 function BuyScreen:try_roll_items()
-  if not locked_state then
-    self:set_items(self.shop_level)
-    return true
-  else
-    return false
-  end
+  self:set_items(self.shop_level)
 end
 
 
 function BuyScreen:set_items(shop_level)
+  --clear item cards (UI elements)
   if self.items then for _, item in ipairs(self.items) do item:die() end end
-    self.items = {}
-    local shop_level = shop_level or 1
-    local tier_weights = level_to_item_odds[shop_level]
-    local item_1
-    local item_2
-    local item_3
-    local all_items = {}
+  self.items = {}
+  local shop_level = shop_level or 1
+  local tier_weights = level_to_item_odds[shop_level]
+  local item_1
+  local item_2
+  local item_3
+  local all_items = {}
 
+  if locked_state and self.shop_item_data and self.shop_item_data[1] then
+    item_1 = self.shop_item_data[1]
+  else
     item_1 = Get_Random_Item(shop_level, self.units)
+  end
+  if locked_state and self.shop_item_data and self.shop_item_data[2] then
+    item_2 = self.shop_item_data[2]
+  else
     item_2 = Get_Random_Item(shop_level, self.units)
+  end
+  if locked_state and self.shop_item_data and self.shop_item_data[3] then
+    item_3 = self.shop_item_data[3]
+  else
     item_3 = Get_Random_Item(shop_level, self.units)
+  end
 
-    all_items = {item_1, item_2, item_3}
-    
+  all_items = {item_1, item_2, item_3}
+  self.shop_item_data = all_items
 
-    local item_h = 50
-    local item_w = 40
+  local item_h = 50
+  local item_w = 40
 
-    local y = gh - (item_h / 2) - 10
-    local x = gw/2 - 60
-    for i, item in ipairs(all_items) do
-      table.insert(self.items, ItemCard{group = self.ui, x = x + (i-1)*60, y = y, w = 40, h = 50,
-                    item = item, parent = self, i = i})
+  local y = gh - (item_h / 2) - 10
+  local x = gw/2 - 60
+  for i, item in ipairs(all_items) do
+    table.insert(self.items, ItemCard{group = self.ui, x = x + (i-1)*60, y = y, w = 40, h = 50,
+                  item = item, parent = self, i = i})
   end
 end
 
@@ -934,7 +974,7 @@ function GoButton:update(dt)
         print('starting arena')
         print(#self.parent.units)
         main:add(Arena'arena')
-        main:go_to('arena', self.parent.level, self.parent.level_list, self.parent.loop, self.parent.units, self.parent.max_units, self.parent.passives, self.parent.shop_level, self.parent.shop_xp, locked_state)
+        main:go_to('arena', self.parent.level, self.parent.level_list, self.parent.loop, self.parent.units, self.parent.max_units, self.parent.passives, self.parent.shop_level, self.parent.shop_xp, self.parent.shop_item_data)
       end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']level ' .. tostring(self.parent.level) .. '/' .. tostring(25*(self.parent.loop+1)), font = pixul_font, alignment = 'center'}}, global_text_tags)}
     end
 
@@ -983,15 +1023,19 @@ function LockButton:update(dt)
   self:update_game_object(dt)
 
   if self.selected and input.m1.pressed then
-    locked_state = not locked_state
-    buyScreen:save_run()
-    ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    self.parent:set_locked_state(not locked_state)
+    glass_shatter:play{volume = 0.6}
     self.selected = true
     self.spring:pull(0.2, 200, 10)
-    self.text:set_text{{text = '[fgm5]' .. tostring(locked_state and 'unlock' or 'lock'), font = pixul_font, alignment = 'center'}}
     if locked_state then self.shape.w = 44
     else self.shape.w = 32 end
   end
+end
+
+function LockButton:update_text()
+  self.text:set_text{{text = '[fgm5]' .. tostring(locked_state and 'unlock' or 'lock'), font = pixul_font, alignment = 'center'}}
+  if locked_state then self.shape.w = 44
+  else self.shape.w = 32 end
 end
 
 
@@ -1062,16 +1106,17 @@ function RerollButton:update(dt)
         end
         self.t:after(2, function() self.info_text:deactivate(); self.info_text.dead = true; self.info_text = nil end, 'info_text')
       else
-        local rerolled = self.parent:try_roll_items()
-        if rerolled then
-          ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-          self.selected = true
-          self.spring:pull(0.2, 200, 10)
-          gold = gold - 2
-          self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
-        else
-          error1:play{pitch = random:float(0.95, 1.05), volume = 1}
+        --don't play sound here
+        if locked_state then
+          self.parent:set_locked_state(false)
         end
+        self.parent:try_roll_items()
+        ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+        self.selected = true
+        self.spring:pull(0.2, 200, 10)
+        gold = gold - 2
+        self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
+
         buyScreen:save_run()
       end
     elseif self.parent:is(Arena) then
@@ -1278,7 +1323,7 @@ function ItemCard:update(dt)
 
   if self.parent:is(Arena) then return end
 
-  if input.m1.pressed and self.colliding_with_mouse and gold >= self.cost then
+  if input.m1.pressed and self.colliding_with_mouse and gold >= self.cost and not locked_state then
     if not self.grabbed then
       self.timeGrabbed = love.timer.getTime()
     end
@@ -1335,11 +1380,19 @@ function ItemCard:draw()
         graphics.rectangle(self.x, y, self.w, color_h, 6, 6, color)
       end
     end
+    --draw the locked color under the border
+    if locked_state then
+      local color = grey[0]:clone()
+      color.a = 0.8
+      graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, color)
+    end
     graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, self.tier_color, 2)
+
     self.cost_text:draw(self.x + self.w/2, self.y - self.h/2)
     if self.image then
       self.image:draw(self.x, self.y)
     end
+
 
 
     graphics.pop()

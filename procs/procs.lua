@@ -803,6 +803,7 @@ function Proc_Slowstack:init(args)
     toggles = {slowstack = 1}
   }
 
+  if not self.unit then return end
   self.unit:add_buff(self.buffdata)
 end
 

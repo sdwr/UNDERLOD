@@ -28,6 +28,8 @@ function init()
   shared_init()
   SpawnGlobals.Init()
 
+  math.randomseed(os.time())
+
   input:bind('move_left', { 'a', 'left', 'dpleft', 'm1' })
   input:bind('move_right', { 'd', 'e', 's', 'right', 'dpright', 'm2' })
   input:bind('enter', { 'space', 'return', 'fleft', 'fdown', 'fright' })
@@ -2468,6 +2470,7 @@ function open_options(self)
       end, 'pause')
     end }
 
+    --restart new game
     if not self:is(MainMenu) then
       self.restart_button = Button { group = self.ui, x = gw / 2, y = gh - 200, force_update = true, button_text = 'restart run (r)', fg_color = 'bg10', bg_color = 'bg', action = function(
           b)
@@ -2502,7 +2505,7 @@ function open_options(self)
           main:add(BuyScreen 'buy_screen')
           locked_state = false
           system.save_run()
-          main:go_to('buy_screen', 1, {}, 0, {}, max_units, passives, 1, 0, max_units)
+          main:go_to('buy_screen', 1, {}, 0, {}, max_units, passives, 1, 0, {})
         end, text = Text({ { text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center' } }, global_text_tags) }
       end }
     end

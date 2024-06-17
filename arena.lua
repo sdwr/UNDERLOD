@@ -14,7 +14,7 @@ end
 
 
 
-function Arena:on_enter(from, level, level_list, loop, units, max_units, passives, shop_level, shop_xp, lock)
+function Arena:on_enter(from, level, level_list, loop, units, max_units, passives, shop_level, shop_xp, shop_item_data)
   self.hfx:add('condition1', 1)
   self.hfx:add('condition2', 1)
   self.level = level or 1
@@ -25,6 +25,7 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
   self.passives = passives
   self.shop_level = shop_level or 1
   self.shop_xp = shop_xp or 0
+  self.shop_item_data = shop_item_data
 
   self.gold_text = nil
   self.timer_text = nil
@@ -839,8 +840,8 @@ function Arena:transition()
     slow_amount = 1
     music_slow_amount = 1
     main:add(BuyScreen'buy_screen')
-    system.save_run(self.level+1, self.level_list, self.loop, gold, self.units, self.max_units, self.passives, self.shop_level, self.shop_xp, run_passive_pool, locked_state)
-    main:go_to('buy_screen', self.level+1, self.level_list, self.loop, self.units, self.max_units, self.passives, self.shop_level, self.shop_xp)
+    system.save_run(self.level+1, self.level_list, self.loop, gold, self.units, self.max_units, self.passives, self.shop_level, self.shop_xp, self.shop_item_data)
+    main:go_to('buy_screen', self.level+1, self.level_list, self.loop, self.units, self.max_units, self.passives, self.shop_level, self.shop_xp, self.shop_item_data)
 
   end, nil}
 end
