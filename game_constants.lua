@@ -4,7 +4,7 @@ DEBUG_SPELLS = false
 
 --gold
 --note that HoG econ check is in arena.lua
-STARTING_GOLD = 0
+STARTING_GOLD = 5
 GOLD_PER_ROUND = 8
 INTEREST_AMOUNT = 0.1
 

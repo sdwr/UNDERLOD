@@ -57,7 +57,6 @@ TODO:
 
 SMALL CLEANUP:
   --items reroll when entering from mainmenu (can reroll by entering and leaving)
-     --lock works correctly
 
   --stunned laser enemy still fires laser, and has no cooldown ("cast" never triggers, but laser happens in precast)
 
