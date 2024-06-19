@@ -14,14 +14,14 @@ function Enemy:init(args)
   self.init_enemy(self)
   self:calculate_stats(true)
 
-  print('enemy init', self.type, self.base_castcooldown, self.baseCast)
   self.castcooldown = math.random() * (self.base_castcooldown or self.baseCast)
   
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20 + self.shape.w / 2)
   self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 1000)
-
+  
   self.base_castcooldown = self.base_castcooldown or 3
   self.last_attack_started = 0
+  
 end
 
 --load enemy type specific functions from global table

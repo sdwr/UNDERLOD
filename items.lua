@@ -191,7 +191,7 @@ item_to_item_data = {
     name = 'healingleaf',
     colors = {},
     cost = 5,
-    icon = 'healingleaf',
+    icon = 'leaf',
     desc = 'Heals this unit every 5 seconds',
     stats = {hp = 0.2},
     procs = {'heal'}
@@ -210,7 +210,7 @@ item_to_item_data = {
     colors = {},
     cost = 5,
     icon = 'bloodlust',
-    desc = 'Get attackspeed and movespeed when you kill an enemy',
+    desc = 'Get stacking aspd and mspd when you kill an enemy',
     stats = {dmg = 0.5},
     procs = {'bloodlust'}
   },

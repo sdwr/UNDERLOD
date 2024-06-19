@@ -7,6 +7,10 @@ fns['init_enemy'] = function(self)
   self.size = self.data.size or 'big'
   self.tracks = self.data.tracks or false
 
+  --set mega variant
+  --self.mega = self.data.mega or false
+  self.mega = true
+  
   --create shape
   self.color = blue[0]:clone()
   Set_Enemy_Shape(self, self.size)
@@ -21,6 +25,18 @@ fns['init_enemy'] = function(self)
   -- and is set to a default if baseCast is not set
   self.baseCast = attack_speeds['medium-fast']
 
+  self.castcooldown = attack_speeds['medium']
+
+  self.direction_lock = true
+  self.rotation_lock = false
+
+  if self.mega then
+    self.baseCast = attack_speeds['fast']
+    self.castcooldown = attack_speeds['medium-fast']
+    self.direction_lock = false
+    self.rotation_lock = true
+  end
+
   --set attacks
 
   --laser has stuff happen during the cast (in prelist)
@@ -33,7 +49,7 @@ fns['init_enemy'] = function(self)
     name = 'laser',
     viable = function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end,
     casttime = self.castTime,
-    castcooldown = attack_speeds['medium'],
+    castcooldown = self.castcooldown,
     oncaststart = function()
       local target = Helper.Spell:get_furthest_target(self)
       if target then
@@ -42,11 +58,14 @@ fns['init_enemy'] = function(self)
         self.state = unit_states['casting']
         local args = {
           unit = self,
-          direction_lock = true,
+          direction_lock = self.direction_lock,
+          rotation_lock = self.rotation_lock,
           laser_aim_width = 6,
           damage = self.dmg,
           damage_troops = true
         }
+        
+
         Helper.Spell.Laser:create(args)
       end
     end,

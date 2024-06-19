@@ -134,6 +134,9 @@ end
 
 function Helper.Unit:finish_casting(unit)
     if unit then
+        if unit.end_cast then
+            unit:end_cast()
+        end
         unit.last_attack_finished = Helper.Time.time
         if unit.state == unit_states['casting'] then
             unit.state = unit_states['normal']

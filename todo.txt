@@ -1,8 +1,7 @@
 
 TODO:
   
-  -level icon for when you get a new unit (5 and 10)
-    - restrict to one of each unit?
+  - restrict to one of each unit?
     
   -boss hp bar segments for phases
 
@@ -12,6 +11,7 @@ TODO:
   
   - add more dodgeable attacks / enemies
     - laser is good
+      -laser + rotation + follow target needs to stop turning before firing
     - spread laser 
       - shoots in star pattern all at once
       - or rotating around unit
