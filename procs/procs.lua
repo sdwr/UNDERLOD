@@ -236,7 +236,7 @@ function Proc_Lightning:init(args)
 
   --define the proc's vars
   self.damage = self.data.damage or 20
-  self.damageType = 'lightning'
+  self.damageType = DAMAGE_TYPE_LIGHTNING
   self.chain = self.data.chain or 4
   self.every_attacks = self.data.every_attacks or 4
   self.radius = self.data.radius or 50
@@ -287,7 +287,7 @@ function Proc_Static:init(args)
 
   --define the proc's vars
   self.damage = self.data.damage or 20
-  self.damageType = 'lightning'
+  self.damageType = DAMAGE_TYPE_LIGHTNING
   self.chain = self.data.chain or 6
   self.every_moves = self.data.every_moves or 500
   self.radius = self.data.radius or 100
@@ -319,6 +319,28 @@ function Proc_Static:onHit(target, damage)
       parent = self.unit,
       chain = self.chain,
       level = 1}
+  end
+end
+
+Proc_Shock = Proc:extend()
+function Proc_Shock:init(args)
+  self.triggers = {PROC_ON_HIT}
+  self.scope = 'troop'
+
+  Proc_Shock.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  self.color = self.data.color or yellow[0]
+  self.duration = 5
+end
+
+function Proc_Shock:onHit(target, damage, damageType)
+  Proc_Shock.super.onHit(self, target, damage, damageType)
+  
+  if damageType == DAMAGE_TYPE_LIGHTNING then
+    target:shock(self.duration)
   end
 end
 
@@ -857,6 +879,7 @@ proc_name_to_class = {
   ['static'] = Proc_Static,
   ['radiance'] = Proc_Radiance,
   ['shield'] = Proc_Shield,
+  ['shock'] = Proc_Shock,
   --red procs
   ['fire'] = Proc_Fire,
   ['lavapool'] = Proc_Lavapool,

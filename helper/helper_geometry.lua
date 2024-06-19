@@ -85,33 +85,26 @@ end
 
 
 function Helper.Geometry:distance_from_line(x, y, linex1, liney1, linex2, liney2)
-    local a = (liney2 - liney1) / (linex2 - linex1)
-    local b = -1
-    local c = -a * linex1 + liney1
-
-    return math.abs(a*x + b*y + c) / math.sqrt(a^2 + b^2)
+    local x_proj, y_proj = self:get_point_on_line(x, y, linex1, liney1, linex2, liney2)
+    return math.sqrt((x_proj - x)^2 + (y_proj - y)^2)
 end
 
 function Helper.Geometry:get_point_on_line(x, y, linex1, liney1, linex2, liney2)
     local a = (liney2 - liney1) / (linex2 - linex1)
     local b = -1
-    local c = -a * linex1 + liney1
+    local c = liney1 - a * linex1
 
-    return (b^2*x - a*b*y - a*c) / (a^2 + b^2), (a^2*y - a*b*x - b*c) / (a^2 + b^2)
+    local x_proj = (b^2 * x - a * b * y - a * c) / (a^2 + b^2)
+    local y_proj = (a^2 * y - a * b * x - b * c) / (a^2 + b^2)
+    
+    return x_proj, y_proj
 end
 
---should be more generous? does not look like it is working
 function Helper.Geometry:is_on_line(x, y, linex1, liney1, linex2, liney2, line_width)
-    local function point_on_line_is_part_of_line(x, y, linex1, liney1, linex2, liney2)
-        local pointx = 0
-        local pointy = 0
-        pointx, pointy = Helper.Geometry:get_point_on_line(x, y, linex1, liney1, linex2, liney2)
+    local x_proj, y_proj = self:get_point_on_line(x, y, linex1, liney1, linex2, liney2)
+    local distance = self:distance_from_line(x, y, linex1, liney1, linex2, liney2)
     
-        return Helper.Geometry:is_inside_rectangle(pointx, pointy, linex1, liney1, linex2, liney2)
-    end
-
-    if Helper.Geometry:distance_from_line(x, y, linex1, liney1, linex2, liney2) < line_width / 2
-    and point_on_line_is_part_of_line(x, y, linex1, liney1, linex2, liney2) then
+    if distance <= line_width / 2 and self:is_inside_rectangle(x_proj, y_proj, linex1, liney1, linex2, liney2) then
         return true
     else
         return false
@@ -121,29 +114,12 @@ end
 
 
 function Helper.Geometry:is_inside_rectangle(x, y, pointx1, pointy1, pointx2, pointy2)
-    local result = true
-
-    if pointx1 > pointx2 then
-        if x > pointx1 or x < pointx2 then
-            result = false
-        end
-    else
-        if x < pointx1 or x > pointx2 then
-            result = false
-        end
-    end
-
-    if pointy1 > pointy2 then
-        if y > pointy1 or y < pointy2 then
-            result = false
-        end
-    else
-        if y < pointy1 or y > pointy2 then
-            result = false
-        end
-    end
-
-    return result
+    local minX = math.min(pointx1, pointx2)
+    local maxX = math.max(pointx1, pointx2)
+    local minY = math.min(pointy1, pointy2)
+    local maxY = math.max(pointy1, pointy2)
+    
+    return x >= minX and x <= maxX and y >= minY and y <= maxY
 end
 
 

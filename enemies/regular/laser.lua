@@ -10,7 +10,7 @@ fns['init_enemy'] = function(self)
   --set mega variant
   --self.mega = self.data.mega or false
   self.mega = true
-  
+
   --create shape
   self.color = blue[0]:clone()
   Set_Enemy_Shape(self, self.size)
@@ -49,6 +49,7 @@ fns['init_enemy'] = function(self)
     name = 'laser',
     viable = function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end,
     casttime = self.castTime,
+    freezeduration = 0.4,
     castcooldown = self.castcooldown,
     oncaststart = function()
       local target = Helper.Spell:get_furthest_target(self)
@@ -60,7 +61,7 @@ fns['init_enemy'] = function(self)
           unit = self,
           direction_lock = self.direction_lock,
           rotation_lock = self.rotation_lock,
-          laser_aim_width = 6,
+          laser_aim_width = 8,
           damage = self.dmg,
           damage_troops = true
         }

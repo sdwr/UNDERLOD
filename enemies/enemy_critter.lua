@@ -66,17 +66,17 @@ function EnemyCritter:attack()
   end
 end
 
-function EnemyCritter:hit(damage, from, damagetype)
+function EnemyCritter:hit(damage, from, damageType)
   if self.dead or self.invulnerable then return end
   self.hfx:use('hit', 0.25, 200, 10)
 
   self.hp = self.hp - damage
-  self:show_damage_number(damage, damagetype)
+  self:show_damage_number(damage, damageType)
 
   if from and from.onHitCallbacks then
-    from:onHitCallbacks(self, damage)
+    from:onHitCallbacks(self, damage, damageType)
   end
-  self:onGotHitCallbacks(from, damage)
+  self:onGotHitCallbacks(from, damage, damageType)
 
   self:show_hp()
   if self.hp <= 0 then

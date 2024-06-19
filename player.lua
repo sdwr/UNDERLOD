@@ -1564,6 +1564,7 @@ function ChainLightning:init(args)
   self:init_game_object(args)
   if not self.group.world then self.dead = true; return end
   self.dmg = args.dmg or 5
+  self.damageType = args.damageType or DAMAGE_TYPE_LIGHTNING
 
   self.attack_sensor = Circle(self.target.x, self.target.y, self.rs)
   local total_targets = args.chain or 3
@@ -1583,7 +1584,7 @@ function ChainLightning:init(args)
     if #self.targets >= self.i then
       local target = self.targets[self.i]
       if not target then return end
-      target:hit(self.dmg, self.parent)
+      target:hit(self.dmg, self.parent, self.damageType)
       spark2:play{pitch = random:float(0.8, 1.2), volume = 0.7}
 
       local lastTarget = nil
@@ -3238,7 +3239,7 @@ function Critter:attack()
 end
 
 
-function Critter:hit(damage, from)
+function Critter:hit(damage, from, damageType)
   if self.dead or self.invulnerable then return end
   self.hfx:use('hit', 0.25, 200, 10)
 
@@ -3246,9 +3247,9 @@ function Critter:hit(damage, from)
 
   --on hit callbacks
   if from and from.onHitCallbacks then
-    from:onHitCallbacks(self, damage)
+    from:onHitCallbacks(self, damage, damageType)
   end
-  self:onGotHitCallbacks(from, damage)
+  self:onGotHitCallbacks(from, damage, damageType)
 
   self:show_hp()
   if self.hp <= 0 then

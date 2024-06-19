@@ -440,7 +440,7 @@ function Troop:set_character()
   end
 end
 
-function Troop:hit(damage, from, damagetype)
+function Troop:hit(damage, from, damageType)
   if self.bubbled then return end
   if self.dead then return end
   if self.magician_invulnerable then return end
@@ -470,9 +470,9 @@ function Troop:hit(damage, from, damagetype)
   
   --on hit callbacks
   if from and from.onHitCallbacks then
-    from:onHitCallbacks(self, actual_damage)
+    from:onHitCallbacks(self, actual_damage, damageType)
   end
-  self:onGotHitCallbacks(from, actual_damage)
+  self:onGotHitCallbacks(from, actual_damage, damageType)
 
   camera:shake(2, 0.5)
 

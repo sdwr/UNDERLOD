@@ -254,6 +254,16 @@ item_to_item_data = {
     stats = {hp = .1},
     procs = {'radiance', 'shield'}
   },
+  ['shock'] = {
+    name = 'shock',
+    colors = {'yellow'},
+    cost = 10,
+    icon = 'lightning',
+    desc = 'Your lightning damage stacks shock on enemies, increasing their damage taken',
+    stats = {aspd = 0.15},
+    procs = {'shock'},
+    prereqs = {'lightningdmg'}
+  },
   --still need to add
   ['bubble'] = {
     name = 'bubble',

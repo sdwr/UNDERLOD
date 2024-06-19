@@ -34,8 +34,11 @@ BOSS_HP_SCALING = function(level) return 1 + ((level / 6) - 1) end
 --proc constants
 MAX_STACKS_FIRE = 5
 MAX_STACKS_SLOW = 5
+MAX_STACKS_SHOCK = 10
 MAX_STACKS_REDSHIELD = 20
 MAX_STACKS_BLOODLUST = 10
+
+SHOCK_DEF_REDUCTION = -0.04
 
 
 -- UI constants
@@ -57,6 +60,14 @@ CHARACTER_CARD_PROC_Y = (CHARACTER_CARD_HEIGHT / 2) - 115
 
 -- Spell constants
 LASER_FIRE_TYPES = {'target', 'fixed_angle', 'rotating'}
+
+DAMAGE_TYPE_LIGHTNING = 'lightning'
+DAMAGE_TYPE_FIRE = 'fire'
+DAMAGE_TYPE_PHYSICAL = 'physical'
+DAMAGE_TYPE_POISON = 'poison'
+DAMAGE_TYPE_COLD = 'cold'
+
+DAMAGE_TYPES = {DAMAGE_TYPE_LIGHTNING, DAMAGE_TYPE_FIRE, DAMAGE_TYPE_PHYSICAL, DAMAGE_TYPE_POISON, DAMAGE_TYPE_COLD}
 
 -- global state :o
 --hack

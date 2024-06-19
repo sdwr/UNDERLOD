@@ -70,7 +70,7 @@ function Enemy:update(dt)
         self:rotate_towards_object(self.target, 0.5)
       end
     elseif self.state == unit_states['stopped'] or self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
-      if self.target and not self.target.dead then
+      if self.target and not self.target.dead and not self.freezerotation then
         self:rotate_towards_object(self.target, 1)
       end
     end
@@ -145,7 +145,7 @@ function Enemy:on_collision_enter(other, contact)
     end
 end
 
-function Enemy:hit(damage, from, damagetype)
+function Enemy:hit(damage, from, damageType)
     if self.invulnerable then return end
     if self.dead then return end
     if self.isBoss then
@@ -162,7 +162,7 @@ function Enemy:hit(damage, from, damagetype)
     self:show_hp()
   
     local actual_damage = math.max(self:calculate_damage(damage)*(self.stun_dmg_m or 1), 0)
-    self:show_damage_number(actual_damage, damagetype)
+    self:show_damage_number(actual_damage, damageType)
 
     self.hp = self.hp - actual_damage
     if self.hp > self.max_hp then self.hp = self.max_hp end
@@ -170,9 +170,9 @@ function Enemy:hit(damage, from, damagetype)
   
     --callbacks
     if from and from.onHitCallbacks then
-      from:onHitCallbacks(self, actual_damage)
+      from:onHitCallbacks(self, actual_damage, damageType)
     end
-    self:onGotHitCallbacks(from, actual_damage)
+    self:onGotHitCallbacks(from, actual_damage, damageType)
 
     if self.hp <= 0 then
       --on death callbacks

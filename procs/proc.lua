@@ -128,15 +128,15 @@ function Proc:onAttack(target)
   end
 end
 
-function Proc:onHit(target, damage)
+function Proc:onHit(target, damage, damageType)
   if DEBUG_PROCS then
-    print('onHit', self.unit, target, damage, self.name)
+    print('onHit', self.unit, target, damage, damageType, self.name)
   end
 end
 
-function Proc:onGotHit(from, damage)
+function Proc:onGotHit(from, damage, damageType)
   if DEBUG_PROCS then
-    print('onGotHit', self.unit, from, damage, self.name)
+    print('onGotHit', self.unit, from, damage, damageType, self.name)
   end
 end
 

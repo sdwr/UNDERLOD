@@ -551,6 +551,9 @@ function Unit:calculate_stats(first_run)
   self.class_mvspd_a = 0
   self.class_hp_m = 1
   self.class_dmg_m = 1
+  if self.type == 'laser' then
+    self.class_dmg_m = 2
+  end
   self.class_aspd_m = 1
   self.class_area_dmg_m = 1
   self.class_area_size_m = 1
@@ -734,9 +737,9 @@ function Unit:onAttackCallbacks(target)
   end
 end
 
-function Unit:onHitCallbacks(from, damage)
+function Unit:onHitCallbacks(from, damage, damageType)
   for k, proc in ipairs(self.onHitProcs) do
-    proc:onHit(from, damage)
+    proc:onHit(from, damage, damageType)
   end
 end
 
@@ -824,6 +827,19 @@ function Unit:redshield(duration)
   end
   self:remove_buff('redshield')
   self:add_buff(redshieldBuff)
+end
+
+function Unit:shock(duration)
+  local shockBuff = {name = 'shock', color = yellow[0], duration = duration, maxDuration = duration, stats = {buff_def_m = SHOCK_DEF_REDUCTION}}
+  local existing_buff = self.buffs['shock']
+
+  shockBuff.stacks = 1
+  if existing_buff then
+    shockBuff.stacks = math.min((existing_buff.stacks or 1) + 1, MAX_STACKS_SHOCK)
+  end
+
+  self:remove_buff('shock')
+  self:add_buff(shockBuff)
 end
 
 function Unit:stun(duration)
@@ -1001,9 +1017,12 @@ end
 -- castcooldown is the unit's cooldown until the next cast
 --and current_castcooldown is what the castcooldown will be set to when the cast is finished
 
+--freezeduration is the time before the cast is finished when the unit stops rotating
+--(so player can escape the cast), linked to freezerotation
 local example_spelldata = {
   viable = function(unit) return unit:in_range()() end,
   casttime = 1,
+  freezeduration = 0.5,
   oncaststart = function(unit) 
     unit:rotate_towards_object(unit.target, 1)
     alert1:play{volume = 0.5}
@@ -1018,6 +1037,11 @@ local example_spelldata = {
 function Unit:update_cast(dt)
   if self.state == unit_states['casting'] then
     local time = love.timer.getTime() - self.last_attack_started
+
+    if self.freezeduration and time + self.freezeduration > self.castTime then
+      self.freezerotation = true
+    end
+
     if time >= self.castTime then
       --let the spell handle the unit state change (might be different for each spell)
       self:currentcast()
@@ -1059,6 +1083,7 @@ function Unit:start_cast(spelldata)
   self.last_attack_started = love.timer.getTime()
   self.currentcast = spelldata.cast
   self.current_castcooldown = spelldata.casttime or self.base_castcooldown
+  self.freezeduration = spelldata.freezeduration
   if spelldata.oncaststart then
     spelldata.oncaststart(self)
   end
@@ -1069,6 +1094,8 @@ function Unit:end_cast()
   self.castcooldown = self.current_castcooldown
   self.current_castcooldown = nil
   self.spelldata = nil
+  self.freezeduration = nil
+  self.freezerotation = false
   if self.state == unit_states['casting'] then
     self.state = unit_states['normal']
   end
