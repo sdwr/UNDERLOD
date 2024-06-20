@@ -14,7 +14,6 @@ function Swordsman_Troop:draw()
 end
 
 function Swordsman_Troop:attack(area, mods)
-  print('swordsman attacking')
   Swordsman_Troop.super.attack(self, area, mods)
   _G[random:table{'swordsman1', 'swordsman2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.75}
 end

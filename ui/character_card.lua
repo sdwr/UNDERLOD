@@ -112,7 +112,6 @@ function CharacterCard:update(dt)
 end
 
 function CharacterCard:die()
-  print('killing card')
   --kill all items
   for i =1, 6 do
     if self.items[i] then

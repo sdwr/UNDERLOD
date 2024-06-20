@@ -40,9 +40,12 @@ function State:init_state(name)
 end
 
 
-function State:enter(from, ...)
+function State:enter(from, data)
   self.active = true
-  if self.on_enter then self:on_enter(from, ...) end
+  if self.on_enter then
+    Load_Save_Data_Into_State(self, data)
+    self:on_enter(from)
+  end
 end
 
 
@@ -100,7 +103,7 @@ end
 -- Calls on_exit for the deactivated state and on_enter for the activated one.
 -- If on_exit returns true then the deactivated state will be removed from memory.
 -- You must handle the destruction of it yourself in its on_exit function.
-function Main:go_to(state, ...)
+function Main:go_to(state, data)
   if type(state) == 'string' then state = self:get(state) end
 
   if self.current then
@@ -113,5 +116,5 @@ function Main:go_to(state, ...)
 
   local last_state = self.current
   self.current = state
-  state:enter(last_state, ...)
+  state:enter(last_state, data)
 end

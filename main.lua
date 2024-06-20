@@ -2,6 +2,7 @@ require 'engine'
 require 'shared'
 require 'utils'
 require 'game_constants'
+require 'save_game'
 require 'helper/helper'
 require 'ui/ui'
 require 'arena'
@@ -2489,7 +2490,6 @@ function open_options(self)
           slow_amount = 1
           music_slow_amount = 1
           run_time = 0
-          gold = STARTING_GOLD
           passives = {}
           main_song_instance:stop()
           run_passive_pool = {
@@ -2512,7 +2512,10 @@ function open_options(self)
           main:add(BuyScreen 'buy_screen')
           locked_state = false
           system.save_run()
-          main:go_to('buy_screen', 1, {}, 0, {}, max_units, passives, 1, 0, {})
+          
+
+          local new_run = Create_Blank_Save_Data()
+          main:go_to('buy_screen', new_run)
         end, text = Text({ { text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center' } }, global_text_tags) }
       end }
     end

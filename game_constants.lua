@@ -2,6 +2,19 @@
 DEBUG_PROCS = false
 DEBUG_SPELLS = false
 
+EXPECTED_SAVE_FIELDS = {
+  'level',
+  'level_list',
+  'loop',
+  'gold',
+  'units',
+  'max_units',
+  'passives',
+  'shop_item_data',
+  'locked_state',
+  'reroll_shop',
+}
+
 --gold
 --note that HoG econ check is in arena.lua
 STARTING_GOLD = 5

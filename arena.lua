@@ -14,18 +14,10 @@ end
 
 
 
-function Arena:on_enter(from, level, level_list, loop, units, max_units, passives, shop_level, shop_xp, shop_item_data)
+function Arena:on_enter(from)
+  
   self.hfx:add('condition1', 1)
   self.hfx:add('condition2', 1)
-  self.level = level or 1
-  self.level_list = level_list
-  self.loop = loop or 0
-  self.units = units
-  self.max_units = max_units or MAX_UNITS
-  self.passives = passives
-  self.shop_level = shop_level or 1
-  self.shop_xp = shop_xp or 0
-  self.shop_item_data = shop_item_data
 
   self.gold_text = nil
   self.timer_text = nil
@@ -33,7 +25,7 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
 
   main_song_instance:stop()
 
-  self.starting_units = table.copy(units)
+  self.starting_units = table.copy(self.units)
   self.targetedEnemy = nil
 
   --if not state.mouse_control then
@@ -100,8 +92,8 @@ function Arena:on_enter(from, level, level_list, loop, units, max_units, passive
   HotbarGlobals:clear_hotbar()
 
   Helper.Unit.team_button_width = 47
-  for i = 1, #units do
-    local character = units[i].character
+  for i = 1, #self.units do
+    local character = self.units[i].character
     local type = character_types[character]
     local number = i
     local b = HotbarButton{group = self.ui, x = 50 + Helper.Unit.team_button_width/2 + (Helper.Unit.team_button_width + 5) * (i - 1), 
@@ -237,7 +229,9 @@ function Arena:update(dt)
         max_units = MAX_UNITS
         main:add(BuyScreen'buy_screen')
         system.save_run()
-        main:go_to('buy_screen', 1, self.level_list, 0, {}, max_units, passives, 1, 0)
+        local new_run = Create_Blank_Save_Data()
+
+        main:go_to('buy_screen', new_run)
       end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
     end
 
@@ -612,7 +606,8 @@ function Arena:die()
           max_units = MAX_UNITS
           main:add(BuyScreen'buy_screen')
           system.save_run()
-          main:go_to('buy_screen', 1, self.level_list, 0, {}, max_units, passives, 1, 0)
+          local new_run = Create_Blank_Save_Data()
+          main:go_to('buy_screen', new_run)
         end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
       end}
     end)
@@ -824,25 +819,18 @@ function Arena:transition()
   self.transitioning = true
   ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
   TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or self.color, transition_action = function(t)
-    if self.level % 2 == 0 and self.shop_level < 5 then
-      self.shop_xp = self.shop_xp + 1
-      local max_xp = 0
-      if self.shop_level == 1 then max_xp = 3
-      elseif self.shop_level == 2 then max_xp = 4
-      elseif self.shop_level == 3 then max_xp = 5
-      elseif self.shop_level == 4 then max_xp = 6
-      elseif self.shop_level == 5 then max_xp = 0 end
-      if self.shop_xp >= max_xp then
-        self.shop_xp = 0
-        self.shop_level = self.shop_level + 1
-      end
-      if self.shop_level > 5 then self.shop_level = 5 end
-    end
+
     slow_amount = 1
     music_slow_amount = 1
     main:add(BuyScreen'buy_screen')
-    system.save_run(self.level+1, self.level_list, self.loop, gold, self.units, self.max_units, self.passives, self.shop_level, self.shop_xp, self.shop_item_data)
-    main:go_to('buy_screen', self.level+1, self.level_list, self.loop, self.units, self.max_units, self.passives, self.shop_level, self.shop_xp, self.shop_item_data)
+    local save_data = Collect_Save_Data_From_State(self)
+
+    save_data.level = save_data.level + 1
+    save_data.reroll_shop = true
+
+    system.save_run(save_data)
+
+    main:go_to('buy_screen', save_data)
 
   end, nil}
 end

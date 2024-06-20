@@ -137,22 +137,18 @@ function system.load_state()
   else state = {} end
 end
 
-
-function system.save_run(level, level_list, loop, gold, units, max_units, passives, shop_level, shop_xp, shop_item_data)
-  local run = {level = level, level_list = level_list, loop = loop, gold = gold, units = units, max_units = max_units, passives = passives, shop_level = shop_level, shop_xp = shop_xp, shop_item_data = shop_item_data, locked_state = locked_state}
-    current_new_game_plus = current_new_game_plus
-  local str = "return " .. table.tostring(run)
-  love.filesystem.write("run_v4.txt", str)
+function system.save_run(data)
+  data = data or {}
+  local str = "return " .. table.tostring(data)
+  love.filesystem.write("run.txt", str)
 end
-
 
 function system.load_run()
   local chunk = nil
-  if love.filesystem.getInfo("run_v4.txt") then chunk = love.filesystem.load("run_v4.txt") end
+  if love.filesystem.getInfo("run.txt") then chunk = love.filesystem.load("run.txt") end
   if chunk then return chunk()
   else return {} end
 end
-
 
 function system.get_main_directory()
   return love.filesystem.getSource()

@@ -95,15 +95,16 @@ function MainMenu:on_enter(from)
           'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
           'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
         }
-        run_time = run.time or 0
-        gold = run.gold or STARTING_GOLD
-        passives = run.passives or {}
-        locked_state = run.locked_state
         current_new_game_plus = run.current_new_game_plus or current_new_game_plus or 0
         Helper.Unit.team_saves = run.team_saves or {{}, {}, {}, {}}
         system.save_state()
         main:add(BuyScreen'buy_screen')
-        main:go_to('buy_screen', run.level or 1, run.level_list or {}, run.loop or 0, run.units or {}, run.max_units or MAX_UNITS, passives, run.shop_level or 1, run.shop_xp or 0, run.shop_item_data)
+
+        run_time = run.time or 0
+        locked_state = run.locked_state
+
+        --need to increment loop for NG+ ?
+        main:go_to('buy_screen', run)
       end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
     end}
   end
@@ -124,14 +125,16 @@ function MainMenu:on_enter(from)
         'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
         'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
       }
-      run_time = 0
-      gold = STARTING_GOLD
-      passives = {}
-      locked_state = false
+      
       current_new_game_plus = current_new_game_plus or 0
       system.save_state()
       main:add(BuyScreen'buy_screen')
-      main:go_to('buy_screen', 1, {}, 0, {}, 3, passives, 1, 0, {})
+      
+      run_time = 0
+      locked_state = false
+
+      local new_run = Create_Blank_Save_Data()
+      main:go_to('buy_screen', new_run)
     end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
   end}
   self.options_button = Button{group = self.main_ui, x = 47, y = gh/2 + 34, force_update = true, button_text = 'options', fg_color = 'bg10', bg_color = 'bg', action = function(b)

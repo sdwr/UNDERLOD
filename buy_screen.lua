@@ -1,17 +1,3 @@
-GameState = Object:extend()
-function GameState:init(...)
-  self:import(...)
-end
-
-function GameState:save_run()
-  system.save_run(self.level, self.level_list, self.loop, gold, self.units, self.max_units, self.passives, self.shop_level, self.shop_xp, self.shop_item_data)
-end
-
-function GameState:load_run()
-  local run = system.load_run()
-  self:import(run)
-end
-
 
 buyScreen = nil
 
@@ -23,8 +9,6 @@ function BuyScreen:init(name)
   self:init_game_object()
   buyScreen = self
 end
-
-
 
 function BuyScreen:on_exit()
   self.main:destroy()
@@ -53,28 +37,11 @@ function BuyScreen:on_exit()
   self.level_button = nil
 end
 
-function BuyScreen:on_enter(from, level, level_list, loop, units, max_units, passives, shop_level, shop_xp, shop_item_data)
-  self.gameState = GameState({
-    level = level, 
-    loop = loop, 
-    units = units, 
-    max_units = max_units, 
-    passives = passives, 
-    shop_level = shop_level, 
-    shop_xp = shop_xp,
-    shop_item_data = shop_item_data,
-  })
-  self.level = level
-  self.level_list = level_list
-  self.loop = loop
-  self.units = units
-  self.max_units = max_units
-  self.passives = passives
-  self.shop_level = level_to_shop_tier(level)
-  self.shop_xp = shop_xp
-  self.shop_item_data = shop_item_data
+function BuyScreen:on_enter(from)
 
-  if not locked_state then
+  self.shop_level = level_to_shop_tier(self.level)
+
+  if not locked_state and self.reroll_shop then
     self.shop_item_data = {}
   end
   camera.x, camera.y = gw/2, gh/2
@@ -220,7 +187,11 @@ function BuyScreen:update(dt)
 end
 
 function BuyScreen:save_run()
-  system.save_run(self.level, self.level_list, self.loop, gold, self.units,  self.max_units, self.passives, self.shop_level, self.shop_xp, self.shop_item_data)
+  local save_data = Collect_Save_Data_From_State(self)
+  save_data.gold = gold
+  save_data.locked_state = locked_state
+
+  system.save_run(save_data)
 end
 
 function BuyScreen:set_locked_state(state)
@@ -358,21 +329,37 @@ function BuyScreen:set_items(shop_level)
   local item_3
   local all_items = {}
 
-  if locked_state and self.shop_item_data and self.shop_item_data[1] then
+  if not self.shop_item_data then
+    self.shop_item_data = {}
+  end
+
+  if self.shop_item_data[1] and locked_state then
+    item_1 = self.shop_item_data[1]
+  elseif not self.reroll_shop then
     item_1 = self.shop_item_data[1]
   else
     item_1 = Get_Random_Item(shop_level, self.units)
   end
-  if locked_state and self.shop_item_data and self.shop_item_data[2] then
+
+  if self.shop_item_data[2] and locked_state then
+    item_2 = self.shop_item_data[2]
+  elseif not self.reroll_shop then
     item_2 = self.shop_item_data[2]
   else
     item_2 = Get_Random_Item(shop_level, self.units)
   end
-  if locked_state and self.shop_item_data and self.shop_item_data[3] then
+
+  if self.shop_item_data[3] and locked_state then
+    item_3 = self.shop_item_data[3]
+  elseif not self.reroll_shop then
     item_3 = self.shop_item_data[3]
   else
     item_3 = Get_Random_Item(shop_level, self.units)
   end
+
+  --only reroll once (so, main menu and back in won't reroll again)
+  --reroll_shop resets on level clear in arena.lua
+  self.reroll_shop = false
 
   all_items = {item_1, item_2, item_3}
   self.shop_item_data = all_items
@@ -382,9 +369,10 @@ function BuyScreen:set_items(shop_level)
 
   local y = gh - (item_h / 2) - 10
   local x = gw/2 - 60
-  for i, item in ipairs(all_items) do
-    table.insert(self.items, ItemCard{group = self.ui, x = x + (i-1)*60, y = y, w = 40, h = 50,
-                  item = item, parent = self, i = i})
+  for i = 1, 3 do
+    if all_items[i] then
+      table.insert(self.items, ItemCard{group = self.ui, x = x + (i-1)*60, y = y, w = item_w, h = item_h, item = all_items[i], parent = self, i = i})
+    end
   end
 end
 
@@ -609,7 +597,9 @@ function RestartButton:update(dt)
       system.save_state()
       main:add(BuyScreen'buy_screen')
       system.save_run()
-      main:go_to('buy_screen', 1, self.level_list, 0, {}, self.max_units, passives, 1, 0)
+
+      local new_run = Create_Blank_Save_Data()
+      main:go_to('buy_screen', new_run)
     end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
   end
 end
@@ -973,7 +963,9 @@ function GoButton:update(dt)
         print('starting arena')
         print(#self.parent.units)
         main:add(Arena'arena')
-        main:go_to('arena', self.parent.level, self.parent.level_list, self.parent.loop, self.parent.units, self.parent.max_units, self.parent.passives, self.parent.shop_level, self.parent.shop_xp, self.parent.shop_item_data)
+
+        local current_run = Collect_Save_Data_From_State(self.parent)
+        main:go_to('arena', current_run)
       end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']level ' .. tostring(self.parent.level) .. '/' .. tostring(25*(self.parent.loop+1)), font = pixul_font, alignment = 'center'}}, global_text_tags)}
     end
 
@@ -1109,11 +1101,12 @@ function RerollButton:update(dt)
         if locked_state then
           self.parent:set_locked_state(false)
         end
+        self.parent.reroll_shop = true
+        gold = gold - 2
         self.parent:try_roll_items()
         ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
         self.selected = true
         self.spring:pull(0.2, 200, 10)
-        gold = gold - 2
         self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
 
         buyScreen:save_run()
@@ -1340,6 +1333,8 @@ function ItemCard:buy_item(slot)
   gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
   slot:addItem(self.item)
   gold = gold - self.cost
+
+  self.parent.shop_item_data[self.i] = nil
   self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'right'}}
   buyScreen:save_run()
   self:die()
