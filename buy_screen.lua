@@ -1302,7 +1302,35 @@ function ItemCard:init(args)
 
   self.timeGrabbed = 0
   self.buyTimer = 0.2
+
+  self:creation_effect()
   
+end
+
+function ItemCard:creation_effect()
+  if self.cost <= 5 then
+    --no effect
+  elseif self.cost <= 10 then
+    pop2:play{pitch = random:float(0.95, 1.05), volume = 0.7}
+    self.spring:pull(0.2, 200, 10)
+    for i = 1, 10 do
+      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+    end
+  elseif self.cost <= 15 then
+    pop1:play{pitch = random:float(0.95, 1.05), volume = 0.8}
+    self.spring:pull(0.4, 200, 10)
+    for i = 1, 20 do
+      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+    end
+  else
+    gold3:play{pitch = random:float(0.95, 1.05), volume = 0.8}
+    self.spring:pull(0.6, 200, 10)
+    for i = 1, 30 do
+      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+    end
+  
+  end
+
 end
 
 function ItemCard:buy_item(slot)
@@ -1323,7 +1351,8 @@ function ItemCard:update(dt)
 
   if self.parent:is(Arena) then return end
 
-  if input.m1.pressed and self.colliding_with_mouse and gold >= self.cost and not locked_state then
+  local firstEmptySlot = self.parent:get_first_available_inventory_slot()
+  if input.m1.pressed and self.colliding_with_mouse and gold >= self.cost and not locked_state and firstEmptySlot then
     if not self.grabbed then
       self.timeGrabbed = love.timer.getTime()
     end
@@ -1343,7 +1372,7 @@ function ItemCard:update(dt)
       self:buy_item(Active_Inventory_Slot)
     elseif love.timer.getTime() - self.timeGrabbed < self.buyTimer then
       --buy the item if the mouse is released within the buyTimer
-      local firstEmptySlot = self.parent:get_first_available_inventory_slot()
+      firstEmptySlot = self.parent:get_first_available_inventory_slot()
       if firstEmptySlot then
         self:buy_item(firstEmptySlot)
       end

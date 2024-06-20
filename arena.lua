@@ -274,7 +274,7 @@ function Arena:quit()
     print('won game')
     self:on_win()
   else
-    print('starting transition')
+    print('beat level')
     if not self.arena_clear_text then self.arena_clear_text = Text2{group = self.ui, x = gw/2, y = gh/2 - 48, lines = {{text = '[wavy_mid, cbyc]arena clear!', font = fat_font, alignment = 'center'}}} end
     self:gain_gold(ARENA_TRANSITION_TIME)
     self.t:after(ARENA_TRANSITION_TIME, function()
@@ -819,6 +819,7 @@ function Arena:set_timer_text()
 end
 
 
+--beat level (win)
 function Arena:transition()
   self.transitioning = true
   ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}

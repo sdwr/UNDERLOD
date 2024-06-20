@@ -1,8 +1,99 @@
 
 TODO:
-  
-  - restrict to one of each unit?
-    
+
+  - add modifier/achievement/difficulty system
+    --each achieve unlocks a modifier that can be toggled per run
+    -- each mod has a + and a -
+      - flat enemy scaling as well (10% each)
+    - some achieves can be just flat scaling
+      - and a small item pack (2-3 items)
+
+    --achives:
+      - silver star on achieves for doing them with 50% mods enabled
+      - gold star for doing them with all mods enabled
+
+      - beat the final boss
+      - beat the final boss with 3 of the same unit
+      - beat the final boss with all melee
+      - beat the final boss with 50% mods enabled
+      - beat the final boss with all mods enabled
+      - beat the final boss in under XX minutes
+      - beat the final boss without ever losing a troop
+      - beat the final boss without rerolling the shop
+      - beat the final boss without ever purchasing an item costing >10
+
+      - beat the rock boss without getting hit by avalanche
+      - beat the dragon without letting a single egg hatch
+      - 
+      
+      - stack fire on an enemy up to 20 stacks
+      - kill an enemy entirely with lightning procs
+      - reach aspd cap (??) on a unit
+      - reach 300% dmg on a unit without any +hp (glass cannon)
+      - fully equip a unit with dota references
+      - fully equip a unit with items costing >20
+      - fully equip a unit with wow references(?)
+      - survive a level with 1 troop remaining
+      - beat a level without attacking (need craggy or radiance or summoner item)
+      - heal a unit to full hp from 1 hp
+      - stack 200 shield on a single unit 
+        (need to make shield stack)
+      
+
+      - beat the final boss with triforce item (need legendary fire/lightning/cold items)
+      - beat the final boss with all X characters (base, bonus, bonus2...)
+
+      - have over 100 gold during a run (stack econ)
+      - reroll 100 times
+      - sell/consume 100 items
+      - consume 100 potions
+
+      - have 4 potion effects on a single unit 
+
+
+    --mods:
+      - positive modifiers:
+
+        - new void element type added to shop (10-ish cards)
+        - new poison type added to shop
+
+        - 1 new character of each type, randomly offered in character select
+          - whirlwind constant aoe melee
+          - medium range boomerang / crescent aoe shot
+          - sniper that gains aspd per attack on same target
+
+        - can have more than one of each unit type
+          -neg: enemies can spawn in pairs
+
+        - trap/summoner item pack
+          - env hazards in levels
+        
+        - 
+
+
+      - negative modifiers:
+
+        - environmental hazards in levels
+          -laser (fixed position, moves back and forth, rotates slowly
+            rotates towards player, then charges up and fires)
+          -laser grid (spaced, at intervals, sweep across screen or out from center)
+            -vertical or horizontal
+          -fire wall (moves back and forth)
+
+        - all enemies in a level gain a buff
+          -aspd
+          -shield
+        - boss damage + 30%
+        - boss hp + 30%
+        - bosses gain a shield that regenerates
+
+        - all enemy casts also cast a quick stomp
+        - enemy attacks sunder armor (stacking -def)
+        - all enemies in the level spawn at the same time
+
+        - enemies start enraging after 30s/1m
+
+
   -boss hp bar segments for phases
 
   - do ranged enemies need a melee attack? (can sit on them right now)
@@ -11,7 +102,6 @@ TODO:
   
   - add more dodgeable attacks / enemies
     - laser is good
-      -laser + rotation + follow target needs to stop turning before firing
     - spread laser 
       - shoots in star pattern all at once
       - or rotating around unit
@@ -21,27 +111,6 @@ TODO:
     - make them bigger
     - give them stronger stats
     - make their special ability better
-
-  -add environmental effects to levels
-    -hazards:
-      -laser (fixed position, moves back and forth, rotates slowly
-         rotates towards player, then charges up and fires)
-      -laser grid (spaced, at intervals, sweep across screen or out from center)
-        -vertical or horizontal
-      -fire wall (moves back and forth)
-
-  -add NG+ modifier system, each mod has a beneficial effect and a negative one
-    --(or just gets harder for each mod added)
-    - new unit choices
-      - melee that attacks or does constant AoE in circle around self
-      - medium range crescent attack
-      - buff unit
-      - very slow unit
-
-    - new items (void color)
-    - different bosses
-    - environmental hazards in rooms
-    - enemies get random buffs (aspd, shield, second attack)
 
   - make units not chase towards enemies when they are in range (+ push the enemy away)
   
@@ -57,7 +126,13 @@ TODO:
 
 SMALL CLEANUP:
   --items reroll when entering from mainmenu (can reroll by entering and leaving)
-
+    --make gamestate into an object instead of passing 10+ params around
+      --needs to be imported into the different States on load
+      --or all that can be accessed from the gamestate itself
+        --need to replace a lot of vars...
+      --could have a Helper fn that puts all the gamestate vars on the State object
+        GameState:importInto(state)
+    
   --stunned laser enemy still fires laser, and has no cooldown ("cast" never triggers, but laser happens in precast)
 
   --dragon fire particles don't go far enough (and stay after fire ends)
@@ -67,11 +142,8 @@ SMALL CLEANUP:
 
   --troops aggro towards enemies, but not quite close enough to attack
   
-  --laser secondary hit detection is stingy (maybe not registering points?)
-
   --some item text not disappearing properly on death
   --all items are destroyed exiting buy screen, will trigger consumable effects
-  --grabbed item draws behind item boxes, should be in front (moving to tutorial group doesn't fix)
 
 --------------
 NEW FEATURE PLAN:

@@ -47,6 +47,7 @@ function init()
   silence = Sound('Silence.ogg', s)
   gold1 = Sound('Collect 5.ogg', s)
   gold2 = Sound('Coins - Gears - Slot.ogg', s)
+  gold3 = Sound('Collect 4.ogg', s)
   psychic1 = Sound('Magical Impact 13.ogg', s)
   fire1 = Sound('Fire bolt 3.ogg', s)
   fire2 = Sound('Fire bolt 5.ogg', s)
@@ -1592,12 +1593,16 @@ function init()
     local cost = item.cost or 0
     local color = grey[0]
     if cost then
-      if cost <= 6 then
+      if cost <= 2 then
+        color = brown[0]
+      elseif cost <= 5 then
         color = grey[0]
-      elseif cost <= 12 then
+      elseif cost <= 10 then
         color = yellow[5]
-      elseif cost <= 18 then
+      elseif cost <= 15 then
         color = orange[3]
+      else
+        color = red[3]
       end
     end
     return color

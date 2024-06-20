@@ -66,6 +66,7 @@ end
 --consumes units as unit_data (probably)
 --returns items as item_data
 function Get_Random_Item(shop_level, units)
+  local max_cost = Get_Max_Item_Cost(shop_level)
   local available_items = {}
   --TODO: change weighting based on level (item tier)
 
@@ -94,20 +95,21 @@ function Get_Random_Item(shop_level, units)
 
   --only add items where all prereqs are owned
   for k, v in pairs(item_to_item_data) do
+    local has_cost = v.cost <= max_cost
+    local has_prereqs = true
     if v.prereqs and #v.prereqs > 0 then
-      local has_prereqs = true
       for i, prereq in ipairs(v.prereqs) do
         if not owned_items[prereq] then
           has_prereqs = false
           break
         end
       end
-      if has_prereqs then
-        table.insert(available_items, v)
-      end
-    else
+    end
+
+    if has_cost and has_prereqs then
       table.insert(available_items, v)
     end
+
   end
 
   if #available_items == 0 then
@@ -116,6 +118,18 @@ function Get_Random_Item(shop_level, units)
   end
 
   return get_random_from_table(available_items)
+end
+
+function Get_Max_Item_Cost(shop_level)
+  if shop_level == 1 then
+    return 5
+  elseif shop_level == 2 then
+    return 10
+  elseif shop_level == 3 then
+    return 15
+  else
+    return 20
+  end
 end
 
 
@@ -291,7 +305,7 @@ item_to_item_data = {
     colors = {'red'},
     cost = 5,
     icon = 'lavaman',
-    desc = 'Has a chance to create flaming minions when you kill an enemy',
+    desc = 'Creates flaming minions every few seconds',
     stats = {dmg = 0.5},
     procs = {'lavaman'},
     tags = {'firedmg'}
@@ -309,7 +323,7 @@ item_to_item_data = {
   ['fireexplode'] = {
     name = 'fireexplode',
     colors = {'red'},
-    cost = 10,
+    cost = 15,
     icon = 'sun',
     desc = 'When burning enemies reach max stacks, they explode for % max health',
     stats = {dmg = 0.5},
@@ -330,7 +344,7 @@ item_to_item_data = {
   ['blazin'] = {
     name = 'blazin',
     colors = {'red'},
-    cost = 5,
+    cost = 10,
     icon = 'fire',
     desc = 'Gain aspd per burning enemy',
     stats = {dmg = 0.5},
@@ -389,7 +403,7 @@ item_to_item_data = {
   ['icefang'] = {
     name = 'icefang',
     colors = {'blue'},
-    cost = 5,
+    cost = 10,
     icon = 'icefang',
     desc = 'Your slows stack to slow enemies to a crawl',
     stats = {dmg = 0.5},
@@ -416,7 +430,7 @@ item_to_item_data = {
   ['twinflame'] = {
     name = 'twinflame',
     colors = {'red', 'blue'},
-    cost = 10,
+    cost = 15,
     icon = 'twinflame',
     desc = 'Converts slow to fire damage, and fire damage to slow',
     stats = {dmg = 0.5},
@@ -426,7 +440,7 @@ item_to_item_data = {
   ['omegastar'] = {
     name = 'omegastar',
     colors = {'red', 'yellow', 'blue'},
-    cost = 10,
+    cost = 20,
     icon = 'omegastar',
     desc = 'Increases all elemental damage. You heal for a portion of elemental damage dealt',
     stats = {dmg = 0.5},
