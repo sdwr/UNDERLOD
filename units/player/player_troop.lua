@@ -205,7 +205,6 @@ function Troop:attack(area, mods)
   mods = mods or {}
   local t = {group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(area or 64), color = self.color, dmg = self.dmg,
     character = self.character, level = self.level, parent = self, is_troop = true}
-  print_object(t)
   Area(table.merge(t, mods))
 
 end

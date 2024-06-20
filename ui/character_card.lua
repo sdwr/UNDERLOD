@@ -42,6 +42,8 @@ function CharacterCard:init(args)
   self:addProcIcon()
   self:addProcIcon()
 
+  --otherwise have duplicate text somehow?? 
+  Refresh_All_Cards_Text()
   
   if self.spawn_effect then SpawnEffect{group = main.current.effects, x = self.x, y = self.y, color = self.character_color} end
 end

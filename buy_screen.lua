@@ -293,7 +293,6 @@ function BuyScreen:quit_tutorial()
   self.tutorial_text = nil
   self.title_text.dead = true
   self.title_text = nil
-  for _, t in ipairs(self.tutorial_cards) do t.dead = true end
   self.close_button.dead = true
   self.close_button = nil
   self.tutorial_cards = {}
@@ -809,7 +808,7 @@ function LevelMapLevel:on_mouse_enter()
   self.selected = true
   self.spring:pull(0.2, 200, 10)
   self.level_text = BuildLevelText(self.parent.level_list, 
-    self.level, 260, gh - 80)
+    self.level, gw/2, LEVEL_TEXT_HOVER_HEIGHT )
 end
 
 function LevelMapLevel:on_mouse_exit()
@@ -1434,7 +1433,7 @@ function ItemCard:create_info_text()
   if self.item then
     self.info_text = InfoText{group = main.current.ui, force_update = true}
     self.info_text:activate(build_item_text(self.item), nil, nil, nil, nil, 16, 4, nil, 2)
-    self.info_text.x, self.info_text.y = gw/2, gh/2 + 10
+    self.info_text.x, self.info_text.y = gw/2, gh/2 + ITEM_CARD_TEXT_HOVER_HEIGHT_OFFSET
   end
 end
 

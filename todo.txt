@@ -125,6 +125,10 @@ TODO:
 
 
 SMALL CLEANUP:
+  --freeze UI when pause menu is open in buy screen
+    - move settings buttons to new UI layer and freeze everything else?
+    - what about arena
+    
   --items reroll when entering from mainmenu (can reroll by entering and leaving)
     --make gamestate into an object instead of passing 10+ params around
       --needs to be imported into the different States on load
@@ -142,7 +146,6 @@ SMALL CLEANUP:
 
   --troops aggro towards enemies, but not quite close enough to attack
   
-  --some item text not disappearing properly on death
   --all items are destroyed exiting buy screen, will trigger consumable effects
 
 --------------
