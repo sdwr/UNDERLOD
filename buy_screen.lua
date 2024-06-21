@@ -519,6 +519,7 @@ function ArenaLevelButton:update(dt)
           self.parent.level_map:reset()
         end
       end
+      self.parent.shop_level = level_to_shop_tier(self.parent.level)
       system.save_state()
       buyScreen:save_run()
     end

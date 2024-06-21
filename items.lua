@@ -187,9 +187,9 @@ item_to_item_data = {
   ['stockmarket'] = {
     name = 'stockmarket',
     colors = {},
-    cost = 5,
+    cost = 10,
     icon = 'linegoesup',
-    desc = 'Gain interest on your gold (1 gold per 10 gold)',
+    desc = 'Gain interest on your gold (1 per ' .. math.floor(1 / INTEREST_AMOUNT).. ', up to ' .. MAX_INTEREST .. ')',
     stats = {hp = 0.2, interest = 1}
   },
   ['basher'] = {

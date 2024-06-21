@@ -16,10 +16,11 @@ EXPECTED_SAVE_FIELDS = {
 }
 
 --gold
---note that HoG econ check is in arena.lua
+--note that HoG econ check is in arena.lua (gain_gold)
 STARTING_GOLD = 5
 GOLD_PER_ROUND = 8
 INTEREST_AMOUNT = 0.1
+MAX_INTEREST = 3
 
 BOSS_ROUND_POWER = 1000
 NUMBER_OF_ROUNDS = 25
@@ -60,6 +61,9 @@ MAX_STACKS_REDSHIELD = 20
 MAX_STACKS_BLOODLUST = 10
 
 SHOCK_DEF_REDUCTION = -0.04
+
+-- unit constants
+MELEE_ATTACK_RANGE = 50
 
 
 -- UI constants

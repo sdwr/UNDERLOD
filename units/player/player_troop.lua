@@ -118,6 +118,7 @@ function Troop:update(dt)
 
     --if target not in attack range, close in
     if target and not self:in_range()() and self.state == unit_states['normal'] then
+      print('seeking poitn')
       self:seek_point(target.x, target.y)
       self:wander(7, 30, 5)
       --self:steering_separate(16, troop_classes)

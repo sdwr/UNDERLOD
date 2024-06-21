@@ -937,10 +937,16 @@ function Unit:update_targets()
   end
 end
 
+--need melee units to not move inside the target
+--need ranged units to move close enough to attack
 function Unit:in_range()
   return function()
     local target = self:my_target()
-    return target and not target.dead and self.state == unit_states['normal'] and self:distance_to_object(target) - target.shape.w/2 < self.attack_sensor.rs
+    local target_size_offset = 0
+    if self.attack_range and self.attack_range < MELEE_ATTACK_RANGE and target and not target.dead then
+      target_size_offset = target.shape.w/2
+    end
+    return target and not target.dead and self.state == unit_states['normal'] and self:distance_to_object(target) - target_size_offset < self.attack_sensor.rs
   end
 end
 

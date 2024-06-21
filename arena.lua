@@ -782,7 +782,7 @@ function Arena:process_gold_event()
     self.bonus_gold = self.bonus_gold + event.amount
   elseif event.type == 'interest' then
     self.stacks_of_interest = self.stacks_of_interest + event.amount
-    self.total_interest = math.floor(gold * INTEREST_AMOUNT * self.stacks_of_interest)
+    self.total_interest = math.min(MAX_INTEREST, math.floor(gold * INTEREST_AMOUNT)) * self.stacks_of_interest
   elseif event.type == 'final' then
     gold = gold + self.gold_gained + self.gold_picked_up + self.bonus_gold + self.total_interest
     self.gold_gained = 0
