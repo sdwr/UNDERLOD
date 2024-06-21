@@ -13,8 +13,14 @@ https://user-images.githubusercontent.com/22898519/134641583-11ba18c1-c698-47c0-
 
 ### Running
 
+Windows:
+
 Download this repository, `cd` into it and then run `engine/love/love.exe --console .`
 
+Linux:
+
+Install love with `sudo apt install love`, or whatever your installer is
+Download this repository, `cd` into it and then run `love .`
 ### Build
 
 https://love2d.org/wiki/Game_Distribution#Creating_a_Windows_Executable
