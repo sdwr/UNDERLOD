@@ -18,7 +18,7 @@ EXPECTED_SAVE_FIELDS = {
 --gold
 --note that HoG econ check is in arena.lua (gain_gold)
 STARTING_GOLD = 5
-GOLD_PER_ROUND = 8
+GOLD_PER_ROUND = 6
 INTEREST_AMOUNT = 0.1
 MAX_INTEREST = 3
 

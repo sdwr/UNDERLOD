@@ -134,6 +134,12 @@ TODO:
 
 
 SMALL CLEANUP:  
+  --add popup controls on level 1 (disable with checkbox)
+    --reenable in settings?
+
+  --rewrite shop screen help text
+
+  
   --still duplicate text/proc in buy screen sometimes
   --dragon still only attacking once??
 
