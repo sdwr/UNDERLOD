@@ -37,6 +37,14 @@ TIME_TO_ROUND_START = 2
 SPAWNS_IN_GROUP = 6
 
 --stat constants
+REGULAR_ENEMY_HP = 50
+REGULAR_ENEMY_DAMAGE = 10
+REGULAR_ENEMY_MS = 50
+
+SPECIAL_ENEMY_HP = 175
+SPECIAL_ENEMY_DAMAGE = 20
+SPECIAL_ENEMY_MS = 40
+
 REGULAR_ENEMY_SCALING = function(level) return math.pow(1.1, level) end
 SPECIAL_ENEMY_SCALING = function(level) return math.pow(1.1, level) end
 

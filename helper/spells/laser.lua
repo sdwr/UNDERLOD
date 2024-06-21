@@ -13,6 +13,7 @@ function Helper.Spell.Laser:create(args)
         rotation_angle = args.rotation_angle or 0,
         rotation_lock = args.rotation_lock,
         laser_aim_width = args.laser_aim_width or 4,
+        laser_width = args.laser_width or (args.laser_aim_width * 3),
         color = args.color or blue[0],
         precolor = args.precolor or red[0],
         damage = args.damage or 10,
@@ -38,6 +39,7 @@ function Helper.Spell.Laser:create(args)
 
     if laser.unit and laser.unit.area_size_m then
         laser.laser_aim_width = laser.laser_aim_width * laser.unit.area_size_m
+        laser.laser_width = laser.laser_width * laser.unit.area_size_m
     end
 
     if laser.unit.my_target and laser.unit:my_target() then
@@ -169,7 +171,7 @@ function Helper.Spell.Laser:update()
                 color = laser.color,
                 damage = laser.damage,
                 damage_troops = laser.damage_troops,
-                width = laser.laser_aim_width * 3,
+                width = laser.laser_width,
                 x = laser.unit.x,
                 y = laser.unit.y,
             }
@@ -179,10 +181,10 @@ function Helper.Spell.Laser:update()
                 -- args.end_x = end_x
                 -- args.end_y = end_y
                 -- Helper.Spell.Laser:create_damage(i, args)
-                Helper.Spell.DamageLine:create(laser.unit, laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.unit.x, laser.unit.y, Helper.Geometry:move_point(laser.unit.x, laser.unit.y, laser.rotation_angle + laser.unit:get_angle(), 500))
+                Helper.Spell.DamageLine:create(laser.unit, laser.color, laser.laser_width, laser.damage_troops, laser.damage, laser.unit.x, laser.unit.y, Helper.Geometry:move_point(laser.unit.x, laser.unit.y, laser.rotation_angle + laser.unit:get_angle(), 500))
 
             elseif laser.direction_lock then
-                Helper.Spell.DamageLine:create(laser.unit, laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.unit.x, laser.unit.y, Helper.Spell.Laser:get_end_location(laser.unit.x, laser.unit.y, laser.unit.x + laser.direction_targetx, laser.unit.y + laser.direction_targety))
+                Helper.Spell.DamageLine:create(laser.unit, laser.color, laser.laser_width, laser.damage_troops, laser.damage, laser.unit.x, laser.unit.y, Helper.Spell.Laser:get_end_location(laser.unit.x, laser.unit.y, laser.unit.x + laser.direction_targetx, laser.unit.y + laser.direction_targety))
                 -- local end_x, end_y = Helper.Spell.Laser:get_end_location(laser.unit.x, laser.unit.y, laser.unit.x + laser.direction_targetx, laser.unit.y + laser.direction_targety)
                 -- args.end_x = end_x
                 -- args.end_y = end_y
@@ -193,14 +195,14 @@ function Helper.Spell.Laser:update()
                     x = laser.target_last_x
                     y = laser.target_last_y
                 end
-                Helper.Spell.DamageLine:create(laser.unit, laser.color, laser.laser_aim_width * 3, laser.damage_troops, laser.damage, laser.unit.x, laser.unit.y, Helper.Spell.Laser:get_end_location(laser.unit.x, laser.unit.y, x, y))                
+                Helper.Spell.DamageLine:create(laser.unit, laser.color, laser.laser_width, laser.damage_troops, laser.damage, laser.unit.x, laser.unit.y, Helper.Spell.Laser:get_end_location(laser.unit.x, laser.unit.y, x, y))                
                 -- local end_x, end_y = Helper.Spell.Laser:get_end_location(laser.unit.x, laser.unit.y, x, y)
                 -- args.end_x = end_x
                 -- args.end_y = end_y
                 -- Helper.Spell.Laser:create_damage(i, args)
             end
             Helper.Spell.Laser:die(i)
-            shoot1:play{volume=0.5}
+            shoot1:play{volume=0.35}
 
             Helper.Unit:unclaim_target(laser.unit)
             Helper.Unit:finish_casting(laser.unit)

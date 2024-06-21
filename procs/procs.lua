@@ -157,7 +157,7 @@ end
 
 function Proc_Heal:heal()
   if self.unit and self.unit.heal then
-    heal1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+    heal1:play{pitch = random:float(0.8, 1.2), volume = 0.3}
     self.unit:heal(self.healAmount)
   end
 end

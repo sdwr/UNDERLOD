@@ -50,6 +50,6 @@ function Create_Blank_Save_Data()
   data.passives = {}
   data.shop_item_data = {}
   data.locked_state = false
-  data.reroll_shop = false
+  data.reroll_shop = true
   return data
 end

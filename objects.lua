@@ -168,28 +168,6 @@ function WallArrow:draw()
   graphics.pop()
 end
 
-Buff = Object:extend()
-function Buff:init(name, duration, color)
-  self.name = name
-  self.duration = duration
-  self.color = color
-  self.stats = {}
-end
-
-function Create_buff_dmg(duration)
-  local name = "dmg/0.2"
-  local buff = Buff(name, duration, red_transparent_weak)
-  buff.stats[buff_types['dmg']] = 0.2
-  return buff
-end
-
-function Create_buff_druid_hot(duration)
-  local name = 'druid_hot'
-  local buff = Buff(name, duration, green_transparent_weak)
-  buff.heal_per_s = 5
-  return buff
-end
-
 
 
 
@@ -453,15 +431,15 @@ function Unit:init_stats()
   elseif self:is(EnemyCritter) or self:is(Critter) then
     self.base_hp = 25 * hpMod
     self.base_dmg = 5 * dmgMod
-    self.base_mvspd = 100 * spdMod
+    self.base_mvspd = REGULAR_ENEMY_MS * spdMod
   elseif self.class == 'regular_enemy' then
-    self.base_hp = 100 * REGULAR_ENEMY_SCALING(level)
-    self.base_dmg = 10  * REGULAR_ENEMY_SCALING(level)
-    self.base_mvspd = 50
+    self.base_hp = REGULAR_ENEMY_HP * REGULAR_ENEMY_SCALING(level)
+    self.base_dmg = REGULAR_ENEMY_DAMAGE  * REGULAR_ENEMY_SCALING(level)
+    self.base_mvspd = REGULAR_ENEMY_MS
   elseif self.class == 'special_enemy' then
-    self.base_hp = 350 * SPECIAL_ENEMY_SCALING(level)
-    self.base_dmg = 20  * SPECIAL_ENEMY_SCALING(level)
-    self.base_mvspd = 40
+    self.base_hp = SPECIAL_ENEMY_HP * SPECIAL_ENEMY_SCALING(level)
+    self.base_dmg = SPECIAL_ENEMY_DAMAGE  * SPECIAL_ENEMY_SCALING(level)
+    self.base_mvspd = SPECIAL_ENEMY_MS
   elseif self.class == 'miniboss' then
     self.base_hp = 1000 * SPECIAL_ENEMY_SCALING(level)
     self.base_dmg = 20  * SPECIAL_ENEMY_SCALING(level)
