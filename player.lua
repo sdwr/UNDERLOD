@@ -1811,6 +1811,266 @@ end
 function Mortar:draw()
 end
 
+Burst = Object:extend()
+Burst:implement(GameObject)
+Burst:implement(Physics)
+function Burst:init(args)
+  self:init_game_object(args)
+  self.radius = self.radius or 8
+  self.shape = Circle(self.x, self.y, self.radius)
+
+  self.color = red[0] or self.color
+  self.color = self.color:clone()
+  self.color.a = 0.7
+
+  self.damage = self.damage or 30
+  self.num_pieces = self.num_pieces or 10
+  
+  self.speed = self.speed or 100
+  self.distance = self.distance or 100
+  self.r = self.r or 0
+  
+  self.secondary_damage = self.secondary_damage or 10
+  self.secondary_distance = self.secondary_distance or 50
+  self.secondary_speed = self.secondary_speed or 100
+  
+
+  self.already_damaged = {}
+  
+  self.r = self.r or 0
+  self:set_angle(self.r)
+
+  self.duration = self.duration or 12
+  self.elapsed = 0
+  self.t:after(self.duration, function() self:die() end)
+end
+
+function Burst:check_hits()
+  local friendlies = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
+  for _, friendly in ipairs(friendlies) do
+    if not table.contains(self.already_damaged, friendly) then
+      friendly:hit(self.damage, self.unit)
+      table.insert(self.already_damaged, friendly)
+    end
+  end
+end
+
+function Burst:update(dt)
+  self:update_game_object(dt)
+  self:check_hits()
+  self.elapsed = self.elapsed + dt
+
+  local x = self.x
+  local y = self.y
+  self.x = self.x + self.speed * math.cos(self.r) * dt
+  self.y = self.y + self.speed * math.sin(self.r) * dt
+
+  local distance = math.sqrt((self.x - x)^2 + (self.y - y)^2)
+  self.distance = self.distance - distance
+  if self.distance <= 0 then
+    self:explode()
+  end
+  self.shape:move_to(self.x, self.y)
+  if Outside_Arena(self) then
+    self:explode()
+  end
+end
+
+function Burst:explode()
+  if not self.dead then
+    explosion_new:play{pitch = random:float(0.95, 1.05), volume = 0.3}
+
+    local angle_between = 2*math.pi / self.num_pieces
+    local angle = 0
+    for i = 1, self.num_pieces do
+      angle = angle + angle_between
+      BurstBullet{
+        group = self.group,
+        x = self.x,
+        y = self.y,
+        r = angle,
+        speed = self.secondary_speed,
+        distance = self.secondary_distance,
+        damage = self.secondary_damage,
+        color = self.color,
+        unit = self.unit,
+      }
+      
+    end
+    self:die()
+  end
+end
+
+function Burst:draw()
+  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.x)
+    graphics.circle(self.x, self.y, self.shape.rs, self.color)
+  graphics.pop()
+end
+
+function Burst:die()
+  self.dead = true
+end
+
+BurstBullet = Object:extend()
+BurstBullet:implement(GameObject)
+BurstBullet:implement(Physics)
+function BurstBullet:init(args)
+  self:init_game_object(args)
+  self.radius = self.radius or 4
+  self.shape = Circle(self.x, self.y, self.radius)
+
+  self.color = red[0] or self.color
+  self.color = self.color:clone()
+  self.color.a = 0.7
+
+  self.damage = self.damage or 20
+
+  self.distance = self.distance or 50
+  self.speed = self.speed or 100
+  self.r = self.r or 0
+  self:set_angle(self.r)
+
+  self.duration = self.duration or 12
+  self.elapsed = 0
+  self.t:after(self.duration, function() self:die() end)
+end
+
+function BurstBullet:update(dt)
+  self:update_game_object(dt)
+  self:check_hits()
+  self.elapsed = self.elapsed + dt
+
+  local x = self.x
+  local y = self.y
+
+  self.x = self.x + self.speed * math.cos(self.r) * dt
+  self.y = self.y + self.speed * math.sin(self.r) * dt
+  self.shape:move_to(self.x, self.y)
+
+  local distance = math.sqrt((self.x - x)^2 + (self.y - y)^2)
+  self.distance = self.distance - distance
+  if self.distance <= 0 then
+    self:die()
+  end
+  self.shape:move_to(self.x, self.y)
+  if self.x < 0 or self.x > gw or self.y < 0 or self.y > gh then
+    self:die()
+  end
+end
+
+function BurstBullet:check_hits()
+  local friendlies = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
+  if #friendlies > 0 then
+    friendlies[1]:hit(self.damage, self.unit)
+    self:die()
+  end
+end
+
+function BurstBullet:draw()
+  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.x)
+    graphics.circle(self.x, self.y, self.shape.rs, self.color)
+  graphics.pop()
+end
+
+function BurstBullet:die()
+  self.dead = true
+end
+
+--needs container spell that makes a bunch of these with various 
+--angles and speeds
+--but need to resolve where the unit state /cooldown is handled first
+-- in the unit? in the spell? different solutions
+PlasmaBall = Object:extend()
+PlasmaBall:implement(GameObject)
+PlasmaBall:implement(Physics)
+function PlasmaBall:init(args)
+  self:init_game_object(args)
+  self.radius = self.radius or 8
+  self.shape = Circle(self.x, self.y, self.radius)
+
+  self.color = red[0] or self.color
+  self.color = self.color:clone()
+  self.color.a = 0.7
+
+  self.explosion_radius = self.explosion_radius or 12
+  self.explosion_damage = self.damage or 30
+
+  self.speed = self.speed or 100
+  self.rotation_speed = self.rotation_speed or 1
+  self.movement_type = self.movement_type or 'spiral'
+  self.target = self.target
+  
+  self.r = self.r or 0
+  self:set_angle(self.r)
+
+  self.duration = self.duration or 12
+  self.elapsed = 0
+  self.t:after(self.duration, function() self:die() end)
+end
+
+function PlasmaBall:update(dt)
+  self:update_game_object(dt)
+  self:check_hits()
+  self.elapsed = self.elapsed + dt
+
+  local x = self.x
+  local y = self.y
+  if self.movement_type == 'straight' then
+    self.x = self.x + self.speed * math.cos(self.r) * dt
+    self.y = self.y + self.speed * math.sin(self.r) * dt
+  elseif self.movement_type == 'spiral' then
+    self.r = self.r + self.rotation_speed * dt
+    self.x = self.x + self.speed * math.cos(self.r) * dt
+    self.y = self.y + self.speed * math.sin(self.r) * dt
+  elseif self.movement_type == 'homing' then
+    if self.target and not self.target.dead then
+      self.r = math.lerp_angle_dt(0.5, dt, self.r, self:angle_to_object(self.target))
+      self.x = self.x + self.speed * math.cos(self.r) * dt
+      self.y = self.y + self.speed * math.sin(self.r) * dt
+    else
+      --just move straight if no target
+      self.x = self.x + self.speed * math.cos(self.r) * dt
+      self.y = self.y + self.speed * math.sin(self.r) * dt
+    end
+  end
+  self.shape:move_to(self.x, self.y)
+end
+
+function PlasmaBall:check_hits()
+  local friendlies = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
+  if #friendlies > 0 then
+    self:explode()
+  end
+end
+
+function PlasmaBall:draw()
+  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.x)
+    graphics.circle(self.x, self.y, self.shape.rs, self.color, 4)
+  graphics.pop()
+end
+
+function PlasmaBall:explode()
+  explosion_new:play{pitch = random:float(0.95, 1.05), volume = 0.3}
+  Area{
+    group = main.current.effects, 
+    unit = self.unit,
+    x = self.x, 
+    y = self.y, 
+    r = self.explosion_radius,
+    pick_shape = 'circle',
+    duration = 0.15,
+    dmg = self.explosion_damage,
+    is_troop = false,
+    color = self.color, 
+  }
+  self:die()
+end
+
+function PlasmaBall:die()
+  self.dead = true
+end
+
+
 FireWall = Object:extend()
 FireWall:implement(GameObject)
 FireWall:implement(Physics)

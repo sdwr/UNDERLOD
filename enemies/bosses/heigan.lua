@@ -50,6 +50,25 @@ fns['init_enemy'] = function(self)
     end
   }
 
+  local plasma_ball = {
+    name = 'plasma_ball',
+    viable = function () return true end,
+    casttime = 1,
+    cast = function()
+      PlasmaBall{
+        group = main.current.main,
+        unit = self,
+        team = "enemy",
+        x = self.x,
+        y = self.y,
+        r = self.r,
+        color = orange[-5],
+        damage = 20,
+        parent = self
+      }
+    end
+  }
+
   local quick_stomp = {
     name = 'quick_stomp',
     viable = function() return self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies) end,
@@ -69,6 +88,7 @@ fns['init_enemy'] = function(self)
     end
   }
 
+  table.insert(self.attack_options, plasma_ball)
   table.insert(self.attack_options, safety_dance)
   table.insert(self.attack_options, laser_ball)
   table.insert(self.attack_options, quick_stomp)

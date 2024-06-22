@@ -1960,6 +1960,8 @@ function init()
       'laser',
       'stomper',
       'bomb',
+      'burst',
+      'plasma',
     },
     [2] = {
       'mortar',
@@ -1993,6 +1995,8 @@ function init()
     ['stomper'] = 300,
     ['charger'] = 300,
     ['bomb'] = 300,
+    ['burst'] = 300,
+    ['plasma'] = 300,
     --special enemies t2
     ['mortar'] = 500,
     ['spawner'] = 500,
