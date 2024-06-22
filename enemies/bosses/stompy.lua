@@ -58,7 +58,7 @@ fns['init_enemy'] = function(self)
   local stomp = {
     name = 'stomp',
     viable = function() return self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies) end,
-    casttime = 0.3,
+    castcooldown = 2,
     oncaststart = function() turret_hit_wall2:play{volume = 0.9} end,
     cast = function()
       Stomp{group = main.current.main, unit = self, team = "enemy", x = self.x, y = self.y, rs = self.attack_sensor.rs, color = red[0], dmg = 50, level = self.level, parent = self}
@@ -67,7 +67,7 @@ fns['init_enemy'] = function(self)
   local mortar = {
     name = 'mortar',
     viable = function() return self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) end,
-    casttime = 1,
+    castcooldown = 1,
     oncaststart = function() turret_hit_wall2:play{volume = 0.9} end,
     cast = function()
       local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
@@ -78,7 +78,7 @@ fns['init_enemy'] = function(self)
   local avalanche = {
     name = 'avalanche',
     viable = function() return true end,
-    casttime = 1,
+    castcooldown = 1,
     oncaststart = function() turret_hit_wall2:play{volume = 0.9} end,
     cast = function()
       Avalanche{group = main.current.main, unit = self, team = "enemy", x = self.x, y = self.y, dmg = 30}

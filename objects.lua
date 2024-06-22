@@ -987,7 +987,7 @@ end
 -- which sets the unit state to 'casting'
 -- sets currentcast to be the spell.cast()
 -- casts the spell.oncaststart()
--- and sets currentcast to be the spell casttime
+-- and sets currentcast to be the spell castcooldown
 
 --then the update_cast()
 -- ticks based on last_attack_started
@@ -995,7 +995,7 @@ end
 
 --confusing between castTime, baseCast, currentcast, and current_castcooldown
 -- need baseCast and castTime for player units w aspd
--- spell casttime should be modified by aspd as well
+-- spell castcooldown should be modified by aspd as well
 
 -- currentcast is the function that is called when the cast is finished
 -- castcooldown is the unit's cooldown until the next cast
@@ -1005,7 +1005,7 @@ end
 --(so player can escape the cast), linked to freezerotation
 local example_spelldata = {
   viable = function(unit) return unit:in_range()() end,
-  casttime = 1,
+  castcooldown = 1,
   freezeduration = 0.5,
   oncaststart = function(unit) 
     unit:rotate_towards_object(unit.target, 1)
@@ -1066,7 +1066,7 @@ function Unit:start_cast(spelldata)
   self.state = unit_states['casting']
   self.last_attack_started = love.timer.getTime()
   self.currentcast = spelldata.cast
-  self.current_castcooldown = spelldata.casttime or self.base_castcooldown
+  self.current_castcooldown = spelldata.castcooldown or self.base_castcooldown
   self.freezeduration = spelldata.freezeduration
   if spelldata.oncaststart then
     spelldata.oncaststart(self)

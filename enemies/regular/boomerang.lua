@@ -22,7 +22,7 @@ fns['init_enemy'] = function(self)
   local boomerang = {
     name = 'boomerang',
     viable = function () return true end,
-    casttime = 0.8,
+    castcooldown = 3,
     cast = function()
       cannoneer1:play{volume=0.7}
 

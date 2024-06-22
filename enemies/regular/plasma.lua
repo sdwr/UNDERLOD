@@ -22,7 +22,7 @@ fns['init_enemy'] = function(self)
   local plasma_barrage = {
     name = 'plasma_barrage',
     viable = function () return true end,
-    casttime = 0.8,
+    castcooldown = 0.8,
     cast = function()
       cannoneer1:play{volume=0.7}
 

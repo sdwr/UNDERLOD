@@ -26,7 +26,7 @@ fns['init_enemy'] = function(self)
   local safety_dance = {
     name = 'safety_dance',
     viable = function () return true end,
-    casttime = 1,
+    castcooldown = 1,
     cast = function()
       Helper.Spell.SafetyDance:create_all(self, orange[-5], true, 'one_safe', 4, 25)
     end
@@ -35,7 +35,7 @@ fns['init_enemy'] = function(self)
   local laser_ball = {
     name = 'laser_ball',
     viable = function () return true end,
-    casttime = 1,
+    castcooldown = 1,
     cast = function()
       LaserBall{
         group = main.current.main,
@@ -50,10 +50,49 @@ fns['init_enemy'] = function(self)
     end
   }
 
+  local plasma_barrage_spiral = {
+    name = 'plasma_barrage',
+    viable = function () return true end,
+    castcooldown = 2,
+    cast = function()
+      PlasmaBarrage{
+        group = main.current.main,
+        unit = self,
+        team = "enemy",
+        x = self.x,
+        y = self.y,
+        movement_type = 'spiral',
+        rotation_speed = 1,
+        color = orange[-5],
+        damage = 20,
+        parent = self
+      }
+    end
+  }
+
+  local plasma_barrage_straight = {
+    name = 'plasma_barrage_straight',
+    viable = function () return true end,
+    castcooldown = 2,
+    cast = function()
+      PlasmaBarrage{
+        group = main.current.main,
+        unit = self,
+        team = "enemy",
+        x = self.x,
+        y = self.y,
+        movement_type = 'straight',
+        color = orange[-5],
+        damage = 20,
+        parent = self
+      }
+    end
+  }
+
   local plasma_ball = {
     name = 'plasma_ball',
     viable = function () return true end,
-    casttime = 1,
+    castcooldown = 1,
     cast = function()
       PlasmaBall{
         group = main.current.main,
@@ -72,7 +111,7 @@ fns['init_enemy'] = function(self)
   local quick_stomp = {
     name = 'quick_stomp',
     viable = function() return self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies) end,
-    casttime = 1,
+    castcooldown = 1,
     cast = function()
       Stomp{
         group = main.current.main,
@@ -88,7 +127,8 @@ fns['init_enemy'] = function(self)
     end
   }
 
-  table.insert(self.attack_options, plasma_ball)
+  table.insert(self.attack_options, plasma_barrage_spiral)
+  table.insert(self.attack_options, plasma_barrage_straight)
   table.insert(self.attack_options, safety_dance)
   table.insert(self.attack_options, laser_ball)
   table.insert(self.attack_options, quick_stomp)

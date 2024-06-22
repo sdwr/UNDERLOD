@@ -70,7 +70,7 @@ fns['init_enemy'] = function(self)
   local fire = {
     name = 'fire',
     viable = function() return Helper.Spell:there_is_target_in_range(self, 100) end,
-    casttime = 0.5,
+    castcooldown = 0.5,
     oncaststart = function() turret_hit_wall2:play{volume = 0.9} end,
     cast = function()
       print('starting fire cast')
@@ -84,7 +84,7 @@ fns['init_enemy'] = function(self)
   local fire_sweep = {
     name = 'fire_sweep',
     viable = function() return true end,
-    casttime = 1,
+    castcooldown = 1,
     oncaststart = function() turret_hit_wall2:play{volume = 0.9} end,
     cast = function()
       print('starting fire sweep cast')
@@ -101,7 +101,7 @@ fns['init_enemy'] = function(self)
   local fire_wall = {
     name = 'fire_wall',
     viable = function() return true end,
-    casttime = 1,
+    castcooldown = 1,
     oncaststart = function() turret_hit_wall2:play{volume = 0.9} end,
     cast = function()
       print('starting fire wall cast')
