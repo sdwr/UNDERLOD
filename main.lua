@@ -1961,6 +1961,7 @@ function init()
       'stomper',
       'bomb',
       'burst',
+      'boomerang',
       'plasma',
     },
     [2] = {
@@ -1996,6 +1997,7 @@ function init()
     ['charger'] = 300,
     ['bomb'] = 300,
     ['burst'] = 300,
+    ['boomerang'] = 300,
     ['plasma'] = 300,
     --special enemies t2
     ['mortar'] = 500,

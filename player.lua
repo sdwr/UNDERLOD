@@ -1976,6 +1976,101 @@ function BurstBullet:die()
   self.dead = true
 end
 
+--need to tweak so it returns to unit, not to original position
+Boomerang = Object:extend()
+Boomerang:implement(GameObject)
+Boomerang:implement(Physics)
+function Boomerang:init(args)
+  self:init_game_object(args)
+  self.radius = self.radius or 8
+  self.shape = Circle(self.x, self.y, self.radius)
+
+  self.color = yellow[0] or self.color
+  self.color = self.color:clone()
+  self.color.a = 0.7
+
+  self.damage = self.damage or 30
+
+  self.speed = self.speed or 125
+  self.r = self.r or 0
+  self:set_angle(self.r)
+  self.twirl_speed = self.twirl_speed or 3
+  self.twirl_facing = 0
+
+  self.distance = self.distance or 100
+
+  self.duration = self.distance / self.speed
+  self.halfway_duration = self.duration / 2
+  self.turned_around = false
+
+  self.already_damaged = {}
+
+  self.elapsed = 0
+end
+
+function Boomerang:update(dt)
+  self:update_game_object(dt)
+  self:check_hits()
+  self.elapsed = self.elapsed + dt
+  self.twirl_facing = self.twirl_facing + self.twirl_speed * dt
+
+  local x = self.x
+  local y = self.y
+
+  if not self.turned_around then
+    self.x = self.x + self.speed * math.cos(self.r) * dt
+    self.y = self.y + self.speed * math.sin(self.r) * dt
+  else
+    --return to unit
+    if not self.unit or self.unit.dead then self:die() end
+    if self:distance_to_object(self.unit) < 10 then self:die() end
+    self.x = self.x + self.speed * math.cos(self:angle_to_object(self.unit)) * dt
+    self.y = self.y + self.speed * math.sin(self:angle_to_object(self.unit)) * dt
+  end
+
+
+  if self.elapsed > self.halfway_duration and not self.turned_around then
+    self.r = self.r + math.pi
+    self.turned_around = true
+    self.already_damaged = {}
+  end
+  if self.elapsed > self.duration then
+    self:die()
+  end
+
+  self.shape:move_to(self.x, self.y)
+end
+
+function Boomerang:check_hits()
+  local friendlies = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
+  for _, friendly in ipairs(friendlies) do
+    if not table.contains(self.already_damaged, friendly) then
+      friendly:hit(self.damage, self.unit)
+      table.insert(self.already_damaged, friendly)
+    end
+  end
+end
+
+function Boomerang:draw()
+
+  local circle = function()
+    graphics.circle(self.x, self.y, self.shape.rs, self.color)
+  end
+  local mask_circle = function()
+    graphics.circle(self.x + 2, self.y + 2, self.shape.rs, self.color, 2)
+  end
+
+  graphics.push(self.x, self.y, self.twirl_facing, self.spring.x, self.spring.x)
+    graphics.draw_with_mask(circle, mask_circle)
+  graphics.pop()
+end
+
+function Boomerang:die()
+  self.dead = true
+end
+
+
+
 --needs container spell that makes a bunch of these with various 
 --angles and speeds
 --but need to resolve where the unit state /cooldown is handled first
