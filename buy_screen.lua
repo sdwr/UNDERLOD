@@ -67,6 +67,7 @@ function BuyScreen:on_enter(from)
 
 
   self:try_roll_items()
+  Refresh_All_Cards_Text()
   
   self.show_level_buttons = false
   

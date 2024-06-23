@@ -284,22 +284,28 @@ function Unit:get_buff(buffName)
 end
 
 function Unit:add_buff(buff)
-  local existing_buff = self.buffs[buff.name]
+  --copy the buff so we don't modify the original (procs are reusing the same buff data object)
+  local buffCopy = {}
+  for k, v in pairs(buff) do
+    buffCopy[k] = v
+  end
+
+  local existing_buff = self.buffs[buffCopy.name]
 
   --overwrite duration and nextTick if the buff is already present
   if existing_buff then
-    self.buffs[buff.name].duration = math.max(existing_buff.duration, buff.duration)
-    if buff.nextTick then
-      self.buffs[buff.name].nextTick = buff.nextTick
+    self.buffs[buffCopy.name].duration = math.max(existing_buff.duration, buffCopy.duration)
+    if buffCopy.nextTick then
+      self.buffs[buffCopy.name].nextTick = buffCopy.nextTick
     end
   else
-    if buff.color then
-      local color = buff.color:clone()
+    if buffCopy.color then
+      local color = buffCopy.color:clone()
       color.a = 0.6
-      buff.color = color
+      buffCopy.color = color
     end
-    self.buffs[buff.name] = buff
-    self:increment_buff_toggles(buff)
+    self.buffs[buffCopy.name] = buffCopy
+    self:increment_buff_toggles(buffCopy)
   end
 end
 
@@ -704,7 +710,7 @@ end
 function Unit:onTickCallbacks(dt)
   if not main.current:is(Arena) then return end
   for k, proc in ipairs(self.onTickProcs) do
-    proc:onTick(dt)
+    proc:onTick(dt, self)
   end
 end
 

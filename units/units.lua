@@ -126,6 +126,40 @@ function Team:remove_and_add_buff(buff)
   end
 end
 
+--util functions
+
+function Team:get_enemies_in_range(range)
+  local enemies = {}
+  for i, troop in ipairs(self.troops) do
+    local in_range = Helper.Spell:get_all_targets_in_range(troop, range)
+    combine_tables(enemies, in_range)
+  end
+  return enemies
+end
+
+function Team:get_allies_in_range(range)
+  local allies = {}
+  for i, troop in ipairs(self.troops) do
+    if not troop.dead then
+      local in_range = Helper.Spell:get_all_allies_in_range(troop, range)
+      combine_tables(allies, in_range)
+    end
+  end
+  return allies
+end
+
+function Team:is_first_troop(troop)
+  return self.troops[1] == troop
+end
+
+--affect all troops in team
+
+function Team:damage_all_troops(damage, from, damageType)
+  for i, troop in ipairs(self.troops) do
+    troop:hit(damage, from, damageType)
+  end
+end
+
 --item functions
 
 --needs troops to be added to team first (should be done in init?

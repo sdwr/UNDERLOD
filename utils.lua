@@ -8,6 +8,31 @@ get_random_from_table = function(t)
   return t[index]
 end
 
+
+add_to_table_no_duplicates = function(t, v)
+  for i, value in ipairs(t) do
+      if value == v then
+          return
+      end
+  end
+  table.insert(t, v)
+end
+
+combine_tables = function(t1, t2)
+  for i, v in ipairs(t2) do
+      table.insert(t1, v)
+  end
+end
+
+combine_tables_no_duplicates = function(t1, t2)
+  for i, v in ipairs(t2) do
+      add_to_table_no_duplicates(t1, v)
+  end
+end
+
+
+
+
 deepcopy = function(orig)
   local orig_type = type(orig)
   local copy

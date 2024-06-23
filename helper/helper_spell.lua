@@ -101,6 +101,38 @@ function Helper.Spell:get_nearest_target(unit, include_list)
     end
 end
 
+function Helper.Spell:get_all_targets_in_range(unit, range, include_list)
+    include_list = include_list or {}
+    range = range or 100
+
+    local unit_list = Helper.Unit:get_list(not unit.is_troop)
+    local target_list = {}
+
+    for _, value in ipairs(unit_list) do
+        if Helper.Geometry:distance(unit.x, unit.y, value.x, value.y) < range and (#include_list == 0 or is_in_list(include_list, value)) then
+            table.insert(target_list, value)
+        end
+    end
+
+    return target_list
+end
+
+function Helper.Spell:get_all_allies_in_range(unit, range, include_list)
+    include_list = include_list or {}
+    range = range or 100
+
+    local unit_list = Helper.Unit:get_list(unit.is_troop)
+    local target_list = {}
+
+    for _, value in ipairs(unit_list) do
+        if Helper.Geometry:distance(unit.x, unit.y, value.x, value.y) < range and (#include_list == 0 or is_in_list(include_list, value)) then
+            table.insert(target_list, value)
+        end
+    end
+
+    return target_list
+end
+
 function Helper.Spell:get_random_target_in_range(unit, range)
     local unit_list = Helper.Unit:get_list(not unit.is_troop)
     if #unit_list > 0 then

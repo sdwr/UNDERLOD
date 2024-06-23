@@ -59,7 +59,7 @@ function Laser_Troop:set_character()
         if self.onAttackCallbacks then
           self:onAttackCallbacks(self.target)
         end
-        sniper_load:play{volume=0.5}
+        sniper_load:play{volume=0.2}
         local args = { 
           unit = self,
           direction_lock = false,

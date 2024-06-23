@@ -208,6 +208,15 @@ item_to_item_data = {
     stats = {hp = 0.25, thorns = 0.2 },
     procs = {'craggy'}
   },
+  ['spikedcollar'] = {
+    name = 'spikedcollar',
+    colors = {},
+    cost = 10,
+    icon = 'spikedcollar',
+    desc = 'Periodically deals damage to nearby enemies',
+    stats = {thorns = 0.2 },
+    procs = {'spikedcollar'}
+  },
   ['heartofgold'] = {
     name = 'heartofgold',
     colors = {},
@@ -232,15 +241,6 @@ item_to_item_data = {
     desc = 'A weapon that stuns enemies',
     stats = {bash = 0.2, dmg = 0.5},
     procs = {'bash'}
-  },
-  ['healingleaf'] = {
-    name = 'healingleaf',
-    colors = {},
-    cost = 5,
-    icon = 'leaf',
-    desc = 'Heals this unit every 5 seconds',
-    stats = {hp = 0.2},
-    procs = {'heal'}
   },
   ['overkill'] = {
     name = 'overkill',
@@ -441,6 +441,27 @@ item_to_item_data = {
     stats = {dmg = 0.5},
     procs = {'slowstack'},
     prereqs = {'frostslow'}
+  },
+
+  --green items
+  ['healingleaf'] = {
+    name = 'healingleaf',
+    colors = {'green'},
+    cost = 5,
+    icon = 'leaf',
+    desc = 'Heals this unit every 5 seconds',
+    stats = {hp = 0.2},
+    procs = {'heal'}
+  },
+  ['sacrificialclam'] = {
+    name = 'sacrificialclam',
+    colors = {'green'},
+    cost = 10,
+    icon = 'clam',
+    desc = 'Periodically sacrifice health to grant nearby allies attack speed',
+    stats = {dmg = 0.25},
+    procs = {'sacrificialclam'},
+    tags = {'sacrifice'}
   },
 
   --not yet implemented

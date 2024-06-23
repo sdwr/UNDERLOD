@@ -302,6 +302,7 @@ function init()
   mace                  = Image(d .. 'mace')
   fire                  = Image(d .. 'fire')
   lightning             = Image(d .. 'lightning')
+  clam                  = Image(d .. 'clam')
 
   arrows                = Image(d .. 'arrows')
   bear                  = Image(d .. 'bear')
@@ -1456,6 +1457,7 @@ function init()
     ['mace'] = mace,
     ['fire'] = fire,
     ['lightning'] = lightning,
+    ['clam'] = clam,
   }
 
   item_costs = {

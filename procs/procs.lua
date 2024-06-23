@@ -175,6 +175,51 @@ function Proc_Craggy:onGotHit(from, damage)
   end
 end
 
+Proc_SpikedCollar = Proc:extend()
+function Proc_SpikedCollar:init(args)
+  self.triggers = {PROC_ON_TICK}
+  self.scope = 'team'
+
+  Proc_SpikedCollar.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  self.damage = self.data.damage or 20
+  self.tick_interval = self.data.tick_interval or 3
+  self.damageType = self.data.damageType or DAMAGE_TYPE_PHYSICAL
+
+  self.radius = self.data.radius or 50
+
+  --proc internal memory
+  self.tick_timer = 0
+end
+
+function Proc_SpikedCollar:onTick(dt, from)
+  Proc_SpikedCollar.super.onTick(self, dt)
+
+  if not self.team then
+    print('error: no team for proc', self.name)
+    return
+  end
+
+  --only tick once per tick
+  if not self.team:is_first_troop(from) then return end
+
+  self.tick_timer = self.tick_timer + dt
+  if self.tick_timer < self.tick_interval then return end
+  self.tick_timer = 0
+
+  
+  local enemies = self.team:get_enemies_in_range(self.radius)
+  if not enemies or #enemies == 0 then return end
+
+  rogue_crit1:play{pitch = random:float(0.8, 1.2), volume = 0.3}
+  for i, enemy in ipairs(enemies) do
+      enemy:hit(self.damage, self.unit, self.damageType)
+  end
+end
+
 --proc bash
 Proc_Bash = Proc:extend()
 function Proc_Bash:init(args)
@@ -239,6 +284,60 @@ function Proc_Heal:die()
   Proc_Heal.super.die(self)
   if not self.manual_trigger then return end
   trigger:cancel(self.manual_trigger)
+end
+
+Proc_SacrificialClam = Proc:extend()
+function Proc_SacrificialClam:init(args)
+  self.triggers = {PROC_ON_TICK}
+  self.scope = 'team'
+
+  Proc_SacrificialClam.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  self.buffname = 'sacrificialclam'
+  self.buffDuration = self.data.duration or 4
+  self.buffAspd = self.data.buffAspd or 0.4
+  self.tick_interval = self.buffDuration
+
+  self.buffdata = {name = self.buffname, duration = self.buffDuration,
+    stats = {aspd = self.buffAspd}, color = green[3]
+  }
+
+  self.selfDamage = self.data.selfDamage or 15
+  
+  self.radius = self.data.radius or 50
+
+  --proc internal memory
+  self.tick_timer = self.buffDuration / 2
+end
+
+function Proc_SacrificialClam:onTick(dt, from)
+  Proc_SacrificialClam.super.onTick(self, dt)
+
+  if not self.team then
+    print('error: no team for proc', self.name)
+    return
+  end
+
+  --only tick once per tick
+  if not self.team:is_first_troop(from) then return end
+
+  self.tick_timer = self.tick_timer + dt
+  if self.tick_timer < self.tick_interval then return end
+  self.tick_timer = 0
+
+
+  local allies = self.team:get_allies_in_range(self.radius)
+  self.team:damage_all_troops(self.selfDamage, nil, DAMAGE_TYPE_PHYSICAL)
+  
+  pop2:play{pitch = random:float(0.8, 1.2), volume = 1.2}
+  
+  if not allies or #allies == 0 then return end
+  for i, ally in ipairs(allies) do
+    ally:add_buff(self.buffdata)
+  end
 end
 
 --proc overkill
@@ -947,8 +1046,8 @@ proc_name_to_class = {
   ['areapotion'] = Proc_AreaPotion,
 
   ['craggy'] = Proc_Craggy,
+  ['spikedcollar'] = Proc_SpikedCollar,
   ['bash'] = Proc_Bash,
-  ['heal'] = Proc_Heal,
   ['overkill'] = Proc_Overkill,
   ['bloodlust'] = Proc_Bloodlust,
   ['lightning'] = Proc_Lightning,
@@ -969,6 +1068,9 @@ proc_name_to_class = {
   ['holduground'] = Proc_Holduground,
   ['icenova'] = Proc_Icenova,
   ['slowstack'] = Proc_Slowstack,
+  --green procs
+  ['heal'] = Proc_Heal,
+  ['sacrificialclam'] = Proc_SacrificialClam,
 
   -- elemental procs
   ['eledmg'] = Proc_Eledmg,
