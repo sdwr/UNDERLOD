@@ -73,6 +73,10 @@ function print_object(obj)
     print('no object to print')
     return
   end
+  if type(obj) ~= 'table' then
+    print('not a table')
+    return
+  end
   for k, v in pairs(obj) do
     print(k, v)
   end

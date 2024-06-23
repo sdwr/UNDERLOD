@@ -1,7 +1,14 @@
 -- Copies the table deeply, including metatables
+local obj_list = {}
 function table.copy(t)
   local t_type = type(t)
   local copy
+
+  if t and not obj_list[t] then
+    print("copying", t)
+    obj_list[t] = true
+  end
+
   if t_type == "table" then
     copy = {}
     for k, v in next, t, nil do
