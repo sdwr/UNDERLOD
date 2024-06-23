@@ -22,13 +22,23 @@ fns['init_enemy'] = function(self)
   local plasma_barrage = {
     name = 'plasma_barrage',
     viable = function () return true end,
-    castcooldown = 0.8,
+    castcooldown = 2,
     cast = function()
-      cannoneer1:play{volume=0.7}
+      PlasmaBarrage{
+        group = main.current.main,
+        unit = self,
+        team = "enemy",
+        x = self.x,
+        y = self.y,
+        movement_type = 'spiral',
+        rotation_speed = 1,
+        color = orange[-5],
+        num_balls = 10,
+        damage = 20,
+        parent = self
+      }
 
-      local r = 0
-      --need to channel the attack and cast 10 in a row, changing the angle slightly each time
-      --need to make sure stuns interrupt the cast, that cooldown doesnt decrease while casting
+    end
   }
 
   table.insert(self.attack_options, plasma_barrage)

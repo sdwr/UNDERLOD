@@ -20,6 +20,7 @@ require 'enemies/regular/bomb'
 require 'enemies/regular/charger'
 require 'enemies/regular/burst'
 require 'enemies/regular/boomerang'
+require 'enemies/regular/plasma'
 
 require 'enemies/miniboss/bigstomper'
 
