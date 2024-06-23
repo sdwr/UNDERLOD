@@ -139,6 +139,12 @@ SMALL CLEANUP:
 
   --rewrite shop screen help text
 
+  --prevent teams from being selected when all troops are dead
+    - code is split between arena/hotbarGlobals/hotbar class/helper
+    - the actual team gets selected in helper_unit
+    - which is where the check should be
+    - but by then the whole selection has already happened in arena/hotbarglobals
+
   
   --still duplicate text/proc in buy screen sometimes
   --dragon still only attacking once??
