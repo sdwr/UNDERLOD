@@ -43,6 +43,18 @@ function Wave_Types:Basic_Special_Basic(tier)
   return wave
 end
 
+function Wave_Types:Two_Basic_Three_Special(tier)
+  local wave = {}
+  local special = random:table(special_enemy_by_tier[tier])
+  local normal = random:table(normal_enemy_by_tier[tier])
+  table.insert(wave, {special, 1, nil})
+  table.insert(wave, {normal, 2, 'close'})
+  table.insert(wave, {special, 1, 'random'})
+  table.insert(wave, {normal, 2, 'close'})
+  table.insert(wave, {special, 1, 'close'})
+  return wave
+end
+
 function Wave_Types:Three_Lasers()
   local wave = {}
   table.insert(wave, {'laser', 1, nil})
@@ -96,13 +108,19 @@ function Wave_Types:Get_Waves(level)
   elseif level == 5 then
     wave = self:Basic_Plus_Two_Burst(1)
     table.insert(waves, wave)
+    wave = self:Basic_Plus_Two_Special(1)
   elseif level == 7 then
-    wave = self:Basic_Plus_Two_Boomerang(1)
+    wave = self:Basic_Plus_Two_Boomerang(2)
     table.insert(waves, wave)
-  else
     wave = self:Basic_Plus_Two_Special(2)
+  elseif level == 8 then
+    wave = self:Two_Basic_Three_Special(2)
     table.insert(waves, wave)
-    wave = self:Mortar_And_Arc()
+    wave = self:Basic_Plus_Two_Special(2)
+  else
+    wave = self:Two_Basic_Three_Special(2)
+    table.insert(waves, wave)
+    wave = self:Two_Basic_Three_Special(2)
     table.insert(waves, wave)
   end
   return waves

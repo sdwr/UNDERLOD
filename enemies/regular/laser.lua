@@ -48,7 +48,6 @@ fns['init_enemy'] = function(self)
   local laser = {
     name = 'laser',
     viable = function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end,
-    castcooldown = self.castTime,
     freezeduration = 0.4,
     castcooldown = self.castcooldown,
     oncaststart = function()

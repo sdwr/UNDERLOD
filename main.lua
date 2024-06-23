@@ -1959,16 +1959,20 @@ function init()
     [1] = {
       'laser',
       'stomper',
-      'bomb',
       'burst',
       'boomerang',
       'plasma',
     },
     [2] = {
+      'laser',
+      'stomper',
+      'burst',
+      'boomerang',
+      'plasma',
+      
       'mortar',
       'spawner',
       'arcspread',
-      'laser',
     },
     [3] = {
       'summoner',

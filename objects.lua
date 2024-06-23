@@ -788,7 +788,10 @@ function Unit:remove_shield()
   self.shielded = 0
 end
 
+--keep the highest shield value, don't stack, don't refresh duration
 function Unit:shield(amount, duration)
+  if self.shielded > amount then return end
+  
   local shieldBuff = {name = 'shield', duration = duration, maxDuration = duration, stats = {}}
   self:remove_buff('shield')
   self:add_buff(shieldBuff)
@@ -1003,6 +1006,10 @@ end
 
 --freezeduration is the time before the cast is finished when the unit stops rotating
 --(so player can escape the cast), linked to freezerotation
+
+--should be able to interrupt the cast with stuns or something, and have it kill the 
+--existing spell (say for a channeling spell)
+
 local example_spelldata = {
   viable = function(unit) return unit:in_range()() end,
   castcooldown = 1,

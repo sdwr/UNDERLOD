@@ -44,29 +44,102 @@ function Proc_Reroll:onSell()
 end
 
 
---need to make the sell trigger onroundstart
---and add the onroundstart to the unit somehow
---because the unit doesn't exist until the round starts
-Proc_Berserk = Proc:extend()
-function Proc_Berserk:init(args)
+Proc_DamagePotion = Proc:extend()
+function Proc_DamagePotion:init(args)
   self.triggers = {PROC_ON_ROUND_START}
   self.scope = 'troop'
 
-  Proc_Berserk.super.init(self, args)
+  Proc_DamagePotion.super.init(self, args)
   
   
 
   --define the proc's vars
-  self.buffname = 'berserk'
-  self.buffDuration = self.data.buffDuration or 5
-  self.aspdMulti = self.data.aspdMulti or 1.5
+  self.buffname = 'damagepotion'
+  self.buffDuration = self.data.buffDuration or 9999
+  self.dmgMulti = self.data.dmgMulti or 0.5
+  self.buff = {name = self.buffname, color = red[5], duration = self.buffDuration,
+    stats = {dmg = self.dmgMulti}
+  }
 end
 
-function Proc_Berserk:onRoundStart()
-  Proc_Berserk.super.onRoundStart(self)
-  self.unit:berserk(self.buffDuration, self.aspdMulti)
+function Proc_DamagePotion:onRoundStart()
+  Proc_DamagePotion.super.onRoundStart(self)
+  if not self.unit then return end
+  self.unit:add_buff(self.buff)
 end
 
+Proc_ShieldPotion = Proc:extend()
+function Proc_ShieldPotion:init(args)
+  self.triggers = {PROC_ON_ROUND_START}
+  self.scope = 'troop'
+
+  Proc_ShieldPotion.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  self.buffname = 'shieldpotion'
+  self.buffDuration = self.data.buffDuration or 9999
+  self.shieldAmount = self.data.shieldAmount or 100
+end
+
+function Proc_ShieldPotion:onRoundStart()
+  Proc_ShieldPotion.super.onRoundStart(self)
+  if not self.unit then return end
+  self.unit:shield(self.shieldAmount, self.buffDuration)
+end
+
+--need to make the sell trigger onroundstart
+--and add the onroundstart to the unit somehow
+--because the unit doesn't exist until the round starts
+Proc_BerserkPotion = Proc:extend()
+function Proc_BerserkPotion:init(args)
+  self.triggers = {PROC_ON_ROUND_START}
+  self.scope = 'troop'
+
+  Proc_BerserkPotion.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  self.buffname = 'berserkpotion'
+  self.buffDuration = self.data.buffDuration or 9999
+  self.aspdMulti = self.data.aspdMulti or 0.5
+  self.mvspdMulti = self.data.mvspdMulti or 0.2
+  self.buff = {name = self.buffname, color = red[5], duration = self.buffDuration,
+    stats = {aspd = self.aspdMulti, mvspd = self.mspdMulti}
+  }
+end
+
+function Proc_BerserkPotion:onRoundStart()
+  Proc_BerserkPotion.super.onRoundStart(self)
+  if not self.unit then return end
+  self.unit:add_buff(self.buff)
+end
+
+Proc_AreaPotion = Proc:extend()
+function Proc_AreaPotion:init(args)
+  self.triggers = {PROC_ON_ROUND_START}
+  self.scope = 'troop'
+
+  Proc_AreaPotion.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  self.buffname = 'areapotion'
+  self.areaMulti = self.data.areaMulti or 0.3
+  self.buffDuration = self.data.buffDuration or 9999
+  self.buff = {name = self.buffname, color = red[5], duration = self.buffDuration,
+    stats = {area_size = self.areaMulti}
+  }
+end
+
+function Proc_AreaPotion:onRoundStart()
+  Proc_AreaPotion.super.onRoundStart(self)
+  if not self.unit then return end
+  self.unit:add_buff(self.buff)
+end
 
 --proc craggy
 Proc_Craggy = Proc:extend()
@@ -868,7 +941,10 @@ end
 
 proc_name_to_class = {
   ['reroll'] = Proc_Reroll,
-  ['berserk'] = Proc_Berserk,
+  ['damagepotion'] = Proc_DamagePotion,
+  ['shieldpotion'] = Proc_ShieldPotion,
+  ['berserkpotion'] = Proc_BerserkPotion,
+  ['areapotion'] = Proc_AreaPotion,
 
   ['craggy'] = Proc_Craggy,
   ['bash'] = Proc_Bash,

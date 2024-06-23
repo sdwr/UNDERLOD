@@ -146,15 +146,35 @@ item_to_item_data = {
   
   --rerolls the next level (just the one?)
   --if using level mods, reroll all the mods or just within the same type?
-  ['rerollpotion'] = {
-    name = 'rerollpotion',
+  -- ['rerollpotion'] = {
+  --   name = 'rerollpotion',
+  --   colors = {},
+  --   cost = 2,
+  --   consumable = true,
+  --   icon = 'flask',
+  --   desc = 'Reroll the upcoming levels when you drink this potion',
+  --   stats = {},
+  --   procs = {'reroll'}
+  -- },
+  ['damagepotion'] = {
+    name = 'damagepotion',
     colors = {},
     cost = 2,
     consumable = true,
-    icon = 'flask',
-    desc = 'Reroll the upcoming levels when you drink this potion',
+    icon = 'potion2',
+    desc = 'Gain attack damage next round when you drink this potion',
     stats = {},
-    procs = {'reroll'}
+    procs = {'damagepotion'}
+  },
+  ['shieldpotion'] = {
+    name = 'shieldpotion',
+    colors = {},
+    cost = 2,
+    consumable = true,
+    icon = 'potion2',
+    desc = 'Start with a shield next round when you drink this potion',
+    stats = {},
+    procs = {'shieldpotion'}
   },
   ['berserkpotion'] = {
     name = 'berserkpotion',
@@ -162,10 +182,22 @@ item_to_item_data = {
     cost = 2,
     consumable = true,
     icon = 'potion2',
-    desc = 'Gain attack speed and damage for the first 10 seconds of the next round when you drink this potion',
+    desc = 'Gain attack speed and movespeed next round when you drink this potion',
     stats = {},
-    procs = {'berserk'}
+    procs = {'berserkpotion'}
   },
+  ['areapotion'] = {
+    name = 'areapotion',
+    colors = {},
+    cost = 2,
+    consumable = true,
+    icon = 'potion2',
+    desc = 'Gain area size next round when you drink this potion',
+    stats = {},
+    procs = {'areapotion'}
+  },
+
+  
   --colorless items
   ['craggyvest'] = {
     name = 'craggyvest',
