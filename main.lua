@@ -1546,10 +1546,10 @@ function init()
   }
 
 
-  build_proc_text = function(proc)
-    local name = proc.name or 'proc name'
+  build_proc_text = function(item)
+    local name = item.name or 'item name'
     name = name:upper()
-    local desc = proc.desc or 'proc desc'
+    local desc = item.desc or 'item desc'
 
     local out = {}
     table.insert(out, { text = '[fg]' .. name, font = pixul_font, alignment = 'center', height_multiplier = 1.25 })
@@ -1969,7 +1969,7 @@ function init()
       'burst',
       'boomerang',
       'plasma',
-      
+
       'mortar',
       'spawner',
       'arcspread',
@@ -2030,6 +2030,14 @@ function init()
     ['summoner'] = purple[3],
     ['assassin'] = purple[3],
   }
+
+  get_item_color = function(item)
+    if item and item.colors and #item.colors > 0 then
+      return item.colors[1]
+    else
+      return red[0]
+    end
+  end
 
   damage_type_to_color = {
     ['physical'] = white[3],

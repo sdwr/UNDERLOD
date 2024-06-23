@@ -69,6 +69,10 @@ end
 
 --debug utils
 function print_object(obj)
+  if not obj then
+    print('no object to print')
+    return
+  end
   for k, v in pairs(obj) do
     print(k, v)
   end

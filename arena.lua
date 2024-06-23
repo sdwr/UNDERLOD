@@ -25,7 +25,10 @@ function Arena:on_enter(from)
 
   main_song_instance:stop()
 
+  print('in arena before copy')
+  print_object(self.units[1].consumedItems[1])
   self.starting_units = table.copy(self.units)
+  print('after copy')
   self.targetedEnemy = nil
 
   --if not state.mouse_control then
@@ -271,6 +274,7 @@ function Arena:quit()
     print('beat level')
     if not self.arena_clear_text then self.arena_clear_text = Text2{group = self.ui, x = gw/2, y = gh/2 - 48, lines = {{text = '[wavy_mid, cbyc]arena clear!', font = fat_font, alignment = 'center'}}} end
     self:gain_gold(ARENA_TRANSITION_TIME)
+    
     self.t:after(ARENA_TRANSITION_TIME, function()
       self.slow_transitioning = true
       self.t:tween(0.7, self, {main_slow_amount = 0}, math.linear, function() self.main_slow_amount = 0 end)
@@ -827,6 +831,9 @@ function Arena:transition()
 
     save_data.level = save_data.level + 1
     save_data.reroll_shop = true
+
+    Clear_Consumed_Items(save_data.units)
+
 
     system.save_run(save_data)
 

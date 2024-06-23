@@ -135,8 +135,18 @@ function Spawn_Teams(arena)
     end
 
 
+    --consumed items should be on the team instead
+    --troop creation
     for row_offset=0, 4 do
-      local troop_data = {group = arena.main, x = spawn_x + (column_offset*20), y = spawn_y + (row_offset*10), level = unit.level, character = unit.character, items = unit.items, passives = arena.passives}
+      local troop_data = {
+        group = arena.main, 
+        character = unit.character, 
+        consumedItems = unit.consumedItems,
+        items = unit.items, 
+        x = spawn_x + (column_offset*20), 
+        y = spawn_y + (row_offset*10), 
+        level = unit.level, 
+        passives = arena.passives}
       team:add_troop(troop_data)
     end
 
@@ -153,6 +163,7 @@ function Spawn_Teams(arena)
     --only problem is that the item needs to be applied to the troops before its first tick
 
     team:apply_item_procs()
+    team:apply_consumed_item_procs()
 
     
   end

@@ -1,9 +1,48 @@
+
+--unit data in buy screen
+function Create_Unit_Data(character)
+  local data = {}
+  data.character = character
+  data.items = {nil, nil, nil, nil, nil, nil}
+  data.numItems = 6
+  data.consumedItems = {}
+  return data
+end
+
+function Consume_Item(unit, item)
+  --make a copy of the item so we can store it in the unit
+  print('consuuming item in shop')
+  print_object(item)
+  local itemCopy = Create_Item(item.name)
+  print('item copy')
+  print_object(itemCopy)
+  if not unit.consumedItems then
+    unit.consumedItems = {}
+  end
+  for i, existingItem in ipairs(unit.consumedItems) do
+    if existingItem and existingItem.name == item.name then
+      return false
+    end
+  end
+  table.insert(unit.consumedItems, itemCopy)
+end
+
+function Clear_Consumed_Items(units)
+  if not units then return end
+  for i, unit in ipairs(units) do
+    unit.consumedItems = {}
+  end
+end
+
+
+--character cards in UI
 Active_Inventory_Slot = nil
 Character_Cards = {}
 
 function Refresh_All_Cards_Text()
   for i, card in ipairs(Character_Cards) do
     card:refreshText()
+    card:refreshProcIcons()
   end
 end
 
@@ -39,9 +78,6 @@ function CharacterCard:init(args)
   --texts
   self:initText()
 
-  self:addProcIcon()
-  self:addProcIcon()
-
   --otherwise have duplicate text somehow?? 
   Refresh_All_Cards_Text()
   
@@ -72,7 +108,7 @@ function CharacterCard:initText()
   self.proc_text = nil
 end
 
-function CharacterCard:addProcIcon()
+function CharacterCard:addProcIcon(item)
   local proc_x = self.x + CHARACTER_CARD_PROC_X
   local proc_y = self.y + CHARACTER_CARD_PROC_Y
 
@@ -81,12 +117,22 @@ function CharacterCard:addProcIcon()
   local procIcon = ProcIcon{
     group = main.current.main, 
     x = x, 
-    y = proc_y, 
-    text = 'proc text', 
-    color = red[0],
-    proc = {name = 'proc', desc = 'proc description'}
+    y = proc_y,
+    item = item,
   }
   table.insert(self.procIcons, procIcon)
+end
+
+function CharacterCard:refreshProcIcons()
+  for i, icon in ipairs(self.procIcons) do
+    icon:die()
+  end
+  self.procIcons = {}
+  if not self.unit.consumedItems then return end
+  for i, item in ipairs(self.unit.consumedItems) do
+    print_object(item)
+    self:addProcIcon(item)
+  end
 end
 
 function CharacterCard:refreshText()
@@ -112,12 +158,6 @@ function CharacterCard:update(dt)
 end
 
 function CharacterCard:die()
-  --kill all items
-  for i =1, 6 do
-    if self.items[i] then
-      self.items[i]:die()
-    end
-  end
   self.name_text.dead = true
   self.stat_text.dead = true
   self.dead = true
@@ -129,7 +169,8 @@ function ProcIcon:init(args)
   self:init_game_object(args)
   self.shape = Circle(self.x, self.y, 10)
   self.interact_with_mouse = true
-  self.text = build_proc_text(self.proc)
+  self.text = build_proc_text(self.item)
+  self.color = get_item_color(self.item)
   self.info_text = nil
 end
 
@@ -203,12 +244,12 @@ function ItemPart:sellItem()
   --have to create the item first to remove it
   -- unit.items is just the item data, not the item object
   if self.parent.unit.items[self.i] then
-    print('selling item')
-    print (self.parent.unit.items[self.i].name)
     local item = Create_Item(self.parent.unit.items[self.i].name)
     if item then
       if item.consumable then
         spawn_mark2:play{pitch = random:float(0.8, 1.2), volume = 1}
+        Consume_Item(self.parent.unit, item)
+        Refresh_All_Cards_Text()
       else
         --play sell sound
         spawn_mark1:play{pitch = random:float(0.8, 1.2), volume = 1}

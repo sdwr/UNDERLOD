@@ -227,7 +227,7 @@ end
 --buy functions
 
 function BuyScreen:buy_unit(character)
-  table.insert(self.units, {character = character, level = 1, reserve = {0, 0}, items = {nil, nil, nil, nil, nil, nil}, numItems = 6})
+  table.insert(self.units, Create_Unit_Data(character))
   self:set_party()
   self:save_run()
 end
@@ -311,6 +311,7 @@ function BuyScreen:set_party()
     table.insert(Character_Cards, CharacterCard{group = self.main, x = x + (i-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, unit = unit, character = unit.character, i = i, parent = self})
     unit.spawn_effect = true
   end
+  Refresh_All_Cards_Text()
 end
 
 function BuyScreen:try_roll_items()

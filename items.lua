@@ -17,17 +17,17 @@ function Item:init(data)
   self.name = data.name
   --unit will be nil, because the unit doesn't exist yet (is created in arena)
   self.unit = data.unit or {}
+  print("SETTIGN ITEM UNIT", self.unit)
+  self.consumable = data.consumable
   self.colors = data.colors
   self.cost = data.cost
   self.icon = data.icon
   self.desc = data.desc
   self.stats = data.stats
   self.procs = {}
-  --creates procs from the data, but this doesnt work on the unit
-  -- (because the unit doesn't exist yet)
 
-  --hack that this loads during combat and in the shop
-  --combat expects the unit to exist, but the shop doesn't
+  --procs are created here, but also in units.lua when the team/troop is created
+  --all current procs need a team or troop to function, so these procs do nothing
   if data.procs then
     for k, v in pairs(data.procs) do
       table.insert(self.procs, Create_Proc(v, nil, nil))
@@ -117,7 +117,9 @@ function Get_Random_Item(shop_level, units)
     return nil
   end
 
-  return get_random_from_table(available_items)
+  local itemdata = get_random_from_table(available_items)
+  return Create_Item(itemdata.name)
+
 end
 
 function Get_Max_Item_Cost(shop_level)
@@ -197,7 +199,7 @@ item_to_item_data = {
     procs = {'areapotion'}
   },
 
-  
+
   --colorless items
   ['craggyvest'] = {
     name = 'craggyvest',

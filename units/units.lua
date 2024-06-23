@@ -142,8 +142,35 @@ function Team:apply_item_procs()
   if team_items then
     for i = 1,6 do
       local item = team_items[i]
+      if item and item.procs and not item.consumable then
+        for _, proc in ipairs(item.procs) do
+          local procname = proc
+          --can fill data from item here, but defaults should be ok
+          local procObj = Create_Proc(procname, self, nil)
+          self:add_proc(procObj)
+        end
+      end
+    end
+  end
+end
+
+function Team:apply_consumed_item_procs()
+  if not self.troops or #self.troops == 0 then
+    print('no troops in team')
+    return
+  end
+
+  local team_consumables = self.troops[1].consumedItems
+  print('conusimg items', team_consumables)
+  print_object(team_consumables)
+
+  if team_consumables then
+    for i, item in ipairs(team_consumables) do
+      print('item', item)
+      print_object(item)
       if item and item.procs then
         for _, proc in ipairs(item.procs) do
+          print('adding proc', proc)
           local procname = proc
           --can fill data from item here, but defaults should be ok
           local procObj = Create_Proc(procname, self, nil)
