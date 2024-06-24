@@ -240,7 +240,7 @@ item_to_item_data = {
     cost = 10,
     icon = 'mace',
     desc = 'A weapon that stuns enemies',
-    stats = {bash = 0.2, dmg = 0.5},
+    stats = {bash = 0.2, dmg = 0.25},
     procs = {'bash'}
   },
   ['overkill'] = {
@@ -258,7 +258,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'bloodlust',
     desc = 'Get stacking aspd and mspd when you kill an enemy',
-    stats = {dmg = 0.5},
+    stats = {},
     procs = {'bloodlust'}
   },
   ['repeater'] = {
@@ -329,7 +329,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'sword',
     desc = 'A sword that burns enemies',
-    stats = {dmg = 0.5},
+    stats = {dmg = 0.25},
     procs = {'fire'},
     tags = {'firedmg'}
   },
@@ -339,7 +339,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'lavaman',
     desc = 'Creates flaming minions every few seconds',
-    stats = {dmg = 0.5},
+    stats = {dmg = 0.25},
     procs = {'lavaman'},
     tags = {'firedmg'}
   },
@@ -349,7 +349,7 @@ item_to_item_data = {
     cost = 10,
     icon = 'lavapool',
     desc = 'Creates a pool of lava under enemies every few attacks',
-    stats = {dmg = 0.5},
+    stats = {dmg = 0.25},
     procs = {'lavapool'},
     tags = {'firedmg'}
   },
@@ -380,7 +380,7 @@ item_to_item_data = {
     cost = 10,
     icon = 'fire',
     desc = 'Gain aspd per burning enemy',
-    stats = {dmg = 0.5},
+    stats = {dmg = 0.25},
     procs = {'blazin'},
     prereqs = {'firedmg'}
   },
@@ -392,7 +392,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'frostorb',
     desc = 'An orb that slows enemies',
-    stats = {dmg = 0.5},
+    stats = {dmg = 0.25},
     procs = {'frost'},
     tags = {'frostslow'}
   },
@@ -402,17 +402,17 @@ item_to_item_data = {
     cost = 10,
     icon = 'frostbomb',
     desc = 'Creates a slowing field under enemies every few attacks',
-    stats = {dmg = 0.5},
+    stats = {dmg = 0.25},
     procs = {'frostfield'},
     tags = {'frostslow'}
   },
   ['reticle'] = {
     name = 'reticle',
     colors = {'blue'},
-    cost = 5,
+    cost = 10,
     icon = 'reticle',
     desc = 'A reticle that increases range',
-    stats = {range = 0.1, dmg = 0.5},
+    stats = {range = 0.15, dmg = 0.25},
     procs = {}
   },
   ['holduground'] = {
@@ -430,7 +430,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'turtle',
     desc = 'Damages and slows enemies when they get too close',
-    stats = {dmg = 0.5},
+    stats = {dmg = 0.25},
     procs = {'icenova'}
   },
   ['icefang'] = {

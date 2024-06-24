@@ -210,7 +210,7 @@ function Proc_SpikedCollar:onTick(dt, from)
   if self.tick_timer < self.tick_interval then return end
   self.tick_timer = 0
 
-  
+
   local enemies = self.team:get_enemies_in_range(self.radius)
   if not enemies or #enemies == 0 then return end
 
@@ -944,7 +944,7 @@ function Proc_Icenova:start_proc_delay()
 end
 
 function Proc_Icenova:try_proc()
-  if Helper.Spell:there_is_target_in_range(self.unit, self.radius, nil) then
+  if Helper.Spell:there_is_target_in_range(self.unit, self.radius - 8, nil) then
     self:cast()
     trigger:after(self.cooldown, function() self.canProc = true end)
     self:reset_tryProc()
@@ -971,7 +971,7 @@ function Proc_Icenova:cast()
     x = self.unit.x, y = self.unit.y,
     pick_shape = 'circle',
     dmg = self.damage,
-    r = self.radius, duration = self.duration, color = self.color,
+    r = self.radius + 3, duration = self.duration, color = self.color,
     is_troop = self.unit.is_troop,
     slowAmount = self.slowAmount,
     slowDuration = self.slowDuration

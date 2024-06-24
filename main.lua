@@ -1660,7 +1660,7 @@ function init()
     ['area_size'] = 'area_size',
     ['hp'] = 'hp',
     ['status_resist'] = 'status_resist',
-    ['attack_range'] = 'attack_range',
+    ['range'] = 'range',
     ['dmg_per_def'] = 'dmg_per_def',
 
     ['shield'] = 'shield',
@@ -1950,7 +1950,7 @@ function init()
 
   normal_enemy_by_tier = {
     [1] = {
-      'seeker',
+      'shooter',
     },
     [2] = {
       'shooter'
