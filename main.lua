@@ -303,6 +303,8 @@ function init()
   fire                  = Image(d .. 'fire')
   lightning             = Image(d .. 'lightning')
   clam                  = Image(d .. 'clam')
+  coins                 = Image(d .. 'coins')
+  reticle               = Image(d .. 'reticle')
 
   arrows                = Image(d .. 'arrows')
   bear                  = Image(d .. 'bear')
