@@ -156,46 +156,47 @@ item_to_item_data = {
   --   stats = {},
   --   procs = {'reroll'}
   -- },
-  ['damagepotion'] = {
-    name = 'damagepotion',
-    colors = {},
-    cost = 2,
-    consumable = true,
-    icon = 'potion2',
-    desc = 'Gain attack damage next round when you drink this potion',
-    stats = {},
-    procs = {'damagepotion'}
-  },
-  ['shieldpotion'] = {
-    name = 'shieldpotion',
-    colors = {},
-    cost = 2,
-    consumable = true,
-    icon = 'potion2',
-    desc = 'Start with a shield next round when you drink this potion',
-    stats = {},
-    procs = {'shieldpotion'}
-  },
-  ['berserkpotion'] = {
-    name = 'berserkpotion',
-    colors = {},
-    cost = 2,
-    consumable = true,
-    icon = 'potion2',
-    desc = 'Gain attack speed and movespeed next round when you drink this potion',
-    stats = {},
-    procs = {'berserkpotion'}
-  },
-  ['areapotion'] = {
-    name = 'areapotion',
-    colors = {},
-    cost = 2,
-    consumable = true,
-    icon = 'potion2',
-    desc = 'Gain area size next round when you drink this potion',
-    stats = {},
-    procs = {'areapotion'}
-  },
+
+  -- ['damagepotion'] = {
+  --   name = 'damagepotion',
+  --   colors = {},
+  --   cost = 2,
+  --   consumable = true,
+  --   icon = 'potion2',
+  --   desc = 'Gain attack damage next round when you drink this potion',
+  --   stats = {},
+  --   procs = {'damagepotion'}
+  -- },
+  -- ['shieldpotion'] = {
+  --   name = 'shieldpotion',
+  --   colors = {},
+  --   cost = 2,
+  --   consumable = true,
+  --   icon = 'potion2',
+  --   desc = 'Start with a shield next round when you drink this potion',
+  --   stats = {},
+  --   procs = {'shieldpotion'}
+  -- },
+  -- ['berserkpotion'] = {
+  --   name = 'berserkpotion',
+  --   colors = {},
+  --   cost = 2,
+  --   consumable = true,
+  --   icon = 'potion2',
+  --   desc = 'Gain attack speed and movespeed next round when you drink this potion',
+  --   stats = {},
+  --   procs = {'berserkpotion'}
+  -- },
+  -- ['areapotion'] = {
+  --   name = 'areapotion',
+  --   colors = {},
+  --   cost = 2,
+  --   consumable = true,
+  --   icon = 'potion2',
+  --   desc = 'Gain area size next round when you drink this potion',
+  --   stats = {},
+  --   procs = {'areapotion'}
+  -- },
 
   
   --colorless items
@@ -411,7 +412,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'reticle',
     desc = 'A reticle that increases range',
-    stats = {attack_range = 0.1, dmg = 0.5},
+    stats = {range = 0.1, dmg = 0.5},
     procs = {}
   },
   ['holduground'] = {

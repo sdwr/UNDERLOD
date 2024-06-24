@@ -496,8 +496,8 @@ function Unit:get_item_stats()
           stats.mvspd = (stats.mvspd or 0) + amt
         elseif stat == buff_types['aspd'] then
           stats.aspd = (stats.aspd or 0) + amt
-        elseif stat == buff_types['attack_range'] then
-          stats.attack_range = (stats.attack_range or 0) + amt
+        elseif stat == buff_types['range'] then
+          stats.range = (stats.range or 0) + amt
         elseif stat == buff_types['area_dmg'] then
           stats.area_dmg = (stats.area_dmg or 0) + amt
         elseif stat == buff_types['area_size'] then
@@ -555,8 +555,8 @@ function Unit:calculate_stats(first_run)
   self.buff_def_m = 1
   self.buff_mvspd_m = 1
   self.slow_mvspd_m = 1
-  self.buff_attack_range_a = 0
-  self.buff_attack_range_m = 1
+  self.buff_range_a = 0
+  self.buff_range_m = 1
 
   self.eledmg_m = 1
 
@@ -616,8 +616,8 @@ function Unit:calculate_stats(first_run)
             self.buff_hp_m = self.buff_hp_m + amtWithStacks
           elseif stat == buff_types['status_resist'] then
             self.status_resist = self.status_resist + amtWithStacks
-          elseif stat == buff_types['attack_range'] then
-            self.buff_attack_range_m = self.buff_attack_range_m + amtWithStacks
+          elseif stat == buff_types['range'] then
+            self.buff_range_m = self.buff_range_m + amtWithStacks
 
 
           elseif stat == buff_types['eledmg'] then
@@ -654,8 +654,8 @@ function Unit:calculate_stats(first_run)
             self.buff_mvspd_m = self.buff_mvspd_m + amt
           elseif stat == buff_types['aspd'] then
             self.buff_aspd_m = self.buff_aspd_m + amt
-          elseif stat == buff_types['attack_range'] then
-            self.buff_attack_range_m = self.buff_attack_range_m + amt
+          elseif stat == buff_types['range'] then
+            self.buff_range_m = self.buff_range_m + amt
           elseif stat == buff_types['area_dmg'] then
             self.buff_area_dmg_m = self.buff_area_dmg_m + amt
           elseif stat == buff_types['area_size'] then
@@ -698,7 +698,7 @@ function Unit:calculate_stats(first_run)
     self.castTime = self.baseCast * self.aspd_m
   end
 
-  self.attack_range = ((self.base_attack_range or 0) + self.buff_attack_range_a) * self.buff_attack_range_m
+  self.attack_range = ((self.base_attack_range or 0) + self.buff_range_a) * self.buff_range_m
 
   self.area_size_m = self.base_area_size_m*self.buff_area_size_m
 

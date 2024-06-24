@@ -39,8 +39,8 @@ function CharacterCard:init(args)
   --texts
   self:initText()
 
-  self:addProcIcon()
-  self:addProcIcon()
+  -- self:addProcIcon()
+  -- self:addProcIcon()
 
   --otherwise have duplicate text somehow?? 
   Refresh_All_Cards_Text()
@@ -67,7 +67,7 @@ function CharacterCard:initText()
   self.name_text = Text({{text = '[yellow[3]]' .. self.character, font = pixul_font, alignment = 'center'}}, global_text_tags)
   self.stat_text = build_character_text(self.unit)
   self.stat_text.x = self.x
-  self.stat_text.y = self.y - self.h/2 + 25 + self.stat_text.h/2
+  self.stat_text.y = self.y - self.h/2 + 15 + self.stat_text.h/2
   
   self.proc_text = nil
 end
