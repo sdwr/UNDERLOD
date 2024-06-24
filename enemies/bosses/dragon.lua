@@ -105,7 +105,8 @@ fns['init_enemy'] = function(self)
     oncaststart = function() turret_hit_wall2:play{volume = 0.9} end,
     cast = function()
       print('starting fire wall cast')
-      FireWall{unit = self}
+      fire1:play{volume = 0.7}
+      FireWall{unit = self, wall_type="half"}
     end,
   }
 

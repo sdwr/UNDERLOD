@@ -2074,7 +2074,6 @@ PlasmaBarrage = Object:extend()
 PlasmaBarrage:implement(GameObject)
 PlasmaBarrage:implement(Physics)
 function PlasmaBarrage:init(args)
-  print('plasma barrage init')
   self:init_game_object(args)
 
   self.currentTime = 0
@@ -2141,7 +2140,6 @@ function PlasmaBarrage:update(dt)
 end
 
 function PlasmaBarrage:die()
-  print('plasma barrage die')
   if self.unit and self.unit.state == 'frozen' then self.unit.state = 'normal' end
   self.dead = true
   if self.trigger and self.t then self.t:cancel(self.trigger) end
@@ -2249,7 +2247,7 @@ function FireWall:init(args)
   self:init_game_object(args)
   
   self.color = red[0]:clone()
-  self.color.a = 0.7
+  self.color.a = 0.6
   
   self.dmg = self.dmg or 50
   --starts on one side of the screen and moves to the other
@@ -2264,9 +2262,12 @@ function FireWall:init(args)
   self.x = self.start_x
 
   --hole in the wall
+  self.wall_type = self.wall_type or 'segments'
   self.num_segments = self.num_segments or 4
   self.num_holes = self.num_holes or 1
   
+  
+
   self:create_hole_indexes()
 
   self:create_segments()
@@ -2299,6 +2300,14 @@ end
 
 function FireWall:create_segments()
   self.segments = {}
+  if self.wall_type == 'segments' then
+    self:create_segmented_wall()
+  elseif self.wall_type == 'half' then
+    self:create_half_wall()
+  end
+end
+
+function FireWall:create_segmented_wall()
   local segment_width = 10
   local segment_height = gh / self.num_segments
 
@@ -2318,6 +2327,31 @@ function FireWall:create_segments()
       table.insert(self.segments, segment)
     end
   end
+end
+
+function FireWall:create_half_wall()
+  local segment_width = 10
+  local segment_height = gh / 2
+
+  local possible_y = {
+    segment_height / 2,
+    segment_height,
+    segment_height + (segment_height / 2)
+  }
+  local y = random:table(possible_y)
+
+  local segment = FireSegment{
+      group = main.current.effects, 
+      x = self.x,
+      y = y,
+      w = segment_width,
+      h = segment_height,
+      speed = self.speed,
+      direction = self.direction,
+      color = self.color,
+      dmg = self.dmg,
+      parent = self}
+  table.insert(self.segments, segment)
 end
 
 function FireWall:update(dt)
@@ -2344,15 +2378,37 @@ function FireSegment:init(args)
   self.currentTime = 0
   self.speed = self.speed or 100
   self.dmg = self.dmg or 50
+
+  self.particle_interval = 0.1
+  self.particle_elapsed = 0
 end
 
 function FireSegment:update(dt)
   self:update_game_object(dt)
   self:check_hits()
+  self:add_particles()
+
   self.currentTime = self.currentTime + dt
+  self.particle_elapsed = self.particle_elapsed + dt
+
   self.x = self.x + self.speed * self.direction * dt
   self.shape:move_to(self.x, self.y)
   if self.x < 0 or self.x > gw then self:die() end
+end
+
+function FireSegment:add_particles()
+  if self.particle_elapsed > self.particle_interval then
+    self.particle_elapsed = 0
+    for i = 1, 5 do
+      local x = self.x + random:float(-self.w/2, self.w/2)
+      local y = self.y + random:float(-self.h/2, self.h/2)
+      HitParticle{group = main.current.effects, 
+        x = x, y = y, 
+        color = self.color,
+        v = random:float(30, 60)
+      }
+    end
+  end
 end
 
 function FireSegment:draw()
