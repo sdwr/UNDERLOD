@@ -1965,7 +1965,7 @@ function init()
       'stomper',
       'burst',
       'boomerang',
-      'plasma',
+
     },
     [2] = {
       'laser',

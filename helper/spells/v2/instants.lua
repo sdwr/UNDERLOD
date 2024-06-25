@@ -24,6 +24,147 @@ function Get_Distance_To_Target(self)
   end
 end
 
+Arcspread = Object:extend()
+Arcspread:implement(GameObject)
+Arcspread:implement(Physics)
+function Arcspread:init(args)
+  self:init_game_object(args)
+  
+  self.color = self.color or blue[2]
+
+  self.damage = self.damage or 30
+  self.pierce = self.pierce
+  self.thickness = self.thickness or 1
+  self.numArcs = self.numArcs or 4
+
+  self.duration = self.spell_duration or 10
+
+  self.width = self.width or math.pi/4
+  self.speed = self.speed or 100
+  self.radius = self.radius or 20
+  self.duration = self.duration or 10
+
+  self.grow = true
+  
+  
+  self.angle = math.random(2*math.pi)
+
+
+  self:create_arcs()
+  self:die()
+end
+
+function Arcspread:create_arcs()
+  for i = 1, self.numArcs do
+    self.angle = self.angle + (2*math.pi / self.numArcs)
+    for j = 0, self.thickness-1 do
+      DamageArc{
+        group = main.current.effects, 
+        unit = self.unit,
+        x = self.x, 
+        y = self.y, 
+        color = self.color, 
+        pierce = self.pierce,
+        damage = self.damage, 
+        width = self.width, 
+        angle = self.angle, 
+        speed = self.speed, 
+        radius = self.radius - (j*4),
+        duration = self.duration,
+        grow = self.grow,
+      }
+    end
+  end
+end
+
+function Arcspread:update(dt)
+end
+
+function Arcspread:draw()
+end
+
+function Arcspread:die()
+  self.dead = true
+end
+
+DamageArc = Object:extend()
+DamageArc:implement(GameObject)
+DamageArc:implement(Physics)
+function DamageArc:init(args)
+  self:init_game_object(args)
+  self.color = self.color or red[0]
+
+  self.damage = self.damage or 30
+
+  self.pierce = self.pierce or 0
+  self.angle = self.angle or 0
+  self.width = self.width or math.pi/4
+  self.speed = self.speed or 100
+  self.radius = self.radius or 20
+  self.duration = self.duration or 10
+
+  self.grow = self.grow
+
+  --memory
+  self.elapsed = 0
+  self.targets_hit = {}
+
+  self.x, self.y = Helper.Geometry:move_point(self.x, self.y, 
+  self.angle + math.pi, self.radius / 2)
+
+  self.t:after(self.duration, function() self:die() end)
+end
+
+function DamageArc:update(dt)
+  self:move(dt)
+  self:try_damage()
+  self:delete()
+end
+
+function DamageArc:move(dt)
+  local movement = dt * self.speed
+  if self.grow then
+    self.radius = self.radius + movement
+  else
+    self.x, self.y = Helper.Geometry:move_point(self.x, self.y, 
+    self.angle, movement)
+  end
+end
+
+function DamageArc:try_damage()
+  local x1, y1, x2, y2  = Helper.Spell.DamageArc:getLine(self)
+  local line = Line(x1, y1, x2, y2)
+  
+  local targets = main.current.main:get_objects_in_shape(line, friendly_classes, self.targets_hit)
+
+  for _, target in ipairs(targets) do
+    dot1:play{pitch = random:float(0.95, 1.05), volume = 0.7}
+    target:hit(self.damage, self.unit)
+    table.insert(self.targets_hit, target)
+
+  end
+
+  if #self.targets_hit > self.pierce then
+    self:die()
+  end
+end
+
+function DamageArc:delete()
+  if Helper.Geometry:is_off_screen(self.x, self.y, self.angle, self.radius + 20) then
+    self:die()
+  end
+end
+
+function DamageArc:draw()
+  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.x)
+    graphics.arc( 'open', self.x, self.y, self.radius, self.angle, self.angle + self.width, self.color, 1)
+  graphics.pop()
+end
+
+function DamageArc:die()
+  self.dead = true
+end
+
 Avalanche = Object:extend()
 Avalanche:implement(GameObject)
 Avalanche:implement(Physics)
