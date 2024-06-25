@@ -174,6 +174,7 @@ function Helper.Geometry.rotate_to(centerx, centery, fromx, fromy, tox, toy, spe
 end
 
 function Helper.Geometry:move_point(x, y, angle, amount)
+    angle = angle % (2 * math.pi)
     local x2 = x + (amount * math.cos(angle))
     local y2 = y + (amount * math.sin(angle))
     return x2, y2

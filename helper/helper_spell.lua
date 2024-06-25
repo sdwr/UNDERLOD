@@ -308,7 +308,7 @@ function Helper.Spell:damage_points()
             end
             local x = point_damage.point.unit.x + point_damage.point.x
             local y = point_damage.point.unit.y + point_damage.point.y
-            HitCircle{group = main.current.effects, x = x, y = y, rs = 6, color = fg[0], duration = 0.1}
+            -- HitCircle{group = main.current.effects, x = x, y = y, rs = 6, color = fg[0], duration = 0.1}
             for i = 1, 1 do HitParticle{group = main.current.effects, x = x, y = y, color = blue[0]} end
             for i = 1, 1 do HitParticle{group = main.current.effects, x = x, y = y, color = blue[0]} end
         end

@@ -41,7 +41,7 @@ function Laser_Spell:init(args)
   self.rotation_lock = self.rotation_lock
   self.rotation_offset = self.rotation_offset or 0
   self.r = self.r or 0
-  self.length = self.length or 1000
+  self.length = self.length or 300
   self.damage_troops = self.damage_troops
 
   self.laser_aim_width = self.laser_aim_width or 4
@@ -50,6 +50,7 @@ function Laser_Spell:init(args)
   self.charge_duration = self.charge_duration or 1
   self.fire_duration = self.fire_duration or 0.2
   self.damage_once = self.damage_once
+  self.already_damaged = {}
   self.fade_fire_draw = self.fade_fire_draw
   self.fade_in_aim_draw = self.fade_in_aim_draw
 
@@ -141,14 +142,15 @@ function Laser_Spell:update(dt)
 end
 
 function Laser_Spell:update_target_coords()
-  if self.unit:my_target() then
-    self.target_last_x = self.unit:my_target().x
-    self.target_last_y = self.unit:my_target().y
+  if self.lasermode == 'target' then
+    if self.unit:my_target() then
+      self.target_last_x = self.unit:my_target().x
+      self.target_last_y = self.unit:my_target().y
+    end
   end
 end
 
 function Laser_Spell:update_coords()
-  local should_follow_r = self.rotation_lock
   
   local should_stay_fixed = self.is_firing and not self.fire_follows_unit
   local update_r = self.lasermode == 'rotate' and not self.rotation_lock
@@ -162,11 +164,14 @@ function Laser_Spell:update_coords()
     --do nothing
   elseif update_r then
     self.r = self.unit:get_angle() + self.rotation_offset
-    self.lineCoords = {self.x, self.y, Helper.Geometry:move_point(self.x, self.y, self.r, 1000)}
+    self.lineCoords = {self.x, self.y, Helper.Geometry:move_point(self.x, self.y, self.r, self.length)}
   elseif update_d then
     local x2, y2 = self:get_end_location(self.x, self.y, self.target_last_x, self.target_last_y)
     self.lineCoords = {self.x, self.y, x2, y2}
-  elseif freeze_r or freeze_d then
+  elseif freeze_r then
+    self.r = self.unit:get_angle() + self.rotation_offset
+    self.lineCoords = {self.x, self.y, Helper.Geometry:move_point(self.x, self.y, self.r, self.length)}
+  elseif freeze_d then
     --translate the line to the unit, using the existing x2, y2 coords (works for both rotate and target)
     local xdiff, ydiff = self.lineCoords[1] - self.x, self.lineCoords[2] - self.y
     local oldx, oldy = self.lineCoords[3], self.lineCoords[4]
@@ -202,13 +207,11 @@ function Laser_Spell:update_charge(dt)
 end
 
 function Laser_Spell:try_damage()
+  local damage = 0
   if self.damage_once then
-    if self.has_damaged then
-      return
-    else 
-      self.has_damaged = true
-    end
+    damage = self.damage
   else
+    damage = self.damage * self.tick_interval
     if self.next_tick > 0 then
       return
     else
@@ -224,7 +227,11 @@ function Laser_Spell:try_damage()
       local x = unit.x + point.x
       local y = unit.y + point.y
       if Helper.Geometry:is_on_line(x, y, self.lineCoords[1], self.lineCoords[2], self.lineCoords[3], self.lineCoords[4], self.laser_width) then
-        Helper.Spell:register_damage_point(point, self.unit, self.damage)
+        if self.already_damaged[unit] then
+          break
+        end
+        Helper.Spell:register_damage_point(point, self.unit, damage)
+        self.already_damaged[unit] = true
       end
     end
   end
@@ -246,7 +253,7 @@ function Laser_Spell:draw()
       width = width * (1 - self.fire_time / self.fire_duration)
     end
   end
-  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
+  graphics.push(self.x, self.y, self.r, self.spring.x, self.spring.y)
     graphics.line(self.lineCoords[1], self.lineCoords[2], self.lineCoords[3], self.lineCoords[4], color, width)
   graphics.pop()
 end
@@ -266,26 +273,4 @@ function Laser_Spell:get_end_location(x, y, targetx, targety)
 
   local angle = math.atan2(targety - y, targetx - x)
   return Helper.Geometry:move_point(x, y, angle, self.length)
-end
-
-Laser_Damage = Object:extend()
-function Laser_Damage:init(args)
-
-
-end
-
-function Laser_Damage:update(dt)
-
-end
-
-function Laser_Damage:try_damage()
-
-end
-
-function Laser_Damage:draw()
-
-end
-
-function Laser_Damage:die()
-
 end

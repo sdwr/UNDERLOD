@@ -760,8 +760,10 @@ function LaserBall:init(args)
   end)
 
   --set the velocity and rotation speed
-  self.rotation_speed = 1
+  self.rotation_speed = 0.5
   self.speed = 100
+
+  self.damage = 20
 
   self.r = math.random(2*math.pi)
   self:set_angle(self.r)
@@ -811,16 +813,25 @@ function LaserBall:fire_lasers()
   for i = 0, 3 do
     --Laser{group = main.current.effects, parent = self, color = self.color, initial_rotation = (i-1)*math.pi/2}
     local args = {
-      unit = nil,
+      group = main.current.main,
+      unit = self,
+      spell_duration = 10,
+      name = 'laser',
       rotation_lock = true,
-      rotation_angle = i * math.pi/2,
-      laser_aim_width = 4,
-      damage = 20,
+      rotation_offset = i * (math.pi / 4),
+      laser_aim_width = 6,
+      damage = self.damage,
+      lasermode = 'rotate',
       damage_troops = true,
-      prefire = self.duration_prefire
-
+      damage_once = true,
+      charge_duration = self.duration_prefire,
+      fire_duration = self.duration_fire,
+      end_spell_on_fire = false,
+      fire_follows_unit = true,
+      fade_in_aim_draw = true,
+      fade_fire_draw = false,
     }
-    Helper.Spell.Laser:create(args)
+    Laser_Spell(args)
   end
 end
 

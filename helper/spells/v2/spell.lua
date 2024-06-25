@@ -283,7 +283,7 @@ function Spell:die()
   if DEBUG_SPELLS then
     print('destroying spell: ', self.name)
   end
-  if self.unit and self.unit.spellObject == self then
+  if self.unit and self.unit.spellObject == self and self.unit.end_cast then
     print('ending cast')
     self.unit:end_cast(self.castcooldown)
     self.unit.spellObject = nil
