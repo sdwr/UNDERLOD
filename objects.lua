@@ -1073,7 +1073,6 @@ function Unit:pick_cast()
   local attack = random:table(viable_attacks)
 
   print('unit ', self.type, ' picked cast: ' .. attack.name)
-  print('casting!', attack.spellclass)
   if attack.spellclass then
     if attack.oncast then
       attack.oncast(self)
@@ -1085,6 +1084,7 @@ function Unit:pick_cast()
     attackcopy.target = self:my_target()
     self.castObject = Cast(attackcopy)
   else
+    --old spell system
     self:start_cast(attack)
   end
   return true

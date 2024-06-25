@@ -17,24 +17,26 @@
 --   }
 -- }
 
--- cast will be on unit's current_cast variable, and the cast timer will be drawn on the unit
+-- cast will be on unit's castObject variable, and the cast timer will be drawn on the unit
 -- the cast will be cancelled if the unit dies or is stunned
 
 -- and then when the cast:cast() is called, it will create a new instance of BreatheFire(spelldata)
--- and store it in the unit's .current_cast variable
+-- and store it in the unit's .spellObject variable
 -- the breathefire class will have its own duration and actions (rotating towards target, etc)
--- and have a :cancel() or :die() function that will cancel the spell if the unit dies or is stunned
--- so the spell can end itself, and call the unit's end_cast or cancel_cast functions
--- or the unit can call the spell's :cancel() function if it dies or is stunned
+-- has a :finish_cast() when the spell finishes normally
+-- that calls :finish_cast() to reset the unit's state and remove the spellObject
+
+-- or the unit should be able to cancel the spellObject if it dies or is stunned
 
 Try_Cancel_Cast = function(self)
   if self.cancel_on_death and (not self.unit or self.unit.dead) then
     self:cancel()
   end
   if self.cancel_on_range then
-    if not (self.unit and self.unit.target)
+    if 
+      not (self.unit and self.unit.target)
       or
-       Helper.Unit:distance_to_target(self.unit) > self.cancel_range
+      Helper.Unit:distance_to_target(self.unit) > self.cancel_range
       then
       self:cancel()
     end
@@ -115,7 +117,7 @@ function Cast:update(dt)
 end
 
 function Cast:cast()
-  if true then
+  if DEBUG_SPELLS then
     print('cast spell', self.unit, self.name)
   end
   self.spelldata.x = self.x
