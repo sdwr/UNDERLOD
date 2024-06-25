@@ -24,6 +24,9 @@ require 'helper/spells/v2/stomp_spell'
 require 'helper/spells/v2/breathe_fire'
 require 'helper/spells/v2/plasma_barrage'
 require 'helper/spells/v2/mortar'
+require 'helper/spells/v2/summon'
+
+require 'helper/spells/v2/instants'
 
 Helper.Spell.spells = {
     Helper.Spell.SpreadMissile,

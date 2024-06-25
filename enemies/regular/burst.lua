@@ -22,35 +22,25 @@ fns['init_enemy'] = function(self)
   local burst = {
     name = 'burst',
     viable = function () return true end,
-    castcooldown = 0.8,
-    cast = function()
-      cannoneer1:play{volume=0.7}
-
-      local r = 0
-      if self.target then
-        r = math.atan2(self.target.y - self.y, self.target.x - self.x)
-      else
-        r = math.random()*2*math.pi
-      end
-
-      local distance = math.random(75, 200)
-
-      Burst{
-        group = main.current.main,
-        unit = self,
-        team = "enemy",
-        target = self.target,
-        x = self.x,
-        y = self.y,
-        r = r,
-        color = orange[0],
-        damage = self.dmg,
-        speed = 100,
-        distance = distance,
-        num_pieces = 8,
-        parent = self
-      }
-    end
+    oncast = function() end,
+    castcooldown = 1,
+    instantspell = true,
+    cast_length = 1,
+    spellclass = Burst,
+    spelldata = {
+      group = main.current.main,
+      unit = self,
+      team = "enemy",
+      target = self.target,
+      spelltype = "targeted",
+      x = self.x,
+      y = self.y,
+      color = orange[0],
+      damage = self.dmg,
+      speed = 100,
+      num_pieces = 8,
+      parent = self
+    }
   }
 
   table.insert(self.attack_options, burst)

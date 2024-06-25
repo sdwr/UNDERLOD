@@ -1975,7 +1975,7 @@ function init()
       'plasma',
       
       'mortar',
-      'spawner',
+      'summoner',
       'arcspread',
     },
     [3] = {

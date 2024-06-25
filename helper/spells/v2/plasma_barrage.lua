@@ -66,4 +66,100 @@ function Plasma_Barrage:die()
   if self.trigger and self.t then self.t:cancel(self.trigger) end
 end
 
+-----------------------------------------
+
+--needs container spell that makes a bunch of these with various 
+--angles and speeds
+--but need to resolve where the unit state /cooldown is handled first
+-- in the unit? in the spell? different solutions
+PlasmaBall = Object:extend()
+PlasmaBall:implement(GameObject)
+PlasmaBall:implement(Physics)
+function PlasmaBall:init(args)
+  self:init_game_object(args)
+  self.radius = self.radius or 8
+  self.shape = Circle(self.x, self.y, self.radius)
+
+  self.color = red[0] or self.color
+  self.color = self.color:clone()
+  self.color.a = 0.7
+
+  self.explosion_radius = self.explosion_radius or 12
+  self.explosion_damage = self.damage or 30
+
+  self.speed = self.speed or 100
+  self.rotation_speed = self.rotation_speed or 1
+  self.movement_type = self.movement_type or 'spiral'
+  self.target = self.target
+  
+  self.r = self.r or 0
+  self:set_angle(self.r)
+
+  self.duration = self.duration or 12
+  self.elapsed = 0
+  self.t:after(self.duration, function() self:die() end)
+end
+
+function PlasmaBall:update(dt)
+  self:update_game_object(dt)
+  self:check_hits()
+  self.elapsed = self.elapsed + dt
+
+  local x = self.x
+  local y = self.y
+  if self.movement_type == 'straight' then
+    self.x = self.x + self.speed * math.cos(self.r) * dt
+    self.y = self.y + self.speed * math.sin(self.r) * dt
+  elseif self.movement_type == 'spiral' then
+    self.r = self.r + self.rotation_speed * dt
+    self.x = self.x + self.speed * math.cos(self.r) * dt
+    self.y = self.y + self.speed * math.sin(self.r) * dt
+  elseif self.movement_type == 'homing' then
+    if self.target and not self.target.dead then
+      self.r = math.lerp_angle_dt(0.5, dt, self.r, self:angle_to_object(self.target))
+      self.x = self.x + self.speed * math.cos(self.r) * dt
+      self.y = self.y + self.speed * math.sin(self.r) * dt
+    else
+      --just move straight if no target
+      self.x = self.x + self.speed * math.cos(self.r) * dt
+      self.y = self.y + self.speed * math.sin(self.r) * dt
+    end
+  end
+  self.shape:move_to(self.x, self.y)
+end
+
+function PlasmaBall:check_hits()
+  local friendlies = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
+  if #friendlies > 0 then
+    self:explode()
+  end
+end
+
+function PlasmaBall:draw()
+  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.x)
+    graphics.circle(self.x, self.y, self.shape.rs, self.color, 4)
+  graphics.pop()
+end
+
+function PlasmaBall:explode()
+  explosion_new:play{pitch = random:float(0.95, 1.05), volume = 0.3}
+  Area{
+    group = main.current.effects, 
+    unit = self.unit,
+    x = self.x, 
+    y = self.y, 
+    r = self.explosion_radius,
+    pick_shape = 'circle',
+    duration = 0.15,
+    dmg = self.explosion_damage,
+    is_troop = false,
+    color = self.color, 
+  }
+  self:die()
+end
+
+function PlasmaBall:die()
+  self.dead = true
+end
+
 

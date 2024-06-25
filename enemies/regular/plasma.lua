@@ -19,29 +19,29 @@ fns['init_enemy'] = function(self)
 
   self.attack_options = {}
 
-  local plasma_barrage = {
+  --spell ends after # of balls, not duration
+  local plasma_barrage_straight = {
     name = 'plasma_barrage',
     viable = function () return true end,
-    castcooldown = 2,
-    cast = function()
-      PlasmaBarrage{
-        group = main.current.main,
-        unit = self,
-        team = "enemy",
-        x = self.x,
-        y = self.y,
-        movement_type = 'spiral',
-        rotation_speed = 1,
-        color = orange[-5],
-        num_balls = 10,
-        damage = 20,
-        parent = self
-      }
-
-    end
+    castcooldown = 1,
+    oncast = function() end,
+    cast_length = 1,
+    spellclass = Plasma_Barrage,
+    spelldata = {
+      group = main.current.main,
+      team = "enemy",
+      spell_duration = 100,
+      x = self.x,
+      y = self.y,
+      movement_type = 'straight',
+      rotation_speed = 1,
+      color = orange[-5],
+      damage = 20,
+      parent = self
+    }
   }
 
-  table.insert(self.attack_options, plasma_barrage)
+  table.insert(self.attack_options, plasma_barrage_straight)
 
 end
 
