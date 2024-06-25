@@ -12,18 +12,33 @@ fns['init_enemy'] = function(self)
   self.color = red[0]:clone()
   Set_Enemy_Shape(self, self.size)
 
-  --set physics 
+  --set physics
   self:set_restitution(0.5)
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
   self.class = 'special_enemy'
 
   --set attacks
-    self.t:cooldown(attack_speeds['slow'], function() local target = self:get_closest_target(self.attack_sensor, main.current.friendlies); return target end, function()
-      local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.friendlies)
-      if closest_enemy then
-        Stomp{group = main.current.main, unit = self, team = "enemy", x = self.x, y = self.y, rs = 30, color = red[0], dmg = self.dmg, level = self.level, parent = self}
-      end
-    end, nil, nil, 'attack')
+  self.attack_options = {}
+
+  local stomp = {
+    name = 'stomp',
+    viable = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end,
+    oncast = function() end,
+    cast_length = 1,
+    spellclass = Stomp_Spell,
+    spelldata = {
+      group = main.current.main,
+      team = "enemy",
+      rs = 30,
+      color = red[0],
+      dmg = self.dmg or 30,
+      spell_duration = 1,
+      level = self.level,
+      parent = self
+    },
+    rotation_lock = true,
+  }
+  table.insert(self.attack_options, stomp)
 end
 
 fns['draw_enemy'] = function(self)   

@@ -19,6 +19,11 @@ require 'helper/spells/v2/arrow_proj'
 
 require 'helper/spells/v2/spell'
 require 'helper/spells/v2/arrow'
+require 'helper/spells/v2/stomp_spell'
+-- require 'helper/spells/v2/laser_spell'
+require 'helper/spells/v2/breathe_fire'
+require 'helper/spells/v2/plasma_barrage'
+require 'helper/spells/v2/mortar'
 
 Helper.Spell.spells = {
     Helper.Spell.SpreadMissile,

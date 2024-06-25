@@ -983,7 +983,6 @@ function DotArea:init(args)
       end
       for _, target in ipairs(targets) do
         target:hit(self.dmg/5)
-        HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
         for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
         for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
       end
@@ -1714,8 +1713,6 @@ function Stomp:init(args)
 
   self.state = "charging"
 
-  self.parent.state = 'frozen'
-
   orb1:play({volume = 0.5})
 
   self.color = self.color or red[0]
@@ -1732,7 +1729,7 @@ function Stomp:init(args)
 end
 
 function Stomp:update(dt)
-  if self.parent and self.parent.dead then self.dead = true; return end
+  if self.unit and self.unit.dead then self.dead = true; return end
   self:update_game_object(dt)
   self.attack_sensor:move_to(self.x, self.y)
   self.currentTime = self.currentTime + dt
@@ -2239,13 +2236,13 @@ function PlasmaBall:die()
   self.dead = true
 end
 
-
 FireWall = Object:extend()
 FireWall:implement(GameObject)
 FireWall:implement(Physics)
 function FireWall:init(args)
   self:init_game_object(args)
   
+  fire1:play{volume = 0.7}
   self.color = red[0]:clone()
   self.color.a = 0.6
   
@@ -2498,7 +2495,7 @@ function LaserBall:fire_lasers()
   for i = 0, 3 do
     --Laser{group = main.current.effects, parent = self, color = self.color, initial_rotation = (i-1)*math.pi/2}
     local args = {
-      unit = self,
+      unit = nil,
       rotation_lock = true,
       rotation_angle = i * math.pi/2,
       laser_aim_width = 4,

@@ -343,7 +343,12 @@ function Unit:draw_cast_timer()
 
     local currentTime = love.timer.getTime()
     local time = currentTime - self.last_attack_started
-    local pct = time / self.castTime
+    local pct = 0
+    if self.castObject then
+      pct = self.castObject:get_cast_percentage()
+    else
+      local pct = time / self.castTime
+    end
     local bodySize = self.shape.rs or self.shape.w/2 or 5
     local rs = pct * bodySize
     if pct < 1 then
@@ -1002,13 +1007,12 @@ end
 -- ticks based on last_attack_started
 -- and calls the currentcast() when the time is up
 
---confusing between castTime, baseCast, currentcast, and current_castcooldown
+--confusing between castTime, baseCast, currentcast
 -- need baseCast and castTime for player units w aspd
 -- spell castcooldown should be modified by aspd as well
 
 -- currentcast is the function that is called when the cast is finished
 -- castcooldown is the unit's cooldown until the next cast
---and current_castcooldown is what the castcooldown will be set to when the cast is finished
 
 --freezeduration is the time before the cast is finished when the unit stops rotating
 --(so player can escape the cast), linked to freezerotation
@@ -1049,8 +1053,6 @@ function Unit:update_cast(dt)
   --frozen state is used here as the state where the unit is following through on the cast (stomp for example)
   if self.castcooldown and self.castcooldown > 0 and self.state ~= unit_states['frozen'] then
     self.castcooldown = self.castcooldown - dt
-  elseif self.castcooldown and self.castcooldown <= 0 then
-    self.castcooldown = nil
   end
 
 
@@ -1066,20 +1068,39 @@ function Unit:pick_cast()
     end
   end
 
-  if #viable_attacks == 0 then return end
+  if #viable_attacks == 0 then return false end
 
   local attack = random:table(viable_attacks)
 
   print('unit ', self.type, ' picked cast: ' .. attack.name)
-  self:start_cast(attack)
+  print('casting!', attack.spellclass)
+  if attack.spellclass then
+    if attack.oncast then
+      attack.oncast(self)
+    end
+    local attackcopy = Deep_Copy_Cast(attack)
+    attackcopy.x = self.x
+    attackcopy.y = self.y
+    attackcopy.unit = self
+    attackcopy.target = self:my_target()
+    self.castObject = Cast(attackcopy)
+  else
+    self:start_cast(attack)
+  end
+  return true
 
+end
+
+function Unit:should_freeze_rotation()
+  return self.freezerotation
+    or (self.castObject and self.castObject.freeze_rotation)
+    or (self.spellObject and self.spellObject.freeze_rotation)
 end
 
 function Unit:start_cast(spelldata)
   self.state = unit_states['casting']
   self.last_attack_started = love.timer.getTime()
   self.currentcast = spelldata.cast
-  self.current_castcooldown = spelldata.castcooldown or self.base_castcooldown
   self.freezeduration = spelldata.freezeduration
   if spelldata.oncaststart then
     spelldata.oncaststart(self)
@@ -1087,32 +1108,36 @@ function Unit:start_cast(spelldata)
 
 end
 
-function Unit:end_cast()
-  self.castcooldown = self.current_castcooldown
-  self.current_castcooldown = nil
+function Unit:end_cast(cooldown)
+  self.castcooldown = cooldown
   self.spelldata = nil
   self.freezeduration = nil
   self.freezerotation = false
-  if self.state == unit_states['casting'] then
+  if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
     self.state = unit_states['normal']
   end
+
+  self.castObject = nil
+  self.spellObject = nil
 end
 
 function Unit:cancel_cast()
   if self.state == unit_states['casting'] then
     self.state = unit_states['normal']
   end
-  self.current_castcooldown = nil
-  self.castcooldown = nil
+  self.castcooldown = 0
   self.spelldata = nil
+
+  self.castObject = nil
+  self.spellObject = nil
 end
 
 --if cast is interrupted, set the cooldown to half
 function Unit:interrupt_cast()
   if self.state == unit_states['casting'] then
-    self.state = unit_states['normal']  
-    self.castcooldown = self.current_castcooldown / 2
-    self.current_castcooldown = nil
+    self.state = unit_states['normal']
+    --change this
+    self.castcooldown = 3
     self.spelldata = nil
   end
 end

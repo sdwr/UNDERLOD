@@ -43,8 +43,10 @@ function Enemy:update(dt)
 
     self:calculate_stats()
 
-    self:update_cast(dt)
-  
+    if self.castcooldown and self.castcooldown > 0 and self.state ~= unit_states['frozen'] then
+      self.castcooldown = self.castcooldown - dt
+    end
+
     --get target / rotate to target
     if self.target and self.target.dead then self.target = nil end
     
@@ -70,7 +72,7 @@ function Enemy:update(dt)
         self:rotate_towards_object(self.target, 0.5)
       end
     elseif self.state == unit_states['stopped'] or self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
-      if self.target and not self.target.dead and not self.freezerotation then
+      if self.target and not self.target.dead and not self:should_freeze_rotation() then
         self:rotate_towards_object(self.target, 1)
       end
     end
