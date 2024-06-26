@@ -73,7 +73,7 @@ function Laser_Spell:init(args)
     self.laser_width = self.laser_width * self.unit.area_size_m
   end
 
-  self.charge_sound = laser_charging:play{volume = 0.4}
+  self.charge_sound = laser_charging:play{volume = 0.3}
 
   -- memory
   self.charge_time = 0
@@ -189,7 +189,7 @@ function Laser_Spell:update_charge(dt)
       self.is_charging = false
       self.is_firing = true
       --fire here
-      shoot1:play{volume=0.35}
+      shoot1:play{volume=0.2}
       
       if self.end_spell_on_fire then
         self:finish_cast()

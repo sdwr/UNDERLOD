@@ -824,6 +824,7 @@ function LaserBall:fire_lasers()
       lasermode = 'rotate',
       damage_troops = true,
       damage_once = true,
+      
       charge_duration = self.duration_prefire,
       fire_duration = self.duration_fire,
       end_spell_on_fire = false,
