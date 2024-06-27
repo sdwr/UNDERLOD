@@ -18,14 +18,35 @@ fns['init_enemy'] = function(self)
   self.cast_time = 0
 
   --set attacks
-    self.t:cooldown(attack_speeds['medium-slow'], function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end, function ()
-      local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
-      if target then
-        self:rotate_towards_object(target, 1)
-        sniper_load:play{volume=0.9}
-        Helper.Spell.SpreadMissile:create(Helper.Color.blue, 10, self.dmg, self, 25, true) 
-        end
-    end, nil, nil, 'shoot')
+  self.attack_options = {}
+
+  local spread_laser = {
+    name = 'spread_laser',
+    viable = function() return self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) end,
+    oncast = function() self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) end,
+    castcooldown = 1,
+    cast_length = 0.1,
+    spellclass = Spread_Laser,
+    spelldata = {
+      group = main.current.main,
+      unit = self,
+      target = self.target,
+      freeze_rotation = true,
+      spell_duration = 10,
+      color = blue[0],
+      damage = self.dmg,
+      laser_aim_width = 6,
+      damage_troops = true,
+      damage_once = true,
+      lock_last_duration = 1,
+
+      spread_type = 'target',
+      num_shots = 3,
+      spread_width = math.pi / 16,
+    }
+  }
+
+  table.insert(self.attack_options, spread_laser)
 end
 
 fns['draw_enemy'] = function(self)

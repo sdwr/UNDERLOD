@@ -23,6 +23,8 @@ Laser_Spell = Spell:extend()
 function Laser_Spell:init(args)
   Laser_Spell.super.init(self, args)
 
+  print('creating laser')
+
   self.color = self.color or blue[0]
   self.aim_color = self.aim_color or red[0]
   self.color_transparent = self.color:clone()
@@ -34,6 +36,7 @@ function Laser_Spell:init(args)
   self.direction_targety = -1
 
   --'target' or 'rotate', whether it follows target or unit rotation
+  --or 'fixed' for fixed angle
   --can use with direction_lock or rotation_lock to lock the laser in place
   --after its initial facing is set
   self.lasermode = self.lasermode or 'target'
@@ -99,9 +102,12 @@ function Laser_Spell:set_distance_to_target()
 end
 
 function Laser_Spell:set_initial_coords()
-  if self.lasermode == 'rotate' then
+  if self.lasermode == 'fixed' then
+    self.r = self.rotation_offset
+    self.lineCoords = {self.x, self.y, Helper.Geometry:move_point_radians(self.x, self.y, self.r, self.length)}
+  elseif self.lasermode == 'rotate' then
     self.r = self.unit:get_angle() + self.rotation_offset
-    self.lineCoords = {self.x, self.y, Helper.Geometry:move_point(self.x, self.y, self.r, self.length)}
+    self.lineCoords = {self.x, self.y, Helper.Geometry:move_point_radians(self.x, self.y, self.r, self.length)}
   elseif self.lasermode == 'target' then
     local targetx, targety = 0, 0
     if self.unit:my_target() then
@@ -153,6 +159,7 @@ end
 function Laser_Spell:update_coords()
   
   local should_stay_fixed = self.is_firing and not self.fire_follows_unit
+  local fixed_r = self.lasermode == 'fixed'
   local update_r = self.lasermode == 'rotate' and not self.rotation_lock
   local freeze_r = self.lasermode == 'rotate' and self.rotation_lock
   local update_d = self.lasermode == 'target' and not self.direction_lock and not self:should_freeze_movement()
@@ -162,15 +169,17 @@ function Laser_Spell:update_coords()
 
   if should_stay_fixed then
     --do nothing
+  elseif fixed_r then
+    self.lineCoords = {self.x, self.y, Helper.Geometry:move_point_radians(self.x, self.y, self.r, self.length)}
   elseif update_r then
     self.r = self.unit:get_angle() + self.rotation_offset
-    self.lineCoords = {self.x, self.y, Helper.Geometry:move_point(self.x, self.y, self.r, self.length)}
+    self.lineCoords = {self.x, self.y, Helper.Geometry:move_point_radians(self.x, self.y, self.r, self.length)}
   elseif update_d then
     local x2, y2 = self:get_end_location(self.x, self.y, self.target_last_x, self.target_last_y)
     self.lineCoords = {self.x, self.y, x2, y2}
   elseif freeze_r then
     self.r = self.unit:get_angle() + self.rotation_offset
-    self.lineCoords = {self.x, self.y, Helper.Geometry:move_point(self.x, self.y, self.r, self.length)}
+    self.lineCoords = {self.x, self.y, Helper.Geometry:move_point_radians(self.x, self.y, self.r, self.length)}
   elseif freeze_d then
     --translate the line to the unit, using the existing x2, y2 coords (works for both rotate and target)
     local xdiff, ydiff = self.lineCoords[1] - self.x, self.lineCoords[2] - self.y
@@ -272,5 +281,5 @@ function Laser_Spell:get_end_location(x, y, targetx, targety)
   end
 
   local angle = math.atan2(targety - y, targetx - x)
-  return Helper.Geometry:move_point(x, y, angle, self.length)
+  return Helper.Geometry:move_point_radians(x, y, angle, self.length)
 end

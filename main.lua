@@ -1965,14 +1965,16 @@ function init()
       'stomper',
       'burst',
       'boomerang',
-
+      
     },
     [2] = {
       'laser',
       'stomper',
       'burst',
       'boomerang',
+      
       'plasma',
+      'spread',
       
       'mortar',
       'summoner',
@@ -2009,6 +2011,7 @@ function init()
     ['plasma'] = 300,
     --special enemies t2
     ['mortar'] = 500,
+    ['spread'] = 500,
     ['spawner'] = 500,
     ['arcspread'] = 500,
     --special enemies t3

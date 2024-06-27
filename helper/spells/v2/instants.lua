@@ -109,7 +109,7 @@ function DamageArc:init(args)
   self.elapsed = 0
   self.targets_hit = {}
 
-  self.x, self.y = Helper.Geometry:move_point(self.x, self.y, 
+  self.x, self.y = Helper.Geometry:move_point_radians(self.x, self.y, 
   self.angle + math.pi, self.radius / 2)
 
   self.t:after(self.duration, function() self:die() end)
@@ -126,7 +126,7 @@ function DamageArc:move(dt)
   if self.grow then
     self.radius = self.radius + movement
   else
-    self.x, self.y = Helper.Geometry:move_point(self.x, self.y, 
+    self.x, self.y = Helper.Geometry:move_point_radians(self.x, self.y, 
     self.angle, movement)
   end
 end

@@ -1,5 +1,7 @@
 
 TODO:
+  - FIX LASER HITBOX!!!
+  
 
   - add modifier/achievement/difficulty system
     --each achieve unlocks a modifier that can be toggled per run
