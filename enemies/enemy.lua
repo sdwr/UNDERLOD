@@ -43,10 +43,6 @@ function Enemy:update(dt)
 
     self:calculate_stats()
 
-    if self.castcooldown and self.castcooldown > 0 and self.state ~= unit_states['frozen'] then
-      self.castcooldown = self.castcooldown - dt
-    end
-
     --get target / rotate to target
     if self.target and self.target.dead then self.target = nil end
     

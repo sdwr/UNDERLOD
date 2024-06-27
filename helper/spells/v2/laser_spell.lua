@@ -22,9 +22,7 @@
 Laser_Spell = Spell:extend()
 function Laser_Spell:init(args)
   Laser_Spell.super.init(self, args)
-
-  print('creating laser')
-
+  
   self.color = self.color or blue[0]
   self.aim_color = self.aim_color or red[0]
   self.color_transparent = self.color:clone()
@@ -195,24 +193,30 @@ function Laser_Spell:update_charge(dt)
   if self.is_charging then
     self.charge_time = self.charge_time + dt
     if self.charge_time > self.charge_duration then
-      self.is_charging = false
-      self.is_firing = true
-      --fire here
-      shoot1:play{volume=0.2}
-      
-      if self.end_spell_on_fire then
-        self:finish_cast()
-      end
-      self.charge_sound:stop()
+     self:fire_laser()
     end
   elseif self.is_firing then
     self.fire_time = self.fire_time + dt
     if self.fire_time > self.fire_duration then
       if not self.end_spell_on_fire then
-        self:finish_cast()
+        self:die()
       end
     end
   end
+end
+
+function Laser_Spell:fire_laser()
+  self.is_charging = false
+  self.is_firing = true
+  --fire here
+  shoot1:play{volume=0.2}
+  
+  if self.end_spell_on_fire then
+    self:die()
+  else 
+    self:try_end_cast()
+  end
+  self.charge_sound:stop()
 end
 
 function Laser_Spell:try_damage()
@@ -267,12 +271,6 @@ function Laser_Spell:draw()
   graphics.pop()
 end
 
-function Laser_Spell:finish_cast()
-
-  Laser_Spell.super.finish_cast(self)
-
-end
-
 --helper
 
 function Laser_Spell:get_end_location(x, y, targetx, targety)
@@ -282,4 +280,9 @@ function Laser_Spell:get_end_location(x, y, targetx, targety)
 
   local angle = math.atan2(targety - y, targetx - x)
   return Helper.Geometry:move_point_radians(x, y, angle, self.length)
+end
+
+function Laser_Spell:cancel()
+  self.charge_sound:stop()
+  Laser_Spell.super.cancel(self)
 end

@@ -9,6 +9,7 @@ function Archer_Troop:init(data)
   self.baseCast = attack_speeds['short-cast']
   self.castTime = self.baseCast
   self.backswing = data.backswing or 0.1
+  self.castcooldown = math.random() * (self.base_castcooldown or self.baseCast)
 
   self.spell = nil
 end
@@ -100,7 +101,7 @@ function Archer_Troop:set_state_functions()
 
     --if we have a target, and we can cast, start casting
     --how to add delay to the cast? maybe just add put it in the spell
-    if Helper.Unit:can_attack(self) then
+    if Helper.Unit:can_cast(self) then
       self:setup_cast()
     end
   end

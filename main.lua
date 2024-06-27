@@ -1972,7 +1972,7 @@ function init()
       'stomper',
       'burst',
       'boomerang',
-      
+
       'plasma',
       'spread',
       
@@ -1982,7 +1982,7 @@ function init()
     },
     [3] = {
       'summoner',
-      'assassin',
+      -- 'assassin',
     },
   }
 

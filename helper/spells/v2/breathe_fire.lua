@@ -110,7 +110,3 @@ function Breathe_Fire:draw()
   end
   
 end
-
-function Breathe_Fire:finish_cast()
-  Breathe_Fire.super.finish_cast(self)
-end

@@ -49,8 +49,8 @@ function Summon_Spell:spawn()
   end
 end
 
-function Summon_Spell:finish_cast()
+function Summon_Spell:die()
   self:spawn()
 
-  Summon_Spell.super.finish_cast(self)
+  Summon_Spell.super.die(self)
 end

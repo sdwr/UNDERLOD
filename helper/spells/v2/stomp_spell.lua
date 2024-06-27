@@ -28,7 +28,7 @@ function Stomp_Spell:draw()
 end
 
 
-function Stomp_Spell:finish_cast()
+function Stomp_Spell:die()
   usurer1:play{pitch = random:float(0.95, 1.05), volume = 1.6}
 
   local targets = {}
@@ -46,5 +46,5 @@ function Stomp_Spell:finish_cast()
     for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
   end
 
-  Stomp_Spell.super.finish_cast(self)
+  Stomp_Spell.super.die(self)
 end

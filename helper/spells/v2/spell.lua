@@ -23,7 +23,7 @@
 -- and then when the cast:cast() is called, it will create a new instance of BreatheFire(spelldata)
 -- and store it in the unit's .spellObject variable
 -- the breathefire class will have its own duration and actions (rotating towards target, etc)
--- has a :finish_cast() when the spell finishes normally
+-- has a :die() when the spell finishes normally
 -- that calls :finish_cast() to reset the unit's state and remove the spellObject
 
 -- or the unit should be able to cancel the spellObject if it dies or is stunned
@@ -244,7 +244,7 @@ function Spell:update(dt)
   Try_Cancel_Cast(self)
   self.elapsedTime = Helper.Time.time - self.startTime
   if self.elapsedTime > self.spell_duration then
-    self:finish_cast()
+    self:die()
   end
   if self.elapsedTime > self.spell_duration + self.duration then
     self:die()
@@ -262,11 +262,11 @@ function Spell:cancel()
   self:die()
 end
 
-function Spell:finish_cast()
-  if DEBUG_SPELLS then
-    print('finish spell ', self.unit, self.name)
+function Spell:try_end_cast()
+  if self.unit and self.unit.spellObject == self and self.unit.end_cast then
+    self.unit:end_cast(self.castcooldown)
+    self.unit.spellObject = nil
   end
-  self:die()
 end
 
 --think about moving :die to GameObject (but then it still has to call the unit procs)
@@ -283,10 +283,6 @@ function Spell:die()
   if DEBUG_SPELLS then
     print('destroying spell: ', self.name)
   end
-  if self.unit and self.unit.spellObject == self and self.unit.end_cast then
-    print('ending cast')
-    self.unit:end_cast(self.castcooldown)
-    self.unit.spellObject = nil
-  end
+  self:try_end_cast()
   self.dead = true
 end

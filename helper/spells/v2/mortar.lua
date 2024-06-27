@@ -50,5 +50,5 @@ function Mortar_Spell:fire()
   }
 
   self.shots_left = self.shots_left - 1
-  if self.shots_left <= 0 then self:finish_cast() end
+  if self.shots_left <= 0 then self:die() end
 end

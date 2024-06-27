@@ -38,6 +38,7 @@ function Laser_Troop:set_character()
   self.castTime = self.baseCast
 
   self:set_state_functions()
+  self.castcooldown = math.random() * (self.base_castcooldown or self.baseCast)
 end
 
 function Laser_Troop:set_state_functions()
@@ -78,7 +79,7 @@ function Laser_Troop:set_state_functions()
             laser_aim_width = 1,
             damage_troops = false,
             damage_once = true,
-            end_spell_on_fire = true,
+            end_spell_on_fire = false,
             fire_follows_unit = false,
             fade_fire_draw = true,
             fade_in_aim_draw = true,

@@ -1020,44 +1020,6 @@ end
 --should be able to interrupt the cast with stuns or something, and have it kill the 
 --existing spell (say for a channeling spell)
 
-local example_spelldata = {
-  viable = function(unit) return unit:in_range()() end,
-  castcooldown = 1,
-  freezeduration = 0.5,
-  oncaststart = function(unit) 
-    unit:rotate_towards_object(unit.target, 1)
-    alert1:play{volume = 0.5}
-  end,
-  cast = function(unit) 
-    unit:rotate_towards_object(unit.target, 1)
-    unit:attack(20, {x = unit.target.x, y = unit.target.y})
-  end,
-}
-
---call this in the update function (split between player_troop, enemy, enemycritter, critter right now)
-function Unit:update_cast(dt)
-  if self.state == unit_states['casting'] then
-    local time = love.timer.getTime() - self.last_attack_started
-
-    if self.freezeduration and time + self.freezeduration > self.castTime then
-      self.freezerotation = true
-    end
-
-    if time >= self.castTime then
-      --let the spell handle the unit state change (might be different for each spell)
-      self:currentcast()
-      self:end_cast()
-    end
-  end
-  --update / clear cast cooldown
-  --frozen state is used here as the state where the unit is following through on the cast (stomp for example)
-  if self.castcooldown and self.castcooldown > 0 and self.state ~= unit_states['frozen'] then
-    self.castcooldown = self.castcooldown - dt
-  end
-
-
-end
-
 function Unit:pick_cast()
   if not self.attack_options then return end
 
@@ -1088,14 +1050,8 @@ function Unit:cast(castData)
     castCopy.y = self.y
     castCopy.unit = self
     castCopy.target = self:my_target()
-    print('casting spell', castCopy.name, 'from', self.type)
     self.castObject = Cast(castCopy)
-  else
-    --old spell system
-    print('casting old spell', castData.name, 'from', self.type)
-    self:start_cast(castData)
   end
-
 end
 
 function Unit:should_freeze_rotation()
@@ -1104,21 +1060,9 @@ function Unit:should_freeze_rotation()
     or (self.spellObject and self.spellObject.freeze_rotation)
 end
 
-function Unit:start_cast(spelldata)
-  self.state = unit_states['casting']
-  self.last_attack_started = love.timer.getTime()
-  self.currentcast = spelldata.cast
-  self.freezeduration = spelldata.freezeduration
-  if spelldata.oncaststart then
-    spelldata.oncaststart(self)
-  end
-
-end
-
 function Unit:end_cast(cooldown)
   self.castcooldown = cooldown
   self.spelldata = nil
-  self.freezeduration = nil
   self.freezerotation = false
   if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
     self.state = unit_states['normal']
@@ -1128,8 +1072,6 @@ function Unit:end_cast(cooldown)
   self.spellObject = nil
 end
 
---circular - what if called from spell? what if called from movement?
--- has to cancel spell either way
 function Unit:cancel_cast()
   if self.state == unit_states['casting'] then
     self.state = unit_states['normal']
@@ -1137,11 +1079,19 @@ function Unit:cancel_cast()
   self.castcooldown = 0
   self.spelldata = nil
 
+  --remove the cast object before calling :die() to prevent infinite loop
+  local castObject = self.castObject
+  local spellObject = self.spellObject
   self.castObject = nil
   self.spellObject = nil
+  if castObject then
+    castObject:cancel()
+  end
+  if spellObject then
+    spellObject:cancel()
+  end
 end
 
---if cast is interrupted, set the cooldown to half
 function Unit:interrupt_cast()
   if self.state == unit_states['casting'] then
     self.state = unit_states['normal']
