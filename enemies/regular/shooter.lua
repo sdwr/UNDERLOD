@@ -17,6 +17,7 @@ fns['init_enemy'] = function(self)
   self:set_restitution(0.5)
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
   self.class = 'regular_enemy'
+  self.attack_sensor = Circle(self.x, self.y, 100)
 
   --set attacks
   self.attack_options = {}
@@ -24,18 +25,17 @@ fns['init_enemy'] = function(self)
   local shoot = {
     name = 'shoot',
     viable = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end,
-    oncast = function() end,
+    oncast = function() self.target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies) end,
     cast_length = 0.8,
+    castcooldown = 1,
+    instantspell = true,
     spellclass = Arrow,
     spelldata = {
       group = main.current.effects,
       spell_duration = 1,
       color = blue[0],
       damage = self.dmg,
-      unit = self,
-      target = self.target,
     },
-    rotation_lock = true,
   }
   table.insert(self.attack_options, shoot)
 end

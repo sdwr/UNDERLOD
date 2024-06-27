@@ -1040,6 +1040,10 @@ function Unit:pick_cast()
   return true
 end
 
+function Unit:update_cast_cooldown(dt)
+  self.castcooldown = self.castcooldown - dt
+end
+
 function Unit:cast(castData)
   if castData.spellclass then
     if castData.oncast then
@@ -1075,9 +1079,9 @@ end
 function Unit:cancel_cast()
   if self.state == unit_states['casting'] then
     self.state = unit_states['normal']
+    self.castcooldown = 0
+    self.spelldata = nil
   end
-  self.castcooldown = 0
-  self.spelldata = nil
 
   --remove the cast object before calling :die() to prevent infinite loop
   local castObject = self.castObject

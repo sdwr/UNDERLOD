@@ -37,6 +37,7 @@ end
 --set castcooldown and self.base_castcooldown in the enemy file (init)
 function Enemy:update(dt)
     self:update_game_object(dt)
+    self:update_cast_cooldown(dt)
 
     self:onTickCallbacks(dt)
     self:update_buffs(dt)

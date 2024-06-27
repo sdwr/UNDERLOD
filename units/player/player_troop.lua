@@ -7,6 +7,7 @@ function Troop:init(args)
   self.target_rally = nil
   self.castTime = 0.3
   self.backswing = 0.2
+  self.castcooldown = self.baseCast or 1
   --buff examples...
   --self.buffs[1] = {name = buff_types['dmg'], amount = 0.2, color = red_transparent_weak}
   --self.buffs[2] = {name = buff_types['aspd'], amount = 0.2, color = green_transparent_weak}
@@ -40,6 +41,7 @@ end
 
 function Troop:update(dt)
   self:update_game_object(dt)
+  self:update_cast_cooldown(dt)
 
   self:onTickCallbacks(dt)
   self:update_buffs(dt)
