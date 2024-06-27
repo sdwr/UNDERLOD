@@ -47,6 +47,11 @@ end
 
 function Arrow:update(dt)
   self:update_game_object(dt)
+  
+  if not self.target or self.target.dead or self.dead then
+    self:die()
+    return
+  end
 
   local xdist = self.target.x - self.x
   local ydist = self.target.y - self.y
@@ -57,9 +62,6 @@ function Arrow:update(dt)
 
   self.shape:move_to(self.x, self.y)
 
-  if self.dead then return end
-  if not self.target then self:die() end
-  if self.target.dead then self:die() end
 
   if math.distance(self.x, self.y, self.target.x, self.target.y) < 10 then
     hit2:play{volume=0.7}

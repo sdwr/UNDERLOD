@@ -41,7 +41,8 @@ Try_Cancel_Cast = function(self)
       self:cancel()
     end
   end
-  if self.cancel_no_target and (not self.unit:my_target() or self.unit:my_target().dead == true) then
+  if self.cancel_no_target and 
+    (not self.unit or not self.unit:my_target() or self.unit:my_target().dead == true) then
     self:cancel()
   end
 end
@@ -125,11 +126,15 @@ function Cast:cast()
   self.spelldata.unit = self.unit
   self.spelldata.target = self.target
 
-  self.spelldata.castcooldown = self.castcooldown
+  local castcooldown = self.castcooldown or 1
+  self.spelldata.castcooldown = castcooldown
 
+  if self.oncastfinish then
+    self.oncastfinish(self)
+  end
   local spell = self.spellclass(self.spelldata)
   if self.instantspell then
-    self.unit:end_cast(self.castcooldown)
+    self.unit:end_cast(castcooldown)
   else
     self.unit.spellObject = spell
   end

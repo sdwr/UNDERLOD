@@ -854,6 +854,11 @@ Area:implement(GameObject)
 function Area:init(args)
   self:init_game_object(args)
   
+  if self.areatype == 'target' then
+    if self.target then
+      self.x, self.y = self.target.x, self.target.y
+    end
+  end
   if self.pick_shape == 'circle' then
     local w = 1.5*self.r
     self.shape = Circle(self.x, self.y, w)

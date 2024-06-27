@@ -11,7 +11,6 @@ function Archer_Troop:init(data)
   self.backswing = data.backswing or 0.1
   self.castcooldown = math.random() * (self.base_castcooldown or self.baseCast)
 
-  self.spell = nil
 end
 
 function Archer_Troop:setup_cast()
