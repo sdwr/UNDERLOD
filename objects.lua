@@ -1073,21 +1073,28 @@ function Unit:pick_cast()
   local attack = random:table(viable_attacks)
 
   print('unit ', self.type, ' picked cast: ' .. attack.name)
-  if attack.spellclass then
-    if attack.oncast then
-      attack.oncast(self)
+
+  self:cast(attack)
+  return true
+end
+
+function Unit:cast(castData)
+  if castData.spellclass then
+    if castData.oncast then
+      castData.oncast(self)
     end
-    local attackcopy = Deep_Copy_Cast(attack)
-    attackcopy.x = self.x
-    attackcopy.y = self.y
-    attackcopy.unit = self
-    attackcopy.target = self:my_target()
-    self.castObject = Cast(attackcopy)
+    local castCopy = Deep_Copy_Cast(castData)
+    castCopy.x = self.x
+    castCopy.y = self.y
+    castCopy.unit = self
+    castCopy.target = self:my_target()
+    print('casting spell', castCopy.name, 'from', self.type)
+    self.castObject = Cast(castCopy)
   else
     --old spell system
-    self:start_cast(attack)
+    print('casting old spell', castData.name, 'from', self.type)
+    self:start_cast(castData)
   end
-  return true
 
 end
 
@@ -1121,6 +1128,8 @@ function Unit:end_cast(cooldown)
   self.spellObject = nil
 end
 
+--circular - what if called from spell? what if called from movement?
+-- has to cancel spell either way
 function Unit:cancel_cast()
   if self.state == unit_states['casting'] then
     self.state = unit_states['normal']

@@ -14,10 +14,7 @@ require 'helper/spells/burst'
 require 'helper/spells/bomb'
 require 'helper/spells/frostfield'
 
-require 'helper/spells/v2/arrow_proj'
-
 require 'helper/spells/v2/spell'
-require 'helper/spells/v2/arrow'
 require 'helper/spells/v2/stomp_spell'
 require 'helper/spells/v2/laser_spell'
 require 'helper/spells/v2/spread_laser'

@@ -1,7 +1,16 @@
 
 TODO:
   - FIX LASER HITBOX!!!
-  
+  - match troop + enemy cooldowns (troops have 0 cooldown right now)
+    -move troops to "pick attack" system
+    - make sure switching targets/moving cancels the cast
+
+  - 
+
+
+  - make enemies spawn from screen edges instead of spawn points
+  - remove level walls
+
 
   - add modifier/achievement/difficulty system
     --each achieve unlocks a modifier that can be toggled per run

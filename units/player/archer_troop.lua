@@ -13,32 +13,31 @@ function Archer_Troop:init(data)
   self.spell = nil
 end
 
-function Archer_Troop:cancel_cast()
-  if self.spell then
-    self.spell:die()
-  end
-  self.spell = nil
-  if self.state == unit_states['casting'] then
-    self.state = unit_states['normal']
-  end
-end
-
-function Archer_Troop:cast()
-  self.state = unit_states['casting']
+function Archer_Troop:setup_cast()
   --on attack callbacks
   if self.onAttackCallbacks then
     self:onAttackCallbacks(self.target)
   end
   local data = {
     name = 'arrow',
-    group = main.current.effects,
+    viable = function() return Helper.Spell:target_is_in_range(self, self.attack_sensor.rs, false) end,
+    oncast = function() end,
     unit = self,
-    target = self:my_target(),
-    color = Helper.Color.blue,
-    damage = self.dmg,
-    castTime = self.castTime,
+    target = self.target,
+    castcooldown = self.cooldownTime,
+    cast_length = self.castTime,
+    backswing = 0.2,
+    instantspell = true,
+    spellclass = Arrow,
+    spelldata = {
+      group = main.current.effects,
+      spell_duration = 1,
+      color = blue[0],
+      damage = self.dmg,
+
+    }
   }
-  self.spell = Spell_Arrow(data)
+  self.castObject = Cast(data)
 end
 
 --need to implement generic cooldown time and cast time, so that we can use the same logic for all units
@@ -102,7 +101,7 @@ function Archer_Troop:set_state_functions()
     --if we have a target, and we can cast, start casting
     --how to add delay to the cast? maybe just add put it in the spell
     if Helper.Unit:can_attack(self) then
-      self:cast()
+      self:setup_cast()
     end
   end
 

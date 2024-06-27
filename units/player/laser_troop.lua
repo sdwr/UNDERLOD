@@ -37,65 +37,79 @@ function Laser_Troop:set_character()
   self.baseCast = attack_speeds['buff']
   self.castTime = self.baseCast
 
-  --if ready to cast and has target in range, start cast
-  self.state_always_run_functions['always_run'] = function()
+  self:set_state_functions()
+end
 
-    --prioritize moving towards target
-    --should only have a target if it is assigned now
-    -- or if it grabs a random target
-    --because random targets will be taken away after each attack
-    if Helper.Unit:target_out_of_range(self) then
-      self.state = unit_states['normal']
-      Helper.Spell.Laser:stop_aiming(self)
+function Laser_Troop:set_state_functions()
 
-    elseif Helper.Unit:can_cast(self) then
-      if not self:my_target() then
-        Helper.Unit:claim_target(self, Helper.Spell:get_nearest_least_targeted(self, self.attack_sensor.rs, true))
-      end
-      self.state = unit_states['casting']
-      Helper.Time:wait(get_random(0, 0.1), function()
-        
+    --if ready to cast and has target in range, start cast
+    self.state_always_run_functions['always_run'] = function()
+
+      --prioritize moving towards target
+      --should only have a target if it is assigned now
+      -- or if it grabs a random target
+      --because random targets will be taken away after each attack
+      if Helper.Unit:target_out_of_range(self) then
+        self.state = unit_states['normal']
+        Helper.Spell.Laser:stop_aiming(self)
+  
+      elseif Helper.Unit:can_cast(self) then
+        if not self:my_target() then
+          Helper.Unit:claim_target(self, Helper.Spell:get_nearest_least_targeted(self, self.attack_sensor.rs, true))
+        end
         --on attack callbacks
         if self.onAttackCallbacks then
           self:onAttackCallbacks(self.target)
         end
-        sniper_load:play{volume=0.2}
-        local args = { 
-          unit = self,
-          direction_lock = false,
-          laser_aim_width = 1,
-          laser_width = 4,
-          damage_troops = false,
-          damage = self.dmg,
-          color = Helper.Color.blue,
-        }
-        Helper.Spell.Laser:create(args)
-      end)
-    end
-    
-    --need 2 types of target - one for random targets, one for assigned targets
-    --if target is assigned, it will remain until the target dies or is reassigned
-    --but random targets will be reassigned every attack, to keep a nice spread of damage
 
-    --cancel if target moves out of range
-    if self:my_target() and not Helper.Spell:target_is_in_range(self, self.attack_sensor.rs, true) then
-      Helper.Spell.Laser:stop_aiming(self)
+        local data = {
+          name = 'laser',
+          viable = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.enemies); return target end,
+          oncast = function() end,
+          castcooldown = self.cooldownTime,
+          cast_length = 0.1,
+          spellclass = Laser_Spell,
+          spelldata = {
+            group = main.current.main,
+            spell_duration = 10,
+            color = blue[0],
+            damage = self.dmg,
+            lasermode = 'target',
+            laser_aim_width = 1,
+            damage_troops = false,
+            damage_once = true,
+            end_spell_on_fire = true,
+            fire_follows_unit = false,
+            fade_fire_draw = true,
+            fade_in_aim_draw = true,
+          }
+        }
+        self:cast(data)
+      end
+      
+      --need 2 types of target - one for random targets, one for assigned targets
+      --if target is assigned, it will remain until the target dies or is reassigned
+      --but random targets will be reassigned every attack, to keep a nice spread of damage
+  
+      --cancel if target moves out of range
+      if self:my_target() and not Helper.Spell:target_is_in_range(self, self.attack_sensor.rs, true) then
+        self:cancel_cast()
+        Helper.Unit:unclaim_target(self)
+      end
+    end
+  
+    --cancel on move
+    self.state_always_run_functions['following_or_rallying'] = function()
+      self:cancel_cast()
       Helper.Unit:unclaim_target(self)
     end
+  
+    self.state_change_functions['normal'] = function() end
+  
+    --cancel on death
+    self.state_change_functions['death'] = function()
+      self:cancel_cast()
+      Helper.Unit:unclaim_target(self)
+    end
+
   end
-
-  --cancel on move
-  self.state_always_run_functions['following_or_rallying'] = function()
-    Helper.Spell.Laser:stop_aiming(self)
-    Helper.Unit:unclaim_target(self)
-  end
-
-  self.state_change_functions['normal'] = function() end
-
-  --cancel on death
-  self.state_change_functions['death'] = function()
-    Helper.Spell.Laser:stop_aiming(self)
-    Helper.Unit:unclaim_target(self)
-  end
-
-end

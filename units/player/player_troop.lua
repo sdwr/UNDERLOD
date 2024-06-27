@@ -552,7 +552,7 @@ function Troop:castAnimation()
       if self.state == unit_states['frozen'] then
         self.state = unit_states['stopped']
       end
-      self:cast()
+      self:setup_cast()
       self.t:after(backswing, function() 
         if self.state == unit_states['stopped'] then
           self.state = unit_states['normal']
@@ -561,7 +561,7 @@ function Troop:castAnimation()
     end, 'castAnimation')
 end
 
-function Troop:cast()
+function Troop:setup_cast()
   if not self then return end
   if self.target and not self.target.dead then
     if self.character == 'wizard' then
