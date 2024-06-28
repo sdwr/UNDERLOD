@@ -67,46 +67,66 @@ fns['init_enemy'] = function(self)
   self.fireSweepRange = 200
   
   self.attack_options = {}
+
   local fire = {
     name = 'fire',
-    viable = function() return Helper.Spell:there_is_target_in_range(self, 100) end,
-    castcooldown = 0.5,
-    oncaststart = function() turret_hit_wall2:play{volume = 0.9} end,
-    cast = function()
-      print('starting fire cast')
-      Helper.Unit:claim_target(self, Helper.Spell:get_nearest_target(self))
-      Helper.Spell.Flame:create(Helper.Color.orange, 60, 100, self.fireDmg, self)
-      self.state = unit_states['frozen']
-      Helper.Spell.Flame:end_flame_after(self, self.fireDuration)
-    end,
+    viable = function() return Helper.Spell:there_is_target_in_range(self, 150) end,
+    castcooldown = 1,
+    oncast = function(self) self.target = Helper.Spell:get_nearest_target(self) end,
+    cast_length = 0.5,
+    spellclass = Breathe_Fire,
+    spelldata = {
+      group = main.current.main,
+      color = red[0],
+      team = "enemy",
+      flamewidth = 30,
+      flameheight = 150,
+      tick_interval = 0.125,
+      dps = 30,
+      spell_duration = 5,
+      follow_target = true,
+      freeze_rotation = true,
+      follow_speed = 20,
+    }, 
   }
 
   local fire_sweep = {
     name = 'fire_sweep',
     viable = function() return true end,
     castcooldown = 1,
-    oncaststart = function() turret_hit_wall2:play{volume = 0.9} end,
-    cast = function()
-      print('starting fire sweep cast')
-      --pick a random target, then rotate in a direction
-      local target = Helper.Spell:get_random_target_in_range(self, self.fireSweepRange)
-      if not target then target = Helper.Spell:get_nearest_target(self) end
-      Helper.Unit:claim_target(self, target)
-      Helper.Spell.Flame:create(Helper.Color.orange, 30, self.fireSweepRange, self.fireDmg, self, false)
-      self.state = unit_states['frozen']
-      Helper.Spell.Flame:end_flame_after(self, self.fireDuration)
-    end, 
+    oncast = function(self) self.target = Helper.Spell:get_nearest_target(self) end,
+    cast_length = 0.5,
+    spellclass = Breathe_Fire,
+    spelldata = {
+      group = main.current.main,
+      color = red[0],
+      team = "enemy",
+      flamewidth = 30,
+      flameheight = 150,
+      tick_interval = 0.125,
+      rotate_tick_interval = 1,
+      dps = 30,
+      spell_duration = 5,
+      follow_target = false,
+      freeze_rotation = true,
+      follow_speed = 45,
+    },
   }
 
   local fire_wall = {
     name = 'fire_wall',
     viable = function() return true end,
     castcooldown = 1,
-    oncaststart = function() turret_hit_wall2:play{volume = 0.9} end,
-    cast = function()
-      print('starting fire wall cast')
-      FireWall{unit = self}
-    end,
+    oncast = function(self) end,
+    cast_length = 1,
+    spellclass = FireWall,
+    instantspell = true,
+    spelldata = {
+      group = main.current.main,
+      color = red[0],
+      team = "enemy",
+      wall_type = "half",
+    },
   }
 
   table.insert(self.attack_options, fire)

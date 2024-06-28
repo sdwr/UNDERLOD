@@ -8,17 +8,22 @@ require 'helper/spells/laser'
 require 'helper/spells/damage_line'
 require 'helper/spells/spread_laser'
 require 'helper/spells/spread_missile'
-require 'helper/spells/damage_arc'
 require 'helper/spells/safety_dance'
 require 'helper/spells/sweep'
 require 'helper/spells/burst'
 require 'helper/spells/bomb'
 require 'helper/spells/frostfield'
 
-require 'helper/spells/v2/arrow_proj'
-
 require 'helper/spells/v2/spell'
-require 'helper/spells/v2/arrow'
+require 'helper/spells/v2/stomp_spell'
+require 'helper/spells/v2/laser_spell'
+require 'helper/spells/v2/spread_laser'
+require 'helper/spells/v2/breathe_fire'
+require 'helper/spells/v2/plasma_barrage'
+require 'helper/spells/v2/mortar'
+require 'helper/spells/v2/summon'
+
+require 'helper/spells/v2/instants'
 
 Helper.Spell.spells = {
     Helper.Spell.SpreadMissile,
@@ -301,7 +306,7 @@ function Helper.Spell:damage_points()
             end
             local x = point_damage.point.unit.x + point_damage.point.x
             local y = point_damage.point.unit.y + point_damage.point.y
-            HitCircle{group = main.current.effects, x = x, y = y, rs = 6, color = fg[0], duration = 0.1}
+            -- HitCircle{group = main.current.effects, x = x, y = y, rs = 6, color = fg[0], duration = 0.1}
             for i = 1, 1 do HitParticle{group = main.current.effects, x = x, y = y, color = blue[0]} end
             for i = 1, 1 do HitParticle{group = main.current.effects, x = x, y = y, color = blue[0]} end
         end

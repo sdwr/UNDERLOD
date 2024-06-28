@@ -23,10 +23,25 @@ fns['init_enemy'] = function(self)
     self.aggro_sensor = Circle(self.x, self.y, 1)
 
   --set attacks
-    self.t:cooldown(attack_speeds['slow'], function() return self.state == 'normal' and self.summons < self.maxSummons end, function()
-        Summon{group = main.current.main, team = "enemy", type = 'rager', amount = 1, castTime = 1.5,
-        x = self.x, y = self.y, rs = 15, color = purple[3], level = self.level, parent = self}
-    end, nil, nil, 'cast')
+  self.attack_options = {}
+
+  local summon = {
+    name = 'summon',
+    viable = function() return self.summons < self.maxSummons end,
+    castcooldown = 3,
+    oncast = function() end,
+    cast_length = 0.1,
+    spellclass = Summon_Spell,
+    spelldata = {
+      group = main.current.main,
+      amount = 4,
+      spell_duration = 2,
+      rs = 15,
+      color = purple[3],
+    }
+  }
+
+  table.insert(self.attack_options, summon)
 end
 
 fns['draw_enemy'] = function(self)   

@@ -15,10 +15,31 @@ fns['init_enemy'] = function(self)
   self.class = 'special_enemy'
 
   --set attacks
-    self.t:cooldown(attack_speeds['slow'], function() return true end, function ()
-        sniper_load:play{volume=0.9}
-        Helper.Spell.DamageArc:create_spread(self, Helper.Color.blue, true, false, self.dmg, 30, 3, 4, 50, self.x, self.y)
-    end, nil, nil, 'shoot')
+  self.attack_options = {}
+
+  local arcspread = {
+    name = 'arcspread',
+    viable = function () return true end,
+    oncast = function() end,
+    castcooldown = 2,
+    instantspell = true,
+    cast_length = 1.5,
+    spellclass = Arcspread,
+    spelldata = {
+      group = main.current.main,
+      unit = self,
+      target = self.target,
+      color = blue2[5],
+      damage = self.dmg,
+      pierce = 1,
+      thickness = 2,
+      numArcs = 4,
+
+      speed = 100,
+    }
+  }
+
+  table.insert(self.attack_options, arcspread)
 end
 
 fns['draw_enemy'] = function(self)

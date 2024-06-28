@@ -22,34 +22,25 @@ fns['init_enemy'] = function(self)
   local boomerang = {
     name = 'boomerang',
     viable = function () return true end,
-    castcooldown = 3,
-    cast = function()
-      cannoneer1:play{volume=0.7}
-
-      local r = 0
-      if self.target then
-        r = math.atan2(self.target.y - self.y, self.target.x - self.x)
-      else
-        r = math.random()*2*math.pi
-      end
-
-      local distance = 300
-
-      Boomerang{
-        group = main.current.main,
-        unit = self,
-        team = "enemy",
-        target = self.target,
-        x = self.x,
-        y = self.y,
-        r = r,
-        color = yellow[0],
-        damage = self.dmg,
-        speed = 100,
-        distance = distance,
-        parent = self
-      }
-    end
+    oncast = function() end,
+    castcooldown = 1,
+    instantspell = true,
+    cast_length = 1,
+    spellclass = Boomerang,
+    spelldata = {
+      group = main.current.main,
+      unit = self,
+      team = "enemy",
+      target = self.target,
+      x = self.x,
+      y = self.y,
+      spelltype = "targeted",
+      color = yellow[0],
+      damage = self.dmg,
+      speed = 100,
+      distance = 300,
+      parent = self
+    }
   }
 
   table.insert(self.attack_options, boomerang)

@@ -55,34 +55,62 @@ fns['init_enemy'] = function(self)
 
   --set attacks
   self.attack_options = {}
+
   local stomp = {
     name = 'stomp',
     viable = function() return self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies) end,
-    castcooldown = 2,
-    oncaststart = function() turret_hit_wall2:play{volume = 0.9} end,
-    cast = function()
-      Stomp{group = main.current.main, unit = self, team = "enemy", x = self.x, y = self.y, rs = self.attack_sensor.rs, color = red[0], dmg = 50, level = self.level, parent = self}
-    end,
+    castcooldown = 1,
+    oncast = function() end,
+    cast_length = 1,
+    spellclass = Stomp_Spell,
+    spelldata = {
+      group = main.current.main,
+      team = "enemy",
+      spell_duration = 1,
+      x = self.x,
+      y = self.y,
+      rs = self.attack_sensor.rs,
+      color = red[0],
+      dmg = 50,
+      parent = self
+    }
   }
+
   local mortar = {
     name = 'mortar',
-    viable = function() return self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) end,
-    castcooldown = 1,
-    oncaststart = function() turret_hit_wall2:play{volume = 0.9} end,
-    cast = function()
-      local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
-      Mortar{group = main.current.main, unit = self, team = "enemy", target = target, rs = 25, color = red[0], dmg = 30, level = self.level, parent = self}
-    end,
+    viable = function() return true end,
+    castcooldown = 2,
+    oncast = function() end,
+    instantspell = true,
+    cast_length = 1,
+    spellclass = Mortar_Spell,
+    spelldata = {
+      group = main.current.main,
+      team = "enemy",
+      spell_duration = 10,
+      num_shots = 3,
+      shot_interval = 0.7,
+      dmg = 30,
+      rs = 25,
+      parent = self
+    }
   }
-  
+
   local avalanche = {
     name = 'avalanche',
     viable = function() return true end,
-    castcooldown = 1,
-    oncaststart = function() turret_hit_wall2:play{volume = 0.9} end,
-    cast = function()
-      Avalanche{group = main.current.main, unit = self, team = "enemy", x = self.x, y = self.y, dmg = 30}
-    end, 
+    castcooldown = 4,
+    instantspell = true,
+    oncast = function() turret_hit_wall2:play{volume = 0.9} end,
+    spellclass = Avalanche,
+    spelldata = {
+      group = main.current.main,
+      unit = self,
+      team = "enemy",
+      x = self.x,
+      y = self.y,
+      dmg = 30
+    }
   }
 
   table.insert(self.attack_options, stomp)

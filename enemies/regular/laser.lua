@@ -27,7 +27,7 @@ fns['init_enemy'] = function(self)
 
   self.castcooldown = attack_speeds['medium']
 
-  self.direction_lock = true
+  self.direction_lock = false
   self.rotation_lock = false
 
   if self.mega then
@@ -45,35 +45,32 @@ fns['init_enemy'] = function(self)
   -- so that the laser can be drawn before the cast is finished
   -- and the spell can be cancelled properly if the unit dies or is stunned
   self.attack_options = {}
+
   local laser = {
     name = 'laser',
     viable = function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end,
-    freezeduration = 0.4,
+    oncast = function() self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) end,
     castcooldown = self.castcooldown,
-    oncaststart = function()
-      local target = Helper.Spell:get_furthest_target(self)
-      if target then
-        self:rotate_towards_object(target, 1)
-        Helper.Unit:claim_target(self, target)
-        self.state = unit_states['casting']
-        local args = {
-          unit = self,
-          direction_lock = self.direction_lock,
-          rotation_lock = self.rotation_lock,
-          laser_aim_width = 8,
-          damage = self.dmg,
-          damage_troops = true
-        }
-        
-
-        Helper.Spell.Laser:create(args)
-      end
-    end,
-    cast = function()
-      if self.state == unit_states['casting'] then
-        self.state = unit_states['normal']
-      end
-    end,
+    cast_length = 0.1,
+    spellclass = Laser_Spell,
+    --spell ends itself when firing, doesn't use duration
+    spelldata = {
+      group = main.current.main,
+      unit = self,
+      target = self.target,
+      spell_duration = 10,
+      color = blue[0],
+      damage = self.dmg,
+      lasermode = 'target',
+      laser_aim_width = 6,
+      damage_troops = true,
+      damage_once = true,
+      end_spell_on_fire = false,
+      fire_follows_unit = false,
+      fade_fire_draw = true,
+      fade_in_aim_draw = true,
+      lock_last_duration = 0.3
+    },
   }
 
   table.insert(self.attack_options, laser)

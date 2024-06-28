@@ -2,20 +2,6 @@
 
 local fns = {}
 
-fns['shoot'] = function(self, r, mods)
-  mods = mods or {}
-  local t = {group = main.current.main, unit = self, x = self.x, y = self.y, v = 175, r = r, color = self.color, dmg = self.dmg}
-  self.hfx:use('shoot', 0.25)
-  self.state = unit_states['frozen']
-
-  self.t:after(0.4, function()
-    self.state = unit_states['stopped']
-    HitCircle{group = main.current.effects, x = self.x , y = self.y, rs = 6, duration = 0.1}
-    EnemyProjectile(table.merge(t, mods or {}))
-    end, 'stopped')
-  self.t:after(0.4 + .4, function() self.state = unit_states['normal'] end, 'normal')
-
-end
 
 fns['init_enemy'] = function(self)
 
@@ -31,16 +17,27 @@ fns['init_enemy'] = function(self)
   self:set_restitution(0.5)
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
   self.class = 'regular_enemy'
+  self.attack_sensor = Circle(self.x, self.y, 100)
 
   --set attacks
-    self.attack_sensor = Circle(self.x, self.y, 100)
-    self.t:cooldown(attack_speeds['slow'], function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end, function ()
-      local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies)
-      if target then
-        self:rotate_towards_object(target, 1)
-        fns['shoot'](self, self:angle_to_object(target))
-      end
-    end, nil, nil, 'shoot')
+  self.attack_options = {}
+
+  local shoot = {
+    name = 'shoot',
+    viable = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end,
+    oncast = function() self.target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies) end,
+    cast_length = 0.8,
+    castcooldown = 1,
+    instantspell = true,
+    spellclass = Arrow,
+    spelldata = {
+      group = main.current.effects,
+      spell_duration = 1,
+      color = blue[0],
+      damage = self.dmg,
+    },
+  }
+  table.insert(self.attack_options, shoot)
 end
 
 fns['draw_enemy'] = function(self)   

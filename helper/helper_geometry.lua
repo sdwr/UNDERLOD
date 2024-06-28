@@ -1,5 +1,9 @@
 Helper.Geometry = {}
 
+function Helper.Geometry:angle_between(x1, y1, x2, y2)
+    return math.atan2(y2 - y1, x2 - x1)
+end
+
 function Helper.Geometry:get_triangle_from_height_and_width(x, y, xh, yh, height, width)
     local a = math.atan(math.abs(xh - x) / math.abs(yh - y))
     if xh > x and yh > y then
@@ -174,6 +178,13 @@ function Helper.Geometry.rotate_to(centerx, centery, fromx, fromy, tox, toy, spe
 end
 
 function Helper.Geometry:move_point(x, y, angle, amount)
+    angle = angle % (2 * math.pi)
+    local x2 = x + (amount * math.cos(angle))
+    local y2 = y + (amount * math.sin(angle))
+    return x2, y2
+end
+
+function Helper.Geometry:move_point_radians(x, y, angle, amount)
     local x2 = x + (amount * math.cos(angle))
     local y2 = y + (amount * math.sin(angle))
     return x2, y2

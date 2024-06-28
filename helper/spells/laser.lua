@@ -3,6 +3,9 @@ Helper.Spell.Laser.list = {}
 
 function Helper.Spell.Laser:create(args)
 
+    if not args.unit then
+        return
+    end
     local laser = {
         unit = args.unit,
         start_aim_time = Helper.Time.time,

@@ -7,6 +7,7 @@ function Troop:init(args)
   self.target_rally = nil
   self.castTime = 0.3
   self.backswing = 0.2
+  self.castcooldown = self.baseCast or 1
   --buff examples...
   --self.buffs[1] = {name = buff_types['dmg'], amount = 0.2, color = red_transparent_weak}
   --self.buffs[2] = {name = buff_types['aspd'], amount = 0.2, color = green_transparent_weak}
@@ -40,6 +41,7 @@ end
 
 function Troop:update(dt)
   self:update_game_object(dt)
+  self:update_cast_cooldown(dt)
 
   self:onTickCallbacks(dt)
   self:update_buffs(dt)
@@ -552,7 +554,7 @@ function Troop:castAnimation()
       if self.state == unit_states['frozen'] then
         self.state = unit_states['stopped']
       end
-      self:cast()
+      self:setup_cast()
       self.t:after(backswing, function() 
         if self.state == unit_states['stopped'] then
           self.state = unit_states['normal']
@@ -561,7 +563,7 @@ function Troop:castAnimation()
     end, 'castAnimation')
 end
 
-function Troop:cast()
+function Troop:setup_cast()
   if not self then return end
   if self.target and not self.target.dead then
     if self.character == 'wizard' then

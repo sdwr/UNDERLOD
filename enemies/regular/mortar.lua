@@ -16,14 +16,30 @@ fns['init_enemy'] = function(self)
   self.class = 'special_enemy'
 
   --set attacks
-    self.t:cooldown(attack_speeds['slow'], function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end, function ()
-      local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
-      if target then
-        self:rotate_towards_object(target, 1)
-        Mortar{group = main.current.main, unit = self, team = "enemy", target = target, rs = 25, color = red[0], dmg = self.dmg, level = self.level, parent = self}
-      end
-    end, nil, nil, 'shoot')
-end
+  self.attack_options = {}
+
+  local mortar = {
+    name = 'mortar',
+    viable = function() return self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) end,
+    castcooldown = 1,
+    oncast = function() end,
+    cast_length = 1,
+    spellclass = Mortar_Spell,
+    spelldata = {
+      group = main.current.main,
+      spell_duration = 10,
+      num_shots = 3,
+      shot_interval = 0.7,
+      dmg = 30,
+      rs = 25,
+      parent = self
+    }
+  }
+
+  table.insert(self.attack_options, mortar)
+
+  end
+
 
 fns['draw_enemy'] = function(self)
   graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)

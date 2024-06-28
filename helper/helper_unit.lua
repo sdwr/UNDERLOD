@@ -104,22 +104,12 @@ function Helper.Unit:can_cast(unit, points)
     --still missing is chasing down a target that moves out of range
     if unit then
         return (unit.state == unit_states['normal'] or unit.state == unit_states['stopped'])
-        and Helper.Time.time - unit.last_attack_finished > unit.cooldownTime
         and Helper.Spell:there_is_target_in_range(unit, unit.attack_sensor.rs, points)
+        and unit.castcooldown <= 0
     end
     return false
 end
 
---expects the unit to have a target already
-function Helper.Unit:can_attack(unit, points)
-    points = points or false
-    if unit then
-        return (unit.state == unit_states['normal'] or unit.state == unit_states['stopped'] )
-        and Helper.Spell:target_is_in_range(unit, unit.attack_sensor.rs, points)
-        and Helper.Time.time - unit.last_attack_finished > unit.cooldownTime
-    end
-    return false
-end
 
 function Helper.Unit:start_casting(unit)
     if unit then
