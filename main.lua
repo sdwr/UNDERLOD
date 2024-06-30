@@ -1505,7 +1505,8 @@ function init()
     ['mvspd'] = 'move speed',
     ['aspd'] = 'attack speed',
     ['hp'] = 'hp',
-    ['def'] = 'defense',
+    ['flat_def'] = 'flat defence',
+    ['percent_def'] = 'percent defence',
     ['area_size'] = 'area size',
     ['vamp'] = 'vampirism',
     ['ghost'] = 'move through units',
@@ -1656,14 +1657,14 @@ function init()
   buff_types = {
     ['dmg'] = 'dmg',
     ['aspd'] = 'aspd',
-    ['def'] = 'def',
+    ['flat_def'] = 'flat defence',
+    ['percent_def'] = 'percent defence',
     ['mvspd'] = 'mvspd',
     ['area_dmg'] = 'area_dmg',
     ['area_size'] = 'area_size',
     ['hp'] = 'hp',
     ['status_resist'] = 'status_resist',
     ['range'] = 'range',
-    ['dmg_per_def'] = 'dmg_per_def',
 
     ['shield'] = 'shield',
 

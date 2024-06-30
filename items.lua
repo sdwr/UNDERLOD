@@ -464,6 +464,15 @@ item_to_item_data = {
     procs = {'sacrificialclam'},
     tags = {'sacrifice'}
   },
+  ['curse'] = {
+    name = 'curse',
+    colors = {'green'},
+    cost = 10,
+    icon = 'curse',
+    desc = 'Periodically curse nearby enemies, causing them to take more damage',
+    stats = {dmg = 0.25},
+    procs = {'curse'},
+  },
 
   --not yet implemented
   --------------------

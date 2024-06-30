@@ -186,8 +186,16 @@ function DamageArc:move(dt)
   end
 end
 
+function DamageArc:get_line()
+  local x1, y1 = Helper.Geometry:move_point(self.x, self.y, self.angle, self.radius)
+  local x2, y2 = Helper.Geometry:move_point(self.x, self.y, self.angle + self.width, self.radius)
+
+  return x1, y1, x2, y2
+
+end
+
 function DamageArc:try_damage()
-  local x1, y1, x2, y2  = Helper.Spell.DamageArc:getLine(self)
+  local x1, y1, x2, y2  = self:get_line()
   local line = Line(x1, y1, x2, y2)
   
   local targets = main.current.main:get_objects_in_shape(line, friendly_classes, self.targets_hit)

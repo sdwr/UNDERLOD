@@ -160,6 +160,16 @@ function Helper.Spell:get_random_target_in_range(unit, range)
     return -1
 end
 
+function Helper.Spell:get_random_target_in_range_from_point(x, y, range, is_troop)
+    local unit = {
+        x = x,
+        y = y,
+        is_troop = is_troop
+    }
+
+    return self:get_random_target_in_range(unit, range)
+end
+
 function Helper.Spell:get_nearest_target_from_point(x, y, target_is_troop)
     local unit = {
         x = x,

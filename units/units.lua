@@ -128,6 +128,25 @@ end
 
 --util functions
 
+function Team:get_center()
+  local x = 0
+  local y = 0
+  local count = 0
+  for i, troop in ipairs(self.troops) do
+    if not troop.dead then
+      x = x + troop.x
+      y = y + troop.y
+      count = count + 1
+    end
+  end
+  if count == 0 then
+    return {x = 0, y = 0}
+  else
+    return {x = x / count, y = y / count}
+  end
+
+end
+
 function Team:get_enemies_in_range(range)
   local enemies = {}
   for i, troop in ipairs(self.troops) do

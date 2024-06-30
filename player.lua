@@ -914,6 +914,9 @@ function Area:damage()
     if self.burnDps then
       target:burn(self.burnDps, self.burnDuration, self.unit)
     end
+    if self.debuff then
+      target:add_buff(self.debuff, self.debuffDuration, self.unit)
+    end
     if self.dmg > 0 then
       target:hit(self.dmg, self.unit)
       HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}

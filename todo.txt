@@ -1,11 +1,6 @@
 
 TODO:
   - FIX LASER HITBOX!!!
-  - match troop + enemy cooldowns (troops have 0 cooldown right now)
-    -move troops to "pick attack" system
-    - make sure switching targets/moving cancels the cast
-
-  - 
 
 
   - make enemies spawn from screen edges instead of spawn points
@@ -110,6 +105,8 @@ TODO:
   - do ranged enemies need a melee attack? (can sit on them right now)
     - damage on contact
     - knockback stomp 
+
+  - first boss needs unavoidable damage? or leave as is
    
   - add more dodgeable attacks / enemies
     - laser is good

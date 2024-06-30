@@ -340,6 +340,75 @@ function Proc_SacrificialClam:onTick(dt, from)
   end
 end
 
+Proc_Curse = Proc:extend()
+function Proc_Curse:init(args)
+  self.triggers = {PROC_ON_TICK}
+  self.scope = 'team'
+
+  Proc_Curse.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  self.buffname = 'curse'
+  self.buffDuration = self.data.buffDuration or 3
+  self.seek_radius = 100
+  self.radius = self.data.radius or 50
+  self.color = self.data.color or purple[0]
+  self.buffdata = {name = self.buffname, duration = self.buffDuration, color = self.color,
+    stats = {percent_def = -0.4}
+  }
+
+  self.tick_interval = self.data.tick_interval or 5 
+  --proc memory
+  self.tick_timer = math.random() * self.tick_interval
+end
+
+function Proc_Curse:onTick(dt, from)
+  Proc_Curse.super.onTick(self, dt)
+
+  if not self.team then
+    print('error: no team for proc', self.name)
+    return
+  end
+
+  --only tick once per tick
+  if not self.team:is_first_troop(from) then return end
+
+  self.tick_timer = self.tick_timer + dt
+  if self.tick_timer < self.tick_interval then return end
+
+  local center = self.team:get_center()
+  local enemy = Helper.Spell:get_random_target_in_range_from_point(center.x, center.y, self.seek_radius, from.is_troop)
+  if not enemy or enemy == -1 then return end
+
+  self.tick_timer = 0
+  self:curse(enemy, from)
+end
+
+function Proc_Curse:curse(target, from)
+  if not target then return end
+  print('trigger curse!')
+  print(target)
+  glass_shatter:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+
+  local randomx = random:float(-10, 10)
+  local randomy = random:float(-10, 10)
+
+  Area{
+    group = main.current.effects, 
+    x = target.x + randomx, y = target.y + randomy,
+    pick_shape = 'circle',
+    dmg = 0, r = self.radius, duration = 0.2, color = self.color,
+    is_troop = from.is_troop,
+    debuff = self.buffdata
+  
+  }
+
+end
+
+
+
 --proc overkill
 Proc_Overkill = Proc:extend()
 function Proc_Overkill:init(args)
@@ -901,7 +970,7 @@ function Proc_Icenova:init(args)
   Proc_Icenova.super.init(self, args)
 
   --define the proc's vars
-  self.damage = self.data.damage or 10
+  self.damageMulti = self.data.damageMulti or 1
   self.radius = self.data.radius or 30
   self.duration = self.data.duration or 0.2
   self.slowAmount = self.data.slowAmount or 0.5
@@ -964,13 +1033,14 @@ function Proc_Icenova:cast()
   --play sound
   glass_shatter:play{pitch = random:float(0.8, 1.2), volume = 0.8}
 
+  local damage = self.unit.dmg * self.damageMulti
   --cast here, note that the spell has duration, but we only want it to trigger once
   Area{
     group = main.current.effects,
     unit = self.unit,
     x = self.unit.x, y = self.unit.y,
     pick_shape = 'circle',
-    dmg = self.damage,
+    dmg = damage,
     r = self.radius + 3, duration = self.duration, color = self.color,
     is_troop = self.unit.is_troop,
     slowAmount = self.slowAmount,
@@ -1071,6 +1141,7 @@ proc_name_to_class = {
   --green procs
   ['heal'] = Proc_Heal,
   ['sacrificialclam'] = Proc_SacrificialClam,
+  ['curse'] = Proc_Curse,
 
   -- elemental procs
   ['eledmg'] = Proc_Eledmg,

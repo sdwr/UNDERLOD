@@ -495,8 +495,10 @@ function Unit:get_item_stats()
       for stat, amt in pairs(item.stats) do
         if stat == buff_types['dmg'] then
           stats.dmg = (stats.dmg or 0) + amt
-        elseif stat == buff_types['def'] then
-          stats.def = (stats.def or 0) + amt
+        elseif stat == buff_types['flat_def'] then
+          stats.flat_def = (stats.flat_def or 0) + amt
+        elseif stat == buff_types['percent_def'] then
+          stats.percent_def = (stats.percent_def or 0) + amt
         elseif stat == buff_types['mvspd'] then
           stats.mvspd = (stats.mvspd or 0) + amt
         elseif stat == buff_types['aspd'] then
@@ -581,7 +583,9 @@ function Unit:calculate_stats(first_run)
       for stat, amt in pairs(enemy_stats) do
         if stat == buff_types['dmg'] then
           self.class_dmg_m = amt
-        elseif stat == buff_types['def'] then
+        elseif stat == buff_types['flat_def'] then
+          self.class_def_a = amt
+        elseif stat == buff_types['percent_def'] then
           self.class_def_m = amt
         elseif stat == buff_types['mvspd'] then
           self.class_mvspd_m = amt
@@ -623,6 +627,8 @@ function Unit:calculate_stats(first_run)
             self.status_resist = self.status_resist + amtWithStacks
           elseif stat == buff_types['range'] then
             self.buff_range_m = self.buff_range_m + amtWithStacks
+          elseif stat == buff_types['percent_def'] then
+              self.buff_def_m = self.buff_def_m + stat
 
 
           elseif stat == buff_types['eledmg'] then
@@ -633,12 +639,8 @@ function Unit:calculate_stats(first_run)
             self.vamp = self.vamp + amtWithStacks
 
           --flat stats
-          elseif stat == buff_types['def'] then
+          elseif stat == buff_types['flat_def'] then
             self.buff_def_a = self.buff_def_a + amtWithStacks
-          --should do this after all other stats are calculated
-          elseif stat == buff_types['dmg_per_def'] then
-            local def = self.buff_def_a
-            self.buff_dmg_a = self.buff_dmg_a + def*amtWithStacks
           end
           
         end
@@ -653,7 +655,9 @@ function Unit:calculate_stats(first_run)
         for stat, amt in pairs(item.stats) do
           if stat == buff_types['dmg'] then
             self.buff_dmg_m = self.buff_dmg_m + amt
-          elseif stat == buff_types['def'] then
+          elseif stat == buff_types['flat_def'] then
+            self.buff_def_a = self.buff_def_a + amt
+          elseif stat == buff_types['percent_def'] then
             self.buff_def_m = self.buff_dmg_m + amt
           elseif stat == buff_types['mvspd'] then
             self.buff_mvspd_m = self.buff_mvspd_m + amt
@@ -1033,8 +1037,6 @@ function Unit:pick_cast()
   if #viable_attacks == 0 then return false end
 
   local attack = random:table(viable_attacks)
-
-  print('unit ', self.type, ' picked cast: ' .. attack.name)
 
   self:cast(attack)
   return true
