@@ -180,7 +180,7 @@ function Helper.Spell:get_nearest_target_from_point(x, y, target_is_troop)
     return self:get_nearest_target(unit)
 end
 
-function Helper.Spell:get_nearest_least_targeted(unit, range, points)
+function Helper.Spell:get_random_in_range(unit, range, points)
     points = points or false
     range = range + 30
     
@@ -206,27 +206,11 @@ function Helper.Spell:get_nearest_least_targeted(unit, range, points)
         end
     end
 
-    local targeted_min = 9999
-    for i, value in ipairs(target_list) do
-        if #value.targeted_by < targeted_min then
-            targeted_min = #value.targeted_by
-        end
+    if #target_list == 0 then
+        return -1
     end
-
-    local least_targeted_units = {}
-    for i, value in ipairs(target_list) do
-        if #value.targeted_by == targeted_min then
-            table.insert(least_targeted_units, value)
-        end
-    end
-
-    local globalTarget = nil
-    if main and main.current and main.current.targetedEnemy then
-        globalTarget = main.current.targetedEnemy
-        table.insert(least_targeted_units, globalTarget)
-    end
-
-    return Helper.Spell:get_nearest_target(unit, least_targeted_units)
+    
+    return random:table(target_list)
 end
 
 function Helper.Spell:is_in_range(unit, target, range, points)

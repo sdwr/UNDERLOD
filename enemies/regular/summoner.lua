@@ -33,6 +33,7 @@ fns['init_enemy'] = function(self)
     cast_length = 0.1,
     spellclass = Summon_Spell,
     spelldata = {
+      cancel_on_death = true,
       group = main.current.main,
       amount = 4,
       spell_duration = 2,

@@ -34,16 +34,12 @@ end
 function Helper.Unit:add_custom_variables_to_unit(unit)
     unit.previous_state = ''
 
-    unit.targeted_by = {}
     unit.state_change_functions = {}
     unit.state_always_run_functions = {}
     unit.last_attack_started = -999999
     unit.last_attack_finished = -999999
     unit.ignore_cooldown = false
-    unit.death_function = function()  
-        for i = #unit.targeted_by, 1, -1 do
-            unit.targeted_by[i].state_change_functions['target_death']()
-        end
+    unit.death_function = function()
 
         if unit == Helper.Unit.flagged_enemy then
             Helper.Unit.flagged_enemy = -1
@@ -71,12 +67,8 @@ function Helper.Unit:claim_target(unit, target)
             if unit.target == target then
                 return
             end
-            if unit.target then
-                table.remove(unit.target.targeted_by, find_in_list(unit.target.targeted_by, unit))
-            end
         end
         unit:set_target(target)
-        table.insert(unit.target.targeted_by, unit)
     end
 end
 
@@ -84,7 +76,6 @@ end
 function Helper.Unit:unclaim_target(unit)
     --only clear my target, not assigned target
     if unit.target then
-        table.remove(unit.target.targeted_by, find_in_list(unit.target.targeted_by, unit))
         unit:clear_my_target()
     end
 end

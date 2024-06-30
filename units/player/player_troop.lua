@@ -359,7 +359,7 @@ function Troop:set_character()
     --if ready to cast and has target in range, start casting
     self.state_always_run_functions['always_run'] = function()
       if Helper.Unit:can_cast(self) then
-        Helper.Unit:claim_target(self, Helper.Spell:get_nearest_least_targeted(self, self.attack_sensor.rs))
+        Helper.Unit:claim_target(self, Helper.Spell:get_random_in_range(self, self.attack_sensor.rs))
 
         --on attack callbacks
         if self.onAttackCallbacks then

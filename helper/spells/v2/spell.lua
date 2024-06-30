@@ -204,18 +204,17 @@ function Spell:init(args)
 
   --instant casts are 0?
   self.spell_duration = self.spell_duration or 0
-  self.die_on_finish = self.die_on_finish or false
-
+  self.die_on_finish = self.die_on_finish
   self.duration = self.duration or 10
 
 
 
   --when to cancel
-  self.cancel_on_death = self.cancel_on_death or true
-  self.cancel_on_range = self.cancel_on_range or false
+  self.cancel_on_death = self.cancel_on_death
+  self.cancel_on_range = self.cancel_on_range
   self.cancel_range = self.range or 300
 
-  self.cancel_no_target = self.cancel_no_target or false
+  self.cancel_no_target = self.cancel_no_target
 
   self.startTime = Helper.Time.time
   self.elapsedTime = 0

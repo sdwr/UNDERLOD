@@ -900,6 +900,25 @@ end
 
 function Area:damage()
   local targets = {}
+
+  --healing area
+  if self.heal then
+    targets = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
+    for _, target in ipairs(targets) do
+      target:heal(self.heal)
+    end
+    return
+  end
+
+  --root targets
+  if self.rootDuration then
+    targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
+    for _, target in ipairs(targets) do
+      target:root(self.rootDuration, self.unit)
+    end
+    return
+  end
+  
   if self.is_troop then 
     targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
   else

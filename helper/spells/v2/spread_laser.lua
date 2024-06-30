@@ -33,8 +33,6 @@ function Spread_Laser:initCoords()
     self.target_x = self.target.x
     self.target_y = self.target.y
     self.r = math.atan2(self.target_y - self.unit.y, self.target_x - self.unit.x)
-    print('spread laser target', self.target_x, self.target_y, self.r)
-    print('spread_width', self.spread_width)
   elseif self.spread_type == 'scatter' then
     self.r = math.random(0, 2 * math.pi)
   end
@@ -99,7 +97,6 @@ function Spread_Laser:shoot_laser()
   }
   local laser = Laser_Spell(spelldata)
   table.insert(self.laser_beams, laser)
-  print('laser shot with r', r)
 end
 
 function Spread_Laser:die()
@@ -110,6 +107,5 @@ function Spread_Laser:die()
       laser_beam:die()
     end
   end
-  print('spread laser died')
   self.laser_beams = {}
 end

@@ -340,6 +340,68 @@ function Proc_SacrificialClam:onTick(dt, from)
   end
 end
 
+Proc_HealingWave = Proc:extend()
+function Proc_HealingWave:init(args)
+  self.triggers = {PROC_ON_TICK}
+  self.scope = 'team'
+
+  Proc_HealingWave.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  self.tick_interval = self.data.tick_interval or 5
+
+  self.healAmount = self.data.healAmount or 25
+  self.radius = self.data.radius or 75
+  self.color = self.data.color or green[0]
+
+  --proc memory
+  self.tick_timer = 0
+end
+
+function Proc_HealingWave:onTick(dt, from)
+  Proc_HealingWave.super.onTick(self, dt)
+
+  if not self.team then
+    print('error: no team for proc', self.name)
+    return
+  end
+
+  --only tick once per tick
+  if not self.team:is_first_troop(from) then return end
+
+  self.tick_timer = self.tick_timer + dt
+  if self.tick_timer < self.tick_interval then return end
+
+  local center = self.team:get_center()
+  if not center then return end
+
+  self:cast(center, from)
+end
+
+function Proc_HealingWave:cast(target, from)
+  if not target then return end
+
+  heal1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+  self.tick_timer = 0
+
+  local randomx = random:float(-10, 10)
+  local randomy = random:float(-10, 10)
+
+  Area{
+    group = main.current.effects, 
+    x = target.x + randomx, y = target.y + randomy,
+    pick_shape = 'circle',
+    dmg = 0, r = self.radius, duration = 0.2, color = self.color,
+    is_troop = from.is_troop,
+    heal = self.healAmount
+  }
+
+end
+
+
+
 Proc_Curse = Proc:extend()
 function Proc_Curse:init(args)
   self.triggers = {PROC_ON_TICK}
@@ -382,14 +444,12 @@ function Proc_Curse:onTick(dt, from)
   local enemy = Helper.Spell:get_random_target_in_range_from_point(center.x, center.y, self.seek_radius, from.is_troop)
   if not enemy or enemy == -1 then return end
 
-  self.tick_timer = 0
+  self.tick_timer = math.random() * self.tick_interval
   self:curse(enemy, from)
 end
 
 function Proc_Curse:curse(target, from)
   if not target then return end
-  print('trigger curse!')
-  print(target)
   glass_shatter:play{pitch = random:float(0.8, 1.2), volume = 0.5}
 
   local randomx = random:float(-10, 10)
@@ -404,7 +464,68 @@ function Proc_Curse:curse(target, from)
     debuff = self.buffdata
   
   }
+end
 
+Proc_Root = Proc:extend()
+function Proc_Root:init(args)
+  self.triggers = {PROC_ON_TICK}
+  self.scope = 'team'
+
+  Proc_Root.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  self.buffname = 'root'
+  self.rootDuration = self.data.rootDuration or 3
+  self.seek_radius = 100
+  self.radius = self.data.radius or 50
+  self.color = self.data.color or green[0]
+
+  self.tick_interval = self.data.tick_interval or 5 
+  --proc memory
+  self.tick_timer = math.random() * self.tick_interval
+end
+
+function Proc_Root:onTick(dt, from)
+  Proc_Root.super.onTick(self, dt)
+
+  if not self.team then
+    print('error: no team for proc', self.name)
+    return
+  end
+
+  --only tick once per tick
+  if not self.team:is_first_troop(from) then return end
+
+  self.tick_timer = self.tick_timer + dt
+  if self.tick_timer < self.tick_interval then return end
+
+  local center = self.team:get_center()
+  local enemy = Helper.Spell:get_random_target_in_range_from_point(center.x, center.y, self.seek_radius, from.is_troop)
+  if not enemy or enemy == -1 then return end
+
+  self:root(enemy, from)
+end
+
+function Proc_Root:root(target, from)
+  if not target then return end
+
+  glass_shatter:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+  self.tick_timer = 0
+
+  local randomx = random:float(-10, 10)
+  local randomy = random:float(-10, 10)
+
+  Area{
+    group = main.current.effects, 
+    x = target.x + randomx, y = target.y + randomy,
+    pick_shape = 'circle',
+    dmg = 0, r = self.radius, duration = 0.2, color = self.color,
+    is_troop = from.is_troop,
+    rootDuration = self.rootDuration
+  
+  }
 end
 
 
@@ -747,7 +868,7 @@ end
 
 Proc_Lavaman = Proc:extend()
 function Proc_Lavaman:init(args)
-  self.triggers = {PROC_ON_ROUND_START}
+  self.triggers = {PROC_ON_TICK}
   self.scope = 'team'
 
   Proc_Lavaman.super.init(self, args)
@@ -756,12 +877,59 @@ function Proc_Lavaman:init(args)
 
   --define the proc's vars
   self.buffname = 'lavaman'
-  self.buffDuration = self.data.buffDuration or 5
-  self.damage = self.data.damage or 10
-  self.radius = self.data.radius or 30
+  self.tick_interval = 5
   self.color = self.data.color or red[0]
 
-  --do nothing for now
+  --proc memory
+  self.tick_timer = math.random() * self.tick_interval
+end
+
+function Proc_Lavaman:onTick(dt, from)
+  Proc_Lavaman.super.onTick(self, dt)
+
+  if not self.team then
+    print('error: no team for proc', self.name)
+    return
+  end
+
+  --only tick once per tick
+  if not self.team:is_first_troop(from) then return end
+  --should cancel when all troops in the team are dead
+
+  self.tick_timer = self.tick_timer + dt
+  if self.tick_timer < self.tick_interval then return end
+
+  self:try_spawn()
+end
+
+function Proc_Lavaman:try_spawn()
+
+  -- find a random free spot in the team
+  self:find_free_spot()
+  
+  illusion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+  self.tick_timer = 0
+end
+
+function Proc_Lavaman:find_free_spot()
+  local tries = 10
+  local center = self.team:get_center()
+  for i = 1, tries do
+    local offset = SpawnGlobals.spawn_offsets[i % #SpawnGlobals.spawn_offsets]
+    local coords = {x = center.x + offset.x, y = center.y + offset.y}
+    if Can_Spawn(2, coords) then
+      self:spawn(coords)
+      return
+    end
+  end
+end
+
+function Proc_Lavaman:spawn(coords)
+  illusion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+  self.tick_timer = 0
+  Critter{group = main.current.main,
+    x = coords.x, y = coords.y, color = self.color, r = random:float(0, 2*math.pi)
+  }
 end
 
 
@@ -1141,7 +1309,9 @@ proc_name_to_class = {
   --green procs
   ['heal'] = Proc_Heal,
   ['sacrificialclam'] = Proc_SacrificialClam,
+  ['healingwave'] = Proc_HealingWave,
   ['curse'] = Proc_Curse,
+  ['root'] = Proc_Root,
 
   -- elemental procs
   ['eledmg'] = Proc_Eledmg,

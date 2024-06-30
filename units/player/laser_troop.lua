@@ -56,7 +56,7 @@ function Laser_Troop:set_state_functions()
   
       elseif Helper.Unit:can_cast(self) then
         if not self:my_target() then
-          Helper.Unit:claim_target(self, Helper.Spell:get_nearest_least_targeted(self, self.attack_sensor.rs, true))
+          Helper.Unit:claim_target(self, Helper.Spell:get_random_in_range(self, self.attack_sensor.rs, true))
         end
         --on attack callbacks
         if self.onAttackCallbacks then

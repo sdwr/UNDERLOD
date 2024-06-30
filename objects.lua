@@ -366,6 +366,9 @@ function Unit:update_buffs(dt)
     if k == 'stunned' then
       self.state = unit_states['frozen']
     end
+    if k == 'rooted' then
+      self.state = unit_states['stopped']
+    end
 
     --dec duration
     v.duration = v.duration - dt
@@ -385,7 +388,13 @@ function Unit:update_buffs(dt)
       if k == 'bash_cd' then
         self.canBash = true
       elseif k == 'stunned' then
-        self.state = unit_states['normal']
+        if self.state == unit_states['frozen'] then
+          self.state = unit_states['normal']
+        end
+      elseif k == 'rooted' then
+        if self.state == unit_states['stopped'] then
+          self.state = unit_states['normal']
+        end
       elseif k == 'shield' then
         self:remove_shield()
       end
@@ -846,6 +855,14 @@ function Unit:stun(duration)
   local stunBuff = {name = 'stunned', color = black[0], duration = duration}
   self:add_buff(stunBuff)
   self:interrupt_cast()
+end
+
+function Unit:root(duration)
+  if self.class == 'boss' then
+    return
+  end
+  local rootBuff = {name = 'rooted', color = green[0], duration = duration}
+  self:add_buff(rootBuff)
 end
 
 function Unit:slow(amount, duration, from)

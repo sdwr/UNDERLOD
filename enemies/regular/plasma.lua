@@ -30,6 +30,7 @@ fns['init_enemy'] = function(self)
     spelldata = {
       group = main.current.main,
       team = "enemy",
+      cancel_on_death = true,
       spell_duration = 100,
       x = self.x,
       y = self.y,

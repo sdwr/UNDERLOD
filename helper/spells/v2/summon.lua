@@ -27,6 +27,8 @@ function Summon_Spell:draw()
 end
 
 function Summon_Spell:spawn()
+  if not self.unit or self.unit.dead or not self.unit.state == unit_states['channeling'] then return end
+  
   illusion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
   spawn1:play{pitch = random:float(0.8, 1.2), volume = 0.15}
   if self.summonType == 'enemy_critter' then

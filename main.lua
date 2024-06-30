@@ -305,6 +305,8 @@ function init()
   clam                  = Image(d .. 'clam')
   coins                 = Image(d .. 'coins')
   reticle               = Image(d .. 'reticle')
+  root                  = Image(d .. 'root')
+  bomb2                 = Image(d .. 'bomb2')
 
   arrows                = Image(d .. 'arrows')
   bear                  = Image(d .. 'bear')
@@ -1285,7 +1287,7 @@ function init()
 
   unit_stat_multipliers = {
     ['swordsman'] = { hp = 1.5, dmg = 1.25, def = 1.25, mvspd = 1 },
-    ['laser'] = { hp = 1, dmg = 1, def = 1, mvspd = 1 },
+    ['laser'] = { hp = 1, aspd = 1.25, dmg = 2, def = 1, mvspd = 1 },
     ['archer'] = { hp = 1, dmg = 1, def = 1, mvspd = 1 },
     ['pyro'] = { hp = 1.25, dmg = 1, def = 1.25, mvspd = 1 },
     ['cannon'] = { hp = 1, dmg = 2, def = 1.25, mvspd = 1 },
@@ -1460,6 +1462,11 @@ function init()
     ['fire'] = fire,
     ['lightning'] = lightning,
     ['clam'] = clam,
+    ['reticle'] = reticle,
+    ['skull'] = skull,
+    ['root'] = root,
+    ['bomb'] = bomb2,
+
   }
 
   item_costs = {

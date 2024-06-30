@@ -222,7 +222,7 @@ item_to_item_data = {
     name = 'heartofgold',
     colors = {},
     cost = 5,
-    icon = 'heartofgold',
+    icon = 'turtle',
     desc = 'A heart that increases health',
     stats = {hp = 0.2, gold = 2}
   },
@@ -400,7 +400,7 @@ item_to_item_data = {
     name = 'frostbomb',
     colors = {'blue'},
     cost = 10,
-    icon = 'frostbomb',
+    icon = 'bomb',
     desc = 'Creates a slowing field under enemies every few attacks',
     stats = {dmg = 0.25},
     procs = {'frostfield'},
@@ -464,14 +464,32 @@ item_to_item_data = {
     procs = {'sacrificialclam'},
     tags = {'sacrifice'}
   },
+  ['healingwave'] = {
+    name = 'healingwave',
+    colors = {'green'},
+    cost = 10,
+    icon = 'gem',
+    desc = 'Periodically heal all nearby allies',
+    stats = {hp = 0.4},
+    procs = {'healingwave'}
+  },
   ['curse'] = {
     name = 'curse',
     colors = {'green'},
     cost = 10,
-    icon = 'curse',
+    icon = 'skull',
     desc = 'Periodically curse nearby enemies, causing them to take more damage',
     stats = {dmg = 0.25},
     procs = {'curse'},
+  },
+  ['entangle'] = {
+    name = 'entangle',
+    colors = {'green'},
+    cost = 10,
+    icon = 'root',
+    desc = 'Periodically root nearby enemies, preventing them from moving',
+    stats = {dmg = 0.25},
+    procs = {'root'},
   },
 
   --not yet implemented
