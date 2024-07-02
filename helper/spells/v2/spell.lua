@@ -134,6 +134,9 @@ function Cast:cast()
   end
   local spell = self.spellclass(self.spelldata)
   if self.instantspell then
+    if self.spelldata.on_attack_callbacks and self.unit.onAttackCallbacks then
+      self.unit:onAttackCallbacks(self.target)
+    end
     self.unit:end_cast(castcooldown)
   else
     self.unit.spellObject = spell
@@ -268,8 +271,14 @@ end
 
 function Spell:try_end_cast()
   if self.unit and self.unit.spellObject == self and self.unit.end_cast then
+    if self.on_attack_callbacks and self.unit.onAttackCallbacks then
+      self.unit:onAttackCallbacks(self.target)
+    end
     self.unit:end_cast(self.castcooldown)
     self.unit.spellObject = nil
+    if self.unit_dies_at_end then
+      self.unit:die()
+    end
   end
 end
 

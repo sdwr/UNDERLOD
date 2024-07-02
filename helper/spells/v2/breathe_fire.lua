@@ -6,7 +6,7 @@ function Breathe_Fire:init(args)
   Breathe_Fire.super.init(self, args)
 
 
-  pyro1:play{volume=0.5}
+  self.sound = firebreath:play{volume=0.5}
 
   self.flamewidth = self.flamewidth or 30
   self.flameheight = self.flameheight or 100
@@ -109,4 +109,10 @@ function Breathe_Fire:draw()
     graphics.pop()
   end
   
+  function Breathe_Fire:die()
+    if self.sound and self.sound.stop then
+      self.sound:stop()
+    end
+    Breathe_Fire.super.die(self)
+  end
 end

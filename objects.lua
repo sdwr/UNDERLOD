@@ -219,6 +219,7 @@ function Unit:show_damage_number(dmg, damagetype)
   if not state.show_damage_numbers then return end
   
   local color = damage_type_to_color[damagetype] or white[0]
+  local roundedDmg = math.floor(dmg)
 
   local data = {
     group = main.current.effects,
@@ -226,7 +227,7 @@ function Unit:show_damage_number(dmg, damagetype)
     x = self.x + random_offset(4),
     y = self.y + random_offset(4),
     rs = 6,
-    lines = {{text =  '' .. dmg, font = pixul_mini}},
+    lines = {{text =  '' .. roundedDmg, font = pixul_mini}},
   }
   FloatingText(data)
 end
@@ -735,7 +736,7 @@ end
 --warning, target can be either a unit or a coordinate
 function Unit:onAttackCallbacks(target)
   for k, proc in ipairs(self.onAttackProcs) do
-    proc:onAttack(target)
+    proc:onAttack(target, self)
   end
 end
 

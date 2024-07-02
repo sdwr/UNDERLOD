@@ -30,6 +30,7 @@ end
 function Spread_Laser:initCoords()
   if self.spread_type == 'target' then
     self.target = self.unit:my_target()
+    if not self.target then return end
     self.target_x = self.target.x
     self.target_y = self.target.y
     self.r = math.atan2(self.target_y - self.unit.y, self.target_x - self.unit.x)

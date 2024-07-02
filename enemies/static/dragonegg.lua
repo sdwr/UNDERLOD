@@ -21,12 +21,31 @@ fns['init_enemy'] = function(self)
   self.time_to_cast = 3
 
   self.state = unit_states['frozen']
+  self.can_cast_while_frozen = true
 
   --set attacks
-    self.t:after(attack_speeds['medium-fast'], function ()
-        Summon{group = main.current.main, team = "enemy", type = "enemy_critter", amount = 6, suicide = true,
-                x = self.x, y = self.y, rs = 15, castTime = self.time_to_cast, color = brown[5], level = self.level, parent = self}
-    end, 'spawn')
+  self.attack_options = {}
+  
+  local summon = {
+    name = 'summon',
+    viable = function() return self.summons < self.maxSummons end,
+    castcooldown = 3,
+    oncast = function() end,
+    cast_length = 0.1,
+    spellclass = Summon_Spell,
+    spelldata = {
+      cancel_on_death = true,
+      unit_dies_at_end = true,
+      group = main.current.main,
+      amount = 6,
+      spell_duration = self.time_to_cast,
+      rs = 15,
+      color = brown[5],
+    }
+  }
+
+  table.insert(self.attack_options, summon)
+
 end
 
 fns['draw_enemy'] = function(self)

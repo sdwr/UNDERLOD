@@ -152,6 +152,7 @@ function init()
   laser_charging = Sound('laser_charging.mp3', s)
 
   campfire = Sound('campfire.wav', s)
+  firebreath = Sound('firebreath.mp3', s)
 
 
 

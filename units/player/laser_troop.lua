@@ -58,11 +58,6 @@ function Laser_Troop:set_state_functions()
         if not self:my_target() then
           Helper.Unit:claim_target(self, Helper.Spell:get_random_in_range(self, self.attack_sensor.rs, true))
         end
-        --on attack callbacks
-        if self.onAttackCallbacks then
-          self:onAttackCallbacks(self.target)
-        end
-
         local data = {
           name = 'laser',
           viable = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.enemies); return target end,
@@ -74,6 +69,7 @@ function Laser_Troop:set_state_functions()
             group = main.current.main,
             spell_duration = 10,
             color = blue[0],
+            on_attack_callbacks = true,
             damage = self.dmg,
             lasermode = 'target',
             laser_aim_width = 1,

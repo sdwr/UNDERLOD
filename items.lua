@@ -311,6 +311,15 @@ item_to_item_data = {
     procs = {'shock'},
     prereqs = {'lightningdmg'}
   },
+  ['overcharge'] = {
+    name = 'overcharge',
+    colors = {'yellow'},
+    cost = 10,
+    icon = 'lightning',
+    desc = 'Repeated attacks on the same target increase your attack speed',
+    stats = {mvspd = 0.15},
+    procs = {'overcharge'}
+  },
   --still need to add
   ['bubble'] = {
     name = 'bubble',
@@ -341,7 +350,7 @@ item_to_item_data = {
     desc = 'Creates flaming minions every few seconds',
     stats = {dmg = 0.25},
     procs = {'lavaman'},
-    tags = {'firedmg'}
+    tags = {}
   },
   ['lavapool'] = {
     name = 'lavapool',
@@ -503,6 +512,9 @@ item_to_item_data = {
 
   --enemies that are stunned are vulnerable to all damage (global) (+stun dmg, tier 2/3)
   --enemies that are stunned are slowed when they recover from stun (global) (+stun slow, tier 2/3)
+
+
+  --expensive items
 
 
 

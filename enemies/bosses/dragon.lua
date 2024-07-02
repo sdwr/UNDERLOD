@@ -86,7 +86,7 @@ fns['init_enemy'] = function(self)
       spell_duration = 5,
       follow_target = true,
       freeze_rotation = true,
-      follow_speed = 20,
+      follow_speed = 32,
     }, 
   }
 
@@ -130,7 +130,7 @@ fns['init_enemy'] = function(self)
   }
 
   table.insert(self.attack_options, fire)
-  table.insert(self.attack_options, fire_sweep)
+  --table.insert(self.attack_options, fire_sweep)
   table.insert(self.attack_options, fire_wall)
 
   self.state_always_run_functions['always_run'] = function()

@@ -204,7 +204,7 @@ function Proc_SpikedCollar:onTick(dt, from)
   end
 
   --only tick once per tick
-  if not self.team:is_first_troop(from) then return end
+  if not self.team:is_first_alive_troop(from) then return end
 
   self.tick_timer = self.tick_timer + dt
   if self.tick_timer < self.tick_interval then return end
@@ -322,7 +322,7 @@ function Proc_SacrificialClam:onTick(dt, from)
   end
 
   --only tick once per tick
-  if not self.team:is_first_troop(from) then return end
+  if not self.team:is_first_alive_troop(from) then return end
 
   self.tick_timer = self.tick_timer + dt
   if self.tick_timer < self.tick_interval then return end
@@ -369,19 +369,16 @@ function Proc_HealingWave:onTick(dt, from)
   end
 
   --only tick once per tick
-  if not self.team:is_first_troop(from) then return end
+  if not self.team:is_first_alive_troop(from) then return end
 
   self.tick_timer = self.tick_timer + dt
   if self.tick_timer < self.tick_interval then return end
 
-  local center = self.team:get_center()
-  if not center then return end
 
-  self:cast(center, from)
+  self:cast(from)
 end
 
-function Proc_HealingWave:cast(target, from)
-  if not target then return end
+function Proc_HealingWave:cast(from)
 
   heal1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
   self.tick_timer = 0
@@ -391,7 +388,7 @@ function Proc_HealingWave:cast(target, from)
 
   Area{
     group = main.current.effects, 
-    x = target.x + randomx, y = target.y + randomy,
+    x = from.x + randomx, y = from.y + randomy,
     pick_shape = 'circle',
     dmg = 0, r = self.radius, duration = 0.2, color = self.color,
     is_troop = from.is_troop,
@@ -435,13 +432,12 @@ function Proc_Curse:onTick(dt, from)
   end
 
   --only tick once per tick
-  if not self.team:is_first_troop(from) then return end
+  if not self.team:is_first_alive_troop(from) then return end
 
   self.tick_timer = self.tick_timer + dt
   if self.tick_timer < self.tick_interval then return end
 
-  local center = self.team:get_center()
-  local enemy = Helper.Spell:get_random_target_in_range_from_point(center.x, center.y, self.seek_radius, from.is_troop)
+  local enemy = Helper.Spell:get_random_target_in_range_from_point(from.x, from.y, self.seek_radius, from.is_troop)
   if not enemy or enemy == -1 then return end
 
   self.tick_timer = math.random() * self.tick_interval
@@ -496,13 +492,12 @@ function Proc_Root:onTick(dt, from)
   end
 
   --only tick once per tick
-  if not self.team:is_first_troop(from) then return end
+  if not self.team:is_first_alive_troop(from) then return end
 
   self.tick_timer = self.tick_timer + dt
   if self.tick_timer < self.tick_interval then return end
 
-  local center = self.team:get_center()
-  local enemy = Helper.Spell:get_random_target_in_range_from_point(center.x, center.y, self.seek_radius, from.is_troop)
+  local enemy = Helper.Spell:get_random_target_in_range_from_point(from.x, from.y, self.seek_radius, from.is_troop)
   if not enemy or enemy == -1 then return end
 
   self:root(enemy, from)
@@ -706,6 +701,66 @@ function Proc_Shock:onHit(target, damage, damageType)
   end
 end
 
+Proc_Overcharge = Proc:extend()
+function Proc_Overcharge:init(args)
+  self.triggers = {PROC_ON_ATTACK}
+  self.scope = 'team'
+
+  Proc_Overcharge.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  self.buffname = 'overcharge'
+  self.buffDuration = self.data.buffDuration or 9999
+  self.aspdMulti = self.data.aspdMulti or 0.1
+  self.maxStacks = self.data.maxStacks or 10
+
+  self.buff = {name = self.buffname, color = yellow[5], duration = self.buffDuration,
+    stats = {aspd = self.aspdMulti}, stacks = 1
+  }
+
+  --memory
+  self.targets = {}
+  self.hitCount = 0
+
+end
+
+function Proc_Overcharge:onAttack(target, unit)
+  Proc_Overcharge.super.onAttack(self, target)
+
+  --only apply the buff when the first unit attacks
+  --but drop the buff when any unit attacks a different target
+  --keep track of each unit's target separately
+  local troopIndex = self.team:get_troop_index(unit)
+  if troopIndex == -1 then return end
+
+  if not self.targets[troopIndex] then
+    self.targets[troopIndex] = target
+  elseif self.targets[troopIndex] ~= target then
+      self.team:remove_buff(self.buffname)
+      self:resetStacks()
+  else
+    --the same target, add a stack
+    self:addHit()
+  end
+
+end
+
+function Proc_Overcharge:addHit()
+  self.hitCount = self.hitCount + 1
+  if self.hitCount >= self.team:get_alive_troop_count() then
+    self.buff.stacks = math.min(self.buff.stacks + 1, self.maxStacks)
+    self.team:add_buff(self.buff)
+    self.hitCount = 0
+  end
+end
+
+function Proc_Overcharge:resetStacks()
+  self.buff.stacks = 1
+  self.targets = {}
+end
+
 --proc radiance
 --need to add an aura to the unit that follows it around
 --but only applies once to each enemy, no matter how many units have the aura
@@ -893,16 +948,16 @@ function Proc_Lavaman:onTick(dt, from)
   end
 
   --only tick once per tick
-  if not self.team:is_first_troop(from) then return end
+  if not self.team:is_first_alive_troop(from) then return end
   --should cancel when all troops in the team are dead
 
   self.tick_timer = self.tick_timer + dt
   if self.tick_timer < self.tick_interval then return end
 
-  self:try_spawn()
+  self:try_spawn(from)
 end
 
-function Proc_Lavaman:try_spawn()
+function Proc_Lavaman:try_spawn(from)
 
   -- find a random free spot in the team
   self:find_free_spot()
@@ -911,12 +966,11 @@ function Proc_Lavaman:try_spawn()
   self.tick_timer = 0
 end
 
-function Proc_Lavaman:find_free_spot()
+function Proc_Lavaman:find_free_spot(from)
   local tries = 10
-  local center = self.team:get_center()
   for i = 1, tries do
     local offset = SpawnGlobals.spawn_offsets[i % #SpawnGlobals.spawn_offsets]
-    local coords = {x = center.x + offset.x, y = center.y + offset.y}
+    local coords = {x = from.x + offset.x, y = from.y + offset.y}
     if Can_Spawn(2, coords) then
       self:spawn(coords)
       return
@@ -1288,11 +1342,14 @@ proc_name_to_class = {
   ['bash'] = Proc_Bash,
   ['overkill'] = Proc_Overkill,
   ['bloodlust'] = Proc_Bloodlust,
+
+  --yellow procs
   ['lightning'] = Proc_Lightning,
   ['static'] = Proc_Static,
   ['radiance'] = Proc_Radiance,
   ['shield'] = Proc_Shield,
   ['shock'] = Proc_Shock,
+  ['overcharge'] = Proc_Overcharge,
   --red procs
   ['fire'] = Proc_Fire,
   ['lavapool'] = Proc_Lavapool,

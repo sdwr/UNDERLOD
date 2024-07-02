@@ -167,8 +167,38 @@ function Team:get_allies_in_range(range)
   return allies
 end
 
-function Team:is_first_troop(troop)
-  return self.troops[1] == troop
+function Team:is_first_alive_troop(troop)
+  if not self.troops or #self.troops == 0 then
+    return false
+  end
+  local aliveTroop = nil
+  for i, t in ipairs(self.troops) do
+    if not t.dead then
+      aliveTroop = t
+      break
+    end
+  end
+  
+  return troop == aliveTroop
+end
+
+function Team:get_alive_troop_count()
+  local count = 0
+  for i, troop in ipairs(self.troops) do
+    if not troop.dead then
+      count = count + 1
+    end
+  end
+  return count
+end
+
+function Team:get_troop_index(troop)
+  for i, t in ipairs(self.troops) do
+    if t == troop then
+      return i
+    end
+  end
+  return -1
 end
 
 --affect all troops in team

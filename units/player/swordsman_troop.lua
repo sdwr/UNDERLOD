@@ -38,9 +38,6 @@ function Swordsman_Troop:set_character()
 end
 
 function Swordsman_Troop:setup_cast()
-  if self.onAttackCallbacks then
-    self:onAttackCallbacks(self.target)
-  end
   local data = {
     name = 'attack',
     viable = function() return Helper.Spell:target_is_in_range(self, self.attack_sensor.rs, true) end,
@@ -55,6 +52,7 @@ function Swordsman_Troop:setup_cast()
     spellclass = Area,
     spelldata = {
       group = main.current.effects,
+      on_attack_callbacks = true,
       spell_duration = 0.1,
       color = red[0],
       areatype = 'target',

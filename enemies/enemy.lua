@@ -47,7 +47,7 @@ function Enemy:update(dt)
     --get target / rotate to target
     if self.target and self.target.dead then self.target = nil end
     
-    if self.state == unit_states['normal'] then
+    if self.state == unit_states['normal'] or (self.can_cast_while_frozen and self.state == unit_states['frozen']) then
 
       --this needs to work with movement options (some attacks will require target in range, others will not)
       --some will want to chase target (fire breath)
@@ -104,25 +104,6 @@ function Enemy:draw()
   self:draw_buffs()
   self.draw_enemy(self)
   self:draw_cast_timer()
-end
-
---this is for bosses
---not all attacks will be viable (target in range)
-function Enemy:pick_attack()
-
-  local viable_attacks = {}
-  for k, v in pairs(self.attack_options) do
-    if v.viable() then
-      table.insert(viable_attacks, v)
-    end
-  end
-
-  if #viable_attacks == 0 then return end
-
-  local attack = random:table(viable_attacks)
-
-  
-
 end
 
 function Enemy:on_collision_enter(other, contact)

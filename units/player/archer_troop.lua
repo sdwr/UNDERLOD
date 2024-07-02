@@ -14,10 +14,6 @@ function Archer_Troop:init(data)
 end
 
 function Archer_Troop:setup_cast()
-  --on attack callbacks
-  if self.onAttackCallbacks then
-    self:onAttackCallbacks(self.target)
-  end
   local data = {
     name = 'arrow',
     viable = function() return Helper.Spell:target_is_in_range(self, self.attack_sensor.rs, false) end,
@@ -31,6 +27,7 @@ function Archer_Troop:setup_cast()
     spellclass = Arrow,
     spelldata = {
       group = main.current.effects,
+      on_attack_callbacks = true,
       spell_duration = 1,
       color = blue[0],
       damage = self.dmg,
