@@ -103,6 +103,8 @@ end
 -- Calls on_exit for the deactivated state and on_enter for the activated one.
 -- If on_exit returns true then the deactivated state will be removed from memory.
 -- You must handle the destruction of it yourself in its on_exit function.
+
+--save data is loaded in save_game.lua
 function Main:go_to(state, data)
   if type(state) == 'string' then state = self:get(state) end
 

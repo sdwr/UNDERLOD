@@ -157,6 +157,19 @@ item_to_item_data = {
   --   procs = {'reroll'}
   -- },
 
+
+    --resets the reroll cost of the shop to base
+  -- ['resetpotion'] = {
+  --   name = 'resetpotion',
+  --   colors = {},
+  --   cost = 2,
+  --   consumable = true,
+  --   icon = 'flask',
+  --   desc = 'Reset the reroll price of the shop back to ' .. STARTING_REROLL_COST .. ' when you drink this potion,
+  --   stats = {},
+  --   procs = {'reset'}
+  -- },
+
   -- ['damagepotion'] = {
   --   name = 'damagepotion',
   --   colors = {},

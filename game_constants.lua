@@ -13,6 +13,7 @@ EXPECTED_SAVE_FIELDS = {
   'shop_item_data',
   'locked_state',
   'reroll_shop',
+  'times_rerolled',
 }
 
 --gold
@@ -21,6 +22,13 @@ STARTING_GOLD = 5
 GOLD_PER_ROUND = 6
 INTEREST_AMOUNT = 0.1
 MAX_INTEREST = 3
+
+STARTING_REROLL_COST = 1
+--values should be 1, 2, 3, 4, 5
+REROLL_COST = function (times_rerolled)
+  return math.min(5, times_rerolled + STARTING_REROLL_COST)
+end
+
 
 BOSS_ROUND_POWER = 1000
 NUMBER_OF_ROUNDS = 25

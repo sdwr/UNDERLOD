@@ -827,6 +827,7 @@ function Arena:transition()
 
     save_data.level = save_data.level + 1
     save_data.reroll_shop = true
+    save_data.times_rerolled = 0
 
     system.save_run(save_data)
 

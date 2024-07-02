@@ -1061,7 +1061,8 @@ function RerollButton:init(args)
   self.interact_with_mouse = true
   if self.parent:is(BuyScreen) then
     self.shape = Rectangle(self.x, self.y, 54, 16)
-    self.text = Text({{text = '[bg10]reroll: [yellow]2', font = pixul_font, alignment = 'center'}}, global_text_tags)
+    self.text = Text({{text = '[bg10]reroll: [yellow]', font = pixul_font, alignment = 'center'}}, global_text_tags)
+    self:refresh_text('[bg10]')
   elseif self.parent:is(Arena) then
     self.shape = Rectangle(self.x, self.y, 60, 16)
     local merchant
@@ -1086,7 +1087,8 @@ function RerollButton:update(dt)
 
   if (self.selected and input.m1.pressed) or input.r.pressed then
     if self.parent:is(BuyScreen) then
-      if gold < 2 then
+      local rerollCost = REROLL_COST(self.parent.times_rerolled)
+      if gold < rerollCost then
         self.spring:pull(0.2, 200, 10)
         self.selected = true
         error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
@@ -1104,9 +1106,11 @@ function RerollButton:update(dt)
           self.parent:set_locked_state(false)
         end
         self.parent.reroll_shop = true
-        gold = gold - 2
+        gold = gold - rerollCost
+        self.parent.times_rerolled = self.parent.times_rerolled + 1
         self.parent:try_roll_items()
-        ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+        self:refresh_text('[bg10]')
+        gold2:play{pitch = random:float(0.95, 1.05), volume = 0.3}
         self.selected = true
         self.spring:pull(0.2, 200, 10)
         self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
@@ -1114,32 +1118,22 @@ function RerollButton:update(dt)
         buyScreen:save_run()
       end
     elseif self.parent:is(Arena) then
-      if gold < 5 and not self.free_reroll then
-        self.spring:pull(0.2, 200, 10)
-        self.selected = true
-        error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-        if not self.info_text then
-          self.info_text = InfoText{group = main.current.ui, force_update = true}
-          self.info_text:activate({
-            {text = '[fg]not enough gold', font = pixul_font, alignment = 'center'},
-          }, nil, nil, nil, nil, 16, 4, nil, 2)
-          self.info_text.x, self.info_text.y = gw/2, gh/2 + 10
-        end
-        self.t:after(2, function() self.info_text:deactivate(); self.info_text.dead = true; self.info_text = nil end, 'info_text')
-      else
-        ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-        self.parent:set_passives(true)
-        self.selected = true
-        self.spring:pull(0.2, 200, 10)
-        if not self.free_reroll then gold = gold - 5 end
-        self.parent.shop_text:set_text{{text = '[fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
-        self.free_reroll = false
-        self.text = Text({{text = '[bg10]reroll: [yellow]5', font = pixul_font, alignment = 'center'}}, global_text_tags)
-      end
+      --nothing
     end
 
     if input.r.pressed then self.selected = false end
   end
+end
+
+function RerollButton:refresh_text(colorString)
+  if self.parent:is(BuyScreen) then
+    local rerollCost = REROLL_COST(self.parent.times_rerolled)
+    local re = tostring(rerollCost)
+    self.text:set_text{{text = colorString ..'reroll: [yellow]'.. re, font = pixul_font, alignment = 'center'}}
+  elseif self.parent:is(Arena) then
+    --unused
+  end
+
 end
 
 
@@ -1160,7 +1154,7 @@ function RerollButton:on_mouse_enter()
   pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
   self.selected = true
   if self.parent:is(BuyScreen) then
-    self.text:set_text{{text = '[fgm5]reroll: 2', font = pixul_font, alignment = 'center'}}
+    self:refresh_text('[fgm5]')
   elseif self.parent:is(Arena) then
     if self.free_reroll then
       self.text:set_text{{text = '[fgm5]reroll: 0', font = pixul_font, alignment = 'center'}}
@@ -1174,7 +1168,7 @@ end
 
 function RerollButton:on_mouse_exit()
   if self.parent:is(BuyScreen) then
-    self.text:set_text{{text = '[bg10]reroll: [yellow]2', font = pixul_font, alignment = 'center'}}
+    self:refresh_text('[bg10]')
   elseif self.parent:is(Arena) then
     if self.free_reroll then
       self.text:set_text{{text = '[fgm5]reroll: [yellow]0', font = pixul_font, alignment = 'center'}}

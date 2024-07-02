@@ -43,6 +43,24 @@ function Proc_Reroll:onSell()
   end
 end
 
+--proc reroll
+Proc_Reset = Proc:extend()
+function Proc_Reset:init(args)
+  self.triggers = {PROC_ON_SELL}
+  self.scope = 'global'
+
+  Proc_Reroll.super.init(self, args)
+  
+end
+
+--when sold in the shop, resets the reroll cost
+function Proc_Reset:onSell()
+  --should only trigger in buy_screen
+  if main.current and main.current.reset_reroll_cost then
+    main.current:reset_reroll_cost()
+  end
+end
+
 
 Proc_DamagePotion = Proc:extend()
 function Proc_DamagePotion:init(args)
@@ -1332,6 +1350,7 @@ end
 
 proc_name_to_class = {
   ['reroll'] = Proc_Reroll,
+  ['reset'] = Proc_Reset,
   ['damagepotion'] = Proc_DamagePotion,
   ['shieldpotion'] = Proc_ShieldPotion,
   ['berserkpotion'] = Proc_BerserkPotion,
