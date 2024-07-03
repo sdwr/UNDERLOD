@@ -779,6 +779,160 @@ function Proc_Overcharge:resetStacks()
   self.targets = {}
 end
 
+Proc_Powercharge = Proc:extend()
+function Proc_Powercharge:init(args)
+  self.triggers = {PROC_ON_ATTACK}
+  self.scope = 'team'
+
+  Proc_Powercharge.super.init(self, args)
+
+  --define the proc's vars
+  self.buffname = 'powercharge'
+  self.buffDuration = self.data.buffDuration or 9999
+  self.dmgMulti = self.data.dmgMulti or 0.1
+  self.maxStacks = self.data.maxStacks or 10
+
+  self.buff = {name = self.buffname, color = red[5], duration = self.buffDuration,
+    stats = {dmg = self.dmgMulti}, stacks = 1
+  }
+
+  --memory
+  self.targets = {}
+  self.hitCount = 0
+
+end
+
+function Proc_Powercharge:onAttack(target, unit)
+  Proc_Powercharge.super.onAttack(self, target)
+
+  --only apply the buff when the first unit attacks
+  --but drop the buff when any unit attacks a different target
+  --keep track of each unit's target separately
+  local troopIndex = self.team:get_troop_index(unit)
+  if troopIndex == -1 then return end
+
+  if not self.targets[troopIndex] then
+    self.targets[troopIndex] = target
+  elseif self.targets[troopIndex] ~= target then
+      self.team:remove_buff(self.buffname)
+      self:resetStacks()
+  else
+    --the same target, add a stack
+    self:addHit()
+  end
+
+end
+
+function Proc_Powercharge:addHit()
+  self.hitCount = self.hitCount + 1
+  if self.hitCount >= self.team:get_alive_troop_count() then
+    self.buff.stacks = math.min(self.buff.stacks + 1, self.maxStacks)
+    self.team:add_buff(self.buff)
+    self.hitCount = 0
+  end
+end
+
+function Proc_Powercharge:resetStacks()
+  self.buff.stacks = 1
+  self.targets = {}
+end
+
+Proc_Vulncharge = Proc:extend()
+function Proc_Vulncharge:init(args)
+  self.triggers = {PROC_ON_ATTACK}
+  self.scope = 'team'
+
+  Proc_Vulncharge.super.init(self, args)
+
+  --define the proc's vars
+  self.buffname = 'vulncharge'
+  self.buffDuration = self.data.buffDuration or 5
+  self.dmgMulti = self.data.dmgMulti or 0.1
+  self.maxStacks = self.data.maxStacks or 10
+
+  self.buff = {name = self.buffname, color = purple[5], duration = self.buffDuration,
+    stats = {percent_def = -0.1}, stacks = 1, stacks_expire_together = true
+  }
+
+  --memory
+  self.target = nil
+  self.hitCount = 0
+
+end
+
+function Proc_Vulncharge:onAttack(target, unit)
+  Proc_Vulncharge.super.onAttack(self, target)
+
+  --only apply to one target ( all troops must attack the same target)
+  local troopIndex = self.team:get_troop_index(unit)
+  if troopIndex == -1 then return end
+
+  if not self.target then
+    self.target = target
+  elseif self.target ~= target then
+    self:removeVuln()
+    self:resetStacks()
+    self.target = target
+  else
+    --the same target, add a stack
+    self:addHit()
+  end
+
+end
+
+function Proc_Vulncharge:addHit()
+  self.hitCount = self.hitCount + 1
+  if self.hitCount >= self.team:get_alive_troop_count() then
+    self.buff.stacks = math.min(self.buff.stacks + 1, self.maxStacks)
+    self:applyVuln()
+    self.hitCount = 0
+  end
+end
+
+function Proc_Vulncharge:applyVuln()
+  if not self.target then return end
+  self.target:add_buff(self.buff)
+end
+
+function Proc_Vulncharge:removeVuln()
+  if not self.target then return end
+  self.target:remove_buff(self.buffname)
+end
+
+function Proc_Vulncharge:resetStacks()
+  self.buff.stacks = 1
+  self.targets = {}
+end
+
+--triggers on all enemy deaths
+Proc_Firebomb = Proc:extend()
+function Proc_Firebomb:init(args)
+  self.triggers = {PROC_ON_DEATH}
+  self.scope = 'global'
+
+  Proc_Firebomb.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  self.damage = self.data.damage or 20
+  self.radius = self.data.radius or 50
+  self.color = self.data.color or red[0]
+end
+
+function Proc_Firebomb:onDeath(target)
+  Proc_Firebomb.super.onDeath(self, target)
+  --remove level from spell
+  Area{
+    group = main.current.main, 
+    x = target.x, y = target.y,
+    pick_shape = 'circle',
+    dmg = self.damage,
+    r = self.radius, duration = 0.2, color = self.color,
+    is_troop = false
+  }
+end
+
 --proc radiance
 --need to add an aura to the unit that follows it around
 --but only applies once to each enemy, no matter how many units have the aura
@@ -1368,7 +1522,6 @@ proc_name_to_class = {
   ['radiance'] = Proc_Radiance,
   ['shield'] = Proc_Shield,
   ['shock'] = Proc_Shock,
-  ['overcharge'] = Proc_Overcharge,
   --red procs
   ['fire'] = Proc_Fire,
   ['lavapool'] = Proc_Lavapool,
@@ -1388,6 +1541,11 @@ proc_name_to_class = {
   ['healingwave'] = Proc_HealingWave,
   ['curse'] = Proc_Curse,
   ['root'] = Proc_Root,
+  
+  --stack on attack
+  ['overcharge'] = Proc_Overcharge,
+  ['powercharge'] = Proc_Powercharge,
+  ['vulncharge'] = Proc_Vulncharge,
 
   -- elemental procs
   ['eledmg'] = Proc_Eledmg,

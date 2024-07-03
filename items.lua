@@ -322,17 +322,10 @@ item_to_item_data = {
     desc = 'Your lightning damage stacks shock on enemies, increasing their damage taken',
     stats = {aspd = 0.15},
     procs = {'shock'},
+    tags = {'shock'},
     prereqs = {'lightningdmg'}
   },
-  ['overcharge'] = {
-    name = 'overcharge',
-    colors = {'yellow'},
-    cost = 10,
-    icon = 'lightning',
-    desc = 'Repeated attacks on the same target increase your attack speed',
-    stats = {mvspd = 0.15},
-    procs = {'overcharge'}
-  },
+
   --still need to add
   ['bubble'] = {
     name = 'bubble',
@@ -453,7 +446,8 @@ item_to_item_data = {
     icon = 'turtle',
     desc = 'Damages and slows enemies when they get too close',
     stats = {dmg = 0.25},
-    procs = {'icenova'}
+    procs = {'icenova'},
+    tags = {'frostslow'}
   },
   ['icefang'] = {
     name = 'icefang',
@@ -514,13 +508,73 @@ item_to_item_data = {
     procs = {'root'},
   },
 
-  --not yet implemented
-  --------------------
-
+  
   --repeated attacks on the same target are faster / do more damage / build vuln
 
-  --burning enemies have a chance to explode for % max hp (global) (+burn dmg, tier 2/3)
+  ['overcharge'] = {
+    name = 'overcharge',
+    colors = {'yellow'},
+    cost = 10,
+    icon = 'lightning',
+    desc = 'Repeated attacks on the same target increase your attack speed',
+    stats = {mvspd = 0.15},
+    procs = {'overcharge'}
+  },
+  ['powercharge'] = {
+    name = 'powercharge',
+    colors = {'red'},
+    cost = 10,
+    icon = 'lightning',
+    desc = 'Repeated attacks on the same target increase your damage',
+    stats = {dmg = 0.25},
+    procs = {'powercharge'}
+  },
+  ['vulncharge'] = {
+    name = 'vulncharge',
+    colors = {'blue'},
+    cost = 10,
+    icon = 'lightning',
+    desc = 'Repeated attacks on the same target increase the damage they take',
+    stats = {dmg = 0.25},
+    procs = {'vulncharge'}
+  },
+  
+  --elemental on death effects
 
+  ['ticktickboom'] = {
+    name = 'ticktickboom',
+    colors = {'red'},
+    cost = 15,
+    icon = 'bomb',
+    desc = 'All burning enemies have a chance to explode for % max health on death',
+    stats = {dmg = 0.5},
+    procs = {'firebomb'},
+    prereqs = {'firedmg'}
+  },
+  ['waterelemental'] = {
+    name = 'frostbite',
+    colors = {'blue'},
+    cost = 15,
+    icon = 'frost',
+    desc = 'All slowed enemies have a chance to spawn a water elemental on death',
+    stats = {dmg = 0.5},
+    procs = {'waterelemental'},
+    prereqs = {'frostslow'}
+  },
+  ['shockwave'] = {
+    name = 'shockwave',
+    colors = {'yellow'},
+    cost = 15,
+    icon = 'lightning',
+    desc = 'All shocked enemies have a chance to spread shock on death',
+    stats = {dmg = 0.5},
+    procs = {'shockwave'},
+    prereqs = {'shock'}
+  },
+
+  --not yet implemented
+  --------------------
+  
   --enemies that are slowed take more damage from all sources (global) (+slow dmg, tier 2/3)
 
   --enemies that are stunned are vulnerable to all damage (global) (+stun dmg, tier 2/3)

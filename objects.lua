@@ -400,7 +400,7 @@ function Unit:update_buffs(dt)
         self:remove_shield()
       end
       --this is where buff stacks tick down
-      if v.stacks and v.stacks > 1 then
+      if v.stacks and v.stacks > 1 and not v.stacks_expire_together then
         v.stacks = v.stacks - 1
         v.duration = v.maxDuration
       else
