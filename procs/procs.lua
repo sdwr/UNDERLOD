@@ -916,21 +916,160 @@ function Proc_Firebomb:init(args)
 
   --define the proc's vars
   self.damage = self.data.damage or 20
-  self.radius = self.data.radius or 50
+  self.radius = self.data.radius or 30
   self.color = self.data.color or red[0]
+
+  self.chance_to_proc = self.data.chance_to_proc or 0.2
+
+  self.is_troop = true
 end
 
-function Proc_Firebomb:onDeath(target)
-  Proc_Firebomb.super.onDeath(self, target)
-  --remove level from spell
+function Proc_Firebomb:onDeath(from)
+  Proc_Firebomb.super.onDeath(self, from)
+  
+  
+  if not self.globalUnit then return end
+  if self.globalUnit.is_troop == self.is_troop then return end
+  
+  if not self.globalUnit:has_buff('burn') then return end
+
+  if math.random() < self.chance_to_proc then
+    self:explode(from)
+  end
+end
+
+function Proc_Firebomb:explode(from)
+  explosion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
   Area{
-    group = main.current.main, 
-    x = target.x, y = target.y,
+    group = main.current.effects,
+    x = self.globalUnit.x, y = self.globalUnit.y,
     pick_shape = 'circle',
-    dmg = self.damage,
-    r = self.radius, duration = 0.2, color = self.color,
-    is_troop = false
+    dmg = self.damage, r = self.radius, duration = 0.2, color = self.color,
+    is_troop = self.is_troop
   }
+
+  self.globalUnit = nil
+end
+
+Proc_WaterElemental = Proc:extend()
+function Proc_WaterElemental:init(args)
+  self.triggers = {PROC_ON_DEATH}
+  self.scope = 'global'
+
+  Proc_WaterElemental.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  self.damage = self.data.damage or 20
+  self.radius = self.data.radius or 30
+  self.color = self.data.color or blue[0]
+
+  self.chance_to_proc = self.data.chance_to_proc or 0.2
+
+  self.is_troop = true
+
+  --proc memory
+  self.maxSummons = self.data.maxSummons or 3
+  self.summoned = 0
+  self.summons = {}
+end
+
+function Proc_WaterElemental:onDeath(from)
+  Proc_WaterElemental.super.onDeath(self, from)
+  
+  if not self.globalUnit then return end
+  if self.globalUnit.is_troop == self.is_troop then return end
+
+  if not self.globalUnit:has_buff('slowed') then return end
+
+  self:checkSummons()
+
+  if math.random() < self.chance_to_proc and self.summoned < self.maxSummons then
+    self:summon(from)
+  end
+
+  self.globalUnit = nil
+end
+
+function Proc_WaterElemental:summon(from)
+  local myLocation = {x = self.globalUnit.x, y = self.globalUnit.y}
+  local location = Get_Spawn_Point(6, myLocation)
+  if not location then return end
+  local summon = Critter{group = main.current.main,
+    x = location.x, y = location.y, color = self.color, r = random:float(0, 2*math.pi)
+  }
+
+  self.summoned = self.summoned + 1
+  table.insert(self.summons, summon)
+end
+
+function Proc_WaterElemental:checkSummons()
+  for i, summon in ipairs(self.summons) do
+    if not summon or summon.dead then
+      table.remove(self.summons, i)
+      self.summoned = self.summoned - 1
+    end
+  end
+end
+
+function Proc_WaterElemental:clearSummonList()
+  for i, summon in ipairs(self.summons) do
+    if summon then
+      summon:die()
+    end
+  end
+end
+
+function Proc_WaterElemental:die()
+  Proc_WaterElemental.super.die(self)
+  self:clearSummonList()
+end
+
+Proc_Shockwave = Proc:extend()
+function Proc_Shockwave:init(args)
+  self.triggers = {PROC_ON_DEATH}
+  self.scope = 'global'
+
+  Proc_Shockwave.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  self.damage = self.data.damage or 20
+  self.radius = self.data.radius or 30
+  self.color = self.data.color or yellow[0]
+
+  self.chance_to_proc = self.data.chance_to_proc or 0.2
+
+  self.is_troop = true
+end
+
+function Proc_Shockwave:onDeath(from)
+  Proc_Shockwave.super.onDeath(self, from)
+  
+  if not self.globalUnit then return end
+  if self.globalUnit.is_troop == self.is_troop then return end
+
+  if not self.globalUnit:has_buff('shock') then return end
+
+  if math.random() < self.chance_to_proc then
+    self:shockwave(from)
+  end
+end
+
+function Proc_Shockwave:shockwave(from)
+  explosion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+  Area{
+    group = main.current.effects,
+    x = self.globalUnit.x, y = self.globalUnit.y,
+    pick_shape = 'circle',
+    dmg = self.damage, r = self.radius, duration = 0.2, color = self.color,
+    is_troop = self.is_troop,
+    shockDuration = 5,
+  }
+
+  self.globalUnit = nil
 end
 
 --proc radiance
@@ -1036,7 +1175,7 @@ function Proc_Lavapool:init(args)
   self.duration = self.data.duration or 3
   self.color = self.data.color or red[0]
   self.damage = self.data.damage or 10
-  self.tick_rate = self.data.tick_rate or 0.5
+  self.tick_rate = self.data.tick_rate or 1
   self.radius = self.data.radius or 25
   self.every_attacks = self.data.every_attacks or 4
 
@@ -1068,6 +1207,7 @@ function Proc_Lavapool:onHit(target, damage)
         pick_shape = 'circle',
         damage_ticks = true,
         tick_rate = self.tick_rate,
+        tick_immediately = true,
         dmg = self.damage,
         r = self.radius, duration = self.duration, color = self.color,
         is_troop = self.unit.is_troop,
@@ -1159,6 +1299,7 @@ function Proc_Lavaman:spawn(coords)
 end
 
 
+--should be global instead of per troop?
 Proc_FireExplode = Proc:extend()
 function Proc_FireExplode:init(args)
   self.triggers = {}
@@ -1187,7 +1328,9 @@ function Proc_FireExplode:explode(target)
   local damage = (target.max_hp * self.dmgMulti)
   local radius = target.shape.w * self.sizeMulti
 
-  cannoneer2:play{pitch = random:float(0.8, 1.2), volume = 1.2}
+  target:remove_buff('burn')
+
+  cannoneer1:play{pitch = random:float(0.8, 1.2), volume = 1.2}
   Area{
     group = main.current.effects, 
     x = target.x, y = target.y,
@@ -1546,6 +1689,11 @@ proc_name_to_class = {
   ['overcharge'] = Proc_Overcharge,
   ['powercharge'] = Proc_Powercharge,
   ['vulncharge'] = Proc_Vulncharge,
+
+  --elemental on death
+  ['firebomb'] = Proc_Firebomb,
+  ['waterelemental'] = Proc_WaterElemental,
+  ['shockwave'] = Proc_Shockwave,
 
   -- elemental procs
   ['eledmg'] = Proc_Eledmg,

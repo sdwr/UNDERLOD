@@ -90,6 +90,18 @@ function Can_Spawn(rs, location)
   end
 end
 
+function Get_Spawn_Point(rs, location)
+  for i = 1, SPAWN_CHECKS do
+    local offset = SpawnGlobals.spawn_offsets[i % #SpawnGlobals.spawn_offsets]
+    local x, y = location.x + offset.x, location.y + offset.y
+    if Can_Spawn(rs, {x = x, y = y}) then
+      return {x = x, y = y}
+    end
+  end
+  return nil
+end
+
+
 function Outside_Arena(location)
   if location.x < SpawnGlobals.wall_width or 
      location.x > gw - SpawnGlobals.wall_width or 

@@ -35,6 +35,53 @@ LIST_OF_PROC_TYPES = {
   PROC_ON_ROUND_START,
 }
 
+--these need to have unit passed in, because they will be called on global procs
+--or set self.globalUnit on the proc to avoid changing the signature?? sounds terrible :>(
+CALL_PROC_MAP = {
+  [PROC_ON_TICK] = function(proc, dt) return proc:onTick(dt) end,
+  [PROC_ON_HIT] = function(proc, target, damage, damageType) return proc:onHit(target, damage, damageType) end,
+  [PROC_ON_GOT_HIT] = function(proc, from, damage, damageType) return proc:onGotHit(from, damage, damageType) end,
+  [PROC_ON_ATTACK] = function(proc, target) return proc:onAttack(target) end,
+  [PROC_ON_MOVE] = function(proc, distance) return proc:onMove(distance) end,
+  [PROC_ON_DEATH] = function(proc) return proc:onDeath() end,
+  [PROC_ON_KILL] = function(proc, target) return proc:onKill(target) end,
+  [PROC_ON_ROUND_START] = function(proc) return proc:onRoundStart() end,
+
+}
+
+--this is the list of procs that are global, and not tied to a unit
+-- the var is global, but is initialized/reset in the arena
+-- all units try to call the procs in this list when their "onXCallback" functions are called
+
+GLOBAL_PROC_LIST = {}
+
+Call_Global_Procs = function(triggerName, args)
+  if not GLOBAL_PROC_LIST[triggerName] then
+    return
+  end
+
+  for i, proc in ipairs(GLOBAL_PROC_LIST[triggerName]) do
+    if not proc.dead then
+      proc[triggerName](proc, args)
+    end
+  end
+end
+
+Reset_Global_Proc_List = function()
+  for i, triggerName in ipairs(LIST_OF_PROC_TYPES) do
+    if GLOBAL_PROC_LIST[triggerName] then
+      Clear_All_Procs(GLOBAL_PROC_LIST[triggerName])
+    end
+    GLOBAL_PROC_LIST[triggerName] = {}
+  end
+end
+
+Clear_All_Procs = function(procList)
+  for i, proc in ipairs(procList) do
+    proc:die()
+  end
+end
+
 
 --name is passed in from the item data
 Proc = Object:extend()
@@ -70,7 +117,7 @@ function Proc:addTriggers()
   elseif self.scope == 'troop' and self.unit then
     self:addTriggersToTroop()
   elseif self.scope == 'global' then
-    --do global stuff
+    self:addTriggersToGlobal()
   else
     print('proc not on team or troop (in proc)', self.name)
     self:die()
@@ -105,6 +152,17 @@ function Proc:addTriggersToTroop()
     if self:hasTrigger(triggerName) then
       local list = unit[triggerName]
       table.insert(list, self)
+    end
+  end
+end
+
+function Proc:addTriggersToGlobal()
+  for i, triggerName in ipairs(LIST_OF_PROC_TYPES) do
+    if self:hasTrigger(triggerName) then
+      if not GLOBAL_PROC_LIST[triggerName] then
+        GLOBAL_PROC_LIST[triggerName] = {}
+      end
+      table.insert(GLOBAL_PROC_LIST[triggerName], self)
     end
   end
 end
@@ -150,9 +208,9 @@ end
 
 --onDeath is called when the unit dies
 --and comes from engine internals, so does not know who killed the unit
-function Proc:onDeath()
+function Proc:onDeath(from)
   if DEBUG_PROCS then
-    print('onDeath', self.name)
+    print('onDeath', from, self.name)
   end
 end
 

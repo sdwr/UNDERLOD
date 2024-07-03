@@ -728,6 +728,11 @@ end
 
 function Unit:onTickCallbacks(dt)
   if not main.current:is(Arena) then return end
+
+  for k, proc in ipairs(GLOBAL_PROC_LIST[PROC_ON_TICK]) do
+    proc:onTick(dt, self)
+  end
+
   for k, proc in ipairs(self.onTickProcs) do
     proc:onTick(dt, self)
   end
@@ -735,32 +740,58 @@ end
 
 --warning, target can be either a unit or a coordinate
 function Unit:onAttackCallbacks(target)
+
+  for k, proc in ipairs(GLOBAL_PROC_LIST[PROC_ON_ATTACK]) do
+    proc:onAttack(target, self)
+  end
+
   for k, proc in ipairs(self.onAttackProcs) do
     proc:onAttack(target, self)
   end
 end
 
-function Unit:onHitCallbacks(from, damage, damageType)
+function Unit:onHitCallbacks(target, damage, damageType)
+
+  for k, proc in ipairs(GLOBAL_PROC_LIST[PROC_ON_HIT]) do
+    proc.globalUnit = self
+    proc:onHit(target, damage, damageType)
+  end
+
   for k, proc in ipairs(self.onHitProcs) do
-    proc:onHit(from, damage, damageType)
+    proc:onHit(target, damage, damageType)
   end
 end
 
 function Unit:onGotHitCallbacks(from, damage)
+
+  for k, proc in ipairs(GLOBAL_PROC_LIST[PROC_ON_GOT_HIT]) do
+    proc.globalUnit = self
+    proc:onGotHit(from, damage)
+  end
   for k, proc in ipairs(self.onGotHitProcs) do
     proc:onGotHit(from, damage)
   end
 end
 
 function Unit:onKillCallbacks(target)
+
+  for k, proc in ipairs(GLOBAL_PROC_LIST[PROC_ON_KILL]) do
+    proc.globalUnit = self
+    proc:onKill(target)
+  end
   for k, proc in ipairs(self.onKillProcs) do
     proc:onKill(target)
   end
 end
 
-function Unit:onDeathCallbacks()
+function Unit:onDeathCallbacks(from)
+  for k, proc in ipairs(GLOBAL_PROC_LIST[PROC_ON_DEATH]) do
+    proc.globalUnit = self
+    proc:onDeath(from)
+  end
+
   for k, proc in ipairs(self.onDeathProcs) do
-    proc:onDeath()
+    proc:onDeath(from)
   end
 end
 
@@ -776,7 +807,7 @@ function Unit:onRoundStartCallbacks()
   end
 end
 
---seems like body.v does not chagne from nil
+--seems like body.v does not change from nil
 function Unit:isMoving(dt)
   local diff = math.distance(self.x, self.y, self.last_x or self.x, self.last_y or self.y)
   self.last_x = self.x

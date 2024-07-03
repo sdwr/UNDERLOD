@@ -882,15 +882,21 @@ function Area:init(args)
 
   self.duration = args.duration or 0.2
   self.current_time = 0
+
   self.damage_ticks = args.damage_ticks or false
   self.tick_rate = args.tick_rate or 0.1
+
+  if self.tick_immediately then
+    self.current_time = self.tick_rate
+  end
+  
   self.active = true
 
   if not self.damage_ticks then
     self:damage()
   end
 
-  self.t:tween(0.05, self, {w = args.w}, math.cubic_in_out, function() self.spring:pull(0.15 * self.flashFactor) end)
+  --self.t:tween(0.05, self, {w = args.w}, math.cubic_in_out, function() self.spring:pull(0.15 * self.flashFactor) end)
   self.t:after(self.duration, function()
     self.color = args.color
     self.active = false
@@ -915,6 +921,14 @@ function Area:damage()
     targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
     for _, target in ipairs(targets) do
       target:root(self.rootDuration, self.unit)
+    end
+    return
+  end
+
+  if self.shockDuration then
+    targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
+    for _, target in ipairs(targets) do
+      target:shock(self.shockDuration, self.unit)
     end
     return
   end

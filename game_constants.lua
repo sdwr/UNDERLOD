@@ -44,6 +44,7 @@ RALLY_DURATION = 3
 --and also used by procs to know when to start buffs
 TIME_TO_ROUND_START = 2
 SPAWNS_IN_GROUP = 6
+SPAWN_CHECKS = 10
 
 --stat constants
 REGULAR_ENEMY_HP = 50

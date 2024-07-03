@@ -114,6 +114,9 @@ function Arena:on_enter(from)
     self.progress_bar = ProgressBar{group = self.ui, x = gw/2, y = 20, w = 200, h = 10, color = yellow[0], progress = 0}
     self.progress_bar.max_progress = self.level_list[self.level].round_power or 0
   end
+
+  Reset_Global_Proc_List()
+
   Spawn_Teams(self)
 
   --select first character by default
@@ -820,6 +823,8 @@ function Arena:transition()
   ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
   TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or self.color, transition_action = function(t)
 
+
+    Reset_Global_Proc_List()
     slow_amount = 1
     music_slow_amount = 1
     main:add(BuyScreen'buy_screen')
