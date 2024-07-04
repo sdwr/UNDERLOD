@@ -67,7 +67,6 @@ end
 --returns items as item_data
 function Get_Random_Item(shop_level, units)
   local max_cost = Get_Max_Item_Cost(shop_level)
-  print('max cost: ', max_cost)
   local available_items = {}
   --TODO: change weighting based on level (item tier)
 

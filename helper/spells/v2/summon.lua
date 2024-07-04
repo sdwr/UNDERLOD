@@ -33,19 +33,19 @@ function Summon_Spell:spawn()
   spawn1:play{pitch = random:float(0.8, 1.2), volume = 0.15}
   if self.summonType == 'enemy_critter' then
     for i = 1, self.summonAmount do
-      local myLocation = {x = self.x, y = self.y}
-      local location = Get_Spawn_Point(2, myLocation)
-      if location then
-          EnemyCritter{group = main.current.main, x = location.x, y = location.y, color = grey[0], r = random:float(0, 2*math.pi), 
+      local offset = SpawnGlobals.spawn_offsets[i % #SpawnGlobals.spawn_offsets]
+      local x, y = self.x + offset.x, self.y + offset.y
+      if Can_Spawn(2, {x = x, y = y}) then
+          EnemyCritter{group = main.current.main, x = x, y = y, color = grey[0], r = random:float(0, 2*math.pi), 
           v = 10, parent = self.unit}
       end
     end
   else
     for i = 1, self.summonAmount do
-      local myLocation = {x = self.x, y = self.y}
-      local location = Get_Spawn_Point(6, myLocation)
-      if location then
-          Enemy{type = self.type, group = main.current.main, x = self.x + location.x, y = self.y + location.y, level = self.level, parent = self.unit}
+      local offset = SpawnGlobals.spawn_offsets[i % #SpawnGlobals.spawn_offsets]
+      local x, y = self.x + offset.x, self.y + offset.y
+      if Can_Spawn(6, {x = x, y = y}) then
+          Enemy{type = self.type, group = main.current.main, x = self.x + x, y = self.y + y, level = self.level, parent = self.unit}
       end
     end
   end

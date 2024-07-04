@@ -19,7 +19,7 @@ function Archer_Troop:setup_cast()
     viable = function() return Helper.Spell:target_is_in_range(self, self.attack_sensor.rs, false) end,
     oncast = function() end,
     unit = self,
-    target = self.target,
+    target = self:my_target(),
     castcooldown = self.cooldownTime,
     cast_length = self.castTime,
     backswing = 0.2,

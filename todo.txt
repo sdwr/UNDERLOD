@@ -143,7 +143,10 @@ TODO:
 
 SMALL CLEANUP:  
 
-  --troops no longer attack when assigned_target is set (right click)
+  --archer troop attacks RMB target twice?
+    -- something still wrong with cooldown/cast start
+    -- should be unified for troops as well
+
 
   --add popup controls on level 1 (disable with checkbox)
     --reenable in settings?
@@ -157,7 +160,6 @@ SMALL CLEANUP:
     - but by then the whole selection has already happened in arena/hotbarglobals
 
   
-  --still duplicate text/proc in buy screen sometimes
   --dragon still only attacking once??
 
   --stompy needs to wander randomly (towards middle of screen)

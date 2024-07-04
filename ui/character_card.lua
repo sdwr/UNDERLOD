@@ -1,7 +1,23 @@
 Active_Inventory_Slot = nil
 Character_Cards = {}
 
+--still have duplicate text bug 
+--hack workaround: add all card texts to a global table
+--and clear them all when refreshing
+
+--looks like it only happens after losing/restarting a run,
+--where the old cards are not killed until the new ones are created
+
+ALL_CARD_TEXTS = {}
+
+
 function Refresh_All_Cards_Text()
+  for i, text in ipairs(ALL_CARD_TEXTS) do
+    if not text.dead then
+      text.dead = true
+    end
+  end
+  ALL_CARD_TEXTS = {}
   for i, card in ipairs(Character_Cards) do
     card:refreshText()
   end
@@ -65,9 +81,7 @@ end
 
 function CharacterCard:initText()
   self.name_text = Text({{text = '[yellow[3]]' .. self.character, font = pixul_font, alignment = 'center'}}, global_text_tags)
-  self.stat_text = build_character_text(self.unit)
-  self.stat_text.x = self.x
-  self.stat_text.y = self.y - self.h/2 + 15 + self.stat_text.h/2
+  self:refreshText()
   
   self.proc_text = nil
 end
@@ -90,8 +104,11 @@ function CharacterCard:addProcIcon()
 end
 
 function CharacterCard:refreshText()
-  self.stat_text.dead = true
+  if self.stat_text then
+    self.stat_text.dead = true
+  end
   self.stat_text = build_character_text(self.unit)
+  table.insert(ALL_CARD_TEXTS, self.stat_text)
   self.stat_text.x = self.x
   self.stat_text.y = self.y - self.h/2 + 35 + self.stat_text.h/2
 end

@@ -1035,6 +1035,9 @@ function Unit:should_follow()
   local input = input['space'].down
   if input then
     Helper.Unit:clear_all_rally_points()
+    if self.cancel_cast then
+      self:cancel_cast()
+    end
   end
   local canMove = (self.state == unit_states['normal'] or self.state == unit_states['stopped'] or self.state == unit_states['rallying'] or self.state == unit_states['following'] or self.state == unit_states['casting'])
 
@@ -1127,18 +1130,14 @@ function Unit:end_cast(cooldown)
   self.spellObject = nil
 end
 
-function Unit:cancel_cast()
-  if self.state == unit_states['casting'] then
-    self.state = unit_states['normal']
-    self.castcooldown = 0
-    self.spelldata = nil
-  end
 
-  --remove the cast object before calling :die() to prevent infinite loop
-  local castObject = self.castObject
-  local spellObject = self.spellObject
-  self.castObject = nil
-  self.spellObject = nil
+--remove the castObject before calling die()
+-- to prevent the infinite loop
+function Cancel_Cast_And_Spell(unit)
+  local castObject = unit.castObject
+  local spellObject = unit.spellObject
+  unit.castObject = nil
+  unit.spellObject = nil
   if castObject then
     castObject:cancel()
   end
@@ -1147,13 +1146,30 @@ function Unit:cancel_cast()
   end
 end
 
+
+--infinite loop, this calls cast:cancel() which calls this
+--but broken by removing the castObject before calling die()
+-- and the death check
+function Unit:cancel_cast()
+
+  if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
+    self.state = unit_states['normal']
+    self.castcooldown = 0
+    self.spelldata = nil
+  end
+
+  Cancel_Cast_And_Spell(self)
+end
+
 function Unit:interrupt_cast()
-  if self.state == unit_states['casting'] then
+  if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
     self.state = unit_states['normal']
     --change this
     self.castcooldown = 3
     self.spelldata = nil
   end
+
+  Cancel_Cast_And_Spell(self)
 end
 
 --for channeling spells, if they are hit while casting
