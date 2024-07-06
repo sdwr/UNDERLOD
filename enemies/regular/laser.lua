@@ -52,6 +52,7 @@ fns['init_enemy'] = function(self)
     oncast = function() self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) end,
     castcooldown = self.castcooldown,
     cast_length = 0.1,
+    hide_cast_timer = true,
     spellclass = Laser_Spell,
     --spell ends itself when firing, doesn't use duration
     spelldata = {
@@ -65,6 +66,7 @@ fns['init_enemy'] = function(self)
       laser_aim_width = 6,
       damage_troops = true,
       damage_once = true,
+      draw_spawn_circle = true,
       end_spell_on_fire = false,
       fire_follows_unit = false,
       fade_fire_draw = true,

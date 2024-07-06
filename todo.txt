@@ -168,10 +168,6 @@ SMALL CLEANUP:
     -- add charger enemy
     -- add mspd buff enemy
 
-  --freeze UI when pause menu is open in buy screen
-    - move settings buttons to new UI layer and freeze everything else?
-    - what about arena
-
   --laser enemy rotates at end of precast (wrong state?)
     -retarget in enemy:update()? would have to be in normal state
     

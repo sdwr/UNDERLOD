@@ -341,6 +341,7 @@ end
 
 function Unit:draw_cast_timer()
   if self.state == unit_states['casting'] then
+    if self.castObject and self.castObject.hide_cast_timer then return end
 
     local currentTime = love.timer.getTime()
     local time = currentTime - self.last_attack_started

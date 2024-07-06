@@ -45,8 +45,9 @@ function Laser_Spell:init(args)
   self.length = self.length or 300
   self.damage_troops = self.damage_troops
 
-  self.laser_aim_width = self.laser_aim_width or 4
-  self.laser_width = self.laser_width or self.laser_aim_width * 3
+  self.laser_aim_width = self.laser_aim_width or 2
+  self.laser_width = self.laser_width or self.laser_aim_width * 6
+  self.draw_spawn_circle = self.draw_spawn_circle
 
   self.charge_duration = self.charge_duration or 1
   self.fire_duration = self.fire_duration or 0.2
@@ -257,7 +258,7 @@ function Laser_Spell:draw()
     color = self.aim_color_transparent
     width = self.laser_aim_width
     if self.fade_in_aim_draw then
-      self.aim_color_transparent.a = (self.charge_time / self.charge_duration)
+      self.aim_color_transparent.a = 0.4 * (self.charge_time / self.charge_duration)
     end
   elseif self.is_firing then
     color = self.color_transparent
@@ -269,6 +270,11 @@ function Laser_Spell:draw()
   graphics.push(self.x, self.y, self.r, self.spring.x, self.spring.y)
     graphics.line(self.lineCoords[1], self.lineCoords[2], self.lineCoords[3], self.lineCoords[4], color, width)
   graphics.pop()
+
+  if self.is_firing and self.draw_spawn_circle then
+    local circle_radius = self.laser_width/2 * (1 - (self.fire_time / self.fire_duration))
+    graphics.circle(self.x, self.y, circle_radius, self.color_transparent)
+  end
 end
 
 --helper

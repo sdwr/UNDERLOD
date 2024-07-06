@@ -20,6 +20,7 @@ function BuyScreen:on_exit()
   self.effects = nil
   self.ui = nil
   self.ui_top = nil
+  self.options_ui = nil
   self.shop_text = nil
   self.items_text = nil
   self.sets = nil
@@ -61,6 +62,7 @@ function BuyScreen:on_enter(from)
   self.effects = Group()
   self.ui = Group()
   self.ui_top = Group()
+  self.options_ui = Group()
   self.tutorial = Group()
 
   self.lock_button = LockButton{group = self.main, x = gw/2 - 150, y = gh - 40, parent = self}
@@ -156,11 +158,11 @@ function BuyScreen:update(dt)
     self.effects:update(dt*slow_amount)
     self.ui:update(dt*slow_amount)
     self.ui_top:update(dt*slow_amount)
+    self.options_ui:update(dt*slow_amount)
     if self.shop_text then self.shop_text:update(dt) end
     if self.items_text then self.items_text:update(dt) end
   else
-    self.ui:update(dt*slow_amount)
-    self.ui_top:update(dt*slow_amount)
+    self.options_ui:update(dt*slow_amount)
     self.tutorial:update(dt*slow_amount)
   end
 
@@ -279,9 +281,11 @@ function BuyScreen:draw()
 
   if self.shop_text then self.shop_text:draw(64, 20) end
 
-  if self.paused then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
   self.ui:draw()
   self.ui_top:draw()
+  if self.paused then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
+
+  self.options_ui:draw()
 
   if self.in_tutorial then
     graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent_2)

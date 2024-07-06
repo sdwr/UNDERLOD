@@ -20,6 +20,7 @@ function MainMenu:on_enter(from)
   self.effects = Group()
   self.main_ui = Group():no_camera()
   self.ui = Group():no_camera()
+  self.options_ui = Group():no_camera()
   self.main:disable_collision_between('troop', 'projectile')
   self.main:disable_collision_between('projectile', 'projectile')
   self.main:disable_collision_between('projectile', 'enemy_projectile')
@@ -180,6 +181,7 @@ function MainMenu:on_exit()
   self.post_main = nil
   self.effects = nil
   self.ui = nil
+  self.options_ui = nil
   self.units = nil
   self.player = nil
   self.t = nil
@@ -210,12 +212,13 @@ function MainMenu:update(dt)
     self.floor:update(dt*slow_amount)
     self.main:update(dt*slow_amount)
     self.post_main:update(dt*slow_amount)
+    self.options_ui:update(dt*slow_amount)
     self.effects:update(dt*slow_amount)
     self.main_ui:update(dt*slow_amount)
     if self.title_text then self.title_text:update(dt) end
     self.ui:update(dt*slow_amount)
   else
-    self.ui:update(dt*slow_amount)
+    self.options_ui:update(dt*slow_amount)
   end
 end
 
@@ -236,6 +239,7 @@ function MainMenu:draw()
 
   self.main_ui:draw()
   self.title_text:draw(60, gh/2 - 40)
-  if self.paused then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
   self.ui:draw()
+  if self.paused then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
+  self.options_ui:draw()
 end

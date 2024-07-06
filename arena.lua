@@ -43,6 +43,7 @@ function Arena:on_enter(from)
   self.post_main = Group()
   self.effects = Group()
   self.ui = Group()
+  self.options_ui = Group()
   self.credits = Group()
   self.main:disable_collision_between('troop', 'projectile')
   self.main:disable_collision_between('projectile', 'projectile')
@@ -144,6 +145,7 @@ function Arena:on_exit()
   self.post_main = nil
   self.effects = nil
   self.ui = nil
+  self.options_ui = nil
   self.credits = nil
   self.units = nil
   self.passives = nil
@@ -257,6 +259,7 @@ function Arena:update(dt)
   self.post_main:update(dt*slow_amount)
   self.effects:update(dt*slow_amount)
   self.ui:update(dt*slow_amount)
+  self.options_ui:update(dt*slow_amount)
   self.credits:update(dt)
 
   Helper:update(dt*slow_amount)
@@ -544,10 +547,11 @@ function Arena:draw()
 
   Helper:draw()
 
-
-
-  if self.choosing_passives or self.won or self.paused or self.died then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
+  
+  
   self.ui:draw()
+  if self.choosing_passives or self.won or self.paused or self.died then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
+  self.options_ui:draw()
 
   if self.shop_text then self.shop_text:draw(gw - 40, gh - 17) end
   if self.gold_text then self.gold_text:draw(gw / 2, gh / 2) end
