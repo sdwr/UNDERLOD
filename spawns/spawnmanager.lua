@@ -399,7 +399,6 @@ function Spawn_Enemy(arena, type, location)
     level = arena.level, data = data}
     return true
   else
-    print("failed to spawn enemy " .. type .. " at " .. location.x .. ", " .. location.y)
     return false
   end
 

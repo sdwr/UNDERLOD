@@ -904,6 +904,123 @@ function Proc_Vulncharge:resetStacks()
   self.targets = {}
 end
 
+--talismans that grant global buffs
+Proc_StrengthTalisman = Proc:extend()
+function Proc_StrengthTalisman:init(args)
+  self.triggers = {PROC_ON_ROUND_START}
+  self.scope = 'global'
+
+  Proc_StrengthTalisman.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  self.buffname = 'strengthtalisman'
+  self.buffDuration = self.data.buffDuration or 9999
+  self.dmgMulti = self.data.dmgMulti or 0.25
+  self.buff = {name = self.buffname, color = red[5], duration = self.buffDuration,
+    stats = {dmg = self.dmgMulti}
+  }
+end
+
+function Proc_StrengthTalisman:onRoundStart()
+  Proc_StrengthTalisman.super.onRoundStart(self)
+
+  spawn_mark2:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+  local troops = Helper.Unit:get_list(true)
+  for i, troop in ipairs(troops) do
+    troop:add_buff(self.buff)
+  end
+end
+
+Proc_AgilityTalisman = Proc:extend()
+function Proc_AgilityTalisman:init(args)
+  self.triggers = {PROC_ON_ROUND_START}
+  self.scope = 'global'
+
+  Proc_AgilityTalisman.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  self.buffname = 'agilitytalisman'
+  self.buffDuration = self.data.buffDuration or 9999
+  self.aspdMulti = self.data.aspdMulti or 0.25
+  self.mvspdMulti = self.data.mvspdMulti or 0.25
+  self.buff = {name = self.buffname, color = yellow[5], duration = self.buffDuration,
+    stats = {aspd = self.aspdMulti, mvspd = self.mvspdMulti}
+  }
+end
+
+function Proc_AgilityTalisman:onRoundStart()
+  Proc_AgilityTalisman.super.onRoundStart(self)
+
+  spawn_mark2:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+  local troops = Helper.Unit:get_list(true)
+  for i, troop in ipairs(troops) do
+    troop:add_buff(self.buff)
+  end
+end
+
+--CDR ON STATS NOT IMPLEMENTED
+Proc_WisdomTalisman = Proc:extend()
+function Proc_WisdomTalisman:init(args)
+  self.triggers = {PROC_ON_ROUND_START}
+  self.scope = 'global'
+
+  Proc_WisdomTalisman.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  self.buffname = 'wisdomtalisman'
+  self.buffDuration = self.data.buffDuration or 9999
+  self.range = self.data.range or 0.25
+  self.cdrMulti = self.data.cdr or 0.1
+  self.buff = {name = self.buffname, color = blue[5], duration = self.buffDuration,
+    stats = {range = self.range, cdr = self.cdrMulti}
+  }
+end
+
+function Proc_WisdomTalisman:onRoundStart()
+  Proc_WisdomTalisman.super.onRoundStart(self)
+
+  spawn_mark2:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+  local troops = Helper.Unit:get_list(true)
+  for i, troop in ipairs(troops) do
+    troop:add_buff(self.buff)
+  end
+end
+
+Proc_VitalityTalisman = Proc:extend()
+function Proc_VitalityTalisman:init(args)
+  self.triggers = {PROC_ON_ROUND_START}
+  self.scope = 'global'
+
+  Proc_VitalityTalisman.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  self.buffname = 'vitalitytalisman'
+  self.buffDuration = self.data.buffDuration or 9999
+  self.hpMulti = self.data.hpMulti or 0.25
+  self.defMulti = self.data.defMulti or 0.25
+  self.buff = {name = self.buffname, color = green[5], duration = self.buffDuration,
+    stats = {hp = self.hpMulti, percent_def = self.defMulti}
+  }
+end
+
+function Proc_VitalityTalisman:onRoundStart()
+  Proc_VitalityTalisman.super.onRoundStart(self)
+
+  spawn_mark2:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+  local troops = Helper.Unit:get_list(true)
+  for i, troop in ipairs(troops) do
+    troop:add_buff(self.buff)
+  end
+end
+
 --triggers on all enemy deaths
 Proc_Firebomb = Proc:extend()
 function Proc_Firebomb:init(args)
@@ -1272,7 +1389,7 @@ end
 function Proc_Lavaman:try_spawn(from)
 
   -- find a random free spot in the team
-  self:find_free_spot()
+  self:find_free_spot(from)
   
   illusion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
   self.tick_timer = 0
@@ -1689,6 +1806,13 @@ proc_name_to_class = {
   ['overcharge'] = Proc_Overcharge,
   ['powercharge'] = Proc_Powercharge,
   ['vulncharge'] = Proc_Vulncharge,
+
+
+  --global talismans
+  ['strengthtalisman'] = Proc_StrengthTalisman,
+  ['wisdomtalisman'] = Proc_WisdomTalisman,
+  ['agilitytalisman'] = Proc_AgilityTalisman,
+  ['vitalitytalisman'] = Proc_VitalityTalisman,
 
   --elemental on death
   ['firebomb'] = Proc_Firebomb,

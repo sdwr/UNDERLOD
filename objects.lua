@@ -575,6 +575,7 @@ function Unit:calculate_stats(first_run)
   self.slow_mvspd_m = 1
   self.buff_range_a = 0
   self.buff_range_m = 1
+  self.buff_cdr_m = 1
 
   self.eledmg_m = 1
 
@@ -638,6 +639,8 @@ function Unit:calculate_stats(first_run)
             self.status_resist = self.status_resist + amtWithStacks
           elseif stat == buff_types['range'] then
             self.buff_range_m = self.buff_range_m + amtWithStacks
+          elseif stat == buff_types['cdr'] then
+            self.buff_cdr_m = self.buff_cdr_m + amtWithStacks
           elseif stat == buff_types['percent_def'] then
               self.buff_def_m = self.buff_def_m + stat
 

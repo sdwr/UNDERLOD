@@ -538,6 +538,47 @@ item_to_item_data = {
     stats = {dmg = 0.25},
     procs = {'vulncharge'}
   },
+
+  --global stat boosts
+  ['strengthtalisman'] = {
+    name = 'strengthtalisman',
+    colors = {'red'},
+    cost = 15,
+    icon = 'talisman',
+    desc = 'Increases damage for all units',
+    stats = {hp = 0.25},
+    procs = {'strengthtalisman'}
+  },
+
+  ['agilitytalisman'] = {
+    name = 'agilitytalisman',
+    colors = {'yellow'},
+    cost = 15,
+    icon = 'talisman',
+    desc = 'Increases attack speed and movespeed for all units',
+    stats = {hp = 0.25},
+    procs = {'agilitytalisman'}
+  },
+  ['wisdomtalisman'] = {
+    name = 'wisdomtalisman',
+    colors = {'blue'},
+    cost = 15,
+    icon = 'talisman',
+    desc = 'Increases range and reduces cooldown for all units',
+    stats = {hp = 0.25},
+    procs = {'wisdomtalisman'}
+  },
+  ['vitalitytalisman'] = {
+    name = 'vitalitytalisman',
+    colors = {'green'},
+    cost = 15,
+    icon = 'talisman',
+    desc = 'Increases health and defence for all units',
+    stats = {hp = 0.25},
+    procs = {'vitalitytalisman'}
+  },
+
+
   
   --elemental on death effects
 

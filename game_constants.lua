@@ -55,11 +55,28 @@ SPECIAL_ENEMY_HP = 175
 SPECIAL_ENEMY_DAMAGE = 20
 SPECIAL_ENEMY_MS = 40
 
-REGULAR_ENEMY_SCALING = function(level) return math.pow(1.1, level) end
-SPECIAL_ENEMY_SCALING = function(level) return math.pow(1.1, level) end
+LEVEL_TO_TIER = function(level)
+  if level < 6 then
+    return 1
+  elseif level < 11 then
+    return 2
+  elseif level < 16 then
+    return 3
+  else
+    return 4
+  end
+end
+
+REGULAR_ENEMY_SCALING = function(level) 
+  return math.pow(1.1, level) + ((LEVEL_TO_TIER(level) - 1) / 4)
+end
+
+SPECIAL_ENEMY_SCALING = function(level) 
+  return math.pow(1.1, level) + ((LEVEL_TO_TIER(level) - 1) / 4)
+end
 
 --add 0.25 to the scaling for each boss level (boss levels are every 6 levels)
-BOSS_HP_SCALING = function(level) return 1 + ((level / 6) - 1) end
+BOSS_HP_SCALING = function(level) return LEVEL_TO_TIER(level) end
 
 
 --proc constants

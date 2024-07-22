@@ -308,6 +308,7 @@ function init()
   reticle               = Image(d .. 'reticle')
   root                  = Image(d .. 'root')
   bomb2                 = Image(d .. 'bomb2')
+  talisman              = Image(d .. 'talisman')
 
   arrows                = Image(d .. 'arrows')
   bear                  = Image(d .. 'bear')
@@ -1467,6 +1468,7 @@ function init()
     ['skull'] = skull,
     ['root'] = root,
     ['bomb'] = bomb2,
+    ['talisman'] = talisman,
 
   }
 
@@ -1917,7 +1919,7 @@ function init()
   function level_to_shop_tier(lvl)
     if lvl <= 6 then
       return 1
-    elseif lvl <= 12 then
+    elseif lvl <= 11 then
       return 2
     elseif lvl <= 16 then
       return 3
