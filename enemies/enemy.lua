@@ -190,7 +190,8 @@ function Enemy:die()
   if main.current.progress_bar then
     local progress_amount = 0
     progress_amount = enemy_to_round_power[self.type] or 0
-    main.current.progress_bar:increase_progress(progress_amount)
+
+    main.current.progress_bar:increase_with_particles(progress_amount, self.x, self.y)
   end
 
   if self.parent and self.parent.summons and self.parent.summons > 0 then

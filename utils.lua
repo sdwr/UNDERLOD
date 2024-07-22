@@ -104,3 +104,18 @@ function find_item_image(item)
   local image = item_images[item.name] or item_images[item.icon] or item_images['default']
   return image
 end
+
+function get_progress_bar()
+  if main and main.current and main.current.progress_bar then
+    return main.current.progress_bar
+  end
+  return nil
+end
+
+function get_progress_location()
+  local bar = get_progress_bar()
+  if bar then
+    return bar:get_progress_location()
+  end
+  return {x = 0, y = 0}
+end

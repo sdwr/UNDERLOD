@@ -20,6 +20,7 @@ function BuyScreen:on_exit()
   self.effects = nil
   self.ui = nil
   self.ui_top = nil
+  self.overlay_ui = nil
   self.options_ui = nil
   self.shop_text = nil
   self.items_text = nil
@@ -62,6 +63,7 @@ function BuyScreen:on_enter(from)
   self.effects = Group()
   self.ui = Group()
   self.ui_top = Group()
+  self.overlay_ui = Group()
   self.options_ui = Group()
   self.tutorial = Group()
 
@@ -86,16 +88,16 @@ function BuyScreen:on_enter(from)
   if not Character_Cards or #Character_Cards == 0 then
     Character_Cards = {}
     self.select_character_overlay = CharacterSelectOverlay{
-      group = self.ui
+      group = self.overlay_ui
     }
   --and again at round 5
   elseif self.level == PICK_SECOND_CHARACTER and #Character_Cards == 1 then
     self.select_character_overlay = CharacterSelectOverlay{
-      group = self.ui
+      group = self.overlay_ui
     }
   elseif self.level == PICK_THIRD_CHARACTER and #Character_Cards == 2 then
     self.select_character_overlay = CharacterSelectOverlay{
-      group = self.ui
+      group = self.overlay_ui
     }
   end
 
@@ -153,14 +155,18 @@ function BuyScreen:update(dt)
 
   self:update_game_object(dt*slow_amount)
 
-  if not self.in_tutorial and not self.paused then
+  if not self.in_tutorial and not self.choose_character and not self.paused then
     self.main:update(dt*slow_amount)
     self.effects:update(dt*slow_amount)
     self.ui:update(dt*slow_amount)
     self.ui_top:update(dt*slow_amount)
+    self.overlay_ui:update(dt*slow_amount)
     self.options_ui:update(dt*slow_amount)
     if self.shop_text then self.shop_text:update(dt) end
     if self.items_text then self.items_text:update(dt) end
+  elseif self.choose_character and not self.paused then
+    self.overlay_ui:update(dt*slow_amount)
+    self.options_ui:update(dt*slow_amount)
   else
     self.options_ui:update(dt*slow_amount)
     self.tutorial:update(dt*slow_amount)
@@ -284,7 +290,8 @@ function BuyScreen:draw()
   self.ui:draw()
   self.ui_top:draw()
   if self.paused then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
-
+  
+  self.overlay_ui:draw()
   self.options_ui:draw()
 
   if self.in_tutorial then
@@ -661,22 +668,43 @@ function ProgressBar:draw()
   graphics.pop()
 end
 
+function ProgressBar:get_progress_location()
+  local progress_location = {x = self.x, y = self.y}
+  progress_location.x = progress_location.x - self.shape.w/2 + self.shape.w*self.progress/self.max_progress
+  return progress_location
+end
+
 function ProgressBar:set_progress(progress)
   self.progress = progress
 end
 
+function ProgressBar:increase_with_particles(roundPower, x, y)
+  self:create_progress_particle(roundPower, x, y)
+end
+
 function ProgressBar:increase_progress(amount)
   self.progress = self.progress + amount
+
   alert1:play{pitch = random:float(0.95, 1.05), volume = 1.1}
+  
   self:create_particles()
 end
 
 function ProgressBar:create_particles()
-  local progress_location = {x = self.x, y = self.y}
-  progress_location.x = progress_location.x - self.shape.w/2 + self.shape.w*self.progress/self.max_progress
+  local progress_location = self:get_progress_location()
   for i = 1, 10 do
     HitParticle{group = main.current.effects, x = progress_location.x, y = progress_location.y, color = self.color}
   end
+end
+
+function ProgressBar:create_progress_particle(roundPower, x, y)
+  ProgressParticle{
+    group = main.current.main,
+    x = x,
+    y = y,
+    roundPower = roundPower,
+    parent = self, 
+  }
 
 end
 

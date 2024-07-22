@@ -828,8 +828,52 @@ function HitParticle:change_color(delay_multiplier, target_color)
   return self
 end
 
+ProgressParticle  = Object:extend()
+ProgressParticle:implement(GameObject)
+ProgressParticle:implement(Physics)
+function ProgressParticle:init(args)
+  self:init_game_object(args)
+  self.roundPower = self.roundPower or 0
+  
+  self.v = self.v or random:float(100, 200)
+  self.r = args.r or random:float(0, 2*math.pi)
+  self.duration = self.duration or 3
+  self.rs = self.rs or random:float(3, 4)
+  
+  self:set_as_circle(self.rs, 'dynamic', 'effect')
+  self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
+  self.color = self.color or yellow[2]
+  self.t:tween(self.duration, self, {rs = 1}, math.cubic_in_out)
 
+  self.elapsed = 0
+end
 
+function ProgressParticle:update(dt)
+  self:update_game_object(dt)
+  self.elapsed = self.elapsed + dt
+  if self.elapsed > self.duration then
+    self:finish()
+  end
+
+  local progress_location = get_progress_location()
+  self:seek_point(progress_location.x, progress_location.y)
+
+  if self:distance_to_point(progress_location.x, progress_location.y) < 5 then
+    self:finish()
+  end
+end
+
+function ProgressParticle:draw()
+  graphics.push(self.x, self.y, self.r)
+    graphics.circle(self.x, self.y, self.rs, self.color)
+  graphics.pop()
+end
+
+function ProgressParticle:finish()
+  self.dead = true
+  self.parent:increase_progress(self.roundPower)
+
+end
 
 AnimationEffect = Object:extend()
 AnimationEffect:implement(GameObject)

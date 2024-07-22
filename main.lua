@@ -2711,7 +2711,6 @@ function open_options(self)
 end
 
 function close_options(self)
-  print('closing options!')
   trigger:tween(0.25, _G, { slow_amount = 1 }, math.linear, function()
     slow_amount = 1
     self.paused = false

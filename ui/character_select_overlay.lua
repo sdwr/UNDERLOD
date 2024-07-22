@@ -6,6 +6,8 @@ function CharacterSelectOverlay:init(args)
   self:init_game_object(args)
   self.cards = {}
 
+  main.current.choose_character = true
+
   local unit1 = 'swordsman'
   local unit2 = 'archer'
   local unit3 = 'laser'
@@ -71,6 +73,8 @@ end
 
 function Overlay:die()
   self.dead = true
+
+  main.current.choose_character = false
 end
 
 
