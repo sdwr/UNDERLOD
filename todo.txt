@@ -1,7 +1,5 @@
 
 TODO:
-  - FIX LASER HITBOX!!!
-
 
   - make enemies spawn from screen edges instead of spawn points
   - remove level walls

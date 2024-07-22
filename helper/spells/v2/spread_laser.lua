@@ -62,7 +62,16 @@ function Spread_Laser:get_next_rotation()
   elseif self.spread_type == 'target' then
     --oscillate outwards from the target, first shot is dead center
     local direction = (i % 2 == 0) and -1 or 1
-    local offset = self.spread_width * math.ceil(i/2) * direction
+
+    --i goes from 1 to num_shots
+    local multi = 0
+    if i == 1 then
+      multi = 0
+    else
+      multi = math.floor(i/2)
+    end
+
+    local offset = self.spread_width * multi * direction
     self.r_offset = offset
   end
 

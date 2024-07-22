@@ -267,7 +267,7 @@ function Laser_Spell:draw()
       width = width * (1 - self.fire_time / self.fire_duration)
     end
   end
-  graphics.push(self.x, self.y, self.r, self.spring.x, self.spring.y)
+  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
     graphics.line(self.lineCoords[1], self.lineCoords[2], self.lineCoords[3], self.lineCoords[4], color, width)
   graphics.pop()
 
