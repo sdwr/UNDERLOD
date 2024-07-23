@@ -2,6 +2,7 @@ require 'engine'
 require 'shared'
 require 'utils'
 require 'game_constants'
+require 'achievements'
 require 'save_game'
 require 'helper/helper'
 require 'ui/ui'
@@ -2420,6 +2421,20 @@ function draw()
   end
 end
 
+function open_achievements(self)
+  self.paused = true
+  self.achievements_panel = AchievementsPanel{group = self.options_ui}
+
+end
+
+function close_achievements(self)
+  self.paused = false
+  if self.achievements_panel then
+    self.achievements_panel:die()
+    self.achievements_panel = nil
+  end
+end
+
 function open_options(self)
   input:set_mouse_visible(true)
   trigger:tween(0.25, _G, { slow_amount = 0 }, math.linear, function()
@@ -2520,22 +2535,7 @@ function open_options(self)
           run_time = 0
           passives = {}
           main_song_instance:stop()
-          run_passive_pool = {
-            'centipede', 'ouroboros_technique_r', 'ouroboros_technique_l', 'amplify', 'resonance', 'ballista',
-            'call_of_the_void', 'crucio', 'speed_3', 'damage_4', 'shoot_5', 'death_6', 'lasting_7',
-            'defensive_stance', 'offensive_stance', 'kinetic_bomb', 'porcupine_technique', 'last_stand', 'seeping',
-            'deceleration', 'annihilation', 'malediction', 'hextouch', 'whispers_of_doom',
-            'tremor', 'heavy_impact', 'fracture', 'meat_shield', 'hive', 'baneling_burst', 'blunt_arrow',
-            'explosive_arrow', 'divine_machine_arrow', 'chronomancy', 'awakening', 'divine_punishment',
-            'assassination', 'flying_daggers', 'ultimatum', 'magnify', 'echo_barrage', 'unleash', 'reinforce', 'payback',
-            'enchanted', 'freezing_field', 'burning_field', 'gravity_field', 'magnetism',
-            'insurance', 'dividends', 'berserking', 'unwavering_stance', 'unrelenting_stance', 'blessing', 'haste',
-            'divine_barrage', 'orbitism', 'psyker_orbs', 'psychosink', 'rearm', 'taunt', 'construct_instability',
-            'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike',
-            'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
-            'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening',
-            'kinetic_strike',
-          }
+          run_passive_pool = {}
           max_units = MAX_UNITS
           main:add(BuyScreen 'buy_screen')
           locked_state = false

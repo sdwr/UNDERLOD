@@ -184,6 +184,9 @@ function BuyScreen:update(dt)
     if input['u'].pressed then
       self.show_level_buttons = not self.show_level_buttons
     end
+    if input['a'].pressed then
+      --toggle achievements
+    end
   end
 
   if input.escape.pressed and not self.transitioning and not self.in_tutorial then

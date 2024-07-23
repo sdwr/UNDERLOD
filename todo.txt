@@ -28,7 +28,7 @@ TODO:
 
       - beat the rock boss without getting hit by avalanche
       - beat the dragon without letting a single egg hatch
-      - 
+      - beat heigan without taking safety dance damage
       
       - stack fire on an enemy up to 20 stacks
       - kill an enemy entirely with lightning procs

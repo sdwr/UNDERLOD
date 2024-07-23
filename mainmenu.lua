@@ -138,14 +138,21 @@ function MainMenu:on_enter(from)
       main:go_to('buy_screen', new_run)
     end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
   end}
-  self.options_button = Button{group = self.main_ui, x = 47, y = gh/2 + 34, force_update = true, button_text = 'options', fg_color = 'bg10', bg_color = 'bg', action = function(b)
+  self.achievements_button = Button{group = self.main_ui, x = 65, y = gh/2 + 34, force_update = true, button_text = 'achievements', fg_color = 'bg10', bg_color = 'bg', action = function(b)
+      if not self.paused then
+        open_achievements(self)
+      else
+        close_achievements(self)
+      end
+  end}
+  self.options_button = Button{group = self.main_ui, x = 47, y = gh/2 + 56, force_update = true, button_text = 'options', fg_color = 'bg10', bg_color = 'bg', action = function(b)
     if not self.paused then
       open_options(self)
     else
       close_options(self)
     end
   end}
-  self.quit_button = Button{group = self.main_ui, x = 37, y = gh/2 + 56, force_update = true, button_text = 'quit', fg_color = 'bg10', bg_color = 'bg', action = function(b)
+  self.quit_button = Button{group = self.main_ui, x = 37, y = gh/2 + 78, force_update = true, button_text = 'quit', fg_color = 'bg10', bg_color = 'bg', action = function(b)
     system.save_state()
     --steam.shutdown()
     love.event.quit()
@@ -201,6 +208,7 @@ function MainMenu:update(dt)
     if not self.paused then
       open_options(self)
     else
+      close_achievements(self)
       close_options(self)
     end
   end
@@ -238,7 +246,7 @@ function MainMenu:draw()
   graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent)
 
   self.main_ui:draw()
-  self.title_text:draw(60, gh/2 - 40)
+  self.title_text:draw(70, gh/2 - 40)
   self.ui:draw()
   if self.paused then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
   self.options_ui:draw()
