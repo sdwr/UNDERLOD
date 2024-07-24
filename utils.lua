@@ -30,6 +30,12 @@ combine_tables_no_duplicates = function(t1, t2)
   end
 end
 
+table_length = function(t)
+  local count = 0
+  for _ in pairs(t) do count = count + 1 end
+  return count
+end
+
 
 
 

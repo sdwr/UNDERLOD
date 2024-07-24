@@ -1,3 +1,7 @@
+PLAYTEST FEEDBACK:
+  - different color on character select overlay
+  - laser longer time before firing
+  - special enemy damaged reduced at tier 1
 
 TODO:
 
@@ -212,9 +216,8 @@ get the playthrough to be fun:
 BUGS:
 --------------
 
-spread laser shoots wrong direction
-  - regular laser enemy starts rotating wrong way at end?
-  
+quit button disappears after oepning achieve AchievementsPanel
+
 crash:
   crash when spawning units inside each other (fixed for boss though?)
   check global GameState references - had a bug trying to set the rallyEffect in the main menu

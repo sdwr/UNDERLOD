@@ -1,3 +1,5 @@
+require('achievements/achievement_unlocks')
+
 
 ACHIEVEMENTS_TABLE = {
 
@@ -20,7 +22,7 @@ ACHIEVEMENTS_TABLE = {
   ['unstoppable'] = {
     name = 'Unstoppable',
     desc = 'Complete 200 levels',
-    icon = 'unstoppable',
+    icon = 'unstoppable',  
   },
   ['legendary'] = {
     name = 'Legendary',
@@ -85,8 +87,8 @@ ACHIEVEMENTS_TABLE = {
   },
   ['sellconsume100items'] = {
     name = 'Merchant',
-    desc = 'Sell/consume 100 items',
-    icon = 'sellconsume100items',
+    desc = 'Sell 100 items',
+    icon = 'sell100items',
   },
   ['consume100potions'] = {
     name = 'Potion Master',
@@ -187,5 +189,4 @@ ACHIEVEMENTS_TABLE = {
     desc = 'Beat the final boss with all X characters (base, bonus, bonus2...)',
     icon = 'finalbossallxchars',
   },
-
 }

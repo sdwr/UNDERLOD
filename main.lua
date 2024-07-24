@@ -2,7 +2,7 @@ require 'engine'
 require 'shared'
 require 'utils'
 require 'game_constants'
-require 'achievements'
+require 'achievements/achievements'
 require 'save_game'
 require 'helper/helper'
 require 'ui/ui'
@@ -1604,6 +1604,21 @@ function init()
     return out
   end
 
+  build_achievement_text = function(achieve)
+    local name = achieve.name or 'achievement name'
+    name = name:upper()
+
+    local out = {}
+    table.insert(out, { text = '[fg]' .. name, font = pixul_font, alignment = 'center', height_multiplier = 1.25 })
+    table.insert(out, {
+      text = '[fg]' .. achieve.desc,
+      font = pixul_font,
+      alignment = 'center',
+      height_multiplier = 1.25
+    })
+    return out
+  end
+
   item_to_color = function(item)
     if not item then return grey[0] end
 
@@ -2272,7 +2287,7 @@ function init()
     'healing_strike', 'psycholeak', 'divine_blessing', 'hardening',
   }
 
-  --steam.userStats.requestCurrentStats()
+  Load_Steam_State()
   new_game_plus = state.new_game_plus or 0
   if not state.new_game_plus then state.new_game_plus = new_game_plus end
   current_new_game_plus = state.current_new_game_plus or new_game_plus
@@ -2704,7 +2719,7 @@ function open_options(self)
 
     self.quit_button = Button { group = self.options_ui, x = gw / 2, y = gh - 25, force_update = true, button_text = 'quit', fg_color = 'bg10', bg_color = 'bg', action = function()
       system.save_state()
-      --steam.shutdown()
+      steam.shutdown()
       love.event.quit()
     end }
   end, 'pause')

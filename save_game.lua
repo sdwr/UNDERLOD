@@ -54,3 +54,33 @@ function Create_Blank_Save_Data()
   data.times_rerolled = 0
   return data
 end
+
+--should this have just multi-run stats?
+-- or save/check the in-combat stats in here as well?
+-- like max shield achieve
+function Create_Blank_Game_Stats()
+  local data = {}
+  data.levels_complete = 0
+  
+  data.max_gold = 0
+  data.total_rerolls = 0
+  data.total_items_sold = 0
+  data.total_items_consumed = 0
+  data.max_potion_effects = 0
+  
+  data.current_run_rerolls = 0
+  data.current_run_troop_deaths = 0
+  data.current_run_over10cost_items_purchased = 0
+  
+  data.current_run_num_same_unit = 0
+
+  data.max_fire_stacks = 0
+  data.max_aspd = 0
+  data.max_dmg_without_hp = 0
+
+  data.max_dota_items_on_unit = 0
+  data.max_wow_items_on_unit = 0
+  data.max_20cost_items_on_unit = 0
+
+  return data
+end
