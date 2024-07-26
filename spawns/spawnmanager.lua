@@ -110,7 +110,13 @@ function Outside_Arena(location)
       return true
   else
     return false
-  end 
+  end
+end
+
+function Get_Point_In_Arena()
+  local x = random:int(SpawnGlobals.wall_width, gw - SpawnGlobals.wall_width)
+  local y = random:int(SpawnGlobals.wall_height, gh - SpawnGlobals.wall_height)
+  return {x = x, y = y}
 end
 
 function Kill_Teams()

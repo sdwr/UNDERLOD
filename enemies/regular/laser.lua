@@ -19,6 +19,7 @@ fns['init_enemy'] = function(self)
   self:set_restitution(0.5)
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
   self.class = 'special_enemy'
+  self.movementStyle = MOVEMENT_TYPE_RANDOM
 
   --set special attrs
   --castTime is what is used to determine the spell duration 

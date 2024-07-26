@@ -90,6 +90,9 @@ TODO:
 
   -boss hp bar segments for phases
 
+  -shouldn't be able to push back bosses or special enemies
+    - right now a critter can pushback + interrupt a boss
+
   - do ranged enemies need a melee attack? (can sit on them right now)
     - damage on contact
     - knockback stomp 

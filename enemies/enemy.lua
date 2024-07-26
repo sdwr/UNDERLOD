@@ -14,6 +14,8 @@ function Enemy:init(args)
   self.init_enemy(self)
   self:calculate_stats(true)
 
+  self.movementStyle = self.movementStyle or MOVEMENT_TYPE_SEEK
+
   self.castcooldown = math.random() * (self.base_castcooldown or self.baseCast)
   
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20 + self.shape.w / 2)
@@ -21,7 +23,9 @@ function Enemy:init(args)
   
   self.base_castcooldown = self.base_castcooldown or 3
   self.last_attack_started = 0
-  
+
+  self.random_dest = {x = self.x, y = self.y}
+  self.random_dest_timer = 0
 end
 
 --load enemy type specific functions from global table
@@ -43,6 +47,8 @@ function Enemy:update(dt)
     self:update_buffs(dt)
 
     self:calculate_stats()
+    
+    self.random_dest_timer = self.random_dest_timer - dt
 
     --get target / rotate to target
     if self.target and self.target.dead then self.target = nil end
@@ -60,13 +66,14 @@ function Enemy:update(dt)
 
     --do movement and target selection only if not casting
     if self.state == unit_states['normal'] then
-
-      if not self:in_range()() then
-        self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.friendlies)
-      end
-      if self.target and self.target.dead then self.target = nil end
-      if self.target then
-        self:rotate_towards_object(self.target, 0.5)
+      if self.movementStyle == MOVEMENT_TYPE_SEEK then
+        self:update_target_seek()
+      elseif self.movementStyle == MOVEMENT_TYPE_RANDOM then
+        self:update_target_random()
+      else
+        --pass, add flee later
+        --flee has to not just go for the corners (directly running away)
+        --has to look over entire map and pick a random "safe spot" away from troops
       end
     elseif self.state == unit_states['stopped'] or self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
       if self.target and not self.target.dead and not self:should_freeze_rotation() then
@@ -77,15 +84,13 @@ function Enemy:update(dt)
 
     --move
     if self.state == unit_states['normal'] then
-        if self:in_range()() then
-            -- dont need to move
-        elseif self.target then
-          --can't change speed?
-            self:seek_point(self.target.x, self.target.y, 1, 1)
-            -- self:rotate_towards_velocity(0.5)
-        else
-            -- dont need to move
-        end
+      if self.movementStyle == MOVEMENT_TYPE_SEEK then
+        self:update_move_seek()
+      elseif self.movementStyle == MOVEMENT_TYPE_RANDOM then
+        self:update_move_random()
+      else
+        --pass, add flee later
+      end
     elseif self.state == unit_states['frozen'] or unit_states['channeling'] then
       self:set_velocity(0,0)
     end
@@ -97,6 +102,47 @@ function Enemy:update(dt)
     self.aggro_sensor:move_to(self.x, self.y)
   
     if self.area_sensor then self.area_sensor:move_to(self.x, self.y) end
+end
+
+function Enemy:update_target_seek()
+  if not self:in_range()() then
+    self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.friendlies)
+  end
+  if self.target and self.target.dead then self.target = nil end
+  if self.target then
+    self:rotate_towards_object(self.target, 0.5)
+  end
+end
+
+function Enemy:update_move_seek()
+  if self:in_range()() then
+    -- dont need to move
+  elseif self.target then
+  --can't change speed?
+    self:seek_point(self.target.x, self.target.y, 1, 1)
+    -- self:rotate_towards_velocity(0.5)
+  else
+    -- dont need to move
+  end
+end
+
+function Enemy:update_target_random()
+  if not self:in_range()() then
+    self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.friendlies)
+  end
+  if self.target and self.target.dead then self.target = nil end
+  if self.target then
+    self:rotate_towards_object(self.target, 0.5)
+  end
+end
+
+function Enemy:update_move_random()
+  if self.random_dest_timer <= 0 then
+    self.random_dest = Get_Point_In_Arena()
+    self.random_dest_timer = 5
+  end
+
+  self:seek_point(self.random_dest.x, self.random_dest.y, 1, 1)
 end
 
 function Enemy:draw()
