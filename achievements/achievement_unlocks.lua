@@ -37,3 +37,14 @@ function Unlock_Achievement(name)
   level_up1:play{volume=0.5}
   AchievementToast{achievement = ACHIEVEMENTS_TABLE[name], duration = 5}
 end
+
+function Reset_All_Achievements()
+  if steam then
+    steam.userStats.resetAllStats(true)
+    steam.userStats.storeStats()
+  end
+
+  for k, v in pairs(ACHIEVEMENTS_TABLE) do
+    ACHIEVEMENTS_TABLE[k].unlocked = false
+  end
+end

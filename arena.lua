@@ -118,6 +118,8 @@ function Arena:on_enter(from)
     self.hotbar:add_button(i, b)
   end
 
+  --UI elements
+
   --draw progress bar at the top of the screen
   if Is_Boss_Level(self.level) then
     
@@ -125,6 +127,10 @@ function Arena:on_enter(from)
     self.progress_bar = ProgressBar{group = self.ui, x = gw/2, y = 20, w = 200, h = 10, color = yellow[0], progress = 0}
     self.progress_bar.max_progress = self.level_list[self.level].round_power or 0
   end
+
+  self.plusgold_text_offset_x = 0
+  self.plusgold_text_offset_y = 0
+
 
   Reset_Global_Proc_List()
 
@@ -564,7 +570,8 @@ function Arena:draw()
   self.options_ui:draw()
 
   if self.shop_text then self.shop_text:draw(gw - 40, gh - 17) end
-  if self.gold_text then self.gold_text:draw(gw / 2, gh / 2) end
+  if self.gold_text then self.gold_text:draw(gw / 2, gh / 2 + 10) end
+  if self.plusgold_text then self.plusgold_text:draw(gw / 2 + self.plusgold_text_offset_x, gh / 2 + 10 + self.plusgold_text_offset_y) end
   if self.timer_text then self.timer_text:draw(gw - 30, 20) end
 
   if self.in_credits then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent_2) end
@@ -736,6 +743,10 @@ function Arena:gain_gold(duration)
 
   local event = nil
 
+  --empty event first 
+  event = {type = 'start', amount = 0}
+  table.insert(self.gold_events, event)
+
   --base gold gain
   event = {type = 'gained', amount = GOLD_PER_ROUND}
   table.insert(self.gold_events, event)
@@ -772,6 +783,11 @@ function Arena:gain_gold(duration)
   local final_event = {type = 'final', amount = 0}
   table.insert(self.gold_events, final_event)
 
+
+  --clear gold constants from last round
+  SUM_PLUSGOLD = 0
+  LAST_PLUSGOLD = 0
+
   --create a trigger to add each gold event over time
   --have to cancel when the table is empty
   local timePerEvent = duration / #self.gold_events
@@ -781,49 +797,78 @@ function Arena:gain_gold(duration)
 
 end
 
+
 function Arena:process_gold_event()
+  self:clear_gold()
   if #self.gold_events == 0 then
     print('no more gold events')
-    self:clear_gold()
     return
   end
+
+
 
   local event = table.remove(self.gold_events, 1)
 
   gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
+  local plusgold = 0
+  local plusgoldtext = nil
   if event.type == 'gained' then
-    self.gold_gained = self.gold_gained + event.amount
+    plusgold = event.amount
+    plusgoldtext = '[wavy_mid, yellow[0]]' .. tostring(plusgold) .. ' ' .. event.type
   elseif event.type == 'picked_up' then
-    self.gold_picked_up = self.gold_picked_up + event.amount
+    plusgold = event.amount
+    plusgoldtext = '[wavy_mid, yellow[0]]' .. tostring(plusgold) .. ' ' .. event.type
   elseif event.type == 'bonus_gold' then
-    self.bonus_gold = self.bonus_gold + event.amount
+    plusgold = event.amount
+    plusgoldtext = '[wavy_mid, yellow[0]]' .. tostring(plusgold) .. ' ' .. event.type
   elseif event.type == 'interest' then
-    self.stacks_of_interest = self.stacks_of_interest + event.amount
-    self.total_interest = math.min(MAX_INTEREST, math.floor(gold * INTEREST_AMOUNT)) * self.stacks_of_interest
+    plusgold = event.amount * math.min(MAX_INTEREST, math.floor(gold * INTEREST_AMOUNT))
+    plusgoldtext = '[wavy_mid, yellow[0]]' .. tostring(plusgold) .. ' ' ..event.type
+  elseif event.type == 'start' then
+    --do nothing
   elseif event.type == 'final' then
-    gold = gold + self.gold_gained + self.gold_picked_up + self.bonus_gold + self.total_interest
-    self.gold_gained = 0
-    self.gold_picked_up = 0
-    self.bonus_gold = 0
-    self.stacks_of_interest = 0
-    
-    gold = math.floor(gold)
+    gold = gold + SUM_PLUSGOLD + LAST_PLUSGOLD
+    SUM_PLUSGOLD = 0
+    LAST_PLUSGOLD = 0
   else
     print('unknown gold event type')
   end
-  self:draw_gold()
+
+  self:randomize_plusgold_text_offset()
+  self:draw_gold(plusgold, plusgoldtext)
 
 end
 
-function Arena:draw_gold()
-  local text_content = '[wavy_mid, yellow[0] ' .. tostring(gold) .. ' gold ' ..
-    ' + ' .. tostring(self.gold_gained or 0) .. ' + ' .. tostring(self.gold_picked_up or 0) ..
-    ' + ' .. tostring(self.bonus_gold or 0) .. ' + ' .. tostring(self.total_interest or 0)
-  self.gold_text = Text({{text = text_content, font = pixul_font, alignment = 'center'}}, global_text_tags)
+--we want to show the gained gold, and the total gold
+--and the total gold includes all the previous gold gains
+-- the final event will add in the last gold gain to the total gold
+--and everything will add up
+function Arena:draw_gold(plusgold, plusgoldtext)
+  SUM_PLUSGOLD = SUM_PLUSGOLD + LAST_PLUSGOLD
+  local text_content = '[wavy_mid, yellow[0]' .. tostring(gold + SUM_PLUSGOLD) .. ' gold '
+  self.gold_text = Text({{text = text_content, font = fat_font, alignment = 'center'}}, global_text_tags)
+
+  if plusgold == 0 then return end
+  if plusgoldtext == nil then return end
+
+  self.plusgold_text = Text({{text = plusgoldtext, font = pixul_font, alignment = 'center'}}, global_text_tags)
+  
+  LAST_PLUSGOLD = plusgold
+end
+
+function Arena:randomize_plusgold_text_offset()
+  local sign_x = random:float(0, 1)
+  if sign_x < 0.5 then sign_x = -1 else sign_x = 1 end
+  local sign_y = random:float(0, 1)
+  if sign_y < 0.5 then sign_y = -1 else sign_y = 1 end
+
+  self.plusgold_text_offset_x = random:float(0, 20) * sign_x
+  self.plusgold_text_offset_y = random:float(20, 30) * sign_y
 end
 
 function Arena:clear_gold()
   self.gold_text = nil
+  self.plusgold_text = nil
 end
 
 function Arena:set_timer_text()

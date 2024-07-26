@@ -40,10 +40,9 @@ function AchievementsPanel:update_mouseover()
   end
 end
 
-  
 function AchievementsPanel:updateScroll()
   if not self.mouse_over then return end
-  
+
   if input.wheel_up.pressed then
     self.scroll_location = self.scroll_location + 1
   end
@@ -109,7 +108,7 @@ function AchievementsPanel:drawAll()
   graphics.rectangle(self.x, self.y, self.w, self.h, nil, nil, color)
 
 
-  local num_rows = math.ceil(table_length(ACHIEVEMENTS_TABLE) / ACHIEVEMENTS_PER_ROW)
+  local num_rows = math.ceil(table_length(ACHIEVEMENTS_INDEX) / ACHIEVEMENTS_PER_ROW)
   local row_height = ACHIEVEMENT_SIZE + ACHIEVEMENT_SPACING
   
   local start_x = (self.x - self.w / 2) + ACHIEVEMENT_SIZE/2 + ACHIEVEMENT_SPACING
@@ -140,7 +139,7 @@ function AchievementsPanel:drawAll()
   local count = 0
 
   self.achievement_locations = {}
-  for achievement_name in pairs(ACHIEVEMENTS_TABLE) do
+  for i, achievement_name in ipairs(ACHIEVEMENTS_INDEX) do
     self.achievement_locations[achievement_name] = {x = x, y = y}
     local achievement = ACHIEVEMENTS_TABLE[achievement_name]
 

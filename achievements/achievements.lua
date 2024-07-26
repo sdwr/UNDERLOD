@@ -1,5 +1,42 @@
 require('achievements/achievement_unlocks')
 
+ACHIEVEMENTS_INDEX = {
+  'firstblood',
+  'heatingup',
+  'fiftyfifty',
+  'unstoppable',
+  'legendary',
+  'crushed',
+  'handlethem',
+  'safetydance',
+  'finalbossperfect',
+  'survivor',
+  'passivewin',
+  'healer',
+  'shieldstacker',
+  'stackecon',
+  'reroll100',
+  'sellconsume100items',
+  'consume100potions',
+  '4potioneffects',
+  'firestacker',
+  'lightningkiller',
+  'aspdcap',
+  'glasscannon',
+  'dotaequip',
+  'expensiveequip',
+  'wowequip',
+  'finalboss',
+  'finalbosssameunit',
+  'finalbossmelee',
+  'finalboss50mods',
+  'finalbossallmods',
+  'finalbosstime',
+  'finalbossnolosstroops',
+  'finalbossnoreroll',
+  'finalbossnoitem10',
+  'finalbossallxchars',
+}
 
 ACHIEVEMENTS_TABLE = {
 

@@ -23,6 +23,10 @@ GOLD_PER_ROUND = 6
 INTEREST_AMOUNT = 0.1
 MAX_INTEREST = 3
 
+--gold display at end of round
+SUM_PLUSGOLD = 0
+LAST_PLUSGOLD = 0
+
 STARTING_REROLL_COST = 1
 --values should be 1, 2, 3, 4, 5
 REROLL_COST = function (times_rerolled)
@@ -47,7 +51,7 @@ SPAWNS_IN_GROUP = 6
 SPAWN_CHECKS = 10
 
 --stat constants
-REGULAR_ENEMY_HP = 50
+REGULAR_ENEMY_HP = 80
 REGULAR_ENEMY_DAMAGE = 10
 REGULAR_ENEMY_MS = 50
 

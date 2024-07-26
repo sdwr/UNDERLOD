@@ -3,7 +3,28 @@ PLAYTEST FEEDBACK:
   - laser longer time before firing
   - special enemy damaged reduced at tier 1
 
+  - can beat up to first boss without moving any units, just buying dmg items
+    - special attacks dont do enough damage
+
+  - boss can be pushed by lavaman minions (interrupts mortar???)
+    -find some way of having boss immovable but still able to move itself
+    - very high weight? feel like I tried this before
+
 TODO:
+
+  -game still has SNKRX game ID somewhere, counts as SNKRX on steam
+
+  - add achievement triggers to game (in combat, end of level)
+  - add game stats to save game
+  - update game stats from various places (buy screen, combat, end of level)
+
+  - add "End of Demo" popup after heigan boss
+  - end game after heigan boss
+
+  - full game content will be:
+    -final boss
+    -difficulty levels/modifiers (hazards?)
+    -new characters
 
   - make enemies spawn from screen edges instead of spawn points
   - remove level walls
@@ -20,44 +41,9 @@ TODO:
       - silver star on achieves for doing them with 50% mods enabled
       - gold star for doing them with all mods enabled
 
-      - beat the final boss
-      - beat the final boss with 3 of the same unit
-      - beat the final boss with all melee
-      - beat the final boss with 50% mods enabled
-      - beat the final boss with all mods enabled
-      - beat the final boss in under XX minutes
-      - beat the final boss without ever losing a troop
-      - beat the final boss without rerolling the shop
-      - beat the final boss without ever purchasing an item costing >10
-
-      - beat the rock boss without getting hit by avalanche
-      - beat the dragon without letting a single egg hatch
-      - beat heigan without taking safety dance damage
-      
-      - stack fire on an enemy up to 20 stacks
-      - kill an enemy entirely with lightning procs
-      - reach aspd cap (??) on a unit
-      - reach 300% dmg on a unit without any +hp (glass cannon)
-      - fully equip a unit with dota references
-      - fully equip a unit with items costing >20
-      - fully equip a unit with wow references(?)
-      - survive a level with 1 troop remaining
-      - beat a level without attacking (need craggy or radiance or summoner item)
-      - heal a unit to full hp from 1 hp
-      - stack 200 shield on a single unit 
-        (need to make shield stack)
-      
-
-      - beat the final boss with triforce item (need legendary fire/lightning/cold items)
-      - beat the final boss with all X characters (base, bonus, bonus2...)
-
-      - have over 100 gold during a run (stack econ)
-      - reroll 100 times
-      - sell/consume 100 items
-      - consume 100 potions
-
-      - have 4 potion effects on a single unit 
-
+      - beat the game only buying red items + uncolored
+      - beat the game only buying yellow items + uncolored
+      - beat the game only buying blue items + uncolored
 
     --mods:
       - positive modifiers:
@@ -142,7 +128,7 @@ TODO:
 
 
 
-
+ 
 SMALL CLEANUP:  
 
   --archer troop attacks RMB target twice?

@@ -53,6 +53,8 @@ ctrl+u toggles level select buttons
 
 ctrl+p toggles basic profiler
 
+f11 clears all achievements (and tries to clear from steam as well)
+
 d makes damage circle
 s makes sweep spell
 

@@ -2418,12 +2418,10 @@ function update(dt)
     state.fullscreen = false
   end
 
-  --[[
   if input.f11.pressed then
-    steam.userStats.resetAllStats(true)
-    steam.userStats.storeStats()
+    Reset_All_Achievements()
   end
-  ]] --
+
 end
 
 function draw()
