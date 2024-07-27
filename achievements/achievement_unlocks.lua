@@ -13,6 +13,21 @@
 -- game data is saved in save_game.lua
 
 
+function Check_Achievements(achieves)
+  print('checking achievements', achieves)
+  if type(achieves) == 'string' then
+    achieves = {achieves}
+  end
+
+  for _, name in ipairs(achieves) do
+    if not ACHIEVEMENTS_TABLE[name].unlocked then
+      if ACHIEVEMENTS_TABLE[name].check and ACHIEVEMENTS_TABLE[name].check() then
+        Unlock_Achievement(name)
+      end
+    end
+  end
+end
+
 function Load_Steam_State()
   if steam then
     steam.userStats.requestCurrentStats()

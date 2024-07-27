@@ -527,6 +527,11 @@ function Unit:get_item_stats()
     end
   end
 
+  -- if stats.hp and stats.hp == 0 then
+  --   Stats_Max_Dmg_Without_Hp(stats.dmg or 0)
+  -- end
+
+  -- Stats_Max_Aspd(stats.aspd or 0)
   return stats
 
 end
@@ -714,6 +719,10 @@ function Unit:calculate_stats(first_run)
 
   self.aspd_m = 1/(self.base_aspd_m*self.buff_aspd_m)
 
+  -- Stats_Max_Aspd(self.buff_aspd_m)
+  -- if self.buff_hp_m == 1 then
+  --   Stats_Max_Dmg_Without_Hp(self.buff_dmg_m or 0)
+  -- end
   if self.baseCooldown then
     self.cooldownTime = self.baseCooldown * self.aspd_m
   end

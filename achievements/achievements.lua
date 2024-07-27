@@ -16,7 +16,7 @@ ACHIEVEMENTS_INDEX = {
   'shieldstacker',
   'stackecon',
   'reroll100',
-  'sellconsume100items',
+  'sell100items',
   'consume100potions',
   '4potioneffects',
   'firestacker',
@@ -122,7 +122,7 @@ ACHIEVEMENTS_TABLE = {
     desc = 'Reroll 100 times',
     icon = 'reroll100',
   },
-  ['sellconsume100items'] = {
+  ['sell100items'] = {
     name = 'Merchant',
     desc = 'Sell 100 items',
     icon = 'sell100items',

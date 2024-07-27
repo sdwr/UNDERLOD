@@ -54,7 +54,7 @@ end
 function AchievementsPanel:updateClose()
   if not self.mouse_over then return end
   local x, y = self.group:get_mouse_position()
-  if x > self.x + self.w/2 - 5 and x < self.x + self.w/2 + 15 and y > self.y - self.h/2 + 5 and y < self.y - self.h/2 + 25 then
+  if x > self.x + self.w/2 - 15 and x < self.x + self.w/2 + 5 and y > self.y - self.h/2 - 5  and y < self.y - self.h/2 + 15 then
     if input.m1.pressed then
       close_achievements(main.current)
     end
@@ -81,7 +81,7 @@ end
 --happens inside the push
 function AchievementsPanel:drawCloseButton()
   graphics.rectangle(self.x + self.w/2 - 5, self.y - self.h/2 + 5, 20, 20, nil, nil, white[3])
-  graphics.print("X", pixul_font, self.x + self.w/2 - 12, self.y - self.h/2 - 5, nil, 2, 2, nil, nil, red[2])
+  graphics.print("X", pixul_font, self.x + self.w/2 - 12, self.y - self.h/2 - 4, nil, 2, 2, nil, nil, red[2])
 end
 
 function AchievementsPanel:drawPopupText()
