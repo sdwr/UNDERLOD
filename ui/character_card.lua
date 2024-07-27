@@ -220,17 +220,21 @@ function ItemPart:sellItem()
   --have to create the item first to remove it
   -- unit.items is just the item data, not the item object
   if self.parent.unit.items[self.i] then
-    print('selling item')
     print (self.parent.unit.items[self.i].name)
     local item = Create_Item(self.parent.unit.items[self.i].name)
     if item then
       if item.consumable then
         spawn_mark2:play{pitch = random:float(0.8, 1.2), volume = 1}
+        --item:consume()
+        Stats_Consume_Item()
       else
         --play sell sound
         spawn_mark1:play{pitch = random:float(0.8, 1.2), volume = 1}
         local sell_value = math.ceil(item.cost / 3)
         main.current:gain_gold(sell_value)
+
+        Stats_Sell_Item()
+        Stats_Max_Gold()
       end
       item:sell()
     end

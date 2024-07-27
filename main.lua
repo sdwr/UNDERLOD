@@ -1,9 +1,9 @@
+require 'save_game'
 require 'engine'
 require 'shared'
 require 'utils'
 require 'game_constants'
 require 'achievements/achievements'
-require 'save_game'
 require 'helper/helper'
 require 'ui/ui'
 require 'arena'
@@ -2555,7 +2555,7 @@ function open_options(self)
           system.save_run()
           
 
-          local new_run = Create_Blank_Save_Data()
+          local new_run = Start_New_Run()
           main:go_to('buy_screen', new_run)
         end, text = Text({ { text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center' } }, global_text_tags) }
       end }

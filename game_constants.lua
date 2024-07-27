@@ -16,6 +16,9 @@ EXPECTED_SAVE_FIELDS = {
   'times_rerolled',
 }
 
+USER_STATS = {}
+system.load_stats()
+
 --gold
 --note that HoG econ check is in arena.lua (gain_gold)
 STARTING_GOLD = 5

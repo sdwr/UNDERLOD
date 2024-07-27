@@ -838,6 +838,8 @@ function Unit:burn(dps, duration, from)
   --handle dps * stacks and stacks falling off in the update function
   self:remove_buff('burn')
   self:add_buff(burnBuff)
+
+  Stats_Max_Fire_Stacks(burnBuff.stacks)
 end
 
 function Unit:isShielded()

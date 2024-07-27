@@ -150,6 +150,21 @@ function system.load_run()
   else return {} end
 end
 
+function system.save_stats()
+  local str = "return " .. table.tostring(USER_STATS)
+  love.filesystem.write("stats.txt", str)
+end
+
+function system.load_stats()
+  local chunk = nil
+  if love.filesystem.getInfo("stats.txt") then chunk = love.filesystem.load("stats.txt") end
+  if chunk then 
+    USER_STATS = chunk()
+  else 
+    USER_STATS = Create_Blank_Game_Stats()
+  end
+end
+
 function system.get_main_directory()
   return love.filesystem.getSource()
 end

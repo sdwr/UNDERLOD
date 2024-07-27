@@ -105,7 +105,7 @@ TODO:
       - shoots in star pattern all at once
       - or rotating around unit
     - homing missile (slow, dodgeable)
-
+  
   - make miniboss versions of regular enemies
     - make them bigger
     - give them stronger stats
@@ -115,7 +115,6 @@ TODO:
   
   - add new enemy movement patterns
     - avoid player (for summoners)
-    - move randomly (for bullet hell)
 
   - make screen transition circle always white
 

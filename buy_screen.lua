@@ -326,6 +326,25 @@ function BuyScreen:set_party()
     table.insert(Character_Cards, CharacterCard{group = self.main, x = x + (i-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, unit = unit, character = unit.character, i = i, parent = self})
     unit.spawn_effect = true
   end
+
+  --check how many of the same unit are in the party
+  local max_count = self:most_copies_of_unit()
+  Stats_Current_Run_Num_Same_Unit(max_count)
+end
+
+function BuyScreen:most_copies_of_unit()
+  local unit_counts = {}
+  for _, unit in ipairs(self.units) do
+    unit_counts[unit.character] = (unit_counts[unit.character] or 0) + 1
+  end
+  local max = 0
+  local max_unit = nil
+  for unit, count in pairs(unit_counts) do
+    if count > max then
+      max = count
+    end
+  end
+  return max
 end
 
 function BuyScreen:try_roll_items()
@@ -614,7 +633,7 @@ function RestartButton:update(dt)
       main:add(BuyScreen'buy_screen')
       system.save_run()
 
-      local new_run = Create_Blank_Save_Data()
+      local new_run = Start_New_Run()
       main:go_to('buy_screen', new_run)
     end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
   end
@@ -1150,6 +1169,9 @@ function RerollButton:update(dt)
         self.spring:pull(0.2, 200, 10)
         self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
 
+
+        Stats_Current_Run_Rerolls()
+        Stats_Total_Rerolls()
         buyScreen:save_run()
       end
     elseif self.parent:is(Arena) then
@@ -1365,9 +1387,13 @@ function ItemCard:buy_item(slot)
   slot:addItem(self.item)
   gold = gold - self.cost
 
+  if self.cost > 10 then
+    Stats_Current_Run_Over10Cost_Items_Purchased()
+  end
+  buyScreen:save_run()
+
   self.parent.shop_item_data[self.i] = nil
   self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'right'}}
-  buyScreen:save_run()
   self:die()
 end
 

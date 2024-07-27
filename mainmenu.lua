@@ -77,6 +77,7 @@ function MainMenu:on_enter(from)
 
   self.title_text = Text({{text = '[wavy_mid, fg]UNDERLOD', font = fat_font, alignment = 'center'}}, global_text_tags)
   local run = system.load_run()
+  system.load_stats()
 
   --continue game
   if(run and not not next(run)) then
@@ -134,7 +135,7 @@ function MainMenu:on_enter(from)
       run_time = 0
       locked_state = false
 
-      local new_run = Create_Blank_Save_Data()
+      local new_run = Start_New_Run()
       main:go_to('buy_screen', new_run)
     end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
   end}
