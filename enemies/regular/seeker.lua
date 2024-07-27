@@ -28,6 +28,9 @@ fns['init_enemy'] = function(self)
   --set physics 
   self:set_restitution(0.5)
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
+
+  self:set_mass(REGULAR_ENEMY_MASS)
+
   self.class = 'regular_enemy'
 
   --set attacks

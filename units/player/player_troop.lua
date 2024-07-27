@@ -25,7 +25,9 @@ function Troop:init(args)
   else
     self:set_as_rectangle(size, size,'dynamic', 'troop')
   end
+  
   self:set_restitution(0.5)
+  
 
   self.color = character_colors[self.character]
   self.type = character_types[self.character]
@@ -504,7 +506,7 @@ function Troop:die()
   if self.dead then return end
   self.dead = true
   Stats_Current_Run_Troop_Deaths()
-  
+
   if self.parent and self.parent.summons then
     self.parent.summons = self.parent.summons - 1
   end

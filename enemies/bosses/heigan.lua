@@ -15,6 +15,9 @@ fns['init_enemy'] = function(self)
   --set physics 
   self:set_restitution(0.1)
   self:set_as_steerable(self.v, 1000, 2*math.pi, 2)
+  
+
+  self:set_mass(BOSS_MASS)
   self.class = 'boss'
 
   --set sensors
