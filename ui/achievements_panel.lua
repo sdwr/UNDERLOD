@@ -148,8 +148,8 @@ function AchievementsPanel:drawAll()
     local borderColor = fg[0]:clone()
 
     if achievement.unlocked then
-      color = fg[0]:clone()
-      borderColor = green[0]:clone()
+      color = green[0]:clone()
+      borderColor = yellow[0]:clone()
     end
 
     color.a = 0.5

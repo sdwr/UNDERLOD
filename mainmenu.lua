@@ -160,8 +160,7 @@ function MainMenu:on_enter(from)
   end}
   self.unlock_button = Button{group = self.main_ui, x = 40, y = gh/2  + 100, force_update = true, button_text ='unlock', fg_color = 'bg10', bg_color='bg', action = function(b)
     
-    level_up1:play{volume=0.5}
-    AchievementToast{group = main.current.ui, achievement = ACHIEVEMENTS_TABLE['heatingup'], color = fg[0]}
+    Unlock_Achievement('heatingup')
   end}
   --[[self.t:every(2, function() self.soundtrack_button.spring:pull(0.025, 200, 10) end)
   self.soundtrack_button = Button{group = self.main_ui, x = gw - 72, y = gh - 40, force_update = true, button_text = 'buy the soundtrack!', fg_color = 'bg10', bg_color = 'bg', action = function(b)

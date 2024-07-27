@@ -41,6 +41,8 @@ end
 
 function BuyScreen:on_enter(from)
 
+  Check_All_Achievements()
+
   self.shop_level = level_to_shop_tier(self.level)
 
   if not locked_state and self.reroll_shop then

@@ -12,6 +12,10 @@
 
 -- game data is saved in save_game.lua
 
+function Check_All_Achievements()
+  local achieves = ACHIEVEMENTS_INDEX
+  Check_Achievements(achieves)
+end
 
 function Check_Achievements(achieves)
   if type(achieves) == 'string' then
@@ -42,7 +46,7 @@ function steam.userStats.onUserStatsReceived()
 end
 
 function Unlock_Achievement(name)
-  print('unlocking!!!')
+  print('unlocking!!!', name)
   if steam then
     steam.userStats.setAchievement(name)
     steam.userStats.storeStats()

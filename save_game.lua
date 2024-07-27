@@ -89,6 +89,12 @@ function Create_Blank_Game_Stats()
   stats.total_items_sold = 0 --done
   stats.total_items_consumed = 0 --done, need to have a consume function though
   stats.max_potion_effects = 0
+
+  --boss achievements
+  stats.stompy_perfect = 0
+  stats.dragon_no_eggs = 0
+  stats.heigan_no_floor = 0
+  stats.final_boss_perfect = 0
   
   --current run stats
   stats.current_run_rerolls = 0 --done
@@ -98,6 +104,10 @@ function Create_Blank_Game_Stats()
   stats.current_run_max_lowest_cost_on_unit = 0
 
   stats.current_run_num_same_unit = 0 --done
+
+  stats.current_run_least_troops_alive = 9999
+  stats.current_run_level_times_attacked = 9999
+
 
   --combat stats
   stats.max_fire_stacks = 0 --done but need to tweak mechanics
@@ -140,13 +150,15 @@ function Update_User_Stats()
 end
 
 --total stats
+
+
+
 function Stats_Level_Complete()
 
   USER_STATS.levels_complete = USER_STATS.levels_complete + 1
   Update_User_Stats()
-
-  --check for achievements
-  Check_Achievements({'firstblood', 'heatingup', 'fiftyfifty', 'unstoppable', 'legendary'})
+  --check achieves for these in the next buy screen
+  --to be able to see the toast
 end
 
 function Stats_Max_Gold()
@@ -154,10 +166,10 @@ function Stats_Max_Gold()
     USER_STATS.max_gold = gold
   end
   Update_User_Stats()
-
-  Check_Achievements('stackecon')
-
+  --check achieves for these in the next buy screen
+  --to be able to see the toast
 end
+
 
 function Stats_Total_Rerolls()
   USER_STATS.total_rerolls = USER_STATS.total_rerolls + 1

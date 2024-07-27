@@ -205,6 +205,9 @@ BUGS:
 --------------
 
 quit button disappears after oepning achieve AchievementsPanel
+  -looks like it is related to paused state cycling
+  -only happens when achievo panel is opened + closed
+  - does not happen if options menu is opened + closed before achivements
 
 crash:
   crash when spawning units inside each other (fixed for boss though?)

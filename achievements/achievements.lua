@@ -77,21 +77,25 @@ ACHIEVEMENTS_TABLE = {
     name = 'Crushed',
     desc = 'Defeat Stompy without taking damage',
     icon = 'crushed',
+    check = function() return USER_STATS.stompy_perfect > 0 end,
   },
   ['handlethem'] = {
     name = 'Handle Them',
     desc = 'Defeat the Dragon without letting any eggs hatch',
     icon = 'handlethem',
+    check = function() return USER_STATS.dragon_no_eggs > 0 end,
   },
   ['safetydance'] = {
     name = 'Safety Dance',
     desc = 'Defeat Heigan without taking damage from the floor',
     icon = 'safetydance',
+    check = function() return USER_STATS.heigan_no_floor > 0 end,
   },
   ['finalbossperfect'] = {
     name = 'The Final Countdown',
     desc = 'Defeat the final boss without taking damage',
     icon = 'finalbossperfect',
+    check = function() return USER_STATS.final_boss_perfect > 0 end,
   },
 
   --combat achievements
@@ -99,11 +103,13 @@ ACHIEVEMENTS_TABLE = {
     name = 'Lone Survivor',
     desc = 'Survive a level with 1 troop remaining',
     icon = 'survivor',
+    check = function() return USER_STATS.current_run_least_troops_alive == 1 end,
   },
   ['passivewin'] = {
     name = 'Pacifist',
     desc = 'Beat a level without attacking',
     icon = 'passivewin',
+    check = function() return USER_STATS.current_run_level_times_attacked == 0 end,
   },
   ['healer'] = {
     name = 'Healer',
@@ -121,26 +127,32 @@ ACHIEVEMENTS_TABLE = {
     name = 'Economic Powerhouse',
     desc = 'Have over 100 gold during a run',
     icon = 'stackecon',
+    check = function() return USER_STATS.max_gold >= 100 end,
   },
   ['reroll100'] = {
     name = 'Reroll Enthusiast',
     desc = 'Reroll 100 times',
     icon = 'reroll100',
+    check = function() return USER_STATS.total_rerolls >= 100 end,
   },
   ['sell100items'] = {
     name = 'Merchant',
     desc = 'Sell 100 items',
     icon = 'sell100items',
+    check = function() return USER_STATS.total_items_sold >= 100 end,
+
   },
   ['consume100potions'] = {
     name = 'Potion Master',
     desc = 'Consume 100 potions',
     icon = 'consume100potions',
+    check = function() return USER_STATS.total_items_consumed >= 100 end,
   },
   ['4potioneffects'] = {
     name = 'Alchemist',
     desc = 'Have 4 potion effects on a single unit',
     icon = '4potioneffects',
+    check = function() return USER_STATS.max_potion_effects >= 4 end,
   },
 
   --item achievements
@@ -148,6 +160,7 @@ ACHIEVEMENTS_TABLE = {
     name = 'Fire Stacker',
     desc = 'Stack fire on an enemy up to 20 stacks',
     icon = 'firestacker',
+    check = function() return USER_STATS.max_fire_stacks >= 20 end,
   },
   ['lightningkiller'] = {
     name = 'Lightning Killer',
@@ -158,11 +171,13 @@ ACHIEVEMENTS_TABLE = {
     name = 'Speed Demon',
     desc = 'Reach attack speed cap on a unit',
     icon = 'aspdcap',
+    check = function() return USER_STATS.max_aspd >= 3 end,
   },
   ['glasscannon'] = {
     name = 'Glass Cannon',
     desc = 'Reach 300% damage on a unit without any +hp',
     icon = 'glasscannon',
+    check = function() return USER_STATS.max_dmg_without_hp >= 3 end,
   },
   ['dotaequip'] = {
     name = 'Dota Fan',
