@@ -45,26 +45,31 @@ ACHIEVEMENTS_TABLE = {
     name = 'First Blood',
     desc = 'Complete your first level',
     icon = 'firstblood',
+    check = function() return USER_STATS.levels_complete >= 1 end,
   },
   ['heatingup'] = {
     name = 'Heating Up',
     desc = 'Complete 5 levels',
     icon = 'heatingup',
+    check = function() return USER_STATS.levels_complete >= 5 end,
   },  
   ['fiftyfifty'] = {
     name = 'Fifty Fifty',
     desc = 'Complete 50 levels',
     icon = 'fiftyfifty',
+    check = function() return USER_STATS.levels_complete >= 50 end,
   },
   ['unstoppable'] = {
     name = 'Unstoppable',
     desc = 'Complete 200 levels',
-    icon = 'unstoppable',  
+    icon = 'unstoppable',
+    check = function() return USER_STATS.levels_complete >= 200 end,
   },
   ['legendary'] = {
     name = 'Legendary',
     desc = 'Complete 500 levels',
     icon = 'legendary',
+    check = function() return USER_STATS.levels_complete >= 500 end,
   },
 
   --perfect run achievements

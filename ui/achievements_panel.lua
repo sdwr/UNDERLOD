@@ -196,20 +196,22 @@ AchievementToast:implement(GameObject)
 function AchievementToast:init(args)
   self:init_game_object(args)
   
-  self.x = gw - 150
-  self.y = gh - 120
-  self.w = 280
-  self.h = 100
+  self.w = 130
+  self.h = 50
+  self.x = gw - self.w/2
+  self.y = gh - self.h/2
 
   self.shape = Rectangle(self.x, self.y, self.w, self.h)
   self.interact_with_mouse = true
+
+  self.bg_color = bg[1]
 
   --memory
   self.scroll_location = 0
   self.mouse_over = false
 
   self.achievement = args.achievement
-  self.duration = 5 or args.duration
+  self.duration = 3 or args.duration
 end
 
 function AchievementToast:update(dt)
@@ -224,11 +226,10 @@ function AchievementToast:draw()
   local image = find_item_image(self.achievement.icon)
 
   graphics.push(self.x, self.y, 0, self.sx * self.spring.x, self.sy * self.spring.x)
-    graphics.rectangle(0, 0, self.w, self.h, nil, nil, white[1])
-    graphics.print("Achievement Unlocked!", 10, 10)
-    graphics.print(self.achievement.name, 10, 30)
-    graphics.print(self.achievement.description, 10, 50)
-    image:draw(200, 10, 0, 0.7, 0.7)
+    graphics.rectangle(self.x, self.y, self.w, self.h, nil, nil, self.bg_color)
+    graphics.print(self.achievement.name, pixul_font, self.x - 30, self.y - 20, nil, 1, 1, nil, nil, white[1])
+    graphics.print(self.achievement.desc, pixul_font, self.x - 30, self.y, nil, 0.9, 0.9, nil, nil, white[1])
+    image:draw(self.x - 50, self.y, 0, 0.7, 0.7)
   graphics.pop()
 end
 

@@ -2419,6 +2419,7 @@ function update(dt)
   end
 
   if input.f11.pressed then
+    print('resetting all acheives and stats')
     Reset_All_Achievements()
   end
 

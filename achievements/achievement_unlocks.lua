@@ -14,7 +14,6 @@
 
 
 function Check_Achievements(achieves)
-  print('checking achievements', achieves)
   if type(achieves) == 'string' then
     achieves = {achieves}
   end
@@ -43,6 +42,7 @@ function steam.userStats.onUserStatsReceived()
 end
 
 function Unlock_Achievement(name)
+  print('unlocking!!!')
   if steam then
     steam.userStats.setAchievement(name)
     steam.userStats.storeStats()
@@ -50,7 +50,7 @@ function Unlock_Achievement(name)
   ACHIEVEMENTS_TABLE[name].unlocked = true
 
   level_up1:play{volume=0.5}
-  AchievementToast{achievement = ACHIEVEMENTS_TABLE[name], duration = 5}
+  AchievementToast{group = main.current.ui, achievement = ACHIEVEMENTS_TABLE[name], duration = 5}
 end
 
 function Reset_All_Achievements()
@@ -58,6 +58,8 @@ function Reset_All_Achievements()
     steam.userStats.resetAllStats(true)
     steam.userStats.storeStats()
   end
+
+  Reset_User_Stats()
 
   for k, v in pairs(ACHIEVEMENTS_TABLE) do
     ACHIEVEMENTS_TABLE[k].unlocked = false
