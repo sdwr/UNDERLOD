@@ -44,10 +44,12 @@ function AchievementsPanel:updateScroll()
   if not self.mouse_over then return end
 
   if input.wheel_up.pressed then
-    self.scroll_location = self.scroll_location + 1
+    self.scroll_location = self.scroll_location + SCROLL_SPEED
+    self.scroll_location = math.min(self.scroll_location, MAX_SCROLL_LOCATION)
   end
   if input.wheel_down.pressed then
-    self.scroll_location = self.scroll_location - 1
+    self.scroll_location = self.scroll_location - SCROLL_SPEED
+    self.scroll_location = math.max(self.scroll_location, MIN_SCROLL_LOCATION)
   end
 end
 
@@ -106,31 +108,11 @@ function AchievementsPanel:drawAll()
   local color = bg[1]:clone()
   color.a = 0.8
   graphics.rectangle(self.x, self.y, self.w, self.h, nil, nil, color)
-
-
-  local num_rows = math.ceil(table_length(ACHIEVEMENTS_INDEX) / ACHIEVEMENTS_PER_ROW)
-  local row_height = ACHIEVEMENT_SIZE + ACHIEVEMENT_SPACING
   
   local start_x = (self.x - self.w / 2) + ACHIEVEMENT_SIZE/2 + ACHIEVEMENT_SPACING
   local start_y = (self.y - self.h / 2) +  ACHIEVEMENT_SIZE/2 + ACHIEVEMENT_SPACING
 
-  self.min_y = start_y - ((num_rows - 3) * row_height)
-  self.max_start_y = start_y
-
-  -- broken? not capping properly
-  -- self.min_cursor = 0
-  -- self.max_cursor = (self.max_start_y - self.min_y)/ SCROLL_SPEED
-
-  -- if self.scroll_location < self.min_cursor then
-  --   self.scroll_location = self.min_cursor
-  -- end
-  -- if self.scroll_location > self.max_cursor then
-  --   self.scroll_location = self.max_cursor
-  -- end
-
   local computed_y = start_y + (self.scroll_location * SCROLL_SPEED)
-  computed_y = math.min(self.max_start_y, computed_y)
-  computed_y = math.max(self.min_y, computed_y)
 
   local space_between = ACHIEVEMENT_SIZE + ACHIEVEMENT_SPACING
 

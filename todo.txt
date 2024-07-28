@@ -221,21 +221,9 @@ combat:
   buffs with same name don't stack properly (first amt gets duration refreshed)
   buffs aren't the right size on all units (hidden under square, too big around rect)
 
-units:
-  shouldn't be able to push bosses with units
-
-shop screen:
-  item overlay doesn't work in windowed mode
-    - they are an overlay on the game window
-    - but are scaled to fullscreen
-    - too big and in the wrong place in windowed mode
-
-  items display on top of the settings menu
   items too big coming from shop
   saving/enter arena with item on cursor?
   
-  guide/restart buttons hover overlaps troop display
-
 ---------------
 CODE CLEANUP:
 ---------------

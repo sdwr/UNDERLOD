@@ -54,7 +54,8 @@ function Unlock_Achievement(name)
   ACHIEVEMENTS_TABLE[name].unlocked = true
 
   level_up1:play{volume=0.5}
-  AchievementToast{group = main.current.ui, achievement = ACHIEVEMENTS_TABLE[name], duration = 5}
+  local group = main.current.ui_top or main.current.ui
+  AchievementToast{group = group, achievement = ACHIEVEMENTS_TABLE[name], duration = 5}
 end
 
 function Reset_All_Achievements()

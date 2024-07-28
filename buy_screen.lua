@@ -41,10 +41,9 @@ end
 
 function BuyScreen:on_enter(from)
 
-  Check_All_Achievements()
-
+  
   self.shop_level = level_to_shop_tier(self.level)
-
+  
   if not locked_state and self.reroll_shop then
     self.shop_item_data = {}
   end
@@ -57,10 +56,10 @@ function BuyScreen:on_enter(from)
   end
 
   input:set_mouse_visible(true)
-
+  
   steam.friends.setRichPresence('steam_display', '#StatusFull')
   steam.friends.setRichPresence('text', 'Shop - Level ' .. self.level)
-
+  
   self.main = Group()
   self.effects = Group()
   self.ui = Group()
@@ -68,7 +67,8 @@ function BuyScreen:on_enter(from)
   self.overlay_ui = Group()
   self.options_ui = Group()
   self.tutorial = Group()
-
+  
+  Check_All_Achievements()
   self.lock_button = LockButton{group = self.main, x = gw/2 - 150, y = gh - 40, parent = self}
 
 
