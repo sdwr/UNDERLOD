@@ -33,23 +33,23 @@ end
 
 function Load_Steam_State()
   if steam then
-    steam.userStats.requestCurrentStats()
+    --steam.userStats.requestCurrentStats()
   end
 end
 
 --this is the callback function for when the stats are loaded
 function steam.userStats.onUserStatsReceived()
   for k, v in pairs(ACHIEVEMENTS_TABLE) do
-    local success, achieved = steam.userStats.getAchievement(k)
-    ACHIEVEMENTS_TABLE[k].unlocked = achieved
+    --local success, achieved = --steam.userStats.getAchievement(k)
+    -- ACHIEVEMENTS_TABLE[k].unlocked = achieved
   end
 end
 
 function Unlock_Achievement(name)
   print('unlocking!!!', name)
   if steam then
-    steam.userStats.setAchievement(name)
-    steam.userStats.storeStats()
+    --steam.userStats.setAchievement(name)
+    --steam.userStats.storeStats()
   end
   ACHIEVEMENTS_TABLE[name].unlocked = true
 
@@ -60,8 +60,8 @@ end
 
 function Reset_All_Achievements()
   if steam then
-    steam.userStats.resetAllStats(true)
-    steam.userStats.storeStats()
+    --steam.userStats.resetAllStats(true)
+    --steam.userStats.storeStats()
   end
 
   Reset_User_Stats()

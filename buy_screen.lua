@@ -57,8 +57,8 @@ function BuyScreen:on_enter(from)
 
   input:set_mouse_visible(true)
   
-  steam.friends.setRichPresence('steam_display', '#StatusFull')
-  steam.friends.setRichPresence('text', 'Shop - Level ' .. self.level)
+  --steam.friends.setRichPresence('steam_display', '#StatusFull')
+  --steam.friends.setRichPresence('text', 'Shop - Level ' .. self.level)
   
   self.main = Group()
   self.effects = Group()

@@ -35,8 +35,8 @@ function Arena:on_enter(from)
 
   trigger:tween(2, main_song_instance, {volume = 0.5, pitch = 1}, math.linear)
 
-  steam.friends.setRichPresence('steam_display', '#StatusFull')
-  steam.friends.setRichPresence('text', 'Arena - Level ' .. self.level)
+  --steam.friends.setRichPresence('steam_display', '#StatusFull')
+  --steam.friends.setRichPresence('text', 'Arena - Level ' .. self.level)
 
   self.floor = Group()
   self.main = Group():set_as_physics_world(32, 0, 0, {'troop', 'enemy', 'projectile', 'enemy_projectile', 'force_field', 'ghost', 'effect'})
@@ -851,15 +851,11 @@ function Arena:on_win()
     if current_new_game_plus == 2 then
       state.achievement_new_game_1 = true
       system.save_state()
-      --steam.userStats.setAchievement('NEW_GAME_1')
-      --steam.userStats.storeStats()
     end
 
     if current_new_game_plus == 6 then
       state.achievement_new_game_5 = true
       system.save_state()
-      --steam.userStats.setAchievement('GAME_COMPLETE')
-      --steam.userStats.storeStats()
     end
   end
 

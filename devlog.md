@@ -1026,7 +1026,7 @@ thing, which should make it easier to work with. The rect cutting UI idea does s
 
 # Day 64-66 - 21-23/04/21
 
-Lots of small fixes here and there and also made an attempt at getting the build accepted on Steam. It failed and now I'm waiting again until next week most likely since the guy didn't get to it by the end of Friday.
+Lots of small fixes here and there and also made an attempt at getting the build accepted on --steam. It failed and now I'm waiting again until next week most likely since the guy didn't get to it by the end of Friday.
 I also made some small graphical improvements to the game that I think will help. Now what I have left to do, in order of importance:
 
 * General balance

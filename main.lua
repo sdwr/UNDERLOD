@@ -2722,7 +2722,7 @@ function open_options(self)
 
     self.quit_button = Button { group = self.options_ui, x = gw / 2, y = gh - 25, force_update = true, button_text = 'quit', fg_color = 'bg10', bg_color = 'bg', action = function()
       system.save_state()
-      steam.shutdown()
+      --steam.shutdown()
       love.event.quit()
     end }
   end, 'pause')
