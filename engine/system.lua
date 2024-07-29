@@ -122,6 +122,11 @@ function system.save_state()
   local str = "return " .. table.tostring(state or {})
   love.filesystem.write("state.txt", str)
   
+  str = "return " .. table.tostring(USER_STATS)
+  love.filesystem.write("stats.txt", str)
+
+  str = "return " .. table.tostring(ACHIEVEMENTS_UNLOCKED)
+  love.filesystem.write("achievements.txt", str)
 end
 
 
@@ -136,6 +141,18 @@ function system.load_state()
   if love.filesystem.getInfo("state.txt") then chunk = love.filesystem.load("state.txt") end
   if chunk then state = chunk()
   else state = {} end
+
+  chunk = nil
+  if love.filesystem.getInfo("stats.txt") then chunk = love.filesystem.load("stats.txt") end
+  if chunk then USER_STATS = chunk()
+  else USER_STATS = Create_Blank_Game_Stats() end
+
+  chunk = nil
+  if love.filesystem.getInfo("achievements.txt") then chunk = love.filesystem.load("achievements.txt") end
+  if chunk then 
+    ACHIEVEMENTS_UNLOCKED = chunk() 
+    --set steam achievements here or in achievement_unlocks.lua
+  end
 end
 
 function system.save_run(data)

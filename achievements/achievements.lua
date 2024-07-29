@@ -38,6 +38,44 @@ ACHIEVEMENTS_INDEX = {
   'finalbossallxchars',
 }
 
+ACHIEVEMENTS_UNLOCKED = {
+  ['firstblood'] = false,
+  ['heatingup'] = false,
+  ['fiftyfifty'] = false,
+  ['unstoppable'] = false,
+  ['legendary'] = false,
+  ['crushed'] = false,
+  ['handlethem'] = false,
+  ['safetydance'] = false,
+  ['finalbossperfect'] = false,
+  ['survivor'] = false,
+  ['passivewin'] = false,
+  ['healer'] = false,
+  ['shieldstacker'] = false,
+  ['stackecon'] = false,
+  ['reroll100'] = false,
+  ['sell100items'] = false,
+  ['consume100potions'] = false,
+  ['4potioneffects'] = false,
+  ['firestacker'] = false,
+  ['lightningkiller'] = false,
+  ['aspdcap'] = false,
+  ['glasscannon'] = false,
+  ['dotaequip'] = false,
+  ['expensiveequip'] = false,
+  ['wowequip'] = false,
+  ['finalboss'] = false,
+  ['finalbosssameunit'] = false,
+  ['finalbossmelee'] = false,
+  ['finalboss50mods'] = false,
+  ['finalbossallmods'] = false,
+  ['finalbosstime'] = false,
+  ['finalbossnolosstroops'] = false,
+  ['finalbossnoreroll'] = false,
+  ['finalbossnoitem10'] = false,
+  ['finalbossallxchars'] = false,
+}
+
 ACHIEVEMENTS_TABLE = {
 
   --complete level achievements

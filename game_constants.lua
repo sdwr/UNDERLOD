@@ -2,6 +2,9 @@
 DEBUG_PROCS = false
 DEBUG_SPELLS = false
 
+IS_DEMO = true
+DEMO_END_LEVEL = 11
+
 EXPECTED_SAVE_FIELDS = {
   'level',
   'level_list',

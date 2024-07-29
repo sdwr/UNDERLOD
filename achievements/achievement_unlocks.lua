@@ -23,7 +23,7 @@ function Check_Achievements(achieves)
   end
 
   for _, name in ipairs(achieves) do
-    if not ACHIEVEMENTS_TABLE[name].unlocked then
+    if not ACHIEVEMENTS_UNLOCKED[name] then
       if ACHIEVEMENTS_TABLE[name].check and ACHIEVEMENTS_TABLE[name].check() then
         Unlock_Achievement(name)
       end
@@ -51,7 +51,7 @@ function Unlock_Achievement(name)
     --steam.userStats.setAchievement(name)
     --steam.userStats.storeStats()
   end
-  ACHIEVEMENTS_TABLE[name].unlocked = true
+  ACHIEVEMENTS_UNLOCKED[name] = true
 
   level_up1:play{volume=0.5}
   local group = main.current.ui_top or main.current.ui
@@ -66,7 +66,7 @@ function Reset_All_Achievements()
 
   Reset_User_Stats()
 
-  for k, v in pairs(ACHIEVEMENTS_TABLE) do
-    ACHIEVEMENTS_TABLE[k].unlocked = false
+  for k, v in pairs(ACHIEVEMENTS_UNLOCKED) do
+    ACHIEVEMENTS_UNLOCKED[k] = false
   end
 end

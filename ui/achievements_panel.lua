@@ -124,12 +124,13 @@ function AchievementsPanel:drawAll()
   for i, achievement_name in ipairs(ACHIEVEMENTS_INDEX) do
     self.achievement_locations[achievement_name] = {x = x, y = y}
     local achievement = ACHIEVEMENTS_TABLE[achievement_name]
+    local unlocked = ACHIEVEMENTS_UNLOCKED[achievement_name]
 
     --should calculate whether they are visible on screen before drawing
     local color = white[1]:clone()
     local borderColor = fg[0]:clone()
 
-    if achievement.unlocked then
+    if unlocked then
       color = green[0]:clone()
       borderColor = yellow[0]:clone()
     end

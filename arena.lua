@@ -286,9 +286,9 @@ function Arena:quit()
   if self.died then return end
 
   self.quitting = true
-  if self.level % 25 == 0 then
-    print('won game')
-    self:on_win()
+  if IS_DEMO and self.level == DEMO_END_LEVEL then
+    print('end of demo')
+    self:demo_end()
   else
     print('beat level')
     if not self.arena_clear_text then self.arena_clear_text = Text2{group = self.ui, x = gw/2, y = gh/2 - 48, lines = {{text = '[wavy_mid, cbyc]arena clear!', font = fat_font, alignment = 'center'}}} end
@@ -420,6 +420,10 @@ function Arena:draw()
   if self.plusgold_text then self.plusgold_text:draw(gw / 2 + self.plusgold_text_offset_x, gh / 2 + 10 + self.plusgold_text_offset_y) end
   if self.timer_text then self.timer_text:draw(gw - 30, 20) end
 
+  if self.won then
+    if self.win_text then self.win_text:draw(gw/2, gh/2 - 48) end
+    if self.win_text2 then self.win_text2:draw(gw/2, gh/2) end
+  end
   if self.in_credits then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent_2) end
   self.credits:draw()
 end
@@ -750,6 +754,23 @@ function Arena:transition()
   end, nil}
 end
 
+function Arena:demo_end()
+  self.won = true
+
+  trigger:after(2.5, function()
+    self.win_text = Text2{group = self.ui, x = gw/2 + 40, y = gh/2 - 69, force_update = true, lines = {{text = '[wavy_mid, cbyc2]congratulations!', font = fat_font, alignment = 'center'}}}
+    self.win_text2 = Text2{group = self.ui, x = gw/2 + 40, y = gh/2 + 20, force_update = true, lines = {
+      {text = "[fg]end of the demo", font = pixul_font, alignment = 'center', height_multiplier = 1.24},
+      {text = "[fg]thanks for playing!", font = pixul_font, alignment = 'center', height_multiplier = 1.24},
+    }}
+
+    -- self.build_text = Text2{group = self.ui, x = 40, y = 20, force_update = true, lines = {{text = "[wavy_mid, fg]your build", font = pixul_font, alignment = 'center'}}}
+
+    -- for i, unit in ipairs(self.units) do
+    --   CharacterCard{group = self.main, x = x + (i-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, unit = unit, character = unit.character, i = i, parent = self}
+    -- end
+  end)
+end
 --on game win (beat final boss)
 function Arena:on_win()
   self:gain_gold(ARENA_TRANSITION_TIME)

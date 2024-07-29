@@ -27,8 +27,6 @@ function Breathe_Fire:init(args)
   self.directionx = target.x - self.unit.x
   self.directiony = target.y - self.unit.y
 
-  print(self.follow_target, 'follow target')
-
   --memory
   self.next_tick = 0
   self.next_rotate_tick = 0
