@@ -218,7 +218,7 @@ item_to_item_data = {
     colors = {},
     cost = 5,
     icon = 'fancyarmor',
-    desc = 'A vest that increases armor',
+    desc = 'Deals return damage and have a chance to stun attackers',
     stats = {hp = 0.25, thorns = 0.2 },
     procs = {'craggy'}
   },
@@ -394,7 +394,7 @@ item_to_item_data = {
     colors = {'red'},
     cost = 10,
     icon = 'fire',
-    desc = 'Gain aspd per burning enemy',
+    desc = 'Gain attack speed per burning enemy',
     stats = {dmg = 0.25},
     procs = {'blazin'},
     prereqs = {'firedmg'}
@@ -545,7 +545,7 @@ item_to_item_data = {
     colors = {'red'},
     cost = 15,
     icon = 'talisman',
-    desc = 'Increases damage for all units',
+    desc = 'Increases damage for all of your units',
     stats = {hp = 0.25},
     procs = {'strengthtalisman'}
   },
@@ -555,7 +555,7 @@ item_to_item_data = {
     colors = {'yellow'},
     cost = 15,
     icon = 'talisman',
-    desc = 'Increases attack speed and movespeed for all units',
+    desc = 'Increases attack speed and movespeed for all of your units',
     stats = {hp = 0.25},
     procs = {'agilitytalisman'}
   },
@@ -564,7 +564,7 @@ item_to_item_data = {
     colors = {'blue'},
     cost = 15,
     icon = 'talisman',
-    desc = 'Increases range and reduces cooldown for all units',
+    desc = 'Increases range and reduces cooldown for all of your unitss',
     stats = {hp = 0.25},
     procs = {'wisdomtalisman'}
   },
@@ -573,7 +573,7 @@ item_to_item_data = {
     colors = {'green'},
     cost = 15,
     icon = 'talisman',
-    desc = 'Increases health and defence for all units',
+    desc = 'Increases health and defence for all of your units',
     stats = {hp = 0.25},
     procs = {'vitalitytalisman'}
   },
@@ -628,12 +628,12 @@ item_to_item_data = {
 
 
   --multicolor items
-  ['twinflame'] = {
-    name = 'twinflame',
+  ['frostfire'] = {
+    name = 'frostfire',
     colors = {'red', 'blue'},
     cost = 15,
     icon = 'twinflame',
-    desc = 'Converts slow to fire damage, and fire damage to slow',
+    desc = 'Makes your fire damage slow, and your frost damage burn',
     stats = {dmg = 0.5},
     procs = {'fire'},
     prereqs = {'firedmg', 'frostslow'}

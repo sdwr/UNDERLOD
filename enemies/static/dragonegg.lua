@@ -18,7 +18,7 @@ fns['init_enemy'] = function(self)
   self.maxSummons = 10
   self.summons = 0
 
-  self.time_to_cast = 3
+  self.time_to_cast = 6
 
   self.state = unit_states['frozen']
   self.can_cast_while_frozen = true

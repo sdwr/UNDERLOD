@@ -12,7 +12,6 @@ PLAYTEST FEEDBACK:
   -attempt to call CharacterPart
     - on level 15
 
-  - change healing leaf to % hp (to synergize with +hp)
   - flat amount of gold per level (even when shop gets expensive)
   - drop gold from enemies? instead of flat per level
 
