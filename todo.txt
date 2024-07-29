@@ -6,11 +6,43 @@ PLAYTEST FEEDBACK:
   - can beat up to first boss without moving any units, just buying dmg items
     - special attacks dont do enough damage
 
-  - boss can be pushed by lavaman minions (interrupts mortar???)
-    -find some way of having boss immovable but still able to move itself
-    - very high weight? feel like I tried this before
+  - spawn_marker crash (spawns/spawnmanager.lua)
+  - some attacks default to 0/0
+
+  -attempt to call CharacterPart
+    - on level 15
+
+  - change healing leaf to % hp (to synergize with +hp)
+  - flat amount of gold per level (even when shop gets expensive)
+  - drop gold from enemies? instead of flat per level
+
+  -dragon eggs pop too soon
+
+  -fire synergy too compliated (does lava stack? does fire dmg on other units stack?)
+  - change stack gems to specify "ALL UNITS"
+
+  - change how fire explosion looks (have to know it's player team)
+    - make look like healing explosions?
+  
+  -spikedcollar + thornmail should have the same description
+
+  --wisdom talisman vs attackspeed
+  -- should be named the same
+
 
 TODO:
+
+  -chart difficulty on 4 tracks
+    a) no items no movement
+    b) standard dmg items, no movement
+    c) no items, with kiting
+    -d) buy items full kiting
+
+  -should be able to clear
+    a) 2 levels
+    b) up to first boss
+    c) ???
+    d) whole game
 
   -game still has SNKRX game ID somewhere, counts as SNKRX on steam
 
@@ -18,8 +50,8 @@ TODO:
   - add game stats to save game
   - update game stats from various places (buy screen, combat, end of level)
 
-  - add "End of Demo" popup after heigan boss
-  - end game after heigan boss
+  - add "End of Demo" popup after dragon boss
+  - end game after dragon boss
 
   - full game content will be:
     -final boss

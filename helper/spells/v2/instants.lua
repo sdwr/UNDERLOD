@@ -838,7 +838,7 @@ function LaserBall:init(args)
   
   self.duration_init = 2
   self.duration_prefire = 1
-  self.duration_fire = 1.5
+  self.duration_fire = args.duration_fire or 1
   self.duration_wait = 2
   
   self.nextLaser = self.duration_init
@@ -881,8 +881,8 @@ function LaserBall:fire_lasers()
       spell_duration = 10,
       name = 'laser',
       rotation_lock = true,
-      rotation_offset = i * (math.pi / 4),
-      laser_aim_width = 6,
+      rotation_offset = i * (math.pi / 2),
+      laser_aim_width = 2,
       damage = self.damage,
       lasermode = 'rotate',
       damage_troops = true,

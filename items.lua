@@ -261,7 +261,7 @@ item_to_item_data = {
     colors = {},
     cost = 10,
     icon = 'overkill',
-    desc = 'Enemies that are overkilled explode for a % of their max health',
+    desc = 'Enemies that are killed explode for a % of their max health',
     stats = {dmg = 0.5},
     procs = {'overkill'}
   },
@@ -327,15 +327,15 @@ item_to_item_data = {
   },
 
   --still need to add
-  ['bubble'] = {
-    name = 'bubble',
-    colors = {'yellow'},
-    cost = 5,
-    icon = 'bubblewand',
-    desc = 'Periodically create a bubble shield around you that blocks all damage',
-    stats = {hp = 0.1},
-    procs = {'bubble'}
-  },
+  -- ['bubble'] = {
+  --   name = 'bubble',
+  --   colors = {'yellow'},
+  --   cost = 5,
+  --   icon = 'bubblewand',
+  --   desc = 'Periodically create a bubble shield around you that blocks all damage',
+  --   stats = {hp = 0.1},
+  --   procs = {'bubble'}
+  -- },
 
   --red items
   ['firesword'] = {
