@@ -286,7 +286,7 @@ function Arena:quit()
   if self.died then return end
 
   self.quitting = true
-  if self.level % 15 == 0 then
+  if self.level % 25 == 0 then
     print('won game')
     self:on_win()
   else

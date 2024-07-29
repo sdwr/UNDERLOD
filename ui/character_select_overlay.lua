@@ -137,10 +137,12 @@ end
 
 function ShopCard:draw()
   graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
-    graphics.rectangle(self.x, self.y, self.w, self.h, 4, 4, bg[0], 5)
     if self.selected then
-      graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, bg[-1])
+      graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, bg[0])
+    else
+      graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, bg[2])
     end
+    graphics.rectangle(self.x, self.y, self.w, self.h, 4, 4, bg[1], 5)
   graphics.pop()
 end
 

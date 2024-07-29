@@ -75,7 +75,8 @@ fns['init_enemy'] = function(self)
       fire_follows_unit = false,
       fade_fire_draw = true,
       fade_in_aim_draw = true,
-      lock_last_duration = 0.3
+      lock_last_duration = 0.5,
+      charge_duration = 1.5,
     },
   }
 

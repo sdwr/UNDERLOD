@@ -14,7 +14,7 @@ function Helper.Unit:get_list(troop_list)
     --can maybe make a list of all troop types, but that kinda sucks
     --
     if troop_list then
-        return main.current.main:get_objects_by_classes(main.current.troops)
+        return main.current.main:get_objects_by_classes(main.current.friendlies)
     else
         return main.current.main:get_objects_by_classes(main.current.enemies)
     end

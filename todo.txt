@@ -1,7 +1,5 @@
 PLAYTEST FEEDBACK:
-  - different color on character select overlay
-  - laser longer time before firing
-  - special enemy damaged reduced at tier 1
+  - special enemy damage reduced at tier 1
 
   - can beat up to first boss without moving any units, just buying dmg items
     - special attacks dont do enough damage
@@ -9,13 +7,8 @@ PLAYTEST FEEDBACK:
   - spawn_marker crash (spawns/spawnmanager.lua)
   - some attacks default to 0/0
 
-  -attempt to call CharacterPart
-    - on level 15
-
   - flat amount of gold per level (even when shop gets expensive)
   - drop gold from enemies? instead of flat per level
-
-  -dragon eggs pop too soon
 
   -fire synergy too compliated (does lava stack? does fire dmg on other units stack?)
   - change stack gems to specify "ALL UNITS"
@@ -23,8 +16,6 @@ PLAYTEST FEEDBACK:
   - change how fire explosion looks (have to know it's player team)
     - make look like healing explosions?
   
-  -spikedcollar + thornmail should have the same description
-
   --wisdom talisman vs attackspeed
   -- should be named the same
 
@@ -50,7 +41,7 @@ TODO:
   - update game stats from various places (buy screen, combat, end of level)
 
   - add "End of Demo" popup after dragon boss
-  - end game after dragon boss
+  - end game after dragon boss-
 
   - full game content will be:
     -final boss

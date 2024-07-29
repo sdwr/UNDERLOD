@@ -218,7 +218,7 @@ item_to_item_data = {
     colors = {},
     cost = 5,
     icon = 'fancyarmor',
-    desc = 'Deals return damage and have a chance to stun attackers',
+    desc = 'Deals return damage and has a chance to stun attackers',
     stats = {hp = 0.25, thorns = 0.2 },
     procs = {'craggy'}
   },
@@ -227,7 +227,7 @@ item_to_item_data = {
     colors = {},
     cost = 10,
     icon = 'spikedcollar',
-    desc = 'Periodically deals damage to nearby enemies',
+    desc = 'Deals return damage and periodically deals damage to nearby enemies',
     stats = {thorns = 0.2 },
     procs = {'spikedcollar'}
   },
@@ -564,7 +564,7 @@ item_to_item_data = {
     colors = {'blue'},
     cost = 15,
     icon = 'talisman',
-    desc = 'Increases range and reduces cooldown for all of your unitss',
+    desc = 'Increases range and reduces item cooldowns for all of your units',
     stats = {hp = 0.25},
     procs = {'wisdomtalisman'}
   },
