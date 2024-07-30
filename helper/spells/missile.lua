@@ -70,7 +70,7 @@ function Helper.Spell.Missile:set_position(missile)
     -- only players have cooldown? fix
     if missile.unit:my_target() and (missile.targetx == -1 or missile.targety == -1) then
         local x, y = Helper.Spell:get_target_nearest_point(missile.unit)
-        missile.targetx, missile.targety = Helper.Spell.Laser:get_end_location(missile.x, missile.y, x, y)
+        -- missile.targetx, missile.targety = Helper.Spell.Laser:get_end_location(missile.x, missile.y, x, y)
     end
 end
 

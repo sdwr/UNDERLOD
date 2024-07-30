@@ -110,14 +110,14 @@ function BuyScreen:on_enter(from)
     self.in_tutorial = true
     self.title_text = Text2{group = self.tutorial, x = gw/2, y = 35, lines = {{text = '[fg]WELCOME TO UNDERLOD!', font = fat_font, alignment = 'center'}}}
     self.tutorial_text = Text2{group = self.tutorial, x = 228, y = 160, lines = {
-      {text = '[fg]You control a snake of multiple heroes that auto-attack nearby enemies.', font = pixul_font, height_multiplier = 1.2},
-      {text = '[fg]You can steer the snake left or right by pressing [yellow]A/D[fg] or [yellow]left/right arrows[fg].', font = pixul_font, height_multiplier = 2.2},
-      {text = '[fg]Combine the same heroes to level them up:', font = pixul_font, height_multiplier = 1.2},
-      {text = '[fg]At [yellow]Lv.3[fg] heroes unlock special effects.', font = pixul_font, height_multiplier = 2.2},
-      {text = '[fg]Hire heroes of the same classes to unlock class passives:', font = pixul_font, height_multiplier = 1.2},
-      {text = '[fg]Each hero can have between [yellow]1 to 3[fg] classes.', font = pixul_font, height_multiplier = 2.2},
-      {text = '[fg]You gain [yellow]1 interest per 5 gold[fg], up to a maximum of 5.', font = pixul_font, height_multiplier = 1.2},
-      {text = "[fg]This means that saving above [yellow]25 gold[fg] doesn't yield more interest.", font = pixul_font, height_multiplier = 2.2},
+      {text = '[fg]You control troops of multiple units that auto-attack nearby enemies.', font = pixul_font, height_multiplier = 1.2},
+      {text = '[fg]Hold [yellow]left click[fg] to drag your current troop.', font = pixul_font, height_multiplier = 2.2},
+      {text = '[yellow]Right click[fg] to set a rally point for your current troop', font = pixul_font, height_multiplier = 2.2},
+      {text = '[yellow]Spacebar[fg] drags all your troops to the cursor location', font = pixul_font, height_multiplier = 2.2},
+      {text = '[fg]Buy items in the shop between rounds', font = pixul_font, height_multiplier = 1.2},
+      {text = '[fg]Sell items with [yellow]right click[fg]', font = pixul_font, height_multiplier = 1.2},
+      {text = '[fg]The shop levels up every time you defeat a boss', font = pixul_font, height_multiplier = 1.2},
+      {text = "[fg]Try to earn your 3rd troop and defeat the final boss", font = pixul_font, height_multiplier = 1.2},
       {text = "[yellow, wavy_mid]Good luck!", font = pixul_font, height_multiplier = 2.2, alignment = 'center'},
     }}
 
@@ -301,8 +301,6 @@ function BuyScreen:draw()
 
   if self.in_tutorial then
     graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent_2)
-    arrow:draw(gw/2 + 93, gh/2 - 30, 0, 0.4, 0.35)
-    arrow:draw(gw/2 + 93, gh/2 - 10, 0, 0.4, 0.35)
   end
   self.tutorial:draw()
 end

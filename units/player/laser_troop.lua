@@ -51,8 +51,7 @@ function Laser_Troop:set_state_functions()
       -- or if it grabs a random target
       --because random targets will be taken away after each attack
       if Helper.Unit:target_out_of_range(self) then
-        self.state = unit_states['normal']
-        Helper.Spell.Laser:stop_aiming(self)
+        self:cancel_cast()
   
       elseif Helper.Unit:can_cast(self) then
         if not self:my_target() then

@@ -2426,7 +2426,6 @@ function update(dt)
   if input.f10.pressed then
     Unlock_Achievement('heatingup')
   end
-
 end
 
 function draw()

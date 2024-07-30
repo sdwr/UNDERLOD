@@ -22,6 +22,11 @@ PLAYTEST FEEDBACK:
 
 TODO:
 
+  -cap the progress bar at the end of the progress bar
+    -the XP flies into the edge of the screen
+    
+  -mask the laser firing so it tapers towards the units center
+
   -chart difficulty on 4 tracks
     a) no items no movement
     b) standard dmg items, no movement
