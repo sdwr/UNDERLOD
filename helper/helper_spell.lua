@@ -2,15 +2,10 @@ Helper.Spell = {}
 
 
 require 'helper/spells/flame'
-require 'helper/spells/missile'
 require 'helper/spells/damage_circle'
-require 'helper/spells/laser'
 require 'helper/spells/damage_line'
-require 'helper/spells/spread_laser'
-require 'helper/spells/spread_missile'
 require 'helper/spells/safety_dance'
 require 'helper/spells/sweep'
-require 'helper/spells/burst'
 require 'helper/spells/bomb'
 require 'helper/spells/frostfield'
 
@@ -26,9 +21,6 @@ require 'helper/spells/v2/summon'
 require 'helper/spells/v2/instants'
 
 Helper.Spell.spells = {
-    Helper.Spell.SpreadMissile,
-    Helper.Spell.Missile, 
-    Helper.Spell.Laser, 
     Helper.Spell.Flame,
     Helper.Spell.DamageCircle, 
     Helper.Spell.DamageLine,
@@ -36,7 +28,6 @@ Helper.Spell.spells = {
     Helper.Spell.SafetyDance,
     Helper.Spell.Sweep,
     Helper.Spell.Bomb,
-    Helper.Spell.Burst,
     Helper.Spell.Frostfield,
 }
 

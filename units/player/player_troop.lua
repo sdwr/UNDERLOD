@@ -242,7 +242,7 @@ function Troop:set_character()
         end)
         self.spell_wait_id = Helper.Time:wait(1, function()
           Helper.Unit:claim_target(self, Helper.Spell:get_nearest_target(self))
-          Helper.Spell.Burst:create(Helper.Color.white, 5, self.dmg, 500, self, true)
+          -- Helper.Spell.Burst:create(Helper.Color.white, 5, self.dmg, 500, self, true)
         end)
       end
     end
@@ -265,7 +265,7 @@ function Troop:set_character()
     self.state_change_functions['death'] = function()
       Helper.Time:cancel_wait(self.spell_wait_id)
       self.spell_wait_id = -1
-      Helper.Spell.Burst:stop_firing(self)
+      -- Helper.Spell.Burst:stop_firing(self)
       Helper.Unit:unclaim_target(self)
     end
 
@@ -291,14 +291,14 @@ function Troop:set_character()
           if self.onAttackCallbacks then
             self:onAttackCallbacks(self.target)
           end
-          Helper.Spell.Missile:create(Helper.Color.orange, 10, self.dmg, 300, self, true, 15)
+          -- Helper.Spell.Missile:create(Helper.Color.orange, 10, self.dmg, 300, self, true, 15)
         end)
       end
     end
 
     --cancel on move
     self.state_always_run_functions['following_or_rallying'] = function()
-      Helper.Spell.Missile:stop_aiming(self)
+      -- Helper.Spell.Missile:stop_aiming(self)
       Helper.Unit:unclaim_target(self)
     end
 
@@ -306,7 +306,7 @@ function Troop:set_character()
 
     --cancel on death
     self.state_change_functions['death'] = function()
-      Helper.Spell.Missile:stop_aiming(self)
+      -- Helper.Spell.Missile:stop_aiming(self)
       Helper.Unit:unclaim_target(self)
     end
 
