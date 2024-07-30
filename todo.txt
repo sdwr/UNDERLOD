@@ -22,9 +22,16 @@ PLAYTEST FEEDBACK:
 
 TODO:
 
+  -add global passives at the end of some rounds?
+    - flat damage to all troops
+    - flat aspd to all troops
+    - all periodical effects tick 20% faster
+    - etc
+
+
   -cap the progress bar at the end of the progress bar
     -the XP flies into the edge of the screen
-    
+
   -mask the laser firing so it tapers towards the units center
 
   -chart difficulty on 4 tracks
@@ -164,6 +171,11 @@ SMALL CLEANUP:
     -- something still wrong with cooldown/cast start
     -- should be unified for troops as well
 
+  --item cards get smaller as you drag towards chars
+    -- or just drag icons and leave cards behind
+
+  -buff/debuff circles should trace boss /special enemy shapes
+    -think about going over buff visuals to make sure they are distinct
 
   --add popup controls on level 1 (disable with checkbox)
     --reenable in settings?

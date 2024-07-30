@@ -51,6 +51,7 @@ function Laser_Troop:set_state_functions()
       -- or if it grabs a random target
       --because random targets will be taken away after each attack
       if Helper.Unit:target_out_of_range(self) then
+        Helper.Unit:unclaim_target(self)
         self:cancel_cast()
   
       elseif Helper.Unit:can_cast(self) then
@@ -86,12 +87,6 @@ function Laser_Troop:set_state_functions()
       --need 2 types of target - one for random targets, one for assigned targets
       --if target is assigned, it will remain until the target dies or is reassigned
       --but random targets will be reassigned every attack, to keep a nice spread of damage
-  
-      --cancel if target moves out of range
-      if self:my_target() and not Helper.Spell:target_is_in_range(self, self.attack_sensor.rs, true) then
-        self:cancel_cast()
-        Helper.Unit:unclaim_target(self)
-      end
     end
   
     --cancel on move

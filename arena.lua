@@ -810,7 +810,7 @@ function Arena:on_win()
         }}
       end
       for i, passive in ipairs(self.passives) do
-        ItemCard{group = self.ui, x = 120 + (i-1)*30, y = 20, w = 30, h = 45, sx = 0.75, sy = 0.75, force_update = true, passive = passive.passive , level = passive.level, xp = passive.xp, parent = self}
+        ItemCard{group = self.ui, x = 120 + (i-1)*30, y = 20, w = ITEM_CARD_WIDTH, h = ITEM_CARD_HEIGHT, sx = 0.75, sy = 0.75, force_update = true, passive = passive.passive , level = passive.level, xp = passive.xp, parent = self}
       end
 
       if current_new_game_plus == 6 then

@@ -109,10 +109,6 @@ function Helper.Unit:start_casting(unit)
     end
 end
 
-function Helper.Unit:cancel_casting(unit)
-
-end
-
 function Helper.Unit:finish_casting(unit)
     if unit then
         if unit.end_cast then

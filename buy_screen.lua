@@ -1440,37 +1440,70 @@ function ItemCard:update(dt)
   self.shape:move_to(self.x, self.y)
 end
 
+function ItemCard:distance_from_slots()
+  local slot_y = ITEM_SLOT_LOWER_BOUND
+  if self.y < slot_y then
+    return 0
+  else
+    return math.min(self.y - slot_y, ITEM_SLOT_DISTANCE) / ITEM_SLOT_DISTANCE
+  end
+end
+
+function ItemCard:get_drawn_size()
+  local max_h = ITEM_CARD_HEIGHT
+  local min_h = ITEM_SLOT_SIZE
+
+  local max_w = ITEM_CARD_WIDTH
+  local min_w = ITEM_SLOT_SIZE
+
+  local dist = self:distance_from_slots()
+  local w = math.lerp(dist, min_w, max_w)
+  local h = math.lerp(dist, min_h, max_h)
+
+
+  return w, h
+end
 
 function ItemCard:draw()
   if self.item then
+    local width = self.w
+    local height = self.h
+    local item_sx = 1
+    local item_sy = 1
+
+    if self.grabbed then
+      width, height = self:get_drawn_size()
+      item_sx = width / ITEM_CARD_WIDTH
+      item_sy = height / ITEM_CARD_HEIGHT
+    end
     graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
 
-    graphics.rectangle(self.x, self.y, self.w, self.h, 6,6, bg[5])
+    graphics.rectangle(self.x, self.y, width, height, 6,6, bg[5])
     if self.colors then
       local num_colors = #self.colors
-      local color_h = self.h / num_colors
+      local color_h = height / num_colors
       for i, color_name in ipairs(self.colors) do
         --make a copy of the color so we can change the alpha
         local color = _G[color_name]
         color = color[0]:clone()
         color.a = 0.6
         --find the y midpoint of the rectangle
-        local y = (self.y - self.h/2) + ((i-1) * color_h) + (color_h/2)
+        local y = (self.y - height/2) + ((i-1) * color_h) + (color_h/2)
 
-        graphics.rectangle(self.x, y, self.w, color_h, 6, 6, color)
+        graphics.rectangle(self.x, y, width, color_h, 6, 6, color)
       end
     end
     --draw the locked color under the border
     if locked_state then
       local color = grey[0]:clone()
       color.a = 0.8
-      graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, color)
+      graphics.rectangle(self.x, self.y, width, height, 6, 6, color)
     end
-    graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, self.tier_color, 2)
+    graphics.rectangle(self.x, self.y, width, height, 6, 6, self.tier_color, 2)
 
-    self.cost_text:draw(self.x + self.w/2, self.y - self.h/2)
+    self.cost_text:draw(self.x + width/2, self.y - height/2)
     if self.image then
-      self.image:draw(self.x, self.y)
+      self.image:draw(self.x, self.y, 0, item_sx, item_sy)
     end
 
 
