@@ -37,6 +37,7 @@ function CharacterCard:init(args)
   self.background_color = args.background_color or bg[0]
   self.character = args.unit.character or 'none'
   self.character_color = character_colors[self.character]
+  self.character_color_string = character_color_strings[self.character]
   
   self.w = CHARACTER_CARD_WIDTH
   self.h = CHARACTER_CARD_HEIGHT
@@ -80,7 +81,7 @@ function CharacterCard:createItemParts()
 end
 
 function CharacterCard:initText()
-  self.name_text = Text({{text = '[yellow[3]]' .. self.character, font = pixul_font, alignment = 'center'}}, global_text_tags)
+  self.name_text = Text({{text = '[' .. self.character_color_string .. '[3]]' .. self.character, font = pixul_font, alignment = 'center'}}, global_text_tags)
   self:refreshText()
   
   self.proc_text = nil
@@ -110,7 +111,7 @@ function CharacterCard:refreshText()
   self.stat_text = build_character_text(self.unit)
   table.insert(ALL_CARD_TEXTS, self.stat_text)
   self.stat_text.x = self.x
-  self.stat_text.y = self.y - self.h/2 + 35 + self.stat_text.h/2
+  self.stat_text.y = self.y - self.h/2 + 30 + self.stat_text.h/2
 end
 
 function CharacterCard:draw()
@@ -237,6 +238,7 @@ function ItemPart:sellItem()
         Stats_Max_Gold()
       end
       item:sell()
+      self:remove_item_text()
     end
   end
 

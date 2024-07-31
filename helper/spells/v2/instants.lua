@@ -925,3 +925,55 @@ function LaserBall:bounce(nx, ny)
   return self.r
 end
 -----------------------------------------
+
+GoldItem = Object:extend()
+GoldItem:implement(GameObject)
+GoldItem:implement(Physics)
+function GoldItem:init(args)
+  self:init_game_object(args)
+  self.radius = 3
+  self:set_as_circle(self.radius, 'dynamic', 'ghost')
+  self.shape = Circle(self.x, self.y, self.radius)
+
+  self.color = yellow[0]
+
+  self.amount = args.amount or 1
+  self.pickup_radius = 15
+
+  self.aggro_sensor = Circle(self.x, self.y, self.pickup_radius)
+
+  self.r = math.random(2*math.pi)
+  self:set_angle(self.r)
+
+  self.duration = 10
+  self.elapsed = 0
+end
+
+function GoldItem:update(dt)
+  if self.dead then return end
+
+  self:update_game_object(dt)
+  self.elapsed = self.elapsed + dt
+  if self.elapsed > self.duration then self.dead = true end
+  self.aggro_sensor:move_to(self.x, self.y)
+
+  local friendlies = main.current.main:get_objects_in_shape(self.aggro_sensor, main.current.friendlies)
+  if #friendlies > 0 then
+    self.dead = true
+    gold1:play{pitch = random:float(0.8, 1.2), volume = 0.9}
+    if main.current then
+      if main.current.gold_picked_up then
+        main.current.gold_picked_up = main.current.gold_picked_up + self.amount
+      else
+        main.current.gold_picked_up = self.amount
+      end
+    end
+    
+  end
+end
+
+function GoldItem:draw()
+  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.x)
+    graphics.circle(self.x, self.y, self.shape.rs, self.color)
+  graphics.pop()
+end

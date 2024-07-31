@@ -14,7 +14,7 @@ fns['init_enemy'] = function(self)
   self:set_restitution(0.5)
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
 
-  self:set_mass(2)
+  self:set_mass(SPECIAL_ENEMY_MASS)
 
   self.class = 'special_enemy'
   self.movementStyle = MOVEMENT_TYPE_RANDOM

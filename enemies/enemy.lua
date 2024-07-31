@@ -229,6 +229,7 @@ function Enemy:onDeath()
 end
 
 function Enemy:die()
+  if self.dead then return end
   self.super.die(self)
   self.dead = true
   -- update progress bar in arena, based on enemy value

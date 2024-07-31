@@ -1240,7 +1240,9 @@ LooseItem = Object:extend()
 LooseItem:implement(GameObject)
 function LooseItem:init(args)
   self:init_game_object(args)
-  self.shape = Rectangle(self.x, self.y, self.sx * 20, self.sy * 20)
+  self.h = self.sy * 20
+  self.w = self.sx * 20
+  self.shape = Rectangle(self.x, self.y, self.w, self.h)
   self.interact_with_mouse = false
 
   if buyScreen then
@@ -1254,7 +1256,29 @@ function LooseItem:update(dt)
   self.shape:move_to(self.x, self.y)
 end
 
+
+--duplicated from ItemPart (should be combined!!)
 function LooseItem:draw()
+  if self.item then
+    local tier_color = item_to_color(self.item)
+    graphics.rectangle(self.x, self.y, self.w+4, self.h+4, 3, 3, tier_color)
+    graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, bg[5])
+    if self.item.colors then
+      local num_colors = #self.item.colors
+      local color_h = self.h / num_colors
+      for i, color_name in ipairs(self.item.colors) do
+        --make a copy of the color so we can change the alpha
+        local color = _G[color_name]
+        color = color[0]:clone()
+        color.a = 0.6
+        --find the y midpoint of the rectangle
+        local y = (self.y - self.h/2) + ((i-1) * color_h) + (color_h/2)
+
+        graphics.rectangle(self.x, y, self.w, color_h, 2, 2, color)
+      end
+    end
+  end
+
   local image = find_item_image(self.item)
   if image then
     image:draw(self.x, self.y, 0, 0.4, 0.4)

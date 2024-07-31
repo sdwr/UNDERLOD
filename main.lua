@@ -310,6 +310,12 @@ function init()
   root                  = Image(d .. 'root')
   bomb2                 = Image(d .. 'bomb2')
   talisman              = Image(d .. 'talisman')
+  bloodlust             = Image(d .. 'bloodlust')
+  spikedcollar          = Image(d .. 'spikedcollar2')
+  bow2                  = Image(d .. 'bow2')
+  repeater              = Image(d .. 'repeater')
+  monster               = Image(d .. 'monster')
+  sackofcash            = Image(d .. 'sackofcash')
 
   arrows                = Image(d .. 'arrows')
   bear                  = Image(d .. 'bear')
@@ -1470,6 +1476,12 @@ function init()
     ['root'] = root,
     ['bomb'] = bomb2,
     ['talisman'] = talisman,
+    ['bloodlust'] = bloodlust,
+    ['spikedcollar'] = spikedcollar,
+    ['bow'] = bow2,
+    ['repeater'] = repeater,
+    ['monster'] = monster,
+    ['sackofcash'] = sackofcash,
 
   }
 
@@ -1522,7 +1534,8 @@ function init()
     ['vamp'] = 'vampirism',
     ['ghost'] = 'move through units',
     ['slow'] = 'movement slow on attack',
-    ['thorns'] = 'return damage to attacker',
+    ['thorns'] = 'thorns',
+    ['range'] = 'range',
     ['bash'] = 'chance to stun',
     ['enrage'] = 'enrage allies on death',
     ['gold'] = 'gold per round',
@@ -1579,29 +1592,54 @@ function init()
 
     local out = {}
     table.insert(out, { text = '[fg]' .. name, font = pixul_font, alignment = 'center', height_multiplier = 1.25 })
-    table.insert(out, {
-      text = '[fg]' .. item.desc .. ', costs: ' .. item.cost,
-      font = pixul_font,
-      alignment = 'center',
-      height_multiplier = 1.25
-    })
+
     local stats = item.stats
     if stats then
       for key, val in pairs(stats) do
         local text = ''
         if key == 'gold' then
-          text = '[fg] ' .. val .. ' ' .. (item_stat_lookup[key] or '')
+          text = '[yellow] ' .. val .. ' ' .. (item_stat_lookup[key] or '')
         elseif key == 'enrage' or key == 'ghost' then
-          text = '[fg] ' .. (item_stat_lookup[key] or '')
+          text = '[yellow] ' .. (item_stat_lookup[key] or '')
         elseif key == 'proc' then
-          text = '[fg]' .. 'custom proc... add later'
+          text = '[yellow]' .. 'custom proc... add later'
         else
-          text = '[fg] ' .. val * 100 .. '% ' .. (item_stat_lookup[key] or '')
+          text = '[yellow] ' .. val * 100 .. '% ' .. (item_stat_lookup[key] or '')
         end
         table.insert(out, { text = text, font = pixul_font, alignment = 'center', height_multiplier = 1.25 })
       end
     end
+
+    build_desc_lines(item.desc, out)
+    
+    table.insert(out, {
+      text = '[fg]Costs: ' .. item.cost,
+      font = pixul_font,
+      alignment = 'center',
+      height_multiplier = 1.25
+    })
+
     return out
+  end
+
+  build_desc_lines = function(desc, out)
+    --only wrap at spaces
+    local last_space = 0
+    local more_lines = true
+    while more_lines do
+      local start = last_space + 1
+      local space = desc:find(' ', start + 30)
+      if space then
+        last_space = space
+      else
+        space = #desc
+      end
+      local line = desc:sub(start, space)
+      table.insert(out, { text = '[fg]' .. line, font = pixul_font, alignment = 'center', height_multiplier = 1.25 })
+      if space == #desc then
+        more_lines = false
+      end
+    end
   end
 
   build_achievement_text = function(achieve)
@@ -1617,6 +1655,36 @@ function init()
       height_multiplier = 1.25
     })
     return out
+  end
+
+  build_wave_text = function(i, wave, out)
+    --sum all enemies by type
+    local enemies = {}
+    for _, enemy in pairs(wave) do
+      local type = enemy[1]
+      if type == 'shooter' or type == 'seeker' then
+        type = 'basic'
+      else
+        type = 'special'
+      end
+
+      if not enemies[type] then
+        enemies[type] = enemy[2]
+      else
+        enemies[type] = enemies[type] + enemy[2]
+      end
+    end
+    
+    table.insert(out, { text = '[fg]Wave ' .. i .. ':', font = pixul_font, alignment = 'center', height_multiplier = 1.25 })
+    local enemy_text = "[fg]"
+    for type, count in pairs(enemies) do
+      enemy_text = enemy_text .. count .. ' ' .. type .. ', '
+    end
+    enemy_text = enemy_text:sub(1, #enemy_text - 2)
+    table.insert(out, { text = '[fg]' .. enemy_text, font = pixul_font, alignment = 'center', height_multiplier = 1.25 })
+
+    return out
+
   end
 
   item_to_color = function(item)

@@ -515,6 +515,9 @@ end
 
 local invisible = Color(1, 1, 1, 0)
 global_text_tags = {
+  black = TextTag{draw = function(c, i, text) graphics.set_color(black[0]) end},
+  grey = TextTag{draw = function(c, i, text) graphics.set_color(grey[0]) end},
+  brown = TextTag{draw = function(c, i, text) graphics.set_color(brown[0]) end},
   red = TextTag{draw = function(c, i, text) graphics.set_color(red[0]) end},
   orange = TextTag{draw = function(c, i, text) graphics.set_color(orange[0]) end},
   yellow = TextTag{draw = function(c, i, text) graphics.set_color(yellow[0]) end},

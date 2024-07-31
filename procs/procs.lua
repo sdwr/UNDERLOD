@@ -193,6 +193,35 @@ function Proc_Craggy:onGotHit(from, damage)
   end
 end
 
+Proc_SackOfCash = Proc:extend()
+function Proc_SackOfCash:init(args)
+  self.triggers = {PROC_ON_DEATH}
+  self.scope = 'global'
+
+  Proc_SackOfCash.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  self.goldChance = self.data.goldChance or 0.2
+end
+
+function Proc_SackOfCash:onDeath(from)
+  Proc_SackOfCash.super.onDeath(self, from)
+
+  if not self.globalUnit then return end
+  if self.globalUnit.is_troop then return end
+  if self.globalUnit.class ~= 'special_enemy' then return end
+
+  if math.random() < self.goldChance then
+    gold1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+    local x_offset = random:float(-10, 10)
+    local y_offset = random:float(-10, 10)
+    GoldItem{group = main.current.main, x = self.globalUnit.x + x_offset, y = self.globalUnit.y + y_offset, amount = 1}
+  end
+
+end
+
 Proc_SpikedCollar = Proc:extend()
 function Proc_SpikedCollar:init(args)
   self.triggers = {PROC_ON_TICK}
@@ -1769,6 +1798,8 @@ proc_name_to_class = {
   ['shieldpotion'] = Proc_ShieldPotion,
   ['berserkpotion'] = Proc_BerserkPotion,
   ['areapotion'] = Proc_AreaPotion,
+  
+  ['sackofcash'] = Proc_SackOfCash,
 
   ['craggy'] = Proc_Craggy,
   ['spikedcollar'] = Proc_SpikedCollar,

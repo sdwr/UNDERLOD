@@ -4,7 +4,6 @@ PLAYTEST FEEDBACK:
   - can beat up to first boss without moving any units, just buying dmg items
     - special attacks dont do enough damage
 
-  - spawn_marker crash (spawns/spawnmanager.lua)
   - some attacks default to 0/0
 
   - flat amount of gold per level (even when shop gets expensive)
@@ -18,11 +17,28 @@ PLAYTEST FEEDBACK:
   
   --wisdom talisman vs attackspeed
   -- should be named the same
+ 
+--add 3rd econ item, sack of gold
 
+that makes special enemies randomly drop gold
 
 TODO:
 
-  -add global passives at the end of some rounds?
+HIGH LEVEL OVERVIEW:
+*********************************************************
+  - add passive choices between rounds 
+  - add consumable potions (include reroll passives)
+  - add fourth boss (or just cap at 3 for now)
+  - add difficulty levels (normal, hard, elite)
+  - add difficulty modifiers
+*******************************************************
+
+  -finish adding icons
+    -lavapool
+    -frostbomb -> frostfield (same as lavapool)
+    -healingwave not gem (reserved for globals)
+
+  -add global passives at the end of some rounds
     - flat damage to all troops
     - flat aspd to all troops
     - all periodical effects tick 20% faster
@@ -124,14 +140,9 @@ TODO:
 
   -boss hp bar segments for phases
 
-  -shouldn't be able to push back bosses or special enemies
-    - right now a critter can pushback + interrupt a boss
-
   - do ranged enemies need a melee attack? (can sit on them right now)
     - damage on contact
     - knockback stomp 
-
-  - first boss needs unavoidable damage? or leave as is
    
   - add more dodgeable attacks / enemies
     - laser is good
@@ -171,25 +182,21 @@ SMALL CLEANUP:
     -- something still wrong with cooldown/cast start
     -- should be unified for troops as well
 
-  --item cards get smaller as you drag towards chars
-    -- or just drag icons and leave cards behind
+  --progress particles get stuck on walls
+  
+  --enemy laser tracks too quickly
 
   -buff/debuff circles should trace boss /special enemy shapes
     -think about going over buff visuals to make sure they are distinct
 
   --add popup controls on level 1 (disable with checkbox)
     --reenable in settings?
-
-  --rewrite shop screen help text
-
+s
   --prevent teams from being selected when all troops are dead
     - code is split between arena/hotbarGlobals/hotbar class/helper
     - the actual team gets selected in helper_unit
     - which is where the check should be
     - but by then the whole selection has already happened in arena/hotbarglobals
-
-  
-  --dragon still only attacking once??
 
   --stompy needs to wander randomly (towards middle of screen)
 

@@ -288,6 +288,11 @@ function Laser_Spell:get_end_location(x, y, targetx, targety)
   return Helper.Geometry:move_point_radians(x, y, angle, self.length)
 end
 
+function Laser_Spell:die()
+  self.charge_sound:stop()
+  Laser_Spell.super.die(self)
+end
+
 function Laser_Spell:cancel()
   self.charge_sound:stop()
   Laser_Spell.super.cancel(self)

@@ -49,6 +49,12 @@ function SpawnGlobals.Init()
 
   SpawnGlobals.last_spawn_point = nil
 
+  SpawnGlobals.get_spawn_marker = function(index)
+    local spawn_index = index % ((#SpawnGlobals.spawn_markers) - 1)
+    local spawn_marker = SpawnGlobals.spawn_markers[spawn_index]
+
+    return spawn_marker or SpawnGlobals.spawn_markers[1]
+  end
 end
 
 function Get_Close_Spawn(index)
@@ -419,7 +425,7 @@ function Spawn_Group(arena, group_index, type, amount)
   --set twice because of initial delay
   arena.spawning_enemies = true
 
-  local spawn_marker = SpawnGlobals.spawn_markers[group_index]
+  local spawn_marker = SpawnGlobals.get_spawn_marker(group_index)
   local index = 1
   local total_spawned = 0
   arena.t:every(arena.time_between_spawns, function()
@@ -434,7 +440,7 @@ function Spawn_Group(arena, group_index, type, amount)
     if index > 9 then 
       index = 1
       group_index = group_index + 1
-      spawn_marker = SpawnGlobals.spawn_markers[(group_index % #SpawnGlobals.spawn_markers)]
+      spawn_marker = SpawnGlobals.get_spawn_marker(group_index)
     end
 
     local offset = SpawnGlobals.spawn_offsets[index]
