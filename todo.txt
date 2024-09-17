@@ -312,6 +312,7 @@ FEATURES:
 tooling:
   one-click builds
   mac/web build?!?!
+  move linux libraries to folder
   debug mode
     fps counter tracks longest frames
 

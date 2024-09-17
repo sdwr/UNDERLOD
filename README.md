@@ -19,8 +19,19 @@ Download this repository, `cd` into it and then run `engine/love/love.exe --cons
 
 Linux:
 
-Install love with `sudo apt install love`, or whatever your installer is
-Download this repository, `cd` into it and then run `love .`
+Install love with `sudo apt install love`
+
+Download the repo, `cd` into it
+
+Link the libraries with 
+
+  `export LD_LIBRARY_PATH=PATH_TO_REPO:$LD_LIBRARY_PATH`
+
+Then run with 
+
+  `love .`
+
+
 ### Build
 
 https://love2d.org/wiki/Game_Distribution#Creating_a_Windows_Executable
