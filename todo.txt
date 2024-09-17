@@ -178,6 +178,8 @@ HIGH LEVEL OVERVIEW:
  
 SMALL CLEANUP:  
 
+  --lavaman persists between rounds?
+
   --archer troop attacks RMB target twice?
     -- something still wrong with cooldown/cast start
     -- should be unified for troops as well
@@ -312,7 +314,7 @@ FEATURES:
 tooling:
   one-click builds
   mac/web build?!?!
-  move linux libraries to folder
+  move linux libraries
   debug mode
     fps counter tracks longest frames
 

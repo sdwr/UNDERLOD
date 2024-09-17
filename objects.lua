@@ -468,7 +468,7 @@ function Unit:init_stats()
     self.base_mvspd = 55
   end
   if self.class == 'boss' then
-    self.base_hp = BOSS_BASE_HP * BOSS_HP_SCALING(level)
+    self.base_hp = BOSS_HP * BOSS_HP_SCALING(level)
     self.base_dmg = BOSS_DAMAGE
     self.base_mvspd = BOSS_MS
   end

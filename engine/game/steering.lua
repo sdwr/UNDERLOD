@@ -156,7 +156,6 @@ function Physics:seek_mouse(deceleration, weight)
   return self:seek_point(mx, my, deceleration, weight)
 end
 
-
 -- Separation steering behavior
 -- Keeps this object separated from other objects of specific classes according to the radius passed in
 -- What this function does is simply look at all nearby objects and apply forces to this object such that it remains separated from them

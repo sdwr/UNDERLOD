@@ -93,10 +93,15 @@ function Troop:update(dt)
 
   -- then do movement if rally/following
   if self.state == unit_states['following'] then
-    self:seek_mouse()
-    --self:steering_separate(16, troop_classes)
-    self:wander(15,50,5)
-    self:rotate_towards_velocity(1)
+    --if not in range, move towards mouse
+    if self:distance_to_mouse() > 10 then
+      self:seek_mouse()
+      --self:steering_separate(16, troop_classes)
+      self:wander(15,50,5)
+      self:rotate_towards_velocity(1)
+    else
+      self:set_velocity(0,0)
+    end
 
   elseif self.state == unit_states['rallying'] then
       self:seek_point(self.target_pos.x, self.target_pos.y)
