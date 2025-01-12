@@ -50,25 +50,6 @@ PICK_THIRD_CHARACTER = 13
 
 RALLY_DURATION = 3
 
---used in the spawn manager
---and also used by procs to know when to start buffs
-TIME_TO_ROUND_START = 2
-SPAWNS_IN_GROUP = 6
-SPAWN_CHECKS = 10
-
---stat constants
-REGULAR_ENEMY_HP = 70
-REGULAR_ENEMY_DAMAGE = 10
-REGULAR_ENEMY_MS = 50
-
-SPECIAL_ENEMY_HP = 175
-SPECIAL_ENEMY_DAMAGE = 20
-SPECIAL_ENEMY_MS = 40
-
-BOSS_HP = 1000
-BOSS_DAMAGE = 10
-BOSS_MS = 40
-
 BOSS_MASS = 100
 SPECIAL_ENEMY_MASS = 2
 REGULAR_ENEMY_MASS = 1
@@ -85,16 +66,6 @@ LEVEL_TO_TIER = function(level)
   end
 end
 
-REGULAR_ENEMY_SCALING = function(level) 
-  return math.pow(1.1, level) + ((LEVEL_TO_TIER(level) - 1) / 4)
-end
-
-SPECIAL_ENEMY_SCALING = function(level) 
-  return math.pow(1.1, level) + ((LEVEL_TO_TIER(level) - 1) / 4)
-end
-
---add 0.25 to the scaling for each boss level (boss levels are every 6 levels)
-BOSS_HP_SCALING = function(level) return LEVEL_TO_TIER(level) end
 
 
 --proc constants

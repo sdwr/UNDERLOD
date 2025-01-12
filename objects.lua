@@ -433,66 +433,10 @@ end
 
 
 function Unit:init_stats()
-  --constants? remove
-  local level = self.level or 1
-  local hpMod = 1 + ((level - 1) / 2)
-  local dmgMod = 1 + ((level - 1) / 2)
-  local spdMod = 1
 
-  self.shielded = 0
-  
-  --init base stats
-  if self:is(Player) then
-    self.base_hp = 100
-    self.base_dmg = 10
-    self.base_mvspd = 50
-  elseif self.is_troop then
-    self.base_hp = 100 * hpMod
-    self.base_dmg = 10 * dmgMod
-    self.base_mvspd = 67 * spdMod
-  elseif self:is(EnemyCritter) or self:is(Critter) then
-    self.base_hp = 25 * hpMod
-    self.base_dmg = 5 * dmgMod
-    self.base_mvspd = REGULAR_ENEMY_MS * spdMod
-  elseif self.class == 'regular_enemy' then
-    self.base_hp = REGULAR_ENEMY_HP * REGULAR_ENEMY_SCALING(level)
-    self.base_dmg = REGULAR_ENEMY_DAMAGE  * REGULAR_ENEMY_SCALING(level)
-    self.base_mvspd = REGULAR_ENEMY_MS
-  elseif self.class == 'special_enemy' then
-    self.base_hp = SPECIAL_ENEMY_HP * SPECIAL_ENEMY_SCALING(level)
-    self.base_dmg = SPECIAL_ENEMY_DAMAGE  * SPECIAL_ENEMY_SCALING(level)
-    self.base_mvspd = SPECIAL_ENEMY_MS
-  elseif self.class == 'miniboss' then
-    self.base_hp = 1000 * SPECIAL_ENEMY_SCALING(level)
-    self.base_dmg = 20  * SPECIAL_ENEMY_SCALING(level)
-    self.base_mvspd = 55
-  end
-  if self.class == 'boss' then
-    self.base_hp = BOSS_HP * BOSS_HP_SCALING(level)
-    self.base_dmg = BOSS_DAMAGE
-    self.base_mvspd = BOSS_MS
-  end
+  _set_unit_base_stats(self)
 
-  self.baseCooldown = self.baseCooldown or attack_speeds['medium']
-  self.baseCast = self.baseCast or attack_speeds['medium-cast']
-  
-  --for enemies
-  if not self.items then
-    self.items = {}
-  end
-
-  --add per-attack procs from items here
-  self.procs = {}
-
-  self.onTickProcs = {}
-  self.onHitProcs = {}
-  self.onAttackProcs = {}
-  self.onGotHitProcs = {}
-  self.onKillProcs = {}
-  self.onDeathProcs = {}
-  self.onMoveProcs = {}
-  self.onRoundStartProcs = {}
-  
+  _set_unit_item_config(self)
 end
 
 --different from calculate_stats :( 

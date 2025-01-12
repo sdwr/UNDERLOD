@@ -3,6 +3,7 @@ require 'engine'
 require 'shared'
 require 'utils'
 require 'game_constants'
+require 'combat_stats'
 require 'achievements/achievements'
 require 'helper/helper'
 require 'ui/ui'
@@ -1294,36 +1295,6 @@ function init()
     ['thief'] = function(lvl) return get_character_stat_string('thief', lvl) end,
   }
 
-  unit_stat_multipliers = {
-    ['swordsman'] = { hp = 1.5, dmg = 1.25, def = 1.25, mvspd = 1 },
-    ['laser'] = { hp = 1, aspd = 1.25, dmg = 2, def = 1, mvspd = 1 },
-    ['archer'] = { hp = 1, dmg = 1, def = 1, mvspd = 1 },
-    ['pyro'] = { hp = 1.25, dmg = 1, def = 1.25, mvspd = 1 },
-    ['cannon'] = { hp = 1, dmg = 2, def = 1.25, mvspd = 1 },
-    ['shaman'] = { hp = 1, dmg = 1, def = 1, mvspd = 1 },
-    ['sniper'] = { hp = 0.8, dmg = 4, def = 1, mvspd = 0.9 },
-    ['bomber'] = { hp = 1, dmg = 6, def = 1, mvspd = 1.1 },
-
-    ['none'] = { hp = 1, dmg = 1, def = 1, mvspd = 1 },
-  }
-
-  enemy_type_to_stats = {
-    ['seeker'] = { dmg = 0.25 },
-    ['shooter'] = {},
-
-    ['arcspread'] = { dmg = 0.5 },
-    ['assassin'] = {},
-    ['laser'] = {},
-    ['mortar'] = { dmg = 1.5 },
-    ['rager'] = { dmg = 0.5, mvspd = 2 },
-    ['spawner'] = {},
-    ['stomper'] = { dmg = 2.5 },
-    ['charger'] = { dmg = 1.5, mvspd = 0.5 },
-    ['summoner'] = {},
-    ['bomb'] = { hp = -0.25 },
-
-  }
-
   local ylb1 = function(lvl)
     if lvl == 3 then
       return 'light_bg'
@@ -1708,71 +1679,6 @@ function init()
     return color
   end
 
-  attack_ranges = {
-    ['melee'] = 30,
-    ['medium'] = 60,
-    ['medium-long'] = 100,
-    ['ranged'] = 130,
-    ['long'] = 150,
-    ['ultra-long'] = 250,
-
-    ['whole-map'] = 999,
-  }
-
-  attack_speeds = {
-    ['short-cast'] = 0.20,
-    ['medium-cast'] = 0.37,
-    ['long-cast'] = 0.66,
-    ['ultra-long-cast'] = 1,
-
-    ['buff'] = 0.66,
-    ['ultra-fast'] = 1,
-    ['fast'] = 1.35,
-    ['medium-fast'] = 1.75,
-    ['medium'] = 2.5,
-    ['medium-slow'] = 3.5,
-    ['slow'] = 5,
-    ['ultra-slow'] = 8
-  }
-
-  move_speeds = {
-    ['ultra-fast'] = 2.5,
-    ['fast'] = 1.7,
-    ['medium'] = 1.4,
-    ['regular'] = 1,
-  }
-
-  unit_size = {
-    ['small'] = 4,
-    ['medium'] = 8,
-    ['large'] = 14,
-  }
-
-  buff_types = {
-    ['dmg'] = 'dmg',
-    ['aspd'] = 'aspd',
-    ['flat_def'] = 'flat defence',
-    ['percent_def'] = 'percent defence',
-    ['mvspd'] = 'mvspd',
-    ['area_dmg'] = 'area_dmg',
-    ['area_size'] = 'area_size',
-    ['hp'] = 'hp',
-    ['status_resist'] = 'status_resist',
-    ['range'] = 'range',
-
-    ['shield'] = 'shield',
-
-    ['eledmg'] = 'eledmg',
-    ['elevamp'] = 'elevamp',
-    ['vamp'] = 'vamp',
-
-    ['ghost'] = 'ghost',
-    ['slow'] = 'slow',
-    ['bash'] = 'bash',
-    ['heal'] = 'heal',
-    ['explode'] = 'explode',
-  }
-
   non_attacking_characters = { 'cleric', 'stormweaver', 'squire', 'chronomancer', 'sage', 'psykeeper', 'bane', 'carver',
     'fairy', 'priest', 'paladin', 'necromancer', 'bard', 'druid', 'flagellant', 'merchant', 'miner' }
   non_cooldown_characters = { 'squire', 'chronomancer', 'psykeeper', 'merchant', 'miner' }
@@ -2011,34 +1917,6 @@ function init()
       return 4
     end
   end
-
-  level_to_round_power = {
-    [1] = 100,
-    [2] = 300,    -- Base round
-    [3] = 450,    -- 1.5x base of 300
-    [4] = 600,    -- 2x base of 300
-    [5] = 800,    -- Next round base
-    [6] = 1200,   -- 1.5x base of 800
-    [7] = 1600,   -- 2x base of 800
-    [8] = 2000,   -- Next round base
-    [9] = 3000,   -- 1.5x base of 2000
-    [10] = 4000,  -- 2x base of 2000
-    [11] = 5000,  -- Next round base
-    [12] = 7500,  -- 1.5x base of 5000
-    [13] = 10000, -- 2x base of 5000
-    [14] = 11000, -- Next round base
-    [15] = 16500, -- 1.5x base of 11000
-    [16] = 22000, -- 2x base of 11000
-    [17] = 20000, -- Next round base
-    [18] = 30000, -- 1.5x base of 20000
-    [19] = 40000, -- 2x base of 20000
-    [20] = 35000, -- Next round base
-    [21] = 52500, -- 1.5x base of 35000
-    [22] = 70000, -- 2x base of 35000
-    [23] = 50000, -- Next round base
-    [24] = 75000, -- 1.5x base of 50000
-    [25] = 100000 -- 2x base of 50000
-  }
 
   normal_enemies = {
     'shooter',
