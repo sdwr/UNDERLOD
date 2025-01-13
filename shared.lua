@@ -45,6 +45,7 @@ function shared_init()
 
   fat_font = Font('FatPixelFont', 8)
   pixul_font = Font('PixulBrush', 8)
+  pixul_font_huge = Font('PixulBrush', 30)
   pixul_mini = Font('PixulBrush', 5)
   background_canvas = Canvas(gw, gh)
   main_canvas = Canvas(gw, gh, {stencil = true})

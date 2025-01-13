@@ -284,6 +284,13 @@ shop ui
   - show item cost in corner
   - show troop/item stats without needing to hover
 
+  - disable reroll button when not enough gold
+    or on first_shop
+
+  - base class for CharacterCard and CCBuy
+  - base class for button (onmouseenter, lock)
+  - 
+
 units
   - collision? clustering?
   - add safe unit create that checks for clipping/ finds new spawn

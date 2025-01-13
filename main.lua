@@ -776,7 +776,7 @@ function init()
 
     return text2
   end
-
+  
   character_descriptions = {
     ['vagrant'] = function(lvl) return '[fg]shoots a projectile that deals [yellow]' ..
       get_character_stat('vagrant', lvl, 'dmg') .. '[fg] damage' end,

@@ -71,8 +71,6 @@ function BuyScreen:on_enter(from)
   Check_All_Achievements()
   self.lock_button = LockButton{group = self.main, x = gw/2 - 150, y = gh - 40, parent = self}
 
-
-  self:try_roll_items()
   Refresh_All_Cards_Text()
   
   self.show_level_buttons = false
@@ -81,26 +79,15 @@ function BuyScreen:on_enter(from)
   self.items_text = Text({{text = '[wavy_mid, fg]items - Lv. ' .. self.shop_level, font = pixul_font, alignment = 'center'}}, global_text_tags)
   
   self.level_buttons = {}
+  self.items = {}
+  self.first_shop = true
   
   self:build_level_map()
   self:set_party()
 
-  --builds characters from units?
-  --open once at the start of the game
-  if not Character_Cards or #Character_Cards == 0 then
-    Character_Cards = {}
-    self.select_character_overlay = CharacterSelectOverlay{
-      group = self.overlay_ui
-    }
-  --and again at round 5
-  elseif self.level == PICK_SECOND_CHARACTER and #Character_Cards == 1 then
-    self.select_character_overlay = CharacterSelectOverlay{
-      group = self.overlay_ui
-    }
-  elseif self.level == PICK_THIRD_CHARACTER and #Character_Cards == 2 then
-    self.select_character_overlay = CharacterSelectOverlay{
-      group = self.overlay_ui
-    }
+  --only roll items once a character exists
+  if not self.first_shop then
+    self:try_roll_items()
   end
 
   
@@ -243,6 +230,9 @@ end
 function BuyScreen:buy_unit(character)
   table.insert(self.units, {character = character, level = 1, reserve = {0, 0}, items = {nil, nil, nil, nil, nil, nil}, numItems = 6})
   self:set_party()
+  if #self.items == 0 and gold > 0 then
+    self:try_roll_items()
+  end
   self:save_run()
 end
 
@@ -261,9 +251,11 @@ end
 --can call :addItem on this element to add an item rfto the unit's inventory
 function BuyScreen:get_first_available_inventory_slot()
   for i, character in ipairs(Character_Cards) do
-    local index = self:unit_first_available_inventory_slot(character.unit)
-    if index then
-      return character.items[index]
+    if character.unit then
+      local index = self:unit_first_available_inventory_slot(character.unit)
+      if index then
+        return character.items[index]
+      end
     end
   end
   return nil
@@ -313,23 +305,49 @@ end
 function BuyScreen:set_party()
   Kill_All_Cards()
   Character_Cards = {}
+
   local y = gh/2
   local x = gw/2
-  --center single unit, otherwise start on the left
-  if #self.units == 2 then
-    x = gw/2 - CHARACTER_CARD_WIDTH/2 - CHARACTER_CARD_SPACING
-  elseif #self.units == 3 then
-    x = gw/2 - CHARACTER_CARD_WIDTH - CHARACTER_CARD_SPACING
-  end
 
   for i, unit in ipairs(self.units) do
     table.insert(Character_Cards, CharacterCard{group = self.main, x = x + (i-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, unit = unit, character = unit.character, i = i, parent = self})
     unit.spawn_effect = true
+    self.first_shop = false
   end
+
+  if self.first_shop then
+    table.insert(Character_Cards, CharacterCardBuy{group = self.main, x = x + (#Character_Cards)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, i = #Character_Cards+1, parent = self,
+      is_unlocked = true, cost = 5})
+  elseif self.level >= PICK_SECOND_CHARACTER and #Character_Cards == 1 then
+    table.insert(Character_Cards, CharacterCardBuy{group = self.main, x = x + (#Character_Cards)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, i = #Character_Cards+1, parent = self,
+      is_unlocked = true, cost = 10})
+  elseif self.level >= PICK_THIRD_CHARACTER and #Character_Cards == 2 then
+    table.insert(Character_Cards, CharacterCardBuy{group = self.main, x = x + (#Character_Cards)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, i = #Character_Cards+1, parent = self,
+      is_unlocked = true, cost = 15})
+  end
+
+  --center single unit, otherwise start on the left
+
+  if #Character_Cards == 2 then
+    x = gw/2 - CHARACTER_CARD_WIDTH/2 - CHARACTER_CARD_SPACING
+  elseif #Character_Cards == 3 then
+    x = gw/2 - CHARACTER_CARD_WIDTH - CHARACTER_CARD_SPACING
+  end
+
 
   --check how many of the same unit are in the party
   local max_count = self:most_copies_of_unit()
   Stats_Current_Run_Num_Same_Unit(max_count)
+end
+
+function BuyScreen:try_buy_unit(cost)
+  if gold >= cost then
+    self:gain_gold(-cost)
+    gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
+    self.select_character_overlay = CharacterSelectOverlay{
+      group = self.overlay_ui
+    }
+  end
 end
 
 function BuyScreen:most_copies_of_unit()
@@ -362,6 +380,10 @@ function BuyScreen:set_items(shop_level)
   local item_2
   local item_3
   local all_items = {}
+
+  if self.first_shop then
+    return
+  end
 
   if not self.shop_item_data then
     self.shop_item_data = {}

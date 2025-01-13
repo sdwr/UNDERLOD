@@ -34,6 +34,10 @@ function CharacterSelectOverlay:init(args)
   self.cards[1] = ShopCard{group = self.group, x = x1, y = card_y, w = w, h = h, unit = unit1, parent = self, i = 1}
   self.cards[2] = ShopCard{group = self.group, x = x2, y = card_y, w = w, h = h, unit = unit2, parent = self, i = 2}
   self.cards[3] = ShopCard{group = self.group, x = x3, y = card_y, w = w, h = h, unit = unit3, parent = self, i = 3}
+
+  --disable clicking for the first .25 seconds
+  self.interact_with_mouse = false
+  self.t:after(0.25, function() self.interact_with_mouse = true end)
 end
 
 function CharacterSelectOverlay:draw()
@@ -99,7 +103,7 @@ end
 function ShopCard:update(dt)
   self:update_game_object(dt)
 
-  if (self.selected and input.m1.pressed) then
+  if (self.selected and input.m1.pressed and self.parent.interact_with_mouse) then
     if not main.current.buy_unit then
       print('cant buy unit')
       return
