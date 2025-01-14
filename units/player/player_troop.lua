@@ -35,7 +35,7 @@ function Troop:init(args)
 
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 40)
   
-  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 500)
+  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 120)
   self:set_character()
 
   self.state = unit_states['normal']
@@ -126,7 +126,8 @@ function Troop:update(dt)
     target = self:my_target()
 
     --if target not in attack range, close in
-    if target and not self:in_range()() and self.state == unit_states['normal'] then
+    if target and not self:in_range()() and self.state == unit_states['normal'] 
+      and self:in_aggro_range()() then
       self:seek_point(target.x, target.y)
       self:wander(7, 30, 5)
       --self:steering_separate(16, troop_classes)
@@ -163,8 +164,11 @@ function Troop:draw()
     graphics.rectangle(self.x, self.y, 3, 3, 1, 1, color)
   end
 
-  if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
+  if self.state == unit_states['casting'] then
     self:draw_cast_timer()
+  end
+  if self.state == unit_states['channeling'] then
+    self:draw_channeling()
   end
   if not Helper.Unit:cast_off_cooldown(self) then
     self:draw_cooldown_timer()
@@ -178,6 +182,10 @@ function Troop:draw()
     color.a = 0.3
     graphics.circle(self.x, self.y, self.shape.w*0.6, color)
   end
+
+  --draw aggro sensor
+  -- graphics.circle(self.x, self.y, self.aggro_sensor.rs, yellow[5], 2)
+
   graphics.pop()
 end
 

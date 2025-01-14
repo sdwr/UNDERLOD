@@ -33,6 +33,8 @@ fns['init_enemy'] = function(self)
 
   self.class = 'regular_enemy'
 
+  self.base_mvspd = 50
+
   --set attacks
   self.t:cooldown(attack_speeds['fast'], function() local targets = self:get_objects_in_shape(self.attack_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
       local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.friendlies)

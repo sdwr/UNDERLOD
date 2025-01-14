@@ -344,6 +344,13 @@ function Unit:draw_targeted()
   end
 end
 
+function Unit:draw_channeling()
+  if self.state == unit_states['channeling'] then
+    local bodySize = self.shape.rs or self.shape.w/2 or 5
+    graphics.circle(self.x, self.y, bodySize, blue_transparent, 1)
+  end
+end
+
 function Unit:draw_cast_timer()
   if self.state == unit_states['casting'] then
     if self.castObject and self.castObject.hide_cast_timer then return end
@@ -978,6 +985,17 @@ function Unit:in_range()
       target_size_offset = target.shape.w/2
     end
     return target and not target.dead and self.state == unit_states['normal'] and self:distance_to_object(target) - target_size_offset < self.attack_sensor.rs
+  end
+end
+
+function Unit:in_aggro_range()
+  return function()
+    local target = self:my_target()
+    local target_size_offset = 0
+    if self.attack_range and self.attack_range < MELEE_ATTACK_RANGE and target and not target.dead then
+      target_size_offset = target.shape.w/2
+    end
+    return target and not target.dead and self.state == unit_states['normal'] and self:distance_to_object(target) - target_size_offset < self.aggro_sensor.rs
   end
 end
 

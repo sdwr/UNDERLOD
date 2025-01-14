@@ -7,7 +7,7 @@ fns['init_enemy'] = function(self)
 
   --set extra variables from data
   self.data = self.data or {}
-  self.size = self.data.size or 'regular'
+  self.size = self.data.size or 'regular_big'
 
   --create shape
   self.color = grey[0]:clone()
@@ -29,10 +29,10 @@ fns['init_enemy'] = function(self)
     name = 'shoot',
     viable = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end,
     oncast = function() self.target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies) end,
-    cast_length = 0.8,
+    cast_length = 1.2,
     castcooldown = 1,
     cancel_on_range = true,
-    cancel_range = self.attack_sensor.rs * 1.1,
+    cancel_range = self.attack_sensor.rs * 1.05,
     instantspell = true,
     spellclass = Arrow,
     spelldata = {
@@ -40,6 +40,7 @@ fns['init_enemy'] = function(self)
       spell_duration = 1,
       color = blue[0],
       damage = self.dmg,
+      bullet_size = 5,
     },
   }
   table.insert(self.attack_options, shoot)

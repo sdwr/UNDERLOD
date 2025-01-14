@@ -149,6 +149,7 @@ function Enemy:draw()
   self:draw_targeted()
   self:draw_buffs()
   self.draw_enemy(self)
+  self:draw_channeling()
   self:draw_cast_timer()
 end
 

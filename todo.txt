@@ -24,6 +24,15 @@ that makes special enemies randomly drop gold
 
 TODO:
 
+second-to-second combat touchup:
+-------------------
+- add enemy death explosion
+- tweak on-hit animation
+- level start/ level end animation and sounds
+- coin pickups on enemy death
+- extra couple seconds on level end to pick up coins
+- sound balancing
+
 HIGH LEVEL OVERVIEW:
 *********************************************************
   - add passive choices between rounds 

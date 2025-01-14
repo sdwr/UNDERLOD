@@ -4,12 +4,13 @@
 --and also used by procs to know when to start buffs
 TIME_TO_ROUND_START = 2
 SPAWNS_IN_GROUP = 6
+NORMAL_ENEMIES_PER_GROUP = 3
 SPAWN_CHECKS = 10
 
 --stat constants
 REGULAR_ENEMY_HP = 70
-REGULAR_ENEMY_DAMAGE = 10
-REGULAR_ENEMY_MS = 50
+REGULAR_ENEMY_DAMAGE = 20
+REGULAR_ENEMY_MS = 40
 
 SPECIAL_ENEMY_HP = 175
 SPECIAL_ENEMY_DAMAGE = 20
@@ -22,12 +23,14 @@ BOSS_MS = 40
 --add 0.25 to the scaling for each boss level (boss levels are every 6 levels)
 BOSS_HP_SCALING = function(level) return LEVEL_TO_TIER(level) end
 
-REGULAR_ENEMY_SCALING = function(level) 
-    return math.pow(1.1, level) + ((LEVEL_TO_TIER(level) - 1) / 4)
+REGULAR_ENEMY_SCALING = function(level)
+    return 1 + ((LEVEL_TO_TIER(level) - 1) / 4)
+    -- return math.pow(1.1, level) + ((LEVEL_TO_TIER(level) - 1) / 4)
   end
   
   SPECIAL_ENEMY_SCALING = function(level) 
-    return math.pow(1.1, level) + ((LEVEL_TO_TIER(level) - 1) / 4)
+    return 1 + ((LEVEL_TO_TIER(level) - 1) / 4)
+    -- return math.pow(1.1, level) + ((LEVEL_TO_TIER(level) - 1) / 4)
   end
 
 -- unit stats
@@ -73,7 +76,7 @@ enemy_type_to_stats = {
 attack_ranges = {
     ['melee'] = 30,
     ['medium'] = 60,
-    ['medium-long'] = 100,
+    ['medium-long'] = 110,
     ['ranged'] = 130,
     ['long'] = 150,
     ['ultra-long'] = 250,
@@ -82,12 +85,13 @@ attack_ranges = {
   }
 
 attack_speeds = {
-    ['short-cast'] = 0.20,
+    ['short-cast'] = 0.15,
     ['medium-cast'] = 0.37,
     ['long-cast'] = 0.66,
     ['ultra-long-cast'] = 1,
 
     ['buff'] = 0.66,
+    ['quick'] = 0.8,
     ['ultra-fast'] = 1,
     ['fast'] = 1.35,
     ['medium-fast'] = 1.75,
@@ -182,6 +186,7 @@ _set_unit_base_stats = function(unit)
 
     --init base stats
     if unit:is(Player) then
+      -- only for intro screen, actual units are is_troop
         unit.base_hp = 100
         unit.base_dmg = 10
         unit.base_mvspd = 50
@@ -192,11 +197,15 @@ _set_unit_base_stats = function(unit)
     elseif unit.is_troop then
         unit.base_hp = 100
         unit.base_dmg = 10
-        unit.base_mvspd = 50
+        unit.base_mvspd = 68
     elseif unit.class == 'regular_enemy' then
-        unit.base_hp = REGULAR_ENEMY_HP * REGULAR_ENEMY_SCALING(level)
-        unit.base_dmg = REGULAR_ENEMY_DAMAGE  * REGULAR_ENEMY_SCALING(level)
-        unit.base_mvspd = REGULAR_ENEMY_MS
+        unit.base_hp = unit.base_hp or REGULAR_ENEMY_HP
+        unit.base_dmg = unit.base_dmg or REGULAR_ENEMY_DAMAGE
+        unit.base_mvspd = unit.base_mvspd or REGULAR_ENEMY_MS
+
+        unit.base_hp = unit.base_hp * REGULAR_ENEMY_SCALING(level)
+        unit.base_dmg = unit.base_dmg  * REGULAR_ENEMY_SCALING(level)
+        unit.base_mvspd = unit.base_mvspd
     elseif unit.class == 'special_enemy' then
         unit.base_hp = SPECIAL_ENEMY_HP * SPECIAL_ENEMY_SCALING(level)
         unit.base_dmg = SPECIAL_ENEMY_DAMAGE  * SPECIAL_ENEMY_SCALING(level)
