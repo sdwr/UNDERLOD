@@ -166,7 +166,7 @@ function Troop:draw()
   if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
     self:draw_cast_timer()
   end
-  if Helper.Unit:is_attack_on_cooldown(self) then
+  if not Helper.Unit:cast_off_cooldown(self) then
     self:draw_cooldown_timer()
   end
   if self.bubbled then 
@@ -182,15 +182,13 @@ function Troop:draw()
 end
 
 function Troop:draw_cooldown_timer()
-  local currentTime = Helper.Time.time
-  local time = currentTime - self.last_attack_finished
-  local pct = 1 - (time / self.cooldownTime)
+  local pct = self.castcooldown / self.total_castcooldown
   local bodySize = self.shape.rs or self.shape.w/2 or 5
-  local rs = pct * bodySize
+  local rs = (pct * bodySize * 1.5) + bodySize * 0.5
   if time < Helper.Unit.cast_flash_duration then
-    graphics.circle(self.x, self.y, rs, yellow_transparent)
+    graphics.circle(self.x, self.y, rs, yellow_transparent_weak)
   elseif pct > 0 then
-    graphics.circle(self.x, self.y, rs, white_transparent)
+    graphics.circle(self.x, self.y, rs, white_transparent_weak)
   end
 
 end

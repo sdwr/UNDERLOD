@@ -69,8 +69,7 @@ function BuyScreen:on_enter(from)
   self.tutorial = Group()
   
   Check_All_Achievements()
-  self.lock_button = LockButton{group = self.main, x = gw/2 - 150, y = gh - 40, parent = self}
-
+  
   Refresh_All_Cards_Text()
   
   self.show_level_buttons = false
@@ -84,14 +83,16 @@ function BuyScreen:on_enter(from)
   
   self:build_level_map()
   self:set_party()
-
+  
   --only roll items once a character exists
   if not self.first_shop then
     self:try_roll_items()
   end
-
   
+  
+  self.lock_button = LockButton{group = self.main, x = gw/2 - 150, y = gh - 40, parent = self}
   RerollButton{group = self.main, x = 90, y = gh - 20, parent = self}
+  
   GoButton{group = self.main, x = gw - 90, y = gh - 20, parent = self}
   self.tutorial_button = Button{group = self.main, x = gw/2 + 129, y = 18, button_text = '?', fg_color = 'bg10', bg_color = 'bg', action = function()
     self.in_tutorial = true

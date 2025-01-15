@@ -175,6 +175,11 @@ end
 Unit = Object:extend()
 function Unit:init_unit()
   self.level = self.level or 1
+
+  --also set in child classes
+  self.castcooldown = 0
+  self.total_castcooldown = 0
+
   self.target = nil
   self.assigned_target = nil
   self.buffs = {}
@@ -1054,7 +1059,9 @@ function Unit:pick_cast()
 end
 
 function Unit:update_cast_cooldown(dt)
-  self.castcooldown = self.castcooldown - dt
+  if self.castcooldown > 0 then
+    self.castcooldown = self.castcooldown - dt
+  end
 end
 
 function Unit:cast(castData)
@@ -1079,6 +1086,7 @@ end
 
 function Unit:end_cast(cooldown)
   self.castcooldown = cooldown
+  self.total_castcooldown = cooldown
   self.spelldata = nil
   self.freezerotation = false
   if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then

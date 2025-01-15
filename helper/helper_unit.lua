@@ -86,6 +86,10 @@ function Helper.Unit:target_out_of_range(unit)
     return target and Helper.Geometry:distance(unit.x, unit.y, target.x, target.y) > unit.attack_sensor.rs
 end
 
+function Helper.Unit:cast_off_cooldown(unit)
+    return unit.castcooldown <= 0
+end
+
 function Helper.Unit:can_cast(unit, points)
     points = points or false
     --the goal here is to decouple "has target" from "can cast"
@@ -96,7 +100,7 @@ function Helper.Unit:can_cast(unit, points)
     if unit then
         return (unit.state == unit_states['normal'] or unit.state == unit_states['stopped'])
         and Helper.Spell:there_is_target_in_range(unit, unit.attack_sensor.rs, points)
-        and unit.castcooldown <= 0
+        and Helper.Unit:cast_off_cooldown(unit)
     end
     return false
 end
@@ -119,16 +123,6 @@ function Helper.Unit:finish_casting(unit)
             unit.state = unit_states['normal']
         end
     end
-end
-
-function Helper.Unit:is_attack_on_cooldown(unit)
-    if unit then
-        local time_since_cast = Helper.Time.time - (unit.last_attack_finished or 0)
-        if unit.cooldownTime and time_since_cast < unit.cooldownTime then
-            return true
-        end
-    end
-    return false
 end
 
 function Helper.Unit:add_default_state_change_functions(unit)
