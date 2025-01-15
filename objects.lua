@@ -208,6 +208,21 @@ function Unit:bounce(nx, ny)
   return self.r
 end
 
+--self is enemy, other is player
+function Unit:on_trigger_enter(other)
+  if other.is_troop then
+    -- if launching, knockback the player
+    if self.is_launching then
+      other:push(30, self:angle_to_object(other))
+      other:hit(10, self)
+    end
+  end
+end
+
+function Unit:on_trigger_exit(other)
+
+end
+
 
 function Unit:show_hp(n)
   self.hp_bar.hidden = false
@@ -347,7 +362,7 @@ end
 function Unit:draw_channeling()
   if self.state == unit_states['channeling'] then
     local bodySize = self.shape.rs or self.shape.w/2 or 5
-    graphics.circle(self.x, self.y, bodySize, blue_transparent, 1)
+    graphics.circle(self.x, self.y, bodySize, blue_transparent)
   end
 end
 
@@ -1160,6 +1175,23 @@ end
 --for channeling spells, if they are hit while casting
 function Unit:delay_cast()
 
+end
+
+function Unit:launch_at_facing(magnitude, duration)
+  if self.state == unit_states['casting'] then
+    self.state = unit_states['channeling']
+  end
+
+  duration = duration or 0.5
+
+  self.is_launching = true
+  self.t:after(duration, function() self.is_launching = false end, 'launch_end')
+
+  local facing = self:get_angle()
+  local fx = math.cos(facing) * magnitude
+  local fy = math.sin(facing) * magnitude
+
+  self:apply_force(fx, fy)
 end
 
 function Unit:die()

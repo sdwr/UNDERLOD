@@ -147,6 +147,19 @@ function Troop:update(dt)
   self.aggro_sensor:move_to(self.x, self.y)
 end
 
+function Troop:push(f, r, push_invulnerable)
+  local n = 1
+  self.push_invulnerable = push_invulnerable
+  self.push_force = n*f
+  self.being_pushed = true
+  self.steering_enabled = false
+  self:apply_impulse(n*f*math.cos(r), n*f*math.sin(r))
+  self:apply_angular_impulse(random:table{random:float(-12*math.pi, -4*math.pi), random:float(4*math.pi, 12*math.pi)})
+  self:set_damping(1.5*(1/n))
+  self:set_angular_damping(1.5*(1/n))
+
+end
+
 
 function Troop:draw()
   --graphics.circle(self.x, self.y, self.attack_sensor.rs, orange[0], 1)
@@ -534,7 +547,8 @@ function Troop:on_collision_enter(other, contact)
       local r = random:float(0.9, 1.1)
       player_hit_wall1:play{pitch = r, volume = 0.1}
       pop1:play{pitch = r, volume = 0.2}
-
+  elseif other.class == 'boss' then
+    self:push(50, self:angle_to_object(other))
   elseif table.any(main.current.friendlies, function(v) return other:is(v) end) then
     --self:set_position()
     --other:push(random:float(25, 35)*(self.knockback_m or 1), self:angle_to_object(other))

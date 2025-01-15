@@ -24,6 +24,9 @@ that makes special enemies randomly drop gold
 
 TODO:
 
+music:
+- get demoscene time machine?
+
 second-to-second combat touchup:
 -------------------
 - add enemy death explosion

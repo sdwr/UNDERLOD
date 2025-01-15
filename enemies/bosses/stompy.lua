@@ -29,7 +29,8 @@ fns['init_enemy'] = function(self)
   
   --set physics 
     self:set_restitution(0.1)
-    self:set_as_steerable(self.v, 1000, 2*math.pi, 2)
+    self:set_damping(0.1)
+    self:set_as_steerable(self.v, 10000, 2*math.pi, 2)
 
     self:set_mass(BOSS_MASS)
     self.class = 'boss'
@@ -115,9 +116,30 @@ fns['init_enemy'] = function(self)
     }
   }
 
-  table.insert(self.attack_options, stomp)
-  table.insert(self.attack_options, mortar)
-  table.insert(self.attack_options, avalanche)
+  local charge = {
+    name = 'charge',
+    viable = function() return true end,
+    castcooldown = 3,
+    cast_length = 0.1,
+    oncast = function() end,
+    spellclass = Launch_Spell,
+    spelldata = {
+      group = main.current.main,
+      team = "enemy",
+      charge_duration = 2,
+      spell_duration = 2.5,
+      x = self.x,
+      y = self.y,
+      color = red[0],
+      dmg = 50,
+      parent = self
+    }
+  }
+
+  -- table.insert(self.attack_options, stomp)
+  -- table.insert(self.attack_options, mortar)
+  -- table.insert(self.attack_options, avalanche)
+  table.insert(self.attack_options, charge)
 
 end
 
