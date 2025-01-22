@@ -364,10 +364,28 @@ function Group:set_as_physics_world(meter, xg, yg, tags)
     function(fa, fb, c) --presolve
       local oa, ob = self:get_object_by_id(fa:getUserData()), self:get_object_by_id(fb:getUserData())
       if oa and ob then
-          -- Example: Cancel collisions between specific objects
-          if (oa.class == 'troop' and ob.class == 'boss') or (oa.class == 'boss' and ob.class == 'troop') then
-              c:setEnabled(false) -- Disable the collision
+        --disable knockback for bosses
+        
+        if ((oa.class == 'boss' and ob.class == 'troop') or (oa.class == 'troop' and ob.class == 'boss')) then
+          local boss, troop
+          if oa.class == 'boss' then
+              boss, troop = oa, ob
+          else
+              boss, troop = ob, oa
           end
+
+          if boss.is_launching then
+            troop:push(30, boss:angle_to_object(troop))
+            if not troop.being_pushed then
+              troop:hit(10, boss)
+            end
+          else
+            print('collided with troop', troop.class)
+            troop:push(5, boss:angle_to_object(troop))
+          end
+
+
+        end
       end
   end
   )

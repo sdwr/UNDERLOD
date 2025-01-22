@@ -14,7 +14,7 @@ function Launch_Spell:init(args)
     self.already_damaged = {}
 
     self.damage = self.damage or 40
-    self.impulse_magnitude = self.impulse_magnitude or 100000
+    self.impulse_magnitude = self.impulse_magnitude or 5000
 
     self.lineCoords = {0, 0, 0, 0}
 

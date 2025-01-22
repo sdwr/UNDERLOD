@@ -341,7 +341,8 @@ function init()
     ['channeling'] = 'channeling',
     ['stopped'] = 'stopped',
     ['rallying'] = 'rallying',
-    ['following'] = 'following'
+    ['following'] = 'following',
+    ['launching'] = 'launching',
   }
 
   type_colors = {

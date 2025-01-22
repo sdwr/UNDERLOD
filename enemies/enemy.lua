@@ -161,14 +161,14 @@ function Enemy:on_collision_enter(other, contact)
         self:bounce(contact:getNormal())
     
     elseif table.any(main.current.enemies, function(v) return other:is(v) end) then
-        if self.being_pushed and math.length(self:get_velocity()) > 60 then
-            other:hit(math.floor(self.push_force/4), nil, nil, true)
-            self:hit(math.floor(self.push_force/2), nil, nil, true)
-            other:push(math.floor(self.push_force/2), other:angle_to_object(self))
-            HitCircle{group = main.current.effects, x = x, y = y, rs = 6, color = fg[0], duration = 0.1}
-            for i = 1, 2 do HitParticle{group = main.current.effects, x = x, y = y, color = self.color} end
-            hit2:play{pitch = random:float(0.95, 1.05), volume = 0.35}
-        end
+        -- if self.being_pushed and math.length(self:get_velocity()) > 60 then
+        --     other:hit(math.floor(self.push_force/4), nil, nil, true)
+        --     self:hit(math.floor(self.push_force/2), nil, nil, true)
+        --     other:push(math.floor(self.push_force/2), other:angle_to_object(self))
+        --     HitCircle{group = main.current.effects, x = x, y = y, rs = 6, color = fg[0], duration = 0.1}
+        --     for i = 1, 2 do HitParticle{group = main.current.effects, x = x, y = y, color = self.color} end
+        --     hit2:play{pitch = random:float(0.95, 1.05), volume = 0.35}
+        -- end
     end
 end
 

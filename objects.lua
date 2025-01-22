@@ -210,13 +210,6 @@ end
 
 --self is enemy, other is player
 function Unit:on_trigger_enter(other)
-  if other.is_troop then
-    -- if launching, knockback the player
-    if self.is_launching then
-      other:push(30, self:angle_to_object(other))
-      other:hit(10, self)
-    end
-  end
 end
 
 function Unit:on_trigger_exit(other)
@@ -1182,16 +1175,23 @@ function Unit:launch_at_facing(magnitude, duration)
     self.state = unit_states['channeling']
   end
 
-  duration = duration or 0.5
+  duration = duration or 1
 
   self.is_launching = true
   self.t:after(duration, function() self.is_launching = false end, 'launch_end')
 
   local facing = self:get_angle()
-  local fx = math.cos(facing) * magnitude
-  local fy = math.sin(facing) * magnitude
+  local impulse_x = math.cos(facing) * magnitude
+  local impulse_y = math.sin(facing) * magnitude
 
-  self:apply_force(fx, fy)
+  -- Apply an impulse for an immediate push
+  self:apply_impulse(impulse_x, impulse_y)
+
+  -- Optionally adjust damping for smoother decay
+  self:set_damping(0.5) -- Temporary low damping for smoother deceleration
+  self.t:after(duration, function()
+    self:set_damping(0.0) -- Restore default damping after push
+  end)
 end
 
 function Unit:die()

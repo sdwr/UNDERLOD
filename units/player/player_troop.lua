@@ -91,6 +91,17 @@ function Troop:update(dt)
     end
   end
 
+  if not self.being_pushed then
+    self:update_movement()
+  end
+  
+  self.r = self:get_angle()
+
+  self.attack_sensor:move_to(self.x, self.y)
+  self.aggro_sensor:move_to(self.x, self.y)
+end
+
+function Troop:update_movement()
   -- then do movement if rally/following
   if self.state == unit_states['following'] then
     --if not in range, move towards mouse
@@ -140,24 +151,37 @@ function Troop:update(dt)
   else
     self:set_velocity(0,0)
   end
-  
-  self.r = self:get_angle()
-
-  self.attack_sensor:move_to(self.x, self.y)
-  self.aggro_sensor:move_to(self.x, self.y)
 end
 
 function Troop:push(f, r, push_invulnerable)
-  local n = 1
+  local n = 1 -- Push force multiplier
   self.push_invulnerable = push_invulnerable
-  self.push_force = n*f
-  self.being_pushed = true
-  self.steering_enabled = false
-  self:apply_impulse(n*f*math.cos(r), n*f*math.sin(r))
-  self:apply_angular_impulse(random:table{random:float(-12*math.pi, -4*math.pi), random:float(4*math.pi, 12*math.pi)})
-  self:set_damping(1.5*(1/n))
-  self:set_angular_damping(1.5*(1/n))
+  self.push_force = n * f
+  self.being_pushed = true -- Mark as being pushed
+  self.steering_enabled = false -- Temporarily disable steering
 
+  -- Apply a single impulse for immediate knockback
+  self:apply_impulse(n * f * math.cos(r), n * f * math.sin(r))
+
+  -- Apply angular impulse for rotation
+  self:apply_angular_impulse(
+      random:table{
+          random:float(-12 * math.pi, -4 * math.pi),
+          random:float(4 * math.pi, 12 * math.pi)
+      }
+  )
+
+  -- Apply damping to control velocity decay (adjust for desired effect)
+  self:set_damping(0.1) -- Low damping for sustained knockback
+  self:set_angular_damping(0.1)
+
+  -- Reset state after a fixed duration
+  self.t:after(0.25, function()
+      self.being_pushed = false
+      self.steering_enabled = true
+      self:set_damping(0.0) -- Reset linear damping
+      self:set_angular_damping(0.0) -- Reset angular damping
+  end)
 end
 
 
@@ -548,7 +572,9 @@ function Troop:on_collision_enter(other, contact)
       player_hit_wall1:play{pitch = r, volume = 0.1}
       pop1:play{pitch = r, volume = 0.2}
   elseif other.class == 'boss' then
-    self:push(50, self:angle_to_object(other))
+    --move away from boss
+    -- self:push(50, self:angle_to_object(other))
+
   elseif table.any(main.current.friendlies, function(v) return other:is(v) end) then
     --self:set_position()
     --other:push(random:float(25, 35)*(self.knockback_m or 1), self:angle_to_object(other))

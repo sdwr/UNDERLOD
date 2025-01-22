@@ -306,6 +306,7 @@ function Helper.Unit:select()
         elseif input['m1'].down then
             --clear rally point for the selected team
             local selected_team = Helper.Unit:get_team_by_index(self.selected_team_index)
+            
             if selected_team then
                 selected_team:clear_rally_point()
                 selected_team:set_troop_state('following')

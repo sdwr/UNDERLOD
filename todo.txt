@@ -36,6 +36,16 @@ second-to-second combat touchup:
 - extra couple seconds on level end to pick up coins
 - sound balancing
 
+-- collision and knockback
+---------------------
+- removed all custom collision except for bosses knocking back players
+- try to unify on_collision_enter, and :push() with :launch_at_facing()
+- try to unify push distance and duration (how to calc?)
+
+- being_pushed flag disables all other movement I believe
+- collision code is in group.lua
+- and custom in Troop:on_collision_enter etc
+
 HIGH LEVEL OVERVIEW:
 *********************************************************
   - add passive choices between rounds 
