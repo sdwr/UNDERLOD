@@ -364,7 +364,6 @@ function Group:set_as_physics_world(meter, xg, yg, tags)
     function(fa, fb, c) --presolve
       local oa, ob = self:get_object_by_id(fa:getUserData()), self:get_object_by_id(fb:getUserData())
       if oa and ob then
-        --disable knockback for bosses
         
         if ((oa.class == 'boss' and ob.class == 'troop') or (oa.class == 'troop' and ob.class == 'boss')) then
           local boss, troop
@@ -380,7 +379,6 @@ function Group:set_as_physics_world(meter, xg, yg, tags)
               troop:hit(10, boss)
             end
           else
-            print('collided with troop', troop.class)
             troop:push(5, boss:angle_to_object(troop))
           end
 

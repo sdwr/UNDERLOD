@@ -8,10 +8,12 @@ function Enemy:init(args)
   self:init_game_object(args)
 
   self.state = 'normal'
-  self:init_unit()
   self:setExtraFunctions()
-
+  
   self.init_enemy(self)
+  self:init_unit()
+  self:init_hitbox_points()
+
   self:calculate_stats(true)
 
   self.movementStyle = self.movementStyle or MOVEMENT_TYPE_SEEK

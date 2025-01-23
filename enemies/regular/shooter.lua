@@ -12,12 +12,6 @@ fns['init_enemy'] = function(self)
   --create shape
   self.color = grey[0]:clone()
   Set_Enemy_Shape(self, self.size)
-  
-  --set physics 
-  self:set_restitution(0.5)
-  self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
-
-  self:set_mass(REGULAR_ENEMY_MASS)
 
   self.class = 'regular_enemy'
   self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium-long'])

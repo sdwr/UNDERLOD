@@ -3,6 +3,8 @@ Troop = Unit:extend()
 Troop:implement(GameObject)
 Troop:implement(Physics)
 function Troop:init(args)
+  self.size = unit_size['medium']
+  self.class = 'troop'
   self.is_troop = true
   self.target_rally = nil
   self.castTime = 0.3
@@ -15,24 +17,13 @@ function Troop:init(args)
   self:init_game_object(args)
   self:init_unit()
   local level = self.level or 1
-  local scaleMod = 1 + ((level - 1) / 3)
-  local size = unit_size['medium'] * scaleMod
 
-  self.class = 'troop'
+
+
   self:calculate_stats(true)
-  if self.ghost == true then
-    self:set_as_rectangle(size, size,'dynamic', 'ghost')
-  else
-    self:set_as_rectangle(size, size,'dynamic', 'troop')
-  end
-  
-  self:set_restitution(0.5)
-  
 
   self.color = character_colors[self.character]
   self.type = character_types[self.character]
-  self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
-
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 40)
   
   self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 120)

@@ -2,10 +2,16 @@
   "version": "0.2.0",
   "configurations": [
     {
-        "type": "lua-local",
-        "request": "launch",
-        "name": "Debug Love",
-        "program": {workspaceFolder}/engine/love/love.exe"
+      "type": "lua-local",
+      "request": "launch",
+      "name": "Debug Love2D",
+      "program": "love", 
+      "args": ["${workspaceFolder}"],
+      "cwd": "${workspaceFolder}",
+      "stopOnEntry": false,
+      "env": {
+        "LD_LIBRARY_PATH": "${workspaceFolder}:${env:LD_LIBRARY_PATH}"
+      }
     }
   ]
 }

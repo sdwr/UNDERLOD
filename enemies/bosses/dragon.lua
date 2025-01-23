@@ -3,7 +3,8 @@
 local fns = {}
 
 fns['init_enemy'] = function(self)
-
+  self.boss_name = 'dragon'
+  
   --set extra variables from data
   self.data = self.data or {}
   self.size = self.data.size or 'boss'
@@ -11,56 +12,8 @@ fns['init_enemy'] = function(self)
   --create shape
   self.color = red[0]:clone()
   Set_Enemy_Shape(self, self.size)
-
-  --add hitbox points
-  self.hitbox_points_can_rotate = true
-  Helper.Unit:add_point(self, 32, 0)
-  Helper.Unit:add_point(self, -15, 27)
-  Helper.Unit:add_point(self, -15, -27)
-  Helper.Unit:add_point(self, 23, 5)
-  Helper.Unit:add_point(self, 23, -5)
-  Helper.Unit:add_point(self, 16, 9)
-  Helper.Unit:add_point(self, 16, -9)
-  Helper.Unit:add_point(self, 10, 12)
-  Helper.Unit:add_point(self, 10, -12)
-  Helper.Unit:add_point(self, -9, 23)
-  Helper.Unit:add_point(self, -9, -23)
-  Helper.Unit:add_point(self, -3, 19)
-  Helper.Unit:add_point(self, -3, -19)
-  Helper.Unit:add_point(self, 3, 16)
-  Helper.Unit:add_point(self, 3, -16)
-  Helper.Unit:add_point(self, -16, 21)
-  Helper.Unit:add_point(self, -16, -21)
-  Helper.Unit:add_point(self, -16, 14)
-  Helper.Unit:add_point(self, -16, -14)
-  Helper.Unit:add_point(self, -16, 6)
-  Helper.Unit:add_point(self, -16, -6)
-  Helper.Unit:add_point(self, -16, 0)
-  Helper.Unit:add_point(self, -9, 16)
-  Helper.Unit:add_point(self, -9, -16)
-  Helper.Unit:add_point(self, -9, 7)
-  Helper.Unit:add_point(self, -9, -7)
-  Helper.Unit:add_point(self, -9, 0)
-  Helper.Unit:add_point(self, -2, 11)
-  Helper.Unit:add_point(self, -2, -11)
-  Helper.Unit:add_point(self, -2, 3)
-  Helper.Unit:add_point(self, -2, -3)
-  Helper.Unit:add_point(self, 5, 8)
-  Helper.Unit:add_point(self, 5, -8)
-  Helper.Unit:add_point(self, 5, -0)
-  Helper.Unit:add_point(self, 10, 4)
-  Helper.Unit:add_point(self, 10, -4)
-  Helper.Unit:add_point(self, 18, -3)
-  Helper.Unit:add_point(self, 18, 3)
-  Helper.Unit:add_point(self, 25, 0)
   
-  --set physics 
-    self:set_restitution(0.1)
-    self:set_as_steerable(self.v, 1000, 2*math.pi, 2)
-
-
-    self:set_mass(BOSS_MASS)
-    self.class = 'boss'
+  self.class = 'boss'
 
   --set attacks
   self.fireDmg = 5

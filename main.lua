@@ -25,6 +25,10 @@ require 'util/fpscounter'
 love.profiler = require('util/profiler/profile')
 require 'util/runprofiler'
 
+if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
+  require("lldebugger").start()
+end
+
 
 
 function init()

@@ -18,7 +18,8 @@ fns['attack'] = function(self, area, mods, color)
 end
 
 fns['init_enemy'] = function(self)
-
+  self.boss_name = 'stompy'
+  
   --set extra variables from data
   self.data = self.data or {}
   self.size = self.data.size or 'boss'
@@ -26,35 +27,13 @@ fns['init_enemy'] = function(self)
   --create shape
   self.color = grey[0]:clone()
   Set_Enemy_Shape(self, self.size)
-  
-  --set physics 
-    self:set_restitution(0.1)
-    self:set_damping(0.1)
-    self:set_as_steerable(self.v, 10000, 2*math.pi, 2)
 
-    self:set_mass(BOSS_MASS)
-    self.class = 'boss'
+  self.class = 'boss'
 
-  --set sensors
-    self.attack_sensor = Circle(self.x, self.y, 80)
+--set sensors
+  self.attack_sensor = Circle(self.x, self.y, 80)
 
-  --add hitbox points
-  local step = (self.shape.w - 4) / 5
-  for x = -self.shape.w/2 + 2, self.shape.w/2 - 2, step do
-    for y = -self.shape.h/2 + 2, self.shape.h/2 - 2, step do
-      if x == -self.shape.w/2 + 2 and y == -self.shape.h/2 + 2 then
-        Helper.Unit:add_point(self, x + 2, y + 2)
-      elseif x == -self.shape.w/2 + 2 and near(y, self.shape.h/2 - 2, 0.01) then
-        Helper.Unit:add_point(self, x + 2, y - 2)
-      elseif near(x, self.shape.w/2 - 2, 0.01) and y == -self.shape.h/2 + 2 then
-        Helper.Unit:add_point(self, x - 2, y + 2)
-      elseif near(x, self.shape.w/2 - 2, 0.01) and near(y, self.shape.h/2 - 2, 0.01) then
-        Helper.Unit:add_point(self, x - 2, y - 2)
-      else
-        Helper.Unit:add_point(self, x, y)
-      end
-    end
-  end
+
 
   --set attacks
   self.attack_options = {}

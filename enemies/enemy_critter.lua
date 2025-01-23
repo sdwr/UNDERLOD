@@ -15,7 +15,6 @@ function EnemyCritter:init(args)
   self.class = 'enemy_critter'
   self.color = args.color or grey[0]
   self:calculate_stats(true)
-  self:set_as_steerable(self.v, 400, math.pi, 1)
   --self:push(args.v, args.r) 
   self.t:cooldown(attack_speeds['medium'], function() return self.target and self:distance_to_object(self.target) < self.attack_sensor.rs end, 
   function() self:attack() end, nil, nil, "attack")

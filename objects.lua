@@ -176,6 +176,8 @@ Unit = Object:extend()
 function Unit:init_unit()
   self.level = self.level or 1
 
+  self:config_physics_object()
+
   --also set in child classes
   self.castcooldown = 0
   self.total_castcooldown = 0
@@ -193,6 +195,124 @@ function Unit:init_unit()
 
   Helper.Unit:add_custom_variables_to_unit(self)
 end
+
+function Unit:config_physics_object()
+  
+
+  if self.class == 'boss' then
+
+    self:set_damping(BOSS_DAMPING)
+    self:set_restitution(BOSS_RESTITUTION)
+
+    self:set_mass(BOSS_MASS)
+
+    --heigan had 1000, stompy had 10000, dragon had default
+    self:set_as_steerable(self.v, 1000, 2*math.pi, 2)
+
+  elseif self.class == 'miniboss' then
+    --ignore for now
+  elseif self.class == 'special_enemy' then
+
+    self:set_damping(SPECIAL_ENEMY_DAMPING)
+    self:set_restitution(SPECIAL_ENEMY_RESTITUTION)
+
+    self:set_mass(SPECIAL_ENEMY_MASS)
+
+    self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
+
+  elseif self.class == 'regular_enemy' then
+    
+    self:set_damping(REGULAR_ENEMY_DAMPING)
+    self:set_restitution(REGULAR_ENEMY_RESTITUTION)
+
+    self:set_mass(REGULAR_ENEMY_MASS)
+
+    self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
+  elseif self.class == 'troop' then
+    if self.ghost == true then
+      self:set_as_rectangle(self.size, self.size,'dynamic', 'ghost')
+    else
+      self:set_as_rectangle(self.size, self.size,'dynamic', 'troop')
+    end
+
+    self:set_damping(TROOP_DAMPING)
+    self:set_restitution(TROOP_RESITUTION)
+
+    self:set_mass(TROOP_MASS)
+
+    self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
+
+  end
+  
+end
+
+function Unit:init_hitbox_points()
+  
+  if self.boss_name == 'stompy' then
+    local step = (self.shape.w - 4) / 5
+    for x = -self.shape.w/2 + 2, self.shape.w/2 - 2, step do
+      for y = -self.shape.h/2 + 2, self.shape.h/2 - 2, step do
+        if x == -self.shape.w/2 + 2 and y == -self.shape.h/2 + 2 then
+          Helper.Unit:add_point(self, x + 2, y + 2)
+        elseif x == -self.shape.w/2 + 2 and near(y, self.shape.h/2 - 2, 0.01) then
+          Helper.Unit:add_point(self, x + 2, y - 2)
+        elseif near(x, self.shape.w/2 - 2, 0.01) and y == -self.shape.h/2 + 2 then
+          Helper.Unit:add_point(self, x - 2, y + 2)
+        elseif near(x, self.shape.w/2 - 2, 0.01) and near(y, self.shape.h/2 - 2, 0.01) then
+          Helper.Unit:add_point(self, x - 2, y - 2)
+        else
+          Helper.Unit:add_point(self, x, y)
+        end
+      end
+    end
+  end
+
+  --if enemy is dragon
+  if self.boss_name == 'dragon' then
+    self.hitbox_points_can_rotate = true
+    Helper.Unit:add_point(self, 32, 0)
+    Helper.Unit:add_point(self, -15, 27)
+    Helper.Unit:add_point(self, -15, -27)
+    Helper.Unit:add_point(self, 23, 5)
+    Helper.Unit:add_point(self, 23, -5)
+    Helper.Unit:add_point(self, 16, 9)
+    Helper.Unit:add_point(self, 16, -9)
+    Helper.Unit:add_point(self, 10, 12)
+    Helper.Unit:add_point(self, 10, -12)
+    Helper.Unit:add_point(self, -9, 23)
+    Helper.Unit:add_point(self, -9, -23)
+    Helper.Unit:add_point(self, -3, 19)
+    Helper.Unit:add_point(self, -3, -19)
+    Helper.Unit:add_point(self, 3, 16)
+    Helper.Unit:add_point(self, 3, -16)
+    Helper.Unit:add_point(self, -16, 21)
+    Helper.Unit:add_point(self, -16, -21)
+    Helper.Unit:add_point(self, -16, 14)
+    Helper.Unit:add_point(self, -16, -14)
+    Helper.Unit:add_point(self, -16, 6)
+    Helper.Unit:add_point(self, -16, -6)
+    Helper.Unit:add_point(self, -16, 0)
+    Helper.Unit:add_point(self, -9, 16)
+    Helper.Unit:add_point(self, -9, -16)
+    Helper.Unit:add_point(self, -9, 7)
+    Helper.Unit:add_point(self, -9, -7)
+    Helper.Unit:add_point(self, -9, 0)
+    Helper.Unit:add_point(self, -2, 11)
+    Helper.Unit:add_point(self, -2, -11)
+    Helper.Unit:add_point(self, -2, 3)
+    Helper.Unit:add_point(self, -2, -3)
+    Helper.Unit:add_point(self, 5, 8)
+    Helper.Unit:add_point(self, 5, -8)
+    Helper.Unit:add_point(self, 5, -0)
+    Helper.Unit:add_point(self, 10, 4)
+    Helper.Unit:add_point(self, 10, -4)
+    Helper.Unit:add_point(self, 18, -3)
+    Helper.Unit:add_point(self, 18, 3)
+    Helper.Unit:add_point(self, 25, 0)
+  end
+end
+
+
 
 
 function Unit:bounce(nx, ny)

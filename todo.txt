@@ -38,6 +38,9 @@ second-to-second combat touchup:
 
 -- collision and knockback
 ---------------------
+- combined unit physics config into config_physics_object()
+- all works like before except player movement is too slow, and too much enemy knockback (can push)
+
 - removed all custom collision except for bosses knocking back players
 - try to unify on_collision_enter, and :push() with :launch_at_facing()
 - try to unify push distance and duration (how to calc?)
