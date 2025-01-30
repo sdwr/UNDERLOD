@@ -97,18 +97,18 @@ function Troop:update_movement()
   if self.state == unit_states['following'] then
     --if not in range, move towards mouse
     if self:distance_to_mouse() > 10 then
-      self:seek_mouse(1.5, 5)
-      self:steering_separate(16, troop_classes)
-      self:wander(15, 50, 5)
+      self:seek_mouse(SEEK_DECELERATION, SEEK_WEIGHT)
+      self:steering_separate(SEPARATION_RADIUS, troop_classes)
+      self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
       self:rotate_towards_velocity(1)
     else
       self:set_velocity(0,0)
     end
 
   elseif self.state == unit_states['rallying'] then
-      self:seek_point(self.target_pos.x, self.target_pos.y, 1.5, 5)
-      self:steering_separate(16, troop_classes)
-      self:wander(15, 50, 5)
+      self:seek_point(self.target_pos.x, self.target_pos.y, SEEK_DECELERATION, SEEK_WEIGHT)
+      self:steering_separate(SEPARATION_RADIUS, troop_classes)
+      self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
       self:rotate_towards_velocity(1)
       local distance_to_target_pos = math.distance(self.x, self.y, self.target_pos.x, self.target_pos.y)
       --if close enough, stop (which enables attacking)
@@ -131,9 +131,9 @@ function Troop:update_movement()
     --if target not in attack range, close in
     if target and not self:in_range()() and self.state == unit_states['normal'] 
       and self:in_aggro_range()() then
-      self:seek_point(target.x, target.y, 1.5, 5)
-      self:steering_separate(16, troop_classes)
-      self:wander(15, 50, 5)
+      self:seek_point(target.x, target.y, SEEK_DECELERATION, SEEK_WEIGHT)
+      self:steering_separate(SEPARATION_RADIUS, troop_classes)
+      self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
       self:rotate_towards_velocity(1)
     --otherwise target is in attack range or doesn't exist, stay still
     else
