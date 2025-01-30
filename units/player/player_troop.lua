@@ -98,8 +98,8 @@ function Troop:update_movement()
     --if not in range, move towards mouse
     if self:distance_to_mouse() > 10 then
       self:seek_mouse(1.5, 5)
-      --self:steering_separate(16, troop_classes)
-      self:wander(15,50,5)
+      self:steering_separate(16, troop_classes)
+      self:wander(15, 50, 5)
       self:rotate_towards_velocity(1)
     else
       self:set_velocity(0,0)
@@ -107,7 +107,8 @@ function Troop:update_movement()
 
   elseif self.state == unit_states['rallying'] then
       self:seek_point(self.target_pos.x, self.target_pos.y)
-      self:wander(15,50,5)
+      self:steering_separate(16, troop_classes)
+      self:wander(15, 50, 5)
       self:rotate_towards_velocity(1)
       local distance_to_target_pos = math.distance(self.x, self.y, self.target_pos.x, self.target_pos.y)
       --if close enough, stop (which enables attacking)
@@ -131,8 +132,8 @@ function Troop:update_movement()
     if target and not self:in_range()() and self.state == unit_states['normal'] 
       and self:in_aggro_range()() then
       self:seek_point(target.x, target.y)
+      self:steering_separate(16, troop_classes)
       self:wander(7, 30, 5)
-      --self:steering_separate(16, troop_classes)
       self:rotate_towards_velocity(1)
     --otherwise target is in attack range or doesn't exist, stay still
     else
