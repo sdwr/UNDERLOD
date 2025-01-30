@@ -126,28 +126,28 @@ function Helper.Unit:finish_casting(unit)
 end
 
 function Helper.Unit:add_default_state_change_functions(unit)
-    unit.state_change_functions['normal'] = function() 
-        unit.state_change_functions['regain_control']()
+    unit.state_change_functions['normal'] = function(self) 
+        self.state_change_functions['regain_control'](self)
     end
     unit.state_change_functions['frozen'] = function() end
     unit.state_change_functions['casting'] = function() end
     unit.state_change_functions['channeling'] = function() end
     unit.state_change_functions['stopped'] = function() end
-    unit.state_change_functions['knockback'] = function()
+    unit.state_change_functions['knockback'] = function(self)
         self.being_pushed = true
         self.steering_enabled = false
     end
-    unit.state_change_functions['following'] = function() 
-        unit.state_change_functions['regain_control']()
-        unit.state_change_functions['following_or_rallying']()
+    unit.state_change_functions['following'] = function(self) 
+        self.state_change_functions['regain_control'](self)
+        self.state_change_functions['following_or_rallying'](self)
     end
-    unit.state_change_functions['rallying'] = function()
-        unit.state_change_functions['regain_control']() 
-        unit.state_change_functions['following_or_rallying']()
+    unit.state_change_functions['rallying'] = function(self)
+        self.state_change_functions['regain_control'](self) 
+        self.state_change_functions['following_or_rallying'](self)
     end
     
     unit.state_change_functions['following_or_rallying'] = function() end
-    unit.state_change_functions['regain_control'] = function() 
+    unit.state_change_functions['regain_control'] = function(self) 
         self.being_pushed = false
         self.steering_enabled = true
     end
@@ -156,21 +156,21 @@ function Helper.Unit:add_default_state_change_functions(unit)
 end
 
 function Helper.Unit:add_default_state_always_run_functions(unit)
-    unit.state_always_run_functions['normal'] = function() 
-        unit.state_always_run_functions['normal_or_stopped']()
+    unit.state_always_run_functions['normal'] = function(self) 
+        self.state_always_run_functions['normal_or_stopped'](self)
     end
     unit.state_always_run_functions['frozen'] = function() end
     unit.state_always_run_functions['casting'] = function() end
     unit.state_always_run_functions['channeling'] = function() end
     unit.state_always_run_functions['knockback'] = function() end
-    unit.state_always_run_functions['stopped'] = function() 
-        unit.state_always_run_functions['normal_or_stopped']()
+    unit.state_always_run_functions['stopped'] = function(self) 
+        self.state_always_run_functions['normal_or_stopped'](self)
     end
-    unit.state_always_run_functions['following'] = function() 
-        unit.state_always_run_functions['following_or_rallying']()
+    unit.state_always_run_functions['following'] = function(self) 
+        self.state_always_run_functions['following_or_rallying'](self)
     end
-    unit.state_always_run_functions['rallying'] = function() 
-        unit.state_always_run_functions['following_or_rallying']()
+    unit.state_always_run_functions['rallying'] = function(self) 
+        self.state_always_run_functions['following_or_rallying'](self)
     end
 
     unit.state_always_run_functions['normal_or_stopped'] = function() end
