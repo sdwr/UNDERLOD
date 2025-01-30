@@ -121,7 +121,7 @@ function Enemy:update_move_seek()
     -- dont need to move
   elseif self.target then
   --can't change speed?
-    self:seek_point(self.target.x, self.target.y, 1, 1)
+    self:seek_point(self.target.x, self.target.y, SEEK_DECELERATION, SEEK_WEIGHT)
     -- self:rotate_towards_velocity(0.5)
   else
     -- dont need to move
@@ -144,7 +144,7 @@ function Enemy:update_move_random()
     self.random_dest_timer = 5
   end
 
-  self:seek_point(self.random_dest.x, self.random_dest.y, 1, 1)
+  self:seek_point(self.random_dest.x, self.random_dest.y, SEEK_DECELERATION, SEEK_WEIGHT)
 end
 
 function Enemy:draw()
