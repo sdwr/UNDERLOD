@@ -181,7 +181,7 @@ end
 function Helper.Unit:run_state_change_functions()
     for i, unit in ipairs(Helper.Unit:get_list(true)) do
         if unit.previous_state ~= unit.state then
-            unit.state_change_functions[unit.state]()
+            unit.state_change_functions[unit.state](unit)
         end
         unit.previous_state = unit.state
     end
@@ -195,8 +195,8 @@ end
 
 function Helper.Unit:run_state_always_run_functions()
     for i, unit in ipairs(Helper.Unit:get_list(true)) do
-        unit.state_always_run_functions[unit.state]()
-        unit.state_always_run_functions['always_run']()
+        unit.state_always_run_functions[unit.state](unit)
+        unit.state_always_run_functions['always_run'](unit)
     end
     for i, unit in ipairs(Helper.Unit:get_list(false)) do
         unit.state_always_run_functions[unit.state]()
