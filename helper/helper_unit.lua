@@ -322,7 +322,7 @@ function Helper.Unit:select()
             
             if selected_team then
                 selected_team:clear_rally_point()
-                selected_team:set_troop_state('following')
+                selected_team:set_troop_state_to_following()
             end
         elseif input['space'].down then
             --move "move all units" in here?

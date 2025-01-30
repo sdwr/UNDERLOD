@@ -66,23 +66,30 @@ function Troop:update(dt)
   ]]--
 
   -- deal with mouse input first, set rally/follow
+
   if self:should_follow() then
     Helper.Unit:clear_all_rally_points()
     self.state = unit_states['following']
-
+    
     --dont clear assigned target here
     self.target = nil
     self.target_pos = nil
   end
 
-  --cancel follow if no longer pressing button
-  if self.state == unit_states['following'] then
-    if input['m1'].released or input['space'].released then
-      self.state = unit_states['normal']
-    end
+  -- in case of rally during knockback
+  if self.rallying and self.state ~= unit_states['rallying'] and self.state ~= unit_states['knockback'] then
+    self.state = unit_states['rallying']
+    self:set_rally_position(random:int(1, 10))
   end
+  
+  if self.state ~= unit_states['knockback'] then
+    --cancel follow if no longer pressing button
+    if self.state == unit_states['following'] then
+      if input['m1'].released or input['space'].released then
+        self.state = unit_states['normal']
+      end
+    end
 
-  if not self.being_pushed then
     self:update_movement()
   end
   
@@ -90,6 +97,12 @@ function Troop:update(dt)
 
   self.attack_sensor:move_to(self.x, self.y)
   self.aggro_sensor:move_to(self.x, self.y)
+end
+
+function Troop:set_rally_position(i)
+  local team = Helper.Unit.teams[self.team]
+  self.target_pos = sum_vectors({x = team.rallyCircle.x, y = team.rallyCircle.y}, rally_offsets(i))
+
 end
 
 function Troop:update_movement()
@@ -150,17 +163,26 @@ function Troop:push(f, r, push_invulnerable)
   self.push_invulnerable = push_invulnerable
   self.push_force = n * f
   self.state = unit_states['knockback']
+  self.mass = TROOP_KNOCKBACK_MASS
 
-  local duration = 0.8
+  local duration = 1
+  local decay_rate = 2  -- Controls how fast the force decays
 
-  self.t:during(duration, function()
-      -- Apply force in direction of push
-      self:apply_force(self.push_force * math.cos(r), self.push_force * math.sin(r))
+  -- Apply an initial strong impulse at the start
+  self:apply_force(self.push_force * math.cos(r), self.push_force * math.sin(r))
+
+  self.t:during(duration, function(elapsed)
+      -- Gradually reduce the force over time (exponential decay)
+      local decay_factor = math.exp(-decay_rate * elapsed / duration)
+      local current_force = self.push_force * decay_factor
+
+      self:apply_force(current_force * math.cos(r), current_force * math.sin(r))
   end)
 
-  -- Reset state after a fixed duration
+  -- Reset state after the duration
   self.t:after(duration, function()
-    self.state = unit_states['normal']
+      self.state = unit_states['normal']
+      self.mass = TROOP_MASS
   end)
 end
 

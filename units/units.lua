@@ -43,6 +43,13 @@ function Team:add_troop(args)
   table.insert(self.troops, troop)
 end
 
+function Team:set_troop_state_to_following()
+  for i, troop in ipairs(self.troops) do
+    if troop.state ~= unit_states['knockback'] then
+      troop.state = unit_states['following']
+    end
+  end
+end
 function Team:set_troop_state(state)
   for i, troop in ipairs(self.troops) do
     troop.state = state
@@ -54,7 +61,9 @@ function Team:set_team_target(target)
   self.target = target
   for i, troop in ipairs(self.troops) do
     troop:set_assigned_target(target)
-    troop.state = unit_states['normal']
+    if troop.state ~= unit_states['knockback'] then
+      troop.state = unit_states['normal']
+    end
   end
   Helper.Unit:set_target_ring(target)
 end
@@ -78,9 +87,14 @@ function Team:set_rally_point(x, y)
     color = self.color
   }
   for i, troop in ipairs(self.troops) do
-    troop.state = unit_states['rallying']
     troop.rallying = true
-    troop.target_pos = sum_vectors({x = Helper.mousex, y = Helper.mousey}, rally_offsets(i))
+
+    if troop.state ~= unit_states['knockback'] then
+      troop.state = unit_states['rallying']
+    end
+
+    troop:set_rally_position(i)
+
   end
 end
 
@@ -95,6 +109,7 @@ function Team:clear_rally_point()
     if troop.state == unit_states['rallying'] or troop.state == unit_states['stopped'] then
       troop.state = unit_states['normal']
     end
+    troop.rallying = false
   end
 end
 
