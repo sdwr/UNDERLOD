@@ -44,7 +44,7 @@ end
 function Laser_Troop:set_state_functions()
 
     --if ready to cast and has target in range, start cast
-    self.state_always_run_functions['always_run'] = function()
+    self.state_always_run_functions['always_run'] = function(self)
 
       --prioritize moving towards target
       --should only have a target if it is assigned now
@@ -90,7 +90,7 @@ function Laser_Troop:set_state_functions()
     end
   
     --cancel on move
-    self.state_always_run_functions['following_or_rallying'] = function()
+    self.state_always_run_functions['following_or_rallying'] = function(self)
       self:cancel_cast()
       Helper.Unit:unclaim_target(self)
     end
@@ -98,7 +98,7 @@ function Laser_Troop:set_state_functions()
     self.state_change_functions['normal'] = function() end
   
     --cancel on death
-    self.state_change_functions['death'] = function()
+    self.state_change_functions['death'] = function(self)
       self:cancel_cast()
       Helper.Unit:unclaim_target(self)
     end

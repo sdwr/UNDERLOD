@@ -374,9 +374,9 @@ function Group:set_as_physics_world(meter, xg, yg, tags)
           end
 
           if boss.is_launching then
-            troop:push(300, boss:angle_to_object(troop))
             if not troop.being_pushed then
               hit4:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+              troop:push(500, boss:angle_to_object(troop))
               troop:hit(10, boss)
             else
             end

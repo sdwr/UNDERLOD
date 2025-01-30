@@ -35,14 +35,14 @@ fns['init_enemy'] = function(self)
   self.beep_times = {3, 2, 1.5, 1, 0.5}
 
   --explode on death
-  self.state_change_functions['death'] = function()
+  self.state_change_functions['death'] = function(self)
     if not self.exploded then
       self:explode()
     end
   end
 
   --set bomb behavior
-  self.state_always_run_functions['always_run'] = function()
+  self.state_always_run_functions['always_run'] = function(self)
     if self.triggered then
       self:try_to_beep()
       self.time_to_explode = self.time_to_explode - Helper.Time.delta_time

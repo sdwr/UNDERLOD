@@ -89,14 +89,14 @@ fns['init_enemy'] = function(self)
   --table.insert(self.attack_options, fire_sweep)
   table.insert(self.attack_options, fire_wall)
 
-  self.state_always_run_functions['always_run'] = function()
+  self.state_always_run_functions['always_run'] = function(self)
       self.hitbox_points_rotation = math.deg(self:get_angle())
   end
 
   self.state_change_functions['target_death'] = function()
   end
 
-    self.state_change_functions['death'] = function()
+    self.state_change_functions['death'] = function(self)
       Helper.Spell.Flame:end_flame_after(self, 0)
   end
 end

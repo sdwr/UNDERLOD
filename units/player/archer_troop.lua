@@ -72,7 +72,7 @@ function Archer_Troop:set_state_functions()
   self.state_always_run_functions['always_run'] = function()    
   end
 
-  self.state_always_run_functions['casting'] = function()
+  self.state_always_run_functions['casting'] = function(self)
     if Helper.Unit:target_out_of_range(self) then
       self:cancel_cast()
     end
@@ -82,7 +82,7 @@ function Archer_Troop:set_state_functions()
   --cancel on move
   --will cancel casts that are in flight
   --so we need to handle that in the spell (or make sure they get garbage collected without killing them)
-  self.state_always_run_functions['following_or_rallying'] = function()
+  self.state_always_run_functions['following_or_rallying'] = function(self)
     --cancel cast if previous state was casting
     --we don't know, so we just try to cancel it
     self:cancel_cast()
@@ -91,7 +91,7 @@ function Archer_Troop:set_state_functions()
 
   --here is where the logic for finding a new target/chasing an existing target should go
   --once an attack is started, the unit will be in 'casting' state
-  self.state_always_run_functions['normal_or_stopped'] = function()
+  self.state_always_run_functions['normal_or_stopped'] = function(self)
     --check if is good, otherwise find a new target
     self:check_target()
 
@@ -103,7 +103,7 @@ function Archer_Troop:set_state_functions()
   end
 
   --cancel on death
-  self.state_change_functions['death'] = function()
+  self.state_change_functions['death'] = function(self)
     self:cancel_cast()
     Helper.Unit:unclaim_target(self)
   end
