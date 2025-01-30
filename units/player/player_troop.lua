@@ -276,7 +276,7 @@ function Troop:set_character()
     -- self.cooldownTime = 2
     self.castTime = 0
 
-    self.state_always_run_functions['normal_or_stopped'] = function()
+    self.state_always_run_functions['normal_or_stopped'] = function(self)
       if Helper.Spell:there_is_target_in_range(self, attack_ranges['long'], true) 
       and Helper.Time.time - self.last_attack_finished > 2 
       and Helper.Time.time - self.last_attack_started > 2 then
@@ -291,7 +291,7 @@ function Troop:set_character()
       end
     end
 
-    self.state_always_run_functions['always_run'] = function()
+    self.state_always_run_functions['always_run'] = function(self)
       if Helper.Spell:there_is_target_in_range(self, attack_ranges['long'], true) then
         Helper.Unit:claim_target(self, Helper.Spell:get_nearest_target(self))
       end
@@ -341,7 +341,7 @@ function Troop:set_character()
     end
 
     --cancel on move
-    self.state_always_run_functions['following_or_rallying'] = function()
+    self.state_always_run_functions['following_or_rallying'] = function(self)
       -- Helper.Spell.Missile:stop_aiming(self)
       Helper.Unit:unclaim_target(self)
     end
