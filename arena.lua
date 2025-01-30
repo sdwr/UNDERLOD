@@ -609,7 +609,7 @@ function Arena:gain_gold(duration)
         table.insert(self.gold_events, event)
       end
       if item.name == 'stockmarket' then
-        event = {type = 'interest', amount = item.stats.interest}
+        event = {type = 'interest', amount = 1}
         table.insert(self.gold_events, event)
       end
     end
