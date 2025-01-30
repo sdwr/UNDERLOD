@@ -152,8 +152,12 @@ function Troop:push(f, r, push_invulnerable)
   self.being_pushed = true -- Mark as being pushed
   self.steering_enabled = false -- Temporarily disable steering
 
-  -- Apply a single impulse for immediate knockback
-  self:apply_impulse(n * f * math.cos(r), n * f * math.sin(r))
+  local duration = 0.25
+
+  self.t:during(duration, function()
+      -- Apply force in direction of push
+      self:apply_force(self.push_force * math.cos(r), self.push_force * math.sin(r))
+  end)
 
   -- Apply angular impulse for rotation
   self:apply_angular_impulse(
@@ -163,16 +167,12 @@ function Troop:push(f, r, push_invulnerable)
       }
   )
 
-  -- Apply damping to control velocity decay (adjust for desired effect)
-  self:set_damping(0.1) -- Low damping for sustained knockback
-  self:set_angular_damping(0.1)
+
 
   -- Reset state after a fixed duration
   self.t:after(0.25, function()
       self.being_pushed = false
       self.steering_enabled = true
-      self:set_damping(0.0) -- Reset linear damping
-      self:set_angular_damping(0.0) -- Reset angular damping
   end)
 end
 

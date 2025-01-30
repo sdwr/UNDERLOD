@@ -347,6 +347,7 @@ function init()
     ['rallying'] = 'rallying',
     ['following'] = 'following',
     ['launching'] = 'launching',
+    ['knockback'] = 'knockback',
   }
 
   type_colors = {

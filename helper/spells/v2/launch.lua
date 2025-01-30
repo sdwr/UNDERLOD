@@ -14,7 +14,7 @@ function Launch_Spell:init(args)
     self.already_damaged = {}
 
     self.damage = self.damage or 40
-    self.impulse_magnitude = self.impulse_magnitude or 5000
+    self.impulse_magnitude = self.impulse_magnitude or 1000
 
     self.lineCoords = {0, 0, 0, 0}
 
@@ -73,7 +73,7 @@ function Launch_Spell:fire()
     self.unit:launch_at_facing(self.impulse_magnitude)
 
     self.charge_sound:stop()
-    self.charge_sound = hit4:play{volume = 0.3}
+    hit4:play{volume = 0.6}
 
     self:die()
 end
