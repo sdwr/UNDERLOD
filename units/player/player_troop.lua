@@ -66,23 +66,30 @@ function Troop:update(dt)
   ]]--
 
   -- deal with mouse input first, set rally/follow
+
   if self:should_follow() then
     Helper.Unit:clear_all_rally_points()
     self.state = unit_states['following']
-
+    
     --dont clear assigned target here
     self.target = nil
     self.target_pos = nil
   end
 
-  --cancel follow if no longer pressing button
-  if self.state == unit_states['following'] then
-    if input['m1'].released or input['space'].released then
-      self.state = unit_states['normal']
-    end
+  -- in case of rally during knockback
+  if self.rallying and self.state ~= unit_states['rallying'] and self.state ~= unit_states['knockback'] then
+    self.state = unit_states['rallying']
+    self:set_rally_position(random:int(1, 10))
   end
+  
+  if self.state ~= unit_states['knockback'] then
+    --cancel follow if no longer pressing button
+    if self.state == unit_states['following'] then
+      if input['m1'].released or input['space'].released then
+        self.state = unit_states['normal']
+      end
+    end
 
-  if not self.being_pushed then
     self:update_movement()
   end
   
@@ -90,6 +97,12 @@ function Troop:update(dt)
 
   self.attack_sensor:move_to(self.x, self.y)
   self.aggro_sensor:move_to(self.x, self.y)
+end
+
+function Troop:set_rally_position(i)
+  local team = Helper.Unit.teams[self.team]
+  self.target_pos = sum_vectors({x = team.rallyCircle.x, y = team.rallyCircle.y}, rally_offsets(i))
+
 end
 
 function Troop:update_movement()
@@ -149,30 +162,27 @@ function Troop:push(f, r, push_invulnerable)
   local n = 1 -- Push force multiplier
   self.push_invulnerable = push_invulnerable
   self.push_force = n * f
-  self.being_pushed = true -- Mark as being pushed
-  self.steering_enabled = false -- Temporarily disable steering
+  self.state = unit_states['knockback']
+  self.mass = TROOP_KNOCKBACK_MASS
 
-  -- Apply a single impulse for immediate knockback
-  self:apply_impulse(n * f * math.cos(r), n * f * math.sin(r))
+  local duration = 1
+  local decay_rate = 2  -- Controls how fast the force decays
 
-  -- Apply angular impulse for rotation
-  self:apply_angular_impulse(
-      random:table{
-          random:float(-12 * math.pi, -4 * math.pi),
-          random:float(4 * math.pi, 12 * math.pi)
-      }
-  )
+  -- Apply an initial strong impulse at the start
+  self:apply_force(self.push_force * math.cos(r), self.push_force * math.sin(r))
 
-  -- Apply damping to control velocity decay (adjust for desired effect)
-  self:set_damping(0.1) -- Low damping for sustained knockback
-  self:set_angular_damping(0.1)
+  self.t:during(duration, function(elapsed)
+      -- Gradually reduce the force over time (exponential decay)
+      local decay_factor = math.exp(-decay_rate * elapsed / duration)
+      local current_force = self.push_force * decay_factor
 
-  -- Reset state after a fixed duration
-  self.t:after(0.25, function()
-      self.being_pushed = false
-      self.steering_enabled = true
-      self:set_damping(0.0) -- Reset linear damping
-      self:set_angular_damping(0.0) -- Reset angular damping
+      self:apply_force(current_force * math.cos(r), current_force * math.sin(r))
+  end)
+
+  -- Reset state after the duration
+  self.t:after(duration, function()
+      self.state = unit_states['normal']
+      self.mass = TROOP_MASS
   end)
 end
 
@@ -198,6 +208,9 @@ function Troop:draw()
   end
   if self.state == unit_states['channeling'] then
     self:draw_channeling()
+  end
+  if self.state == unit_states['knockback'] then
+    self:draw_knockback()
   end
   if not Helper.Unit:cast_off_cooldown(self) then
     self:draw_cooldown_timer()
@@ -227,7 +240,10 @@ function Troop:draw_cooldown_timer()
   elseif pct > 0 then
     graphics.circle(self.x, self.y, rs, white_transparent_weak)
   end
+end
 
+function Troop:draw_knockback()
+  graphics.circle(self.x, self.y, self.shape.w, red_transparent)
 end
 
 function Troop:shoot(r, mods)
@@ -272,7 +288,7 @@ function Troop:set_character()
     -- self.cooldownTime = 2
     self.castTime = 0
 
-    self.state_always_run_functions['normal_or_stopped'] = function()
+    self.state_always_run_functions['normal_or_stopped'] = function(self)
       if Helper.Spell:there_is_target_in_range(self, attack_ranges['long'], true) 
       and Helper.Time.time - self.last_attack_finished > 2 
       and Helper.Time.time - self.last_attack_started > 2 then
@@ -287,7 +303,7 @@ function Troop:set_character()
       end
     end
 
-    self.state_always_run_functions['always_run'] = function()
+    self.state_always_run_functions['always_run'] = function(self)
       if Helper.Spell:there_is_target_in_range(self, attack_ranges['long'], true) then
         Helper.Unit:claim_target(self, Helper.Spell:get_nearest_target(self))
       end
@@ -321,7 +337,7 @@ function Troop:set_character()
     self.castTime = self.baseCast
 
     --if ready to cast and has target in range, start casting
-    self.state_always_run_functions['always_run'] = function()
+    self.state_always_run_functions['always_run'] = function(self)
       if Helper.Unit:can_cast(self) then
         Helper.Unit:claim_target(self, Helper.Spell:get_nearest_target(self))
         Helper.Time:wait(get_random(0, 0.1), function()
@@ -337,7 +353,7 @@ function Troop:set_character()
     end
 
     --cancel on move
-    self.state_always_run_functions['following_or_rallying'] = function()
+    self.state_always_run_functions['following_or_rallying'] = function(self)
       -- Helper.Spell.Missile:stop_aiming(self)
       Helper.Unit:unclaim_target(self)
     end
@@ -362,7 +378,7 @@ function Troop:set_character()
     --attack
     self.explode_radius = 15
 
-    self.state_always_run_functions['always_run'] = function()
+    self.state_always_run_functions['always_run'] = function(self)
       if Helper.Unit:can_cast(self) then
         
         --on attack callbacks
@@ -376,7 +392,7 @@ function Troop:set_character()
 
     
     --cancel on move
-    self.state_always_run_functions['following_or_rallying'] = function()
+    self.state_always_run_functions['following_or_rallying'] = function(self)
         Helper.Spell.Bomb:stop_aiming(self)
         Helper.Unit:unclaim_target(self)
     end
@@ -399,7 +415,7 @@ function Troop:set_character()
     self.castTime = self.baseCast
 
     --if ready to cast and has target in range, start casting
-    self.state_always_run_functions['always_run'] = function()
+    self.state_always_run_functions['always_run'] = function(self)
       if Helper.Unit:can_cast(self) then
         Helper.Unit:claim_target(self, Helper.Spell:get_random_in_range(self, self.attack_sensor.rs))
 
@@ -413,7 +429,7 @@ function Troop:set_character()
     end
     
     --cancel on move
-    self.state_always_run_functions['following_or_rallying'] = function()
+    self.state_always_run_functions['following_or_rallying'] = function(self)
       self.spell:cancel()
     end
 

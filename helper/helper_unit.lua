@@ -126,38 +126,51 @@ function Helper.Unit:finish_casting(unit)
 end
 
 function Helper.Unit:add_default_state_change_functions(unit)
-    unit.state_change_functions['normal'] = function() end
+    unit.state_change_functions['normal'] = function(self) 
+        self.state_change_functions['regain_control'](self)
+    end
     unit.state_change_functions['frozen'] = function() end
     unit.state_change_functions['casting'] = function() end
     unit.state_change_functions['channeling'] = function() end
     unit.state_change_functions['stopped'] = function() end
-    unit.state_change_functions['following'] = function() 
-        unit.state_change_functions['following_or_rallying']()
+    unit.state_change_functions['knockback'] = function(self)
+        self.being_pushed = true
+        self.steering_enabled = false
     end
-    unit.state_change_functions['rallying'] = function() 
-        unit.state_change_functions['following_or_rallying']()
+    unit.state_change_functions['following'] = function(self) 
+        self.state_change_functions['regain_control'](self)
+        self.state_change_functions['following_or_rallying'](self)
+    end
+    unit.state_change_functions['rallying'] = function(self)
+        self.state_change_functions['regain_control'](self) 
+        self.state_change_functions['following_or_rallying'](self)
     end
     
     unit.state_change_functions['following_or_rallying'] = function() end
+    unit.state_change_functions['regain_control'] = function(self) 
+        self.being_pushed = false
+        self.steering_enabled = true
+    end
     unit.state_change_functions['death'] = function() end
     unit.state_change_functions['target_death'] = function() end
 end
 
 function Helper.Unit:add_default_state_always_run_functions(unit)
-    unit.state_always_run_functions['normal'] = function() 
-        unit.state_always_run_functions['normal_or_stopped']()
+    unit.state_always_run_functions['normal'] = function(self) 
+        self.state_always_run_functions['normal_or_stopped'](self)
     end
     unit.state_always_run_functions['frozen'] = function() end
     unit.state_always_run_functions['casting'] = function() end
     unit.state_always_run_functions['channeling'] = function() end
-    unit.state_always_run_functions['stopped'] = function() 
-        unit.state_always_run_functions['normal_or_stopped']()
+    unit.state_always_run_functions['knockback'] = function() end
+    unit.state_always_run_functions['stopped'] = function(self) 
+        self.state_always_run_functions['normal_or_stopped'](self)
     end
-    unit.state_always_run_functions['following'] = function() 
-        unit.state_always_run_functions['following_or_rallying']()
+    unit.state_always_run_functions['following'] = function(self) 
+        self.state_always_run_functions['following_or_rallying'](self)
     end
-    unit.state_always_run_functions['rallying'] = function() 
-        unit.state_always_run_functions['following_or_rallying']()
+    unit.state_always_run_functions['rallying'] = function(self) 
+        self.state_always_run_functions['following_or_rallying'](self)
     end
 
     unit.state_always_run_functions['normal_or_stopped'] = function() end
@@ -168,13 +181,13 @@ end
 function Helper.Unit:run_state_change_functions()
     for i, unit in ipairs(Helper.Unit:get_list(true)) do
         if unit.previous_state ~= unit.state then
-            unit.state_change_functions[unit.state]()
+            unit.state_change_functions[unit.state](unit)
         end
         unit.previous_state = unit.state
     end
     for i, unit in ipairs(Helper.Unit:get_list(false)) do
         if unit.previous_state ~= unit.state then
-            unit.state_change_functions[unit.state]()
+            unit.state_change_functions[unit.state](unit)
         end
         unit.previous_state = unit.state
     end
@@ -182,11 +195,11 @@ end
 
 function Helper.Unit:run_state_always_run_functions()
     for i, unit in ipairs(Helper.Unit:get_list(true)) do
-        unit.state_always_run_functions[unit.state]()
-        unit.state_always_run_functions['always_run']()
+        unit.state_always_run_functions[unit.state](unit)
+        unit.state_always_run_functions['always_run'](unit)
     end
     for i, unit in ipairs(Helper.Unit:get_list(false)) do
-        unit.state_always_run_functions[unit.state]()
+        unit.state_always_run_functions[unit.state](unit)
         unit.state_always_run_functions['always_run']()
     end
 end
@@ -309,7 +322,7 @@ function Helper.Unit:select()
             
             if selected_team then
                 selected_team:clear_rally_point()
-                selected_team:set_troop_state('following')
+                selected_team:set_troop_state_to_following()
             end
         elseif input['space'].down then
             --move "move all units" in here?

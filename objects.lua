@@ -1290,7 +1290,7 @@ function Unit:delay_cast()
 
 end
 
-function Unit:launch_at_facing(magnitude, duration)
+function Unit:launch_at_facing(force_magnitude, duration)
   if self.state == unit_states['casting'] then
     self.state = unit_states['channeling']
   end
@@ -1301,11 +1301,13 @@ function Unit:launch_at_facing(magnitude, duration)
   self.t:after(duration, function() self.is_launching = false end, 'launch_end')
 
   local facing = self:get_angle()
-  local impulse_x = math.cos(facing) * magnitude
-  local impulse_y = math.sin(facing) * magnitude
+  self.launch_force_x = math.cos(facing) * force_magnitude
+  self.launch_force_y = math.sin(facing) * force_magnitude
 
-  -- Apply an impulse for an immediate push
-  self:apply_impulse(impulse_x, impulse_y)
+  -- Apply the force over time
+  self.t:during(duration, function()
+    self:apply_force(self.launch_force_x, self.launch_force_y)
+  end)
 
   -- Optionally adjust damping for smoother decay
   self:set_damping(0.5) -- Temporary low damping for smoother deceleration
