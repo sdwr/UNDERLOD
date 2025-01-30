@@ -10,7 +10,14 @@ Wave_Types = {}
 function Wave_Types:Basic(tier)
   local wave = {}
   local enemy = random:table(normal_enemy_by_tier[tier])
-  table.insert(wave, {enemy, 5, nil})
+  table.insert(wave, {enemy, NORMAL_ENEMIES_PER_GROUP, nil})
+  return wave
+end
+
+function Wave_Types:Two_Basic(tier)
+  local wave = {}
+  table.insert(wave, {'seeker', NORMAL_ENEMIES_PER_GROUP, nil})
+  table.insert(wave, {'shooter', NORMAL_ENEMIES_PER_GROUP, nil})
   return wave
 end
 
@@ -18,7 +25,7 @@ function Wave_Types:Basic_Plus_One_Special(tier)
   local wave = {}
   local special = random:table(special_enemy_by_tier[tier])
   local normal = random:table(normal_enemy_by_tier[tier])
-  table.insert(wave, {normal, 5, nil})
+  table.insert(wave, {normal, NORMAL_ENEMIES_PER_GROUP, nil})
   table.insert(wave, {special, 1, 'random'})
   return wave
 end
@@ -27,7 +34,7 @@ function Wave_Types:Basic_Plus_Two_Special(tier)
   local wave = {}
   local special = random:table(special_enemy_by_tier[tier])
   local normal = random:table(normal_enemy_by_tier[tier])
-  table.insert(wave, {normal, 5, nil})
+  table.insert(wave, {normal, NORMAL_ENEMIES_PER_GROUP, nil})
   table.insert(wave, {special, 1, 'random'})
   table.insert(wave, {special, 1, 'random'})
   return wave
@@ -37,7 +44,7 @@ function Wave_Types:Basic_Special_Basic(tier)
   local wave = {}
   local special = random:table(special_enemy_by_tier[tier])
   local normal = random:table(normal_enemy_by_tier[tier])
-  table.insert(wave, {normal, 5, nil})
+  table.insert(wave, {normal, NORMAL_ENEMIES_PER_GROUP, nil})
   table.insert(wave, {special, 1, 'random'})
   table.insert(wave, {normal, 5, 'random'})
   return wave
@@ -90,7 +97,7 @@ end
 function Wave_Types:Basic_Plus_Two_Burst(tier)
   local wave = {}
   local normal = random:table(normal_enemy_by_tier[tier])
-  table.insert(wave, {normal, 5, nil})
+  table.insert(wave, {normal, NORMAL_ENEMIES_PER_GROUP, nil})
   table.insert(wave, {'burst', 1, 'random'})
   table.insert(wave, {'burst', 1, 'random'})
   return wave
@@ -99,7 +106,7 @@ end
 function Wave_Types:Basic_Plus_Two_Boomerang(tier)
   local wave = {}
   local normal = random:table(normal_enemy_by_tier[tier])
-  table.insert(wave, {normal, 5, nil})
+  table.insert(wave, {normal, NORMAL_ENEMIES_PER_GROUP, nil})
   table.insert(wave, {'boomerang', 1, 'random'})
   table.insert(wave, {'boomerang', 1, 'random'})
   return wave
@@ -112,7 +119,7 @@ function Wave_Types:Get_Waves(level)
     wave = self:Basic(1)
     table.insert(waves, wave)
   elseif level == 2 then
-    wave = self:Basic_Plus_One_Special(1)
+    wave = self:Two_Basic(1)
     table.insert(waves, wave)
   elseif level == 3 then
     wave = self:Basic_Special_Basic(1)

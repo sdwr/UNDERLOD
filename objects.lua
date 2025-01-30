@@ -175,6 +175,13 @@ end
 Unit = Object:extend()
 function Unit:init_unit()
   self.level = self.level or 1
+
+  self:config_physics_object()
+
+  --also set in child classes
+  self.castcooldown = 0
+  self.total_castcooldown = 0
+
   self.target = nil
   self.assigned_target = nil
   self.buffs = {}
@@ -189,6 +196,124 @@ function Unit:init_unit()
   Helper.Unit:add_custom_variables_to_unit(self)
 end
 
+function Unit:config_physics_object()
+  
+
+  if self.class == 'boss' then
+
+    self:set_damping(BOSS_DAMPING)
+    self:set_restitution(BOSS_RESTITUTION)
+
+    self:set_mass(BOSS_MASS)
+
+    --heigan had 1000, stompy had 10000, dragon had default
+    self:set_as_steerable(self.v, 1000, 2*math.pi, 2)
+
+  elseif self.class == 'miniboss' then
+    --ignore for now
+  elseif self.class == 'special_enemy' then
+
+    self:set_damping(SPECIAL_ENEMY_DAMPING)
+    self:set_restitution(SPECIAL_ENEMY_RESTITUTION)
+
+    self:set_mass(SPECIAL_ENEMY_MASS)
+
+    self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
+
+  elseif self.class == 'regular_enemy' then
+    
+    self:set_damping(REGULAR_ENEMY_DAMPING)
+    self:set_restitution(REGULAR_ENEMY_RESTITUTION)
+
+    self:set_mass(REGULAR_ENEMY_MASS)
+
+    self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
+  elseif self.class == 'troop' then
+    if self.ghost == true then
+      self:set_as_rectangle(self.size, self.size,'dynamic', 'ghost')
+    else
+      self:set_as_rectangle(self.size, self.size,'dynamic', 'troop')
+    end
+
+    self:set_damping(TROOP_DAMPING)
+    self:set_restitution(TROOP_RESITUTION)
+
+    self:set_mass(TROOP_MASS)
+
+    self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
+
+  end
+  
+end
+
+function Unit:init_hitbox_points()
+  
+  if self.boss_name == 'stompy' then
+    local step = (self.shape.w - 4) / 5
+    for x = -self.shape.w/2 + 2, self.shape.w/2 - 2, step do
+      for y = -self.shape.h/2 + 2, self.shape.h/2 - 2, step do
+        if x == -self.shape.w/2 + 2 and y == -self.shape.h/2 + 2 then
+          Helper.Unit:add_point(self, x + 2, y + 2)
+        elseif x == -self.shape.w/2 + 2 and near(y, self.shape.h/2 - 2, 0.01) then
+          Helper.Unit:add_point(self, x + 2, y - 2)
+        elseif near(x, self.shape.w/2 - 2, 0.01) and y == -self.shape.h/2 + 2 then
+          Helper.Unit:add_point(self, x - 2, y + 2)
+        elseif near(x, self.shape.w/2 - 2, 0.01) and near(y, self.shape.h/2 - 2, 0.01) then
+          Helper.Unit:add_point(self, x - 2, y - 2)
+        else
+          Helper.Unit:add_point(self, x, y)
+        end
+      end
+    end
+  end
+
+  --if enemy is dragon
+  if self.boss_name == 'dragon' then
+    self.hitbox_points_can_rotate = true
+    Helper.Unit:add_point(self, 32, 0)
+    Helper.Unit:add_point(self, -15, 27)
+    Helper.Unit:add_point(self, -15, -27)
+    Helper.Unit:add_point(self, 23, 5)
+    Helper.Unit:add_point(self, 23, -5)
+    Helper.Unit:add_point(self, 16, 9)
+    Helper.Unit:add_point(self, 16, -9)
+    Helper.Unit:add_point(self, 10, 12)
+    Helper.Unit:add_point(self, 10, -12)
+    Helper.Unit:add_point(self, -9, 23)
+    Helper.Unit:add_point(self, -9, -23)
+    Helper.Unit:add_point(self, -3, 19)
+    Helper.Unit:add_point(self, -3, -19)
+    Helper.Unit:add_point(self, 3, 16)
+    Helper.Unit:add_point(self, 3, -16)
+    Helper.Unit:add_point(self, -16, 21)
+    Helper.Unit:add_point(self, -16, -21)
+    Helper.Unit:add_point(self, -16, 14)
+    Helper.Unit:add_point(self, -16, -14)
+    Helper.Unit:add_point(self, -16, 6)
+    Helper.Unit:add_point(self, -16, -6)
+    Helper.Unit:add_point(self, -16, 0)
+    Helper.Unit:add_point(self, -9, 16)
+    Helper.Unit:add_point(self, -9, -16)
+    Helper.Unit:add_point(self, -9, 7)
+    Helper.Unit:add_point(self, -9, -7)
+    Helper.Unit:add_point(self, -9, 0)
+    Helper.Unit:add_point(self, -2, 11)
+    Helper.Unit:add_point(self, -2, -11)
+    Helper.Unit:add_point(self, -2, 3)
+    Helper.Unit:add_point(self, -2, -3)
+    Helper.Unit:add_point(self, 5, 8)
+    Helper.Unit:add_point(self, 5, -8)
+    Helper.Unit:add_point(self, 5, -0)
+    Helper.Unit:add_point(self, 10, 4)
+    Helper.Unit:add_point(self, 10, -4)
+    Helper.Unit:add_point(self, 18, -3)
+    Helper.Unit:add_point(self, 18, 3)
+    Helper.Unit:add_point(self, 25, 0)
+  end
+end
+
+
+
 
 function Unit:bounce(nx, ny)
   local vx, vy = self:get_velocity()
@@ -201,6 +326,14 @@ function Unit:bounce(nx, ny)
     self.r = math.pi - self.r
   end
   return self.r
+end
+
+--self is enemy, other is player
+function Unit:on_trigger_enter(other)
+end
+
+function Unit:on_trigger_exit(other)
+
 end
 
 
@@ -336,6 +469,13 @@ end
 function Unit:draw_targeted()
   if self:has_buff('targeted') then
     graphics.circle(self.x, self.y, ((self.shape.w) / 2) + 3, yellow[0], 1)
+  end
+end
+
+function Unit:draw_channeling()
+  if self.state == unit_states['channeling'] then
+    local bodySize = self.shape.rs or self.shape.w/2 or 5
+    graphics.circle(self.x, self.y, bodySize, blue_transparent)
   end
 end
 
@@ -976,6 +1116,17 @@ function Unit:in_range()
   end
 end
 
+function Unit:in_aggro_range()
+  return function()
+    local target = self:my_target()
+    local target_size_offset = 0
+    if self.attack_range and self.attack_range < MELEE_ATTACK_RANGE and target and not target.dead then
+      target_size_offset = target.shape.w/2
+    end
+    return target and not target.dead and self.state == unit_states['normal'] and self:distance_to_object(target) - target_size_offset < self.aggro_sensor.rs
+  end
+end
+
 --looks like space is the override for all units move
 --and RMB sets 'following' or 'rallying' state in player_troop?
 --change to the original control design
@@ -1054,7 +1205,9 @@ function Unit:pick_cast()
 end
 
 function Unit:update_cast_cooldown(dt)
-  self.castcooldown = self.castcooldown - dt
+  if self.castcooldown > 0 then
+    self.castcooldown = self.castcooldown - dt
+  end
 end
 
 function Unit:cast(castData)
@@ -1079,6 +1232,7 @@ end
 
 function Unit:end_cast(cooldown)
   self.castcooldown = cooldown
+  self.total_castcooldown = cooldown
   self.spelldata = nil
   self.freezerotation = false
   if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
@@ -1134,6 +1288,30 @@ end
 --for channeling spells, if they are hit while casting
 function Unit:delay_cast()
 
+end
+
+function Unit:launch_at_facing(magnitude, duration)
+  if self.state == unit_states['casting'] then
+    self.state = unit_states['channeling']
+  end
+
+  duration = duration or 1
+
+  self.is_launching = true
+  self.t:after(duration, function() self.is_launching = false end, 'launch_end')
+
+  local facing = self:get_angle()
+  local impulse_x = math.cos(facing) * magnitude
+  local impulse_y = math.sin(facing) * magnitude
+
+  -- Apply an impulse for an immediate push
+  self:apply_impulse(impulse_x, impulse_y)
+
+  -- Optionally adjust damping for smoother decay
+  self:set_damping(0.5) -- Temporary low damping for smoother deceleration
+  self.t:after(duration, function()
+    self:set_damping(0.0) -- Restore default damping after push
+  end)
 end
 
 function Unit:die()

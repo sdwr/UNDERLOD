@@ -1,10 +1,10 @@
 Archer_Troop = Troop:extend()
 function Archer_Troop:init(data)
-  self.base_attack_range = attack_ranges['ranged']
+  self.base_attack_range = attack_ranges['medium-long']
   Archer_Troop.super.init(self, data)
 
 
-  self.baseCooldown = attack_speeds['ultra-fast']
+  self.baseCooldown = attack_speeds['quick']
   self.cooldownTime = self.baseCooldown
   self.baseCast = attack_speeds['short-cast']
   self.castTime = self.baseCast

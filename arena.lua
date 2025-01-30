@@ -72,6 +72,7 @@ function Arena:on_enter(from)
   self.main:enable_trigger_between('troop', 'enemy_projectile')
   self.main:enable_trigger_between('enemy_projectile', 'enemy')
   self.main:enable_trigger_between('ghost', 'troop')
+  self.main:enable_trigger_between('enemy', 'troop')
 
   self.gold_picked_up = 0
   self.damage_dealt = 0

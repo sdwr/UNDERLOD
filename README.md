@@ -25,11 +25,11 @@ Download the repo, `cd` into it
 
 Link the libraries with 
 
-  `export LD_LIBRARY_PATH=PATH_TO_REPO:$LD_LIBRARY_PATH`
+  export LD_LIBRARY_PATH=PATH_TO_REPO:$LD_LIBRARY_PATH
 
 Then run with 
 
-  `love .`
+  love .
 
 
 ### Build

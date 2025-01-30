@@ -18,7 +18,8 @@ fns['attack'] = function(self, area, mods, color)
 end
 
 fns['init_enemy'] = function(self)
-
+  self.boss_name = 'stompy'
+  
   --set extra variables from data
   self.data = self.data or {}
   self.size = self.data.size or 'boss'
@@ -26,34 +27,13 @@ fns['init_enemy'] = function(self)
   --create shape
   self.color = grey[0]:clone()
   Set_Enemy_Shape(self, self.size)
-  
-  --set physics 
-    self:set_restitution(0.1)
-    self:set_as_steerable(self.v, 1000, 2*math.pi, 2)
 
-    self:set_mass(BOSS_MASS)
-    self.class = 'boss'
+  self.class = 'boss'
 
-  --set sensors
-    self.attack_sensor = Circle(self.x, self.y, 80)
+--set sensors
+  self.attack_sensor = Circle(self.x, self.y, 80)
 
-  --add hitbox points
-  local step = (self.shape.w - 4) / 5
-  for x = -self.shape.w/2 + 2, self.shape.w/2 - 2, step do
-    for y = -self.shape.h/2 + 2, self.shape.h/2 - 2, step do
-      if x == -self.shape.w/2 + 2 and y == -self.shape.h/2 + 2 then
-        Helper.Unit:add_point(self, x + 2, y + 2)
-      elseif x == -self.shape.w/2 + 2 and near(y, self.shape.h/2 - 2, 0.01) then
-        Helper.Unit:add_point(self, x + 2, y - 2)
-      elseif near(x, self.shape.w/2 - 2, 0.01) and y == -self.shape.h/2 + 2 then
-        Helper.Unit:add_point(self, x - 2, y + 2)
-      elseif near(x, self.shape.w/2 - 2, 0.01) and near(y, self.shape.h/2 - 2, 0.01) then
-        Helper.Unit:add_point(self, x - 2, y - 2)
-      else
-        Helper.Unit:add_point(self, x, y)
-      end
-    end
-  end
+
 
   --set attacks
   self.attack_options = {}
@@ -115,9 +95,30 @@ fns['init_enemy'] = function(self)
     }
   }
 
-  table.insert(self.attack_options, stomp)
-  table.insert(self.attack_options, mortar)
-  table.insert(self.attack_options, avalanche)
+  local charge = {
+    name = 'charge',
+    viable = function() return true end,
+    castcooldown = 3,
+    cast_length = 0.1,
+    oncast = function() end,
+    spellclass = Launch_Spell,
+    spelldata = {
+      group = main.current.main,
+      team = "enemy",
+      charge_duration = 2,
+      spell_duration = 2.5,
+      x = self.x,
+      y = self.y,
+      color = red[0],
+      dmg = 50,
+      parent = self
+    }
+  }
+
+  -- table.insert(self.attack_options, stomp)
+  -- table.insert(self.attack_options, mortar)
+  -- table.insert(self.attack_options, avalanche)
+  table.insert(self.attack_options, charge)
 
 end
 

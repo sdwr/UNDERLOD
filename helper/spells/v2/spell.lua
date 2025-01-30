@@ -36,7 +36,7 @@ Try_Cancel_Cast = function(self)
     if 
       not (self.unit and self.unit.target)
       or
-      Helper.Unit:distance_to_target(self.unit) > self.cancel_range
+      Get_Distance_To_Target(self.unit) > self.cancel_range
       then
       self:cancel()
     end
@@ -87,8 +87,8 @@ function Cast:init(args)
   self.cast_length = self.cast_length or 0.5
   
   self.cancel_on_death = true
-  self.cancel_on_range = false
-  self.cancel_range = self.range or 300
+  self.cancel_on_range = self.cancel_on_range or false
+  self.cancel_range = self.cancel_range or 300
   self.cancel_no_target = false
 
   --internal memory

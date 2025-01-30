@@ -3,6 +3,8 @@ Troop = Unit:extend()
 Troop:implement(GameObject)
 Troop:implement(Physics)
 function Troop:init(args)
+  self.size = unit_size['medium']
+  self.class = 'troop'
   self.is_troop = true
   self.target_rally = nil
   self.castTime = 0.3
@@ -15,27 +17,16 @@ function Troop:init(args)
   self:init_game_object(args)
   self:init_unit()
   local level = self.level or 1
-  local scaleMod = 1 + ((level - 1) / 3)
-  local size = unit_size['medium'] * scaleMod
 
-  self.class = 'troop'
+
+
   self:calculate_stats(true)
-  if self.ghost == true then
-    self:set_as_rectangle(size, size,'dynamic', 'ghost')
-  else
-    self:set_as_rectangle(size, size,'dynamic', 'troop')
-  end
-  
-  self:set_restitution(0.5)
-  
 
   self.color = character_colors[self.character]
   self.type = character_types[self.character]
-  self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
-
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 40)
   
-  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 500)
+  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 120)
   self:set_character()
 
   self.state = unit_states['normal']
@@ -91,21 +82,33 @@ function Troop:update(dt)
     end
   end
 
+  if not self.being_pushed then
+    self:update_movement()
+  end
+  
+  self.r = self:get_angle()
+
+  self.attack_sensor:move_to(self.x, self.y)
+  self.aggro_sensor:move_to(self.x, self.y)
+end
+
+function Troop:update_movement()
   -- then do movement if rally/following
   if self.state == unit_states['following'] then
     --if not in range, move towards mouse
     if self:distance_to_mouse() > 10 then
-      self:seek_mouse()
-      --self:steering_separate(16, troop_classes)
-      self:wander(15,50,5)
+      self:seek_mouse(SEEK_DECELERATION, SEEK_WEIGHT)
+      self:steering_separate(SEPARATION_RADIUS, troop_classes)
+      self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
       self:rotate_towards_velocity(1)
     else
       self:set_velocity(0,0)
     end
 
   elseif self.state == unit_states['rallying'] then
-      self:seek_point(self.target_pos.x, self.target_pos.y)
-      self:wander(15,50,5)
+      self:seek_point(self.target_pos.x, self.target_pos.y, SEEK_DECELERATION, SEEK_WEIGHT)
+      self:steering_separate(SEPARATION_RADIUS, troop_classes)
+      self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
       self:rotate_towards_velocity(1)
       local distance_to_target_pos = math.distance(self.x, self.y, self.target_pos.x, self.target_pos.y)
       --if close enough, stop (which enables attacking)
@@ -126,10 +129,11 @@ function Troop:update(dt)
     target = self:my_target()
 
     --if target not in attack range, close in
-    if target and not self:in_range()() and self.state == unit_states['normal'] then
-      self:seek_point(target.x, target.y)
-      self:wander(7, 30, 5)
-      --self:steering_separate(16, troop_classes)
+    if target and not self:in_range()() and self.state == unit_states['normal'] 
+      and self:in_aggro_range()() then
+      self:seek_point(target.x, target.y, SEEK_DECELERATION, SEEK_WEIGHT)
+      self:steering_separate(SEPARATION_RADIUS, troop_classes)
+      self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
       self:rotate_towards_velocity(1)
     --otherwise target is in attack range or doesn't exist, stay still
     else
@@ -139,11 +143,37 @@ function Troop:update(dt)
   else
     self:set_velocity(0,0)
   end
-  
-  self.r = self:get_angle()
+end
 
-  self.attack_sensor:move_to(self.x, self.y)
-  self.aggro_sensor:move_to(self.x, self.y)
+function Troop:push(f, r, push_invulnerable)
+  local n = 1 -- Push force multiplier
+  self.push_invulnerable = push_invulnerable
+  self.push_force = n * f
+  self.being_pushed = true -- Mark as being pushed
+  self.steering_enabled = false -- Temporarily disable steering
+
+  -- Apply a single impulse for immediate knockback
+  self:apply_impulse(n * f * math.cos(r), n * f * math.sin(r))
+
+  -- Apply angular impulse for rotation
+  self:apply_angular_impulse(
+      random:table{
+          random:float(-12 * math.pi, -4 * math.pi),
+          random:float(4 * math.pi, 12 * math.pi)
+      }
+  )
+
+  -- Apply damping to control velocity decay (adjust for desired effect)
+  self:set_damping(0.1) -- Low damping for sustained knockback
+  self:set_angular_damping(0.1)
+
+  -- Reset state after a fixed duration
+  self.t:after(0.25, function()
+      self.being_pushed = false
+      self.steering_enabled = true
+      self:set_damping(0.0) -- Reset linear damping
+      self:set_angular_damping(0.0) -- Reset angular damping
+  end)
 end
 
 
@@ -163,10 +193,13 @@ function Troop:draw()
     graphics.rectangle(self.x, self.y, 3, 3, 1, 1, color)
   end
 
-  if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
+  if self.state == unit_states['casting'] then
     self:draw_cast_timer()
   end
-  if Helper.Unit:is_attack_on_cooldown(self) then
+  if self.state == unit_states['channeling'] then
+    self:draw_channeling()
+  end
+  if not Helper.Unit:cast_off_cooldown(self) then
     self:draw_cooldown_timer()
   end
   if self.bubbled then 
@@ -178,19 +211,21 @@ function Troop:draw()
     color.a = 0.3
     graphics.circle(self.x, self.y, self.shape.w*0.6, color)
   end
+
+  --draw aggro sensor
+  -- graphics.circle(self.x, self.y, self.aggro_sensor.rs, yellow[5], 2)
+
   graphics.pop()
 end
 
 function Troop:draw_cooldown_timer()
-  local currentTime = Helper.Time.time
-  local time = currentTime - self.last_attack_finished
-  local pct = 1 - (time / self.cooldownTime)
+  local pct = self.castcooldown / self.total_castcooldown
   local bodySize = self.shape.rs or self.shape.w/2 or 5
-  local rs = pct * bodySize
+  local rs = (pct * bodySize * 1.5) + bodySize * 0.5
   if time < Helper.Unit.cast_flash_duration then
-    graphics.circle(self.x, self.y, rs, yellow_transparent)
+    graphics.circle(self.x, self.y, rs, yellow_transparent_weak)
   elseif pct > 0 then
-    graphics.circle(self.x, self.y, rs, white_transparent)
+    graphics.circle(self.x, self.y, rs, white_transparent_weak)
   end
 
 end
@@ -528,6 +563,9 @@ function Troop:on_collision_enter(other, contact)
       local r = random:float(0.9, 1.1)
       player_hit_wall1:play{pitch = r, volume = 0.1}
       pop1:play{pitch = r, volume = 0.2}
+  elseif other.class == 'boss' then
+    --move away from boss
+    -- self:push(50, self:angle_to_object(other))
 
   elseif table.any(main.current.friendlies, function(v) return other:is(v) end) then
     --self:set_position()

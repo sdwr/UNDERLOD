@@ -24,14 +24,10 @@ fns['init_enemy'] = function(self)
   --create shape
   self.color = grey[0]:clone()
   Set_Enemy_Shape(self, self.size)
-  
-  --set physics 
-  self:set_restitution(0.5)
-  self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
-
-  self:set_mass(REGULAR_ENEMY_MASS)
 
   self.class = 'regular_enemy'
+
+  self.base_mvspd = 50
 
   --set attacks
   self.t:cooldown(attack_speeds['fast'], function() local targets = self:get_objects_in_shape(self.attack_sensor, main.current.friendlies); return targets and #targets > 0 end, function()

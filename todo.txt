@@ -24,6 +24,31 @@ that makes special enemies randomly drop gold
 
 TODO:
 
+music:
+- get demoscene time machine?
+
+second-to-second combat touchup:
+-------------------
+- add enemy death explosion
+- tweak on-hit animation
+- level start/ level end animation and sounds
+- coin pickups on enemy death
+- extra couple seconds on level end to pick up coins
+- sound balancing
+
+-- collision and knockback
+---------------------
+- combined unit physics config into config_physics_object()
+- all works like before except player movement is too slow, and too much enemy knockback (can push)
+
+- removed all custom collision except for bosses knocking back players
+- try to unify on_collision_enter, and :push() with :launch_at_facing()
+- try to unify push distance and duration (how to calc?)
+
+- being_pushed flag disables all other movement I believe
+- collision code is in group.lua
+- and custom in Troop:on_collision_enter etc
+
 HIGH LEVEL OVERVIEW:
 *********************************************************
   - add passive choices between rounds 

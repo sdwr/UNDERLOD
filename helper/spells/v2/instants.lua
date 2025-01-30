@@ -40,7 +40,7 @@ function Arrow:init(args)
   self.x = self.unit.x
   self.y = self.unit.y
   
-  self.r = 2
+  self.r = self.bullet_size or 2
   
   alert1:play{volume=0.9}
 end

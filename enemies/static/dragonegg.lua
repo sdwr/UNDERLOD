@@ -10,9 +10,7 @@ fns['init_enemy'] = function(self)
   self.color = brown[5]:clone()
   Set_Enemy_Shape(self, self.size)
   
-  --set physics 
-  self:set_restitution(0.5)
-  self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
+  --set physics
   self.class = 'regular_enemy'
 
   self.maxSummons = 10

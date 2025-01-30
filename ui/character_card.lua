@@ -28,6 +28,9 @@ function Kill_All_Cards()
   for i, card in ipairs(Character_Cards) do
     card:die()
   end
+  for i, text in ipairs(ALL_CARD_TEXTS) do
+    text.dead = true
+  end
 end
 
 CharacterCard = Object:extend()

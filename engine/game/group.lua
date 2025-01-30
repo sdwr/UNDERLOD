@@ -341,7 +341,7 @@ function Group:set_as_physics_world(meter, xg, yg, tags)
 
   self.world = love.physics.newWorld(xg or 0, yg or 0)
   self.world:setCallbacks(
-    function(fa, fb, c)
+    function(fa, fb, c) --begincontact
       local oa, ob = self:get_object_by_id(fa:getUserData()), self:get_object_by_id(fb:getUserData())
       if fa:isSensor() or fb:isSensor() then
         if fa:isSensor() then if oa.on_trigger_enter then oa:on_trigger_enter(ob, c) end end
@@ -351,7 +351,7 @@ function Group:set_as_physics_world(meter, xg, yg, tags)
         if ob.on_collision_enter then ob:on_collision_enter(oa, c) end
       end
     end,
-    function(fa, fb, c)
+    function(fa, fb, c) --endcontact
       local oa, ob = self:get_object_by_id(fa:getUserData()), self:get_object_by_id(fb:getUserData())
       if fa:isSensor() or fb:isSensor() then
         if fa:isSensor() then if oa.on_trigger_exit then oa:on_trigger_exit(ob, c) end end
@@ -360,7 +360,32 @@ function Group:set_as_physics_world(meter, xg, yg, tags)
         if oa.on_collision_exit then oa:on_collision_exit(ob, c) end
         if ob.on_collision_exit then ob:on_collision_exit(oa, c) end
       end
-    end
+    end,
+    function(fa, fb, c) --presolve
+      local oa, ob = self:get_object_by_id(fa:getUserData()), self:get_object_by_id(fb:getUserData())
+      if oa and ob then
+        
+        if ((oa.class == 'boss' and ob.class == 'troop') or (oa.class == 'troop' and ob.class == 'boss')) then
+          local boss, troop
+          if oa.class == 'boss' then
+              boss, troop = oa, ob
+          else
+              boss, troop = ob, oa
+          end
+
+          if boss.is_launching then
+            troop:push(30, boss:angle_to_object(troop))
+            if not troop.being_pushed then
+              troop:hit(10, boss)
+            end
+          else
+            troop:push(5, boss:angle_to_object(troop))
+          end
+
+
+        end
+      end
+  end
   )
   return self
 end

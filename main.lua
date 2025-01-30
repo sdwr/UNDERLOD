@@ -25,6 +25,10 @@ require 'util/fpscounter'
 love.profiler = require('util/profiler/profile')
 require 'util/runprofiler'
 
+if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
+  require("lldebugger").start()
+end
+
 
 
 function init()
@@ -341,7 +345,8 @@ function init()
     ['channeling'] = 'channeling',
     ['stopped'] = 'stopped',
     ['rallying'] = 'rallying',
-    ['following'] = 'following'
+    ['following'] = 'following',
+    ['launching'] = 'launching',
   }
 
   type_colors = {

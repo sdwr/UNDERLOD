@@ -55,6 +55,11 @@ function BuyScreen:on_enter(from)
     self:roll_levels()
   end
 
+  if self.level == 1 and #self.units == 0 then
+    self.units = {}
+    self.first_shop = true
+  end
+
   input:set_mouse_visible(true)
   
   --steam.friends.setRichPresence('steam_display', '#StatusFull')
@@ -69,8 +74,7 @@ function BuyScreen:on_enter(from)
   self.tutorial = Group()
   
   Check_All_Achievements()
-  self.lock_button = LockButton{group = self.main, x = gw/2 - 150, y = gh - 40, parent = self}
-
+  
   Refresh_All_Cards_Text()
   
   self.show_level_buttons = false
@@ -80,18 +84,19 @@ function BuyScreen:on_enter(from)
   
   self.level_buttons = {}
   self.items = {}
-  self.first_shop = true
   
   self:build_level_map()
   self:set_party()
-
+  
   --only roll items once a character exists
   if not self.first_shop then
     self:try_roll_items()
   end
-
   
+  
+  self.lock_button = LockButton{group = self.main, x = gw/2 - 150, y = gh - 40, parent = self}
   RerollButton{group = self.main, x = 90, y = gh - 20, parent = self}
+  
   GoButton{group = self.main, x = gw - 90, y = gh - 20, parent = self}
   self.tutorial_button = Button{group = self.main, x = gw/2 + 129, y = 18, button_text = '?', fg_color = 'bg10', bg_color = 'bg', action = function()
     self.in_tutorial = true
@@ -309,6 +314,27 @@ function BuyScreen:set_party()
   local y = gh/2
   local x = gw/2
 
+  local number_of_cards = #self.units
+  if self.first_shop then
+    number_of_cards = number_of_cards + 1
+  end
+  if self.level >= PICK_SECOND_CHARACTER and number_of_cards < 2 then
+    number_of_cards = number_of_cards + 1
+  end
+  if self.level >= PICK_THIRD_CHARACTER and number_of_cards < 3 then
+    number_of_cards = number_of_cards + 1
+  end
+
+
+  --center single unit, otherwise start on the left
+
+  print('number of cards', number_of_cards)
+  if number_of_cards == 2 then
+    x = gw/2 - CHARACTER_CARD_WIDTH/2 - CHARACTER_CARD_SPACING
+  elseif number_of_cards == 3 then
+    x = gw/2 - CHARACTER_CARD_WIDTH - CHARACTER_CARD_SPACING
+  end
+
   for i, unit in ipairs(self.units) do
     table.insert(Character_Cards, CharacterCard{group = self.main, x = x + (i-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, unit = unit, character = unit.character, i = i, parent = self})
     unit.spawn_effect = true
@@ -326,12 +352,9 @@ function BuyScreen:set_party()
       is_unlocked = true, cost = 15})
   end
 
-  --center single unit, otherwise start on the left
 
-  if #Character_Cards == 2 then
-    x = gw/2 - CHARACTER_CARD_WIDTH/2 - CHARACTER_CARD_SPACING
-  elseif #Character_Cards == 3 then
-    x = gw/2 - CHARACTER_CARD_WIDTH - CHARACTER_CARD_SPACING
+  for i, card in ipairs(Character_Cards) do
+    card.x = x + (i-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING)
   end
 
 
@@ -347,6 +370,7 @@ function BuyScreen:try_buy_unit(cost)
     self.select_character_overlay = CharacterSelectOverlay{
       group = self.overlay_ui
     }
+    self.first_shop = false
   end
 end
 

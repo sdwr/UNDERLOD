@@ -8,10 +8,12 @@ function Enemy:init(args)
   self:init_game_object(args)
 
   self.state = 'normal'
-  self:init_unit()
   self:setExtraFunctions()
-
+  
   self.init_enemy(self)
+  self:init_unit()
+  self:init_hitbox_points()
+
   self:calculate_stats(true)
 
   self.movementStyle = self.movementStyle or MOVEMENT_TYPE_SEEK
@@ -119,7 +121,7 @@ function Enemy:update_move_seek()
     -- dont need to move
   elseif self.target then
   --can't change speed?
-    self:seek_point(self.target.x, self.target.y, 1, 1)
+    self:seek_point(self.target.x, self.target.y, SEEK_DECELERATION, SEEK_WEIGHT)
     -- self:rotate_towards_velocity(0.5)
   else
     -- dont need to move
@@ -142,13 +144,14 @@ function Enemy:update_move_random()
     self.random_dest_timer = 5
   end
 
-  self:seek_point(self.random_dest.x, self.random_dest.y, 1, 1)
+  self:seek_point(self.random_dest.x, self.random_dest.y, SEEK_DECELERATION, SEEK_WEIGHT)
 end
 
 function Enemy:draw()
   self:draw_targeted()
   self:draw_buffs()
   self.draw_enemy(self)
+  self:draw_channeling()
   self:draw_cast_timer()
 end
 
@@ -160,14 +163,14 @@ function Enemy:on_collision_enter(other, contact)
         self:bounce(contact:getNormal())
     
     elseif table.any(main.current.enemies, function(v) return other:is(v) end) then
-        if self.being_pushed and math.length(self:get_velocity()) > 60 then
-            other:hit(math.floor(self.push_force/4), nil, nil, true)
-            self:hit(math.floor(self.push_force/2), nil, nil, true)
-            other:push(math.floor(self.push_force/2), other:angle_to_object(self))
-            HitCircle{group = main.current.effects, x = x, y = y, rs = 6, color = fg[0], duration = 0.1}
-            for i = 1, 2 do HitParticle{group = main.current.effects, x = x, y = y, color = self.color} end
-            hit2:play{pitch = random:float(0.95, 1.05), volume = 0.35}
-        end
+        -- if self.being_pushed and math.length(self:get_velocity()) > 60 then
+        --     other:hit(math.floor(self.push_force/4), nil, nil, true)
+        --     self:hit(math.floor(self.push_force/2), nil, nil, true)
+        --     other:push(math.floor(self.push_force/2), other:angle_to_object(self))
+        --     HitCircle{group = main.current.effects, x = x, y = y, rs = 6, color = fg[0], duration = 0.1}
+        --     for i = 1, 2 do HitParticle{group = main.current.effects, x = x, y = y, color = self.color} end
+        --     hit2:play{pitch = random:float(0.95, 1.05), volume = 0.35}
+        -- end
     end
 end
 
