@@ -97,7 +97,7 @@ function Troop:update_movement()
   if self.state == unit_states['following'] then
     --if not in range, move towards mouse
     if self:distance_to_mouse() > 10 then
-      self:seek_mouse()
+      self:seek_mouse(1.5, 5)
       --self:steering_separate(16, troop_classes)
       self:wander(15,50,5)
       self:rotate_towards_velocity(1)
