@@ -149,8 +149,7 @@ function Troop:push(f, r, push_invulnerable)
   local n = 1 -- Push force multiplier
   self.push_invulnerable = push_invulnerable
   self.push_force = n * f
-  self.being_pushed = true -- Mark as being pushed
-  self.steering_enabled = false -- Temporarily disable steering
+  self.state = unit_states['knockback']
 
   local duration = 0.25
 
@@ -171,8 +170,7 @@ function Troop:push(f, r, push_invulnerable)
 
   -- Reset state after a fixed duration
   self.t:after(0.25, function()
-      self.being_pushed = false
-      self.steering_enabled = true
+    self.state = unit_states['normal']
   end)
 end
 
@@ -198,6 +196,9 @@ function Troop:draw()
   end
   if self.state == unit_states['channeling'] then
     self:draw_channeling()
+  end
+  if self.state == unit_states['knockback'] then
+    self:draw_knockback()
   end
   if not Helper.Unit:cast_off_cooldown(self) then
     self:draw_cooldown_timer()
@@ -227,7 +228,10 @@ function Troop:draw_cooldown_timer()
   elseif pct > 0 then
     graphics.circle(self.x, self.y, rs, white_transparent_weak)
   end
+end
 
+function Troop:draw_knockback()
+  graphics.circle(self.x, self.y, self.shape.w, red_transparent_weak)
 end
 
 function Troop:shoot(r, mods)

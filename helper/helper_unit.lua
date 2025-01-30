@@ -126,19 +126,31 @@ function Helper.Unit:finish_casting(unit)
 end
 
 function Helper.Unit:add_default_state_change_functions(unit)
-    unit.state_change_functions['normal'] = function() end
+    unit.state_change_functions['normal'] = function() 
+        unit.state_change_functions['regain_control']()
+    end
     unit.state_change_functions['frozen'] = function() end
     unit.state_change_functions['casting'] = function() end
     unit.state_change_functions['channeling'] = function() end
     unit.state_change_functions['stopped'] = function() end
+    unit.state_change_functions['knockback'] = function()
+        self.being_pushed = true
+        self.steering_enabled = false
+    end
     unit.state_change_functions['following'] = function() 
+        unit.state_change_functions['regain_control']()
         unit.state_change_functions['following_or_rallying']()
     end
-    unit.state_change_functions['rallying'] = function() 
+    unit.state_change_functions['rallying'] = function()
+        unit.state_change_functions['regain_control']() 
         unit.state_change_functions['following_or_rallying']()
     end
     
     unit.state_change_functions['following_or_rallying'] = function() end
+    unit.state_change_functions['regain_control'] = function() 
+        self.being_pushed = false
+        self.steering_enabled = true
+    end
     unit.state_change_functions['death'] = function() end
     unit.state_change_functions['target_death'] = function() end
 end
@@ -150,6 +162,7 @@ function Helper.Unit:add_default_state_always_run_functions(unit)
     unit.state_always_run_functions['frozen'] = function() end
     unit.state_always_run_functions['casting'] = function() end
     unit.state_always_run_functions['channeling'] = function() end
+    unit.state_always_run_functions['knockback'] = function() end
     unit.state_always_run_functions['stopped'] = function() 
         unit.state_always_run_functions['normal_or_stopped']()
     end
