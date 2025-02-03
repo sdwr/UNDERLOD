@@ -1,12 +1,7 @@
 
-
 local fns = {}
---very buggy:
--- will not rotate towards target if unit is in the way
--- does no damage
--- will disappear and reappear somewhere else if blocked mid-charge
-fns['init_enemy'] = function(self)
 
+fns['init_enemy'] = function(self)
   --set extra variables from data
   self.data = self.data or {}
   self.size = self.data.size or 'big'
@@ -17,13 +12,47 @@ fns['init_enemy'] = function(self)
 
   self.class = 'special_enemy'
 
+  --set sensors
+  self.attack_sensor = Circle(self.x, self.y, 80)
+
   --set attacks
-    self.t:cooldown(attack_speeds['slow'], function() local target = self:get_random_target(self.attack_sensor, main.current.friendlies); return target end, function()
-      local random_enemy = self:get_random_target(self.attack_sensor, main.current.friendlies)
-      if random_enemy then
-        Charge{group = main.current.main, unit = self, team = "enemy", x = self.x, y = self.y, color = red[0], damage = self.dmg, parent = self}
-      end
-    end, nil, nil, 'attack')
+  self.attack_options = {}
+
+  local charge = {
+    name = 'charge',
+    viable = function() return true end,
+    castcooldown = 3,
+    cast_length = 0.1,
+    oncast = function() end,
+    spellclass = Launch_Spell,
+    spelldata = {
+      group = main.current.main,
+      team = "enemy",
+      charge_duration = 2,
+      spell_duration = 2.5,
+      x = self.x,
+      y = self.y,
+      color = red[0],
+      dmg = 50,
+      parent = self
+    }
+  }
+  table.insert(self.attack_options, charge)
+end
+
+fns['attack'] = function(self, area, mods, color)
+  mods = mods or {}
+  local t = {team = "enemy", group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(area or 64), color = color or self.color, dmg = self.dmg,
+    character = self.character, level = self.level, parent = self}
+
+  self.state = unit_states['frozen']
+
+  self.t:after(0.3, function() 
+    self.state = unit_states['stopped']
+    Area(table.merge(t, mods))
+    _G[random:table{'swordsman1', 'swordsman2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.75}
+  end, 'stopped')
+  self.t:after(0.4 + .4, function() self.state = unit_states['normal'] end, 'normal')
 end
 
 fns['draw_enemy'] = function(self)

@@ -364,24 +364,23 @@ function Group:set_as_physics_world(meter, xg, yg, tags)
     function(fa, fb, c) --presolve
       local oa, ob = self:get_object_by_id(fa:getUserData()), self:get_object_by_id(fb:getUserData())
       if oa and ob then
-        
-        if ((oa.class == 'boss' and ob.class == 'troop') or (oa.class == 'troop' and ob.class == 'boss')) then
-          local boss, troop
-          if oa.class == 'boss' then
-              boss, troop = oa, ob
+        if ((table.any(enemy_class_names, function(v) return oa.class == v end) and ob.class == 'troop') or 
+            (oa.class == 'troop' and table.any(enemy_class_names, function(v) return ob.class == v end))) then
+          local enemy, troop
+          if table.any(enemy_class_names, function(v) return oa.class == v end) then
+              enemy, troop = oa, ob
           else
-              boss, troop = ob, oa
+              enemy, troop = ob, oa
           end
 
-          if boss.is_launching then
+          if enemy.is_launching then
             if troop.state ~= unit_states['knockback'] then
               hit4:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-              troop:push(100, boss:angle_to_object(troop))
-              troop:hit(10, boss)
+              troop:push(100, enemy:angle_to_object(troop))
+              troop:hit(10, enemy)
             else
             end
           end
-
 
         end
       end

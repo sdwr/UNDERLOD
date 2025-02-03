@@ -1924,6 +1924,13 @@ function init()
     end
   end
 
+  enemy_class_names = {
+    'regular_enemy',
+    'special_enemy',
+    'boss',
+  }
+
+
   normal_enemies = {
     'shooter',
     'seeker',
@@ -1944,6 +1951,7 @@ function init()
       'stomper',
       'burst',
       'boomerang',
+      'charger',
       
     },
     [2] = {

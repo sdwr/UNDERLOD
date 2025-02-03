@@ -86,7 +86,7 @@ function Cast:init(args)
   self.rotation_lock = self.rotation_lock or false
   self.cast_length = self.cast_length or 0.5
   
-  self.cancel_on_death = true
+  self.cancel_on_death = self.cancel_on_death or true
   self.cancel_on_range = self.cancel_on_range or false
   self.cancel_range = self.cancel_range or 300
   self.cancel_no_target = false
@@ -109,7 +109,15 @@ function Cast:update(dt)
     print('update cast', self.unit, dt, self.name)
   end
   if self.dead then return end
+  
+  if self.cancel_on_death then
+    if not self.unit or self.unit.dead then
+      self:cancel()
+    end
+  end
+  
   Try_Cancel_Cast(self)
+
 
   self.elapsedTime = Helper.Time.time - self.startTime
   if self.elapsedTime > self.cast_length then
