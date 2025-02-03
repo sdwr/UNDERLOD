@@ -227,7 +227,7 @@ function Enemy:onDeath()
     self.parent.summons = self.parent.summons - 1
   end
 
-  self.state_change_functions['death']()
+  self.state_change_functions['death'](self)
   self.death_function()
 end
 

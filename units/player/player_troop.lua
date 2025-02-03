@@ -276,7 +276,7 @@ end
 
 
 function Troop:onDeath()
-  self.state_change_functions['death']()
+  self.state_change_functions['death'](self)
   self.death_function()
 end
 
@@ -309,20 +309,22 @@ function Troop:set_character()
       end
     end
 
-    self.state_change_functions['following_or_rallying'] = function()
+    self.state_change_functions['following_or_rallying'] = function(self)
       Helper.Time:cancel_wait(self.spell_wait_id)
       self.spell_wait_id = -1
     end
 
-    self.state_change_functions['target_death'] = function()
+
+    self.state_change_functions['target_death'] = function(self)
       Helper.Unit:unclaim_target(self)
     end
 
-    self.state_change_functions['death'] = function()
+    self.state_change_functions['death'] = function(self)
       Helper.Time:cancel_wait(self.spell_wait_id)
       self.spell_wait_id = -1
       -- Helper.Spell.Burst:stop_firing(self)
       Helper.Unit:unclaim_target(self)
+
     end
 
 
@@ -400,7 +402,7 @@ function Troop:set_character()
     self.state_change_functions['normal'] = function() end
 
     --cancel on death
-    self.state_change_functions['death'] = function()
+    self.state_change_functions['death'] = function(self)
       Helper.Spell.Bomb:stop_aiming(self)
       Helper.Unit:unclaim_target(self)
     end
@@ -435,7 +437,7 @@ function Troop:set_character()
 
     self.state_change_functions['normal'] = function() end
     --cancel on death
-    self.state_change_functions['death'] = function()
+    self.state_change_functions['death'] = function(self)
       self.spell:cancel()
     end
 
@@ -567,7 +569,7 @@ function Troop:die()
     self.parent.summons = self.parent.summons - 1
   end
 
-  self.state_change_functions['death']()
+  self.state_change_functions['death'](self)
   self.death_function()
 end
 
