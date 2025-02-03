@@ -376,7 +376,7 @@ function Group:set_as_physics_world(meter, xg, yg, tags)
           if enemy.is_launching then
             if troop.state ~= unit_states['knockback'] then
               hit4:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-              troop:push(1000, enemy:angle_to_object(troop))
+              troop:push(LAUNCH_PUSH_FORCE, enemy:angle_to_object(troop))
               troop:hit(10, enemy)
             else
             end

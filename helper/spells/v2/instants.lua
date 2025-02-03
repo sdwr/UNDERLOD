@@ -246,7 +246,8 @@ function Avalanche:init(args)
     if self.unit and self.unit.dead then self:die(); return end
     local x, y = math.random(self.rs, gw - self.rs), math.random(self.rs, gh - self.rs)
     Stomp{group = main.current.main, unit = self.unit, team = self.team, x = x, y = y,
-    rs = self.rs, color = self.color, dmg = self.dmg, chargeTime = 1.5, parent = self}
+      rs = self.rs, color = self.color, dmg = self.dmg, chargeTime = 1.5, knockback = true, 
+      parent = self}
   end, self.timesToCast, function() self:die() end, 'avalanche')
 
   self.unit.state = unit_states['normal']

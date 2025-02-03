@@ -6,6 +6,8 @@ function Mortar_Spell:init(args)
   self.color = self.color or red[0]
   turret_hit_wall2:play{volume = 0.9}
 
+  self.knockback = self.knockback or false
+
   self.num_shots = self.num_shots or 3
   self.shot_interval = self.shot_interval or 0.7
 
@@ -44,6 +46,7 @@ function Mortar_Spell:fire()
     y = target.y + math.random(-10, 10),
     target = target,
     rs = self.rs,
+    knockback = self.knockback,
     color = self.color,
     dmg = self.dmg,
     level = self.level,

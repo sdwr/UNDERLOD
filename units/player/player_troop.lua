@@ -114,7 +114,7 @@ function Troop:update_movement()
       self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
       self:rotate_towards_velocity(1)
     else
-      self:set_velocity(0,0)
+      --self:set_velocity(0,0)
     end
 
   elseif self.state == unit_states['rallying'] then
@@ -149,11 +149,11 @@ function Troop:update_movement()
       self:rotate_towards_velocity(1)
     --otherwise target is in attack range or doesn't exist, stay still
     else
-      self:set_velocity(0,0)
+      --self:set_velocity(0,0)
       self:steering_separate(16, troop_classes)
     end
   else
-    self:set_velocity(0,0)
+    --self:set_velocity(0,0)
   end
 end
 
@@ -178,21 +178,24 @@ function Troop:push(f, r, push_invulnerable)
 
   self.state = unit_states['knockback']
   self.mass = TROOP_KNOCKBACK_MASS
+  self:set_damping(LAUNCH_DAMPING)
 
   local duration = 0.5
 
   -- Apply an initial strong impulse at the start
+  self:set_velocity(0,0)
   self:apply_force(self.push_force * math.cos(r), self.push_force * math.sin(r))
-  
   -- Cancel any existing during trigger for push
   if self.cancel_trigger_tag then
     self.t:cancel(self.cancel_trigger_tag)
   end
 
   -- Reset state after the duration
+
   self.cancel_trigger_tag = self.t:after(duration, function()
       self.state = unit_states['normal']
       self.mass = TROOP_MASS
+      self:set_damping(TROOP_DAMPING)
   end)
 
 end
@@ -254,7 +257,7 @@ function Troop:draw_cooldown_timer()
 end
 
 function Troop:draw_knockback()
-  graphics.circle(self.x, self.y, self.shape.w, red_transparent)
+  graphics.circle(self.x, self.y, self.shape.w/2 + 1, red_transparent)
 end
 
 function Troop:shoot(r, mods)

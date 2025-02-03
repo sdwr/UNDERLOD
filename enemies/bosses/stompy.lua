@@ -52,8 +52,9 @@ fns['init_enemy'] = function(self)
       x = self.x,
       y = self.y,
       rs = self.attack_sensor.rs,
+      knockback = true,
       color = red[0],
-      dmg = 50,
+      dmg = 30,
       parent = self
     }
   }
@@ -72,7 +73,7 @@ fns['init_enemy'] = function(self)
       spell_duration = 10,
       num_shots = 3,
       shot_interval = 0.7,
-      dmg = 30,
+      dmg = 20,
       rs = 25,
       parent = self
     }
@@ -91,7 +92,7 @@ fns['init_enemy'] = function(self)
       team = "enemy",
       x = self.x,
       y = self.y,
-      dmg = 30
+      dmg = 20
     }
   }
 
@@ -110,14 +111,14 @@ fns['init_enemy'] = function(self)
       x = self.x,
       y = self.y,
       color = red[0],
-      dmg = 50,
+      dmg = 30,
       parent = self
     }
   }
 
-  -- table.insert(self.attack_options, stomp)
-  -- table.insert(self.attack_options, mortar)
-  -- table.insert(self.attack_options, avalanche)
+  table.insert(self.attack_options, stomp)
+  table.insert(self.attack_options, mortar)
+  table.insert(self.attack_options, avalanche)
   table.insert(self.attack_options, charge)
 
 end

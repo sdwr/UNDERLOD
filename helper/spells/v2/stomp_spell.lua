@@ -7,6 +7,8 @@ function Stomp_Spell:init(args)
 
   orb1:play({volume = 0.5})
 
+  self.knockback = self.knockback or false
+
   self.color = self.color or red[0]
   self.color_transparent = self.color:clone()
   self.color_transparent.a = 0.2
@@ -40,9 +42,14 @@ function Stomp_Spell:die()
   if #targets > 0 then self.spring:pull(0.05, 200, 10) end
   for _, target in ipairs(targets) do
     target:hit(self.dmg, self.unit)
-    target:slow(0.3, 1, nil)
+    if self.knockback then
+      target:push(LAUNCH_PUSH_FORCE, self.unit:angle_to_object(target))
+    else
+      target:slow(0.3, 1, nil)
+    end
     HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
     for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
+
     for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
   end
 

@@ -1646,6 +1646,7 @@ function Stomp:init(args)
   self:init_game_object(args)
   self.attack_sensor = Circle(self.x, self.y, self.rs)
   self.currentTime = 0
+  self.knockback = self.knockback or false
 
   self.state = "charging"
 
@@ -1684,9 +1685,17 @@ function Stomp:stomp()
   end
   if #targets > 0 then self.spring:pull(0.05, 200, 10) end
   for _, target in ipairs(targets) do
+    if self.knockback then
+      -- Reverse the angle by adding math.pi
+      local angle = target:angle_to_object(self) + math.pi
+      target:push(LAUNCH_PUSH_FORCE, angle)
+    else
+      target:slow(0.3, 1, nil)
+    end
     target:hit(self.dmg, self.unit)
-    target:slow(0.3, 1, nil)
     HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
+
+
     for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
     for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
   end
