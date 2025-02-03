@@ -283,8 +283,10 @@ quit button disappears after oepning achieve AchievementsPanel
   - does not happen if options menu is opened + closed before achivements
 
 crash:
-  crash when spawning units inside each other (fixed for boss though?)
-  check global GameState references - had a bug trying to set the rallyEffect in the main menu
+
+movement:
+  - rallied units dont attack once reaching the rally point anymore
+  
 
 combat:
   safety dance doesn't damage every time

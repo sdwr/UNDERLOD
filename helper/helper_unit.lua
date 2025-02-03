@@ -200,7 +200,7 @@ function Helper.Unit:run_state_always_run_functions()
     end
     for i, unit in ipairs(Helper.Unit:get_list(false)) do
         unit.state_always_run_functions[unit.state](unit)
-        unit.state_always_run_functions['always_run']()
+        unit.state_always_run_functions['always_run'](unit)
     end
 end
 

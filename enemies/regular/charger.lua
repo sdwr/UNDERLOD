@@ -30,6 +30,7 @@ fns['init_enemy'] = function(self)
       team = "enemy",
       charge_duration = 2,
       spell_duration = 2.5,
+      cancel_on_death = true,
       x = self.x,
       y = self.y,
       color = red[0],

@@ -3,7 +3,10 @@ EnemyCritter = Unit:extend()
 EnemyCritter:implement(GameObject)
 EnemyCritter:implement(Physics)
 function EnemyCritter:init(args)
+  self.class = 'enemy_critter'
+
   self:init_game_object(args)
+  Helper.Unit:add_custom_variables_to_unit(self)
   if tostring(self.x) == tostring(0/0) or tostring(self.y) == tostring(0/0) then self.dead = true; return end
   self:init_unit()
   Set_Enemy_Shape(self, 'critter')
@@ -12,7 +15,6 @@ function EnemyCritter:init(args)
   self.aggro_sensor = Circle(self.x, self.y, 1000)
   self.attack_sensor = Circle(self.x, self.y, 25)
 
-  self.class = 'enemy_critter'
   self.color = args.color or grey[0]
   self:calculate_stats(true)
   --self:push(args.v, args.r) 
@@ -22,6 +24,8 @@ end
 
 function EnemyCritter:update(dt)
   self:update_game_object(dt)
+
+  if self.dead then return end
 
   if self.being_pushed then
     local v = math.length(self:get_velocity())

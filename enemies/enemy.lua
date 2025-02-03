@@ -9,7 +9,7 @@ function Enemy:init(args)
 
   self.state = 'normal'
   self:setExtraFunctions()
-  
+  Helper.Unit:add_custom_variables_to_unit(self)
   self.init_enemy(self)
   self:init_unit()
   self:init_hitbox_points()

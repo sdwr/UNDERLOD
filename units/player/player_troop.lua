@@ -14,6 +14,7 @@ function Troop:init(args)
   --self.buffs[2] = {name = buff_types['aspd'], amount = 0.2, color = green_transparent_weak}
   self.beingHealed = false
   self:init_game_object(args)
+  Helper.Unit:add_custom_variables_to_unit(self)
   self:init_unit()
   local level = self.level or 1
 

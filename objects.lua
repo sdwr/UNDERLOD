@@ -190,10 +190,8 @@ function Unit:init_unit()
   self.hfx:add('shoot', 1)
   self.hp_bar = HPBar{group = main.current.effects, parent = self, isBoss = self.isBoss}
   self.effect_bar = EffectBar{group = main.current.effects, parent = self}
-
+  
   self.state = unit_states['normal']
-
-  Helper.Unit:add_custom_variables_to_unit(self)
 end
 
 function Unit:config_physics_object()
@@ -228,6 +226,20 @@ function Unit:config_physics_object()
     self:set_mass(REGULAR_ENEMY_MASS)
 
     self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
+  
+  elseif self.class == 'enemy_critter' then
+    self:set_damping(CRITTER_DAMPING)
+    self:set_restitution(CRITTER_RESTITUTION)
+
+    self:set_mass(CRITTER_MASS)
+    self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
+  elseif self.class =='critter' then
+    self:set_damping(CRITTER_DAMPING)
+    self:set_restitution(CRITTER_RESTITUTION)
+
+    self:set_mass(CRITTER_MASS)
+    self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
+
   elseif self.class == 'troop' then
     if self.ghost == true then
       self:set_as_rectangle(self.size, self.size,'dynamic', 'ghost')

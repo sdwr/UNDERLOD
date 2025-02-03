@@ -55,7 +55,7 @@ end
 function Launch_Spell:update(dt)
 
     Launch_Spell.super.update(self, dt)
-    if self.dead then return end
+    if self.dead or (self.unit and self.unit.dead) then return end
     
     self.r = self.unit:get_angle()
 
