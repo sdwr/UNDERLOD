@@ -466,6 +466,12 @@ function Unit:draw_buffs()
   end
 end
 
+function Unit:draw_launching()
+  if self.is_launching then
+    graphics.circle(self.x, self.y, self.shape.w/2 + 2, orange_transparent)
+  end
+end
+
 function Unit:draw_targeted()
   if self:has_buff('targeted') then
     graphics.circle(self.x, self.y, ((self.shape.w) / 2) + 3, yellow[0], 1)
@@ -819,8 +825,8 @@ function Unit:calculate_stats(first_run)
   self.area_size_m = self.base_area_size_m*self.buff_area_size_m
 
   self.class_mvspd_m = self.class_mvspd_m*unit_stat_mult.mvspd
-  self.max_v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m
-  self.v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m
+  self.max_move_v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m
+  self.max_v = self.max_move_v * 5
 end
 
 function Unit:onTickCallbacks(dt)
@@ -1297,23 +1303,37 @@ function Unit:launch_at_facing(force_magnitude, duration)
 
   duration = duration or 1
 
+  local mass
+  if self.body then
+    mass = self.body:getMass()
+  else
+    mass = 1
+  end
+
   self.is_launching = true
   self.t:after(duration, function() self.is_launching = false end, 'launch_end')
-
   local facing = self:get_angle()
-  self.launch_force_x = math.cos(facing) * force_magnitude
-  self.launch_force_y = math.sin(facing) * force_magnitude
+  self.launch_force_x = math.cos(facing) * force_magnitude * mass
+  self.launch_force_y = math.sin(facing) * force_magnitude * mass
+  
+  self:apply_force(self.launch_force_x, self.launch_force_y)
+  
 
-  -- Apply the force over time
-  self.t:during(duration, function()
-    self:apply_force(self.launch_force_x, self.launch_force_y)
-  end)
+  local orig_damping
+  if self.body then
+    orig_damping = self.body:getLinearDamping()
+  else
+    orig_damping = BOSS_DAMPING
+  end
 
-  -- Optionally adjust damping for smoother decay
-  self:set_damping(0.5) -- Temporary low damping for smoother deceleration
+  self:set_damping(LAUNCH_DAMPING)
+
   self.t:after(duration, function()
-    self:set_damping(0.0) -- Restore default damping after push
+    self:set_damping(orig_damping)
+    self.is_launching = false
   end)
+
+
 end
 
 function Unit:die()

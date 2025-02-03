@@ -134,7 +134,7 @@ function Physics:seek_point(x, y, deceleration, weight)
   local d = math.length(tx, ty)
   if d > 0 then
     local v = d/((deceleration or 1)*0.08)
-    v = math.min(v, self.max_v)
+    v = math.min(v, self.max_move_v)
     local dvx, dvy = v*tx/d, v*ty/d
     local vx, vy = self:get_velocity()
     self.seek_f:set((dvx - vx)*self.turn_multiplier*(weight or 1), (dvy - vy)*self.turn_multiplier*(weight or 1))

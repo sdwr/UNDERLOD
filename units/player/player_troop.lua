@@ -1,4 +1,3 @@
-
 Troop = Unit:extend()
 Troop:implement(GameObject)
 Troop:implement(Physics)
@@ -159,31 +158,43 @@ function Troop:update_movement()
 end
 
 function Troop:push(f, r, push_invulnerable)
+  --only push if not already pushing
+  if self.state == unit_states['knockback'] then
+    return
+  end
+
+  local mass
+  if self.body then
+    mass = self.body:getMass()
+  else
+    mass = 1
+  end
+
   local n = 1 -- Push force multiplier
   self.push_invulnerable = push_invulnerable
-  self.push_force = n * f
+  self.push_force = n * f * mass
+
+    
+
   self.state = unit_states['knockback']
   self.mass = TROOP_KNOCKBACK_MASS
 
-  local duration = 1
-  local decay_rate = 2  -- Controls how fast the force decays
+  local duration = 0.5
 
   -- Apply an initial strong impulse at the start
   self:apply_force(self.push_force * math.cos(r), self.push_force * math.sin(r))
-
-  self.t:during(duration, function(elapsed)
-      -- Gradually reduce the force over time (exponential decay)
-      local decay_factor = math.exp(-decay_rate * elapsed / duration)
-      local current_force = self.push_force * decay_factor
-
-      self:apply_force(current_force * math.cos(r), current_force * math.sin(r))
-  end)
+  
+  -- Cancel any existing during trigger for push
+  if self.cancel_trigger_tag then
+    self.t:cancel(self.cancel_trigger_tag)
+  end
 
   -- Reset state after the duration
-  self.t:after(duration, function()
+  self.cancel_trigger_tag = self.t:after(duration, function()
       self.state = unit_states['normal']
       self.mass = TROOP_MASS
   end)
+
 end
 
 
