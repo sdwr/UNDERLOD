@@ -43,7 +43,7 @@ function Stomp_Spell:die()
   for _, target in ipairs(targets) do
     target:hit(self.dmg, self.unit)
     if self.knockback then
-      target:push(LAUNCH_PUSH_FORCE, self.unit:angle_to_object(target))
+      target:push(LAUNCH_PUSH_FORCE_BOSS, self.unit:angle_to_object(target))
     else
       target:slow(0.3, 1, nil)
     end

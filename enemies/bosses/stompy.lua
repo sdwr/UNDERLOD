@@ -56,7 +56,7 @@ fns['init_enemy'] = function(self)
       y = self.y,
       rs = self.attack_sensor.rs,
       knockback = true,
-      color = red[0],
+      color = grey[0],
       dmg = 30,
       parent = self
     }

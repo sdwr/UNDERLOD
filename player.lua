@@ -1688,7 +1688,7 @@ function Stomp:stomp()
     if self.knockback then
       -- Reverse the angle by adding math.pi
       local angle = target:angle_to_object(self) + math.pi
-      target:push(LAUNCH_PUSH_FORCE, angle)
+      target:push(LAUNCH_PUSH_FORCE_BOSS, angle)
     else
       target:slow(0.3, 1, nil)
     end

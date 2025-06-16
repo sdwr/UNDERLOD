@@ -597,7 +597,7 @@ function Troop:on_collision_enter(other, contact)
       player_hit_wall1:play{pitch = r, volume = 0.1}
       pop1:play{pitch = r, volume = 0.2}
   elseif table.any(main.current.enemies, function(v) return other:is(v) end) then
-      self:push(LAUNCH_PUSH_FORCE, self:angle_to_object(other) + math.pi)
+      self:push(LAUNCH_PUSH_FORCE_ENEMY, self:angle_to_object(other) + math.pi)
       self:hit(10, other)
   elseif table.any(main.current.friendlies, function(v) return other:is(v) end) then
       -- Handle knockback propagation
@@ -606,7 +606,7 @@ function Troop:on_collision_enter(other, contact)
           local vx, vy = self:get_velocity()
           local speed = math.sqrt(vx * vx + vy * vy)
           local angle = math.atan2(vy, vx)
-          other:push(LAUNCH_PUSH_FORCE, angle, nil)
+          other:push(LAUNCH_PUSH_FORCE_ENEMY, angle, nil)
       end
   end
 end
