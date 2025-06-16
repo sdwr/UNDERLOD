@@ -13,7 +13,6 @@ function PreventCasting_Spell:init(args)
 end
 
 function PreventCasting_Spell:start_cast()
-  print('prevent casting')
     
   -- Set the new state that allows movement but prevents casting
   self.target.state = unit_states['casting_blocked']

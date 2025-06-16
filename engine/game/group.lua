@@ -378,13 +378,14 @@ function Group:set_as_physics_world(meter, xg, yg, tags)
               hit4:play{pitch = random:float(0.95, 1.05), volume = 0.5}
               troop:push(LAUNCH_PUSH_FORCE, enemy:angle_to_object(troop))
               troop:hit(10, enemy)
-            else
             end
           end
-
+          
+          -- Prevent troops from pushing enemies by setting contact restitution to 0
+          c:setRestitution(0)
         end
       end
-  end
+    end
   )
   return self
 end

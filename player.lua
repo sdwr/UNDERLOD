@@ -184,7 +184,7 @@ function Player:on_collision_enter(other, contact)
     end
 
   elseif table.any(main.current.enemies, function(v) return other:is(v) end) then
-    other:push(random:float(25, 35)*(self.knockback_m or 1), self:angle_to_object(other))
+    -- Removed push effect
     if self.character == 'vagrant' or self.character == 'psykeeper' then other:hit(2*self.dmg)
     else other:hit(self.dmg) end
     if other.headbutting then

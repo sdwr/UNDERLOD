@@ -17,6 +17,7 @@ function Enemy:init(args)
   self:calculate_stats(true)
 
   self.movementStyle = self.movementStyle or MOVEMENT_TYPE_SEEK
+  self.stopChasingInRange = self.stopChasingInRange or true
 
   self.castcooldown = math.random() * (self.base_castcooldown or self.baseCast)
   
@@ -117,7 +118,7 @@ function Enemy:update_target_seek()
 end
 
 function Enemy:update_move_seek()
-  if self:in_range()() then
+  if self:in_range()() and self.stopChasingInRange then
     -- dont need to move
   elseif self.target then
   --can't change speed?

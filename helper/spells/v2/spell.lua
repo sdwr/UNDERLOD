@@ -282,7 +282,6 @@ function Spell:try_end_cast()
     if self.on_attack_callbacks and self.unit.onAttackCallbacks then
       self.unit:onAttackCallbacks(self.target)
     end
-    print('end_cast', self.unit.type, self.unit.state, self.castcooldown)
     self.unit:end_cast(self.castcooldown)
     self.unit.spellObject = nil
     if self.unit_dies_at_end then

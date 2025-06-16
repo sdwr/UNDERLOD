@@ -30,6 +30,8 @@ fns['init_enemy'] = function(self)
 
   self.class = 'boss'
 
+  self.stopChasingInRange = false
+
 --set sensors
   self.attack_sensor = Circle(self.x, self.y, 80)
 

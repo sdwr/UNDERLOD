@@ -175,30 +175,28 @@ function Troop:push(f, r, push_invulnerable)
   self.push_invulnerable = push_invulnerable
   self.push_force = n * f * mass
 
-    
-
   self.state = unit_states['knockback']
   self.mass = TROOP_KNOCKBACK_MASS
   self:set_damping(LAUNCH_DAMPING)
 
   local duration = 0.5
 
-  -- Apply an initial strong impulse at the start
+  -- Apply an immediate impulse instead of a continuous force
   self:set_velocity(0,0)
-  self:apply_force(self.push_force * math.cos(r), self.push_force * math.sin(r))
+  self:apply_impulse(self.push_force * math.cos(r), self.push_force * math.sin(r))
+  self:apply_angular_impulse(random:table{random:float(-12*math.pi, -4*math.pi), random:float(4*math.pi, 12*math.pi)})
+  
   -- Cancel any existing during trigger for push
   if self.cancel_trigger_tag then
     self.t:cancel(self.cancel_trigger_tag)
   end
 
   -- Reset state after the duration
-
   self.cancel_trigger_tag = self.t:after(duration, function()
       self.state = unit_states['normal']
       self.mass = TROOP_MASS
       self:set_damping(TROOP_DAMPING)
   end)
-
 end
 
 
@@ -596,10 +594,9 @@ function Troop:on_collision_enter(other, contact)
       local r = random:float(0.9, 1.1)
       player_hit_wall1:play{pitch = r, volume = 0.1}
       pop1:play{pitch = r, volume = 0.2}
-  elseif other.class == 'boss' then
-    --move away from boss
-    -- self:push(50, self:angle_to_object(other))
-
+  elseif table.any(main.current.enemies, function(v) return other:is(v) end) then
+    self:push(LAUNCH_PUSH_FORCE, self:angle_to_object(other) + math.pi)
+    self:hit(10, other)
   elseif table.any(main.current.friendlies, function(v) return other:is(v) end) then
     --self:set_position()
     --other:push(random:float(25, 35)*(self.knockback_m or 1), self:angle_to_object(other))
