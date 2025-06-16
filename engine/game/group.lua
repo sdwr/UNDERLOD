@@ -364,26 +364,7 @@ function Group:set_as_physics_world(meter, xg, yg, tags)
     function(fa, fb, c) --presolve
       local oa, ob = self:get_object_by_id(fa:getUserData()), self:get_object_by_id(fb:getUserData())
       if oa and ob then
-        if ((table.any(enemy_class_names, function(v) return oa.class == v end) and ob.class == 'troop') or 
-            (oa.class == 'troop' and table.any(enemy_class_names, function(v) return ob.class == v end))) then
-          local enemy, troop
-          if table.any(enemy_class_names, function(v) return oa.class == v end) then
-              enemy, troop = oa, ob
-          else
-              enemy, troop = ob, oa
-          end
-
-          if enemy.is_launching then
-            if troop.state ~= unit_states['knockback'] then
-              hit4:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-              troop:push(LAUNCH_PUSH_FORCE, enemy:angle_to_object(troop))
-              troop:hit(10, enemy)
-            end
-          end
-          
-          -- Prevent troops from pushing enemies by setting contact restitution to 0
-          c:setRestitution(0)
-        end
+        --pass
       end
     end
   )
