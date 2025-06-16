@@ -118,10 +118,28 @@ fns['init_enemy'] = function(self)
     }
   }
 
+  local prevent_casting = {
+    name = 'prevent_casting',
+    viable = function() return true end,
+    castcooldown = 3,
+    cast_length = 0.5,
+    oncast = function() end,
+    spellclass = PreventCasting_Spell,
+    spelldata = {
+      group = main.current.main,
+      team = "enemy",
+
+      x = self.x,
+      y = self.y,
+      duration = 3,
+    }
+  }
+
   table.insert(self.attack_options, stomp)
   table.insert(self.attack_options, mortar)
   table.insert(self.attack_options, avalanche)
   table.insert(self.attack_options, charge)
+  table.insert(self.attack_options, prevent_casting)
 
 end
 

@@ -348,8 +348,27 @@ function init()
     ['following'] = 'following',
     ['launching'] = 'launching',
     ['knockback'] = 'knockback',
+    ['casting_blocked'] = 'casting_blocked',
   }
 
+  unit_states_can_move = {
+    unit_states['normal'],
+    unit_states['stopped'],
+    unit_states['rallying'],
+    unit_states['following'],
+    unit_states['casting'],
+    unit_states['casting_blocked'],
+  }
+
+  unit_states_can_target = {
+    unit_states['normal'],
+    unit_states['casting_blocked'],
+  }
+
+  unit_states_can_cast = {
+    unit_states['normal'],
+    unit_states['stopped'],
+  }
   type_colors = {
     ['warrior'] = yellow[0],
     ['ranger'] = green[0],

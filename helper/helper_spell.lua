@@ -18,6 +18,8 @@ require 'helper/spells/v2/plasma_barrage'
 require 'helper/spells/v2/mortar'
 require 'helper/spells/v2/summon'
 require 'helper/spells/v2/launch'
+require 'helper/spells/v2/prevent_casting'
+
 
 require 'helper/spells/v2/instants'
 

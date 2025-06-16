@@ -35,7 +35,7 @@ end
 function Update_Enemy_Target(self)
   if self.target and self.target.dead then self.target = nil end
 
-  if self.state == unit_states['normal'] then
+  if table.any(unit_states_can_target, function(v) return self.state == v end) then
     Set_Enemy_Target(self)
   elseif self.state == unit_states['stopped'] or self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
     if self.target and not self.target.dead then

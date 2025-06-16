@@ -18,7 +18,7 @@ SPECIAL_ENEMY_MS = 40
 
 BOSS_HP = 1000
 BOSS_DAMAGE = 10
-BOSS_MS = 40
+BOSS_MS = 70
 
 --add 0.25 to the scaling for each boss level (boss levels are every 6 levels)
 BOSS_HP_SCALING = function(level) return LEVEL_TO_TIER(level) end

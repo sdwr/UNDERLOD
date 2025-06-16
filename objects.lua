@@ -1130,7 +1130,10 @@ function Unit:in_range()
     if self.attack_range and self.attack_range < MELEE_ATTACK_RANGE and target and not target.dead then
       target_size_offset = target.shape.w/2
     end
-    return target and not target.dead and self.state == unit_states['normal'] and self:distance_to_object(target) - target_size_offset < self.attack_sensor.rs
+    return target and 
+      not target.dead and 
+      table.any(unit_states_can_target, function(v) return self.state == v end) and 
+      self:distance_to_object(target) - target_size_offset < self.attack_sensor.rs
   end
 end
 
@@ -1141,7 +1144,10 @@ function Unit:in_aggro_range()
     if self.attack_range and self.attack_range < MELEE_ATTACK_RANGE and target and not target.dead then
       target_size_offset = target.shape.w/2
     end
-    return target and not target.dead and self.state == unit_states['normal'] and self:distance_to_object(target) - target_size_offset < self.aggro_sensor.rs
+    return target and 
+      not target.dead and 
+      table.any(unit_states_can_target, function(v) return self.state == v end) and 
+      self:distance_to_object(target) - target_size_offset < self.aggro_sensor.rs
   end
 end
 
@@ -1165,9 +1171,9 @@ function Unit:should_follow()
     Helper.Unit:clear_all_rally_points()
     if self.cancel_cast then
       self:cancel_cast()
-    end
+    end 
   end
-  local canMove = (self.state == unit_states['normal'] or self.state == unit_states['stopped'] or self.state == unit_states['rallying'] or self.state == unit_states['following'] or self.state == unit_states['casting'])
+  local canMove = table.any(unit_states_can_move, function(v) return self.state == v end)
 
   return input and canMove
 end
@@ -1205,6 +1211,7 @@ end
 --existing spell (say for a channeling spell)
 
 function Unit:pick_cast()
+  print('pick_cast', self.type)
   if not self.attack_options then return end
 
   local viable_attacks = {}
@@ -1218,6 +1225,7 @@ function Unit:pick_cast()
 
   local attack = random:table(viable_attacks)
 
+  print('cast', attack.name)
   self:cast(attack)
   return true
 end
@@ -1239,6 +1247,8 @@ function Unit:cast(castData)
     castCopy.unit = self
     castCopy.target = self:my_target()
     self.castObject = Cast(castCopy)
+  else
+    print('spellclass not found', castData.name)
   end
 end
 

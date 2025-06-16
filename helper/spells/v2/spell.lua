@@ -29,6 +29,7 @@
 -- or the unit should be able to cancel the spellObject if it dies or is stunned
 
 Try_Cancel_Cast = function(self)
+  print('try cancel cast', self.unit, self.name)
   if self.cancel_on_death and (not self.unit or self.unit.dead) then
     self:cancel()
   end
@@ -96,6 +97,7 @@ function Cast:init(args)
   self.elapsedTime = 0
 
   self.unit.state = unit_states['casting']
+  print('finished init cast')
 end
 
 function Cast:draw()
@@ -126,6 +128,7 @@ function Cast:update(dt)
 end
 
 function Cast:cast()
+  print('cast cast', self.unit, self.name)
   if DEBUG_SPELLS then
     print('cast spell', self.unit, self.name)
   end
@@ -282,6 +285,7 @@ function Spell:try_end_cast()
     if self.on_attack_callbacks and self.unit.onAttackCallbacks then
       self.unit:onAttackCallbacks(self.target)
     end
+    print('end_cast', self.unit.type, self.unit.state, self.castcooldown)
     self.unit:end_cast(self.castcooldown)
     self.unit.spellObject = nil
     if self.unit_dies_at_end then

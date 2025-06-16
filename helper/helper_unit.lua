@@ -98,7 +98,7 @@ function Helper.Unit:can_cast(unit, points)
 
     --still missing is chasing down a target that moves out of range
     if unit then
-        return (unit.state == unit_states['normal'] or unit.state == unit_states['stopped'])
+        return table.any(unit_states_can_cast, function(v) return unit.state == v end)
         and Helper.Spell:there_is_target_in_range(unit, unit.attack_sensor.rs, points)
         and Helper.Unit:cast_off_cooldown(unit)
     end
@@ -131,6 +131,7 @@ function Helper.Unit:add_default_state_change_functions(unit)
     end
     unit.state_change_functions['frozen'] = function() end
     unit.state_change_functions['casting'] = function() end
+    unit.state_change_functions['casting_blocked'] = function() end
     unit.state_change_functions['channeling'] = function() end
     unit.state_change_functions['stopped'] = function() end
     unit.state_change_functions['knockback'] = function(self)
@@ -161,6 +162,7 @@ function Helper.Unit:add_default_state_always_run_functions(unit)
     end
     unit.state_always_run_functions['frozen'] = function() end
     unit.state_always_run_functions['casting'] = function() end
+    unit.state_always_run_functions['casting_blocked'] = function() end
     unit.state_always_run_functions['channeling'] = function() end
     unit.state_always_run_functions['knockback'] = function() end
     unit.state_always_run_functions['stopped'] = function(self) 
