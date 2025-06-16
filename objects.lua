@@ -838,7 +838,7 @@ function Unit:calculate_stats(first_run)
 
   self.class_mvspd_m = self.class_mvspd_m*unit_stat_mult.mvspd
   self.max_move_v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m
-  self.max_v = self.max_move_v * 5
+  self.max_v = self.max_move_v * 50
 end
 
 function Unit:onTickCallbacks(dt)
@@ -1321,7 +1321,7 @@ function Unit:launch_at_facing(force_magnitude, duration)
     self.state = unit_states['channeling']
   end
 
-  duration = duration or 0.8
+  duration = duration or 2
 
   local mass
   if self.body then
@@ -1335,21 +1335,30 @@ function Unit:launch_at_facing(force_magnitude, duration)
   local facing = self:get_angle()
   self.launch_force_x = math.cos(facing) * force_magnitude * mass
   self.launch_force_y = math.sin(facing) * force_magnitude * mass
-  
-  self:apply_force(self.launch_force_x, self.launch_force_y)
+  self:set_velocity(0, 0)
+  self:apply_impulse(self.launch_force_x, self.launch_force_y)
   
 
   local orig_damping
   if self.body then
-    orig_damping = self.body:getLinearDamping()
+    orig_damping = self:get_damping()
   else
     orig_damping = BOSS_DAMPING
   end
 
-  self:set_damping(LAUNCH_DAMPING)
+  local orig_friction
+  if self.body then
+    orig_friction = self:get_friction()
+  else
+    orig_friction = 0
+  end
+
+  self:set_damping(0)
+  self:set_friction(0)
 
   self.t:after(duration, function()
     self:set_damping(orig_damping)
+    self:set_friction(orig_friction)
     self.is_launching = false
   end)
 

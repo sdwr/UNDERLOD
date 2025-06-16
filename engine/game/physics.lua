@@ -397,6 +397,10 @@ function Physics:set_damping(v)
 end
 
 
+function Physics:get_damping()
+  if self.body then return self.body:getLinearDamping() end
+end
+
 -- Sets the object's angular velocity
 -- If set_fixed_rotation is set to true then this will do nothing
 -- self:set_angular_velocity(math.pi/4)
@@ -462,6 +466,10 @@ function Physics:set_friction(v)
     end
   end
   return self
+end
+
+function Physics:get_friction()
+  if self.fixture then return self.fixture:getFriction() end
 end
 
 

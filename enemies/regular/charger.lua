@@ -35,8 +35,8 @@ fns['init_enemy'] = function(self)
       x = self.x,
       y = self.y,
       color = red[0],
+      impulse_magnitude = 500,
       dmg = 50,
-      impulse_magnitude = 20000,
       parent = self
     }
   }
