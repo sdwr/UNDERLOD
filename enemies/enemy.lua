@@ -17,7 +17,7 @@ function Enemy:init(args)
   self:calculate_stats(true)
 
   self.movementStyle = self.movementStyle or MOVEMENT_TYPE_SEEK
-  self.stopChasingInRange = self.stopChasingInRange or true
+  self.stopChasingInRange = not not self.stopChasingInRange
 
   self.castcooldown = math.random() * (self.base_castcooldown or self.baseCast)
   
@@ -68,7 +68,7 @@ function Enemy:update(dt)
     end
 
     --do movement and target selection only if not casting
-    if self.state == unit_states['normal'] then
+    if table.any(unit_states_can_target, function(v) return self.state == v end) then
       if self.movementStyle == MOVEMENT_TYPE_SEEK then
         self:update_target_seek()
       elseif self.movementStyle == MOVEMENT_TYPE_RANDOM then
@@ -86,7 +86,7 @@ function Enemy:update(dt)
 
 
     --move
-    if self.state == unit_states['normal'] then
+    if table.any(unit_states_enemy_can_move, function(v) return self.state == v end) then
       if self.movementStyle == MOVEMENT_TYPE_SEEK then
         self:update_move_seek()
       elseif self.movementStyle == MOVEMENT_TYPE_RANDOM then
@@ -122,7 +122,11 @@ function Enemy:update_move_seek()
     -- dont need to move
   elseif self.target then
   --can't change speed?
-    self:seek_point(self.target.x, self.target.y, SEEK_DECELERATION, SEEK_WEIGHT)
+    local decel = SEEK_DECELERATION
+    if self.stopChasingInRange then
+      decel = 0
+    end
+    self:seek_point(self.target.x, self.target.y, decel, SEEK_WEIGHT)
     -- self:rotate_towards_velocity(0.5)
   else
     -- dont need to move

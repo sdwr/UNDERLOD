@@ -10,11 +10,11 @@ function Launch_Spell:init(args)
     self.color_transparent.a = 0.3
 
     self.charge_duration = self.charge_duration or 2
-    self.fire_distance = self.fire_distance or 100
+    self.fire_distance = self.fire_distance or 200
     self.already_damaged = {}
 
     self.damage = self.dmg or 40
-    self.impulse_magnitude = self.impulse_magnitude or 5000
+    self.impulse_magnitude = self.impulse_magnitude or 13000
 
     self.lineCoords = {0, 0, 0, 0}
 

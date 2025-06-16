@@ -179,7 +179,7 @@ function Troop:push(f, r, push_invulnerable)
   self.mass = TROOP_KNOCKBACK_MASS
   self:set_damping(LAUNCH_DAMPING)
 
-  local duration = 0.5
+  local duration = 0.3
 
   -- Apply an immediate impulse instead of a continuous force
   self:set_velocity(0,0)
@@ -193,9 +193,11 @@ function Troop:push(f, r, push_invulnerable)
 
   -- Reset state after the duration
   self.cancel_trigger_tag = self.t:after(duration, function()
+    if self.state == unit_states['knockback'] then
       self.state = unit_states['normal']
-      self.mass = TROOP_MASS
-      self:set_damping(TROOP_DAMPING)
+    end
+    self.mass = TROOP_MASS
+    self:set_damping(TROOP_DAMPING)
   end)
 end
 
@@ -598,8 +600,9 @@ function Troop:on_collision_enter(other, contact)
     self:push(LAUNCH_PUSH_FORCE, self:angle_to_object(other) + math.pi)
     self:hit(10, other)
   elseif table.any(main.current.friendlies, function(v) return other:is(v) end) then
-    --self:set_position()
-    --other:push(random:float(25, 35)*(self.knockback_m or 1), self:angle_to_object(other))
+    if other.state == unit_states['knockback'] then
+      self:push(LAUNCH_PUSH_FORCE, self:angle_to_object(other))
+    end
   end
 end
 

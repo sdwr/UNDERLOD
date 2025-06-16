@@ -1211,7 +1211,6 @@ end
 --existing spell (say for a channeling spell)
 
 function Unit:pick_cast()
-  print('pick_cast', self.type)
   if not self.attack_options then return end
 
   local viable_attacks = {}
@@ -1225,7 +1224,6 @@ function Unit:pick_cast()
 
   local attack = random:table(viable_attacks)
 
-  print('cast', attack.name)
   self:cast(attack)
   return true
 end
