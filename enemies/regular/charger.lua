@@ -20,21 +20,23 @@ fns['init_enemy'] = function(self)
 
   local charge = {
     name = 'charge',
-    viable = function() return true end,
+    viable = function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end,
     castcooldown = 3,
     cast_length = 0.1,
-    oncast = function() end,
+    oncast = function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); self.target = target end,
     spellclass = Launch_Spell,
     spelldata = {
       group = main.current.main,
       team = "enemy",
-      charge_duration = 2,
+      charge_duration = 1,
       spell_duration = 2.5,
       cancel_on_death = true,
+      target = self.target,
       x = self.x,
       y = self.y,
       color = red[0],
       dmg = 50,
+      impulse_magnitude = 20000,
       parent = self
     }
   }

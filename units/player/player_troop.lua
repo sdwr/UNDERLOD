@@ -126,8 +126,8 @@ function Troop:update_movement()
       local distance_to_target_pos = math.distance(self.x, self.y, self.target_pos.x, self.target_pos.y)
       --if close enough, stop (which enables attacking)
       --when the rally circle disappears, it sets the unit back to 'normal' state
-      if distance_to_target_pos < 5 then
-        self.state = unit_states['stopped']
+      if distance_to_target_pos < 9 then
+        self.state = unit_states['normal']
       end
   
   --then find target if not already moving
