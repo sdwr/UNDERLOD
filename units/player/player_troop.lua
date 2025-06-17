@@ -158,7 +158,7 @@ function Troop:update_movement()
   end
 end
 
-function Troop:push(f, r, push_invulnerable)
+function Troop:push(f, r, push_invulnerable, duration)
   --only push if not already pushing
   if self.state == unit_states['knockback'] then
     return
@@ -179,7 +179,7 @@ function Troop:push(f, r, push_invulnerable)
   self.mass = TROOP_KNOCKBACK_MASS
   self:set_damping(LAUNCH_DAMPING)
 
-  local duration = 0.5
+  duration = duration or KNOCKBACK_DURATION_ENEMY
 
   -- Apply an immediate impulse
   self:set_velocity(0,0)
@@ -597,8 +597,14 @@ function Troop:on_collision_enter(other, contact)
       player_hit_wall1:play{pitch = r, volume = 0.1}
       pop1:play{pitch = r, volume = 0.2}
   elseif table.any(main.current.enemies, function(v) return other:is(v) end) then
-      self:push(LAUNCH_PUSH_FORCE_ENEMY, self:angle_to_object(other) + math.pi)
-      self:hit(10, other)
+    local duration = KNOCKBACK_DURATION_ENEMY
+    local push_force = LAUNCH_PUSH_FORCE_ENEMY
+    if other:is(Boss) then  
+      duration = KNOCKBACK_DURATION_BOSS
+      push_force = LAUNCH_PUSH_FORCE_BOSS
+    end
+    self:push(push_force, self:angle_to_object(other) + math.pi, nil, duration)
+    self:hit(10, other)
   elseif table.any(main.current.friendlies, function(v) return other:is(v) end) then
       -- Handle knockback propagation
       if self.state == unit_states['knockback'] and other.state ~= unit_states['knockback'] then

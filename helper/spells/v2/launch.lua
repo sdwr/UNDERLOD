@@ -50,7 +50,7 @@ end
 
 function Launch_Spell:update_coords()
 
-    self.r = self.keep_original_angle and self.original_angle or self.unit:get_angle()
+    self.r = self.unit:get_angle()
     self.length = self.fire_distance * self.pctCharged
 
     self.lineCoords = {self.x, self.y, Helper.Geometry:move_point_radians(self.x, self.y, self.r, self.length)}
@@ -61,7 +61,7 @@ function Launch_Spell:update(dt)
     Launch_Spell.super.update(self, dt)
     if self.dead or (self.unit and self.unit.dead) then return end
     
-    self.r = self.unit:get_angle()
+    self.r = self.keep_original_angle and self.original_angle or self.unit:get_angle()
 
     self:update_pct_charged(dt)
     self:update_coords()
