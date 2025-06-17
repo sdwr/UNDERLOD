@@ -285,7 +285,7 @@ function Helper.Unit:select()
         if input['m2'].pressed then
 
             for i, enemy in ipairs(self:get_list(false)) do
-                if Helper.Geometry:distance(Helper.mousex, Helper.mousey, enemy.x, enemy.y) < 9 then 
+                if Helper.Geometry:distance(Helper.mousex, Helper.mousey, enemy.x, enemy.y) < ((enemy.shape.w / 2) + 5) then 
                     flag = true
                     break
                 end
