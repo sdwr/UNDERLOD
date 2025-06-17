@@ -718,6 +718,7 @@ function ProgressBar:init(args)
   self.interact_with_mouse = false
   self.progress = args.progress or 0
   self.max_progress = args.max_progress or 1
+  self.number_of_waves = args.number_of_waves or 1
   self.color = args.color or fg[0]
   self.bgcolor = args.bgcolor or bg[1]
 end
@@ -734,6 +735,10 @@ function ProgressBar:draw()
     graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, bg[1])
     graphics.rectangle(new_center_x, self.y, width, self.shape.h, 4, 4, self.color)
   graphics.pop()
+
+  for i = 1, self.number_of_waves do
+    graphics.circle(self.x - self.shape.w/2 + i*self.shape.w/self.number_of_waves, self.y, 4, fg[0])
+  end
 end
 
 function ProgressBar:get_progress_location()

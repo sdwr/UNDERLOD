@@ -1965,10 +1965,11 @@ function init()
 
   normal_enemy_by_tier = {
     [1] = {
-      'shooter',
+      'seeker',
     },
     [2] = {
-      'shooter'
+      'shooter',
+      'seeker',
     }
   }
 

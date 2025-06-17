@@ -16,8 +16,10 @@ end
 
 function Wave_Types:Two_Basic(tier)
   local wave = {}
-  table.insert(wave, {'seeker', NORMAL_ENEMIES_PER_GROUP, nil})
-  table.insert(wave, {'shooter', NORMAL_ENEMIES_PER_GROUP, nil})
+  local enemy = random:table(normal_enemy_by_tier[tier])
+  table.insert(wave, {enemy, NORMAL_ENEMIES_PER_GROUP, nil})
+  enemy = random:table(normal_enemy_by_tier[tier])
+  table.insert(wave, {enemy, NORMAL_ENEMIES_PER_GROUP, nil})
   return wave
 end
 
@@ -116,10 +118,10 @@ function Wave_Types:Get_Waves(level)
   local waves = {}
   local wave = nil
   if level == 1 then
-    wave = self:Basic(1)
+    wave = self:Two_Basic(1)
     table.insert(waves, wave)
   elseif level == 2 then
-    wave = self:Two_Basic(1)
+    wave = self:Basic_Special_Basic(1)
     table.insert(waves, wave)
   elseif level == 3 then
     wave = self:Basic_Special_Basic(1)

@@ -18,6 +18,7 @@ function Enemy:init(args)
 
   self.movementStyle = self.movementStyle or MOVEMENT_TYPE_SEEK
   self.stopChasingInRange = not not self.stopChasingInRange
+  self.haltOnPlayerContact = not not self.haltOnPlayerContact
 
   self.castcooldown = math.random() * (self.base_castcooldown or self.baseCast)
   
@@ -167,6 +168,17 @@ function Enemy:on_collision_enter(other, contact)
     if other:is(Wall) then
         self.hfx:use('hit', 0.15, 200, 10, 0.1)
         self:bounce(contact:getNormal())
+
+    elseif table.any(main.current.friendlies, function(v) return other:is(v) end) then
+      if self.haltOnPlayerContact then
+        self:set_velocity(0,0)
+        self.state = unit_states['frozen']
+        self.t:after(0.8, function()
+          if self.state == unit_states['frozen'] then
+            self.state = unit_states['normal']
+          end
+        end)
+      end
     
     elseif table.any(main.current.enemies, function(v) return other:is(v) end) then
         -- if self.being_pushed and math.length(self:get_velocity()) > 60 then

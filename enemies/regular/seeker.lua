@@ -25,18 +25,13 @@ fns['init_enemy'] = function(self)
   self.color = grey[0]:clone()
   Set_Enemy_Shape(self, self.size)
 
+  self.stopChasingInRange = false
+  self.haltOnPlayerContact = true
+
   self.class = 'regular_enemy'
 
   self.base_mvspd = 50
 
-  --set attacks
-  self.t:cooldown(attack_speeds['fast'], function() local targets = self:get_objects_in_shape(self.attack_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
-      local closest_enemy = self:get_closest_object_in_shape(self.attack_sensor, main.current.friendlies)
-      if closest_enemy then
-        self:rotate_towards_object(closest_enemy, 1)
-        fns['attack'](self, {x = closest_enemy.x, y = closest_enemy.y})
-      end
-    end, nil, nil, 'attack')
 end
 
 fns['draw_enemy'] = function(self)
