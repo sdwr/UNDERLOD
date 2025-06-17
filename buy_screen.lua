@@ -90,7 +90,7 @@ function BuyScreen:on_enter(from)
   
   --only roll items once a character exists
   if not self.first_shop then
-    self:try_roll_items()
+    self:try_roll_items(true)
   end
   
   
@@ -236,7 +236,7 @@ function BuyScreen:buy_unit(character)
   table.insert(self.units, {character = character, level = 1, reserve = {0, 0}, items = {nil, nil, nil, nil, nil, nil}, numItems = 6})
   self:set_party()
   if #self.items == 0 and gold > 0 then
-    self:try_roll_items()
+    self:try_roll_items(false)
   end
   self:save_run()
 end
@@ -389,12 +389,12 @@ function BuyScreen:most_copies_of_unit()
   return max
 end
 
-function BuyScreen:try_roll_items()
-  self:set_items(self.shop_level)
+function BuyScreen:try_roll_items(is_shop_start)
+  self:set_items(self.shop_level, is_shop_start)
 end
 
 
-function BuyScreen:set_items(shop_level)
+function BuyScreen:set_items(shop_level, is_shop_start)
   --clear item cards (UI elements)
   if self.items then for _, item in ipairs(self.items) do item:die() end end
   self.items = {}
@@ -449,9 +449,16 @@ function BuyScreen:set_items(shop_level)
 
   local y = gh - (item_h / 2) - 10
   local x = gw/2 - 60
+
+  -- Create items with staggered timing
+  local transition_duration = is_shop_start and TRANSITION_DURATION or 0
+
   for i = 1, 3 do
     if all_items[i] then
-      table.insert(self.items, ItemCard{group = self.ui, x = x + (i-1)*60, y = y, w = item_w, h = item_h, item = all_items[i], parent = self, i = i})
+      self.t:after((0.6 * (i-1)) + transition_duration, function()
+        local item = ItemCard{group = self.ui, x = x + (i-1)*60, y = y, w = item_w, h = item_h, item = all_items[i], parent = self, i = i}
+        table.insert(self.items, item)
+      end)
     end
   end
 end
@@ -1217,7 +1224,7 @@ function RerollButton:update(dt)
         self.parent.reroll_shop = true
         gold = gold - rerollCost
         self.parent.times_rerolled = self.parent.times_rerolled + 1
-        self.parent:try_roll_items()
+        self.parent:try_roll_items(false)
         self:refresh_text('[bg10]')
         gold2:play{pitch = random:float(0.95, 1.05), volume = 0.3}
         self.selected = true
@@ -1434,22 +1441,27 @@ end
 function ItemCard:creation_effect()
   if self.cost <= 5 then
     --no effect
+    pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    self.spring:pull(0.2, 200, 10)
+    for i = 1, 10 do
+      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+    end
   elseif self.cost <= 10 then
     pop2:play{pitch = random:float(0.95, 1.05), volume = 0.7}
     self.spring:pull(0.2, 200, 10)
-    for i = 1, 10 do
+    for i = 1, 20 do
       HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
     end
   elseif self.cost <= 15 then
     pop1:play{pitch = random:float(0.95, 1.05), volume = 0.8}
     self.spring:pull(0.4, 200, 10)
-    for i = 1, 20 do
+    for i = 1, 30 do
       HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
     end
   else
     gold3:play{pitch = random:float(0.95, 1.05), volume = 0.8}
     self.spring:pull(0.6, 200, 10)
-    for i = 1, 30 do
+    for i = 1, 40 do
       HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
     end
   

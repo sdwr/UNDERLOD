@@ -491,10 +491,10 @@ function Unit:draw_targeted()
 end
 
 function Unit:draw_channeling()
-  if self.state == unit_states['channeling'] then
-    local bodySize = self.shape.rs or self.shape.w/2 or 5
-    graphics.circle(self.x, self.y, bodySize, blue_transparent)
-  end
+  -- if self.state == unit_states['channeling'] then
+  --   local bodySize = self.shape.rs or self.shape.w/2 or 5
+  --   graphics.circle(self.x, self.y, bodySize, blue_transparent)
+  -- end
 end
 
 function Unit:draw_cast_timer()
