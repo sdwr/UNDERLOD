@@ -32,7 +32,7 @@ function Laser_Troop:set_character()
   self.attack_sensor = Circle(self.x, self.y, self.base_attack_range)
 
   --total cooldown is cooldownTime + castTime
-  self.baseCooldown = attack_speeds['fast']
+  self.baseCooldown = attack_speeds['ultra-fast']
   self.cooldownTime = self.baseCooldown
   self.baseCast = attack_speeds['buff']
   self.castTime = self.baseCast
@@ -73,6 +73,8 @@ function Laser_Troop:set_state_functions()
             damage = self.dmg,
             lasermode = 'target',
             laser_aim_width = 1,
+            laser_width = 8,
+            charge_duration = 0.5,
             damage_troops = false,
             damage_once = true,
             end_spell_on_fire = false,
