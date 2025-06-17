@@ -20,6 +20,10 @@ function Launch_Spell:init(args)
 
     self:set_initial_coords()
 
+    if self.keep_original_angle then
+      self.original_angle = self.unit:get_angle()
+    end
+
     self.aim_width = self.aim_width or 16
 
     self.charge_sound = laser_charging:play{volume = 0.3}
@@ -46,7 +50,7 @@ end
 
 function Launch_Spell:update_coords()
 
-    self.r = self.unit:get_angle()
+    self.r = self.keep_original_angle and self.original_angle or self.unit:get_angle()
     self.length = self.fire_distance * self.pctCharged
 
     self.lineCoords = {self.x, self.y, Helper.Geometry:move_point_radians(self.x, self.y, self.r, self.length)}

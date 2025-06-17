@@ -1321,7 +1321,7 @@ function Unit:launch_at_facing(force_magnitude, duration)
     self.state = unit_states['channeling']
   end
 
-  duration = duration or 2
+  duration = duration or 0.7
 
   local mass
   if self.body then
@@ -1354,12 +1354,14 @@ function Unit:launch_at_facing(force_magnitude, duration)
   end
 
   self:set_damping(0)
-  self:set_friction(0)
+  self:set_friction(0.4)
 
   self.t:after(duration, function()
+    self:set_velocity(0, 0)
     self:set_damping(orig_damping)
     self:set_friction(orig_friction)
     self.is_launching = false
+    
   end)
 
 
