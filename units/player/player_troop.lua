@@ -598,12 +598,14 @@ function Troop:on_collision_enter(other, contact)
   elseif table.any(main.current.enemies, function(v) return other:is(v) end) then
     local duration = KNOCKBACK_DURATION_ENEMY
     local push_force = LAUNCH_PUSH_FORCE_ENEMY
+    local dmg = 20
     if other:is(Boss) then  
       duration = KNOCKBACK_DURATION_BOSS
       push_force = LAUNCH_PUSH_FORCE_BOSS
+      dmg = 40
     end
     self:push(push_force, self:angle_to_object(other) + math.pi, nil, duration)
-    self:hit(10, other)
+    self:hit(dmg, other)
   elseif table.any(main.current.friendlies, function(v) return other:is(v) end) then
       -- Handle knockback propagation
       if self.state == unit_states['knockback'] and other.state ~= unit_states['knockback'] then

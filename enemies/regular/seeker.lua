@@ -30,7 +30,7 @@ fns['init_enemy'] = function(self)
 
   self.class = 'regular_enemy'
 
-  self.base_mvspd = 50
+  self.base_mvspd = 40
 
 end
 

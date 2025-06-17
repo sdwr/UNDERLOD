@@ -2528,7 +2528,7 @@ function open_options(self)
 
     --restart new game
     if not self:is(MainMenu) then
-      self.restart_button = Button { group = self.options_ui, x = gw / 2, y = gh - 200, force_update = true, button_text = 'restart run (r)', fg_color = 'bg10', bg_color = 'bg', action = function(
+      self.restart_button = Button { group = self.options_ui, x = gw / 2, y = gh - 200, force_update = true, button_text = 'restart run', fg_color = 'bg10', bg_color = 'bg', action = function(
           b)
         self.transitioning = true
         ui_transition2:play { pitch = random:float(0.95, 1.05), volume = 0.5 }

@@ -425,7 +425,7 @@ item_to_item_data = {
     cost = 10,
     icon = 'bomb',
     desc = 'Your attacks trigger a [blue]frostfield[fg] under enemies',
-    stats = {dmg = 0.25},
+    stats = {dmg = 0.1},
     procs = {'frostfield'},
     tags = {'frostslow'}
   },

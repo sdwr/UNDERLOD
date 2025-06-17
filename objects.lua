@@ -1301,14 +1301,11 @@ function Unit:cancel_cast()
 end
 
 function Unit:interrupt_cast()
-  if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
-    self.state = unit_states['normal']
-    --change this
-    self.castcooldown = 3
+  if self.castObject or self.spellObject then
+    self.castcooldown = self.baseCast or 1
     self.spelldata = nil
+    Cancel_Cast_And_Spell(self)
   end
-
-  Cancel_Cast_And_Spell(self)
 end
 
 --for channeling spells, if they are hit while casting
