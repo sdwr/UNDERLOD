@@ -1,10 +1,14 @@
-
 function Start_New_Run()
   --create a new run
   local data = Create_Blank_Save_Data()
 
   --clean up stats from last run
   Clear_User_Stats()
+
+  -- Initialize state with all expected fields
+  for _, field in ipairs(EXPECTED_SAVE_FIELDS) do
+    state[field] = data[field]
+  end
 
   return data
 end
@@ -32,9 +36,7 @@ end
 function Collect_Save_Data_From_State(state)
   local data = {}
   for i, v in ipairs(EXPECTED_SAVE_FIELDS) do
-    if state[v] then
-      data[v] = state[v]
-    end
+    data[v] = state[v]
   end
   data.locked_state = locked_state
   data.gold = gold
@@ -69,6 +71,7 @@ function Create_Blank_Save_Data()
   data.locked_state = false
   data.reroll_shop = true
   data.times_rerolled = 0
+
 
   return data
 end
