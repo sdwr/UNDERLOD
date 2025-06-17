@@ -46,6 +46,7 @@ function Laser_Spell:init(args)
   self.damage_troops = self.damage_troops
 
   self.laser_aim_width = self.laser_aim_width or 2
+  self.current_laser_aim_width = 0.5
   self.laser_width = self.laser_width or self.laser_aim_width * 6
   self.draw_spawn_circle = self.draw_spawn_circle
 
@@ -137,6 +138,8 @@ function Laser_Spell:update(dt)
 
   self:update_target_coords()
   self:update_coords()
+
+  self.current_laser_aim_width = math.max(0.5, self.laser_aim_width * (self.charge_time / self.charge_duration))
 
   self:update_charge(dt)
   if self.is_firing then
@@ -253,10 +256,10 @@ end
 
 function Laser_Spell:draw()
   local color = self.color
-  local width = self.laser_aim_width
+  local width = self.current_laser_aim_width
   if self.is_charging then
     color = self.aim_color_transparent
-    width = self.laser_aim_width
+    width = self.current_laser_aim_width
     if self.fade_in_aim_draw then
       self.aim_color_transparent.a = 0.4 * (self.charge_time / self.charge_duration)
     end
