@@ -22,6 +22,9 @@
 Laser_Spell = Spell:extend()
 function Laser_Spell:init(args)
   Laser_Spell.super.init(self, args)
+
+  self.draw_under_units = args.draw_under_units == nil and true or args.draw_under_units
+
   
   self.color = self.color or blue[0]
   self.aim_color = self.aim_color or red[0]

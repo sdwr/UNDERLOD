@@ -255,7 +255,7 @@ function Manage_Spawns(arena)
   arena.win_condition = 'wave'
 
 
-  arena.boss_levels = {6, 11, 16, 21, 25}
+  arena.boss_levels = BOSS_ROUNDS
 
   -- set arena specific values
 

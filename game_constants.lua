@@ -26,6 +26,7 @@ system.load_stats()
 --note that HoG econ check is in arena.lua (gain_gold)
 STARTING_GOLD = 5
 GOLD_PER_ROUND = 6
+GOLD_FOR_BOSS_ROUND = {10, 15, 20, 25}
 INTEREST_AMOUNT = 0.1
 MAX_INTEREST = 3
 
@@ -40,8 +41,9 @@ REROLL_COST = function (times_rerolled)
 end
 
 
-BOSS_ROUND_POWER = 1000
 NUMBER_OF_ROUNDS = 25
+BOSS_ROUND_POWER = 1000
+BOSS_ROUNDS = {6, 11, 16, 21, 25}
 
 MAX_UNITS = 3
 

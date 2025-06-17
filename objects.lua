@@ -1468,6 +1468,7 @@ function HPBar:draw()
     local y = 20
     graphics.line(x, y, x + w, y, bg[-3], h)
     graphics.line(x, y, x + n*w, y, red[0], h)
+    skull:draw(x + n*w, y, 0, 0.4, 0.4)
   else
     if p.hp < p.max_hp then
       graphics.push(p.x, p.y, 0, p.hfx.hit.x, p.hfx.hit.x)

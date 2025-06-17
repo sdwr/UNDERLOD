@@ -601,7 +601,13 @@ function Arena:gain_gold(duration)
   table.insert(self.gold_events, event)
 
   --base gold gain
-  event = {type = 'gained', amount = GOLD_PER_ROUND}
+  local amount = GOLD_PER_ROUND
+  local boss_round_index = table.find(BOSS_ROUNDS, self.level)
+  if boss_round_index then
+    amount = GOLD_FOR_BOSS_ROUND[boss_round_index]
+  end
+
+  event = {type = 'gained', amount = amount}
   table.insert(self.gold_events, event)
 
   for _, unit in ipairs(self.starting_units) do
