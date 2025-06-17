@@ -414,8 +414,8 @@ function Arena:draw()
 
   
   
-  self.ui:draw()
   if self.choosing_passives or self.won or self.paused or self.died then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
+  self.ui:draw()
   self.options_ui:draw()
 
   if self.shop_text then self.shop_text:draw(gw - 40, gh - 17) end

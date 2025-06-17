@@ -178,7 +178,6 @@ function Wave_Types:Get_Wave_Power(wave)
   for i, group in ipairs(wave) do
     local enemy = group[1]
     local number = group[2]
-    print(enemy, number, enemy_to_round_power[enemy])
     power = power + enemy_to_round_power[enemy] * number
   end
   return power
