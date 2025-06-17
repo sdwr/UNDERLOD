@@ -89,6 +89,7 @@ function Launch_Spell:draw()
     graphics.push(self.x, self.y, 0)
         graphics.line(self.lineCoords[1], self.lineCoords[2], self.lineCoords[3], self.lineCoords[4], self.color_transparent, self.aim_width)
     graphics.pop()
+    -- draw chevrons moving from the center of the line to the end of the line
 end
 
 function Launch_Spell:die()

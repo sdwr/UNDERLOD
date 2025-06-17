@@ -386,7 +386,7 @@ end
 
 function Arena:draw()
   self.floor:draw()
-  self.main:draw_with_ghost_ontop()
+  self.main:draw_custom()
   self.post_main:draw()
   self.effects:draw()
 

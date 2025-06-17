@@ -114,6 +114,7 @@ fns['init_enemy'] = function(self)
       impulse_magnitude = 300,
       cancel_on_death = true,
       keep_original_angle = true,
+      draw_under_units = true,
       x = self.x,
       y = self.y,
       color = red[0],
