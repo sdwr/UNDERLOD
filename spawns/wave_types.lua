@@ -159,11 +159,27 @@ end
 function Wave_Types:Get_Round_Power(waves)
   local power = 0
   for i, wave in ipairs(waves) do
-    for j, group in ipairs(wave) do
-      local enemy = group[1]
-      local number = group[2]
-      power = power + enemy_to_round_power[enemy] * number
-    end
+    power = power + self:Get_Wave_Power(wave)
+  end
+  return power
+end
+
+function Wave_Types:Get_Waves_Power(waves)
+  local power = 0
+  local waves_power = {}
+  for i, wave in ipairs(waves) do
+    waves_power[i] = self:Get_Wave_Power(wave)
+  end
+  return waves_power
+end
+
+function Wave_Types:Get_Wave_Power(wave)
+  local power = 0
+  for i, group in ipairs(wave) do
+    local enemy = group[1]
+    local number = group[2]
+    print(enemy, number, enemy_to_round_power[enemy])
+    power = power + enemy_to_round_power[enemy] * number
   end
   return power
 end

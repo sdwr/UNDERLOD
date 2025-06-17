@@ -39,6 +39,7 @@ function Build_Level_List(max_level)
 
       --calculate the round power for the level
       level_list[i].round_power = Wave_Types:Get_Round_Power(waves)
+      level_list[i].waves_power = Wave_Types:Get_Waves_Power(waves)
     end
   end
 

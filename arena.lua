@@ -128,6 +128,7 @@ function Arena:on_enter(from)
     self.progress_bar = ProgressBar{group = self.ui, x = gw/2, y = 20, w = 200, h = 10, color = orange[0], progress = 0}
     self.progress_bar.max_progress = self.level_list[self.level].round_power or 0
     self.progress_bar.number_of_waves = #self.level_list[self.level].waves
+    self.progress_bar.waves_power = self.level_list[self.level].waves_power
   end
 
   self.plusgold_text_offset_x = 0
