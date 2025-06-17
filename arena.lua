@@ -45,6 +45,31 @@ function Arena:on_enter(from)
   self.ui = Group()
   self.options_ui = Group()
   self.credits = Group()
+  self.tutorial = Group()
+
+  -- Show controls tutorial if not shown before
+  if state.show_tutorial then
+    self.in_tutorial = true
+    pause_game(self)
+    self.tutorial_text = Text2{group = self.tutorial, x = gw/2, y = gh/2 - 40, lines = {
+      {text = '[fg]CONTROLS', font = fat_font, alignment = 'center', height_multiplier = 1.5},
+      {text = '[fg]Left Click: Select and move troops', font = pixul_font, height_multiplier = 1.2},
+      {text = '[fg]Right Click: Set rally point', font = pixul_font, height_multiplier = 1.2},
+      {text = '[fg]Space: Move all troops to cursor', font = pixul_font, height_multiplier = 1.2},
+      {text = '[fg]Escape: Pause game', font = pixul_font, height_multiplier = 1.2},
+      {text = '[fg]R: Restart run', font = pixul_font, height_multiplier = 1.2},
+    }}
+
+    self.show_tutorial_checkbox = Button{group = self.tutorial, x = gw/2 - 60, y = gh/2 + 40, button_text = 'show on round start', fg_color = 'bg10', bg_color = 'bg', action = function(b)
+      state.show_tutorial = not state.show_tutorial
+      b:set_text('show on round start: ' .. (state.show_tutorial and 'yes' or 'no'))
+      system.save_state()
+    end}
+    self.show_tutorial_checkbox:set_text('show on round start: ' .. (state.show_tutorial and 'yes' or 'no'))
+
+    self.close_tutorial_button = CloseButton{group = self.tutorial, x = gw/2 + 60, y = gh/2 + 40}
+  end
+
   self.main:disable_collision_between('troop', 'projectile')
   self.main:disable_collision_between('projectile', 'projectile')
   self.main:disable_collision_between('projectile', 'enemy_projectile')
@@ -427,6 +452,8 @@ function Arena:draw()
   end
   if self.in_credits then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent_2) end
   self.credits:draw()
+  -- if self.in_tutorial then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent_2) end
+  self.tutorial:draw()
 end
 
 function Arena:all_troops_dead()
@@ -968,4 +995,54 @@ end
 
 function CharacterHP:change_hp()
   self.hfx:use('hit', 0.5)
+end
+
+function Arena:quit_tutorial()
+  print('quit_tutorial')
+  self.in_tutorial = false
+  unpause_game(self)
+  self.tutorial_text.dead = true
+  self.tutorial_text = nil
+  if self.show_tutorial_checkbox then
+    self.show_tutorial_checkbox.dead = true
+    self.show_tutorial_checkbox = nil
+  end
+  if self.close_tutorial_button then
+    self.close_tutorial_button.dead = true
+    self.close_tutorial_button = nil
+  end
+  system.save_state()
+end
+
+CloseButton = Object:extend()
+CloseButton:implement(GameObject)
+function CloseButton:init(args)
+  self:init_game_object(args)
+  self.shape = Rectangle(self.x, self.y, 32, 16)
+  self.interact_with_mouse = true
+  self.text = Text({{text = '[fgm5]Close', font = pixul_font, alignment = 'center'}}, global_text_tags)
+end
+
+function CloseButton:update(dt)
+  self:update_game_object(dt)
+  if self.selected and input.m1.pressed then
+    self.parent:quit_tutorial()
+  end
+end
+
+function CloseButton:draw()
+  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
+    graphics.rectangle(self.x, self.y, 32, 16, 4, 4, bg[0], 2)
+    self.text:draw(self.x, self.y + 1)
+  graphics.pop()
+end
+
+function CloseButton:on_mouse_enter()
+  ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
+  pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+  self.selected = true
+end
+
+function CloseButton:on_mouse_exit()
+  self.selected = false
 end

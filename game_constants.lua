@@ -17,6 +17,7 @@ EXPECTED_SAVE_FIELDS = {
   'locked_state',
   'reroll_shop',
   'times_rerolled',
+  'show_tutorial',
 }
 
 USER_STATS = {}

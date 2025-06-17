@@ -2439,8 +2439,23 @@ function close_achievements(self)
   end
 end
 
+function pause_game(self)
+  self.paused = true
+  trigger:tween(0.25, _G, { slow_amount = 0 }, math.linear, function()
+    slow_amount = 0
+  end)
+end
+
+function unpause_game(self)
+  self.paused = false
+  trigger:tween(0.25, _G, { slow_amount = 1 }, math.linear, function()
+    slow_amount = 1
+  end)
+end
+
 function open_options(self)
   input:set_mouse_visible(true)
+  pause_game(self)
   trigger:tween(0.25, _G, { slow_amount = 0 }, math.linear, function()
     slow_amount = 0
     self.paused = true
@@ -2716,8 +2731,7 @@ end
 
 function close_options(self)
   trigger:tween(0.25, _G, { slow_amount = 1 }, math.linear, function()
-    slow_amount = 1
-    self.paused = false
+    unpause_game(self)
     if self.paused_t1 then
       self.paused_t1.dead = true; self.paused_t1 = nil
     end

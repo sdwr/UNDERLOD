@@ -71,7 +71,7 @@ function Create_Blank_Save_Data()
   data.locked_state = false
   data.reroll_shop = true
   data.times_rerolled = 0
-
+  data.show_tutorial = true
 
   return data
 end
