@@ -61,6 +61,7 @@ function Team:set_team_target(target)
   self.target = target
   for i, troop in ipairs(self.troops) do
     troop:set_assigned_target(target)
+    troop:cancel_cast()
     if troop.state ~= unit_states['knockback'] then
       troop.state = unit_states['normal']
     end

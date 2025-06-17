@@ -142,8 +142,7 @@ function Troop:update_movement()
     target = self:my_target()
 
     --if target not in attack range, close in
-    if target and not self:in_range()() and self.state == unit_states['normal'] 
-      and self:in_aggro_range()() then
+    if target and not self:in_range()() and self.state == unit_states['normal'] then
       self:seek_point(target.x, target.y, SEEK_DECELERATION, SEEK_WEIGHT)
       self:steering_separate(SEPARATION_RADIUS, troop_classes)
       self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
