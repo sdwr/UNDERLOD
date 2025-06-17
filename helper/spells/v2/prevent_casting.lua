@@ -15,13 +15,13 @@ end
 function PreventCasting_Spell:start_cast()
     
   -- Set the new state that allows movement but prevents casting
-  self.target.state = unit_states['casting_blocked']
+  self.unit.state = unit_states['casting_blocked']
   
 
   -- Set timer to return to normal state
-  self.target.t:after(self.duration, function()
-      if self.target.state == unit_states['casting_blocked'] then
-          self.target.state = unit_states['normal']
+  self.unit.t:after(self.duration, function()
+      if self.unit.state == unit_states['casting_blocked'] then
+          self.unit.state = unit_states['normal']
       end
   end)
 end
