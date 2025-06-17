@@ -413,18 +413,21 @@ function Burst:init(args)
 end
 
 function Burst:check_hits()
+  local hit_target = false
   local friendlies = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
   for _, friendly in ipairs(friendlies) do
     if not table.contains(self.already_damaged, friendly) then
+      hit_target = true
       friendly:hit(self.damage, self.unit)
       table.insert(self.already_damaged, friendly)
     end
   end
+  return hit_target
 end
 
 function Burst:update(dt)
   self:update_game_object(dt)
-  self:check_hits()
+  local hit_target = self:check_hits()
   self.elapsed = self.elapsed + dt
 
   local x = self.x
@@ -439,6 +442,9 @@ function Burst:update(dt)
   end
   self.shape:move_to(self.x, self.y)
   if Outside_Arena(self) then
+    self:explode()
+  end
+  if hit_target then
     self:explode()
   end
 end
