@@ -50,7 +50,7 @@ end
 
 function Launch_Spell:update_coords()
 
-    self.r = self.unit:get_angle()
+    self.r = self.keep_original_angle and self.original_angle or self.unit:get_angle()
     self.length = self.fire_distance * self.pctCharged
 
     self.lineCoords = {self.x, self.y, Helper.Geometry:move_point_radians(self.x, self.y, self.r, self.length)}
@@ -75,6 +75,7 @@ function Launch_Spell:fire()
     if self.is_firing then return end
 
     self.is_firing = true
+    self.unit:set_angle(self.r)
     self.unit:launch_at_facing(self.impulse_magnitude)
 
     self.charge_sound:stop()

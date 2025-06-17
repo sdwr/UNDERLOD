@@ -453,7 +453,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'turtle',
     desc = 'Enemies coming near you trigger a [blue]frostnova[fg]',
-    stats = {dmg = 0.25},
+    stats = {dmg = 0.1},
     procs = {'icenova'},
     tags = {'frostslow'}
   },
