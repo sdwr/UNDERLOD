@@ -974,7 +974,8 @@ end
 
 function Area:update_ticks(dt)
   self.current_time = self.current_time + dt
-  if self.current_time >= self.tick_rate then
+  if self.current_time >= self.tick_rate and self.active 
+    and self.dmg > 0 then
     self:damage()
     self.current_time = 0
   end

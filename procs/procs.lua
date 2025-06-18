@@ -1646,46 +1646,133 @@ function Proc_Holduground:die()
 end
 
 Proc_Icenova = Proc:extend()
+-- ====================================================================
+-- REFACTORED: __init__ function
+-- We introduce a state machine and timers to manage the proc's logic.
+-- ====================================================================
 function Proc_Icenova:init(args)
   self.triggers = {PROC_ON_TICK}
   self.scope = 'troop'
 
   Proc_Icenova.super.init(self, args)
 
-  --define the proc's vars
+  -- Define the proc's vars
   self.damageMulti = self.data.damageMulti or 1
   self.damage = self.data.damage or 20
   self.radius = self.data.radius or 30
+  self.radius_boost = self.data.radius_boost or 15
   self.duration = self.data.duration or 0.2
   self.slowAmount = self.data.slowAmount or 0.5
   self.slowDuration = self.data.slowDuration or 3
   self.color = self.data.color or blue[0]
 
-  --define the procs memory
-  self.canProc = true
+  -- Cooldown and delay values
   self.cooldown = self.data.cooldown or 5
-  self.procDelay = self.data.procDelay or 0.4
+  self.cancel_cooldown = self.data.cancel_cooldown or 1
+  self.procDelay = self.data.procDelay or 0.75
 
-  self:reset_tryProc()
+  -- State machine setup
+  self.state = 'ready'       -- Possible states: 'ready', 'winding_up', 'on_cooldown'
+  self.windup_timer = 0
+  self.cooldown_timer = 0
+
+  self:create_proc_display_area()
+  self.proc_display_area.hidden = true
 end
 
+-- ====================================================================
+-- REFACTORED: onTick function
+-- This is now the heart of the state machine, handling all logic.
+-- ====================================================================
 function Proc_Icenova:onTick(dt)
   Proc_Icenova.super.onTick(self, dt)
-  
+  if not self.unit or self.unit.dead then return end
 
-  if self.canProc then
-    --check for nearby enemies
-    if Helper.Spell:there_is_target_in_range(self.unit, self.radius - 8, nil) then
-      self.canProc = false
-      self:start_proc_delay()
-    end
-  elseif self.tryProc then
-    self.active_procDelay = self.active_procDelay - dt
-    if self.active_procDelay <= 0 then
-      self:try_proc()
-    end
-  
+  -- State: ON COOLDOWN
+  -- If on cooldown, just tick down the timer and do nothing else.
+  if self.state == 'on_cooldown' then
+      self.cooldown_timer = self.cooldown_timer - dt
+      if self.cooldown_timer <= 0 then
+          self.state = 'ready'
+      end
+      return
   end
+
+  -- State: READY
+  -- If ready, check for an enemy to start the wind-up.
+  if self.state == 'ready' then
+      if Helper.Spell:there_is_target_in_range(self.unit, self.radius, nil) then
+          -- Enemy found! Start winding up.
+          self.state = 'winding_up'
+          self.windup_timer = self.procDelay
+          self.proc_display_area.hidden = false
+          alert1:play{pitch = random:float(0.8, 1.2), volume = 0.6}
+      end
+  end
+
+  -- State: WINDING UP
+  -- If winding up, check for cancellation, update the timer, and check for success.
+  if self.state == 'winding_up' then
+      -- 1. Check for cancellation condition
+      if not Helper.Spell:there_is_target_in_range(self.unit, self.radius, nil) then
+          -- No enemies left! Cancel the proc and start the short cooldown.
+          self.state = 'on_cooldown'
+          self.cooldown_timer = self.cancel_cooldown
+          self.proc_display_area.hidden = true
+          -- NOTE: You could stop a charging sound here if you had one.
+          return -- Stop processing for this frame.
+      end
+
+      -- 2. If not cancelled, continue the wind-up
+      self.windup_timer = self.windup_timer - dt
+      self:update_proc_display() -- Update the visual display
+
+      -- 3. Check for successful proc
+      if self.windup_timer <= 0 then
+          -- Timer finished and enemy is still in range. Fire!
+          self:cast()
+          self.state = 'on_cooldown'
+          self.cooldown_timer = self.cooldown
+          self.proc_display_area.hidden = true
+      end
+  end
+end
+
+-- ====================================================================
+-- MODIFIED: update_proc_display
+-- Now calculates progress based on the new windup_timer variable.
+-- ====================================================================
+function Proc_Icenova:update_proc_display()
+  --update the proc display
+  if self.unit then
+      local radius = self.radius + self.radius_boost
+      -- Calculate progress from 0 to 1 based on the windup timer
+      local progress = (self.procDelay - self.windup_timer) / self.procDelay
+      local r = radius * progress
+
+      self.proc_display_area.hidden = false
+      self.proc_display_area.x = self.unit.x
+      self.proc_display_area.y = self.unit.y
+      self.proc_display_area.r = r
+  end
+end
+
+function Proc_Icenova:create_proc_display_area()
+  local x, y
+  if self.unit then
+    x, y = self.unit.x, self.unit.y
+  end
+  if not x or not y then 
+    x, y = 0, 0
+  end
+
+  self.proc_display_area = Area{
+    group = main.current.effects,
+    x = x, y = y,
+    pick_shape = 'circle',
+    r = self.radius + self.radius_boost, duration = 100, color = self.color,
+    dmg = 0,
+  }
 end
 
 --wait a bit before casting, to see if the unit is still in range
@@ -1697,7 +1784,7 @@ function Proc_Icenova:start_proc_delay()
 end
 
 function Proc_Icenova:try_proc()
-  if Helper.Spell:there_is_target_in_range(self.unit, self.radius - 8, nil) then
+  if Helper.Spell:there_is_target_in_range(self.unit, self.radius, nil) then
     self:cast()
     trigger:after(self.cooldown, function() self.canProc = true end)
     self:reset_tryProc()
@@ -1710,7 +1797,10 @@ end
 
 function Proc_Icenova:reset_tryProc()
   self.tryProc = false
-  self.active_procDelay = 0
+  self.active_procDelay = self.procDelay
+  self.currentProcStartTime = Helper.Time.time
+  self.proc_display_area.hidden = true
+  self.proc_display_area.duration = 100
 end
 
 function Proc_Icenova:cast()
@@ -1725,13 +1815,12 @@ function Proc_Icenova:cast()
     x = self.unit.x, y = self.unit.y,
     pick_shape = 'circle',
     dmg = damage,
-    r = self.radius + 15, duration = self.duration, color = self.color,
+    r = self.radius + self.radius_boost, duration = self.duration, color = self.color,
     is_troop = self.unit.is_troop,
     slowAmount = self.slowAmount,
     slowDuration = self.slowDuration
   }
 end
-
 
 --have to define how to stack slows
 -- just the amount is a little tricky, need to multiplicatively stack towards 0
