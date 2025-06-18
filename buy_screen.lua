@@ -475,7 +475,7 @@ function BuyScreen:set_items(shop_level, is_shop_start)
     end)
     
     -- Delay item creation to happen after text animation
-    transition_duration = transition_duration + 0.8
+    transition_duration = transition_duration + 0.6
   end
 
   local item_count = 0

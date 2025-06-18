@@ -193,6 +193,8 @@ end
 function Spawn_Wave(arena, wave)
   arena.wave_finished = false
 
+  spawn_mark2:play{pitch = 1, volume = 1.2}
+
   local wave_index = 1
   local current_group = 1
   arena.t:every(arena.time_between_spawn_groups, function()
@@ -341,7 +343,6 @@ function Manage_Spawns(arena)
 
         --if spawning is done and all enemies are dead, spawn the next wave
         if arena.wave_finished and #arena.main:get_objects_by_classes(arena.enemies) <= 0 then
-          ui_switch1:play{pitch = 1, volume = 0.9}
           Spawn_Wave(arena, waves[arena.wave])
           arena.wave = arena.wave + 1
           -- arena.time_until_next_wave = arena.time_between_waves
@@ -353,7 +354,11 @@ function Manage_Spawns(arena)
     --check for level end
     arena.t:every(function()
       return #arena.main:get_objects_by_classes(arena.enemies) <= 0 and arena.finished
-      and not arena.quitting and not arena.spawning_enemies end, function() arena:quit() end)
+      and not arena.quitting and not arena.spawning_enemies end, 
+      function() 
+        arena:quit() 
+        unlock1:play{pitch = 1, volume = 1.2}
+      end)
 
   end)
     
