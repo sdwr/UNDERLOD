@@ -549,7 +549,7 @@ function Troop:hit(damage, from, damageType)
   end
   self:onGotHitCallbacks(from, actual_damage, damageType)
 
-  camera:shake(2, 0.5)
+  camera:shake(1, 0.5)
 
   if self.hp > 0 then
     _G[random:table{'player_hit1', 'player_hit2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}

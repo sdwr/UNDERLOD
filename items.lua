@@ -212,15 +212,15 @@ item_to_item_data = {
   -- },
 
   --colorless items
-  ['craggyvest'] = {
-    name = 'craggyvest',
-    colors = {},
-    cost = 5,
-    icon = 'fancyarmor',
-    desc = 'Deals [brown]thorns[fg] damage and has a chance to [black]stun[fg] attackers',
-    stats = {hp = 0.25, thorns = 0.2 },
-    procs = {'craggy'}
-  },
+  -- ['craggyvest'] = {
+  --   name = 'craggyvest',
+  --   colors = {},
+  --   cost = 5,
+  --   icon = 'fancyarmor',
+  --   desc = 'Deals [brown]thorns[fg] damage and has a chance to [black]stun[fg] attackers',
+  --   stats = {hp = 0.25, thorns = 0.2 },
+  --   procs = {'craggy'}
+  -- },
   ['spikedcollar'] = {
     name = 'spikedcollar',
     colors = {},
@@ -230,15 +230,15 @@ item_to_item_data = {
     stats = {thorns = 0.2 },
     procs = {'spikedcollar'}
   },
-  ['sackofcash'] = {
-    name = 'sackofcash',
-    colors = {},
-    cost = 5,
-    icon = 'sackofcash',
-    desc = 'Special enemies have a chance to drop gold when they die',
-    stats = {hp = 0.2},
-    procs = {'sackofcash'}
-  },
+  -- ['sackofcash'] = {
+  --   name = 'sackofcash',
+  --   colors = {},
+  --   cost = 5,
+  --   icon = 'sackofcash',
+  --   desc = 'Special enemies have a chance to drop gold when they die',
+  --   stats = {hp = 0.2},
+  --   procs = {'sackofcash'}
+  -- },
   ['heartofgold'] = {
     name = 'heartofgold',
     colors = {},
@@ -278,7 +278,7 @@ item_to_item_data = {
     colors = {'purple'},
     cost = 5,
     icon = 'bloodlust',
-    desc = 'Get a stacking attack speed and movespeed buff when you kill an enemy',
+    desc = 'Get a stacking attack and movespeed buff when you kill an enemy',
     stats = {},
     procs = {'bloodlust'}
   },
@@ -299,7 +299,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'bow',
     desc = 'Your attacks trigger [yellow]lightning[fg] on enemies',
-    stats = {aspd = 0.25},
+    stats = {},
     procs = {'lightning'},
     tags = {'lightningdmg'}
   },
@@ -352,7 +352,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'fire',
     desc = 'Your attacks inflict [red]burn[fg] on enemies',
-    stats = {dmg = 0.25},
+    stats = {},
     procs = {'fire'},
     tags = {'firedmg'}
   },
@@ -361,7 +361,7 @@ item_to_item_data = {
     colors = {'red'},
     cost = 5,
     icon = 'monster',
-    desc = 'Summons [red]burning[fg] minions to fight for you',
+    desc = 'Summon [red]burning[fg] minions to fight for you',
     stats = {dmg = 0.25},
     procs = {'lavaman'},
     tags = {}
@@ -415,7 +415,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'orb',
     desc = 'Your attacks inflict [blue]frost[fg] on enemies',
-    stats = {dmg = 0.25},
+    stats = {dmg = 0.1},
     procs = {'frost'},
     tags = {'frostslow'}
   },
@@ -453,7 +453,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'turtle',
     desc = 'Enemies coming near you trigger a [blue]frostnova[fg]',
-    stats = {dmg = 0.1},
+    stats = {},
     procs = {'icenova'},
     tags = {'frostslow'}
   },

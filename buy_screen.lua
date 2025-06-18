@@ -328,7 +328,6 @@ function BuyScreen:set_party()
 
   --center single unit, otherwise start on the left
 
-  print('number of cards', number_of_cards)
   if number_of_cards == 2 then
     x = gw/2 - CHARACTER_CARD_WIDTH/2 - CHARACTER_CARD_SPACING
   elseif number_of_cards == 3 then
@@ -405,7 +404,7 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   local item_3
   local all_items = {}
 
-  if self.first_shop then
+  if self.first_shop or self.level == 1 then
     return
   end
 

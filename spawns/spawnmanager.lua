@@ -403,9 +403,14 @@ end
 --if the location is occupied, the enemy will not spawn
 function Spawn_Enemy(arena, type, location)
   local data = {}
+  print('spawning enemy', type, location.x, location.y)
   if Can_Spawn(6, location) then
     Spawn_Effect(arena, location)
-    alert1:play{pitch = 1, volume = 0.8}
+    if table.contains(special_enemies, type) then
+      hit4:play{pitch = random:float(0.8, 1.2), volume = 0.6}
+    else
+      hit3:play{pitch = random:float(0.8, 1.2), volume = 0.6}
+    end
     Enemy{type = type, group = arena.main,
     x = location.x, y = location.y,
     level = arena.level, data = data}
@@ -476,8 +481,8 @@ end
 
 function Spawn_Effect(arena, location)
 
-  spawn_mark2:play{pitch = 1.2, volume = 0.5}
-  camera:shake(4, 0.25)
+  -- spawn_mark2:play{pitch = 1.2, volume = 0.5}
+  -- camera:shake(4, 0.25)
   SpawnEffect{group = arena.effects, x = location.x, y = location.y}
 
 end

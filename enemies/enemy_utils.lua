@@ -1,9 +1,9 @@
 enemy_size_to_xy = {
   critter = {x = 7, y = 4},
   small = {x = 8, y = 6},
-  regular = {x = 14, y = 6},
+  regular = {x = 12, y = 6},
   regular_big = {x = 16, y = 12},
-  big = {x = 24, y = 14},
+  big = {x = 16, y = 12},
   huge = {x = 36, y = 24},
 
   heigan = {x = 40, y = 60},

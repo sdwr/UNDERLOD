@@ -1963,6 +1963,19 @@ function init()
     'seeker',
   }
 
+  special_enemies = {
+    'laser',
+    'stomper',
+    'burst',
+    'boomerang',
+    'charger',
+    'plasma',
+    'spread',
+    'mortar',
+    'summoner',
+    'arcspread',
+  }
+
   normal_enemy_by_tier = {
     [1] = {
       'seeker',

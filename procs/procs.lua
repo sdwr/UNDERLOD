@@ -1654,6 +1654,7 @@ function Proc_Icenova:init(args)
 
   --define the proc's vars
   self.damageMulti = self.data.damageMulti or 1
+  self.damage = self.data.damage or 20
   self.radius = self.data.radius or 30
   self.duration = self.data.duration or 0.2
   self.slowAmount = self.data.slowAmount or 0.5
@@ -1716,7 +1717,7 @@ function Proc_Icenova:cast()
   --play sound
   glass_shatter:play{pitch = random:float(0.8, 1.2), volume = 0.8}
 
-  local damage = self.unit.dmg * self.damageMulti
+  local damage = self.damage * self.damageMulti
   --cast here, note that the spell has duration, but we only want it to trigger once
   Area{
     group = main.current.effects,
@@ -1724,7 +1725,7 @@ function Proc_Icenova:cast()
     x = self.unit.x, y = self.unit.y,
     pick_shape = 'circle',
     dmg = damage,
-    r = self.radius + 3, duration = self.duration, color = self.color,
+    r = self.radius + 15, duration = self.duration, color = self.color,
     is_troop = self.unit.is_troop,
     slowAmount = self.slowAmount,
     slowDuration = self.slowDuration
