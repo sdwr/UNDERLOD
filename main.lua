@@ -1977,6 +1977,12 @@ function init()
     'summoner',
     'arcspread',
   }
+  
+  boss_enemies = {
+    'stompy',
+    'dragon',
+    'heigan',
+  }
 
   normal_enemy_by_tier = {
     [1] = {

@@ -1394,7 +1394,8 @@ function Proc_Lavaman:init(args)
   self.color = self.data.color or red[0]
 
   --proc memory
-  self.tick_timer = math.random() * self.tick_interval
+  -- randomize timer between 1/2 and 3/4 of the interval
+  self.tick_timer = self.tick_interval - (self.tick_interval / 4 ) - ((math.random() / 4) * self.tick_interval)
 end
 
 function Proc_Lavaman:onTick(dt, from)

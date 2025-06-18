@@ -401,7 +401,7 @@ function Spawn_Boss(arena, name)
   arena.spawning_enemies = true
   arena.wave_finished = false
   
-  Spawn_Effect(arena, SpawnGlobals.boss_spawn_point)
+  Spawn_Effect(arena, SpawnGlobals.boss_spawn_point, name)
   LevelManager.activeBoss = Enemy{type = name, isBoss = true, group = arena.main, x = SpawnGlobals.boss_spawn_point.x, y = SpawnGlobals.boss_spawn_point.y, level = arena.level}
   arena.spawning_enemies = false
   arena.wave_finished = true
@@ -413,7 +413,7 @@ end
 function Spawn_Enemy(arena, type, location)
   local data = {}
   if Can_Spawn(6, location) then
-    Spawn_Effect(arena, location)
+    Spawn_Effect(arena, location, type)
     if table.contains(special_enemies, type) then
       hit4:play{pitch = random:float(0.8, 1.2), volume = 0.6}
     else
@@ -474,7 +474,7 @@ function Spawn_Critters(arena, group_index, amount)
   arena.spawning_enemies = true
   
   local spawn_marker = SpawnGlobals.corner_spawns[group_index]
-  Spawn_Effect(arena, spawn_marker)
+  Spawn_Effect(arena, spawn_marker, 'critter')
   local index = 1
   arena.t:every(arena.time_between_spawns, function()
     alert1:play{pitch = 1, volume = 0.5}
@@ -487,11 +487,18 @@ function Spawn_Critters(arena, group_index, amount)
 
 end
 
-function Spawn_Effect(arena, location)
+function Spawn_Effect(arena, location, type)
 
   -- spawn_mark2:play{pitch = 1.2, volume = 0.5}
   -- camera:shake(4, 0.25)
-  SpawnEffect{group = arena.effects, x = location.x, y = location.y}
+  local effect_magnitude = 2
+  if table.contains(special_enemies, type) then
+    effect_magnitude = 8
+  elseif table.contains(boss_enemies, type) then
+    effect_magnitude = 12
+  end
+
+  SpawnEffect{group = arena.effects, x = location.x, y = location.y, effect_magnitude = effect_magnitude}
 
 end
 

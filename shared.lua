@@ -141,36 +141,6 @@ function Star:draw()
 end
 
 
-
-
-SpawnEffect = Object:extend()
-SpawnEffect:implement(GameObject)
-function SpawnEffect:init(args)
-  self:init_game_object(args)
-  self.target_color = self.color or red[0]
-  self.color = fg[0]
-  self.rs = 0
-  self.t:tween(0.1, self, {rs = 6}, math.cubic_in_out, function()
-    if self.action then self.action(self.x, self.y) end
-    self.spring:pull(1)
-    for i = 1, random:int(6, 8) do HitParticle{group = main.current.effects, self.x, self.y, color = self.target_color, duration = random:float(0.3, 0.5), w = random:float(5, 8), v = random:float(150, 200)} end
-    self.t:tween(0.25, self, {rs = 0}, math.linear, function() self.dead = true end)
-    self.t:after(0.15, function() self.color = self.target_color end)
-  end)
-end
-
-
-function SpawnEffect:update(dt)
-  self:update_game_object(dt)
-end
-
-
-function SpawnEffect:draw()
-  graphics.circle(self.x, self.y, random:float(0.9, 1.1)*self.rs*self.spring.x, self.color)
-end
-
-
-
 -- Mixin to be added to a state so it can have nodemap creation, saving and manipulating capabilities.
 Nodemap = Object:extend()
 -- nodemap is a table that contains the definition of the skill tree or overmap.
@@ -388,10 +358,11 @@ function SpawnEffect:init(args)
   self.target_color = self.color or red[0]
   self.color = fg[0]
   self.rs = 0
+  self.effect_magnitude = self.effect_magnitude or 4
   self.t:tween(0.1, self, {rs = 6}, math.cubic_in_out, function()
     if self.action then self.action(self.x, self.y) end
     self.spring:pull(1)
-    for i = 1, random:int(6, 8) do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.target_color, duration = random:float(0.3, 0.5), w = random:float(5, 8), v = random:float(150, 200)} end
+    for i = 1, random:int(self.effect_magnitude, self.effect_magnitude + 2) do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.target_color, duration = random:float(0.3, 0.5), w = random:float(5, 8), v = random:float(150, 200)} end
     self.t:tween(0.25, self, {rs = 0}, math.linear, function() self.dead = true end)
     self.t:after(0.15, function() self.color = self.target_color end)
   end)

@@ -515,7 +515,10 @@ function Troop:set_character()
   end
 end
 
-function Troop:hit(damage, from, damageType)
+function Troop:hit(damage, from, damageType, makesSound)
+
+  if makesSound == nil then makesSound = true end
+
   if self.bubbled then return end
   if self.dead then return end
   if self.magician_invulnerable then return end
@@ -552,9 +555,13 @@ function Troop:hit(damage, from, damageType)
   camera:shake(1, 0.5)
 
   if self.hp > 0 then
-    _G[random:table{'player_hit1', 'player_hit2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    if makesSound then
+      _G[random:table{'player_hit1', 'player_hit2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    end
   else
-    hit4:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    if makesSound then
+      hit4:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    end
     for i = 1, random:int(4, 6) do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color} end
     HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 12}:scale_down(0.3):change_color(0.5, self.color)
 
@@ -596,6 +603,9 @@ function Troop:on_collision_enter(other, contact)
       player_hit_wall1:play{pitch = r, volume = 0.1}
       pop1:play{pitch = r, volume = 0.2}
   elseif table.any(main.current.enemies, function(v) return other:is(v) end) then
+
+    player_hit1:play{pitch = random:float(0.95, 1.05), volume = 1.8}
+
     local duration = KNOCKBACK_DURATION_ENEMY
     local push_force = LAUNCH_PUSH_FORCE_ENEMY
     local dmg = 20
@@ -605,7 +615,7 @@ function Troop:on_collision_enter(other, contact)
       dmg = 40
     end
     self:push(push_force, self:angle_to_object(other) + math.pi, nil, duration)
-    self:hit(dmg, other)
+    self:hit(dmg, other, nil, false)
   elseif table.any(main.current.friendlies, function(v) return other:is(v) end) then
       -- Handle knockback propagation
       if self.state == unit_states['knockback'] and other.state ~= unit_states['knockback'] then

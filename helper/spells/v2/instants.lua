@@ -64,7 +64,7 @@ function Arrow:update(dt)
 
 
   if math.distance(self.x, self.y, self.target.x, self.target.y) < 10 then
-    hit2:play{volume=0.7}
+    hit2:play{volume=0.5}
     self.target:hit(self.damage, self.unit)
     self:die()
   end
@@ -578,7 +578,7 @@ function ChainLightning:init(args)
     if #self.targets >= self.i then
       local target = self.targets[self.i]
       if not target then return end
-      target:hit(self.dmg, self.parent, self.damageType)
+      target:hit(self.dmg, self.parent, self.damageType, false)
       spark2:play{pitch = random:float(0.8, 1.2), volume = 0.7}
 
       local lastTarget = nil

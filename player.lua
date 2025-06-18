@@ -2946,7 +2946,9 @@ function Critter:attack()
 end
 
 
-function Critter:hit(damage, from, damageType)
+function Critter:hit(damage, from, damageType, makesSound)
+  if makesSound == nil then makesSound = true end
+
   if self.dead or self.invulnerable then return end
   self.hfx:use('hit', 0.25, 200, 10)
 
@@ -2969,7 +2971,29 @@ function Critter:hit(damage, from, damageType)
   end
 end
 
-function Critter:push(f, r)
+function Critter:push(f, r, push_invulnerable, duration)
+  --only push if not already pushing
+  if self.state == unit_states['knockback'] then
+    return
+  end
+
+  self.push_invulnerable = push_invulnerable or false
+  duration = duration or KNOCKBACK_DURATION_ENEMY
+
+  self.state = unit_states['knockback']
+
+  -- Cancel any existing during trigger for push
+  if self.cancel_trigger_tag then
+    self.t:cancel(self.cancel_trigger_tag)
+  end
+
+  --reset state after duration
+  self.cancel_trigger_tag = self.t:after(duration, function()
+    if self.state == unit_states['knockback'] then
+      self.state = unit_states['normal']
+    end
+  end)
+
   self.push_force = f
   self.being_pushed = true
   self.steering_enabled = false
@@ -2998,16 +3022,25 @@ end
 
 function Critter:on_collision_enter(other, contact)
   local x, y = contact:getPositions()
-  local nx, ny = contact:getNormal()
-  local r = 0
-  if nx == 0 and ny == -1 then r = -math.pi/2
-  elseif nx == 0 and ny == 1 then r = math.pi/2
-  elseif nx == -1 and ny == 0 then r = math.pi
-  else r = 0 end
 
   if other:is(Wall) then
     self.hfx:use('hit', 0.15, 200, 10, 0.1)
     self:bounce(contact:getNormal())
+  elseif table.any(main.current.enemies, function(v) return other:is(v) end) then
+    
+    player_hit1:play{pitch = random:float(0.95, 1.05), volume = 1.3}
+    
+    local push_force_reduction = 0.13
+    local duration = KNOCKBACK_DURATION_ENEMY
+    local push_force = LAUNCH_PUSH_FORCE_ENEMY * push_force_reduction
+    local dmg = 10
+    if other:is(Boss) then  
+      duration = KNOCKBACK_DURATION_BOSS
+      push_force = LAUNCH_PUSH_FORCE_BOSS * push_force_reduction
+      dmg = 20
+    end
+    self:push(push_force, self:angle_to_object(other) + math.pi, nil, duration)
+    self:hit(dmg, other, nil, false)
   end
 end
 

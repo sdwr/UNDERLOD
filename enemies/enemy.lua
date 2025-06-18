@@ -201,52 +201,54 @@ function Enemy:on_collision_enter(other, contact)
     end
 end
 
-function Enemy:hit(damage, from, damageType)
-    if self.invulnerable then return end
-    if self.dead then return end
+function Enemy:hit(damage, from, damageType, makesSound)
+  if makesSound == nil then makesSound = true end
+  
+  if self.invulnerable then return end
+  if self.dead then return end
+  if self.isBoss then
+    self.hfx:use('hit', 0.005, 200, 20)
+  else
+    --scale hit effect to damage
+    --no damage won't grow model, up to max effect at 0.5x max hp
+    local hitStrength = (damage * 1.0) / self.max_hp
+    hitStrength = math.min(hitStrength, 0.5)
+    hitStrength = math.remap(hitStrength, 0, 0.5, 0, 1)
+    self.hfx:use('hit', 0.25 * hitStrength, 200, 10)
+  end
+  if self.push_invulnerable then return end
+  self:show_hp()
+
+  local actual_damage = math.max(self:calculate_damage(damage)*(self.stun_dmg_m or 1), 0)
+  self:show_damage_number(actual_damage, damageType)
+
+  self.hp = self.hp - actual_damage
+  if self.hp > self.max_hp then self.hp = self.max_hp end
+  main.current.damage_dealt = main.current.damage_dealt + actual_damage
+
+  --callbacks
+  if from and from.onHitCallbacks then
+    from:onHitCallbacks(self, actual_damage, damageType)
+  end
+  self:onGotHitCallbacks(from, actual_damage, damageType)
+
+  if self.hp <= 0 then
+    --on death callbacks
+    if from and from.onKillCallbacks then
+      from:onKillCallbacks(self)
+    end
+    self:onDeathCallbacks(from)
+
+    self:die()
+    for i = 1, random:int(4, 6) do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color} end
+    HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 12}:scale_down(0.3):change_color(0.5, self.color)
+    magic_hit1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
+
     if self.isBoss then
-      self.hfx:use('hit', 0.005, 200, 20)
-    else
-      --scale hit effect to damage
-      --no damage won't grow model, up to max effect at 0.5x max hp
-      local hitStrength = (damage * 1.0) / self.max_hp
-      hitStrength = math.min(hitStrength, 0.5)
-      hitStrength = math.remap(hitStrength, 0, 0.5, 0, 1)
-      self.hfx:use('hit', 0.25 * hitStrength, 200, 10)
+      slow(0.25, 1)
+      magic_die1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     end
-    if self.push_invulnerable then return end
-    self:show_hp()
-  
-    local actual_damage = math.max(self:calculate_damage(damage)*(self.stun_dmg_m or 1), 0)
-    self:show_damage_number(actual_damage, damageType)
-
-    self.hp = self.hp - actual_damage
-    if self.hp > self.max_hp then self.hp = self.max_hp end
-    main.current.damage_dealt = main.current.damage_dealt + actual_damage
-  
-    --callbacks
-    if from and from.onHitCallbacks then
-      from:onHitCallbacks(self, actual_damage, damageType)
-    end
-    self:onGotHitCallbacks(from, actual_damage, damageType)
-
-    if self.hp <= 0 then
-      --on death callbacks
-      if from and from.onKillCallbacks then
-        from:onKillCallbacks(self)
-      end
-      self:onDeathCallbacks(from)
-
-      self:die()
-      for i = 1, random:int(4, 6) do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color} end
-      HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 12}:scale_down(0.3):change_color(0.5, self.color)
-      magic_hit1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
-  
-      if self.isBoss then
-        slow(0.25, 1)
-        magic_die1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-      end
-    end
+  end
 end
 
 function Enemy:onDeath()

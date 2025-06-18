@@ -538,7 +538,7 @@ function Unit:update_buffs(dt)
       if v.duration <= v.nextTick then
         --add a really quiet short sound here, becauseit'll be playing all the time
         fire3:play{pitch = random:float(0.8, 1.2), volume = 0.25}
-        self:hit((v.dps/2) * (v.stacks or 1), nil, 'fire')
+        self:hit((v.dps/2) * (v.stacks or 1), nil, 'fire', false)
         --1 second tick, could be changed
         v.nextTick = v.nextTick - 0.5
       end
