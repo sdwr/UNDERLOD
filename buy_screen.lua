@@ -1,4 +1,3 @@
-
 buyScreen = nil
 
 BuyScreen = Object:extend()
@@ -452,9 +451,12 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   -- Create items with staggered timing
   local transition_duration = is_shop_start and TRANSITION_DURATION or 0
 
+  local item_count = 0
   for i = 1, 3 do
+    local item_number = i
     if all_items[i] then
-      self.t:after((0.6 * (i-1)) + transition_duration, function()
+      item_count = item_count + 1
+      self.t:after((0.6 * (item_count-1)) + transition_duration, function()
         local item = ItemCard{group = self.ui, x = x + (i-1)*60, y = y, w = item_w, h = item_h, item = all_items[i], parent = self, i = i}
         table.insert(self.items, item)
       end)
