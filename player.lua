@@ -2891,11 +2891,8 @@ function Critter:init(args)
   self.color = args.color or white[0]
   self:calculate_stats(true)
   self:set_as_steerable(self.v, 400, math.pi, 1)
-  --self:push(args.v, args.r)
-  self.invulnerable = true
-  self.t:after(0.5, function() self.invulnerable = false end)
 
-  self.t:cooldown(attack_speeds['medium'], function() return self.target and self:distance_to_object(self.target) < self.attack_sensor.rs end, 
+  self.t:cooldown(attack_speeds['fast'], function() return self.target and self:distance_to_object(self.target) < self.attack_sensor.rs end, 
   function() self:attack() end, nil, nil, "attack")
 
 end
@@ -2940,6 +2937,7 @@ end
 
 function Critter:attack()
   if self.target and not self.target.dead then
+    print('critter attack')
     swordsman1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
     self.target:hit(self.dmg)
   end

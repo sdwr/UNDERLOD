@@ -65,7 +65,7 @@ end
 
 --consumes units as unit_data (probably)
 --returns items as item_data
-function Get_Random_Item(shop_level, units)
+function Get_Random_Item(shop_level, units, all_items)
   local max_cost = Get_Max_Item_Cost(shop_level)
   local available_items = {}
   --TODO: change weighting based on level (item tier)
@@ -97,6 +97,9 @@ function Get_Random_Item(shop_level, units)
   for k, v in pairs(item_to_item_data) do
     local has_cost = v.cost <= max_cost
     local has_prereqs = true
+    local already_in_shop = false
+
+    --check if the items prereqs are met
     if v.prereqs and #v.prereqs > 0 then
       for i, prereq in ipairs(v.prereqs) do
         if not owned_items[prereq] then
@@ -106,7 +109,15 @@ function Get_Random_Item(shop_level, units)
       end
     end
 
-    if has_cost and has_prereqs then
+    --check if the item is already in the shop
+    table.any(all_items, function(item)
+      if item and item.name == v.name then
+        already_in_shop = true
+      end
+    end)
+
+
+    if has_cost and has_prereqs and not already_in_shop then
       table.insert(available_items, v)
     end
 

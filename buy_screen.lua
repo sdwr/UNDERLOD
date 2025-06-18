@@ -404,7 +404,7 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   local item_1
   local item_2
   local item_3
-  local all_items = {}
+  local all_items = {nil, nil, nil}
 
   if self.first_shop or self.level == 1 then
     return
@@ -419,24 +419,30 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   elseif not self.reroll_shop then
     item_1 = self.shop_item_data[1]
   else
-    item_1 = Get_Random_Item(shop_level, self.units)
+    item_1 = Get_Random_Item(shop_level, self.units, all_items)
   end
+
+  all_items[1] = item_1
 
   if self.shop_item_data[2] and locked_state then
     item_2 = self.shop_item_data[2]
   elseif not self.reroll_shop then
     item_2 = self.shop_item_data[2]
   else
-    item_2 = Get_Random_Item(shop_level, self.units)
+    item_2 = Get_Random_Item(shop_level, self.units, all_items)
   end
+
+  all_items[2] = item_2
 
   if self.shop_item_data[3] and locked_state then
     item_3 = self.shop_item_data[3]
   elseif not self.reroll_shop then
     item_3 = self.shop_item_data[3]
   else
-    item_3 = Get_Random_Item(shop_level, self.units)
+    item_3 = Get_Random_Item(shop_level, self.units, all_items)
   end
+
+  all_items[3] = item_3
 
   --only reroll once (so, main menu and back in won't reroll again)
   --reroll_shop resets on level clear in arena.lua
