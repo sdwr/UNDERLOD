@@ -110,7 +110,12 @@ end
 
 function Enemy:update_target_seek()
   if not self:in_range()() then
-    self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.friendlies)
+    -- 30% chance to target critters
+    if random:float(0, 1) < ENEMY_CHANCE_TO_TARGET_CRITTER then
+      self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.friendlies)
+    else
+      self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies_without_critters)
+    end
   end
   if self.target and self.target.dead then self.target = nil end
   if self.target then
@@ -136,7 +141,11 @@ end
 
 function Enemy:update_target_random()
   if not self:in_range()() then
-    self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.friendlies)
+    if random:float(0, 1) < ENEMY_CHANCE_TO_TARGET_CRITTER then
+      self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
+    else
+      self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies_without_critters)
+    end
   end
   if self.target and self.target.dead then self.target = nil end
   if self.target then

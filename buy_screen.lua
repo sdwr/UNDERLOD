@@ -1134,12 +1134,16 @@ function LockButton:update(dt)
   self:update_game_object(dt)
 
   if self.selected and input.m1.pressed then
-    self.parent:set_locked_state(not locked_state)
-    glass_shatter:play{volume = 0.6}
-    self.selected = true
-    self.spring:pull(0.2, 200, 10)
-    if locked_state then self.shape.w = 44
-    else self.shape.w = 32 end
+    if self.parent.level == 1 then
+      Create_Info_Text('cannot buy items in the first level', self)
+    else
+      self.parent:set_locked_state(not locked_state)
+      glass_shatter:play{volume = 0.6}
+      self.selected = true
+      self.spring:pull(0.2, 200, 10)
+      if locked_state then self.shape.w = 44
+      else self.shape.w = 32 end
+    end
   end
 end
 
@@ -1199,12 +1203,13 @@ function RerollButton:init(args)
   end
 end
 
-
 function RerollButton:update(dt)
   self:update_game_object(dt)
 
   if (self.selected and input.m1.pressed) or input.r.pressed then
-    if self.parent:is(BuyScreen) then
+    if self.parent.level == 1 then
+      Create_Info_Text('cannot buy items in the first level', self)
+    elseif self.parent:is(BuyScreen) then
       local rerollCost = REROLL_COST(self.parent.times_rerolled)
       if gold < rerollCost then
         self.spring:pull(0.2, 200, 10)
@@ -1822,4 +1827,17 @@ end
 function TypeIcon:unhighlight()
   self.highlighted = false
   self.spring:pull(0.05, 200, 10)
+end
+
+-- helper functions
+function Create_Info_Text(text, parent)
+  if not parent.info_text then
+    error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    parent.info_text = InfoText{group = main.current.ui}
+    parent.info_text:activate({
+      {text = '[fg]cannot buy items in the first level', font = pixul_font, alignment = 'center'},
+    }, nil, nil, nil, nil, 16, 4, nil, 2)
+    parent.info_text.x, parent.info_text.y = gw/2, gh/2 + 10
+  end
+  parent.t:after(2, function() parent.info_text:deactivate(); parent.info_text.dead = true; parent.info_text = nil end, 'info_text')
 end

@@ -10,6 +10,8 @@ troop_classes = {
   Archer_Troop
 }
 
+friendly_classes_without_critters = shallowcopy(troop_classes)
+
 friendly_classes = shallowcopy(troop_classes)
 table.insert(friendly_classes, Critter)
 
