@@ -536,10 +536,11 @@ function Unit:update_buffs(dt)
     --on buff tick
     if k == 'burn' then
       if v.duration <= v.nextTick then
-        --add a really quiet short sound here, because it'll be playing all the time
+        --add a really quiet short sound here, becauseit'll be playing all the time
+        fire3:play{pitch = random:float(0.8, 1.2), volume = 0.25}
         self:hit(v.dps * (v.stacks or 1), nil, 'fire')
         --1 second tick, could be changed
-        v.nextTick = v.nextTick - 1
+        v.nextTick = v.nextTick - 0.5
       end
     end
 
@@ -933,7 +934,7 @@ end
 --add custom UI later, so it doesn't stack with the buff circles
 --check firestack on from unit to see if it can stack
 function Unit:burn(dps, duration, from)
-  local burnBuff = {name = 'burn', color = red[0], duration = duration, maxDuration = duration, nextTick = duration - 1, dps = dps}
+  local burnBuff = {name = 'burn', color = red[0], duration = duration, maxDuration = duration, nextTick = duration, dps = dps}
   local existing_buff = self.buffs['burn']
   
   burnBuff.stacks = 1

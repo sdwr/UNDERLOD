@@ -245,7 +245,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'turtle',
     desc = 'A heart that provides gold every round',
-    stats = {hp = 0.2, gold = 2}
+    stats = {hp = 0.1, gold = 2}
   },
   ['stockmarket'] = {
     name = 'stockmarket',
@@ -319,7 +319,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'sun',
     desc = 'Gain a shield and a damage aura',
-    stats = {hp = .1},
+    stats = {},
     procs = {'radiance', 'shield'}
   },
   ['shock'] = {
@@ -362,7 +362,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'monster',
     desc = 'Summon [red]burning[fg] minions to fight for you',
-    stats = {dmg = 0.25},
+    stats = {},
     procs = {'lavaman'},
     tags = {}
   },
@@ -475,7 +475,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'leaf',
     desc = 'Periodically [green]heal[fg] yourself',
-    stats = {hp = 0.2},
+    stats = {},
     procs = {'heal'},
     tags = {'heal'},
   },
