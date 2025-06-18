@@ -37,7 +37,8 @@ LAST_PLUSGOLD = 0
 STARTING_REROLL_COST = 1
 --values should be 1, 2, 3, 4, 5
 REROLL_COST = function (times_rerolled)
-  return math.min(5, times_rerolled + STARTING_REROLL_COST)
+  -- return math.min(5, times_rerolled + STARTING_REROLL_COST)
+  return STARTING_REROLL_COST
 end
 
 

@@ -750,6 +750,7 @@ function ProgressBar:draw()
     x = x + (self.waves_power[i] / self.max_progress) * self.shape.w
     graphics.circle(x, self.y, 4, fg[0])
   end
+
 end
 
 function ProgressBar:get_progress_location()
