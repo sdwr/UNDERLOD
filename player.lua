@@ -2881,6 +2881,7 @@ function Critter:init(args)
   self:init_game_object(args)
   if tostring(self.x) == tostring(0/0) or tostring(self.y) == tostring(0/0) then self.dead = true; return end
   self:init_unit()
+  Helper.Unit:add_custom_variables_to_unit(self)
   Set_Enemy_Shape(self, 'critter')
   self:set_restitution(0.5)
 

@@ -1420,7 +1420,6 @@ function Proc_Lavaman:try_spawn(from)
   -- find a random free spot in the team
   self:find_free_spot(from)
   
-  illusion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
   self.tick_timer = 0
 end
 
@@ -1437,7 +1436,7 @@ function Proc_Lavaman:find_free_spot(from)
 end
 
 function Proc_Lavaman:spawn(coords)
-  illusion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+  critter2:play{pitch = random:float(0.8, 1.2), volume = 0.5}
   self.tick_timer = 0
   Critter{group = main.current.main,
     x = coords.x, y = coords.y, color = self.color, r = random:float(0, 2*math.pi)

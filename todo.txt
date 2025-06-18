@@ -277,9 +277,6 @@ get the playthrough to be fun:
 BUGS:
 --------------
 
-race condition with enemies and state_change_functions
-add null check, but still might be a problem?
-
 quit button disappears after oepning achieve AchievementsPanel
   -looks like it is related to paused state cycling
   -only happens when achievo panel is opened + closed

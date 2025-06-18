@@ -403,7 +403,6 @@ end
 --if the location is occupied, the enemy will not spawn
 function Spawn_Enemy(arena, type, location)
   local data = {}
-  print('spawning enemy', type, location.x, location.y)
   if Can_Spawn(6, location) then
     Spawn_Effect(arena, location)
     if table.contains(special_enemies, type) then
