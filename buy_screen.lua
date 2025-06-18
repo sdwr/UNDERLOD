@@ -42,6 +42,7 @@ function BuyScreen:on_enter(from)
 
   
   self.shop_level = level_to_shop_tier(self.level)
+  self.last_shop_level = level_to_shop_tier(self.level - 1)
   
   if not locked_state and self.reroll_shop then
     self.shop_item_data = {}
@@ -78,9 +79,11 @@ function BuyScreen:on_enter(from)
   
   self.show_level_buttons = false
   
-  self.shop_text = Text({{text = '[wavy_mid, fg]shop [fg]- gold: [yellow]' .. gold, font = pixul_font, alignment = 'center'}}, global_text_tags)
-  self.items_text = Text({{text = '[wavy_mid, fg]items - Lv. ' .. self.shop_level, font = pixul_font, alignment = 'center'}}, global_text_tags)
-  
+  self.shop_text = Text({{text = '[wavy_mid, fg]gold: [yellow]' .. gold, font = pixul_font, alignment = 'center'}}, global_text_tags)
+
+  self.items_text_x, self.items_text_y = gw/2 - 150, gh - 60
+  self.items_text = Text({{text = '[wavy_mid, fg]shop - Lv. ' .. self.last_shop_level, font = pixul_font, alignment = 'center'}}, global_text_tags)
+
   self.level_buttons = {}
   self.items = {}
   
@@ -284,7 +287,7 @@ end
 function BuyScreen:draw()
   self.main:draw()
   self.effects:draw()
-  if self.items_text then self.items_text:draw(gw/2 - 150, gh - 60) end
+  if self.items_text then self.items_text:draw(self.items_text_x, self.items_text_y) end
 
   if self.shop_text then self.shop_text:draw(64, 20) end
 
@@ -449,7 +452,31 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   local x = gw/2 - 60
 
   -- Create items with staggered timing
-  local transition_duration = is_shop_start and TRANSITION_DURATION or 0
+  local transition_duration = is_shop_start and TRANSITION_DURATION + 0.5 or 0
+
+  -- Check if shop level increased and animate the text
+  if self.shop_level > self.last_shop_level then
+    -- Shop level up animation
+    self.t:after(transition_duration, function()
+      -- Play level up sound
+      gold3:play{pitch = random:float(0.95, 1.05), volume = 0.7}
+      
+      -- Create particle effects around the text
+      for i = 1, 20 do
+        local angle = (i / 20) * 2 * math.pi
+        local distance = math.random() * 30
+        local particle_x = self.items_text_x + math.cos(angle) * distance
+        local particle_y = self.items_text_y + math.sin(angle) * distance
+        HitParticle{group = self.ui, x = particle_x, y = particle_y, color = yellow[0]}
+      end
+      
+      -- Update the text
+      self.items_text:set_text({{text = '[wavy_mid, fg]shop - Lv. ' .. self.shop_level, font = pixul_font, alignment = 'center'}})
+    end)
+    
+    -- Delay item creation to happen after text animation
+    transition_duration = transition_duration + 0.8
+  end
 
   local item_count = 0
   for i = 1, 3 do
