@@ -193,8 +193,6 @@ end
 function Spawn_Wave(arena, wave)
   arena.wave_finished = false
 
-  spawn_mark2:play{pitch = 1, volume = 1.2}
-
   local wave_index = 1
   local current_group = 1
   arena.t:every(arena.time_between_spawn_groups, function()
@@ -269,7 +267,7 @@ function Manage_Spawns(arena)
   arena.time_between_spawn_groups = 0.4
   arena.time_between_spawns = 0.2
 
-  -- arena.time_between_waves = 8
+  arena.time_between_waves = 2
   arena.time_between_next_wave_check = 1
 
   arena.start_time = 3
@@ -331,7 +329,6 @@ function Manage_Spawns(arena)
       --and launch the environmental hazards
       Spawn_Hazards(arena, environmental_hazards)
 
-      -- arena.time_until_next_wave = arena.time_between_waves
       arena.t:every(arena.time_between_next_wave_check, function()
         --quit if we're done
         if arena.wave > arena.max_waves or arena.quitting then
@@ -343,6 +340,13 @@ function Manage_Spawns(arena)
 
         --if spawning is done and all enemies are dead, spawn the next wave
         if arena.wave_finished and #arena.main:get_objects_by_classes(arena.enemies) <= 0 then
+
+          if arena.wave > 1 then
+            spawn_mark2:play{pitch = 1, volume = 1.2}
+            local wave_complete_text = Text2{group = arena.floor, x = gw/2, y = gh/2 - 48, lines = {{text = '[wavy_mid, cbyc]wave complete', font = fat_font, alignment = 'center'}}}
+            wave_complete_text.t:after(arena.time_between_waves, function() wave_complete_text.t:tween(0.2, wave_complete_text, {sy = 0}, math.linear, function() wave_complete_text.sy = 0 end) end)
+          end
+
           Spawn_Wave(arena, waves[arena.wave])
           arena.wave = arena.wave + 1
           -- arena.time_until_next_wave = arena.time_between_waves
