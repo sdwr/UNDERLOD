@@ -115,6 +115,18 @@ function Helper.Geometry:is_on_line(x, y, linex1, liney1, linex2, liney2, line_w
     end
 end
 
+function Helper.Geometry:is_point_in_polygon(x, y, corners)
+    local is_inside = false
+    for i = 1, #corners do
+        local j = corners[i]
+        local k = corners[i + 1] or corners[1]
+        if ((j.y > y) ~= (k.y > y)) and (x < (k.x - j.x) * (y - j.y) / (k.y - j.y) + j.x) then
+            is_inside = not is_inside
+        end
+    end
+    return is_inside
+end
+
 
 
 function Helper.Geometry:is_inside_rectangle(x, y, pointx1, pointy1, pointx2, pointy2)

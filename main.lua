@@ -1976,8 +1976,9 @@ function init()
     'mortar',
     'summoner',
     'arcspread',
+    'firewall_caster',
   }
-  
+
   boss_enemies = {
     'stompy',
     'dragon',
@@ -2015,6 +2016,8 @@ function init()
       'mortar',
       'summoner',
       'arcspread',
+
+      'firewall_caster',
     },
     [3] = {
       'summoner',
@@ -2046,6 +2049,7 @@ function init()
     ['boomerang'] = 300,
     ['plasma'] = 300,
     --special enemies t2
+    ['firewall_caster'] = 500,
     ['mortar'] = 500,
     ['spread'] = 500,
     ['spawner'] = 500,
@@ -2066,6 +2070,7 @@ function init()
     ['rager'] = red[3],
     ['stomper'] = red[3],
     ['charger'] = red[3],
+    ['firewall_caster'] = red[3],
     ['mortar'] = orange[3],
     ['spawner'] = orange[3],
     ['bomb'] = orange[3],

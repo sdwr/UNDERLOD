@@ -70,6 +70,7 @@ enemy_type_to_stats = {
     ['charger'] = { dmg = 1.5, mvspd  = 0.5 },
     ['summoner'] = {},
     ['bomb'] = { hp = -0.25 },
+    ['firewall_caster'] = { dmg = 1.5 },
 }
 
 -- general values
