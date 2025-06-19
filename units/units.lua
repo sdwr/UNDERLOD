@@ -39,10 +39,18 @@ function Team:init(i, unit)
   self.color = character_colors[unit.character]
 end
 
-function Team:add_troop(args)
-  local troop = Create_Troop(args)
+function Team:set_troop_data(data)
+  self.troop_data = data
+end
+
+function Team:add_troop(x, y)
+  self.troop_data.x = x
+  self.troop_data.y = y
+  local troop = Create_Troop(self.troop_data)
   troop.team = self.index
   table.insert(self.troops, troop)
+  
+  return troop
 end
 
 function Team:set_troop_state_to_following()

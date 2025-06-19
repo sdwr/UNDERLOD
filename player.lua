@@ -2948,6 +2948,7 @@ end
 
 
 function Critter:hit(damage, from, damageType, makesSound)
+  
   if makesSound == nil then makesSound = true end
 
   if self.dead or self.invulnerable then return end

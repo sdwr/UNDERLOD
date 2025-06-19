@@ -202,9 +202,11 @@ function Enemy:on_collision_enter(other, contact)
 end
 
 function Enemy:hit(damage, from, damageType, makesSound)
+
+  if self.invulnerable then return end
+
   if makesSound == nil then makesSound = true end
   
-  if self.invulnerable then return end
   if self.dead then return end
   if self.isBoss then
     self.hfx:use('hit', 0.005, 200, 20)

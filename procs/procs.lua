@@ -1529,6 +1529,58 @@ function Proc_Blazin:onTick(dt)
   self.unit:remove_buff(self.buff)
   self.unit:add_buff(self.buffdata)
 end
+Proc_Phoenix = Proc:extend()
+function Proc_Phoenix:init(args)
+  self.triggers = {PROC_ON_DEATH}
+  self.scope = 'troop'
+
+  Proc_Phoenix.super.init(self, args)
+  
+  self.color = self.data.color or white[0]
+  self.invulnerable_duration = self.data.invulnerable_duration or 1.5
+  
+  --define the proc's vars
+  self.team_index = nil
+  self.death_location_x = nil
+  self.death_location_y = nil
+  
+  self.has_been_revived = false
+end
+
+function Proc_Phoenix:onDeath()
+  Proc_Phoenix.super.onDeath(self)
+  
+  if self.has_been_revived then return end
+
+  self.team_index = self.unit.team
+  self.has_been_revived = true
+  self.death_location_x = self.unit.x
+  self.death_location_y = self.unit.y
+
+  local team = Helper.Unit:get_team_by_index(self.team_index)
+
+
+  trigger:after(1, function()
+    if team and team:get_alive_troop_count() >= 1 then
+      local location = team:get_center()
+      local troop = team:add_troop(location.x, location.y)
+      troop:set_invulnerable(self.invulnerable_duration)
+      
+      Area{
+        group = main.current.effects,
+        x = location.x, y = location.y,
+        pick_shape = 'circle',
+        dmg = 0,
+        r = 6, duration = 0.4, color = self.color,
+        is_troop = self.unit.is_troop,
+        unit = troop,
+        follow_unit = true,
+      }
+      holylight:play{pitch = random:float(0.8, 1.2), volume = 1.8}
+    end
+  end)
+  
+end
 
 Proc_Frost = Proc:extend()
 function Proc_Frost:init(args)
@@ -1999,6 +2051,7 @@ proc_name_to_class = {
   ['firestack'] = Proc_Firestack,
   ['fireexplode'] = Proc_FireExplode,
   ['blazin'] = Proc_Blazin,
+  ['phoenix'] = Proc_Phoenix,
   --blue procs
   ['frost'] = Proc_Frost,
   ['frostfield'] = Proc_Frostfield,

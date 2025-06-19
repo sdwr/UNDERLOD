@@ -493,6 +493,14 @@ item_to_item_data = {
     procs = {'blazin'},
     prereqs = {'firedmg'}
   },
+  ['phoenix'] = {
+    name = 'phoenix',
+    colors = {'red'},
+    cost = 10,
+    icon = 'cactus',
+    desc = 'The first time this unit dies, it is revived with 50% health',
+    procs = {'phoenix'}
+  },
 
   --blue items
   ['frostorb'] = {

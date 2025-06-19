@@ -532,6 +532,9 @@ function Unit:update_buffs(dt)
     if k == 'frozen' then
       self.state = unit_states['frozen']
     end
+    if k == 'invulnerable' then
+      self.invulnerable = true
+    end
 
     --dec duration
     v.duration = v.duration - dt
@@ -563,6 +566,8 @@ function Unit:update_buffs(dt)
         if self.state == unit_states['frozen'] then
           self.state = unit_states['normal']
         end
+      elseif k == 'invulnerable' then
+        self.invulnerable = false
       elseif k == 'shield' then
         self:remove_shield()
       end
@@ -1038,6 +1043,11 @@ end
 function Unit:freeze(duration, from)
   local freezeBuff = {name = 'frozen', color = blue[0], duration = duration, maxDuration = duration}
   self:add_buff(freezeBuff)
+end
+
+function Unit:set_invulnerable(duration)
+  local invulnerableBuff = {name = 'invulnerable', color = white[0], duration = duration, maxDuration = duration}
+  self:add_buff(invulnerableBuff)
 end
 
 function Unit:bloodlust(duration)

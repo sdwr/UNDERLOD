@@ -517,6 +517,8 @@ end
 
 function Troop:hit(damage, from, damageType, makesSound)
 
+  if self.invulnerable then return end
+
   if makesSound == nil then makesSound = true end
 
   if self.bubbled then return end
@@ -604,7 +606,7 @@ function Troop:on_collision_enter(other, contact)
       pop1:play{pitch = r, volume = 0.2}
   elseif table.any(main.current.enemies, function(v) return other:is(v) end) then
 
-    player_hit1:play{pitch = random:float(0.95, 1.05), volume = 1.8}
+    player_hit1:play{pitch = random:float(0.95, 1.05), volume = 1.5}
 
     local duration = KNOCKBACK_DURATION_ENEMY
     local push_force = LAUNCH_PUSH_FORCE_ENEMY

@@ -159,9 +159,19 @@ function Spawn_Teams(arena)
     end
 
 
+    team:set_troop_data({
+      group = arena.main,
+      x = spawn_x ,
+      y = spawn_y,
+      level = unit.level,
+      character = unit.character,
+      items = unit.items,
+      passives = arena.passives
+    })
     for row_offset=0, 4 do
-      local troop_data = {group = arena.main, x = spawn_x + (column_offset*20), y = spawn_y + (row_offset*10), level = unit.level, character = unit.character, items = unit.items, passives = arena.passives}
-      team:add_troop(troop_data)
+      local x = spawn_x + (column_offset*20)
+      local y = spawn_y + (row_offset*10)
+      team:add_troop(x, y)
     end
 
     --add items to team / troops here

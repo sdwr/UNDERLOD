@@ -160,6 +160,8 @@ function init()
   campfire = Sound('campfire.wav', s)
   firebreath = Sound('firebreath.mp3', s)
 
+  holylight = Sound('HolyLight.ogg', s)
+
 
 
   song1 = Sound('gunnar - 26 hours and I feel Fine.mp3', { tags = { music } })
