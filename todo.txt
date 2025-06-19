@@ -279,6 +279,10 @@ BUGS:
 
 can reroll items while rerolling items
 
+what happens with multiple icenovas?
+
+icenova doesn't trigger very well vs large enemies (boss)
+
 quit button disappears after oepning achieve AchievementsPanel
   -looks like it is related to paused state cycling
   -only happens when achievo panel is opened + closed

@@ -264,7 +264,7 @@ function Manage_Spawns(arena)
 
   arena.entry_delay = 0.5
 
-  arena.time_between_spawn_groups = 0.4
+  arena.time_between_spawn_groups = 0.8
   arena.time_between_spawns = 0.2
 
   arena.time_between_waves = 2

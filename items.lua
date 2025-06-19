@@ -233,6 +233,16 @@ item_to_item_data = {
   --   procs = {'craggy'}
   -- },
 
+  ['flimsyboots'] = {
+    name = 'flimsyboots',
+    colors = {},
+    cost = 5,
+    icon = 'simpleboots',
+    desc = 'A pair of boots that slightly increases your movespeed',
+    stats = {mvspd = 0.1},
+    procs = {},
+  },
+
   ['shortsword'] = {
     name = 'shortsword',
     colors = {},
@@ -335,7 +345,7 @@ item_to_item_data = {
     colors = {},
     cost = 10,
     icon = 'bomb',
-    desc = 'Enemies that are killed [red[5]]explode[fg] for part of their max health',
+    desc = 'Enemies you kill [red[5]]explode[fg] for part of their max health',
     stats = {dmg = 0.5},
     procs = {'overkill'}
   },
@@ -348,15 +358,15 @@ item_to_item_data = {
     stats = {},
     procs = {'bloodlust'}
   },
-  ['repeater'] = {
-    name = 'repeater',
-    colors = {},
-    cost = 10,
-    icon = 'repeater',
-    desc = 'Greatly increases attack speed',
-    stats = {aspd = 0.5},
-    procs = {}
-  },
+  -- ['repeater'] = {
+  --   name = 'repeater',
+  --   colors = {},
+  --   cost = 10,
+  --   icon = 'repeater',
+  --   desc = 'Greatly increases attack speed',
+  --   stats = {aspd = 0.5},
+  --   procs = {}
+  -- },
 
   --yellow items
   ['medbow'] = {
@@ -372,7 +382,7 @@ item_to_item_data = {
   ['staticboots'] = {
     name = 'staticboots',
     colors = {'yellow'},
-    cost = 5,
+    cost = 10,
     icon = 'simpleboots',
     desc = 'Increase movespeed and charge [yellow]lightning[fg] attacks while moving',
     stats = {mvspd = 0.15},
@@ -382,7 +392,7 @@ item_to_item_data = {
   ['radiance'] = {
     name = 'radiance',
     colors = {'yellow'},
-    cost = 5,
+    cost = 10,
     icon = 'sun',
     desc = 'Gain a shield and a damage aura',
     stats = {},

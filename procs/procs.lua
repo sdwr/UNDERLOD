@@ -639,7 +639,7 @@ function Proc_Lightning:init(args)
   
 
   --define the proc's vars
-  self.damage = self.data.damage or 20
+  self.damage = self.data.damage or 30
   self.damageType = DAMAGE_TYPE_LIGHTNING
   self.chain = self.data.chain or 4
   self.every_attacks = self.data.every_attacks or 4
@@ -1235,7 +1235,7 @@ function Proc_Radiance:init(args)
 
   --define the proc's vars
   self.radius = self.data.radius or 50
-  self.damage = self.data.damage or 10
+  self.damage = self.data.damage or 20
   self.damageType = 'fire'
 end
 
@@ -1268,7 +1268,7 @@ function Proc_Shield:init(args)
 
   --define the proc's vars
   self.buffname = 'shield'
-  self.shield_amount = self.data.shield_amount or 10
+  self.shield_amount = self.data.shield_amount or 25
   self.time_between = self.data.time_between or 5
   self.buff_duration = self.data.buff_duration or 4
 
@@ -1668,7 +1668,7 @@ function Proc_Icenova:init(args)
 
   -- Cooldown and delay values
   self.cooldown = self.data.cooldown or 5
-  self.cancel_cooldown = self.data.cancel_cooldown or 1
+  self.cancel_cooldown = self.data.cancel_cooldown or 0.5
   self.procDelay = self.data.procDelay or 0.75
 
   -- State machine setup

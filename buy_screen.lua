@@ -405,6 +405,7 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   local item_2
   local item_3
   local all_items = {nil, nil, nil}
+  local shop_already_rolled = false
 
   if self.first_shop or self.level == 1 then
     return
@@ -412,6 +413,10 @@ function BuyScreen:set_items(shop_level, is_shop_start)
 
   if not self.shop_item_data then
     self.shop_item_data = {}
+  end
+
+  if self.shop_item_data[1] or self.shop_item_data[2] or self.shop_item_data[3] then
+    shop_already_rolled = true
   end
 
   if self.shop_item_data[1] and locked_state then
@@ -470,43 +475,55 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   -- Check if shop level increased and animate the text
   if self.shop_level > self.last_shop_level then
     -- Shop level up animation
-    self.t:after(transition_duration, function()
-      -- Play level up sound
-      gold3:play{pitch = random:float(0.95, 1.05), volume = 0.7}
-      
-      -- Create particle effects around the text
-      for i = 1, 20 do
-        local angle = (i / 20) * 2 * math.pi
-        local distance = math.random() * 30
-        local particle_x = self.items_text_x + math.cos(angle) * distance
-        local particle_y = self.items_text_y + math.sin(angle) * distance
-        HitParticle{group = self.ui, x = particle_x, y = particle_y, color = yellow[0]}
-      end
-      
-      -- Update the text
+    if not shop_already_rolled then
+      self.t:after(transition_duration, function()
+        -- Play level up sound
+        gold3:play{pitch = random:float(0.95, 1.05), volume = 0.7}
+        
+        -- Create particle effects around the text
+        for i = 1, 20 do
+          local angle = (i / 20) * 2 * math.pi
+          local distance = math.random() * 30
+          local particle_x = self.items_text_x + math.cos(angle) * distance
+          local particle_y = self.items_text_y + math.sin(angle) * distance
+          HitParticle{group = self.ui, x = particle_x, y = particle_y, color = yellow[0]}
+        end
+        
+        -- Update the text
+        self.items_text:set_text({{text = '[wavy_mid, fg]shop - Lv. ' .. self.shop_level, font = pixul_font, alignment = 'center'}})
+      end)
+    else
       self.items_text:set_text({{text = '[wavy_mid, fg]shop - Lv. ' .. self.shop_level, font = pixul_font, alignment = 'center'}})
-    end)
+    end
     
     -- Delay item creation to happen after text animation
     transition_duration = transition_duration + 0.6
   end
 
-  local item_count = 0
-  for i = 1, 3 do
-    local item_number = i
-    if all_items[i] then
-      item_count = item_count + 1
-      self.t:after((0.6 * (item_count-1)) + transition_duration, function()
-        local item = ItemCard{group = self.ui, x = x + (i-1)*60, y = y, w = item_w, h = item_h, item = all_items[i], parent = self, i = i}
-        table.insert(self.items, item)
-      end)
+  if not shop_already_rolled then
+    local item_count = 0
+    for i = 1, 3 do
+      local item_number = i
+      if all_items[i] then
+        item_count = item_count + 1
+        self.t:after((0.6 * (item_count-1)) + transition_duration, function()
+          local item = ItemCard{group = self.ui, x = x + (i-1)*60, y = y, w = item_w, h = item_h, item = all_items[i], parent = self, i = i}
+          table.insert(self.items, item)
+        end)
+      end
     end
-  end
-
-  self.t:after(item_count * 0.6 + transition_duration, function()
+    self.t:after(item_count * 0.6 + transition_duration, function()
+      self.reroll_button.interact_with_mouse = true
+      self.lock_button.interact_with_mouse = true
+    end)
+  else
+    for i = 1, 3 do
+      local item = ItemCard{group = self.ui, x = x + (i-1)*60, y = y, w = item_w, h = item_h, item = all_items[i], parent = self, i = i}
+      table.insert(self.items, item)
+    end
     self.reroll_button.interact_with_mouse = true
     self.lock_button.interact_with_mouse = true
-  end)
+  end
 end
 
 
