@@ -90,14 +90,14 @@ function BuyScreen:on_enter(from)
   self:build_level_map()
   self:set_party()
   
+  
+  self.lock_button = LockButton{group = self.main, x = gw/2 - 150, y = gh - 40, parent = self}
+  self.reroll_button = RerollButton{group = self.main, x = 90, y = gh - 20, parent = self}
+
   --only roll items once a character exists
   if not self.first_shop then
     self:try_roll_items(true)
   end
-  
-  
-  self.lock_button = LockButton{group = self.main, x = gw/2 - 150, y = gh - 40, parent = self}
-  RerollButton{group = self.main, x = 90, y = gh - 20, parent = self}
   
   GoButton{group = self.main, x = gw - 90, y = gh - 20, parent = self}
   self.tutorial_button = Button{group = self.main, x = gw/2 + 129, y = 18, button_text = '?', fg_color = 'bg10', bg_color = 'bg', action = function()
@@ -445,8 +445,15 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   all_items[3] = item_3
 
   --only reroll once (so, main menu and back in won't reroll again)
-  --reroll_shop resets on level clear in arena.lua
   self.reroll_shop = false
+
+  --disable interaction with the reroll and lock buttons while rerolling
+  self.reroll_button.interact_with_mouse = false
+  self.lock_button.interact_with_mouse = false
+  self.reroll_button:on_mouse_exit()
+  self.lock_button:on_mouse_exit()
+  self.reroll_button.selected = false
+  self.lock_button.selected = false
 
   all_items = {item_1, item_2, item_3}
   self.shop_item_data = all_items
@@ -495,6 +502,11 @@ function BuyScreen:set_items(shop_level, is_shop_start)
       end)
     end
   end
+
+  self.t:after(item_count * 0.6 + transition_duration, function()
+    self.reroll_button.interact_with_mouse = true
+    self.lock_button.interact_with_mouse = true
+  end)
 end
 
 
@@ -1166,6 +1178,8 @@ end
 function LockButton:update(dt)
   self:update_game_object(dt)
 
+  if not self.interact_with_mouse then return end
+
   if self.selected and input.m1.pressed then
     if self.parent.level == 1 then
       Create_Info_Text('cannot buy items in the first level', self)
@@ -1196,6 +1210,8 @@ end
 
 
 function LockButton:on_mouse_enter()
+  if not self.interact_with_mouse then return end
+
   ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
   pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
   self.selected = true
@@ -1205,6 +1221,8 @@ end
 
 
 function LockButton:on_mouse_exit()
+  if not self.interact_with_mouse then return end
+
   if not locked_state then self.text:set_text{{text = '[bg10]' .. tostring(locked_state and 'unlock' or 'lock'), font = pixul_font, alignment = 'center'}} end
   self.selected = false
 end
@@ -1238,6 +1256,8 @@ end
 
 function RerollButton:update(dt)
   self:update_game_object(dt)
+
+  if not self.interact_with_mouse then return end
 
   if (self.selected and input.m1.pressed) or input.r.pressed then
     if self.parent.level == 1 then
@@ -1309,6 +1329,8 @@ end
 
 
 function RerollButton:on_mouse_enter()
+  if not self.interact_with_mouse then return end
+
   ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
   pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
   self.selected = true
@@ -1326,6 +1348,8 @@ end
 
 
 function RerollButton:on_mouse_exit()
+  if not self.interact_with_mouse then return end
+
   if self.parent:is(BuyScreen) then
     self:refresh_text('[bg10]')
   elseif self.parent:is(Arena) then

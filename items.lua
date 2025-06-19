@@ -232,6 +232,61 @@ item_to_item_data = {
   --   stats = {hp = 0.25, thorns = 0.2 },
   --   procs = {'craggy'}
   -- },
+
+  ['shortsword'] = {
+    name = 'shortsword',
+    colors = {},
+    cost = 5,
+    icon = 'sword',
+    desc = 'A short sword that slightly increases your damage',
+    stats = {dmg = 0.2},
+    procs = {},
+  },
+  ['longsword'] = {
+    name = 'longsword',
+    colors = {},
+    cost = 10,
+    icon = 'sword',
+    desc = 'A sword that increases your damage',
+    stats = {dmg = 0.4},
+    procs = {},
+  },
+  ['greatsword'] = {
+    name = 'greatsword',
+    colors = {},
+    cost = 15,
+    icon = 'sword',
+    desc = 'A sword that greatly increases your damage',
+    stats = {dmg = 0.6},
+    procs = {},
+  },
+
+  ['shortbow'] = {
+    name = 'shortbow',
+    colors = {},
+    cost = 5,
+    icon = 'bow',
+    desc = 'A dagger that slightly increases your attack speed',
+    stats = {aspd = 0.1},
+    procs = {},
+  }, 
+  ['mediumbowr'] = {
+    name = 'mediumbowr',
+    colors = {},
+    cost = 10,
+    icon = 'bow',
+    desc = 'A rapier that increases your attack speed',
+    stats = {aspd = 0.2},
+  },
+  ['longbow'] = {
+    name = 'longbow',
+    colors = {},
+    cost = 15,
+    icon = 'bow',
+    desc = 'A bow that greatly increases your attack speed',
+    stats = {aspd = 0.4},
+  },
+
   ['spikedcollar'] = {
     name = 'spikedcollar',
     colors = {},
