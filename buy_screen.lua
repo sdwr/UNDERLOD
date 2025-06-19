@@ -518,7 +518,7 @@ function BuyScreen:set_items(shop_level, is_shop_start)
     end)
   else
     for i = 1, 3 do
-      if all_items[1] then
+      if all_items[i] then
         local item = ItemCard{group = self.ui, x = x + (i-1)*60, y = y, w = item_w, h = item_h, item = all_items[i], parent = self, i = i}
         table.insert(self.items, item)
       end

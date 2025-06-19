@@ -278,11 +278,16 @@ function Enemy:die()
   end
 end
 
-function Enemy:push(f, r, push_invulnerable)
+function Enemy:push(f, r, push_invulnerable, duration)
     local n = 1
-    if self.tank then n = 0.7 end
     if self.boss then n = 0.2 end
-    if self.level % 25 == 0 and self.boss then n = 0.7 end
+
+    if self.state == unit_states['knockback'] then
+      return
+    end
+
+    -- self.state = unit_states['knockback']
+
     self.push_invulnerable = push_invulnerable
     self.push_force = n*f
     self.being_pushed = true
@@ -291,4 +296,17 @@ function Enemy:push(f, r, push_invulnerable)
     self:apply_angular_impulse(random:table{random:float(-12*math.pi, -4*math.pi), random:float(4*math.pi, 12*math.pi)})
     self:set_damping(1.5*(1/n))
     self:set_angular_damping(1.5*(1/n))
+
+      -- Cancel any existing during trigger for push
+  if self.cancel_trigger_tag then
+    self.t:cancel(self.cancel_trigger_tag)
+  end
+
+  -- Reset state after the duration
+  self.cancel_trigger_tag = self.t:after(duration, function()
+    self.steering_enabled = true
+    if self.state == unit_states['knockback'] then
+      self.state = unit_states['normal']
+    end
+  end)
 end

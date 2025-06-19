@@ -452,6 +452,16 @@ item_to_item_data = {
     procs = {'lavapool'},
     tags = {'firedmg'}
   },
+  ['firenova'] = {
+    name = 'firenova',
+    colors = {'red'},
+    cost = 10,
+    icon = 'sun',
+    desc = 'Your attacks trigger an [red]explosion[fg] on enemies',
+    stats = {},
+    procs = {'firenova'},
+    prereqs = {'firedmg'}
+  },
   ['fireexplode'] = {
     name = 'fireexplode',
     colors = {'red'},

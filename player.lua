@@ -951,6 +951,9 @@ function Area:damage()
       target:add_buff(self.debuff, self.debuffDuration, self.unit)
     end
     if self.dmg > 0 then
+      if self.knockback_force then
+        target:push(self.knockback_force, self.unit:angle_to_object(target), nil, self.knockback_duration)
+      end
       target:hit(self.dmg, self.unit)
       HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
       for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
