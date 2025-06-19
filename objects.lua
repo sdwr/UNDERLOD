@@ -529,6 +529,9 @@ function Unit:update_buffs(dt)
     if k == 'rooted' then
       self.state = unit_states['stopped']
     end
+    if k == 'frozen' then
+      self.state = unit_states['frozen']
+    end
 
     --dec duration
     v.duration = v.duration - dt
@@ -554,6 +557,10 @@ function Unit:update_buffs(dt)
         end
       elseif k == 'rooted' then
         if self.state == unit_states['stopped'] then
+          self.state = unit_states['normal']
+        end
+      elseif k == 'frozen' then
+        if self.state == unit_states['frozen'] then
           self.state = unit_states['normal']
         end
       elseif k == 'shield' then
@@ -1026,6 +1033,11 @@ function Unit:slow(amount, duration, from)
 
   self:remove_buff('slowed')
   self:add_buff(slowBuff)
+end
+
+function Unit:freeze(duration, from)
+  local freezeBuff = {name = 'frozen', color = blue[0], duration = duration, maxDuration = duration}
+  self:add_buff(freezeBuff)
 end
 
 function Unit:bloodlust(duration)

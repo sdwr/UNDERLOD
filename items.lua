@@ -553,6 +553,16 @@ item_to_item_data = {
     procs = {'slowstack'},
     prereqs = {'frostslow'}
   },
+  ['glaciate'] = {
+    name = 'glaciate',
+    colors = {'blue'},
+    cost = 15,
+    icon = 'icefang',
+    desc = 'Your attacks on [blue]slowed[fg] have a chance to [blue]freeze[fg] them',
+    stats = {dmg = 0.25},
+    procs = {'glaciate'},
+    prereqs = {'frostslow'}
+  },
 
   --green items
   ['healingleaf'] = {

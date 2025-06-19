@@ -1898,6 +1898,40 @@ function Proc_Slowstack:init(args)
   self.unit:add_buff(self.buffdata)
 end
 
+Proc_Glaciate = Proc:extend()
+function Proc_Glaciate:init(args)
+  self.triggers = {PROC_ON_ATTACK, PROC_ON_TICK}
+  self.scope = 'troop'
+
+  Proc_Glaciate.super.init(self, args)
+
+  self.damage = self.data.damage or 10
+  self.damageType = DAMAGE_TYPE_FROST
+  self.duration = self.data.duration or 1
+  self.color = self.data.color or blue[0]
+
+  --define the procs memory
+  self.hit_cooldown = self.data.hit_cooldown or 2
+  self.hit_cooldown_timer = 0
+end
+
+function Proc_Glaciate:onTick(dt)
+  Proc_Glaciate.super.onTick(self, dt)
+  if self.hit_cooldown_timer > 0 then
+    self.hit_cooldown_timer = self.hit_cooldown_timer - dt
+  end
+end
+
+function Proc_Glaciate:onAttack(target)
+  Proc_Glaciate.super.onAttack(self, target)
+  if self.hit_cooldown_timer <= 0 then
+    if target:has_buff('slowed') and not target:has_buff('frozen') then
+      self.hit_cooldown_timer = self.hit_cooldown
+      target:freeze(self.duration, self.unit)
+    end
+  end
+end
+
 --need to assign an owner to burn debuff for this to work
 --consider snapshotting the owner's ele multiplier
 -- and keepign it when the buff gets reapplied
@@ -1971,6 +2005,7 @@ proc_name_to_class = {
   ['holduground'] = Proc_Holduground,
   ['icenova'] = Proc_Icenova,
   ['slowstack'] = Proc_Slowstack,
+  ['glaciate'] = Proc_Glaciate,
   --green procs
   ['heal'] = Proc_Heal,
   ['sacrificialclam'] = Proc_SacrificialClam,
