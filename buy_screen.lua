@@ -70,8 +70,10 @@ function BuyScreen:on_enter(from)
   self.ui = Group()
   self.ui_top = Group()
   self.overlay_ui = Group()
-  self.options_ui = Group()
   self.tutorial = Group()
+  self.options_ui = Group()
+
+  self:create_tutorial_popup()
   
   Check_All_Achievements()
   
@@ -100,31 +102,16 @@ function BuyScreen:on_enter(from)
   end
   
   GoButton{group = self.main, x = gw - 90, y = gh - 20, parent = self}
-  self.tutorial_button = Button{group = self.main, x = gw/2 + 129, y = 18, button_text = '?', fg_color = 'bg10', bg_color = 'bg', action = function()
-    self.in_tutorial = true
-    self.title_text = Text2{group = self.tutorial, x = gw/2, y = 35, lines = {{text = '[fg]WELCOME TO UNDERLOD!', font = fat_font, alignment = 'center'}}}
-    self.tutorial_text = Text2{group = self.tutorial, x = 228, y = 160, lines = {
-      {text = '[fg]You control troops of multiple units that auto-attack nearby enemies.', font = pixul_font, height_multiplier = 1.2},
-      {text = '[fg]Hold [yellow]left click[fg] to drag your current troop.', font = pixul_font, height_multiplier = 2.2},
-      {text = '[yellow]Right click[fg] to set a rally point for your current troop', font = pixul_font, height_multiplier = 2.2},
-      {text = '[yellow]Spacebar[fg] drags all your troops to the cursor location', font = pixul_font, height_multiplier = 2.2},
-      {text = '[fg]Buy items in the shop between rounds', font = pixul_font, height_multiplier = 1.2},
-      {text = '[fg]Sell items with [yellow]right click[fg]', font = pixul_font, height_multiplier = 1.2},
-      {text = '[fg]The shop levels up every time you defeat a boss', font = pixul_font, height_multiplier = 1.2},
-      {text = "[fg]Try to earn your 3rd troop and defeat the final boss", font = pixul_font, height_multiplier = 1.2},
-      {text = "[yellow, wavy_mid]Good luck!", font = pixul_font, height_multiplier = 2.2, alignment = 'center'},
-    }}
-
-
-    self.close_button = Button{group = self.tutorial, x = gw - 20, y = 20, button_text = 'x', bg_color = 'bg', fg_color = 'bg10', action = function()
-      trigger:after(0.01, function()
-        self:quit_tutorial()
-      end)
-    end}
-  end, mouse_enter = function(b)
+  
+  self.tutorial_button = Button{group = self.main, x = gw/2 + 129, y = 18, button_text = '?', fg_color = 'bg10', bg_color = 'bg', 
+    action = function()
+      self.tutorial_popup:open()
+      self.in_tutorial = true
+    end,
+    mouse_enter = function(b)
     b.info_text = InfoText{group = main.current.ui, force_update = true}
     b.info_text:activate({
-      {text = '[fg]guide', font = pixul_font, alignment = 'center'},
+      {text = '[fg]controls', font = pixul_font, alignment = 'center'},
     }, nil, nil, nil, nil, 16, 4, nil, 2)
     b.info_text.x, b.info_text.y = b.x, b.y + 20
   end, mouse_exit = function(b)
@@ -163,15 +150,14 @@ function BuyScreen:update(dt)
   elseif self.choose_character and not self.paused then
     self.overlay_ui:update(dt*slow_amount)
     self.options_ui:update(dt*slow_amount)
-  else
+  elseif self.paused then
     self.options_ui:update(dt*slow_amount)
+  else
     self.tutorial:update(dt*slow_amount)
+    self.options_ui:update(dt*slow_amount)
   end
 
-  if self.in_tutorial and input.escape.pressed then
-    self:quit_tutorial()
-  end
-
+  --buy screen controls
   if input['lctrl'].down or input['rctrl'].down then
     if input['g'].pressed then
       gold = gold + 100
@@ -185,7 +171,7 @@ function BuyScreen:update(dt)
     end
   end
 
-  if input.escape.pressed and not self.transitioning and not self.in_tutorial then
+  if input.escape.pressed and not self.transitioning then
     if not self.paused then
       open_options(self)
     else
@@ -268,19 +254,32 @@ function BuyScreen:get_first_available_inventory_slot()
   return nil
 end
 
+function BuyScreen:create_tutorial_popup()
+  local shop_tutorial_lines = {
+    {text = '[fg]Shop Tutorial', font = fat_font, alignment = 'center'},
+    {text = '', height_multiplier = 0.1}, -- Spacer
+    {text = '[yellow]Left Click:[fg] buy items and troops', font = pixul_font, height_multiplier = 1.5},
+    {text = '[yellow]Left Click and drag:[fg] move items between troops', font = pixul_font, height_multiplier = 1.5},
+    {text = '[yellow]Right Click:[fg] sell items', font = pixul_font, height_multiplier = 1.5},
+    {text = '[yellow]R:[fg] reroll shop', font = pixul_font, height_multiplier = 1.5},
+    {text = '[yellow]Space:[fg] start next level', height_multiplier = 1.5},
+    {text = '[yellow]Esc:[fg] open options', font = pixul_font, height_multiplier = 1.5},
+
+  }
+
+  self.tutorial_popup = TutorialPopup{
+    group = self.tutorial, 
+    parent = self,
+    lines = shop_tutorial_lines,
+    display_show_hints_checkbox = false,
+  }
+end
+
 
 
 
 function BuyScreen:quit_tutorial()
   self.in_tutorial = false
-  self.tutorial_text.dead = true
-  self.tutorial_text = nil
-  self.title_text.dead = true
-  self.title_text = nil
-  self.close_button.dead = true
-  self.close_button = nil
-  self.tutorial_cards = {}
-  self.tutorial:update(0)
 end
 
 
@@ -296,12 +295,9 @@ function BuyScreen:draw()
   if self.paused then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
   
   self.overlay_ui:draw()
+  self.tutorial:draw()
   self.options_ui:draw()
 
-  if self.in_tutorial then
-    graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent_2)
-  end
-  self.tutorial:draw()
 end
 
 function BuyScreen:gain_gold(amount)

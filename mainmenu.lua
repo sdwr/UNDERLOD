@@ -159,10 +159,12 @@ function MainMenu:on_enter(from)
     --steam.shutdown()
     love.event.quit()
   end}
-  self.unlock_button = Button{group = self.main_ui, x = 40, y = gh/2  + 100, force_update = true, button_text ='unlock', fg_color = 'bg10', bg_color='bg', action = function(b)
+
+  -- hide for now (achievement test button)
+  -- self.unlock_button = Button{group = self.main_ui, x = 40, y = gh/2  + 100, force_update = true, button_text ='unlock', fg_color = 'bg10', bg_color='bg', action = function(b)
     
-    Unlock_Achievement('heatingup')
-  end}
+  --   Unlock_Achievement('heatingup')
+  -- end}
   --[[self.t:every(2, function() self.soundtrack_button.spring:pull(0.025, 200, 10) end)
   self.soundtrack_button = Button{group = self.main_ui, x = gw - 72, y = gh - 40, force_update = true, button_text = 'buy the soundtrack!', fg_color = 'bg10', bg_color = 'bg', action = function(b)
     ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}

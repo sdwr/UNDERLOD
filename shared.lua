@@ -608,9 +608,6 @@ function Text2:pull(...)
   self.t:tween(0.2, self, {r = 0}, math.linear)
 end
 
-
-
-
 InfoText = Object:extend()
 InfoText:implement(GameObject)
 function InfoText:init(args)
@@ -653,6 +650,196 @@ function InfoText:deactivate()
   self.t:tween(0.05, self, {sy = 0}, math.linear, function() self.sy = 0; self.dead = true end, 'deactivate')
 end
 
+TutorialPopup = Object:extend()
+TutorialPopup:implement(GameObject)
+
+function TutorialPopup:init(args)
+  self:init_game_object(args)
+  self.group = self.group
+  self.is_open = false
+
+  -- Create a dark, semi-transparent background
+  self.bg_opacity = 0.8
+  self.bg_color = Color(0, 0, 0, self.bg_opacity)
+
+  -- Container for the popup elements
+  self.popup_width = 300
+  self.popup_height = 200
+  self.popup_x = gw/2
+  self.popup_y = gh/2
+
+  self.display_show_hints_checkbox = args.display_show_hints_checkbox or false
+  self.okay_button_offset = self.display_show_hints_checkbox and 60 or 0
+
+  -- ### FIX STARTS HERE ###
+  -- Ensure all lines have a default font to prevent crashes
+  self.tutorial_lines = args.lines or {}
+  for _, line in ipairs(self.tutorial_lines) do
+      if not line.font then
+          line.font = pixul_font -- Or your preferred default font
+      end
+  end
+
+
+end
+
+function TutorialPopup:update(dt)
+  if not self.is_open then return end
+  self:update_game_object(dt)
+  if self.tutorial_text then
+    self.tutorial_text:update(dt)
+  end
+  if self.okay_button then
+    self.okay_button:update(dt)
+  end
+  if self.display_show_hints_checkbox then
+    if self.show_hints_checkbox then
+      self.show_hints_checkbox:update(dt)
+    end
+  end
+end
+
+function TutorialPopup:draw()
+  if not self.is_open then return end
+
+  -- Draw the dark background
+  graphics.push(gw/2, gh/2)
+  graphics.rectangle(gw/2, gh/2, gw, gh, nil, nil, self.bg_color)
+  graphics.pop()
+
+  -- Draw the popup container
+  graphics.push(self.popup_x, self.popup_y)
+  graphics.rectangle(self.popup_x, self.popup_y, self.popup_width, self.popup_height, 10, 10, bg[-2])
+  graphics.pop()
+
+  -- Draw the elements
+  -- self.tutorial_text:draw()
+  -- self.okay_button:draw()
+  -- self.show_hints_checkbox:draw()
+end
+
+function TutorialPopup:open()
+  self.is_open = true
+  self:create_text()
+  -- You can add animations here if you like, similar to the InfoText activate method
+end
+
+function TutorialPopup:close()
+  self.is_open = false
+  self:delete_text()
+  if self.parent then
+    self.parent:quit_tutorial()
+  end
+end
+
+function TutorialPopup:create_text()
+  -- Tutorial Text
+  self.tutorial_text = Text2{
+    group = self.group,
+    x = self.popup_x,
+    y = self.popup_y - 10,
+    lines = self.tutorial_lines
+  }
+
+  -- "Okay" Button
+
+  self.okay_button = Button{
+    group = self.group,
+    parent = self,
+    x = self.popup_x + self.okay_button_offset,
+    y = self.popup_y + (self.popup_height/2) - 15,
+    bg_color = 'green', fg_color = 'fmg5',
+    button_text = 'Okay',
+    action = function(self)
+      self.parent:close()
+    end,
+    mouse_enter = function(b)
+      b.text:set_text{{text = '[fgm5]Okay', font = pixul_font, alignment = 'center'}}
+    end,
+    mouse_exit = function(b)
+      b.text:set_text{{text = '[greenm5]Okay', font = pixul_font, alignment = 'center'}}
+    end
+  }
+
+  -- "Show Hints" Checkbox
+  if self.display_show_hints_checkbox then
+    self.show_hints_checkbox = Checkbox{
+      group = self.group,
+      x = self.popup_x - 60,
+      y = self.popup_y + (self.popup_height/2) - 15,
+      label = 'Show Hints',
+        checked = true -- Default to checked
+    }
+  end
+end
+
+function TutorialPopup:delete_text()
+  self.tutorial_text.dead = true
+  self.okay_button.dead = true
+  if self.display_show_hints_checkbox then
+    self.show_hints_checkbox.dead = true
+  end
+end
+
+Checkbox = Object:extend()
+Checkbox:implement(GameObject)
+
+function Checkbox:init(args)
+  self:init_game_object(args)
+  self.label = args.label or ''
+  self.checked = args.checked or false
+  self.box_size = 16
+  self.label_offset = 5
+
+  -- ### FIX STARTS HERE ###
+  -- Correctly initialize the Text object with global_text_tags
+  self.text = Text({
+      {text = self.label, font = pixul_font}
+  }, global_text_tags)
+  -- ### FIX ENDS HERE ###
+
+  self:add_clickable_area()
+end
+
+function Checkbox:add_clickable_area()
+    self.clickable_area = {
+        x = self.x,
+        y = self.y,
+        w = self.box_size + self.label_offset + self.text.w,
+        h = self.box_size
+    }
+end
+
+function Checkbox:update(dt)
+    self:update_game_object(dt)
+    -- This assumes you have a global 'mouse' object with its position and a 'pressed' state
+    if mouse.pressed and self:is_mouse_over() then
+        self.checked = not self.checked
+        if self.action then self.action(self.checked) end
+    end
+end
+
+function Checkbox:draw()
+    -- Draw the box
+    local box_color = self.checked and yellow[0] or bg[0]
+    graphics.rectangle(self.x, self.y, self.box_size, self.box_size, 2, 2, box_color)
+
+    -- Draw the checkmark if checked
+    if self.checked then
+        graphics.push(self.x + 4, self.y + 4)
+        graphics.line(0, 4, 4, 8, fg[0])
+        graphics.line(4, 8, 8, 0, fg[0])
+        graphics.pop()
+    end
+
+    -- Draw the label
+    self.text:draw(self.x + self.box_size + self.label_offset, self.y)
+end
+
+function Checkbox:is_mouse_over()
+    return mouse.x > self.clickable_area.x and mouse.x < self.clickable_area.x + self.clickable_area.w and
+           mouse.y > self.clickable_area.y and mouse.y < self.clickable_area.y + self.clickable_area.h
+end
 
 
 
