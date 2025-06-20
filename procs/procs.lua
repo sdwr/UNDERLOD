@@ -267,13 +267,13 @@ function Proc_SpikedCollar:onGotHit(from, damage)
   if math.random() < self.proc_chance then
     rogue_crit1:play{pitch = random:float(0.8, 1.2), volume = 0.6}
 
-    self:create_display_area()
+    self:create_area()
 
     self.cooldown_timer = self.cooldown
   end
 end
 
-function Proc_SpikedCollar:create_display_area()
+function Proc_SpikedCollar:create_area()
   if not self.unit then return end
 
   self.display_area = Area{
@@ -286,15 +286,6 @@ function Proc_SpikedCollar:create_display_area()
     stunDuration = self.stunDuration,
 
   }
-end
-
-function Proc_SpikedCollar:update_display_area()
-  if not self.display_area or not self.unit then return end
-
-  self.display_area.x = self.unit.x
-  self.display_area.y = self.unit.y
-
-  self.display_area.hidden = false
 end
 
 function Proc_SpikedCollar:die()
@@ -1762,8 +1753,6 @@ function Proc_Icenova:init(args)
   self.windup_timer = 0
   self.cooldown_timer = 0
 
-  self:create_proc_display_area()
-  self.proc_display_area.hidden = true
 end
 
 -- ====================================================================
@@ -1791,8 +1780,8 @@ function Proc_Icenova:onTick(dt)
           -- Enemy found! Start winding up.
           self.state = 'winding_up'
           self.windup_timer = self.procDelay
-          self.proc_display_area.hidden = false
-          alert1:play{pitch = random:float(0.8, 1.2), volume = 0.6}
+          self:create_proc_display_area()
+          gambler1:play{pitch = random:float(0.8, 1.2), volume = 0.6}
       end
   end
 
@@ -1804,7 +1793,9 @@ function Proc_Icenova:onTick(dt)
           -- No enemies left! Cancel the proc and start the short cooldown.
           self.state = 'on_cooldown'
           self.cooldown_timer = self.cancel_cooldown
-          self.proc_display_area.hidden = true
+          if self.proc_display_area then
+            self.proc_display_area.hidden = true
+          end
           -- NOTE: You could stop a charging sound here if you had one.
           return -- Stop processing for this frame.
       end
@@ -1856,7 +1847,7 @@ function Proc_Icenova:create_proc_display_area()
     group = main.current.effects,
     x = x, y = y,
     pick_shape = 'circle',
-    r = self.radius + self.radius_boost, duration = 100, color = self.color,
+    r = self.radius + self.radius_boost, duration = self.procDelay, color = self.color,
     dmg = 0,
   }
 end
