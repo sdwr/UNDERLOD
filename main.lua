@@ -2479,8 +2479,7 @@ function open_options(self)
     self.paused = true
 
     if self:is(Arena) then
-      self.paused_t1 = Text2 { group = self.options_ui, x = gw / 2, y = gh / 2 - 108, sx = 0.6, sy = 0.6, lines = { { text = '[bg10]<-, a or m1       ->, d or m2', font = fat_font, alignment = 'center' } } }
-      self.paused_t2 = Text2 { group = self.options_ui, x = gw / 2, y = gh / 2 - 92, lines = { { text = '[bg10]turn left                                            turn right', font = pixul_font, alignment = 'center' } } }
+      --pass
     end
 
     if self:is(MainMenu) then
