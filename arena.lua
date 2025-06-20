@@ -19,6 +19,10 @@ function Arena:on_enter(from)
   self.hfx:add('condition1', 1)
   self.hfx:add('condition2', 1)
 
+  self.paused = false
+  self.in_tutorial = false
+  self.in_options = false
+
   self.gold_text = nil
   self.timer_text = nil
   self.time_elapsed = 0
@@ -43,6 +47,7 @@ function Arena:on_enter(from)
   self.post_main = Group()
   self.effects = Group()
   self.ui = Group()
+  self.tutorial = Group()
   self.options_ui = Group()
   self.credits = Group()
   self.main:disable_collision_between('troop', 'projectile')
@@ -136,6 +141,14 @@ function Arena:on_enter(from)
   self.plusgold_text_offset_y = 0
 
 
+  self:create_tutorial_popup()
+  if show_combat_controls then
+    self.tutorial_popup:open()
+    self.in_tutorial = true
+    self.paused = true
+  end
+
+  --init units
   Reset_Global_Proc_List()
 
   Spawn_Teams(self)
@@ -165,6 +178,7 @@ function Arena:on_exit()
   self.post_main = nil
   self.effects = nil
   self.ui = nil
+  self.tutorial = nil
   self.options_ui = nil
   self.credits = nil
   self.units = nil
@@ -216,43 +230,16 @@ function Arena:update(dt)
   if self.shop_text then self.shop_text:update(dt) end
 
   if input.escape.pressed and not self.transitioning and not self.in_credits and not self.choosing_passives then
-    if not self.paused then
+    if not self.in_options then
+      self.in_options = true
       open_options(self)
     else
-      close_options(self)
+      self.in_options = false
+      close_options(self, self.in_tutorial)
     end
   end
 
   if self.paused or self.died or self.won and not self.transitioning then
-    if input.r.pressed then
-      self.transitioning = true
-      ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-      ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-      ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-      TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
-        slow_amount = 1
-        music_slow_amount = 1
-        run_time = 0
-        gold = STARTING_GOLD
-        passives = {}
-        main_song_instance:stop()
-        run_passive_pool = {
-          'centipede', 'ouroboros_technique_r', 'ouroboros_technique_l', 'amplify', 'resonance', 'ballista', 'call_of_the_void', 'crucio', 'speed_3', 'damage_4', 'shoot_5', 'death_6', 'lasting_7',
-          'defensive_stance', 'offensive_stance', 'kinetic_bomb', 'porcupine_technique', 'last_stand', 'seeping', 'deceleration', 'annihilation', 'malediction', 'hextouch', 'whispers_of_doom',
-          'tremor', 'heavy_impact', 'fracture', 'meat_shield', 'hive', 'baneling_burst', 'blunt_arrow', 'explosive_arrow', 'divine_machine_arrow', 'chronomancy', 'awakening', 'divine_punishment',
-          'assassination', 'flying_daggers', 'ultimatum', 'magnify', 'echo_barrage', 'unleash', 'reinforce', 'payback', 'enchanted', 'freezing_field', 'burning_field', 'gravity_field', 'magnetism',
-          'insurance', 'dividends', 'berserking', 'unwavering_stance', 'unrelenting_stance', 'blessing', 'haste', 'divine_barrage', 'orbitism', 'psyker_orbs', 'psychosink', 'rearm', 'taunt', 'construct_instability',
-          'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
-          'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
-        }
-        max_units = MAX_UNITS
-        main:add(BuyScreen'buy_screen')
-        system.save_run()
-        local new_run = Start_New_Run()
-
-        main:go_to('buy_screen', new_run)
-      end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
-    end
 
     if input.escape.pressed then
       self.in_credits = false
@@ -267,17 +254,20 @@ function Arena:update(dt)
   self:update_game_object(dt*slow_amount)
   main_song_instance.pitch = math.clamp(slow_amount*music_slow_amount, 0.05, 1)
 
-  star_group:update(dt*slow_amount)
-  self.floor:update(dt*slow_amount)
-  self.main:update(dt*slow_amount)
-  self.post_main:update(dt*slow_amount)
-  self.effects:update(dt*slow_amount)
-  self.ui:update(dt*slow_amount)
+  if not self.paused then
+    star_group:update(dt*slow_amount)
+    self.floor:update(dt*slow_amount)
+    self.main:update(dt*slow_amount)
+    self.post_main:update(dt*slow_amount)
+    self.effects:update(dt*slow_amount)
+    self.ui:update(dt*slow_amount)
+
+    Helper:update(dt*slow_amount)
+    LevelManager.update(dt)
+  end
+  self.tutorial:update(dt*slow_amount)
   self.options_ui:update(dt*slow_amount)
   self.credits:update(dt)
-
-  Helper:update(dt*slow_amount)
-  LevelManager.update(dt)
 end
 
 function Arena:quit()
@@ -342,6 +332,30 @@ function Arena:draw_spawn_markers()
 
 end
 
+function Arena:create_tutorial_popup()
+  local combat_tutorial_lines = {
+    {text = '[fg]Combat Tutorial', font = fat_font, alignment = 'center'},
+    {text = '', height_multiplier = 0.1}, -- Spacer
+    {text = '[yellow]Left Click(hold):[fg] move troop', font = pixul_font, height_multiplier = 1.5},
+    {text = '[yellow]Right Click:[fg] Target enemy or rally to location', font = pixul_font, height_multiplier = 1.5},
+    {text = '[yellow]Space(hold):[fg] move all troops', font = pixul_font, height_multiplier = 1.5},
+    {text = '[yellow]Numbers 1-3:[fg] select troop', font = pixul_font, height_multiplier = 1.5},
+    {text = '[yellow]Esc:[fg] open options', font = pixul_font, height_multiplier = 1.5},
+  }
+
+  self.tutorial_popup = TutorialPopup{
+    group = self.tutorial, 
+    parent = self,
+    lines = combat_tutorial_lines,
+    display_show_hints_checkbox = true,
+  }
+end
+
+function Arena:quit_tutorial()
+  self.in_tutorial = false
+  self.paused = false
+end
+
 function Arena:display_text()
   if self.start_time and self.start_time > 0 and not self.choosing_passives then
     graphics.push(gw/2, gh/2 - 48, 0, self.hfx.condition1.x, self.hfx.condition1.x)
@@ -384,9 +398,9 @@ function Arena:draw()
   self.main:draw_custom()
   self.post_main:draw()
   self.effects:draw()
-
+  
   --self:draw_spawn_markers()
-
+  
   graphics.draw_with_mask(function()
     star_canvas:draw(0, 0, 0, 1, 1)
   end, function()
@@ -395,22 +409,23 @@ function Arena:draw()
     camera:detach()
   end, true)
   
-
+  
   camera:attach()
   --self:display_text()
   camera:detach()
-
-
+  
+  
   if self.level == 20 and self.trailer then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
-
-
-
+  
+  
+  
   Helper:draw()
-
+  
   
   
   if self.choosing_passives or self.won or self.paused or self.died then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
   self.ui:draw()
+  self.tutorial:draw()
   self.options_ui:draw()
 
   if self.shop_text then self.shop_text:draw(gw - 40, gh - 17) end

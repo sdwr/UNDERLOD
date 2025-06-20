@@ -36,7 +36,7 @@ TODO:
       passively hit ones (thorns, )
 
 -- shop reroll logic is messy, confuses rerolling part of the shop with rolling it for the first time
-  
+-- pause spawns when game is paused in arena
 
 
 music:

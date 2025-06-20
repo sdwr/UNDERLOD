@@ -17,6 +17,8 @@ EXPECTED_SAVE_FIELDS = {
   'locked_state',
   'reroll_shop',
   'times_rerolled',
+  'show_damage_numbers',
+  'show_combat_controls',
 }
 
 USER_STATS = {}

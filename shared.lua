@@ -659,7 +659,7 @@ function TutorialPopup:init(args)
   self.is_open = false
 
   -- Create a dark, semi-transparent background
-  self.bg_opacity = 0.8
+  self.bg_opacity = 0.6
   self.bg_color = Color(0, 0, 0, self.bg_opacity)
 
   -- Container for the popup elements
@@ -693,8 +693,8 @@ function TutorialPopup:update(dt)
     self.okay_button:update(dt)
   end
   if self.display_show_hints_checkbox then
-    if self.show_hints_checkbox then
-      self.show_hints_checkbox:update(dt)
+    if self.show_hints_toggle then
+      self.show_hints_toggle:update(dt)
     end
   end
 end
@@ -712,10 +712,6 @@ function TutorialPopup:draw()
   graphics.rectangle(self.popup_x, self.popup_y, self.popup_width, self.popup_height, 10, 10, bg[-2])
   graphics.pop()
 
-  -- Draw the elements
-  -- self.tutorial_text:draw()
-  -- self.okay_button:draw()
-  -- self.show_hints_checkbox:draw()
 end
 
 function TutorialPopup:open()
@@ -733,114 +729,131 @@ function TutorialPopup:close()
 end
 
 function TutorialPopup:create_text()
+  local popup = self
+
   -- Tutorial Text
   self.tutorial_text = Text2{
-    group = self.group,
-    x = self.popup_x,
-    y = self.popup_y - 10,
-    lines = self.tutorial_lines
-  }
-
-  -- "Okay" Button
-
-  self.okay_button = Button{
-    group = self.group,
-    parent = self,
-    x = self.popup_x + self.okay_button_offset,
-    y = self.popup_y + (self.popup_height/2) - 15,
-    bg_color = 'green', fg_color = 'fmg5',
-    button_text = 'Okay',
-    action = function(self)
-      self.parent:close()
-    end,
-    mouse_enter = function(b)
-      b.text:set_text{{text = '[fgm5]Okay', font = pixul_font, alignment = 'center'}}
-    end,
-    mouse_exit = function(b)
-      b.text:set_text{{text = '[greenm5]Okay', font = pixul_font, alignment = 'center'}}
-    end
-  }
-
-  -- "Show Hints" Checkbox
-  if self.display_show_hints_checkbox then
-    self.show_hints_checkbox = Checkbox{
       group = self.group,
-      x = self.popup_x - 60,
+      x = self.popup_x,
+      y = self.popup_y,
+      lines = self.tutorial_lines
+  }
+
+  -- "Okay" Button (no changes needed)
+  self.okay_button = Button{
+      group = self.group,
+      x = self.popup_x  + self.okay_button_offset,
       y = self.popup_y + (self.popup_height/2) - 15,
+      bg_color = 'bg', fg_color = 'bg10',
+      button_text = 'Okay',
+      action = function()
+          popup:close()
+      end
+  }
+
+  -- ### REPLACEMENT ###
+  -- Replace the old Checkbox with the new ToggleButton
+  self.show_hints_toggle = ToggleButton{
+      group = self.group,
+      x = self.popup_x - 60, -- Adjusted X for better centering
+      y = self.popup_y + (self.popup_height/2) - 15,
+      label_offset = 30,
+      box_size = 15,
       label = 'Show Hints',
-        checked = true -- Default to checked
-    }
-  end
+      checked = true, -- Set the initial state
+      action = function(is_checked)
+        state.show_combat_controls = is_checked
+      end
+  }
+  
 end
 
 function TutorialPopup:delete_text()
   self.tutorial_text.dead = true
   self.okay_button.dead = true
   if self.display_show_hints_checkbox then
-    self.show_hints_checkbox.dead = true
+    self.show_hints_toggle.dead = true
   end
 end
 
-Checkbox = Object:extend()
-Checkbox:implement(GameObject)
+ToggleButton = Object:extend()
+ToggleButton:implement(GameObject)
 
-function Checkbox:init(args)
-  self:init_game_object(args)
-  self.label = args.label or ''
-  self.checked = args.checked or false
-  self.box_size = 16
-  self.label_offset = 5
+function ToggleButton:init(args)
+    self:init_game_object(args)
+    self.interact_with_mouse = true
 
-  -- ### FIX STARTS HERE ###
-  -- Correctly initialize the Text object with global_text_tags
-  self.text = Text({
-      {text = self.label, font = pixul_font}
-  }, global_text_tags)
-  -- ### FIX ENDS HERE ###
+    -- Core state
+    self.label = args.label or 'Toggle'
+    self.checked = args.checked or false
+    self.action = args.action
 
-  self:add_clickable_area()
+    self.label_offset = args.label_offset or 12
+    self.box_offset = args.box_offset or -20
+    self.box_size = args.box_size or 15
+
+    -- Visual state
+    self.selected = false
+    self.text = Text({}, global_text_tags)
+    self:update_visuals() -- Set initial text and color
+
+    -- Define the button's clickable area
+    self.shape = Rectangle(self.x + self.box_offset, self.y, self.box_size, self.box_size)
 end
 
-function Checkbox:add_clickable_area()
-    self.clickable_area = {
-        x = self.x,
-        y = self.y,
-        w = self.box_size + self.label_offset + self.text.w,
-        h = self.box_size
-    }
-end
-
-function Checkbox:update(dt)
+function ToggleButton:update(dt)
     self:update_game_object(dt)
-    -- This assumes you have a global 'mouse' object with its position and a 'pressed' state
-    if mouse.pressed and self:is_mouse_over() then
+
+    -- On click, toggle the state and perform the action
+    if self.selected and input.m1.pressed then
         self.checked = not self.checked
-        if self.action then self.action(self.checked) end
+        ui_switch2:play{pitch = random:float(0.95, 1.05, self.checked and 1.2 or 0.8), volume = 0.5}
+        self.spring:pull(0.2, 200, 10)
+        self:update_visuals()
+
+        if self.action then
+            self.action(self.checked)
+        end
     end
 end
 
-function Checkbox:draw()
-    -- Draw the box
-    local box_color = self.checked and yellow[0] or bg[0]
-    graphics.rectangle(self.x, self.y, self.box_size, self.box_size, 2, 2, box_color)
-
-    -- Draw the checkmark if checked
+function ToggleButton:draw()
+    -- Determine background color based on state
+    local bg_color, fg_color
+    bg_color = bg[2]
     if self.checked then
-        graphics.push(self.x + 4, self.y + 4)
-        graphics.line(0, 4, 4, 8, fg[0])
-        graphics.line(4, 8, 8, 0, fg[0])
-        graphics.pop()
+        fg_color = self.selected and yellow[2] or yellow[0]
+    else
+        fg_color = self.selected and bg[5] or bg[3]
     end
 
-    -- Draw the label
-    self.text:draw(self.x + self.box_size + self.label_offset, self.y)
+    graphics.push(self.x + self.box_offset, self.y, 0, self.spring.x, self.spring.y)
+    graphics.rectangle(self.x + self.box_offset, self.y, self.shape.w, self.shape.h, 4, 4, bg_color)
+    graphics.rectangle(self.x + self.box_offset, self.y, self.shape.w - 5, self.shape.h - 5, 2, 2, fg_color)
+    self.text:draw(self.x + self.label_offset, self.y + 2)
+    graphics.pop()
 end
 
-function Checkbox:is_mouse_over()
-    return mouse.x > self.clickable_area.x and mouse.x < self.clickable_area.x + self.clickable_area.w and
-           mouse.y > self.clickable_area.y and mouse.y < self.clickable_area.y + self.clickable_area.h
+function ToggleButton:on_mouse_enter()
+    love.mouse.setCursor(love.mouse.getSystemCursor('hand'))
+    ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
+    self.selected = true
+    self:update_visuals()
+    self.spring:pull(0.05, 200, 10)
 end
 
+function ToggleButton:on_mouse_exit()
+    love.mouse.setCursor()
+    self.selected = false
+    self:update_visuals()
+end
+
+-- A helper function to centralize the logic for updating text and colors
+function ToggleButton:update_visuals()
+    local text_color = 'fg'
+    local final_text = string.format('[%s]%s', text_color, self.label)
+    self.text:set_text{{text = final_text, font = pixul_font, alignment = 'center'}}
+end
 
 
 ColorRamp = Object:extend()

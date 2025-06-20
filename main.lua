@@ -2308,6 +2308,10 @@ function init()
   if not state.new_game_plus then state.new_game_plus = new_game_plus end
   current_new_game_plus = state.current_new_game_plus or new_game_plus
   if not state.current_new_game_plus then state.current_new_game_plus = current_new_game_plus end
+
+  show_damage_numbers = state.show_damage_numbers or DAMAGE_NUMBERS_SETTING[4]
+  show_combat_controls = state.show_combat_controls or true
+
   max_units = MAX_UNITS
 
   main_song_instance = song7:play { volume = state.music_volume or 0.5 }
@@ -2533,8 +2537,8 @@ function open_options(self)
         if self.screen_shake_button then
           self.screen_shake_button.dead = true; self.screen_shake_button = nil
         end
-        if self.show_damage_numbers then
-          self.show_damage_numbers.dead = true; self.show_damage_numbers = nil
+        if self.show_damage_numbers_button then
+          self.show_damage_numbers_button.dead = true; self.show_damage_numbers_button = nil
         end
         if self.ng_plus_plus_button then
           self.ng_plus_plus_button.dead = true; self.ng_plus_plus_button = nil
@@ -2673,7 +2677,7 @@ function open_options(self)
       b:set_text('screen shake: ' .. tostring(state.no_screen_shake and 'no' or 'yes'))
     end }
 
-    self.show_damage_numbers = Button { group = self.options_ui, x = gw / 2 + 95, y = gh - 100, w = 180, force_update = true, button_text = '[bg10]show damage numbers: ' .. tostring(state.show_damage_numbers),
+    self.show_damage_numbers_button = Button { group = self.options_ui, x = gw / 2 + 95, y = gh - 100, w = 180, force_update = true, button_text = '[bg10]show damage numbers: ' .. tostring(state.show_damage_numbers),
       fg_color = 'bg10', bg_color = 'bg', action = function(b)
       ui_switch1:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
       local index = table.find(DAMAGE_NUMBERS_SETTING, state.show_damage_numbers)
@@ -2683,7 +2687,19 @@ function open_options(self)
         index = index + 1
       end
       state.show_damage_numbers = DAMAGE_NUMBERS_SETTING[index]
+      show_damage_numbers = DAMAGE_NUMBERS_SETTING[index]
+
       b:set_text('show damage numbers: ' .. tostring(state.show_damage_numbers))
+    end }
+
+    self.show_combat_controls_button = Button { group = self.options_ui, x = gw / 2, y = gh - 80, force_update = true, button_text = '[bg10]show combat controls: ' .. tostring(state.show_combat_controls and 'yes' or 'no'),
+      fg_color = 'bg10', bg_color = 'bg', action = function(b)
+      ui_switch1:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
+
+      state.show_combat_controls = not state.show_combat_controls
+      show_combat_controls = state.show_combat_controls
+      
+      b:set_text('show combat controls: ' .. tostring(state.show_combat_controls and 'yes' or 'no'))
     end }
 
     if self:is(MainMenu) then
@@ -2734,10 +2750,12 @@ function open_options(self)
   end, 'pause')
 end
 
-function close_options(self)
+function close_options(self, remain_paused)
   trigger:tween(0.25, _G, { slow_amount = 1 }, math.linear, function()
     slow_amount = 1
-    self.paused = false
+    if not remain_paused then
+      self.paused = false
+    end
     if self.paused_t1 then
       self.paused_t1.dead = true; self.paused_t1 = nil
     end
@@ -2780,8 +2798,11 @@ function close_options(self)
     if self.screen_shake_button then
       self.screen_shake_button.dead = true; self.screen_shake_button = nil
     end
-    if self.show_damage_numbers then
-      self.show_damage_numbers.dead = true; self.show_damage_numbers = nil
+    if self.show_damage_numbers_button then
+      self.show_damage_numbers_button.dead = true; self.show_damage_numbers_button = nil
+    end
+    if self.show_combat_controls_button then
+      self.show_combat_controls_button.dead = true; self.show_combat_controls_button = nil
     end
     if self.quit_button then
       self.quit_button.dead = true; self.quit_button = nil

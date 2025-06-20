@@ -175,8 +175,9 @@ function BuyScreen:update(dt)
     if not self.paused then
       open_options(self)
     else
-      close_options(self)
+      close_options(self, self.in_tutorial)
     end
+
   end
 end
 
