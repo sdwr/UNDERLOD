@@ -72,10 +72,6 @@ function Create_Blank_Save_Data()
   data.reroll_shop = true
   data.times_rerolled = 0
 
-  data.show_damage_numbers = DAMAGE_NUMBERS_SETTING[4]
-  data.show_combat_controls = true
-
-
   return data
 end
 
