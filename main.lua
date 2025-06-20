@@ -2310,7 +2310,7 @@ function init()
   if not state.current_new_game_plus then state.current_new_game_plus = current_new_game_plus end
   max_units = MAX_UNITS
 
-  main_song_instance = silence:play { volume = 0.5 }
+  main_song_instance = song7:play { volume = state.music_volume or 0.5 }
   main = Main()
 
   main:add(MainMenu 'mainmenu')

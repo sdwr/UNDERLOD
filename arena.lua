@@ -184,13 +184,7 @@ end
 function Arena:update(dt)
 
   if main_song_instance:isStopped() then
-    if self.level <= 6 then
-      --zone 1, gunnar
-      main_song_instance = _G[random:table{'song1', 'song2', 'song3', 'song4', 'song5', 'song6', 'song7', 'song8'}]:play{volume = 0.7}
-    else
-      --zone 3, derp
-      main_song_instance = _G[random:table{'derp1'}]:play{volume = 0.5}
-    end
+    main_song_instance = _G[random:table{'derp1', 'song2'}]:play{volume = state.music_volume or 0.5}
   end
 
   if not self.paused and not self.died and not self.won then
