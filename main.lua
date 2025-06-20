@@ -2581,21 +2581,6 @@ function open_options(self)
       end }
     end
 
-
-    self.dark_transition_button = Button { group = self.options_ui, x = gw / 2 + 13, y = gh - 150, force_update = true, button_text = 'dark transitions: ' .. tostring(state.dark_transitions and 'yes' or 'no'),
-      fg_color = 'bg10', bg_color = 'bg', action = function(b)
-      ui_switch1:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
-      state.dark_transitions = not state.dark_transitions
-      b:set_text('dark transitions: ' .. tostring(state.dark_transitions and 'yes' or 'no'))
-    end }
-
-    self.run_timer_button = Button { group = self.options_ui, x = gw / 2 + 121, y = gh - 150, force_update = true, button_text = 'run timer: ' .. tostring(state.run_timer and 'yes' or 'no'), fg_color = 'bg10', bg_color = 'bg',
-      action = function(b)
-        ui_switch1:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
-        state.run_timer = not state.run_timer
-        b:set_text('run timer: ' .. tostring(state.run_timer and 'yes' or 'no'))
-      end }
-
     self.sfx_button = Button { group = self.options_ui, x = gw / 2 - 46, y = gh - 175, force_update = true, button_text = 'sfx volume: ' .. tostring((state.sfx_volume or 0.5) * 10), fg_color = 'bg10', bg_color = 'bg',
       action = function(b)
         ui_switch2:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
@@ -2688,7 +2673,7 @@ function open_options(self)
       b:set_text('screen shake: ' .. tostring(state.no_screen_shake and 'no' or 'yes'))
     end }
 
-    self.show_damage_numbers = Button { group = self.options_ui, x = gw / 2 + 65, y = gh - 75, w = 125, force_update = true, button_text = '[bg10]show damage numbers: ' .. tostring(state.show_damage_numbers and 'yes' or 'no'),
+    self.show_damage_numbers = Button { group = self.options_ui, x = gw / 2 + 75, y = gh - 100, w = 145, force_update = true, button_text = '[bg10]show damage numbers: ' .. tostring(state.show_damage_numbers and 'yes' or 'no'),
       fg_color = 'bg10', bg_color = 'bg', action = function(b)
       ui_switch1:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
       state.show_damage_numbers = not state.show_damage_numbers
