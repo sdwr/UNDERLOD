@@ -72,6 +72,9 @@ function Create_Blank_Save_Data()
   data.reroll_shop = true
   data.times_rerolled = 0
 
+  data.show_damage_numbers = DAMAGE_NUMBERS_SETTING[1]
+  print(data.show_damage_numbers)
+
 
   return data
 end

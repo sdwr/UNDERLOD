@@ -165,6 +165,13 @@ ACHIEVEMENTS_PER_ROW = 4
 
 ACH_CLOSE_BUTTON_SIZE = 20
 
+DAMAGE_NUMBERS_SETTING = {
+  'off',
+  'enemies',
+  'friendlies',
+  'all',
+}
+
 -- Unit constants
 
 MOVEMENT_RANDOM_TIMER = 5

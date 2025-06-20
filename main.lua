@@ -2673,11 +2673,17 @@ function open_options(self)
       b:set_text('screen shake: ' .. tostring(state.no_screen_shake and 'no' or 'yes'))
     end }
 
-    self.show_damage_numbers = Button { group = self.options_ui, x = gw / 2 + 75, y = gh - 100, w = 145, force_update = true, button_text = '[bg10]show damage numbers: ' .. tostring(state.show_damage_numbers and 'yes' or 'no'),
+    self.show_damage_numbers = Button { group = self.options_ui, x = gw / 2 + 95, y = gh - 100, w = 180, force_update = true, button_text = '[bg10]show damage numbers: ' .. tostring(state.show_damage_numbers),
       fg_color = 'bg10', bg_color = 'bg', action = function(b)
       ui_switch1:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
-      state.show_damage_numbers = not state.show_damage_numbers
-      b:set_text('show damage numbers: ' .. tostring(state.show_damage_numbers and 'yes' or 'no'))
+      local index = table.find(DAMAGE_NUMBERS_SETTING, state.show_damage_numbers)
+      if index == #DAMAGE_NUMBERS_SETTING or index == nil then
+        index = 1
+      else
+        index = index + 1
+      end
+      state.show_damage_numbers = DAMAGE_NUMBERS_SETTING[index]
+      b:set_text('show damage numbers: ' .. tostring(state.show_damage_numbers))
     end }
 
     if self:is(MainMenu) then

@@ -550,6 +550,8 @@ function Troop:hit(damage, from, damageType, makesSound, cannotProcOnHit)
   local actual_damage = math.max(self:calculate_damage(damage), 0)
   
   self.hp = self.hp - actual_damage
+
+  self:show_damage_number(damage, damageType)
   
   --on hit callbacks
   if from and from.onHitCallbacks and not cannotProcOnHit then

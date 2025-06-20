@@ -3008,6 +3008,8 @@ function Critter:hit(damage, from, damageType, makesSound, cannotProcOnHit)
 
   self.hp = self.hp - damage
 
+  self:show_damage_number(damage, damageType)
+
   --on hit callbacks
   if from and from.onHitCallbacks and not cannotProcOnHit then
     from:onHitCallbacks(self, damage, damageType)

@@ -361,8 +361,10 @@ end
 
 --have full data passed in instead of just type?
 function Unit:show_damage_number(dmg, damagetype)
-  if not state.show_damage_numbers then return end
-  
+  if state.show_damage_numbers == 'none' then return end
+  if state.show_damage_numbers == 'enemies' and not table.any(main.current.enemies, function(enemy) return enemy.class == self.class end) then return end
+  if state.show_damage_numbers == 'friendlies' and not table.any(main.current.units, function(unit) return unit.class == self.class end) then return end
+
   local color = damage_type_to_color[damagetype] or white[0]
   local roundedDmg = math.floor(dmg)
 
