@@ -224,47 +224,81 @@ end
 
 Proc_SpikedCollar = Proc:extend()
 function Proc_SpikedCollar:init(args)
-  self.triggers = {PROC_ON_TICK}
-  self.scope = 'team'
+  self.triggers = {PROC_ON_GOT_HIT}
+  self.scope = 'troop'
 
   Proc_SpikedCollar.super.init(self, args)
   
   
-
   --define the proc's vars
+  
   self.damage = self.data.damage or 20
-  self.tick_interval = self.data.tick_interval or 3
+  self.tick_interval = self.data.tick_interval or 2
   self.damageType = self.data.damageType or DAMAGE_TYPE_PHYSICAL
+  self.stunChance = self.data.stunChance or 0.2
+  self.stunDuration = self.data.stunDuration or 1
+  
+  self.radius = self.data.radius or 35
+  self.color = self.data.color or brown[0]
 
-  self.radius = self.data.radius or 50
-
+  self.cooldown = self.data.cooldown or 2
+  self.proc_chance = self.data.proc_chance or 0.2
+  
   --proc internal memory
-  self.tick_timer = 0
+  self.cooldown_timer = 0
 end
 
 function Proc_SpikedCollar:onTick(dt, from)
-  Proc_SpikedCollar.super.onTick(self, dt)
+  Proc_SpikedCollar.super.onTick(self, dt, from)
 
-  if not self.team then
-    print('error: no team for proc', self.name)
-    return
+  if self.cooldown_timer > 0 then
+    self.cooldown_timer = self.cooldown_timer - dt
+    if self.cooldown_timer < 0 then
+      self.cooldown_timer = 0
+    end
   end
+end
 
-  --only tick once per tick
-  if not self.team:is_first_alive_troop(from) then return end
+function Proc_SpikedCollar:onGotHit(from, damage)
+  if not self.unit or self.cooldown_timer > 0 then return end
 
-  self.tick_timer = self.tick_timer + dt
-  if self.tick_timer < self.tick_interval then return end
-  self.tick_timer = 0
+  Proc_SpikedCollar.super.onGotHit(self, from, damage)
 
+  if math.random() < self.proc_chance then
+    rogue_crit1:play{pitch = random:float(0.8, 1.2), volume = 0.6}
 
-  local enemies = self.team:get_enemies_in_range(self.radius)
-  if not enemies or #enemies == 0 then return end
+    self:create_display_area()
 
-  rogue_crit1:play{pitch = random:float(0.8, 1.2), volume = 0.3}
-  for i, enemy in ipairs(enemies) do
-      enemy:hit(self.damage, self.unit, self.damageType)
+    self.cooldown_timer = self.cooldown
   end
+end
+
+function Proc_SpikedCollar:create_display_area()
+  if not self.unit then return end
+
+  self.display_area = Area{
+    group = main.current.effects,
+    x = self.unit.x, y = self.unit.y,
+    pick_shape = 'circle',
+    dmg = self.damage, r = self.radius, duration = 0.2, color = self.color,
+    is_troop = self.unit.is_troop,
+    damage_ticks = false,
+    stunDuration = self.stunDuration,
+
+  }
+end
+
+function Proc_SpikedCollar:update_display_area()
+  if not self.display_area or not self.unit then return end
+
+  self.display_area.x = self.unit.x
+  self.display_area.y = self.unit.y
+
+  self.display_area.hidden = false
+end
+
+function Proc_SpikedCollar:die()
+  Proc_SpikedCollar.super.die(self)
 end
 
 --proc bash

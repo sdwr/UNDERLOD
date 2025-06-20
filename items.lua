@@ -302,8 +302,8 @@ item_to_item_data = {
     colors = {},
     cost = 10,
     icon = 'spikedcollar',
-    desc = 'Deals [brown]thorns[fg] damage and periodically deals damage to nearby enemies',
-    stats = {thorns = 0.2 },
+    desc = 'When hit, deals AoE[brown]thorns[fg] damage with a chance to [brown]stun[fg] enemies',
+    stats = {},
     procs = {'spikedcollar'}
   },
   -- ['sackofcash'] = {

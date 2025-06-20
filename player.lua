@@ -932,6 +932,17 @@ function Area:damage()
     end
     return
   end
+
+  if self.stunDuration then
+    local stun_chance = self.stunChance or 1
+    targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
+    for _, target in ipairs(targets) do
+      if math.random() < stun_chance then
+        target:stun(self.stunDuration, self.unit)
+      end
+    end
+    return
+  end
   
   if self.is_troop then 
     targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
