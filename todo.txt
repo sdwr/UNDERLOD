@@ -28,6 +28,10 @@ TODO:
   --onHitCallbacks isn't enough for +crit
     needs to apply before hit, based on conditions (eg enemy chilled)
 
+-- need to clean up onHit 
+  (if chill and fire are on hit, all damage from that unit
+    will chill or burn)
+
 music:
 - get demoscene time machine?
 

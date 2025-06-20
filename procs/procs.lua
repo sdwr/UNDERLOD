@@ -1078,8 +1078,8 @@ end
 --triggers on all enemy deaths
 Proc_Firebomb = Proc:extend()
 function Proc_Firebomb:init(args)
-  self.triggers = {PROC_ON_DEATH}
-  self.scope = 'global'
+  self.triggers = {PROC_ON_KILL}
+  self.scope = 'troop'
 
   Proc_Firebomb.super.init(self, args)
   
@@ -1095,25 +1095,24 @@ function Proc_Firebomb:init(args)
   self.is_troop = true
 end
 
-function Proc_Firebomb:onDeath(from)
-  Proc_Firebomb.super.onDeath(self, from)
+function Proc_Firebomb:onKill(target)
+  Proc_Firebomb.super.onKill(self, target)
   
   
-  if not self.globalUnit then return end
-  if self.globalUnit.is_troop == self.is_troop then return end
+  if not self.unit then return end
   
-  if not self.globalUnit:has_buff('burn') then return end
+  if not target or not target:has_buff('burn') then return end
 
   if math.random() < self.chance_to_proc then
-    self:explode(from)
+    self:explode(target)
   end
 end
 
-function Proc_Firebomb:explode(from)
+function Proc_Firebomb:explode(target)
   explosion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
   Area{
     group = main.current.effects,
-    x = self.globalUnit.x, y = self.globalUnit.y,
+    x = target.x, y = target.y,
     pick_shape = 'circle',
     dmg = self.damage, r = self.radius, duration = 0.2, color = self.color,
     is_troop = self.is_troop
@@ -1124,8 +1123,8 @@ end
 
 Proc_WaterElemental = Proc:extend()
 function Proc_WaterElemental:init(args)
-  self.triggers = {PROC_ON_DEATH}
-  self.scope = 'global'
+  self.triggers = {PROC_ON_KILL}
+  self.scope = 'troop'
 
   Proc_WaterElemental.super.init(self, args)
   
@@ -1144,30 +1143,31 @@ function Proc_WaterElemental:init(args)
   self.maxSummons = self.data.maxSummons or 3
   self.summoned = 0
   self.summons = {}
+
 end
 
-function Proc_WaterElemental:onDeath(from)
-  Proc_WaterElemental.super.onDeath(self, from)
+function Proc_WaterElemental:onKill(target)
+  Proc_WaterElemental.super.onKill(self, target)
   
-  if not self.globalUnit then return end
-  if self.globalUnit.is_troop == self.is_troop then return end
+  if not self.unit then return end
 
-  if not self.globalUnit:has_buff('slowed') then return end
+  if not target or not target:has_buff('chilled') then return end
 
   self:checkSummons()
 
   if math.random() < self.chance_to_proc and self.summoned < self.maxSummons then
-    self:summon(from)
+    self:summon(target)
   end
 
   self.globalUnit = nil
 end
 
-function Proc_WaterElemental:summon(from)
-  local myLocation = {x = self.globalUnit.x, y = self.globalUnit.y}
+function Proc_WaterElemental:summon(target)
+  local myLocation = {x = target.x, y = target.y}
   local location = Get_Spawn_Point(6, myLocation)
   if not location then return end
   local summon = Critter{group = main.current.main,
+    dmg_type = DAMAGE_TYPE_COLD,
     x = location.x, y = location.y, color = self.color, r = random:float(0, 2*math.pi)
   }
 
@@ -1185,6 +1185,7 @@ function Proc_WaterElemental:checkSummons()
 end
 
 function Proc_WaterElemental:clearSummonList()
+  if not self.summons then return end
   for i, summon in ipairs(self.summons) do
     if summon then
       summon:die()
@@ -1199,8 +1200,8 @@ end
 
 Proc_Shockwave = Proc:extend()
 function Proc_Shockwave:init(args)
-  self.triggers = {PROC_ON_DEATH}
-  self.scope = 'global'
+  self.triggers = {PROC_ON_KILL}
+  self.scope = 'troop'
 
   Proc_Shockwave.super.init(self, args)
   
@@ -1216,24 +1217,23 @@ function Proc_Shockwave:init(args)
   self.is_troop = true
 end
 
-function Proc_Shockwave:onDeath(from)
-  Proc_Shockwave.super.onDeath(self, from)
+function Proc_Shockwave:onKill(target)
+  Proc_Shockwave.super.onKill(self, target)
   
-  if not self.globalUnit then return end
-  if self.globalUnit.is_troop == self.is_troop then return end
+  if not self.unit then return end
 
-  if not self.globalUnit:has_buff('shock') then return end
+  if not target or not target:has_buff('shock') then return end
 
   if math.random() < self.chance_to_proc then
-    self:shockwave(from)
+    self:shockwave(target)
   end
 end
 
-function Proc_Shockwave:shockwave(from)
+function Proc_Shockwave:shockwave(target)
   explosion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
   Area{
     group = main.current.effects,
-    x = self.globalUnit.x, y = self.globalUnit.y,
+    x = target.x, y = target.y,
     pick_shape = 'circle',
     dmg = self.damage, r = self.radius, duration = 0.2, color = self.color,
     is_troop = self.is_troop,
@@ -1449,7 +1449,7 @@ function Proc_Lavaman:spawn(coords)
   critter2:play{pitch = random:float(0.8, 1.2), volume = 0.5}
   self.tick_timer = 0
   Critter{group = main.current.main,
-    damage_type = DAMAGE_TYPE_FIRE,
+    dmg_type = DAMAGE_TYPE_FIRE,
     x = coords.x, y = coords.y, color = self.color, r = random:float(0, 2*math.pi)
   }
 end
@@ -2023,6 +2023,7 @@ function Proc_Glacialprison:onKill(target)
     Area{
       group = main.current.effects,
       x = target.x, y = target.y,
+      unit = self.unit,
       pick_shape = 'circle',  
       dmg = self.damage,
       r = self.radius, duration = self.duration, color = self.color,

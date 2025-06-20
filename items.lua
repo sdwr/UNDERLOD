@@ -233,6 +233,7 @@ item_to_item_data = {
   --   procs = {'craggy'}
   -- },
 
+  --stat items (brown?)
   ['flimsyboots'] = {
     name = 'flimsyboots',
     colors = {},
@@ -306,6 +307,9 @@ item_to_item_data = {
     stats = {},
     procs = {'spikedcollar'}
   },
+
+
+  --econ items
   -- ['sackofcash'] = {
   --   name = 'sackofcash',
   --   colors = {},
@@ -702,7 +706,7 @@ item_to_item_data = {
     colors = {'red'},
     cost = 15,
     icon = 'bomb',
-    desc = 'All [red]burning[fg] enemies have a chance to explode for % max health on death',
+    desc = 'Killing a [red]burning[fg] enemy has a chance to explode for % max health',
     stats = {dmg = 0.5},
     procs = {'firebomb'},
     prereqs = {'firedmg'}
@@ -712,9 +716,9 @@ item_to_item_data = {
     colors = {'blue'},
     cost = 15,
     icon = 'frost',
-    desc = 'All [blue]slowed[fg] enemies have a chance to spawn a water elemental on death',
+    desc = 'Killing a [blue]chilled[fg] enemy has a chance to spawn a water elemental',
     stats = {dmg = 0.5},
-    procs = {'monster'},
+    procs = {'waterelemental'},
     prereqs = {'frostslow'}
   },
   ['shockwave'] = {
@@ -722,7 +726,7 @@ item_to_item_data = {
     colors = {'yellow'},
     cost = 15,
     icon = 'lightning',
-    desc = 'All [yellow]shocked[fg] enemies have a chance to spread [yellow]shock[fg] on death',
+    desc = 'Killing a [yellow]shocked[fg] enemies has to spread [yellow]shock[fg]',
     stats = {dmg = 0.5},
     procs = {'shockwave'},
     prereqs = {'shock'}
