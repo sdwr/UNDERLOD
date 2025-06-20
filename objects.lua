@@ -950,10 +950,7 @@ function Unit:burn(dps, duration, from)
   local existing_buff = self.buffs['burn']
   
   burnBuff.stacks = 1
-  if from and from:has_toggle('fireexplode') and existing_buff
-  and existing_buff.stacks == MAX_STACKS_FIRE then
-      from:get_buff('fireexplode').onExplode(self)
-  elseif from and from:has_toggle('firestack') and existing_buff then
+  if  from and from:has_toggle('firestack') and existing_buff then
     burnBuff.stacks = math.min((existing_buff.stacks or 1) + 1, MAX_STACKS_FIRE)
   end
 
@@ -964,6 +961,10 @@ function Unit:burn(dps, duration, from)
   self:add_buff(burnBuff)
 
   Stats_Max_Fire_Stacks(burnBuff.stacks)
+end
+
+function Unit:has_max_burn_stacks()
+  return self.buffs['burn'] and self.buffs['burn'].stacks == MAX_STACKS_FIRE
 end
 
 function Unit:isShielded()
@@ -1038,6 +1039,16 @@ function Unit:slow(amount, duration, from)
 
   self:remove_buff('slowed')
   self:add_buff(slowBuff)
+end
+
+function Unit:chill(amount, duration, from)
+  local chillBuff = {name = 'chilled', color = blue[0], duration = duration, maxDuration = duration, stats = {mvspd = -1 * amount}}
+  local existing_buff = self.buffs['chilled']
+  
+  chillBuff.stacks = 1
+
+  self:remove_buff('chilled')
+  self:add_buff(chillBuff)
 end
 
 function Unit:freeze(duration, from)

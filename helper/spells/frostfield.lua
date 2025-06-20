@@ -3,8 +3,8 @@ Helper.Spell.Frostfield = {}
 Helper.Spell.Frostfield.duration = 2
 Helper.Spell.Frostfield.tick_interval = 0.25
 
-Helper.Spell.Frostfield.slowDuration = 2
-Helper.Spell.Frostfield.slowAmount = 0.3
+Helper.Spell.Frostfield.chillDuration = 2
+Helper.Spell.Frostfield.chillAmount = 0.3
 
 Helper.Spell.Frostfield.list = {}
 
@@ -66,7 +66,7 @@ function Helper.Spell.Frostfield:damage()
             --register damage through the spell system
             Helper.Spell:register_damage_point(point, frostfield.unit, frostfield.damagePerTick)
             --and apply slow directly to the unit
-            unit:slow(Helper.Spell.Frostfield.slowAmount, Helper.Spell.Frostfield.slowDuration, frostfield.unit)
+            unit:chill(Helper.Spell.Frostfield.chillAmount, Helper.Spell.Frostfield.chillDuration, frostfield.unit)
           end
         end
       end

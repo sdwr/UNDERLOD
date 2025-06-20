@@ -1473,17 +1473,13 @@ end
 --should be global instead of per troop?
 Proc_FireExplode = Proc:extend()
 function Proc_FireExplode:init(args)
-  self.triggers = {}
+  self.triggers = {PROC_ON_HIT}
   self.scope = 'troop'
 
   Proc_FireExplode.super.init(self, args)
 
-  self.buffdata = {name = 'fireexplode', duration = 9999,
-  toggles = {fireexplode = 1}, onExplode = function(target) self.explode(self, target) end
-  }
 
   if not self.unit then return end
-  self.unit:add_buff(self.buffdata)
 
   --define the proc's vars
   self.radius = self.data.radius or 25
@@ -1493,6 +1489,13 @@ function Proc_FireExplode:init(args)
 
   self.is_troop = (self.unit and self.unit.is_troop) or false
 
+end
+
+function Proc_FireExplode:onHit(target, damage)
+  Proc_FireExplode.super.onHit(self, target, damage)
+  if target:has_max_burn_stacks() then
+    self:explode(target)
+  end
 end
 
 function Proc_FireExplode:explode(target)
@@ -1615,14 +1618,14 @@ function Proc_Frost:init(args)
   Proc_Frost.super.init(self, args)
 
   --define the proc's vars
-  self.slow_amount = self.data.slow_amount or 0.3
-  self.slow_duration = self.data.slow_duration or 2
+  self.chill_amount = self.data.chill_amount or 0.3
+  self.chill_duration = self.data.chill_duration or 2
 end
 
 function Proc_Frost:onHit(target, damage)
   Proc_Frost.super.onHit(self, target, damage)
 
-  target:slow(self.slow_amount, self.slow_duration, self.unit)
+  target:chill(self.chill_amount, self.chill_duration, self.unit)
 end
 
 Proc_Frostfield = Proc:extend()
@@ -1636,8 +1639,8 @@ function Proc_Frostfield:init(args)
   self.duration = self.data.duration or 3
   self.color = self.data.color or blue[0]
 
-  self.slow_amount = self.data.slow_amount or 0.3
-  self.slow_duration = self.data.slow_duration or 2
+  self.chill_amount = self.data.chill_amount or 0.3
+  self.chill_duration = self.data.chill_duration or 2
   self.radius = self.data.radius or 20
 
   self.every_attacks = self.data.every_attacks or 4
@@ -1672,8 +1675,8 @@ function Proc_Frostfield:onHit(target, damage)
         dmg = 0,
         r = self.radius, duration = self.duration, color = self.color,
         is_troop = self.unit.is_troop,
-        slowAmount = self.slow_amount,
-        slowDuration = self.slow_duration
+        chillAmount = self.chill_amount,
+        chillDuration = self.chill_duration
       }
     end
   end
@@ -1739,8 +1742,8 @@ function Proc_Icenova:init(args)
   self.radius = self.data.radius or 30
   self.radius_boost = self.data.radius_boost or 15
   self.duration = self.data.duration or 0.2
-  self.slowAmount = self.data.slowAmount or 0.5
-  self.slowDuration = self.data.slowDuration or 3
+  self.chillAmount = self.data.chillAmount or 0.5
+  self.chillDuration = self.data.chillDuration or 3
   self.color = self.data.color or blue[0]
 
   -- Cooldown and delay values
@@ -1894,8 +1897,8 @@ function Proc_Icenova:cast()
     dmg = damage,
     r = self.radius + self.radius_boost, duration = self.duration, color = self.color,
     is_troop = self.unit.is_troop,
-    slowAmount = self.slowAmount,
-    slowDuration = self.slowDuration
+    chillAmount = self.chillAmount,
+    chillDuration = self.chillDuration,
   }
 end
 
@@ -1983,7 +1986,7 @@ function Proc_Glaciate:init(args)
   Proc_Glaciate.super.init(self, args)
 
   self.damage = self.data.damage or 10
-  self.damageType = DAMAGE_TYPE_FROST
+  self.damageType = DAMAGE_TYPE_COLD
   self.duration = self.data.duration or 1
   self.color = self.data.color or blue[0]
 
@@ -2006,6 +2009,65 @@ function Proc_Glaciate:onAttack(target)
       self.hit_cooldown_timer = self.hit_cooldown
       target:freeze(self.duration, self.unit)
     end
+  end
+end
+
+Proc_Shatterlance = Proc:extend()
+function Proc_Shatterlance:init(args)
+  self.triggers = {PROC_ON_HIT}
+  self.scope = 'troop'
+  
+  Proc_Shatterlance.super.init(self, args)
+
+  self.damageMulti = self.data.damageMulti or 0.5
+  self.proc_chance = self.data.proc_chance or 0.2
+end
+
+function Proc_Shatterlance:onHit(target, damage)
+  Proc_Shatterlance.super.onHit(self, target, damage)
+  if target:has_buff('chilled') then
+    if math.random() < self.proc_chance then
+      target:hit(damage * self.damageMulti, self.unit, DAMAGE_TYPE_COLD, true, true)
+    end
+  end
+end
+
+Proc_Glacialprison = Proc:extend()
+function Proc_Glacialprison:init(args)
+  self.triggers = {PROC_ON_KILL}
+  self.scope = 'troop'
+
+  Proc_Glacialprison.super.init(self, args)
+
+  self.damage = self.data.damage or 10
+  self.damageType = DAMAGE_TYPE_COLD
+  self.radius = self.data.radius or 35
+  self.chillAmount = self.data.chillAmount or 0.5
+  self.duration = self.data.duration or 3
+  self.chillDuration = self.data.chillDuration or 1.5
+  self.color = self.data.color or blue[0]
+  self.tick_rate = self.data.tick_rate or 0.5
+end
+
+function Proc_Glacialprison:onKill(target)
+  Proc_Glacialprison.super.onKill(self, target)
+  if target:has_buff('chilled') then
+    
+    glass_shatter:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+
+    Area{
+      group = main.current.effects,
+      x = target.x, y = target.y,
+      pick_shape = 'circle',  
+      dmg = self.damage,
+      r = self.radius, duration = self.duration, color = self.color,
+      damage_ticks = true,
+      tick_rate = self.tick_rate,
+      is_troop = self.unit.is_troop,
+      chillAmount = self.chillAmount,
+      chillDuration = self.chillDuration,
+      only_multi_hit_after_effect_ends = true,
+    }
   end
 end
 
@@ -2084,6 +2146,8 @@ proc_name_to_class = {
   ['icenova'] = Proc_Icenova,
   ['slowstack'] = Proc_Slowstack,
   ['glaciate'] = Proc_Glaciate,
+  ['shatterlance'] = Proc_Shatterlance,
+  ['glacialprison'] = Proc_Glacialprison,
   --green procs
   ['heal'] = Proc_Heal,
   ['sacrificialclam'] = Proc_SacrificialClam,

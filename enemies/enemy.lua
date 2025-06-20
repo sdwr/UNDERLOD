@@ -201,22 +201,27 @@ function Enemy:on_collision_enter(other, contact)
     end
 end
 
-function Enemy:hit(damage, from, damageType, makesSound)
+function Enemy:hit(damage, from, damageType, makesSound, cannotProcOnHit)
 
   if self.invulnerable then return end
 
   if makesSound == nil then makesSound = true end
+  if cannotProcOnHit == nil then cannotProcOnHit = false end
   
   if self.dead then return end
   if self.isBoss then
-    self.hfx:use('hit', 0.005, 200, 20)
+    if makesSound then
+      self.hfx:use('hit', 0.005, 200, 20)
+    end
   else
     --scale hit effect to damage
     --no damage won't grow model, up to max effect at 0.5x max hp
     local hitStrength = (damage * 1.0) / self.max_hp
     hitStrength = math.min(hitStrength, 0.5)
     hitStrength = math.remap(hitStrength, 0, 0.5, 0, 1)
-    self.hfx:use('hit', 0.25 * hitStrength, 200, 10)
+    if makesSound then
+      self.hfx:use('hit', 0.25 * hitStrength, 200, 10)
+    end
   end
   if self.push_invulnerable then return end
   self:show_hp()
@@ -229,7 +234,7 @@ function Enemy:hit(damage, from, damageType, makesSound)
   main.current.damage_dealt = main.current.damage_dealt + actual_damage
 
   --callbacks
-  if from and from.onHitCallbacks then
+  if from and from.onHitCallbacks and not cannotProcOnHit then
     from:onHitCallbacks(self, actual_damage, damageType)
   end
   self:onGotHitCallbacks(from, actual_damage, damageType)

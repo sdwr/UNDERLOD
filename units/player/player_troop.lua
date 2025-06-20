@@ -515,11 +515,12 @@ function Troop:set_character()
   end
 end
 
-function Troop:hit(damage, from, damageType, makesSound)
+function Troop:hit(damage, from, damageType, makesSound, cannotProcOnHit)
 
   if self.invulnerable then return end
 
   if makesSound == nil then makesSound = true end
+  if cannotProcOnHit == nil then cannotProcOnHit = false end
 
   if self.bubbled then return end
   if self.dead then return end
@@ -530,7 +531,9 @@ function Troop:hit(damage, from, damageType, makesSound)
   local hitStrength = (damage * 1.0) / self.max_hp
   hitStrength = math.min(hitStrength, 0.5)
   hitStrength = math.remap(hitStrength, 0, 0.5, 0, 1)
-  self.hfx:use('hit', 0.25 * hitStrength, 200, 10)
+  if makesSound then
+    self.hfx:use('hit', 0.25 * hitStrength, 200, 10)
+  end
   self:show_hp()
 
   --this should really be on the base unit class (objects.lua)!
@@ -549,7 +552,7 @@ function Troop:hit(damage, from, damageType, makesSound)
   self.hp = self.hp - actual_damage
   
   --on hit callbacks
-  if from and from.onHitCallbacks then
+  if from and from.onHitCallbacks and not cannotProcOnHit then
     from:onHitCallbacks(self, actual_damage, damageType)
   end
   self:onGotHitCallbacks(from, actual_damage, damageType)

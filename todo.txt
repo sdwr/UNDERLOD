@@ -24,6 +24,10 @@ that makes special enemies randomly drop gold
 
 TODO:
 
+-- add critical hit chance and critical hit damage
+  --onHitCallbacks isn't enough for +crit
+    needs to apply before hit, based on conditions (eg enemy chilled)
+
 music:
 - get demoscene time machine?
 
@@ -196,12 +200,11 @@ HIGH LEVEL OVERVIEW:
   
   -dragon needs another ability
 
-  -try to add charge enemy again
-
 
 
  
 SMALL CLEANUP:  
+
 
   --lavaman persists between rounds?
 

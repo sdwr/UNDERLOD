@@ -905,76 +905,112 @@ function Area:init(args)
 end
 
 function Area:damage()
+
   local targets = {}
-
-  --healing area
-  if self.heal then
-    targets = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
-    for _, target in ipairs(targets) do
-      target:heal(self.heal)
-    end
-    return
-  end
-
-  --root targets
-  if self.rootDuration then
-    targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
-    for _, target in ipairs(targets) do
-      target:root(self.rootDuration, self.unit)
-    end
-    return
-  end
-
-  if self.shockDuration then
-    targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
-    for _, target in ipairs(targets) do
-      target:shock(self.shockDuration, self.unit)
-    end
-    return
-  end
-
-  if self.stunDuration then
-    local stun_chance = self.stunChance or 1
-    targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
-    for _, target in ipairs(targets) do
-      if math.random() < stun_chance then
-        target:stun(self.stunDuration, self.unit)
-      end
-    end
-    return
-  end
-  
-  if self.is_troop then 
+  if self.is_troop then
     targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
   else
     targets = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
   end
 
-  for _, target in ipairs(targets) do
-    if self.slowAmount then
-      --make slow for troops as well
-      target:slow(self.slowAmount, self.slowDuration, self.unit)
-    end
-    if self.burnDps then
-      target:burn(self.burnDps, self.burnDuration, self.unit)
-    end
-    if self.debuff then
-      target:add_buff(self.debuff, self.debuffDuration, self.unit)
-    end
-    if self.dmg > 0 then
-      if self.knockback_force then
-        target:push(self.knockback_force, self.unit:angle_to_object(target), nil, self.knockback_duration)
-      end
-      target:hit(self.dmg, self.unit)
-      HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
-      for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
-      for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
-      hit2:play{pitch = random:float(0.95, 1.05), volume = 0.35}
+  --healing area
+  if self.heal then
+    for _, target in ipairs(targets) do
+      target:heal(self.heal)
     end
 
+  --root targets
+  elseif self.rootDuration then
+    for _, target in ipairs(targets) do
+      if self:can_hit_with_effect(target, 'rooted') then
+        target:root(self.rootDuration, self.unit)
+        target:hit(self.dmg, self.unit)
+        self:apply_hit_effect(target)
+      end
+    end
+
+  elseif self.shockDuration then
+    for _, target in ipairs(targets) do
+      if self:can_hit_with_effect(target, 'shocked') then
+        target:shock(self.shockDuration, self.unit)
+        target:hit(self.dmg, self.unit)
+        self:apply_hit_effect(target)
+      end
+    end
+
+  elseif self.stunDuration then
+    local stun_chance = self.stunChance or 1
+    for _, target in ipairs(targets) do
+
+      if self:can_hit_with_effect(target, 'stunned') then
+        if math.random() < stun_chance then
+          target:stun(self.stunDuration, self.unit)
+          target:hit(self.dmg, self.unit)
+          self:apply_hit_effect(target)
+        end
+      end
+    end
+
+  elseif self.chillAmount then
+    for _, target in ipairs(targets) do
+      if self:can_hit_with_effect(target, 'chilled') then
+        target:chill(self.chillAmount, self.chillDuration, self.unit)
+        target:hit(self.dmg, self.unit)
+        self:apply_hit_effect(target)
+      end
+    end
+
+  elseif self.burnDps then
+    for _, target in ipairs(targets) do
+      target:burn(self.burnDps, self.burnDuration, self.unit)
+    end
+  
+  elseif self.knockback_force then
+    for _, target in ipairs(targets) do
+      if self:can_hit_with_knockback(target) then
+        target:hit(self.dmg, self.unit)
+        target:push(self.knockback_force, self.unit:angle_to_object(target), nil, self.knockback_duration)
+        self:apply_hit_effect(target)
+      end
+    end
+  elseif self.dmg > 0 then
+    for _, target in ipairs(targets) do
+      target:hit(self.dmg, self.unit)
+      self:apply_hit_effect(target)
+    end
   end
 end
 
+function Area:apply_hit_effect(target)
+  HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
+  for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
+  for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
+  hit2:play{pitch = random:float(0.95, 1.05), volume = 0.35}
+end
+
+function Area:can_hit_with_effect(target, effectName)
+  if self.only_multi_hit_after_effect_ends then
+    if not target:has_buff(effectName) then
+      return true
+    else
+      return false
+    end
+  else
+    return true
+  end
+end
+
+function Area:can_hit_with_knockback(target)
+  if self.only_multi_hit_after_effect_ends then
+    if not target.state == unit_states['knockback'] then
+      return true
+    else
+      return false
+    end
+  else
+    return true
+  end
+end
 
 function Area:update(dt)
   self:update_game_object(dt)
@@ -2951,24 +2987,27 @@ end
 
 function Critter:attack()
   if self.target and not self.target.dead then
-    print('critter attack')
     swordsman1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
     self.target:hit(self.dmg)
   end
 end
 
 
-function Critter:hit(damage, from, damageType, makesSound)
+function Critter:hit(damage, from, damageType, makesSound, cannotProcOnHit)
   
   if makesSound == nil then makesSound = true end
+  if cannotProcOnHit == nil then cannotProcOnHit = false end
 
   if self.dead or self.invulnerable then return end
-  self.hfx:use('hit', 0.25, 200, 10)
+
+  if makesSound then
+    self.hfx:use('hit', 0.25, 200, 10)
+  end
 
   self.hp = self.hp - damage
 
   --on hit callbacks
-  if from and from.onHitCallbacks then
+  if from and from.onHitCallbacks and not cannotProcOnHit then
     from:onHitCallbacks(self, damage, damageType)
   end
   self:onGotHitCallbacks(from, damage, damageType)

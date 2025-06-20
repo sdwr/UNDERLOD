@@ -467,22 +467,22 @@ item_to_item_data = {
     colors = {'red'},
     cost = 15,
     icon = 'sun',
-    desc = 'When [red]burning[fg] enemies reach max stacks, they [red[5]]explode[fg] for % max health',
+    desc = 'When hitting a max stacks [red]burning[fg] enemy, they [red[5]]explode[fg] for % max health',
     stats = {dmg = 0.5},
     procs = {'fireexplode'},
     prereqs = {'firestack'}
   },
-  ['firestacker'] = {
-    name = 'firestacker',
-    colors = {'red'},
-    cost = 10,
-    icon = 'gem',
-    desc = 'Across all units, your [red]burn[fg] effects stack to deal more damage',
-    stats = {dmg = 0.5},
-    procs = {'firestack'},
-    prereqs = {'firedmg'},
-    tags = {'firestack'}
-  },
+  -- ['firestacker'] = {
+  --   name = 'firestacker',
+  --   colors = {'red'},
+  --   cost = 10,
+  --   icon = 'gem',
+  --   desc = 'Across all units, your [red]burn[fg] effects stack to deal more damage',
+  --   stats = {dmg = 0.5},
+  --   procs = {'firestack'},
+  --   prereqs = {'firedmg'},
+  --   tags = {'firestack'}
+  -- },
   ['blazin'] = {
     name = 'blazin',
     colors = {'red'},
@@ -551,27 +551,48 @@ item_to_item_data = {
     procs = {'icenova'},
     tags = {'frostslow'}
   },
-  ['icefang'] = {
-    name = 'icefang',
+  -- ['icefang'] = {
+  --   name = 'icefang',
+  --   colors = {'blue'},
+  --   cost = 10,
+  --   icon = 'icefang',
+  --   desc = 'Across all units, your [blue]frost[fg] effects stack to [blue]slow[fg] enemies more',
+  --   stats = {dmg = 0.5},
+  --   procs = {'slowstack'},
+  --   prereqs = {'frostslow'}
+  -- },
+  ['shatterlance'] = {
+    name = 'shatterlance',
     colors = {'blue'},
     cost = 10,
     icon = 'icefang',
-    desc = 'Across all units, your [blue]frost[fg] effects stack to [blue]slow[fg] enemies more',
-    stats = {dmg = 0.5},
-    procs = {'slowstack'},
+    desc = 'Your hits on chilled enemies have a chance to deal extra damage',
+    stats = {dmg = 0.1},
+    procs = {'shatterlance'},
     prereqs = {'frostslow'}
   },
   ['glaciate'] = {
     name = 'glaciate',
     colors = {'blue'},
-    cost = 15,
+    cost = 10,
     icon = 'icefang',
     desc = 'Your attacks on [blue]slowed[fg] have a chance to [blue]freeze[fg] them',
-    stats = {dmg = 0.25},
+    stats = {dmg = 0.1},
     procs = {'glaciate'},
     prereqs = {'frostslow'}
   },
-
+  ['glacialprison'] = {
+    name = 'glacialprison',
+    colors = {'blue'},
+    cost = 15,
+    icon = 'icefang',
+    desc = 'Killing a [blue]chilled[fg] enemy creates a [blue]ice prison[fg] that slows enemies',
+    stats = {dmg = 0.25},
+    procs = {'glacialprison'},
+    prereqs = {'frostslow'}
+  },
+  
+  
   --green items
   ['healingleaf'] = {
     name = 'healingleaf',

@@ -69,14 +69,19 @@ function EnemyCritter:attack()
   end
 end
 
-function EnemyCritter:hit(damage, from, damageType)
+function EnemyCritter:hit(damage, from, damageType, makesSound, cannotProcOnHit)
   if self.dead or self.invulnerable then return end
-  self.hfx:use('hit', 0.25, 200, 10)
+  if makesSound == nil then makesSound = true end
+  if cannotProcOnHit == nil then cannotProcOnHit = false end
+
+  if makesSound then
+    self.hfx:use('hit', 0.25, 200, 10)
+  end
 
   self.hp = self.hp - damage
   self:show_damage_number(damage, damageType)
 
-  if from and from.onHitCallbacks then
+  if from and from.onHitCallbacks and not cannotProcOnHit then
     from:onHitCallbacks(self, damage, damageType)
   end
   self:onGotHitCallbacks(from, damage, damageType)
