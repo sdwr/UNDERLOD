@@ -45,17 +45,18 @@ function steam.userStats.onUserStatsReceived()
   end
 end
 
+--disable achievements for now
 function Unlock_Achievement(name)
-  print('unlocking!!!', name)
-  if steam then
-    --steam.userStats.setAchievement(name)
-    --steam.userStats.storeStats()
-  end
-  ACHIEVEMENTS_UNLOCKED[name] = true
+  -- print('unlocking!!!', name)
+  -- if steam then
+  --   --steam.userStats.setAchievement(name)
+  --   --steam.userStats.storeStats()
+  -- end
+  -- ACHIEVEMENTS_UNLOCKED[name] = true
 
-  level_up1:play{volume=0.5}
-  local group = main.current.ui_top or main.current.ui
-  AchievementToast{group = group, achievement = ACHIEVEMENTS_TABLE[name], duration = 5}
+  -- level_up1:play{volume=0.5}
+  -- local group = main.current.ui_top or main.current.ui
+  -- AchievementToast{group = group, achievement = ACHIEVEMENTS_TABLE[name], duration = 5}
 end
 
 function Reset_All_Achievements()

@@ -139,13 +139,14 @@ function MainMenu:on_enter(from)
       main:go_to('buy_screen', new_run)
     end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
   end}
-  self.achievements_button = Button{group = self.main_ui, x = 65, y = gh/2 + 34, force_update = true, button_text = 'achievements', fg_color = 'bg10', bg_color = 'bg', action = function(b)
-      if not self.paused then
-        open_achievements(self)
-      else
-        close_achievements(self)
-      end
-  end}
+  --disable achievements for now
+  -- self.achievements_button = Button{group = self.main_ui, x = 65, y = gh/2 + 34, force_update = true, button_text = 'achievements', fg_color = 'bg10', bg_color = 'bg', action = function(b)
+  --     if not self.paused then
+  --       open_achievements(self)
+  --     else
+  --       close_achievements(self)
+  --     end
+  -- end}
   self.options_button = Button{group = self.main_ui, x = 47, y = gh/2 + 56, force_update = true, button_text = 'options', fg_color = 'bg10', bg_color = 'bg', action = function(b)
     if not self.paused then
       open_options(self)
