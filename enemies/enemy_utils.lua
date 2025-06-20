@@ -6,6 +6,7 @@ enemy_size_to_xy = {
   big = {x = 16, y = 12},
   huge = {x = 36, y = 24},
 
+  stompy = {x = 46, y = 46},
   heigan = {x = 40, y = 60},
   boss = {x = 60, y = 60},
 }

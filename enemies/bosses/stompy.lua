@@ -19,10 +19,11 @@ end
 
 fns['init_enemy'] = function(self)
   self.boss_name = 'stompy'
+  self.icon = 'golem'
   
   --set extra variables from data
   self.data = self.data or {}
-  self.size = self.data.size or 'boss'
+  self.size = self.data.size or 'stompy'
 
   --create shape
   self.color = grey[0]:clone()
@@ -150,7 +151,11 @@ end
 
 fns['draw_enemy'] = function(self)   
     graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
-    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 10, 10, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+    -- graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 10, 10, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+    local image = find_enemy_image(self)
+    if image then
+      image:draw(self.x, self.y, 0, 1, 1)
+    end
     graphics.pop()
 end
 

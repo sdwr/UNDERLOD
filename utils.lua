@@ -120,6 +120,11 @@ function find_item_image(item)
   return image
 end
 
+function find_enemy_image(enemy)
+  local image = enemy_images[enemy.name] or enemy_images[enemy.icon] or enemy_images[enemy]
+  return image
+end
+
 function get_progress_bar()
   if main and main.current and main.current.progress_bar then
     return main.current.progress_bar

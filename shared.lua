@@ -684,19 +684,7 @@ function TutorialPopup:init(args)
 end
 
 function TutorialPopup:update(dt)
-  if not self.is_open then return end
   self:update_game_object(dt)
-  if self.tutorial_text then
-    self.tutorial_text:update(dt)
-  end
-  if self.okay_button then
-    self.okay_button:update(dt)
-  end
-  if self.display_show_hints_checkbox then
-    if self.show_hints_toggle then
-      self.show_hints_toggle:update(dt)
-    end
-  end
 end
 
 function TutorialPopup:draw()
@@ -755,14 +743,18 @@ function TutorialPopup:create_text()
   -- Replace the old Checkbox with the new ToggleButton
   self.show_hints_toggle = ToggleButton{
       group = self.group,
+      parent = self,
       x = self.popup_x - 60, -- Adjusted X for better centering
       y = self.popup_y + (self.popup_height/2) - 15,
       label_offset = 30,
       box_size = 15,
       label = 'Show Hints',
       checked = true, -- Set the initial state
-      action = function(is_checked)
+      action = function(parent, is_checked)
         state.show_combat_controls = is_checked
+        show_combat_controls = is_checked
+        parent.checked = is_checked
+        system.save_state()
       end
   }
   
@@ -812,7 +804,7 @@ function ToggleButton:update(dt)
         self:update_visuals()
 
         if self.action then
-            self.action(self.checked)
+            self.action(self.parent,self.checked)
         end
     end
 end

@@ -337,6 +337,9 @@ function init()
   gloves                = Image(d .. 'fingerlessgloves')
   frostorb              = Image(d .. 'frostorb')
 
+  local spriteFolder = 'newSprites/'
+  golem = Image(spriteFolder .. 'Golem1_Idle_full')
+
 
 -- normal and stopped are tied together for the purpose of attacking
 -- rallying and following are tied together for the purpose of moving
@@ -1489,6 +1492,10 @@ function init()
     ['monster'] = monster,
     ['sackofcash'] = sackofcash,
 
+  }
+
+  enemy_images = {
+    ['golem'] = golem,
   }
 
   item_costs = {
