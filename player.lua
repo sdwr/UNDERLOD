@@ -860,7 +860,7 @@ function Area:init(args)
     end
   end
   if self.pick_shape == 'circle' then
-    local w = 1.5*self.r
+    local w = 1.2*self.r
     self.shape = Circle(self.x, self.y, w)
   else
     local w = 1.5*self.w
@@ -962,7 +962,7 @@ function Area:damage()
 
   elseif self.burnDps then
     for _, target in ipairs(targets) do
-      target:burn(self.burnDps, self.burnDuration, self.unit)
+      target:burn(self.burnDps, BURN_DURATION, self.unit)
     end
   
   elseif self.knockback_force then
@@ -2942,6 +2942,8 @@ function Critter:init(args)
   self:calculate_stats(true)
   self:set_as_steerable(self.v, 400, math.pi, 1)
 
+  self.dmg_type = args.dmg_type or DAMAGE_TYPE_PHYSICAL
+
   self.t:cooldown(attack_speeds['fast'], function() return self.target and self:distance_to_object(self.target) < self.attack_sensor.rs end, 
   function() self:attack() end, nil, nil, "attack")
 
@@ -2988,7 +2990,7 @@ end
 function Critter:attack()
   if self.target and not self.target.dead then
     swordsman1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
-    self.target:hit(self.dmg)
+    self.target:hit(self.dmg, self, self.dmg_type)
   end
 end
 

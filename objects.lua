@@ -544,7 +544,7 @@ function Unit:update_buffs(dt)
       if v.duration <= v.nextTick then
         --add a really quiet short sound here, becauseit'll be playing all the time
         fire3:play{pitch = random:float(0.8, 1.2), volume = 0.25}
-        self:hit((v.dps/2) * (v.stacks or 1), nil, 'fire', false)
+        self:hit((v.dps/2), nil, DAMAGE_TYPE_PHYSICAL, false)
         --1 second tick, could be changed
         v.nextTick = v.nextTick - 0.5
       end
@@ -943,28 +943,19 @@ function Unit:isMoving(dt)
   return diff > 0.1
 end
 
---add custom UI later, so it doesn't stack with the buff circles
---check firestack on from unit to see if it can stack
+--only keep the highest dps buff
 function Unit:burn(dps, duration, from)
   local burnBuff = {name = 'burn', color = red[0], duration = duration, maxDuration = duration, nextTick = duration, dps = dps}
   local existing_buff = self.buffs['burn']
   
-  burnBuff.stacks = 1
-  if  from and from:has_toggle('firestack') and existing_buff then
-    burnBuff.stacks = math.min((existing_buff.stacks or 1) + 1, MAX_STACKS_FIRE)
+  if existing_buff and existing_buff.dps > burnBuff.dps then
+    return
+  else
+
+    self:remove_buff('burn')
+    self:add_buff(burnBuff)
   end
 
-  --assume we only have 1 dps of burn for now
-  --duration gets overwritten if the buff is already present, but the dps doesn't stack
-  --handle dps * stacks and stacks falling off in the update function
-  self:remove_buff('burn')
-  self:add_buff(burnBuff)
-
-  Stats_Max_Fire_Stacks(burnBuff.stacks)
-end
-
-function Unit:has_max_burn_stacks()
-  return self.buffs['burn'] and self.buffs['burn'].stacks == MAX_STACKS_FIRE
 end
 
 function Unit:isShielded()
@@ -1028,27 +1019,31 @@ function Unit:root(duration)
   self:add_buff(rootBuff)
 end
 
+--only keep the highest slow amount
 function Unit:slow(amount, duration, from)
   local slowBuff = {name = 'slowed', color = blue[2], duration = duration, maxDuration = duration, stats = {mvspd = -1 * amount}}
   local existing_buff = self.buffs['slowed']
 
-  slowBuff.stacks = 1
-  if from and from:has_toggle('slowstack') and existing_buff then
-    slowBuff.stacks = math.min((existing_buff.stacks or 1) + 1, MAX_STACKS_SLOW)
+  if existing_buff and existing_buff.stats.mvspd > slowBuff.stats.mvspd then
+    return
+  else
+    self:remove_buff('slowed')
+    self:add_buff(slowBuff)
   end
 
-  self:remove_buff('slowed')
-  self:add_buff(slowBuff)
 end
 
+--only keep the highest chill amount
 function Unit:chill(amount, duration, from)
   local chillBuff = {name = 'chilled', color = blue[0], duration = duration, maxDuration = duration, stats = {mvspd = -1 * amount}}
   local existing_buff = self.buffs['chilled']
   
-  chillBuff.stacks = 1
-
-  self:remove_buff('chilled')
-  self:add_buff(chillBuff)
+  if existing_buff and existing_buff.stats.mvspd > chillBuff.stats.mvspd then
+    return
+  else
+    self:remove_buff('chilled')
+    self:add_buff(chillBuff)
+  end
 end
 
 function Unit:freeze(duration, from)

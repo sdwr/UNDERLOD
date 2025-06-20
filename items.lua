@@ -467,22 +467,11 @@ item_to_item_data = {
     colors = {'red'},
     cost = 15,
     icon = 'sun',
-    desc = 'When hitting a max stacks [red]burning[fg] enemy, they [red[5]]explode[fg] for % max health',
+    desc = 'Hitting [red]burning[fg] enemy has a chance to [red[5]]explode[fg] for % max health',
     stats = {dmg = 0.5},
     procs = {'fireexplode'},
-    prereqs = {'firestack'}
+    prereqs = {'firedmg'}
   },
-  -- ['firestacker'] = {
-  --   name = 'firestacker',
-  --   colors = {'red'},
-  --   cost = 10,
-  --   icon = 'gem',
-  --   desc = 'Across all units, your [red]burn[fg] effects stack to deal more damage',
-  --   stats = {dmg = 0.5},
-  --   procs = {'firestack'},
-  --   prereqs = {'firedmg'},
-  --   tags = {'firestack'}
-  -- },
   ['blazin'] = {
     name = 'blazin',
     colors = {'red'},
@@ -551,16 +540,6 @@ item_to_item_data = {
     procs = {'icenova'},
     tags = {'frostslow'}
   },
-  -- ['icefang'] = {
-  --   name = 'icefang',
-  --   colors = {'blue'},
-  --   cost = 10,
-  --   icon = 'icefang',
-  --   desc = 'Across all units, your [blue]frost[fg] effects stack to [blue]slow[fg] enemies more',
-  --   stats = {dmg = 0.5},
-  --   procs = {'slowstack'},
-  --   prereqs = {'frostslow'}
-  -- },
   ['shatterlance'] = {
     name = 'shatterlance',
     colors = {'blue'},

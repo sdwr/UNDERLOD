@@ -229,6 +229,10 @@ function Enemy:hit(damage, from, damageType, makesSound, cannotProcOnHit)
   local actual_damage = math.max(self:calculate_damage(damage)*(self.stun_dmg_m or 1), 0)
   self:show_damage_number(actual_damage, damageType)
 
+  if damageType == DAMAGE_TYPE_FIRE then
+    self:burn(actual_damage * BURN_DPS_MULTIPLIER, BURN_DURATION, from)
+  end
+  
   self.hp = self.hp - actual_damage
   if self.hp > self.max_hp then self.hp = self.max_hp end
   main.current.damage_dealt = main.current.damage_dealt + actual_damage

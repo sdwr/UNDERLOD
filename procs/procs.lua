@@ -1324,14 +1324,13 @@ function Proc_Fire:init(args)
   
   --define the proc's vars
   self.damageType = 'fire'
-  self.burnDuration = self.data.burnDuration or 3
   self.burnDps = self.data.burnDamage or 15
 end
 
 function Proc_Fire:onHit(target, damage)
   Proc_Fire.super.onHit(self, target, damage)
   --need to add a burn debuff to the target
-  target:burn(self.burnDps, self.burnDuration, self.unit)
+  target:burn(self.burnDps, BURN_DURATION, self.unit)
 end
 
 Proc_Lavapool = Proc:extend()
@@ -1387,21 +1386,6 @@ function Proc_Lavapool:onHit(target, damage)
       }
     end
   end
-end
-
-Proc_Firestack = Proc:extend()
-function Proc_Firestack:init(args)
-  self.triggers = {}
-  self.scope = 'troop'
-
-  Proc_Firestack.super.init(self, args)
-
-  self.buffdata = {name = 'firestack', duration = 9999,
-    toggles = {firestack = 1}
-  }
-  --add ability to stack firedmg on hit to unit
-  if not self.unit then return end
-  self.unit:add_buff(self.buffdata)
 end
 
 Proc_Lavaman = Proc:extend()
@@ -1465,6 +1449,7 @@ function Proc_Lavaman:spawn(coords)
   critter2:play{pitch = random:float(0.8, 1.2), volume = 0.5}
   self.tick_timer = 0
   Critter{group = main.current.main,
+    damage_type = DAMAGE_TYPE_FIRE,
     x = coords.x, y = coords.y, color = self.color, r = random:float(0, 2*math.pi)
   }
 end
@@ -1487,13 +1472,15 @@ function Proc_FireExplode:init(args)
   self.dmgMulti = self.data.dmgMulti or 0.2
   self.sizeMulti = self.data.sizeMulti or 2
 
+  self.proc_chance = self.data.proc_chance or 0.2
+
   self.is_troop = (self.unit and self.unit.is_troop) or false
 
 end
 
 function Proc_FireExplode:onHit(target, damage)
   Proc_FireExplode.super.onHit(self, target, damage)
-  if target:has_max_burn_stacks() then
+  if math.random() < self.proc_chance then
     self:explode(target)
   end
 end
@@ -1956,28 +1943,6 @@ function Proc_Firenova:onHit(target, damage)
   end
 end
 
---have to define how to stack slows
--- just the amount is a little tricky, need to multiplicatively stack towards 0
--- could use stacks, but it would be nice to use any source of slow
--- ideal is multiplicative stacking, and remove slow over time
--- which i guess is a stack
--- also keep track of which unit applied the slow? or just make it a global effect
-Proc_Slowstack = Proc:extend()
-function Proc_Slowstack:init(args)
-  self.triggers = {}
-  self.scope = 'troop'
-
-  Proc_Slowstack.super.init(self, args)
-
-  --define the proc's vars
-  self.buffdata = {name = 'slowstack', duration = 9999,
-    toggles = {slowstack = 1}
-  }
-
-  if not self.unit then return end
-  self.unit:add_buff(self.buffdata)
-end
-
 Proc_Glaciate = Proc:extend()
 function Proc_Glaciate:init(args)
   self.triggers = {PROC_ON_ATTACK, PROC_ON_TICK}
@@ -2046,7 +2011,7 @@ function Proc_Glacialprison:init(args)
   self.duration = self.data.duration or 3
   self.chillDuration = self.data.chillDuration or 1.5
   self.color = self.data.color or blue[0]
-  self.tick_rate = self.data.tick_rate or 0.5
+  self.tick_rate = self.data.tick_rate or 0.1
 end
 
 function Proc_Glacialprison:onKill(target)
@@ -2135,7 +2100,6 @@ proc_name_to_class = {
   ['lavapool'] = Proc_Lavapool,
   ['firenova'] = Proc_Firenova,
   ['lavaman'] = Proc_Lavaman,
-  ['firestack'] = Proc_Firestack,
   ['fireexplode'] = Proc_FireExplode,
   ['blazin'] = Proc_Blazin,
   ['phoenix'] = Proc_Phoenix,
@@ -2144,7 +2108,6 @@ proc_name_to_class = {
   ['frostfield'] = Proc_Frostfield,
   ['holduground'] = Proc_Holduground,
   ['icenova'] = Proc_Icenova,
-  ['slowstack'] = Proc_Slowstack,
   ['glaciate'] = Proc_Glaciate,
   ['shatterlance'] = Proc_Shatterlance,
   ['glacialprison'] = Proc_Glacialprison,

@@ -19,7 +19,6 @@ ACHIEVEMENTS_INDEX = {
   'sell100items',
   'consume100potions',
   '4potioneffects',
-  'firestacker',
   'lightningkiller',
   'aspdcap',
   'glasscannon',
@@ -57,7 +56,6 @@ ACHIEVEMENTS_UNLOCKED = {
   ['sell100items'] = false,
   ['consume100potions'] = false,
   ['4potioneffects'] = false,
-  ['firestacker'] = false,
   ['lightningkiller'] = false,
   ['aspdcap'] = false,
   ['glasscannon'] = false,
@@ -194,12 +192,6 @@ ACHIEVEMENTS_TABLE = {
   },
 
   --item achievements
-  ['firestacker'] = {
-    name = 'Fire Stacker',
-    desc = 'Stack fire on an enemy up to 20 stacks',
-    icon = 'firestacker',
-    check = function() return USER_STATS.max_fire_stacks >= 20 end,
-  },
   ['lightningkiller'] = {
     name = 'Lightning Killer',
     desc = 'Kill an enemy entirely with lightning procs',

@@ -230,16 +230,6 @@ function Stats_Current_Run_Num_Same_Unit(num)
   Update_User_Stats()
 end
 
---combat stats
-function Stats_Max_Fire_Stacks(num)
-
-  if num > USER_STATS.max_fire_stacks then
-    USER_STATS.max_fire_stacks = num
-  end
-  Update_User_Stats()
-
-  Check_Achievements('firestacker')
-end
 
 function Stats_Lightning_Killer()
 
