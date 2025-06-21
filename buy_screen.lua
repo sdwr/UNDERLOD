@@ -490,40 +490,31 @@ function BuyScreen:set_items(shop_level, is_shop_start)
         -- Update the text
         self.items_text:set_text({{text = '[wavy_mid, fg]shop - Lv. ' .. self.shop_level, font = pixul_font, alignment = 'center'}})
       end)
+      -- Delay item creation to happen after text animation
+      transition_duration = transition_duration + 0.5
     else
       self.items_text:set_text({{text = '[wavy_mid, fg]shop - Lv. ' .. self.shop_level, font = pixul_font, alignment = 'center'}})
     end
     
-    -- Delay item creation to happen after text animation
-    transition_duration = transition_duration + 0.6
   end
 
-  if not shop_already_rolled then
-    local item_count = 0
-    for i = 1, 3 do
-      local item_number = i
-      if all_items[i] then
-        item_count = item_count + 1
-        self.t:after((0.6 * (item_count-1)) + transition_duration, function()
-          local item = ItemCard{group = self.ui, x = x + (i-1)*60, y = y, w = item_w, h = item_h, item = all_items[i], parent = self, i = i}
-          table.insert(self.items, item)
-        end)
-      end
-    end
-    self.t:after(item_count * 0.6 + transition_duration, function()
-      self.reroll_button.interact_with_mouse = true
-      self.lock_button.interact_with_mouse = true
-    end)
-  else
-    for i = 1, 3 do
-      if all_items[i] then
+  --create items
+  local item_count = 0
+  for i = 1, 3 do
+    local item_number = i
+    if all_items[i] then
+      item_count = item_count + 1
+      self.t:after((0.3 * (item_count-1)) + transition_duration, function()
         local item = ItemCard{group = self.ui, x = x + (i-1)*60, y = y, w = item_w, h = item_h, item = all_items[i], parent = self, i = i}
         table.insert(self.items, item)
-      end
+      end)
     end
+  end
+  self.t:after((item_count * 0.3) + transition_duration, function()
     self.reroll_button.interact_with_mouse = true
     self.lock_button.interact_with_mouse = true
-  end
+  end)
+
 end
 
 
