@@ -1742,7 +1742,6 @@ end
 function CharacterIcon:draw()
   graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
     graphics.rectangle(self.x, self.y - 7, 14, 14, 3, 3, character_colors[self.character])
-    graphics.print_centered(self.parent.cost, pixul_font, self.x + 0.5, self.y - 5, 0, 1, 1, 0, 0, _G[character_color_strings[self.character]][-5])
     self.character_text:draw(self.x, self.y + 10)
   graphics.pop()
 end

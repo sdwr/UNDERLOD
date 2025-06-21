@@ -95,7 +95,6 @@ function ShopCard:init(args)
   local x = self.x
   table.insert(self.type_icons, TypeIcon{group = self.group, x = x + (0-1)*20, y = self.y + 6, type = type, character = self.unit, units = self.parent.units, parent = self})
 
-  self.cost = tier_to_cost[character_tiers[self.unit]]
   self.spring:pull(0.2, 200, 10)
 end
 
