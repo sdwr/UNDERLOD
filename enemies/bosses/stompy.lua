@@ -46,12 +46,15 @@ fns['init_enemy'] = function(self)
     viable = function() return self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies) end,
     castcooldown = 1,
     oncast = function() end,
-    cast_length = 1,
+    cast_length = 0.1,
+    cast_sound = usurer1,
+    cast_volume = 2,
+
     spellclass = Stomp_Spell,
     spelldata = {
       group = main.current.main,
       team = "enemy",
-      spell_duration = 1,
+      spell_duration = GOLEM_CAST_TIME,
       cancel_on_death = true,
       x = self.x,
       y = self.y,
@@ -69,7 +72,9 @@ fns['init_enemy'] = function(self)
     castcooldown = 2,
     oncast = function() end,
     instantspell = true,
-    cast_length = 1,
+    cast_length = GOLEM_CAST_TIME,
+    cast_sound = usurer1,
+    cast_volume = 2,
     spellclass = Mortar_Spell,
     spelldata = {
       group = main.current.main,
@@ -88,6 +93,9 @@ fns['init_enemy'] = function(self)
     viable = function() return true end,
     castcooldown = 4,
     instantspell = true,
+    cast_length = GOLEM_CAST_TIME,
+    cast_sound = usurer1,
+    cast_volume = 2,
     oncast = function() turret_hit_wall2:play{volume = 0.9} end,
     spellclass = Avalanche,
     spelldata = {
@@ -106,12 +114,14 @@ fns['init_enemy'] = function(self)
     castcooldown = 3,
     cast_length = 0.1,
     oncast = function() end,
+    cast_sound = usurer1,
+    cast_volume = 2,
     spellclass = Launch_Spell,
     spelldata = {
       group = main.current.main,
       team = "enemy",
-      charge_duration = 1.75,
-      spell_duration = 2.5,
+      charge_duration = GOLEM_CAST_TIME,
+      spell_duration = GOLEM_CAST_TIME + 0.75,
       impulse_magnitude = 300,
       cancel_on_death = true,
       keep_original_angle = true,
@@ -145,7 +155,7 @@ fns['init_enemy'] = function(self)
   table.insert(self.attack_options, mortar)
   table.insert(self.attack_options, avalanche)
   table.insert(self.attack_options, charge)
-  table.insert(self.attack_options, prevent_casting)
+  -- table.insert(self.attack_options, prevent_casting)
 
 end
 

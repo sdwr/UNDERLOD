@@ -36,7 +36,10 @@ TODO:
       passively hit ones (thorns, )
 
 -- shop reroll logic is messy, confuses rerolling part of the shop with rolling it for the first time
--- pause spawns when game is paused in arena
+-- pause spawns when game is paused in arena (and spawn marks)
+
+-- draw ground effects under the main group
+    but keep their hitboxes in the main group
 
 
 music:

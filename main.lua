@@ -1501,6 +1501,9 @@ function init()
     return anim8.newAnimation(grid('1-' .. number, 1), speed)
   end
 
+  GOLEM_CAST_TIME = 1.5
+  GOLEM_ATTACK_FRAMES = 9
+
   golem_idle = Image(spriteFolder .. 'golems/Golem1/Idle/Golem1_Idle_full')
   golem_walk = Image(spriteFolder .. 'golems/Golem1/Walk/Golem1_Walk_full')
   golem_run = Image(spriteFolder .. 'golems/Golem1/Run/Golem1_Run_full')
@@ -1515,10 +1518,11 @@ function init()
   golem_hurt_g = create_grid(golem_hurt, 128, 128)
   golem_death_g = create_grid(golem_death, 128, 128)
 
+
   golem_idle_a = create_animation(golem_idle_g, 4, 128, 128, 0.4)
   golem_walk_a = create_animation(golem_walk_g, 8, 128, 128, 0.2)
   golem_run_a = create_animation(golem_run_g, 8, 128, 128, 0.2)
-  golem_attack_a = create_animation(golem_attack_g, 9, 128, 128, 0.2)
+  golem_attack_a = create_animation(golem_attack_g, 9, 128, 128, GOLEM_CAST_TIME / GOLEM_ATTACK_FRAMES)
   golem_hurt_a = create_animation(golem_hurt_g, 4, 128, 128, 0.4)
   golem_death_a = create_animation(golem_death_g, 8, 128, 128, 0.2)
 
@@ -1528,6 +1532,7 @@ function init()
     ['walk'] = {golem_walk_a, golem_walk},
     ['run'] = {golem_run_a, golem_run},
     ['casting'] = {golem_attack_a, golem_attack},
+    ['channeling'] = {golem_attack_a, golem_attack},
     ['hurt'] = {golem_hurt_a, golem_hurt},
     ['death'] = {golem_death_a, golem_death},
   }

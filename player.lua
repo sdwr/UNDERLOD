@@ -1699,6 +1699,8 @@ function Stomp:init(args)
   self.currentTime = 0
   self.knockback = self.knockback or false
 
+  self.draw_under_units = true
+
   self.state = "charging"
 
   orb1:play({volume = 0.5})

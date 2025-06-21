@@ -184,15 +184,25 @@ end
 function Helper.Unit:run_state_change_functions()
     for i, unit in ipairs(Helper.Unit:get_list(true)) do
         if unit.previous_state ~= unit.state then
+            Helper.Unit:reset_animations(unit)
             unit.state_change_functions[unit.state](unit)
         end
         unit.previous_state = unit.state
     end
     for i, unit in ipairs(Helper.Unit:get_list(false)) do
         if unit.previous_state ~= unit.state then
+            Helper.Unit:reset_animations(unit)
             unit.state_change_functions[unit.state](unit)
         end
         unit.previous_state = unit.state
+    end
+end
+
+function Helper.Unit:reset_animations(unit)
+    if unit.spritesheet then
+        for k, v in pairs(unit.spritesheet) do
+            v[1]:gotoFrame(1)
+        end
     end
 end
 
