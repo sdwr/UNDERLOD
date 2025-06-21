@@ -337,10 +337,6 @@ function init()
   gloves                = Image(d .. 'fingerlessgloves')
   frostorb              = Image(d .. 'frostorb')
 
-  local spriteFolder = 'newSprites/'
-  golem = Image(spriteFolder .. 'Golem1_Idle_full')
-
-
 -- normal and stopped are tied together for the purpose of attacking
 -- rallying and following are tied together for the purpose of moving
   unit_states = {
@@ -1494,8 +1490,50 @@ function init()
 
   }
 
-  enemy_images = {
-    ['golem'] = golem,
+  local spriteFolder = 'newSprites/'
+
+
+  function create_grid(image, w, h)
+    return anim8.newGrid(w, h, image.w, image.h)
+  end
+
+  function create_animation(grid, number, w, h, speed)
+    return anim8.newAnimation(grid('1-' .. number, 1), speed)
+  end
+
+  golem_idle = Image(spriteFolder .. 'golems/Golem1/Idle/Golem1_Idle_full')
+  golem_walk = Image(spriteFolder .. 'golems/Golem1/Walk/Golem1_Walk_full')
+  golem_run = Image(spriteFolder .. 'golems/Golem1/Run/Golem1_Run_full')
+  golem_attack = Image(spriteFolder .. 'golems/Golem1/Attack/Golem1_Attack_full')
+  golem_hurt = Image(spriteFolder .. 'golems/Golem1/Hurt/Golem1_Hurt_full')
+  golem_death = Image(spriteFolder .. 'golems/Golem1/Death/Golem1_Death_full')
+
+  golem_idle_g = create_grid(golem_idle, 128, 128)
+  golem_walk_g = create_grid(golem_walk, 128, 128)
+  golem_run_g = create_grid(golem_run, 128, 128)
+  golem_attack_g = create_grid(golem_attack, 128, 128)
+  golem_hurt_g = create_grid(golem_hurt, 128, 128)
+  golem_death_g = create_grid(golem_death, 128, 128)
+
+  golem_idle_a = create_animation(golem_idle_g, 4, 128, 128, 0.4)
+  golem_walk_a = create_animation(golem_walk_g, 8, 128, 128, 0.2)
+  golem_run_a = create_animation(golem_run_g, 8, 128, 128, 0.2)
+  golem_attack_a = create_animation(golem_attack_g, 9, 128, 128, 0.2)
+  golem_hurt_a = create_animation(golem_hurt_g, 4, 128, 128, 0.4)
+  golem_death_a = create_animation(golem_death_g, 8, 128, 128, 0.2)
+
+  
+  golem_spritesheets = {
+    ['normal'] = {golem_walk_a, golem_idle},
+    ['walk'] = {golem_walk_a, golem_walk},
+    ['run'] = {golem_run_a, golem_run},
+    ['casting'] = {golem_attack_a, golem_attack},
+    ['hurt'] = {golem_hurt_a, golem_hurt},
+    ['death'] = {golem_death_a, golem_death},
+  }
+
+  enemy_spritesheets = {
+    ['golem'] = golem_spritesheets,
   }
 
   item_costs = {

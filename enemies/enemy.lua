@@ -14,6 +14,10 @@ function Enemy:init(args)
   self:init_unit()
   self:init_hitbox_points()
 
+  if self.init_animations then
+    self:init_animations()
+  end
+
   self:calculate_stats(true)
 
   self.movementStyle = self.movementStyle or MOVEMENT_TYPE_SEEK
@@ -30,6 +34,8 @@ function Enemy:init(args)
 
   self.random_dest = {x = self.x, y = self.y}
   self.random_dest_timer = 0
+
+
 end
 
 --load enemy type specific functions from global table
@@ -40,6 +46,15 @@ function Enemy:setExtraFunctions()
   for k, v in pairs(t) do
     self[k] = v
   end
+end
+
+function Enemy:has_animation(state)
+  if self.spritesheet then
+    if self.animations[state] then
+      return true
+    end
+  end
+  return false
 end
 
 --set castcooldown and self.base_castcooldown in the enemy file (init)
