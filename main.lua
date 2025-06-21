@@ -1524,7 +1524,7 @@ function init()
 
   
   golem_spritesheets = {
-    ['normal'] = {golem_walk_a, golem_idle},
+    ['normal'] = {golem_walk_a, golem_walk},
     ['walk'] = {golem_walk_a, golem_walk},
     ['run'] = {golem_run_a, golem_run},
     ['casting'] = {golem_attack_a, golem_attack},

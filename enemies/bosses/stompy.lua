@@ -156,14 +156,9 @@ end
 fns['draw_enemy'] = function(self)   
   graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
 
-  if self.spritesheet and self.spritesheet[self.state] then
-    local animation = self.spritesheet[self.state][1]
-    local image = self.spritesheet[self.state][2]
+  local animation_success = self:draw_animation(self.state, self.x, self.y, 0, 1, 1)
 
-    local frame_width, frame_height = animation:getDimensions()
-
-    animation:draw(image.image, self.x, self.y, 0, 1, 1, frame_width / 2, frame_height / 2)
-  else
+  if not animation_success then
     graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 10, 10, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
   end
 
