@@ -1497,8 +1497,10 @@ function init()
     return anim8.newGrid(w, h, image.w, image.h)
   end
 
-  function create_animation(grid, number, w, h, speed)
-    return anim8.newAnimation(grid('1-' .. number, 1), speed)
+  function create_animation(grid, rowNumber, numberPerRow, w, h, speed)
+    local numbers = rowNumber .. '-' .. numberPerRow
+    print(numbers)
+    return anim8.newAnimation(grid(numbers, 1), speed)
   end
 
   GOLEM_CAST_TIME = 1.5
@@ -1519,12 +1521,27 @@ function init()
   golem_death_g = create_grid(golem_death, 128, 128)
 
 
-  golem_idle_a = create_animation(golem_idle_g, 4, 128, 128, 0.4)
-  golem_walk_a = create_animation(golem_walk_g, 8, 128, 128, 0.2)
-  golem_run_a = create_animation(golem_run_g, 8, 128, 128, 0.2)
-  golem_attack_a = create_animation(golem_attack_g, 9, 128, 128, GOLEM_CAST_TIME / GOLEM_ATTACK_FRAMES)
-  golem_hurt_a = create_animation(golem_hurt_g, 4, 128, 128, 0.4)
-  golem_death_a = create_animation(golem_death_g, 8, 128, 128, 0.2)
+  golem_idle_a = create_animation(golem_idle_g, 1, 4, 128, 128, 0.4)
+  golem_walk_a = create_animation(golem_walk_g, 1, 8, 128, 128, 0.2)
+  golem_run_a = create_animation(golem_run_g, 1, 8, 128, 128, 0.2)
+  golem_attack_a = create_animation(golem_attack_g, 1, 9, 128, 128, GOLEM_CAST_TIME / GOLEM_ATTACK_FRAMES)
+  golem_hurt_a = create_animation(golem_hurt_g, 1, 4, 128, 128, 0.4)
+  golem_death_a = create_animation(golem_death_g, 1, 8, 128, 128, 0.2)
+
+
+
+  SKELETON_CAST_TIME = 1
+
+  skeleton = Image(spriteFolder .. 'room8_skeleton')
+
+  skeleton_birth_g = create_grid(skeleton, 24, 24)
+  skeleton_idle_g = create_grid(skeleton, 24, 24)
+  skeleton_attack_g = create_grid(skeleton, 24, 24)
+
+
+  skeleton_birth_a = create_animation(skeleton_birth_g, 2, 8, 24, 24, 0.4)
+  skeleton_idle_a = create_animation(skeleton_idle_g, 6, 8, 24, 24, 0.4)
+  skeleton_attack_a = create_animation(skeleton_attack_g, 18, 8, 24, 24, 0.4)
 
   
   golem_spritesheets = {
@@ -1537,8 +1554,15 @@ function init()
     ['death'] = {golem_death_a, golem_death},
   }
 
+  skeleton_spritesheets = {
+    ['normal'] = {skeleton_idle_a, skeleton},
+    ['birth'] = {skeleton_birth_a, skeleton},
+    ['casting'] = {skeleton_attack_a, skeleton},
+  }
+
   enemy_spritesheets = {
     ['golem'] = golem_spritesheets,
+    ['skeleton'] = skeleton_spritesheets,
   }
 
   item_costs = {

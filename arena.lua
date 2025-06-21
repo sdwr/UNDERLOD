@@ -386,10 +386,6 @@ function Arena:display_text()
     end
   end
 
-  if state.run_timer then
-    graphics.print_centered(math.round(run_time, 0), fat_font, self.x2 - 12, self.y2 + 16, 0, 0.6, 0.6, nil, nil, fg[0])
-  end
-
 end
 
 

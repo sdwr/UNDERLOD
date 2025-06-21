@@ -14,9 +14,7 @@ function Enemy:init(args)
   self:init_unit()
   self:init_hitbox_points()
 
-  if self.init_animations then
-    self:init_animations()
-  end
+  self.spritesheet = find_enemy_spritesheet(self)
 
   self:calculate_stats(true)
 

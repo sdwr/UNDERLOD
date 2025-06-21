@@ -20,6 +20,7 @@ fns['init_enemy'] = function(self)
   --set extra data from variables
   self.data = self.data or {}
   self.size = self.data.size or 'regular'
+  self.icon = 'skeleton'
 
   --create shape
   self.color = grey[0]:clone()
@@ -35,7 +36,13 @@ fns['init_enemy'] = function(self)
 end
 
 fns['draw_enemy'] = function(self)
-  graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+
+  local animation_success = self:draw_animation(self.state, self.x, self.y, 0, 2, 2)
+
+  if not animation_success then
+    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+  end
+
 end
 
 enemy_to_class['seeker'] = fns

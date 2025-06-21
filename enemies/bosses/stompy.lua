@@ -159,10 +159,6 @@ fns['init_enemy'] = function(self)
 
 end
 
-fns['init_animations'] = function(self)
-  self.spritesheet = find_enemy_spritesheet(self)
-end
-
 fns['draw_enemy'] = function(self)   
   graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
 
