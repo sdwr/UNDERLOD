@@ -161,7 +161,7 @@ function BuyScreen:update(dt)
   if input['lctrl'].down or input['rctrl'].down then
     if input['g'].pressed then
       gold = gold + 100
-      self.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
+      self.shop_text:set_text{{text = '[wavy_mid, fg]gold: [yellow]' .. gold, font = pixul_font, alignment = 'center'}}
     end
     if input['u'].pressed then
       self.show_level_buttons = not self.show_level_buttons
@@ -304,7 +304,7 @@ end
 
 function BuyScreen:gain_gold(amount)
   gold = (gold + amount) or 0
-  self.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
+  self.shop_text:set_text{{text = '[wavy_mid, fg]gold: [yellow]' .. gold, font = pixul_font, alignment = 'center'}}
 end
 
 function BuyScreen:set_party()
@@ -817,6 +817,10 @@ function ProgressBar:set_progress(progress)
   self.progress = progress
 end
 
+function ProgressBar:set_max_progress(max_progress)
+  self.max_progress = max_progress
+end
+
 function ProgressBar:increase_with_particles(roundPower, x, y)
   self:create_progress_particle(roundPower, x, y)
 end
@@ -1297,7 +1301,7 @@ function RerollButton:update(dt)
         gold2:play{pitch = random:float(0.95, 1.05), volume = 0.3}
         self.selected = true
         self.spring:pull(0.2, 200, 10)
-        self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'center'}}
+        self.parent.shop_text:set_text{{text = '[wavy_mid, fg]gold: [yellow]' .. gold, font = pixul_font, alignment = 'center'}}
 
 
         Stats_Current_Run_Rerolls()
@@ -1556,7 +1560,7 @@ function ItemCard:buy_item(slot)
   buyScreen:save_run()
 
   self.parent.shop_item_data[self.i] = nil
-  self.parent.shop_text:set_text{{text = '[wavy_mid, fg]shop [fg]- [fg, nudge_down]gold: [yellow, nudge_down]' .. gold, font = pixul_font, alignment = 'right'}}
+  self.parent.shop_text:set_text{{text = '[wavy_mid, fg]gold: [yellow]' .. gold, font = pixul_font, alignment = 'right'}}
   self:die()
 end
 
