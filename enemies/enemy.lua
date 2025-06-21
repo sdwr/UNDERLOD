@@ -14,6 +14,10 @@ function Enemy:init(args)
   self:init_unit()
   self:init_hitbox_points()
 
+  if self.init_animations then
+    self:init_animations()
+  end
+
   self:calculate_stats(true)
 
   self.movementStyle = self.movementStyle or MOVEMENT_TYPE_SEEK
@@ -30,6 +34,8 @@ function Enemy:init(args)
 
   self.random_dest = {x = self.x, y = self.y}
   self.random_dest_timer = 0
+
+
 end
 
 --load enemy type specific functions from global table
@@ -42,6 +48,48 @@ function Enemy:setExtraFunctions()
   end
 end
 
+function Enemy:has_animation(state)
+  if self.spritesheet then
+    if self.spritesheet[state] then
+      return true
+    end
+  end
+  return false
+end
+
+function Enemy:update_animation(dt)
+  if self.spritesheet and self.spritesheet[self.state] then
+    local animation = self.spritesheet[self.state][1]
+    local image = self.spritesheet[self.state][2]
+    animation:update(dt)
+  end
+end
+
+function Enemy:draw_animation(state, x, y, r, sx, sy)
+  sx = sx or 1
+  sy = sy or 1
+  r = r or 0
+  
+  local animation, image = nil, nil
+
+  if self.spritesheet and self.spritesheet[state] then
+    animation = self.spritesheet[state][1]
+    image = self.spritesheet[state][2]
+  elseif self.spritesheet and self.spritesheet['normal'] then
+    animation = self.spritesheet['normal'][1]
+    image = self.spritesheet['normal'][2]
+  end
+
+  if animation and image then
+    local frame_width, frame_height = animation:getDimensions()
+    animation:draw(image.image, x, y, r, sx, sy, frame_width / 2, frame_height / 2)
+    return true
+  end
+
+  return false
+end
+
+
 --set castcooldown and self.base_castcooldown in the enemy file (init)
 function Enemy:update(dt)
     self:update_game_object(dt)
@@ -49,6 +97,8 @@ function Enemy:update(dt)
 
     self:onTickCallbacks(dt)
     self:update_buffs(dt)
+
+    self:update_animation(dt)
 
     self:calculate_stats()
     

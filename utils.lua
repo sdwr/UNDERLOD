@@ -125,6 +125,11 @@ function find_enemy_image(enemy)
   return image
 end
 
+function find_enemy_spritesheet(enemy)
+  local spritesheet = enemy_spritesheets[enemy.name] or enemy_spritesheets[enemy.icon] or enemy_spritesheets[enemy]
+  return spritesheet
+end
+
 function get_progress_bar()
   if main and main.current and main.current.progress_bar then
     return main.current.progress_bar

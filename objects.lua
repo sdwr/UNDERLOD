@@ -481,9 +481,9 @@ function Unit:draw_buffs()
 end
 
 function Unit:draw_launching()
-  if self.is_launching then
-    graphics.circle(self.x, self.y, self.shape.w/2 + 2, orange_transparent)
-  end
+  -- if self.is_launching then
+  --   graphics.circle(self.x, self.y, self.shape.w/2 + 2, orange_transparent)
+  -- end
 end
 
 function Unit:draw_targeted()
