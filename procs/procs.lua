@@ -1711,182 +1711,149 @@ function Proc_Holduground:die()
   if not self.unit then return end
   self.unit:remove_buff(self.buffname)
 end
-
 Proc_Icenova = Proc:extend()
--- ====================================================================
--- REFACTORED: __init__ function
--- We introduce a state machine and timers to manage the proc's logic.
--- ====================================================================
+
+-- ===================================================================
+-- INITIALIZATION
+-- ===================================================================
 function Proc_Icenova:init(args)
-  self.triggers = {PROC_ON_TICK}
-  self.scope = 'troop'
+    self.triggers = {PROC_ON_TICK}
+    self.scope = 'troop'
+    Proc_Icenova.super.init(self, args)
 
-  Proc_Icenova.super.init(self, args)
+    -- Define the proc's properties from data
+    self.damage = (self.data.damage or 20) * (self.data.damageMulti or 1)
+    self.radius_boost = self.data.radius_boost or 10
+    self.radius = self.data.radius or 30
+    self.radius_with_boost = self.radius + self.radius_boost
+    self.duration = self.data.duration or 0.2
+    self.chillAmount = self.data.chillAmount or 0.5
+    self.chillDuration = self.data.chillDuration or 3
+    self.color = self.data.color or blue[0]
 
-  -- Define the proc's vars
-  self.damageMulti = self.data.damageMulti or 1
-  self.damage = self.data.damage or 20
-  self.radius = self.data.radius or 30
-  self.radius_boost = self.data.radius_boost or 15
-  self.duration = self.data.duration or 0.2
-  self.chillAmount = self.data.chillAmount or 0.5
-  self.chillDuration = self.data.chillDuration or 3
-  self.color = self.data.color or blue[0]
+    -- Cooldown and wind-up values
+    self.cooldown = self.data.cooldown or 5
+    self.cancel_cooldown = self.data.cancel_cooldown or 0.5
+    self.procDelay = self.data.procDelay or 0.75 -- This is the wind-up duration
 
-  -- Cooldown and delay values
-  self.cooldown = self.data.cooldown or 5
-  self.cancel_cooldown = self.data.cancel_cooldown or 0.5
-  self.procDelay = self.data.procDelay or 0.75
-
-  -- State machine setup
-  self.state = 'ready'       -- Possible states: 'ready', 'winding_up', 'on_cooldown'
-  self.windup_timer = 0
-  self.cooldown_timer = 0
-
+    -- State machine setup
+    self.state = 'ready'       -- Possible states: 'ready', 'winding_up', 'on_cooldown'
+    self.windup_timer = 0
+    self.cooldown_timer = 0
+    
+    -- This will hold the visual effect object
+    self.proc_display_area = nil 
 end
 
--- ====================================================================
--- REFACTORED: onTick function
--- This is now the heart of the state machine, handling all logic.
--- ====================================================================
+-- ===================================================================
+-- ON TICK: The State Machine
+-- This is the heart of the proc, handling all logic every frame.
+-- ===================================================================
 function Proc_Icenova:onTick(dt)
-  Proc_Icenova.super.onTick(self, dt)
-  if not self.unit or self.unit.dead then return end
+    Proc_Icenova.super.onTick(self, dt)
+    if not self.unit or self.unit.dead then return end
 
-  -- State: ON COOLDOWN
-  -- If on cooldown, just tick down the timer and do nothing else.
-  if self.state == 'on_cooldown' then
-      self.cooldown_timer = self.cooldown_timer - dt
-      if self.cooldown_timer <= 0 then
-          self.state = 'ready'
-      end
-      return
-  end
+    -- STATE: ON COOLDOWN
+    if self.state == 'on_cooldown' then
+        self.cooldown_timer = self.cooldown_timer - dt
+        if self.cooldown_timer <= 0 then
+            self.state = 'ready'
+        end
 
-  -- State: READY
-  -- If ready, check for an enemy to start the wind-up.
-  if self.state == 'ready' then
-      if Helper.Spell:there_is_target_in_range(self.unit, self.radius, nil) then
-          -- Enemy found! Start winding up.
-          self.state = 'winding_up'
-          self.windup_timer = self.procDelay
-          self:create_proc_display_area()
-          gambler1:play{pitch = random:float(0.8, 1.2), volume = 0.6}
-      end
-  end
+    -- STATE: READY
+    elseif self.state == 'ready' then
+        if Helper.Spell:there_is_target_in_range(self.unit, self.radius, nil) then
+            -- Enemy found! Transition to the winding_up state.
+            self.state = 'winding_up'
+            self.windup_timer = self.procDelay
+            alert1:play{pitch = random:float(0.8, 1.2), volume = 0.6}
+            
+            -- Create a new visual effect for this wind-up.
+            self:create_proc_display_area()
+        end
 
-  -- State: WINDING UP
-  -- If winding up, check for cancellation, update the timer, and check for success.
-  if self.state == 'winding_up' then
-      -- 1. Check for cancellation condition
-      if not Helper.Spell:there_is_target_in_range(self.unit, self.radius, nil) then
-          -- No enemies left! Cancel the proc and start the short cooldown.
-          self.state = 'on_cooldown'
-          self.cooldown_timer = self.cancel_cooldown
-          if self.proc_display_area then
-            self.proc_display_area.hidden = true
-          end
-          -- NOTE: You could stop a charging sound here if you had one.
-          return -- Stop processing for this frame.
-      end
+    -- STATE: WINDING UP
+    elseif self.state == 'winding_up' then
+        -- 1. Check for cancellation (no enemies left in range)
+        if not Helper.Spell:there_is_target_in_range(self.unit, self.radius, nil) then
+            self.state = 'on_cooldown'
+            self.cooldown_timer = self.cancel_cooldown
+            self:destroy_proc_display_area() -- Destroy the visual effect
+            return
+        end
 
-      -- 2. If not cancelled, continue the wind-up
-      self.windup_timer = self.windup_timer - dt
-      self:update_proc_display() -- Update the visual display
+        -- 2. If not cancelled, update the wind-up timer and visual.
+        self.windup_timer = self.windup_timer - dt
+        self:update_proc_display()
 
-      -- 3. Check for successful proc
-      if self.windup_timer <= 0 then
-          -- Timer finished and enemy is still in range. Fire!
-          self:cast()
-          self.state = 'on_cooldown'
-          self.cooldown_timer = self.cooldown
-          self.proc_display_area.hidden = true
-      end
-  end
+        -- 3. Check for successful cast.
+        if self.windup_timer <= 0 then
+            self:cast()
+            self.state = 'on_cooldown'
+            self.cooldown_timer = self.cooldown
+            self:destroy_proc_display_area() -- Destroy the visual effect
+        end
+    end
 end
 
--- ====================================================================
--- MODIFIED: update_proc_display
--- Now calculates progress based on the new windup_timer variable.
--- ====================================================================
-function Proc_Icenova:update_proc_display()
-  --update the proc display
-  if self.unit then
-      local radius = self.radius + self.radius_boost
-      -- Calculate progress from 0 to 1 based on the windup timer
-      local progress = (self.procDelay - self.windup_timer) / self.procDelay
-      local r = radius * progress
-
-      self.proc_display_area.hidden = false
-      self.proc_display_area.x = self.unit.x
-      self.proc_display_area.y = self.unit.y
-      self.proc_display_area.r = r
-  end
-end
+-- ===================================================================
+-- VISUAL EFFECT HELPERS
+-- ===================================================================
 
 function Proc_Icenova:create_proc_display_area()
-  local x, y
-  if self.unit then
-    x, y = self.unit.x, self.unit.y
-  end
-  if not x or not y then 
-    x, y = 0, 0
-  end
+    -- If an old one somehow exists, destroy it first.
+    self:destroy_proc_display_area()
 
-  self.proc_display_area = Area{
-    group = main.current.effects,
-    x = x, y = y,
-    pick_shape = 'circle',
-    r = self.radius + self.radius_boost, duration = self.procDelay, color = self.color,
-    dmg = 0,
-  }
+    self.proc_display_area = Area{
+        group = main.current.effects,
+        x = self.unit.x, y = self.unit.y,
+        pick_shape = 'circle',
+        r = 0, -- Start with a radius of 0
+        duration = self.procDelay + 0.1, -- Give it a lifetime just longer than the wind-up
+        color = self.color,
+        dmg = 0,
+    }
 end
 
---wait a bit before casting, to see if the unit is still in range
-function Proc_Icenova:start_proc_delay()
-  alert1:play{pitch = random:float(0.8, 1.2), volume = 0.6}
-  self.canProc = false
-  self.tryProc = true
-  self.active_procDelay = self.procDelay
+function Proc_Icenova:update_proc_display()
+    if self.proc_display_area and not self.proc_display_area.dead then
+        local progress = 1 - (self.windup_timer / self.procDelay) -- Progress from 0 to 1
+        progress = math.max(0, math.min(1, progress)) -- Clamp progress to prevent errors
+        
+        self.proc_display_area.r = self.radius_with_boost * progress
+        self.proc_display_area.x = self.unit.x
+        self.proc_display_area.y = self.unit.y
+    end
 end
 
-function Proc_Icenova:try_proc()
-  if Helper.Spell:there_is_target_in_range(self.unit, self.radius, nil) then
-    self:cast()
-    trigger:after(self.cooldown, function() self.canProc = true end)
-    self:reset_tryProc()
-  else
-    --reset the proc
-    self.canProc = true
-    self:reset_tryProc()
-  end
+function Proc_Icenova:destroy_proc_display_area()
+    if self.proc_display_area then
+        self.proc_display_area.dead = true
+        self.proc_display_area = nil
+    end
 end
 
-function Proc_Icenova:reset_tryProc()
-  self.tryProc = false
-  self.active_procDelay = self.procDelay
-  self.currentProcStartTime = Helper.Time.time
-  self.proc_display_area.hidden = true
-  self.proc_display_area.duration = 100
-end
+-- ===================================================================
+-- CAST ACTION
+-- ===================================================================
 
 function Proc_Icenova:cast()
-  --play sound
-  glass_shatter:play{pitch = random:float(0.8, 1.2), volume = 0.8}
+    self:destroy_proc_display_area()
+    glass_shatter:play{pitch = random:float(0.8, 1.2), volume = 0.8}
 
-  local damage = self.damage * self.damageMulti
-  --cast here, note that the spell has duration, but we only want it to trigger once
-  Area{
-    group = main.current.effects,
-    unit = self.unit,
-    x = self.unit.x, y = self.unit.y,
-    pick_shape = 'circle',
-    dmg = damage,
-    r = self.radius + self.radius_boost, duration = self.duration, color = self.color,
-    is_troop = self.unit.is_troop,
-    chillAmount = self.chillAmount,
-    chillDuration = self.chillDuration,
-  }
+    Area{
+        group = main.current.effects,
+        unit = self.unit,
+        x = self.unit.x, y = self.unit.y,
+        pick_shape = 'circle',
+        dmg = self.damage,
+        r = self.radius + self.radius_boost, 
+        duration = self.duration, 
+        color = self.color,
+        is_troop = self.unit.is_troop,
+        chillAmount = self.chillAmount,
+        chillDuration = self.chillDuration,
+    }
 end
 
 Proc_Firenova = Proc:extend()
