@@ -13,11 +13,19 @@ function Helper.Unit:get_list(troop_list)
     --and searching by self.is_troop will be slow
     --can maybe make a list of all troop types, but that kinda sucks
     --
+
+    local class_list = {}
     if troop_list then
-        return main.current.main:get_objects_by_classes(main.current.friendlies)
+        class_list = main.current.friendlies
     else
-        return main.current.main:get_objects_by_classes(main.current.enemies)
+        class_list = main.current.enemies
     end
+
+    if not class_list then
+        return {}
+    end
+
+    return main.current.main:get_objects_by_classes(class_list)
 end
 
 function Helper.Unit:get_all_units()
