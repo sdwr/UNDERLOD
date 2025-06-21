@@ -7,9 +7,9 @@ Enemy:implement(Physics)
 function Enemy:init(args)
   self:init_game_object(args)
 
-  self.state = 'normal'
   self:setExtraFunctions()
   Helper.Unit:add_custom_variables_to_unit(self)
+  Helper.Unit:set_state(self, unit_states['normal'])
   self.init_enemy(self)
   self:init_unit()
   self:init_hitbox_points()
@@ -229,10 +229,10 @@ function Enemy:on_collision_enter(other, contact)
     elseif table.any(main.current.friendlies, function(v) return other:is(v) end) then
       if self.haltOnPlayerContact then
         self:set_velocity(0,0)
-        self.state = unit_states['frozen']
+        Helper.Unit:set_state(self, unit_states['frozen'])
         self.t:after(0.8, function()
           if self.state == unit_states['frozen'] then
-            self.state = unit_states['normal']
+            Helper.Unit:set_state(self, unit_states['normal'])
           end
         end)
       end
@@ -365,7 +365,7 @@ function Enemy:push(f, r, push_invulnerable, duration)
   self.cancel_trigger_tag = self.t:after(duration, function()
     self.steering_enabled = true
     if self.state == unit_states['knockback'] then
-      self.state = unit_states['normal']
+      Helper.Unit:set_state(self, unit_states['normal'])
     end
   end)
 end

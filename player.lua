@@ -1590,7 +1590,7 @@ function BreatheFire:init(args)
   self.dot_area = DotArea{follows_caster = true, area_type = 'triangle', team = self.team,
     group = main.current.effects, x = self.x, y = self.y, rs = self.rs, caster = self.parent, parent = self, dmg = self.dmg, duration = self.duration,
     color = self.color}
-  self.parent.state =  unit_states['channeling']
+  Helper.Unit:set_state(self.parent, unit_states['channeling'])
   pyro1:play{volume=0.9}
 end
 
@@ -1603,7 +1603,7 @@ function BreatheFire:update(dt)
 end
 
 function BreatheFire:recover()
-  self.parent.state = unit_states['normal']
+  Helper.Unit:set_state(self.parent, unit_states['normal'])
   self.dead = true
 end
 
@@ -1621,7 +1621,7 @@ function Charge:init(args)
 
   self.state = "charging"
 
-  self.parent.state = 'frozen'
+  Helper.Unit:set_state(self.parent, unit_states['frozen'])
 
   orb1:play({volume = 0.9})
 
@@ -1779,7 +1779,8 @@ function Mortar:init(args)
 
   self.state = "charging"
 
-  self.parent.state = 'frozen'
+  Helper.Unit:set_state(self.parent, unit_states['frozen'])
+
   local fire_speed = 0.70
   self.t:after(fire_speed, function() self:fire() end)
   self.t:after(fire_speed * 2, function() self:fire() end)
@@ -1903,7 +1904,7 @@ function Vanish:init(args)
 
   self.state = "charging"
 
-  self.parent.state = 'frozen'
+  Helper.Unit:set_state(self.parent, unit_states['frozen'])
 
   self.invulnTime = 0.25
   self.vanishTime = 0.5
@@ -1925,7 +1926,7 @@ end
 function Vanish:teleport()
   illusion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
   self.state = "over"
-  self.parent.state = 'normal'
+  Helper.Unit:set_state(self.parent, unit_states['normal'])
   self.parent.invulnerable = false
   self.parent.alpha = 1
   self.parent:set_position(self.target.x - 5, self.target.y)
@@ -3038,7 +3039,7 @@ function Critter:push(f, r, push_invulnerable, duration)
   self.push_invulnerable = push_invulnerable or false
   duration = duration or KNOCKBACK_DURATION_ENEMY
 
-  self.state = unit_states['knockback']
+  Helper.Unit:set_state(self, unit_states['knockback'])
 
   -- Cancel any existing during trigger for push
   if self.cancel_trigger_tag then
@@ -3048,7 +3049,7 @@ function Critter:push(f, r, push_invulnerable, duration)
   --reset state after duration
   self.cancel_trigger_tag = self.t:after(duration, function()
     if self.state == unit_states['knockback'] then
-      self.state = unit_states['normal']
+      Helper.Unit:set_state(self, unit_states['normal'])
     end
   end)
 

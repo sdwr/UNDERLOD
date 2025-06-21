@@ -51,14 +51,14 @@ fns['attack'] = function(self, area, mods, color)
   local t = {team = "enemy", group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(area or 64), color = color or self.color, dmg = self.dmg,
     character = self.character, level = self.level, parent = self}
 
-  self.state = unit_states['frozen']
+  Helper.Unit:set_state(self, unit_states['frozen'])
 
   self.t:after(0.3, function() 
-    self.state = unit_states['stopped']
+    Helper.Unit:set_state(self, unit_states['stopped'])
     Area(table.merge(t, mods))
     _G[random:table{'swordsman1', 'swordsman2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.75}
   end, 'stopped')
-  self.t:after(0.4 + .4, function() self.state = unit_states['normal'] end, 'normal')
+  self.t:after(0.4 + .4, function() Helper.Unit:set_state(self, unit_states['normal']) end, 'normal')
 end
 
 fns['draw_enemy'] = function(self)

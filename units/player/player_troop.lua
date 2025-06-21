@@ -29,7 +29,7 @@ function Troop:init(args)
   self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 120)
   self:set_character()
 
-  self.state = unit_states['normal']
+  Helper.Unit:set_state(self, unit_states['normal'])
 end
 
 function Troop:update(dt)
@@ -69,7 +69,7 @@ function Troop:update(dt)
 
   if self:should_follow() then
     Helper.Unit:clear_all_rally_points()
-    self.state = unit_states['following']
+    Helper.Unit:set_state(self, unit_states['following'])
     
     --dont clear assigned target here
     self.target = nil
@@ -78,7 +78,7 @@ function Troop:update(dt)
 
   -- in case of rally during knockback
   if self.rallying and self.state ~= unit_states['rallying'] and self.state ~= unit_states['knockback'] then
-    self.state = unit_states['rallying']
+    Helper.Unit:set_state(self, unit_states['rallying'])
     self:set_rally_position(random:int(1, 10))
   end
   
@@ -86,7 +86,7 @@ function Troop:update(dt)
     --cancel follow if no longer pressing button
     if self.state == unit_states['following'] then
       if input['m1'].released or input['space'].released then
-        self.state = unit_states['normal']
+        Helper.Unit:set_state(self, unit_states['normal'])
       end
     end
 
@@ -127,7 +127,7 @@ function Troop:update_movement()
       --if close enough, stop (which enables attacking)
       --when the rally circle disappears, it sets the unit back to 'normal' state
       if distance_to_target_pos < 9 then
-        self.state = unit_states['normal']
+        Helper.Unit:set_state(self, unit_states['normal'])
       end
   
   --then find target if not already moving
@@ -174,7 +174,7 @@ function Troop:push(f, r, push_invulnerable, duration)
   self.push_invulnerable = push_invulnerable
   self.push_force = n * f * mass
 
-  self.state = unit_states['knockback']
+  Helper.Unit:set_state(self, unit_states['knockback'])
   self.mass = TROOP_KNOCKBACK_MASS
   self:set_damping(LAUNCH_DAMPING)
 
@@ -193,7 +193,7 @@ function Troop:push(f, r, push_invulnerable, duration)
   -- Reset state after the duration
   self.cancel_trigger_tag = self.t:after(duration, function()
     if self.state == unit_states['knockback'] then
-      self.state = unit_states['normal']
+      Helper.Unit:set_state(self, unit_states['normal'])
     end
       self.mass = TROOP_MASS
       self:set_damping(TROOP_DAMPING)
@@ -582,14 +582,14 @@ function Troop:shootAnimation(angle)
   local castTime = self.castTime
   local backswing = self.backswing
   self.casting = true
-  self.state = unit_states['frozen']
+  Helper.Unit:set_state(self, unit_states['frozen'])
   self.t:after(castTime, function() 
     self.casting = false
-    self.state = unit_states['stopped']
+    Helper.Unit:set_state(self, unit_states['stopped'])
     self:shoot(angle)
     self.t:after(backswing, function() 
       if self.state == unit_states['stopped'] then
-        self.state = unit_states['normal']
+        Helper.Unit:set_state(self, unit_states['normal'])
       end
     end, 'castAnimationEnd')
   end, 'castAnimation')
@@ -600,16 +600,16 @@ function Troop:castAnimation()
     local castTime = self.castTime
     local backswing = self.backswing
     self.casting = true
-    self.state = unit_states['frozen']
+    Helper.Unit:set_state(self, unit_states['frozen'])
     self.t:after(castTime, function() 
       self.casting = false
       if self.state == unit_states['frozen'] then
-        self.state = unit_states['stopped']
+        Helper.Unit:set_state(self, unit_states['stopped'])
       end
       self:setup_cast()
       self.t:after(backswing, function() 
         if self.state == unit_states['stopped'] then
-          self.state = unit_states['normal']
+          Helper.Unit:set_state(self, unit_states['normal'])
         end
       end, 'castAnimationEnd')
     end, 'castAnimation')

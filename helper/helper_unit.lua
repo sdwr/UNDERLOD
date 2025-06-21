@@ -32,7 +32,6 @@ function Helper.Unit:get_all_units()
 end
 
 function Helper.Unit:add_custom_variables_to_unit(unit)
-    unit.previous_state = ''
 
     unit.state_change_functions = {}
     unit.state_always_run_functions = {}
@@ -58,6 +57,15 @@ function Helper.Unit:add_custom_variables_to_unit(unit)
 
     Helper.Unit:add_default_state_change_functions(unit)
     Helper.Unit:add_default_state_always_run_functions(unit)
+end
+
+function Helper.Unit:set_state(unit, state)
+    local previous_state = unit.state
+    unit.state = state
+    if previous_state ~= state then
+        Helper.Unit:reset_animations(unit)
+        unit.state_change_functions[state](unit)
+    end
 end
 
 -- looks like this is for "least targeted" targeting
@@ -108,7 +116,7 @@ end
 
 function Helper.Unit:start_casting(unit)
     if unit then
-        unit.state = unit_states['casting']
+        Helper.Unit:set_state(unit, unit_states['casting'])
         unit.last_attack_started = Helper.Time.time
     end
 end
@@ -120,7 +128,7 @@ function Helper.Unit:finish_casting(unit)
         end
         unit.last_attack_finished = Helper.Time.time
         if unit.state == unit_states['casting'] then
-            unit.state = unit_states['normal']
+            Helper.Unit:set_state(unit, unit_states['normal'])
         end
     end
 end
@@ -179,23 +187,6 @@ function Helper.Unit:add_default_state_always_run_functions(unit)
     unit.state_always_run_functions['normal_or_stopped'] = function() end
     unit.state_always_run_functions['following_or_rallying'] = function() end
     unit.state_always_run_functions['always_run'] = function() end
-end
-
-function Helper.Unit:run_state_change_functions()
-    for i, unit in ipairs(Helper.Unit:get_list(true)) do
-        if unit.previous_state ~= unit.state then
-            Helper.Unit:reset_animations(unit)
-            unit.state_change_functions[unit.state](unit)
-        end
-        unit.previous_state = unit.state
-    end
-    for i, unit in ipairs(Helper.Unit:get_list(false)) do
-        if unit.previous_state ~= unit.state then
-            Helper.Unit:reset_animations(unit)
-            unit.state_change_functions[unit.state](unit)
-        end
-        unit.previous_state = unit.state
-    end
 end
 
 function Helper.Unit:reset_animations(unit)

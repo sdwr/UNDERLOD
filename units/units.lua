@@ -56,13 +56,13 @@ end
 function Team:set_troop_state_to_following()
   for i, troop in ipairs(self.troops) do
     if troop.state ~= unit_states['knockback'] then
-      troop.state = unit_states['following']
+      Helper.Unit:set_state(troop, unit_states['following'])
     end
   end
 end
 function Team:set_troop_state(state)
   for i, troop in ipairs(self.troops) do
-    troop.state = state
+    Helper.Unit:set_state(troop, state)
   end
 end
 
@@ -73,7 +73,7 @@ function Team:set_team_target(target)
     troop:set_assigned_target(target)
     troop:cancel_cast()
     if troop.state ~= unit_states['knockback'] then
-      troop.state = unit_states['normal']
+      Helper.Unit:set_state(troop, unit_states['normal'])
     end
   end
   Helper.Unit:set_target_ring(target)
@@ -101,7 +101,7 @@ function Team:set_rally_point(x, y)
     troop.rallying = true
 
     if troop.state ~= unit_states['knockback'] then
-      troop.state = unit_states['rallying']
+      Helper.Unit:set_state(troop, unit_states['rallying'])
     end
 
     troop:set_rally_position(i)
@@ -118,7 +118,7 @@ function Team:clear_rally_point()
     troop.target_pos = nil
     --only clear state if rallying (might be attacking somehow)
     if troop.state == unit_states['rallying'] or troop.state == unit_states['stopped'] then
-      troop.state = unit_states['normal']
+      Helper.Unit:set_state(troop, unit_states['normal'])
     end
     troop.rallying = false
   end

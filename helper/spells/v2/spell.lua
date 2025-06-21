@@ -95,7 +95,7 @@ function Cast:init(args)
   self.startTime = Helper.Time.time
   self.elapsedTime = 0
 
-  self.unit.state = unit_states['casting']
+  Helper.Unit:set_state(self.unit, unit_states['casting'])
 end
 
 function Cast:draw()
@@ -236,7 +236,7 @@ function Spell:init(args)
   self.elapsedTime = 0
 
   if self.spell_duration > 0 then
-    self.unit.state = unit_states['channeling']
+    Helper.Unit:set_state(self.unit, unit_states['channeling'])
   end
 
 end

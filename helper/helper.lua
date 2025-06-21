@@ -59,7 +59,6 @@ function Helper:update(dt)
     Helper.Unit:update_hitbox_points()
     Helper.Time:run_intervals()
     Helper.Time:run_waits()
-    Helper.Unit:run_state_change_functions()
     Helper.Unit:run_state_always_run_functions()
     Helper.Unit:select()
 

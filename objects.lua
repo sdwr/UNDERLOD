@@ -191,7 +191,7 @@ function Unit:init_unit()
   self.hp_bar = HPBar{group = main.current.effects, parent = self, isBoss = self.isBoss}
   self.effect_bar = EffectBar{group = main.current.effects, parent = self}
   
-  self.state = unit_states['normal']
+  Helper.Unit:set_state(self, unit_states['normal'])
 end
 
 function Unit:config_physics_object()
@@ -526,13 +526,13 @@ function Unit:update_buffs(dt)
   for k, v in pairs(self.buffs) do
     --on buff start
     if k == 'stunned' then
-      self.state = unit_states['frozen']
+      Helper.Unit:set_state(self, unit_states['frozen'])
     end
     if k == 'rooted' then
-      self.state = unit_states['stopped']
+      Helper.Unit:set_state(self, unit_states['stopped'])
     end
     if k == 'frozen' then
-      self.state = unit_states['frozen']
+      Helper.Unit:set_state(self, unit_states['frozen'])
     end
     if k == 'invulnerable' then
       self.invulnerable = true
@@ -558,15 +558,15 @@ function Unit:update_buffs(dt)
         self.canBash = true
       elseif k == 'stunned' then
         if self.state == unit_states['frozen'] then
-          self.state = unit_states['normal']
+          Helper.Unit:set_state(self, unit_states['normal'])
         end
       elseif k == 'rooted' then
         if self.state == unit_states['stopped'] then
-          self.state = unit_states['normal']
+          Helper.Unit:set_state(self, unit_states['normal'])
         end
       elseif k == 'frozen' then
         if self.state == unit_states['frozen'] then
-          self.state = unit_states['normal']
+          Helper.Unit:set_state(self, unit_states['normal'])
         end
       elseif k == 'invulnerable' then
         self.invulnerable = false
@@ -1109,7 +1109,7 @@ function Unit:start_backswing()
   --unit should always be 'casting' when this is called
   --if the unit stops casting, the spell should be cancelled
   if self.state == unit_states['casting'] then
-    self.state = unit_states['stopped']
+    Helper.Unit:set_state(self, unit_states['stopped'])
   else
     print('error: unit not casting when start_backswing called', self.type)
   end
@@ -1117,7 +1117,7 @@ end
 
 function Unit:end_backswing()
   if self.state == unit_states['stopped'] then
-    self.state = unit_states['normal']
+    Helper.Unit:set_state(self, unit_states['normal'])
   end
 end
 
@@ -1293,7 +1293,7 @@ function Unit:end_cast(cooldown)
   self.spelldata = nil
   self.freezerotation = false
   if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
-    self.state = unit_states['normal']
+    Helper.Unit:set_state(self, unit_states['normal'])
   end
 
   self.castObject = nil
@@ -1323,7 +1323,7 @@ end
 function Unit:cancel_cast()
 
   if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
-    self.state = unit_states['normal']
+    Helper.Unit:set_state(self, unit_states['normal'])
     self.castcooldown = 0
     self.spelldata = nil
   end
@@ -1346,7 +1346,7 @@ end
 
 function Unit:launch_at_facing(force_magnitude, duration)
   if self.state == unit_states['casting'] then
-    self.state = unit_states['channeling']
+    Helper.Unit:set_state(self, unit_states['channeling'])
   end
 
   duration = duration or 0.7

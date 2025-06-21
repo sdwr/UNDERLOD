@@ -18,7 +18,7 @@ fns['init_enemy'] = function(self)
 
   self.time_to_cast = 6
 
-  self.state = unit_states['frozen']
+  Helper.Unit:set_state(self, unit_states['frozen'])
   self.can_cast_while_frozen = true
 
   --set attacks
