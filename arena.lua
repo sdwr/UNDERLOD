@@ -84,6 +84,7 @@ function Arena:on_enter(from)
   self.damage_taken = 0
   self.main_slow_amount = .67
   self.enemies = enemy_classes
+  self.enemies_without_critters = enemy_classes_without_critters
   self.troops = troop_classes
   self.friendlies = friendly_classes
   self.friendlies_without_critters = friendly_classes_without_critters
@@ -211,7 +212,11 @@ function Arena:update(dt)
       --select first character by default
       self:select_character_by_index(1)
 
-      Manage_Spawns(self)
+      self.spawn_manager = SpawnManager(self)
+    end
+
+    if self.spawn_manager then
+      self.spawn_manager:update(dt)
     end
 
     --select character from hotbar

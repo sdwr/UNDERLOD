@@ -15,10 +15,13 @@ friendly_classes_without_critters = shallowcopy(troop_classes)
 friendly_classes = shallowcopy(troop_classes)
 table.insert(friendly_classes, Critter)
 
+enemy_classes_without_critters = {Enemy}
+
 enemy_classes = {
   Enemy,
   EnemyCritter
 }
+
 
 all_unit_classes = shallowcopy(troop_classes)
 table.extend(all_unit_classes, enemy_classes)
