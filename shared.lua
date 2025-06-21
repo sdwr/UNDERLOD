@@ -40,6 +40,9 @@ function shared_init()
   music = SoundTag()
   music.volume = state.music_volume or 0.5
 
+  show_combat_controls = state.show_combat_controls or true
+  show_damage_numbers = state.show_damage_numbers or DAMAGE_NUMBERS_SETTING[4]
+
   if state.volume_muted then sfx.volume = 0 end
   if state.music_muted then music.volume = 0 end
 
@@ -659,7 +662,7 @@ function TutorialPopup:init(args)
   self.is_open = false
 
   -- Create a dark, semi-transparent background
-  self.bg_opacity = 0.6
+  self.bg_opacity = 0.5
   self.bg_color = Color(0, 0, 0, self.bg_opacity)
 
   -- Container for the popup elements
@@ -670,6 +673,8 @@ function TutorialPopup:init(args)
 
   self.display_show_hints_checkbox = args.display_show_hints_checkbox or false
   self.okay_button_offset = self.display_show_hints_checkbox and 60 or 0
+
+  self.draw_bg = args.draw_bg or false
 
   -- ### FIX STARTS HERE ###
   -- Ensure all lines have a default font to prevent crashes
@@ -692,7 +697,9 @@ function TutorialPopup:draw()
 
   -- Draw the dark background
   graphics.push(gw/2, gh/2)
-  graphics.rectangle(gw/2, gh/2, gw, gh, nil, nil, self.bg_color)
+  if self.draw_bg then
+    graphics.rectangle(gw/2, gh/2, gw, gh, nil, nil, self.bg_color)
+  end
   graphics.pop()
 
   -- Draw the popup container
@@ -748,7 +755,7 @@ function TutorialPopup:create_text()
       y = self.popup_y + (self.popup_height/2) - 15,
       label_offset = 30,
       box_size = 15,
-      label = 'Show Hints',
+      label = 'Show Controls',
       checked = true, -- Set the initial state
       action = function(parent, is_checked)
         state.show_combat_controls = is_checked

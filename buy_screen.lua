@@ -273,6 +273,7 @@ function BuyScreen:create_tutorial_popup()
     parent = self,
     lines = shop_tutorial_lines,
     display_show_hints_checkbox = false,
+    draw_bg = true,
   }
 end
 

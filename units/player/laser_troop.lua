@@ -42,63 +42,37 @@ function Laser_Troop:set_character()
   self.castcooldown = math.random() * (self.base_castcooldown or self.baseCast)
 end
 
+function Laser_Troop:setup_cast()
+  local data = {
+    name = 'laser',
+    viable = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.enemies); return target end,
+    oncast = function() end,
+    castcooldown = self.cooldownTime,
+    cast_length = 0.1,
+    spellclass = Laser_Spell,
+    spelldata = {
+      group = main.current.main,
+      spell_duration = 10,
+      color = blue[0],
+      on_attack_callbacks = true,
+      damage = self.dmg,
+      lasermode = 'target',
+      laser_aim_width = 1,
+      laser_width = 8,
+      charge_duration = 0.5,
+      damage_troops = false,
+      damage_once = true,
+      end_spell_on_fire = false,
+      fire_follows_unit = false,
+      fade_fire_draw = true,
+      fade_in_aim_draw = true,
+    }
+  }
+  self:cast(data)
+end
+
 function Laser_Troop:set_state_functions()
 
-    --if ready to cast and has target in range, start cast
-    self.state_always_run_functions['always_run'] = function(self)
-
-      --prioritize moving towards target
-      --should only have a target if it is assigned now
-      -- or if it grabs a random target
-      --because random targets will be taken away after each attack
-      if Helper.Unit:target_out_of_range(self) then
-        Helper.Unit:unclaim_target(self)
-        self:cancel_cast()
-  
-      elseif Helper.Unit:can_cast(self) then
-        if not self:my_target() then
-          Helper.Unit:claim_target(self, Helper.Spell:get_random_in_range(self, self.attack_sensor.rs, true))
-        end
-        local data = {
-          name = 'laser',
-          viable = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.enemies); return target end,
-          oncast = function() end,
-          castcooldown = self.cooldownTime,
-          cast_length = 0.1,
-          spellclass = Laser_Spell,
-          spelldata = {
-            group = main.current.main,
-            spell_duration = 10,
-            color = blue[0],
-            on_attack_callbacks = true,
-            damage = self.dmg,
-            lasermode = 'target',
-            laser_aim_width = 1,
-            laser_width = 8,
-            charge_duration = 0.5,
-            damage_troops = false,
-            damage_once = true,
-            end_spell_on_fire = false,
-            fire_follows_unit = false,
-            fade_fire_draw = true,
-            fade_in_aim_draw = true,
-          }
-        }
-        self:cast(data)
-      end
-      
-      --need 2 types of target - one for random targets, one for assigned targets
-      --if target is assigned, it will remain until the target dies or is reassigned
-      --but random targets will be reassigned every attack, to keep a nice spread of damage
-    end
-  
-    --cancel on move
-    self.state_always_run_functions['following_or_rallying'] = function(self)
-      self:cancel_cast()
-      Helper.Unit:unclaim_target(self)
-    end
-  
-    self.state_change_functions['normal'] = function() end
   
     --cancel on death
     self.state_change_functions['death'] = function(self)

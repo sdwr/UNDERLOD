@@ -91,7 +91,14 @@ end
     -- PRIORITY 3: Action States (Busy States)
     -- If the unit is in the middle of casting an ability.
     elseif self.state == unit_states['casting'] then
-        -- The unit should be still while casting. The Cast object controls the duration.
+
+        if self.castObject then
+          if Helper.Unit:target_out_of_range(self) then
+            Helper.Unit:unclaim_target(self)
+            self:cancel_cast()
+          end
+        end
+
         self:set_velocity(0, 0)
         -- We can, however, allow it to rotate towards its target.
         if self.target then
@@ -133,39 +140,57 @@ end
     self.aggro_sensor:move_to(self.x, self.y)
   end
 
-  -- Create this new helper function in your Troop class
-  -- This contains the logic that used to be in `state_always_run_functions['normal_or_stopped']`
   function Troop:update_ai_logic()
     -- This function is only called when the unit is in the 'normal' state.
+    -- It represents the unit's autonomous decision-making process.
 
-    -- 1. Acquire a target if we don't have a valid one.
-    -- (Assuming Archer_Troop's check_target function handles this)
-    if self.check_target then self:check_target() end
+    -- 1. VALIDATE CURRENT TARGET
+    -- First, check if our current target is dead or invalid. If so, clear it.
+    local target = self:my_target()
+    if target and target.dead then
+        self:clear_my_target()
+        target = nil -- Make sure our local variable is also nil
+    end
 
-    -- 2. If we have a valid target, decide what to do.
-    if self:my_target() then
-        -- 3. CHECK IF WE CAN ATTACK.
-        if Helper.Unit:can_cast(self) then
-            -- If yes, change state and create the Cast object. This is the ONLY place
-            -- where the transition from 'normal' to 'casting' should happen.
-            Helper.Unit:set_state(self, unit_states['casting'])
+    -- 2. ACQUIRE NEW TARGET
+    -- If we don't have a target, try to find the closest one within our aggro range.
+    if not target then
+        -- This is the block of code that was missing.
+        local potential_target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies)
+        if potential_target then
+            self:set_target(potential_target)
+            target = potential_target -- Update our local variable
+        end
+    end
+
+    -- 3. ACT BASED ON TARGET STATUS
+    -- If we have a valid target (either pre-existing or newly acquired)...
+    if target then
+        -- 3a. CHECK IF WE CAN ATTACK.
+        -- We must be in range AND our cast must be off cooldown.
+        if self:in_range()() and Helper.Unit:cast_off_cooldown(self) then
+            -- If yes, commit to casting.
+            -- NOTE: Your can_cast helper might do both checks, which is fine!
             if self.setup_cast then self:setup_cast() end
 
-        -- 4. If we CANNOT attack, chaeck if we need to move.
+        -- 3b. If we CANNOT attack, check if we need to move closer.
         elseif not self:in_range()() then
-            -- If target is out of range, move towards it.
-            local target = self:my_target()
+            -- If target is out of range, move towards it. This is the "aggro" behavior.
             self:seek_point(target.x, target.y, SEEK_DECELERATION, SEEK_WEIGHT)
             self:steering_separate(SEPARATION_RADIUS, troop_classes)
             self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
             self:rotate_towards_velocity(1)
+        
+        -- 3c. If we're in range but waiting for cooldown, stand still.
         else
-            -- If we are in range but waiting for cooldown, just stand still.
             self:set_velocity(0, 0)
             self:steering_separate(16, troop_classes)
+            -- Also, rotate to face the target while waiting.
+            self:rotate_towards_object(target, 1)
         end
     else
-        -- No target, so just stand still.
+        -- 4. NO TARGET
+        -- If after all checks we still have no target, do nothing. Stand still.
         self:set_velocity(0, 0)
     end
   end

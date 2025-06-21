@@ -141,23 +141,12 @@ function Arena:on_enter(from)
   self.plusgold_text_offset_y = 0
 
 
+  self.needs_first_update = true
+  self.initial_units_spawned = false
+
   self:create_tutorial_popup()
-  if show_combat_controls then
-    self.tutorial_popup:open()
-    self.in_tutorial = true
-    self.paused = true
-  end
-
-  --init units
-  Reset_Global_Proc_List()
-
-  Spawn_Teams(self)
-
-  --select first character by default
-  self:select_character_by_index(1)
 
   self.start_time = 3
-  Manage_Spawns(self)
 end
 
 function Arena:spawn_critters(spawn_point, amount)
@@ -197,18 +186,34 @@ end
 
 function Arena:update(dt)
 
-  if main_song_instance:isStopped() then
-    main_song_instance = _G[random:table{'derp1', 'song2'}]:play{volume = state.music_volume or 0.5}
-  end
+  if self.needs_first_update then
+    self.needs_first_update = false
 
-  if not self.paused and not self.died and not self.won then
-    run_time = run_time + dt
-    self.time_elapsed = self.time_elapsed + dt
-
-    self:set_timer_text()
+    if show_combat_controls then
+      self.tutorial_popup:open()
+      self.in_tutorial = true
+      self.paused = true
+    end
   end
 
   if not self.paused then
+  
+    if main_song_instance:isStopped() then
+      main_song_instance = _G[random:table{'derp1', 'song2'}]:play{volume = state.music_volume or 0.5}
+    end
+
+    if not self.initial_units_spawned then
+      self.initial_units_spawned = true
+      Reset_Global_Proc_List()
+
+      Spawn_Teams(self)
+
+      --select first character by default
+      self:select_character_by_index(1)
+
+      Manage_Spawns(self)
+    end
+
     --select character from hotbar
     self.troop_list = self.main:get_objects_by_classes(self.troops)
     for i = 1, 9 do
@@ -265,6 +270,7 @@ function Arena:update(dt)
     Helper:update(dt*slow_amount)
     LevelManager.update(dt)
   end
+  
   self.tutorial:update(dt*slow_amount)
   self.options_ui:update(dt*slow_amount)
   self.credits:update(dt)
@@ -348,6 +354,7 @@ function Arena:create_tutorial_popup()
     parent = self,
     lines = combat_tutorial_lines,
     display_show_hints_checkbox = true,
+    draw_bg = false,
   }
 end
 
