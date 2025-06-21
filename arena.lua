@@ -631,7 +631,7 @@ function Arena:gain_gold(duration)
   for _, unit in ipairs(self.starting_units) do
     for _, item in ipairs(unit.items) do
       if item.name == 'heartofgold' then
-        event = {type = 'bonus gold', amount = item.stats.gold}
+        event = {type = 'bonus_gold', amount = item.stats.gold}
         table.insert(self.gold_events, event)
       end
       if item.name == 'stockmarket' then
@@ -660,11 +660,6 @@ function Arena:gain_gold(duration)
   local final_event = {type = 'final', amount = 0}
   table.insert(self.gold_events, final_event)
 
-
-  --clear gold constants from last round
-  SUM_PLUSGOLD = 0
-  LAST_PLUSGOLD = 0
-
   --create a trigger to add each gold event over time
   --have to cancel when the table is empty
   local timePerEvent = duration / #self.gold_events
@@ -681,14 +676,13 @@ function Arena:process_gold_event()
     print('no more gold events')
     return
   end
-
-
-
   local event = table.remove(self.gold_events, 1)
 
   gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
+
   local plusgold = 0
   local plusgoldtext = nil
+
   if event.type == 'gained' then
     plusgold = event.amount
     plusgoldtext = '[wavy_mid, yellow[0]]' .. tostring(plusgold) .. ' ' .. event.type
@@ -704,16 +698,19 @@ function Arena:process_gold_event()
   elseif event.type == 'start' then
     --do nothing
   elseif event.type == 'final' then
-    gold = gold + SUM_PLUSGOLD + LAST_PLUSGOLD
     Stats_Max_Gold()
-    SUM_PLUSGOLD = 0
-    LAST_PLUSGOLD = 0
   else
     print('unknown gold event type')
+    return
   end
 
-  self:randomize_plusgold_text_offset()
   self:draw_gold(plusgold, plusgoldtext)
+  self:randomize_plusgold_text_offset()
+
+  if plusgold > 0 then
+    gold = gold + plusgold
+  end
+
 
 end
 
@@ -722,8 +719,7 @@ end
 -- the final event will add in the last gold gain to the total gold
 --and everything will add up
 function Arena:draw_gold(plusgold, plusgoldtext)
-  SUM_PLUSGOLD = SUM_PLUSGOLD + LAST_PLUSGOLD
-  local text_content = '[wavy_mid, yellow[0]' .. tostring(gold + SUM_PLUSGOLD) .. ' gold '
+  local text_content = '[wavy_mid, yellow[0]' .. tostring(gold) .. ' gold '
   self.gold_text = Text({{text = text_content, font = fat_font, alignment = 'center'}}, global_text_tags)
 
   if plusgold == 0 then return end
@@ -731,7 +727,6 @@ function Arena:draw_gold(plusgold, plusgoldtext)
 
   self.plusgold_text = Text({{text = plusgoldtext, font = pixul_font, alignment = 'center'}}, global_text_tags)
   
-  LAST_PLUSGOLD = plusgold
 end
 
 function Arena:randomize_plusgold_text_offset()
