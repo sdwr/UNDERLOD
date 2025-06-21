@@ -2609,6 +2609,9 @@ function open_options(self)
         if self.screen_shake_button then
           self.screen_shake_button.dead = true; self.screen_shake_button = nil
         end
+        if self.show_combat_controls_button then
+          self.show_combat_controls_button.dead = true; self.show_combat_controls_button = nil
+        end
         if self.show_damage_numbers_button then
           self.show_damage_numbers_button.dead = true; self.show_damage_numbers_button = nil
         end

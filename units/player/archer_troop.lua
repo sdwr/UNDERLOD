@@ -4,7 +4,7 @@ function Archer_Troop:init(data)
   Archer_Troop.super.init(self, data)
 
 
-  self.baseCooldown = attack_speeds['ultra-fast']
+  self.baseCooldown = attack_speeds['buff']
   self.cooldownTime = self.baseCooldown
   self.baseCast = attack_speeds['medium-cast']
   self.castTime = self.baseCast
