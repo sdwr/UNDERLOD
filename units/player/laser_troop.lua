@@ -33,7 +33,7 @@ function Laser_Troop:set_character()
   self.aggro_sensor = Circle(self.x, self.y, self.base_attack_range + 20)
 
   --total cooldown is cooldownTime + castTime
-  self.baseCooldown = attack_speeds['ultra-fast']
+  self.baseCooldown = attack_speeds['fast']
   self.cooldownTime = self.baseCooldown
   self.baseCast = attack_speeds['buff']
   self.castTime = self.baseCast
