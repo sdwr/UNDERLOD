@@ -299,8 +299,11 @@ get the playthrough to be fun:
 BUGS:
 --------------
 
+PLAYER FEEDBACK
+
+  - make levels 7-9 easier
+
 icenova not cancelling properly
-reduce movement speed of seeker enemies, reduce HP of seeker enemies
 unit cost is 10 in overlay, 5 in shop
 right click to sell item
   sound effect?
