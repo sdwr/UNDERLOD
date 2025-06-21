@@ -365,7 +365,7 @@ function ItemPart:create_info_text()
     self.info_text = InfoText{group = main.current.ui, force_update = true}
     self.info_text:activate(build_item_text(item), nil, nil, nil, nil, 16, 4, nil, 2)
     --set the position of the info text
-    self.info_text.x, self.info_text.y = gw/2, gh/2 + 10
+    self.info_text.x, self.info_text.y = gw/2, gh/2 - 50
   end
 end
 

@@ -301,15 +301,7 @@ BUGS:
 
 PLAYER FEEDBACK
 
-  - make levels 7-9 easier
-
-icenova not cancelling properly
-unit cost is 10 in overlay, 5 in shop
 right click to sell item
-  sound effect?
-escape menu show damage numbers button cancel
-
-can reroll items while rerolling items
 
 what happens with multiple icenovas?
 
