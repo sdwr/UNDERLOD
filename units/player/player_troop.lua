@@ -571,11 +571,11 @@ function Troop:on_collision_enter(other, contact)
 
     local duration = KNOCKBACK_DURATION_ENEMY
     local push_force = LAUNCH_PUSH_FORCE_ENEMY
-    local dmg = 20
+    local dmg = REGULAR_PUSH_DAMAGE
     if other:is(Boss) then  
       duration = KNOCKBACK_DURATION_BOSS
       push_force = LAUNCH_PUSH_FORCE_BOSS
-      dmg = 40
+      dmg = SPECIAL_PUSH_DAMAGE
     end
     self:push(push_force, self:angle_to_object(other) + math.pi, nil, duration)
     self:hit(dmg, other, nil, false)

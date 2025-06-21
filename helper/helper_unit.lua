@@ -28,6 +28,19 @@ function Helper.Unit:get_list(troop_list)
     return main.current.main:get_objects_by_classes(class_list)
 end
 
+function Helper.Unit:sort_by_distance(unit_list, unit)
+    local units_and_distances = {}
+    for i, target in ipairs(unit_list) do
+        table.insert(units_and_distances, {unit = target, distance = Helper.Geometry:distance(unit.x, unit.y, target.x, target.y)})
+    end
+    table.sort(units_and_distances, function(a, b) return a.distance < b.distance end)
+    local sorted_units = {}
+    for i, unit_and_distance in ipairs(units_and_distances) do
+        table.insert(sorted_units, unit_and_distance.unit)
+    end
+    return sorted_units
+end
+
 function Helper.Unit:get_all_units()
     local unit_list = {}
     for i, unit in ipairs(Helper.Unit:get_list(true)) do

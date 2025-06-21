@@ -60,6 +60,7 @@ fns['init_enemy'] = function(self)
       spell_duration = 10,
       color = blue[0],
       damage = self.dmg,
+      reduce_pierce_damage = true,
       lasermode = 'target',
       laser_aim_width = 6,
       damage_troops = true,

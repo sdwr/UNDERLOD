@@ -65,10 +65,13 @@ function Laser_Spell:init(args)
   self.lock_last_duration = self.lock_last_duration or 0
   --does the damage follow the unit
   self.fire_follows_unit = self.fire_follows_unit
+  
 
   self.tick_interval = self.tick_interval or 0.1
 
   self.damage = self.damage or 30
+  self.reduce_pierce_damage = self.reduce_pierce_damage
+  self.reduce_pierce_damage_amount = self.reduce_pierce_damage_amount or 0.2
 
   self.lineCoords = {0, 0, 0, 0}
 
@@ -241,6 +244,9 @@ function Laser_Spell:try_damage()
 
   --do damage here
   local targets = Helper.Unit:get_list(self.damage_troops)
+  if self.reduce_pierce_damage and self.unit then
+    targets = Helper.Unit:sort_by_distance(targets, self.unit)
+  end
 
   for _, unit in ipairs(targets) do
     for _, point in ipairs(unit.points) do
@@ -251,6 +257,9 @@ function Laser_Spell:try_damage()
           break
         end
         Helper.Spell:register_damage_point(point, self.unit, damage)
+        if self.reduce_pierce_damage then
+          damage = damage * (1 - self.reduce_pierce_damage_amount)
+        end
         self.already_damaged[unit] = true
       end
     end

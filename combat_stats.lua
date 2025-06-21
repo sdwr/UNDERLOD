@@ -8,17 +8,34 @@ NORMAL_ENEMIES_PER_GROUP = 3
 SPAWN_CHECKS = 10
 
 --stat constants
-REGULAR_ENEMY_HP = 70
-REGULAR_ENEMY_DAMAGE = 20
+REGULAR_ENEMY_HP = 40
+REGULAR_ENEMY_DAMAGE = 10
 REGULAR_ENEMY_MS = 40
 
-SPECIAL_ENEMY_HP = 175
+SPECIAL_ENEMY_HP = 110
 SPECIAL_ENEMY_DAMAGE = 20
 SPECIAL_ENEMY_MS = 35
 
-BOSS_HP = 1000
+BOSS_HP = 600
 BOSS_DAMAGE = 10
 BOSS_MS = 70
+
+REGULAR_PUSH_DAMAGE = 10
+SPECIAL_PUSH_DAMAGE = 20
+
+-- elemental damage
+BURN_DPS_MULTIPLIER = 0.1
+BURN_DURATION = 3
+
+--proc constants
+MAX_STACKS_FIRE = 5
+MAX_STACKS_SLOW = 5
+MAX_STACKS_SHOCK = 10
+MAX_STACKS_REDSHIELD = 20
+MAX_STACKS_BLOODLUST = 10
+
+SHOCK_DEF_REDUCTION = -0.04
+
 
 --add 0.25 to the scaling for each boss level (boss levels are every 6 levels)
 BOSS_HP_SCALING = function(level) return LEVEL_TO_TIER(level) end
@@ -45,19 +62,14 @@ unit_classes = {
 
 unit_stat_multipliers = {
     ['swordsman'] = { hp = 1.5, dmg = 1.25, def = 1.25, mvspd = 1 },
-    ['laser'] = { hp = 1, aspd = 1.25, dmg = 2, def = 1, mvspd = 1 },
-    ['archer'] = { hp = 1, dmg = 1, def = 1, mvspd = 1 },
-    ['pyro'] = { hp = 1.25, dmg = 1, def = 1.25, mvspd = 1 },
-    ['cannon'] = { hp = 1, dmg = 2, def = 1.25, mvspd = 1 },
-    ['shaman'] = { hp = 1, dmg = 1, def = 1, mvspd = 1 },
-    ['sniper'] = { hp = 0.8, dmg = 4, def = 1, mvspd = 0.9 },
-    ['bomber'] = { hp = 1, dmg = 6, def = 1, mvspd = 1.1 },
+    ['laser'] = { hp = 1, aspd = 1, dmg = 1, def = 1, mvspd = 1 },
+    ['archer'] = { hp = 1.25, dmg = 1.5, def = 1, mvspd = 1 },
 
     ['none'] = { hp = 1, dmg = 1, def = 1, mvspd = 1 },
 }
 
 enemy_type_to_stats = {
-    ['seeker'] = { dmg = 0.25 },
+    ['seeker'] = { dmg = 0.25, mvspd = 0.8 },
     ['shooter'] = {},
 
     ['arcspread'] = { dmg = 0.5 },

@@ -97,6 +97,7 @@ function Spread_Laser:shoot_laser()
     spell_duration = self.spell_duration,
     color = self.color,
     damage = self.damage,
+    reduce_pierce_damage = self.reduce_pierce_damage,
     laser_aim_width = self.laser_aim_width,
     damage_troops = self.damage_troops,
     damage_once = self.damage_once,
