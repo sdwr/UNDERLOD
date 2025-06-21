@@ -66,12 +66,6 @@ function Cast:init(args)
   args.group = args.group or main.current.main
 
   self:init_game_object(args)
-
-  if self.cast_sound then
-    self.cast_volume = self.cast_volume or 1
-    self.cast_sound:play{volume = self.cast_volume}
-  end
-
   --unit and target and x and y are set in objects.lua 
   self.unit = self.unit
   self.target = self.target
@@ -142,6 +136,11 @@ function Cast:cast()
 
   local castcooldown = self.castcooldown or 1
   self.spelldata.castcooldown = castcooldown
+
+  if self.cast_sound then
+    self.cast_volume = self.cast_volume or 1
+    self.cast_sound:play{volume = self.cast_volume}
+  end
 
   if self.oncastfinish then
     self.oncastfinish(self)

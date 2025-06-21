@@ -38,9 +38,14 @@ TODO:
 -- shop reroll logic is messy, confuses rerolling part of the shop with rolling it for the first time
 -- pause spawns when game is paused in arena (and spawn marks)
 
--- draw ground effects under the main group
-    but keep their hitboxes in the main group
+-- add attacking state for enemies (to sync with animation)
+  or convert enemy attack triggers into casts
 
+-- player troops start casting every frame they move
+  because they are in 'normal' state
+  need a moving state
+    but needs to work with "keep moving while in aggro range"
+    maybe just do it for player troops
 
 music:
 - get demoscene time machine?

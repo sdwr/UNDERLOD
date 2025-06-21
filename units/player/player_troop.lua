@@ -454,64 +454,6 @@ function Troop:set_character()
     self.state_change_functions['death'] = function(self)
       self.spell:cancel()
     end
-
-  elseif self.character == 'wizard' then
-    self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium-long'])
-    self.t:cooldown(attack_speeds['slow'], self:in_range(), function ()
-        self:castAnimation()
-    end, nil, nil, 'cast')
-
-  elseif self.character == 'shaman' then
-    self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium-long'])
-    self.t:cooldown(attack_speeds['medium-slow'], self:in_range(), function ()
-      self:castAnimation()
-    end, nil, nil, 'cast')
-
-  elseif self.character == 'necromancer' then
-    self.summons = 0
-    self.attack_sensor = Circle(self.x, self.y, attack_ranges['long'])
-    self.t:cooldown(attack_speeds['fast'], self:in_range(), function ()
-      self:castAnimation()
-  end, nil, nil, 'cast')
-
-  elseif self.character == 'paladin' then
-    self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium-long'])
-    self.t:cooldown(attack_speeds['slow'], self:in_range(), function ()
-      self.target.beingHealed = true
-      self.target:removeHealFlag(self.castTime)
-      self:castAnimation()
-    end, nil, nil, 'cast')
-
-  elseif self.character == 'cleric' then
-    self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
-    self.t:cooldown(attack_speeds['slow'], self:in_range(), function ()
-      self.target.beingHealed = true
-      self.target:removeHealFlag(self.castTime)
-      self:castAnimation()
-    end, nil, nil, 'cast')
-  
-  elseif self.character =='priest' then
-    self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
-    self.t:cooldown(attack_speeds['slow'], self:in_range(), function ()
-      self.target.beingHealed = true
-      self.target:removeHealFlag(self.castTime)
-      self:castAnimation()
-    end, nil, nil, 'cast')
-
-  elseif self.character == 'bard' then
-    self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
-    self.t:cooldown(attack_speeds['buff'], function() return true end, function() 
-      local targets = self:get_objects_in_shape(self.attack_sensor, main.current.friendlies)
-      for i, t in ipairs(targets) do
-        t:add_buff(Create_buff_dmg(2))
-      end
-    end, nil, nil, 'buff')
-  elseif self.character == 'druid' then
-    self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium'])
-    self.t:cooldown(attack_speeds['slow'], self:in_range(), function()
-      self:castAnimation()
-    end, nil, nil, 'cast')
-
   end
 end
 

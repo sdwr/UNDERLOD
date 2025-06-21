@@ -1498,9 +1498,8 @@ function init()
   end
 
   function create_animation(grid, rowNumber, numberPerRow, w, h, speed)
-    local numbers = rowNumber .. '-' .. numberPerRow
-    print(numbers)
-    return anim8.newAnimation(grid(numbers, 1), speed)
+    local numbers = 1 .. '-' .. numberPerRow
+    return anim8.newAnimation(grid(numbers, rowNumber), speed)
   end
 
   GOLEM_CAST_TIME = 1.5
@@ -1541,7 +1540,7 @@ function init()
 
   skeleton_birth_a = create_animation(skeleton_birth_g, 2, 8, 24, 24, 0.4)
   skeleton_idle_a = create_animation(skeleton_idle_g, 6, 8, 24, 24, 0.4)
-  skeleton_attack_a = create_animation(skeleton_attack_g, 18, 8, 24, 24, 0.4)
+  skeleton_attack_a = create_animation(skeleton_attack_g, 18, 8, 24, 24, 0.2)
 
   
   golem_spritesheets = {
