@@ -283,6 +283,13 @@ function SpawnManager:update(dt)
             self:start_next_wave()
         end
 
+    elseif self.state == 'wave_delay' then
+      self.wave_delay_timer = self.wave_delay_timer - dt
+      self:show_wave_start_countdown(math.ceil(self.wave_delay_timer))
+      if self.wave_delay_timer <= 0 then
+        self.state = 'spawning_wave'
+      end
+
     -- State: Spawning a wave
     elseif self.state == 'spawning_wave' then
         if not self.is_spawning_group and self.timer <= 0 then
@@ -333,9 +340,12 @@ function SpawnManager:start_next_wave()
     end
 
     print("Starting Wave: " .. self.current_wave_index)
-    self.state = 'spawning_wave'
+    self:show_wave_start_text()
+    self.state = 'wave_delay'
     self.current_group_index = 1
     self.timer = 0 
+
+    self.wave_delay_timer = 5
 end
 
 function SpawnManager:spawn_next_group()
@@ -397,6 +407,24 @@ function SpawnManager:show_wave_complete_text()
     spawn_mark2:play{pitch = 1, volume = 1.2}
     local text = Text2{group = self.arena.floor, x = gw/2, y = gh/2 - 48, lines = {{text = '[wavy_mid, cbyc]wave complete', font = fat_font, alignment = 'center'}}}
     text.t:after(self.timer - 0.2, function() text.t:tween(0.2, text, {sy = 0}, math.linear, function() text.sy = 0 end) end)
+end
+
+function SpawnManager:show_wave_start_text()
+  local text = Text2{group = self.arena.floor, x = gw/2, y = gh/2 - 48, lines = {{text = '[wavy_mid, red]wave starting', font = fat_font, alignment = 'center'}}}
+  pop1:play{pitch = random:float(0.95, 1.05), volume = 0.35}
+  text.t:after(STARTING_WAVE_TEXT_DURATION, function() text.dead = true end)
+end
+
+function SpawnManager:show_wave_start_countdown(seconds_remaining)
+  if seconds_remaining > 0 and seconds_remaining < 4 then
+    if not self.wave_start_countdown_timer or self.wave_start_countdown_timer ~= seconds_remaining then
+      self.wave_start_countdown_timer = seconds_remaining
+      local text = Text2{group = self.arena.floor, x = gw/2, y = gh/2 - 48, lines = {{text = '[wavy_mid, cbyc]' .. seconds_remaining, font = fat_font, alignment = 'center'}}}
+      text.t:after(STARTING_WAVE_COUNTDOWN_DURATION, function() text.dead = true end)
+    end
+  else
+    self.wave_start_countdown_timer = nil
+  end
 end
 
 -- ===================================================================
