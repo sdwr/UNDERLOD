@@ -597,6 +597,25 @@ function Proc_Root:root(target, from)
   }
 end
 
+Proc_Retaliate = Proc:extend()
+function Proc_Retaliate:init(args)
+  self.triggers = {PROC_ON_GOT_HIT}
+  self.scope = 'troop'
+
+  Proc_Retaliate.super.init(self, args)
+  
+  --define the proc's vars
+  self.chance = self.data.chance or 0.2
+
+  --proc memory
+end
+
+function Proc_Retaliate:onGotHit(target, damage)
+  Proc_Retaliate.super.onGotHit(self, target, damage)
+  if math.random() < self.chance then
+    -- self.unit:attack(target)
+  end
+end
 
 
 --proc overkill
@@ -2088,6 +2107,7 @@ proc_name_to_class = {
   ['healingwave'] = Proc_HealingWave,
   ['curse'] = Proc_Curse,
   ['root'] = Proc_Root,
+  ['retaliate'] = Proc_Retaliate,
   
   --stack on attack
   ['overcharge'] = Proc_Overcharge,

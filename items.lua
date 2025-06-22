@@ -386,6 +386,15 @@ item_to_item_data = {
     stats = {repeat_attack_chance = 0.2},
     procs = {}
   },
+  -- ['pricklypear'] = {
+  --   name = 'pricklypear',
+  --   colors = {'green'},
+  --   cost = 10,
+  --   icon = 'cactus',
+  --   desc = 'Chance to instantly attack when hit',
+  --   stats = {},
+  --   procs = {'retaliate'}
+  -- },
 
   --yellow items
   ['medbow'] = {
