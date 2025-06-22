@@ -9,7 +9,7 @@ function ProgressBar:init(args)
   self.max_progress = args.max_progress or 1
   self.number_of_waves = args.number_of_waves or 1
   self.waves_power = args.waves_power or {self.max_progress}
-  self.current_wave = 1
+  self.wave_cumulative_power = self:set_wave_cumulative_power()
   self.color = args.color or fg[0]
   self.bgcolor = args.bgcolor or bg[1]
 end
@@ -38,6 +38,17 @@ function ProgressBar:is_complete()
   return self.progress >= self.max_progress
 end
 
+function ProgressBar:highest_wave_complete()
+  for i = 1, self.number_of_waves do
+    if self.wave_cumulative_power and #self.wave_cumulative_power >= i then
+      if self.progress >= self.wave_cumulative_power[i] then
+        return i
+      end
+    end
+  end
+  return 0
+end
+
 function ProgressBar:get_progress_location()
   local progress_location = {x = self.x, y = self.y}
   progress_location.x = progress_location.x - self.shape.w/2 + self.shape.w*self.progress/self.max_progress
@@ -50,6 +61,30 @@ end
 
 function ProgressBar:set_max_progress(max_progress)
   self.max_progress = max_progress
+  self:set_wave_cumulative_power()
+end
+
+function ProgressBar:set_number_of_waves(number_of_waves)
+  self.number_of_waves = number_of_waves
+  self:set_wave_cumulative_power()
+end
+
+function ProgressBar:set_waves_power(waves_power)
+  self.waves_power = waves_power
+  self:set_wave_cumulative_power()
+end
+
+function ProgressBar:set_wave_cumulative_power()
+  self.wave_cumulative_power = {}
+  for i = 1, self.number_of_waves do
+    if i > 1 and self.waves_power[i] then
+      self.wave_cumulative_power[i] = self.wave_cumulative_power[i-1] + self.waves_power[i]
+    elseif self.waves_power[i] then
+      self.wave_cumulative_power[i] = self.waves_power[i]
+    else
+      self.wave_cumulative_power[i] = 0
+    end
+  end
 end
 
 function ProgressBar:increase_with_particles(roundPower, x, y)

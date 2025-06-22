@@ -309,11 +309,14 @@ function SpawnManager:update(dt)
                   self.arena:quit()
                 end
             else
-                -- No, there are more waves. Prepare for the next one.
-                self.current_wave_index = self.current_wave_index + 1
-                self.state = 'between_waves_delay'
-                self.timer = self.time_between_waves
-                self:show_wave_complete_text()
+                --check if the progress bar is complete
+                if self.arena.progress_bar:highest_wave_complete() == self.current_wave_index then
+                  -- No, there are more waves. Prepare for the next one.
+                  self.current_wave_index = self.current_wave_index + 1
+                  self.state = 'between_waves_delay'
+                  self.timer = self.time_between_waves
+                  self:show_wave_complete_text()
+                end
             end
         end
 
