@@ -210,21 +210,6 @@ function Spawn_Hazards(arena, hazards)
   end
 end
 
-function Calculate_Extra_Spawn_Delay(arena)
-  local extra_spawn_delay = arena.extra_spawn_delay
-  local num_enemies = #arena.main:get_objects_by_classes(arena.enemies_without_critters)
-
-  if num_enemies < 5 then
-    return 0
-  elseif num_enemies < 10 then
-    return extra_spawn_delay * 1
-  elseif num_enemies < 15 then
-    return extra_spawn_delay * 2
-  else
-    return extra_spawn_delay * 4
-  end
-end
-
 -- ===================================================================
 -- SpawnManager Class
 --
@@ -443,6 +428,20 @@ function Spawn_Group(arena, group_index, type, amount, on_finished)
   local spawned_count = 0
   -- A unique ID for our persistent timer so we can cancel it later.
   local timer_id = "spawn_group_" .. random:uid()
+  -- This will hold a reference to our persistent visual marker.
+  local persistent_marker = nil
+
+  -- This new function handles cleaning up the marker and calling the original callback.
+  local cleanup_and_finish = function()
+      -- Destroy the visual marker if it exists.
+      if persistent_marker and not persistent_marker.dead then
+          persistent_marker:die()
+      end
+      -- Call the original on_finished callback if it was provided.
+      if on_finished then
+          on_finished()
+      end
+  end
 
   -- The action to be performed repeatedly by the timer.
   local spawn_action = function()
@@ -453,8 +452,6 @@ function Spawn_Group(arena, group_index, type, amount, on_finished)
       local spawn_x, spawn_y = spawn_marker.x + offset.x, spawn_marker.y + offset.y
 
       -- 2. If the spawn is successful, increment our counter.
-      --    If it fails (because Can_Spawn returns false), spawned_count is not
-      --    incremented, and the timer will simply try again on its next interval.
       if Spawn_Enemy(arena, type, {x = spawn_x, y = spawn_y}) then
           spawned_count = spawned_count + 1
       end
@@ -463,20 +460,22 @@ function Spawn_Group(arena, group_index, type, amount, on_finished)
       if spawned_count >= amount then
           -- Stop this timer from running again.
           arena.t:cancel(timer_id)
-          -- Call the on_finished callback if it exists to signal completion.
-          if on_finished then
-              on_finished()
-          end
+          -- Call our new cleanup function.
+          cleanup_and_finish()
       end
   end
 
-  -- Calculate any extra delay based on the number of enemies already on screen.
-  local group_delay = Calculate_Extra_Spawn_Delay(arena)
+  -- 1. Create the persistent visual marker at the group's center.
+  local center_marker_pos = SpawnGlobals.get_spawn_marker(group_index)
+  persistent_marker = SpawnMarker{
+      group = arena.effects, 
+      x = center_marker_pos.x, 
+      y = center_marker_pos.y
+  }
 
-  -- After an initial delay, start the persistent timer.
-  arena.t:after(group_delay, function()
-      -- This timer will run every `spawn_interval` seconds *indefinitely*
-      -- until we explicitly cancel it inside `spawn_action` using its unique timer_id.
+  -- 2. Wait 1 second AFTER placing the marker.
+  arena.t:after(1, function()
+      -- 3. Start the persistent spawner timer.
       arena.t:every(spawn_interval, spawn_action, nil, nil, timer_id)
   end)
 end

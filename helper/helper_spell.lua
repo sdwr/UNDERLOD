@@ -254,6 +254,16 @@ function Helper.Spell:there_is_target_in_range(unit, range, points)
     return false
 end
 
+function Helper.Spell:get_enemies_in_range(unit, range)
+  local enemies = {}
+  for i, troop in ipairs(Helper.Unit:get_list(not unit.is_troop)) do
+    if Helper.Geometry:distance(unit.x, unit.y, troop.x, troop.y) < range then
+      table.insert(enemies, troop)
+    end
+  end
+  return enemies
+end
+
 function Helper.Spell:get_target_nearest_point(unit)
     local max_distance = 99999999
     local nearestx = 0
