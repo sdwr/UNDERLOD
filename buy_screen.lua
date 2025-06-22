@@ -1575,8 +1575,7 @@ function ItemCard:update(dt)
       self.timeGrabbed = love.timer.getTime()
     end
     self.grabbed = true
-    --remove item text when grabbed
-    self:remove_info_text()
+    self:remove_tooltip()
   end
 
   --determine when to purchase the item vs when to cancel the purchase
@@ -1685,10 +1684,7 @@ function ItemCard:on_mouse_enter()
   ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
   self.spring:pull(0.2, 200, 10)
 
-  if self.tooltip then
-    self.tooltip:die()
-    self.tooltip = nil
-  end
+  self:remove_tooltip()
   
   -- Create and position the new tooltip
   self.tooltip = ItemTooltip{
@@ -1703,10 +1699,7 @@ end
 function ItemCard:on_mouse_exit()
   self.selected = false
   -- Deactivate the tooltip, which will play its closing animation
-  if self.tooltip then
-    self.tooltip:die()
-    self.tooltip = nil
-  end
+  self:remove_tooltip()
 end
 
 
@@ -1714,6 +1707,10 @@ function ItemCard:die()
   self.dead = true
   self.cost_text = nil
   -- Ensure the tooltip is removed when the card dies
+  self:remove_tooltip()
+end
+
+function ItemCard:remove_tooltip()
   if self.tooltip then
     self.tooltip:die()
     self.tooltip = nil
