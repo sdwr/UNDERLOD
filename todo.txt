@@ -299,6 +299,8 @@ get the playthrough to be fun:
 BUGS:
 --------------
 
+floating damage numbers only half disappear
+
 PLAYER FEEDBACK
 
 right click to sell item

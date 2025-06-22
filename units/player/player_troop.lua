@@ -32,225 +32,192 @@ function Troop:init(args)
   Helper.Unit:set_state(self, unit_states['normal'])
 end
 
-  function Troop:update(dt)
-    -- ===================================================================
-    -- 1. ESSENTIAL HOUSEKEEPING (These should always run)
-    -- ===================================================================
-    self:update_game_object(dt)
-    self:update_cast_cooldown(dt)
-    self:onTickCallbacks(dt)
-    self:update_buffs(dt)
-    self:calculate_stats()
-    self:update_targets() -- Updates who the unit is targeting
+function Troop:update(dt)
+  -- ===================================================================
+  -- 1. ESSENTIAL HOUSEKEEPING (These should always run)
+  -- ===================================================================
+  self:update_game_object(dt)
+  self:update_cast_cooldown(dt)
+  self:onTickCallbacks(dt)
+  self:update_buffs(dt)
+  self:calculate_stats()
+  self:update_targets() -- Updates who the unit is targeting
 
-    -- ===================================================================
-    -- 2. THE STATE MACHINE (Hierarchical and Predictable)
-    -- ===================================================================
-    -- This is one big if/elseif block. Only ONE of these can run per frame,
-    -- which prevents state flickering. The order is based on priority.
+  -- ===================================================================
+  -- 2. THE STATE MACHINE (Hierarchical and Predictable)
+  -- ===================================================================
+  -- This is one big if/elseif block. Only ONE of these can run per frame,
+  -- which prevents state flickering. The order is based on priority.
 
-    -- PRIORITY 1: Uninterruptible States
-    -- If a unit is knocked back or frozen, it can't do anything else.
-    if self.state == unit_states['knockback'] or self.state == unit_states['frozen'] then
-        -- The logic that takes the unit *out* of these states (like a timer)
-        -- is handled elsewhere (e.g., in the Troop:push function).
-        -- We do nothing else here.
+  -- PRIORITY 1: Uninterruptible States
+  -- If a unit is knocked back or frozen, it can't do anything else.
+  if self.state == unit_states['knockback'] or self.state == unit_states['frozen'] then
+      -- The logic that takes the unit *out* of these states (like a timer)
+      -- is handled elsewhere (e.g., in the Troop:push function).
+      -- We do nothing else here.
 
-    -- PRIORITY 2: Player-Commanded States
-    -- If the unit is actively following the mouse.
-    elseif self.state == unit_states['following'] then
-        -- Check if we should STOP following.
-        if input['m1'].released or input['space'].released then
-            Helper.Unit:set_state(self, unit_states['normal'])
-        else
-            -- If not, continue moving towards the mouse.
-            if self:distance_to_mouse() > 10 then
-                self:seek_mouse(SEEK_DECELERATION, SEEK_WEIGHT)
-                self:steering_separate(SEPARATION_RADIUS, troop_classes)
-                self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
-                self:rotate_towards_velocity(1)
-            else
-                self:set_velocity(0, 0) -- Stop when we reach the cursor
-            end
-        end
+  -- PRIORITY 2: Player-Commanded States
+  -- If the unit is actively following the mouse.
+  elseif self.state == unit_states['following'] then
 
-    -- If the unit is moving to a rally point.
-    elseif self.state == unit_states['rallying'] then
-        -- Check if we have arrived at the rally point.
-        local distance_to_target_pos = math.distance(self.x, self.y, self.target_pos.x, self.target_pos.y)
-        if distance_to_target_pos < 9 or not self.rallying then -- Also stop if rally is cancelled
-            Helper.Unit:set_state(self, unit_states['normal'])
-        else
-            -- If not, continue moving towards the rally point.
-            self:seek_point(self.target_pos.x, self.target_pos.y, SEEK_DECELERATION, SEEK_WEIGHT)
-            self:steering_separate(SEPARATION_RADIUS, troop_classes)
-            self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
-            self:rotate_towards_velocity(1)
-        end
+      self:cancel_cast()
+      self:clear_my_target()
+      self:clear_assigned_target()
 
-    -- PRIORITY 3: Action States (Busy States)
-    -- If the unit is in the middle of casting an ability.
-    elseif self.state == unit_states['casting'] then
-
-        if self.castObject then
-          if Helper.Unit:target_out_of_range(self) then
-            Helper.Unit:unclaim_target(self)
-            self:cancel_cast()
+      -- Check if we should STOP following.
+      if input['m1'].released or input['space'].released then
+          Helper.Unit:set_state(self, unit_states['normal'])
+      else
+          -- If not, continue moving towards the mouse.
+          if self:distance_to_mouse() > 10 then
+              self:seek_mouse(SEEK_DECELERATION, SEEK_WEIGHT)
+              self:steering_separate(SEPARATION_RADIUS, troop_classes)
+              self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
+              self:rotate_towards_velocity(1)
+          else
+              self:set_velocity(0, 0) -- Stop when we reach the cursor
           end
+      end
+
+  -- If the unit is moving to a rally point.
+  elseif self.state == unit_states['rallying'] then
+
+      self:cancel_cast()
+      -- clear my target (but not assigned target)
+      self:clear_my_target()
+
+      -- Check if we have arrived at the rally point.
+      local distance_to_target_pos = math.distance(self.x, self.y, self.target_pos.x, self.target_pos.y)
+      if distance_to_target_pos < 9 or not self.rallying then -- Also stop if rally is cancelled
+          Helper.Unit:set_state(self, unit_states['normal'])
+      else
+          -- If not, continue moving towards the rally point.
+          self:seek_point(self.target_pos.x, self.target_pos.y, SEEK_DECELERATION, SEEK_WEIGHT)
+          self:steering_separate(SEPARATION_RADIUS, troop_classes)
+          self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
+          self:rotate_towards_velocity(1)
+      end
+
+  -- PRIORITY 3: Action States (Busy States)
+  -- If the unit is in the middle of casting an ability.
+  elseif self.state == unit_states['casting'] then
+
+      if self.castObject then
+        if Helper.Unit:target_out_of_range(self) then
+          Helper.Unit:unclaim_target(self)
+          self:cancel_cast()
         end
+      end
 
-        self:set_velocity(0, 0)
-        -- We can, however, allow it to rotate towards its target.
-        if self.target then
-            self:rotate_towards_object(self.target, 1)
-        end
-        -- NOTE: The 'Cast' object is now responsible for setting the state
-        -- to 'stopped' or 'normal' when it finishes.
+      self:set_velocity(0, 0)
+      -- We can, however, allow it to rotate towards its target.
+      if self.target then
+          self:rotate_towards_object(self.target, 1)
+      end
+      -- NOTE: The 'Cast' object is now responsible for setting the state
+      -- to 'stopped' or 'normal' when it finishes.
 
-    -- If the unit is in its "backswing" after an attack.
-    elseif self.state == unit_states['stopped'] then
-        -- The unit is still and cannot start a new action yet.
-        -- A timer set by the Cast object should move it from 'stopped' to 'normal'.
-        self:set_velocity(0, 0)
+  -- If the unit is in its "backswing" after an attack.
+  elseif self.state == unit_states['stopped'] then
+      -- The unit is still and cannot start a new action yet.
+      -- A timer set by the Cast object should move it from 'stopped' to 'normal'.
+      self:set_velocity(0, 0)
 
-    -- PRIORITY 4: Autonomous AI State
-    -- If the unit is not doing any of the above, it's 'normal' and can think for itself.
-    elseif self.state == unit_states['normal'] then
-        -- First, check if a player command is being issued that would override this state.
-        if self:should_follow() then
-            Helper.Unit:clear_all_rally_points()
-            Helper.Unit:set_state(self, unit_states['following'])
-            self.target = nil
-            self.target_pos = nil
-        elseif self.rallying then
-            Helper.Unit:set_state(self, unit_states['rallying'])
-            self:set_rally_position(random:int(1, 10))
-        else
-            -- If no player command, proceed with AI logic.
-            -- This is where the logic from 'state_always_run_functions' now lives.
-            self:update_ai_logic()
-        end
-    end
-
-    -- ===================================================================
-    -- 3. FINAL PHYSICS AND POSITIONING (These also always run)
-    -- ===================================================================
-    self.r = self:get_angle()
-    self.attack_sensor:move_to(self.x, self.y)
-    self.aggro_sensor:move_to(self.x, self.y)
+  -- PRIORITY 4: Autonomous AI State
+  -- If the unit is not doing any of the above, it's 'normal' and can think for itself.
+  elseif self.state == unit_states['normal'] then
+      -- First, check if a player command is being issued that would override this state.
+      if self:should_follow() then
+          Helper.Unit:clear_all_rally_points()
+          Helper.Unit:set_state(self, unit_states['following'])
+          self.target = nil
+          self.target_pos = nil
+      elseif self.rallying then
+          Helper.Unit:set_state(self, unit_states['rallying'])
+          self:set_rally_position(random:int(1, 10))
+      else
+          -- If no player command, proceed with AI logic.
+          -- This is where the logic from 'state_always_run_functions' now lives.
+          self:update_ai_logic()
+      end
   end
 
-  function Troop:update_ai_logic()
-    -- This function is only called when the unit is in the 'normal' state.
-    -- It represents the unit's autonomous decision-making process.
+  -- ===================================================================
+  -- 3. FINAL PHYSICS AND POSITIONING (These also always run)
+  -- ===================================================================
+  self.r = self:get_angle()
+  self.attack_sensor:move_to(self.x, self.y)
+  self.aggro_sensor:move_to(self.x, self.y)
+end
 
-    -- 1. VALIDATE CURRENT TARGET
-    -- First, check if our current target is dead or invalid. If so, clear it.
-    local target = self:my_target()
-    if target and target.dead then
-        self:clear_my_target()
-        target = nil -- Make sure our local variable is also nil
-    end
+function Troop:update_ai_logic()
+  -- This function is only called when the unit is in the 'normal' state.
+  -- It represents the unit's autonomous decision-making process.
 
-    -- 2. ACQUIRE NEW TARGET
-    -- If we don't have a target, try to find the closest one within our aggro range.
-    if not target then
-        -- This is the block of code that was missing.
-        local potential_target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies)
-        if potential_target then
-            self:set_target(potential_target)
-            target = potential_target -- Update our local variable
-        end
-    end
-
-    -- 3. ACT BASED ON TARGET STATUS
-    -- If we have a valid target (either pre-existing or newly acquired)...
-    if target then
-        -- 3a. CHECK IF WE CAN ATTACK.
-        -- We must be in range AND our cast must be off cooldown.
-        if self:in_range()() and Helper.Unit:cast_off_cooldown(self) then
-            -- If yes, commit to casting.
-            -- NOTE: Your can_cast helper might do both checks, which is fine!
-            if self.setup_cast then self:setup_cast() end
-
-        -- 3b. If we CANNOT attack, check if we need to move closer.
-        elseif not self:in_range()() then
-            -- If target is out of range, move towards it. This is the "aggro" behavior.
-            self:seek_point(target.x, target.y, SEEK_DECELERATION, SEEK_WEIGHT)
-            self:steering_separate(SEPARATION_RADIUS, troop_classes)
-            self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
-            self:rotate_towards_velocity(1)
-        
-        -- 3c. If we're in range but waiting for cooldown, stand still.
-        else
-            self:set_velocity(0, 0)
-            self:steering_separate(16, troop_classes)
-            -- Also, rotate to face the target while waiting.
-            self:rotate_towards_object(target, 1)
-        end
-    else
-        -- 4. NO TARGET
-        -- If after all checks we still have no target, do nothing. Stand still.
-        self:set_velocity(0, 0)
-    end
+  -- 1. VALIDATE CURRENT TARGET
+  -- First, check if our current target is dead or invalid. If so, clear it.
+  local target = self:my_target()
+  if target and target.dead then
+    self:clear_my_target()
+    target = nil -- Make sure our local variable is also nil
+  elseif target and not self:in_range()() then
+    self:clear_my_target()
+    target = nil
   end
+  
+
+  -- 2. ACQUIRE NEW TARGET
+  -- If we don't have a target, try to find the closest one within our aggro range.
+  if not target then
+      --find target if not already found
+      -- pick random in attack range
+      -- or closest in aggro range
+      if self:has_potential_target_in_range() then
+        self:set_target(self:get_random_object_in_shape(self.attack_sensor, main.current.enemies))
+      else
+        self:set_target(self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies))
+      end
+
+      target = self.target
+  end
+
+  -- 3. ACT BASED ON TARGET STATUS
+  -- If we have a valid target (either pre-existing or newly acquired)...
+  if target then
+      -- 3a. CHECK IF WE CAN ATTACK.
+      -- We must be in range AND our cast must be off cooldown.
+      if Helper.Unit:can_cast(self) then
+          -- If yes, commit to casting.
+          -- NOTE: Your can_cast helper might do both checks, which is fine!
+          self:setup_cast()
+
+      -- 3b. If we CANNOT attack, check if we need to move closer.
+      elseif not self:in_range()() then
+          -- If target is out of range, move towards it. This is the "aggro" behavior.
+          self:seek_point(target.x, target.y, SEEK_DECELERATION, SEEK_WEIGHT)
+          self:steering_separate(SEPARATION_RADIUS, troop_classes)
+          self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
+          self:rotate_towards_velocity(1)
+      
+      -- 3c. If we're in range but waiting for cooldown, stand still.
+      else
+          self:set_velocity(0, 0)
+          self:steering_separate(16, troop_classes)
+          -- Also, rotate to face the target while waiting.
+          self:rotate_towards_object(target, 1)
+      end
+  else
+      -- 4. NO TARGET
+      -- If after all checks we still have no target, do nothing. Stand still.
+      self:set_velocity(0, 0)
+  end
+end
+
 
 function Troop:set_rally_position(i)
   local team = Helper.Unit.teams[self.team]
   self.target_pos = sum_vectors({x = team.rallyCircle.x, y = team.rallyCircle.y}, rally_offsets(i))
 
-end
-
-function Troop:update_movement()
-  -- then do movement if rally/following
-  if self.state == unit_states['following'] then
-    --if not in range, move towards mouse
-    if self:distance_to_mouse() > 10 then
-      self:seek_mouse(SEEK_DECELERATION, SEEK_WEIGHT)
-      self:steering_separate(SEPARATION_RADIUS, troop_classes)
-      self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
-      self:rotate_towards_velocity(1)
-    else
-      --self:set_velocity(0,0)
-    end
-
-  elseif self.state == unit_states['rallying'] then
-      self:seek_point(self.target_pos.x, self.target_pos.y, SEEK_DECELERATION, SEEK_WEIGHT)
-      self:steering_separate(SEPARATION_RADIUS, troop_classes)
-      self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
-      self:rotate_towards_velocity(1)
-      local distance_to_target_pos = math.distance(self.x, self.y, self.target_pos.x, self.target_pos.y)
-      --if close enough, stop (which enables attacking)
-      --when the rally circle disappears, it sets the unit back to 'normal' state
-      if distance_to_target_pos < 9 then
-        Helper.Unit:set_state(self, unit_states['normal'])
-      end
-  
-  --then find target if not already moving
-  elseif self.state == unit_states['normal'] then
-
-    local target = self:my_target()
-    --find target if not already found
-    if not target then 
-      self:set_target(self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies))
-    end
-
-    target = self:my_target()
-
-    --if target not in attack range, close in
-    if target and not self:in_range()() and self.state == unit_states['normal'] then
-      self:seek_point(target.x, target.y, SEEK_DECELERATION, SEEK_WEIGHT)
-      self:steering_separate(SEPARATION_RADIUS, troop_classes)
-      self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
-      self:rotate_towards_velocity(1)
-    --otherwise target is in attack range or doesn't exist, stay still
-    else
-      --self:set_velocity(0,0)
-      self:steering_separate(16, troop_classes)
-    end
-  else
-    --self:set_velocity(0,0)
-  end
 end
 
 function Troop:push(f, r, push_invulnerable, duration)
@@ -480,7 +447,6 @@ function Troop:hit(damage, from, damageType, makesSound, cannotProcOnHit)
 
   if self.bubbled then return end
   if self.dead then return end
-  if self.magician_invulnerable then return end
 
   --scale hit effect to damage
   --no damage won't grow model, up to max effect at 0.5x max hp
@@ -591,79 +557,8 @@ function Troop:on_collision_enter(other, contact)
   end
 end
 
-function Troop:shootAnimation(angle)
-  self.startedCastingAt = love.timer.getTime()
-  local castTime = self.castTime
-  local backswing = self.backswing
-  self.casting = true
-  Helper.Unit:set_state(self, unit_states['frozen'])
-  self.t:after(castTime, function() 
-    self.casting = false
-    Helper.Unit:set_state(self, unit_states['stopped'])
-    self:shoot(angle)
-    self.t:after(backswing, function() 
-      if self.state == unit_states['stopped'] then
-        Helper.Unit:set_state(self, unit_states['normal'])
-      end
-    end, 'castAnimationEnd')
-  end, 'castAnimation')
-end
-
-function Troop:castAnimation()
-    self.startedCastingAt = love.timer.getTime()
-    local castTime = self.castTime
-    local backswing = self.backswing
-    self.casting = true
-    Helper.Unit:set_state(self, unit_states['frozen'])
-    self.t:after(castTime, function() 
-      self.casting = false
-      if self.state == unit_states['frozen'] then
-        Helper.Unit:set_state(self, unit_states['stopped'])
-      end
-      self:setup_cast()
-      self.t:after(backswing, function() 
-        if self.state == unit_states['stopped'] then
-          Helper.Unit:set_state(self, unit_states['normal'])
-        end
-      end, 'castAnimationEnd')
-    end, 'castAnimation')
-end
-
 function Troop:setup_cast()
-  if not self then return end
-  if self.target and not self.target.dead then
-    if self.character == 'wizard' then
-      frost1:play{pitch = random:float(0.8, 1.2), volume = 0.4}
-      self.dot_area = DotArea{group = main.current.effects, x = self.target.x, y = self.target.y, rs = 24,
-      character = self.character, color = self.color, dmg = 5, level = self.level, parent = self, duration = 2}
-    elseif self.character == 'shaman' then
-      ChainLightning{group = main.current.main, target = self.target, rs = 50, dmg = self.dmg, color = self.color, parent = self, level = self.level}
-    elseif self.character == 'cleric' then
-      heal1:play({pitch = random:float(0.9,1.1), volume = 0.3})
-      self.target:heal(30)
-      LightningLine{group = main.current.effects, duration = 0.2, src = self, dst = self.target, color = green_transparent_weak}
-    elseif self.character == 'necromancer' then
-      if not self.target.dug_up and self.summons < 3 then
-        critter3:play({pitch = random:float(0.8,1.2), volume = 0.5})
-        self.summons = self.summons + 1
-        Critter{group = main.current.main, x = self.target.x, y = self.target.y, color = white[0], r = random:float(0, 2*math.pi), v = 10, parent = self}
-        self.target:kill()
-        self.target = nil
-      end
-    elseif self.character == 'paladin' then
-      buff1:play({pitch = random:float(0.8,1.2), volume = 0.5})
-        self.target:bubble(2)
-        LightningLine{group = main.current.effects, duration = 0.2, src = self, dst = self.target, color = yellow_transparent_weak}
-    elseif self.character == 'priest' then
-      buff1:play({pitch = random:float(0.8,1.2), volume = 0.5})
-        self.target:shield(30, 3)
-        LightningLine{group = main.current.effects, duration = 0.2, src = self, dst = self.target, color = white_transparent_weak}
-    elseif self.character == 'druid' then
-      buff1:play({pitch = random:float(0.8, 1.2), volume = 0.7})
-      self.target:add_buff(Create_buff_druid_hot(5))
-      LightningLine{group = main.current.effects, duration = 0.2, src = self, dst = self.target, color = green_transparent_weak}
-    end
-  end
+  --overridden in subclasses
 end
 
 function Troop:removeHealFlag(duration)

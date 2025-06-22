@@ -79,57 +79,16 @@ function Archer_Troop:set_state_functions()
   end
 
 
-  --cancel on move
-  --will cancel casts that are in flight
-  --so we need to handle that in the spell (or make sure they get garbage collected without killing them)
   self.state_always_run_functions['following_or_rallying'] = function(self)
-    --cancel cast if previous state was casting
-    --we don't know, so we just try to cancel it
-    self:cancel_cast()
-    Helper.Unit:unclaim_target(self)
   end
 
-  --here is where the logic for finding a new target/chasing an existing target should go
-  --once an attack is started, the unit will be in 'casting' state
   self.state_always_run_functions['normal_or_stopped'] = function(self)
-    --check if is good, otherwise find a new target
-    self:check_target()
-
-    --if we have a target, and we can cast, start casting
-    --how to add delay to the cast? maybe just add put it in the spell
-    if Helper.Unit:can_cast(self) then
-      self:setup_cast()
-    end
   end
 
   --cancel on death
   self.state_change_functions['death'] = function(self)
     self:cancel_cast()
     Helper.Unit:unclaim_target(self)
-  end
-end
-
-function Archer_Troop:check_target()
-  --find target
-  if self.assigned_target then
-    --already found
-  elseif self.target then
-    --check if target is in range
-    if Helper.Spell:target_is_in_range(self, self.attack_sensor.rs, false) then
-      --found
-    else
-      self:find_new_target()
-    end
-  else
-    self:find_new_target()
-  end
-end
-
-function Archer_Troop:find_new_target()
-  --first check if there is a target in range
-  local target = Helper.Spell:get_nearest_target(self)
-  if target then
-    Helper.Unit:claim_target(self, target)
   end
 end
 

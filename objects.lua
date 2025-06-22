@@ -1152,6 +1152,15 @@ function Unit:update_targets()
   end
 end
 
+
+function Unit:has_potential_target_in_range()
+  local target = self:get_closest_object_in_shape(self.attack_sensor, main.current.enemies)
+  if target then
+    return true
+  end
+  return false
+end
+
 --need melee units to not move inside the target
 --need ranged units to move close enough to attack
 function Unit:in_range()

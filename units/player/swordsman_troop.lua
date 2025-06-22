@@ -69,11 +69,6 @@ end
 
 function Swordsman_Troop:set_state_functions()
   self.state_always_run_functions['always_run'] = function(self)
-    if Helper.Unit:can_cast(self) then
-      if self:my_target() then
-        self:setup_cast()
-      end
-    end
   end
 
 end
