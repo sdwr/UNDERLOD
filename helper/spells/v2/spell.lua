@@ -152,6 +152,7 @@ function Cast:cast()
   end
 
   local spell = self.spellclass(self.spelldata)
+  
   if self.instantspell then
     if self.spelldata.on_attack_callbacks and self.unit.onAttackCallbacks then
       self.unit:onAttackCallbacks(self.target)
@@ -366,6 +367,9 @@ end
 function Spell:die()
   if DEBUG_SPELLS then
     print('destroying spell: ', self.name)
+  end
+  if self.unit and self.unit.end_channel then
+    self.unit:end_channel()
   end
   self.dead = true
 end

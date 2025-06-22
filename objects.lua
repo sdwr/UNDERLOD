@@ -1310,18 +1310,21 @@ function Unit:end_cast(cooldown, spell_duration)
   self.total_castcooldown = cooldown
   self.spelldata = nil
   self.freezerotation = false
-  if spell_duration and spell_duration > 0 then
-    if self.state == unit_states['casting'] then
-      self:set_state(unit_states['channeling'])
-      self.t:after(spell_duration, function() self:end_channel() end)
-    end
+
+  if self.state == unit_states['casting']then
+    Helper.Unit:set_state(self, unit_states['normal'])
   end
 
   self.castObject = nil
 end
 
-function Unit:end_channel()
+function Unit:end_channel(cooldown)
   if self.state == unit_states['channeling'] then
+
+    self.castcooldown = self.baseCooldown
+    self.total_castcooldown = self.baseCooldown
+    self.spelldata = nil
+    self.freezerotation = false
     Helper.Unit:set_state(self, unit_states['normal'])
   end
 end
