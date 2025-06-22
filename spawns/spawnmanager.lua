@@ -285,7 +285,7 @@ function SpawnManager:update(dt)
 
     elseif self.state == 'wave_delay' then
       self.wave_delay_timer = self.wave_delay_timer - dt
-      self:show_wave_start_countdown(math.ceil(self.wave_delay_timer))
+      self:show_wave_start_countdown(get_starting_wave_countdown_value(self.wave_delay_timer))
       if self.wave_delay_timer <= 0 then
         self.state = 'spawning_wave'
       end
@@ -302,8 +302,12 @@ function SpawnManager:update(dt)
             -- First, check if the wave we just cleared was the final one.
             if self.current_wave_index >= #self.level_data.waves then
                 -- Yes, it was the last wave. The level is won.
-                self.state = 'finished'
-                self.arena:quit()
+
+                --also check if the progress bar is complete
+                if main.current.progress_bar:is_complete() then
+                  self.state = 'finished'
+                  self.arena:quit()
+                end
             else
                 -- No, there are more waves. Prepare for the next one.
                 self.current_wave_index = self.current_wave_index + 1
@@ -345,7 +349,7 @@ function SpawnManager:start_next_wave()
     self.current_group_index = 1
     self.timer = 0 
 
-    self.wave_delay_timer = 5
+    self.wave_delay_timer = TOTAL_STARTING_WAVE_DELAY
 end
 
 function SpawnManager:spawn_next_group()
