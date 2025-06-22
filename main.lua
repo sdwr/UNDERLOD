@@ -2706,7 +2706,7 @@ function open_options(self)
         index = index + 1
       end
       state.show_damage_numbers = DAMAGE_NUMBERS_SETTING[index]
-      show_damage_numbers = index
+      show_damage_numbers = state.show_damage_numbers
 
       b:set_text('show damage numbers: ' .. tostring(state.show_damage_numbers or 'off'))
     end }
