@@ -25,6 +25,7 @@ end
 GameObject = Object:extend()
 function GameObject:init_game_object(args)
   for k, v in pairs(args or {}) do self[k] = v end
+
   if self.group then self.group:add(self) end
   self.x, self.y = self.x or 0, self.y or 0
   self.r = self.r or 0

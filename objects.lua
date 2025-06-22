@@ -639,6 +639,8 @@ function Unit:get_item_stats()
           stats.area_size = (stats.area_size or 0) + amt
         elseif stat == buff_types['hp'] then
           stats.hp = (stats.hp or 0) + amt
+        elseif stat == buff_types['repeat_attack_chance'] then
+          stats.repeat_attack_chance = (stats.repeat_attack_chance or 0) + amt
         end
       end
     end
@@ -698,6 +700,7 @@ function Unit:calculate_stats(first_run)
   self.buff_range_a = 0
   self.buff_range_m = 1
   self.buff_cdr_m = 1
+  self.buff_repeat_attack_chance = 0
 
   self.eledmg_m = 1
 
@@ -774,6 +777,9 @@ function Unit:calculate_stats(first_run)
           elseif stat == buff_types['vamp'] then
             self.vamp = self.vamp + amtWithStacks
 
+          elseif stat == buff_types['repeat_attack_chance'] then
+            self.buff_repeat_attack_chance = self.buff_repeat_attack_chance + amtWithStacks
+
           --flat stats
           elseif stat == buff_types['flat_def'] then
             self.buff_def_a = self.buff_def_a + amtWithStacks
@@ -815,6 +821,8 @@ function Unit:calculate_stats(first_run)
             self.enrage_on_death = true
           elseif stat == buff_types['explode'] then
             self.canExplode = true
+          elseif stat == buff_types['repeat_attack_chance'] then
+            self.buff_repeat_attack_chance = self.buff_repeat_attack_chance + amt
           end
         end
       end
@@ -835,6 +843,8 @@ function Unit:calculate_stats(first_run)
   self.def = (self.base_def + self.class_def_a + self.buff_def_a)*self.class_def_m*self.buff_def_m
 
   self.aspd_m = 1/(self.base_aspd_m*self.buff_aspd_m)
+
+  self.repeat_attack_chance = self.buff_repeat_attack_chance
 
   -- Stats_Max_Aspd(self.buff_aspd_m)
   -- if self.buff_hp_m == 1 then

@@ -42,7 +42,7 @@ function Swordsman_Troop:setup_cast()
     name = 'attack',
     viable = function() return Helper.Spell:target_is_in_range(self, self.attack_sensor.rs, true) end,
     oncast = function() end,
-    oncastfinish = function() self:play_attack_sound() end,
+    oncastfinish = function() end,
     unit = self,
     target = self.target,
     castcooldown = self.cooldownTime,
@@ -52,6 +52,7 @@ function Swordsman_Troop:setup_cast()
     spellclass = Area,
     spelldata = {
       group = main.current.effects,
+      sound = function() self:play_attack_sound() end,
       on_attack_callbacks = true,
       spell_duration = 0.1,
       color = red[0],

@@ -41,6 +41,8 @@ MAX_STACKS_BLOODLUST = 10
 
 SHOCK_DEF_REDUCTION = -0.04
 
+REPEAT_ATTACK_DELAY = 0.25
+
 
 --add 0.25 to the scaling for each boss level (boss levels are every 6 levels)
 BOSS_HP_SCALING = function(level) return LEVEL_TO_TIER(level) end
@@ -155,6 +157,7 @@ buff_types = {
     ['bash'] = 'bash',
     ['heal'] = 'heal',
     ['explode'] = 'explode',
+    ['repeat_attack_chance'] = 'repeat_attack_chance',
   }
 
 
