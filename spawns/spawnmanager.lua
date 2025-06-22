@@ -86,15 +86,17 @@ function Get_Far_Spawn(index)
 end
 
 function Can_Spawn(rs, location)
-  local check_circle = Circle(0,0, rs)
-  check_circle:move_to(location.x, location.y)
-  local objects = main.current.main:get_objects_in_shape(check_circle, all_unit_classes)
-  if #objects > 0 or Outside_Arena(location) then
-    return false
-  else
-    return true
-  end
+  return true
 end
+--   local check_circle = Circle(0,0, rs)
+--   check_circle:move_to(location.x, location.y)
+--   local objects = main.current.main:get_objects_in_shape(check_circle, all_unit_classes)
+--   if #objects > 0 or Outside_Arena(location) then
+--     return false
+--   else
+--     return true
+--   end
+-- end
 
 function Get_Spawn_Point(rs, location)
   for i = 1, SPAWN_CHECKS do
@@ -211,11 +213,7 @@ function Spawn_Hazards(arena, hazards)
 end
 
 -- ===================================================================
--- SpawnManager Class
---
--- This object manages the entire lifecycle of spawning for a level.
--- It uses a state machine and a single update(dt) function to handle
--- wave progression, delays, and win conditions in a predictable way.
+-- SpawnManager Class (Corrected)
 -- ===================================================================
 
 SpawnManager = Object:extend()
@@ -226,25 +224,23 @@ function SpawnManager:init(arena)
     self.t = self.arena.t -- Use the arena's timer for convenience
 
     -- Spawning State Machine
-    self.state = 'entry_delay' -- The initial state
-    -- Possible States:
-    -- 'entry_delay':           Waiting a moment before the first wave starts.
-    -- 'spawning_wave':         Actively spawning groups within the current wave.
-    -- 'waiting_for_clear':     The wave has finished spawning; now waiting for all enemies to be defeated.
-    -- 'between_waves_delay':   All enemies are cleared; pausing before starting the next wave.
-    -- 'finished':              All waves are complete.
-    -- 'boss_fight':            A special state for boss levels.
+    self.state = 'entry_delay'
+    -- (States remain the same)
 
     -- Timers and Trackers
-    self.time_between_groups = arena.time_between_spawn_groups or 0.8
-    arena.extra_spawn_delay = arena.extra_spawn_delay or 2
     self.time_between_waves = arena.time_between_waves or 5
     self.max_enemies_on_screen = arena.max_enemies or 20
     
     self.timer = arena.entry_delay or 0.5
     self.current_wave_index = 1
     self.current_group_index = 1
-    self.is_spawning_group = false -- A flag to prevent group overlap
+    
+    -- New properties for managing wave-level spawning
+    self.persistent_wave_spawn_marker = nil
+    self.current_wave_spawn_marker_index = nil
+    
+    -- *** FIX: Add a flag to prevent re-triggering the spawn chain. ***
+    self.is_group_spawning = false
 
     -- Check if this is a boss level
     if table.contains(BOSS_ROUNDS, arena.level) then
@@ -253,57 +249,56 @@ function SpawnManager:init(arena)
 end
 
 -- ===================================================================
--- The Core Update Loop
--- This is called every frame from Arena:update()
+-- The Core Update Loop (Corrected)
 -- ===================================================================
 function SpawnManager:update(dt)
     if self.state == 'finished' then return end
 
-    -- Tick down the universal timer
     self.timer = self.timer - dt
+
+    -- (States 'entry_delay', 'waiting_for_clear', 'between_waves_delay', 'boss_fight' are unchanged)
 
     -- State: Initial delay before anything happens
     if self.state == 'entry_delay' then
-        if self.timer <= 0 then
-            self:start_next_wave()
-        end
-
-    elseif self.state == 'wave_delay' then
-      self.wave_delay_timer = self.wave_delay_timer - dt
-      self:show_wave_start_countdown(get_starting_wave_countdown_value(self.wave_delay_timer))
-      if self.wave_delay_timer <= 0 then
-        self.state = 'spawning_wave'
+      if self.timer <= 0 then
+          self:start_next_wave()
       end
+    -- State: Countdown before the wave's spawning begins
+    elseif self.state == 'wave_delay' then
+        self.wave_delay_timer = self.wave_delay_timer - dt
+        self:show_wave_start_countdown(get_starting_wave_countdown_value(self.wave_delay_timer))
+        if self.wave_delay_timer <= 0 then
+            self.state = 'spawning_wave'
+            -- This is the first kick-off of the chain.
+            self:spawn_next_group_in_chain()
+        end
 
     -- State: Spawning a wave
     elseif self.state == 'spawning_wave' then
-        if not self.is_spawning_group and self.timer <= 0 then
-            self:spawn_next_group()
+        -- *** FIX: Only try to spawn if a group is NOT currently spawning. ***
+        -- This prevents the update loop from firing while the callback chain is active.
+        -- It also serves as the retry mechanism if spawning was paused by max_enemies.
+        if not self.is_group_spawning and self.timer <= 0 then
+            self:spawn_next_group_in_chain()
         end
     
-    -- State: Waiting for all enemies to be defeated
+     -- State: Waiting for all enemies to be defeated
     elseif self.state == 'waiting_for_clear' then
-        if #self.arena.main:get_objects_by_classes(self.arena.enemies) <= 0 then
-            -- First, check if the wave we just cleared was the final one.
-            if self.current_wave_index >= #self.level_data.waves then
-                -- Yes, it was the last wave. The level is won.
-
-                --also check if the progress bar is complete
-                if main.current.progress_bar:is_complete() then
+      if #self.arena.main:get_objects_by_classes(self.arena.enemies) <= 0 then
+          if self.current_wave_index >= #self.level_data.waves then
+              if main.current.progress_bar:is_complete() then
                   self.state = 'finished'
                   self.arena:quit()
-                end
-            else
-                --check if the progress bar is complete
-                if self.arena.progress_bar:highest_wave_complete() == self.current_wave_index then
-                  -- No, there are more waves. Prepare for the next one.
+              end
+          else
+              if self.arena.progress_bar:highest_wave_complete() == self.current_wave_index then
                   self.current_wave_index = self.current_wave_index + 1
                   self.state = 'between_waves_delay'
                   self.timer = self.time_between_waves
                   self:show_wave_complete_text()
-                end
-            end
-        end
+              end
+          end
+      end
 
     -- State: Paused between waves
     elseif self.state == 'between_waves_delay' then
@@ -314,10 +309,9 @@ function SpawnManager:update(dt)
     -- State: Boss Fight Logic
     elseif self.state == 'boss_fight' then
         self:handle_boss_fight()
-        self.state = 'finished' -- Boss fight setup is a one-time event
+        self.state = 'finished'
     end
 end
-
 
 -- ===================================================================
 -- State Transition and Action Functions
@@ -333,72 +327,90 @@ function SpawnManager:start_next_wave()
 
     print("Starting Wave: " .. self.current_wave_index)
     self:show_wave_start_text()
+    
     self.state = 'wave_delay'
     self.current_group_index = 1
-    self.timer = 0 
-
+    self.timer = 0
     self.wave_delay_timer = TOTAL_STARTING_WAVE_DELAY
+
+    -- 1. Determine the single spawn point for the entire wave.
+    self.current_wave_spawn_marker_index = random:int(1, #SpawnGlobals.spawn_markers)
+    SpawnGlobals.last_spawn_point = self.current_wave_spawn_marker_index
+
+    -- 2. Create the persistent visual marker that will last the whole wave.
+    local center_marker_pos = SpawnGlobals.get_spawn_marker(self.current_wave_spawn_marker_index)
+    
+    -- Clean up any old marker just in case.
+    if self.persistent_wave_spawn_marker and not self.persistent_wave_spawn_marker.dead then
+        self.persistent_wave_spawn_marker:die()
+    end
+    self.persistent_wave_spawn_marker = SpawnMarker{
+        group = self.arena.effects,
+        x = center_marker_pos.x,
+        y = center_marker_pos.y
+    }
 end
 
-function SpawnManager:spawn_next_group()
-    local wave_data = self.level_data.waves[self.current_wave_index]
-    
-    if self.current_group_index > #wave_data then
-        self.state = 'waiting_for_clear'
-        return
-    end
+function SpawnManager:spawn_next_group_in_chain()
+  if self.state ~= 'spawning_wave' then return end
 
-    local group_data = wave_data[self.current_group_index]
-    local enemy_type, amount, location_type = group_data[1], group_data[2], group_data[3]
+  local wave_data = self.level_data.waves[self.current_wave_index]
 
-    -- Determine spawn location
-    local location_index
-    if not SpawnGlobals.last_spawn_point then
-        location_index = 1
-    else
-        if location_type == 'close' then location_index = Get_Close_Spawn(SpawnGlobals.last_spawn_point)
-        elseif location_type == 'far' then location_index = Get_Far_Spawn(SpawnGlobals.last_spawn_point)
-        else location_index = random:int(1, #SpawnGlobals.spawn_markers)
-        end
-    end
-
-    --wait to spawn if there are too many enemies on screen
-    --we will check again next frame
-    local num_enemies = #self.arena.main:get_objects_by_classes(self.arena.enemies_without_critters)
-    if num_enemies >= self.max_enemies_on_screen then
+  if self.current_group_index > #wave_data then
+      self.state = 'waiting_for_clear'
+      if self.persistent_wave_spawn_marker and not self.persistent_wave_spawn_marker.dead then
+          self.persistent_wave_spawn_marker:die()
+          self.persistent_wave_spawn_marker = nil
+      end
       return
-    end
+  end
 
-    -- Start spawning the group
-    self.is_spawning_group = true
-    Spawn_Group(self.arena, location_index, enemy_type, amount, function()
-        self.is_spawning_group = false
-        self.timer = self.time_between_groups
-    end)
+  local num_enemies = #self.arena.main:get_objects_by_classes(self.arena.enemies_without_critters)
+  if num_enemies >= self.max_enemies_on_screen then
+      self.timer = 0.5 -- Set timer to retry and exit.
+      return
+  end
+  
+  self.timer = 0
 
-    self.current_group_index = self.current_group_index + 1
+  -- *** FIX: Set the flag to true BEFORE starting the spawn group. ***
+  -- This locks the update() loop from interfering.
+  self.is_group_spawning = true
+
+  local group_data = wave_data[self.current_group_index]
+  local enemy_type, amount = group_data[1], group_data[2]
+
+  -- *** FIX: The callback now correctly manages the flag. ***
+  local on_group_finished_spawning = function()
+      -- Spawning for this group is done. Set flag to false.
+      self.is_group_spawning = false
+      
+      self.current_group_index = self.current_group_index + 1
+  end
+
+  Spawn_Group(self.arena, self.current_wave_spawn_marker_index, enemy_type, amount, on_group_finished_spawning)
 end
 
 function SpawnManager:handle_boss_fight()
-    local boss_name = ""
-    if self.arena.level == 6 then boss_name = 'stompy'
-    elseif self.arena.level == 11 then boss_name = 'dragon'
-    -- ... and so on for other bosses
-    end
-    
-    if boss_name ~= "" then
-        self.t:after(1.5, function() 
-            Spawn_Boss(self.arena, boss_name) 
-            self.t:every(function() return LevelManager.activeBoss and LevelManager.activeBoss.dead end, 
-                function() self.arena:quit() end)
-        end)
-    end
+  local boss_name = ""
+  if self.arena.level == 6 then boss_name = 'stompy'
+  elseif self.arena.level == 11 then boss_name = 'dragon'
+  -- ... and so on for other bosses
+  end
+  
+  if boss_name ~= "" then
+      self.t:after(1.5, function() 
+          Spawn_Boss(self.arena, boss_name) 
+          self.t:every(function() return LevelManager.activeBoss and LevelManager.activeBoss.dead end, 
+              function() self.arena:quit() end)
+      end)
+  end
 end
 
 function SpawnManager:show_wave_complete_text()
-    spawn_mark2:play{pitch = 1, volume = 1.2}
-    local text = Text2{group = self.arena.floor, x = gw/2, y = gh/2 - 48, lines = {{text = '[wavy_mid, cbyc]wave complete', font = fat_font, alignment = 'center'}}}
-    text.t:after(self.timer - 0.2, function() text.t:tween(0.2, text, {sy = 0}, math.linear, function() text.sy = 0 end) end)
+  spawn_mark2:play{pitch = 1, volume = 1.2}
+  local text = Text2{group = self.arena.floor, x = gw/2, y = gh/2 - 48, lines = {{text = '[wavy_mid, cbyc]wave complete', font = fat_font, alignment = 'center'}}}
+  text.t:after(self.timer - 0.2, function() text.t:tween(0.2, text, {sy = 0}, math.linear, function() text.sy = 0 end) end)
 end
 
 function SpawnManager:show_wave_start_text()
@@ -419,85 +431,68 @@ function SpawnManager:show_wave_start_countdown(seconds_remaining)
   end
 end
 
+
+-- This MODIFIED function spawns a single group rapidly at a given point.
+-- It no longer creates its own visual marker or has an initial delay.
 function Spawn_Group(arena, group_index, type, amount, on_finished)
-  SpawnGlobals.last_spawn_point = group_index
-  amount = amount or 1
-  local spawn_interval = arena.time_between_spawns or 0.2
-  
-  -- A counter to track how many enemies have successfully spawned for this group.
-  local spawned_count = 0
-  -- A unique ID for our persistent timer so we can cancel it later.
-  local timer_id = "spawn_group_" .. random:uid()
-  -- This will hold a reference to our persistent visual marker.
-  local persistent_marker = nil
+    SpawnGlobals.last_spawn_point = group_index
+    amount = amount or 1
+    -- A shorter interval for "rapid succession" feel between units in a group.
+    local spawn_interval = arena.time_between_spawns or 0.1
+    
+    local spawned_count = 0
+    local timer_id = "spawn_group_" .. random:uid()
 
-  -- This new function handles cleaning up the marker and calling the original callback.
-  local cleanup_and_finish = function()
-      -- Destroy the visual marker if it exists.
-      if persistent_marker and not persistent_marker.dead then
-          persistent_marker:die()
-      end
-      -- Call the original on_finished callback if it was provided.
-      if on_finished then
-          on_finished()
-      end
-  end
+    -- The action to be performed repeatedly by the timer.
+    local spawn_action = function()
+        -- 1. Get the position from the persistent wave marker's index.
+        local spawn_marker = SpawnGlobals.get_spawn_marker(group_index)
+        
+        -- Use the current spawned_count to cycle through available offsets safely.
+        local offset_index = (spawned_count % #SpawnGlobals.spawn_offsets) + 1
+        local offset = SpawnGlobals.spawn_offsets[offset_index]
+        
+        if offset then
+            local spawn_x, spawn_y = spawn_marker.x + offset.x, spawn_marker.y + offset.y
 
-  -- The action to be performed repeatedly by the timer.
-  local spawn_action = function()
-      -- 1. Try to spawn one enemy at the next offset position.
-      local spawn_marker = SpawnGlobals.get_spawn_marker(group_index)
-      -- Use the current spawned_count to get a unique offset.
-      local offset = SpawnGlobals.spawn_offsets[spawned_count + 1] or SpawnGlobals.spawn_offsets[1]
-      local spawn_x, spawn_y = spawn_marker.x + offset.x, spawn_marker.y + offset.y
+            -- 2. If the spawn is successful, increment our counter.
+            Spawn_Enemy(arena, type, {x = spawn_x, y = spawn_y})
+            spawned_count = spawned_count + 1
+        else
+            -- Failsafe in case of bad offset data.
+            print("Warning: Invalid spawn offset.")
+            spawned_count = spawned_count + 1 
+        end
 
-      -- 2. If the spawn is successful, increment our counter.
-      if Spawn_Enemy(arena, type, {x = spawn_x, y = spawn_y}) then
-          spawned_count = spawned_count + 1
-      end
+        -- 3. Check if we have finished spawning the entire group.
+        if spawned_count >= amount then
+            -- Stop this timer from running again.
+            arena.t:cancel(timer_id)
+            -- Call the callback to signal completion, which will trigger the next group.
+            if on_finished then
+                on_finished()
+            end
+        end
+    end
 
-      -- 3. Check if we have finished spawning the entire group.
-      if spawned_count >= amount then
-          -- Stop this timer from running again.
-          arena.t:cancel(timer_id)
-          -- Call our new cleanup function.
-          cleanup_and_finish()
-      end
-  end
-
-  -- 1. Create the persistent visual marker at the group's center.
-  local center_marker_pos = SpawnGlobals.get_spawn_marker(group_index)
-  persistent_marker = SpawnMarker{
-      group = arena.effects, 
-      x = center_marker_pos.x, 
-      y = center_marker_pos.y
-  }
-
-  -- 2. Wait 1 second AFTER placing the marker.
-  arena.t:after(1, function()
-      -- 3. Start the persistent spawner timer.
-      arena.t:every(spawn_interval, spawn_action, nil, nil, timer_id)
-  end)
+    -- Immediately start the spawner timer.
+    -- The visual marker is already present, created by the SpawnManager.
+    arena.t:every(spawn_interval, spawn_action, nil, nil, timer_id)
 end
 
 --spawns a single enemy at a location
 --if the location is occupied, the enemy will not spawn
 function Spawn_Enemy(arena, type, location)
   local data = {}
-  if Can_Spawn(6, location) then
-      Spawn_Effect(arena, location, type)
-      if table.contains(special_enemies, type) then
-          hit4:play{pitch = random:float(0.8, 1.2), volume = 0.6}
-      else
-          hit3:play{pitch = random:float(0.8, 1.2), volume = 0.6}
-      end
-      Enemy{type = type, group = arena.main,
-      x = location.x, y = location.y,
-      level = arena.level, data = data}
-      return true
+  Spawn_Effect(arena, location, type)
+  if table.contains(special_enemies, type) then
+      hit4:play{pitch = random:float(0.8, 1.2), volume = 0.6}
   else
-      return false
+      hit3:play{pitch = random:float(0.8, 1.2), volume = 0.6}
   end
+  Enemy{type = type, group = arena.main,
+  x = location.x, y = location.y,
+  level = arena.level, data = data}
 end
 
 function Countdown(arena)
