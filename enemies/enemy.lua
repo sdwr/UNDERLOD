@@ -7,6 +7,8 @@ Enemy:implement(Physics)
 function Enemy:init(args)
   self:init_game_object(args)
 
+  self.faction = 'enemy'
+
   self:setExtraFunctions()
   Helper.Unit:add_custom_variables_to_unit(self)
   Helper.Unit:set_state(self, unit_states['normal'])

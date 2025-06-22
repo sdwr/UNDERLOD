@@ -4,6 +4,7 @@ EnemyCritter:implement(GameObject)
 EnemyCritter:implement(Physics)
 function EnemyCritter:init(args)
   self.class = 'enemy_critter'
+  self.faction = 'enemy'
 
   self:init_game_object(args)
   Helper.Unit:add_custom_variables_to_unit(self)

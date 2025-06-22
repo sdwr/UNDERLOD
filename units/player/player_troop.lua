@@ -2,8 +2,9 @@ Troop = Unit:extend()
 Troop:implement(GameObject)
 Troop:implement(Physics)
 function Troop:init(args)
-  self.size = unit_size['medium']
   self.class = 'troop'
+  self.faction = 'player'
+  self.size = unit_size['medium']
   self.is_troop = true
   self.target_rally = nil
   self.castTime = 0.3
