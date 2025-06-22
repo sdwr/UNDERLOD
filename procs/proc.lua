@@ -58,6 +58,11 @@ PROC_TYPE_TO_DISPLAY = {
   [PROC_ON_KILL] = {text = 'onKill', color = 'black'},
   [PROC_ON_ROUND_START] = {text = 'onRoundStart', color = 'black'},
   [PROC_ON_SELL] = {text = 'onSell', color = 'black'},
+
+  [DAMAGE_TYPE_COLD] = {text = 'cold', color = 'blue'},
+  [DAMAGE_TYPE_FIRE] = {text = 'fire', color = 'red'},
+  [DAMAGE_TYPE_LIGHTNING] = {text = 'lightning', color = 'yellow'},
+  [DAMAGE_TYPE_POISON] = {text = 'poison', color = 'green'},
 }
 
 --this is the list of procs that are global, and not tied to a unit

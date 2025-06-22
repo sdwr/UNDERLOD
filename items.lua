@@ -39,12 +39,10 @@ function Item:init(data)
 
       --add the proc's triggers and damage type to the item
       if proc.damageType then
-        print('adding tag', proc.damageType)
         table.insert(self.tags, proc.damageType)
       end
       if proc.triggers then
         for _, trigger in ipairs(proc.triggers) do
-          print('adding tag', trigger)
           table.insert(self.tags, trigger)
         end
       end

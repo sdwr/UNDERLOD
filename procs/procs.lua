@@ -1723,6 +1723,7 @@ function Proc_Icenova:init(args)
 
     -- Define the proc's properties from data
     self.damage = (self.data.damage or 20) * (self.data.damageMulti or 1)
+    self.damageType = self.data.damageType or DAMAGE_TYPE_COLD
     self.radius_boost = self.data.radius_boost or 10
     self.radius = self.data.radius or 30
     self.radius_with_boost = self.radius + self.radius_boost

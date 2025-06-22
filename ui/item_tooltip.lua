@@ -22,13 +22,12 @@ function ItemTooltip:init(args)
   self.cost_text = Text({{text ='[yellow]' .. (self.item.cost or 0), font = pixul_font}}, global_text_tags)
   local tag_lines = {}
   if self.item.tags then
-      for _, tag in ipairs(self.item.tags) do table.insert(tag_lines, '[' .. PROC_TYPE_TO_DISPLAY[tag].color .. ']' .. PROC_TYPE_TO_DISPLAY[tag].text) end
+      for _, tag in ipairs(self.item.tags) do 
+        local text = '[' .. PROC_TYPE_TO_DISPLAY[tag].color .. ']' .. PROC_TYPE_TO_DISPLAY[tag].text
+        table.insert(tag_lines, {text = text, font = pixul_font, alignment = 'left'}) 
+      end
   end
-  self.tags_text = Text({{text = table.concat(tag_lines, '\n'), font = pixul_font, alignment = 'right'}}, global_text_tags)
-  self.tags_text_width = 0
-  for _, line in ipairs(self.tags_text.text_data) do
-    self.tags_text_width = math.max(self.tags_text_width, pixul_font:get_text_width(line.text))
-  end
+  self.tags_text = Text(tag_lines, global_text_tags)
 
   -- 2. NAME TEXT
   local name = self.item.name or 'UNKNOWN ITEM'
@@ -88,7 +87,7 @@ function ItemTooltip:draw()
   local current_y = top_y
 
   -- Draw Header
-  self.tags_text:draw(left_x + self.tags_text_width/3, current_y + PADDING)
+  self.tags_text:draw(left_x + self.tags_text.w/2 + PADDING/2, current_y + self.tags_text.h/2 + PADDING/2)
   self.cost_text:draw(right_x - PADDING, current_y + PADDING)
   current_y = current_y + PADDING + HEADER_HEIGHT
 
@@ -100,6 +99,8 @@ function ItemTooltip:draw()
   if self.stats_text.h > 0 then
       self.stats_text:draw(cx, current_y)
       current_y = current_y + self.stats_text.h + PADDING
+  else
+    current_y = current_y + PADDING
   end
   
   -- Draw Description
