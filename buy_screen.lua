@@ -468,7 +468,7 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   local x = gw/2 - 60
 
   -- Create items with staggered timing
-  local transition_duration = is_shop_start and TRANSITION_DURATION + 0.5 or 0
+  local transition_duration = is_shop_start and TRANSITION_DURATION + 0.2 or 0
 
   -- Check if shop level increased and animate the text
   if self.shop_level > self.last_shop_level then
@@ -1489,14 +1489,27 @@ function ItemCard:update(dt)
 
   if self.parent:is(Arena) then return end
 
-  local firstEmptySlot = self.parent:get_first_available_inventory_slot()
-  if input.m1.pressed and self.colliding_with_mouse and gold >= self.cost and not locked_state and firstEmptySlot then
-    if not self.grabbed then
+  if input.m1.pressed and self.colliding_with_mouse and not self.grabbed and not locked_state then
+
+    -- Now, check if the purchase is possible.
+    local firstEmptySlot = self.parent:get_first_available_inventory_slot()
+    
+    if gold >= self.cost and firstEmptySlot then
+      -- SUCCESS: The player can afford it and has space.
       self.timeGrabbed = love.timer.getTime()
+      self.grabbed = true
+      self:remove_tooltip()
+        
+    elseif not firstEmptySlot then
+      self:remove_tooltip()
+      Create_Info_Text('no empty item slots - right click to sell', self)
+
+    elseif gold < self.cost then
+      self:remove_tooltip()
+      Create_Info_Text('not enough gold', self)
+
     end
-    self.grabbed = true
-    self:remove_tooltip()
-  end
+end
 
   --determine when to purchase the item vs when to cancel the purchase
   --should be able to click to buy?
@@ -1822,7 +1835,7 @@ function Create_Info_Text(text, parent)
     error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     parent.info_text = InfoText{group = main.current.ui}
     parent.info_text:activate({
-      {text = '[fg]cannot buy items in the first level', font = pixul_font, alignment = 'center'},
+      {text = '[fg]' .. text, font = pixul_font, alignment = 'center'},
     }, nil, nil, nil, nil, 16, 4, nil, 2)
     parent.info_text.x, parent.info_text.y = gw/2, gh/2 + 10
   end
