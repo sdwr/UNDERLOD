@@ -92,7 +92,7 @@ enemy_type_to_stats = {
 
 -- general values
 attack_ranges = {
-    ['melee'] = 30,
+    ['melee'] = 50,
     ['medium'] = 60,
     ['medium-long'] = 110,
     ['ranged'] = 130,

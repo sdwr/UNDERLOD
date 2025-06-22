@@ -231,6 +231,7 @@ function Helper.Spell:target_is_in_range(unit, range, points)
     return Helper.Spell:is_in_range(unit, target, range, points)
 end
 
+-- remove this at some point
 function Helper.Spell:there_is_target_in_range(unit, range, points)
     points = points or false
     range = range + 30

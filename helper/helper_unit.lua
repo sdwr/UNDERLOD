@@ -122,16 +122,11 @@ function Helper.Unit:cast_off_cooldown(unit)
 end
 
 function Helper.Unit:can_cast(unit, points)
-    points = points or false
-    --the goal here is to decouple "has target" from "can cast"
-    -- we want an assigned target to persist between attacks, and not 
-    -- prevent a unit from casting
-
-    --still missing is chasing down a target that moves out of range
-    if unit then
+    -- We can only cast if we have a valid target in the first place.
+    if unit and unit:my_target() then
         return table.any(unit_states_can_cast, function(v) return unit.state == v end)
-        and Helper.Spell:there_is_target_in_range(unit, unit.attack_sensor.rs, points)
-        and Helper.Unit:cast_off_cooldown(unit)
+            and unit:in_range()()  -- The key change: Use the same logic as the movement check.
+            and Helper.Unit:cast_off_cooldown(unit)
     end
     return false
 end
