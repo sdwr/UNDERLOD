@@ -434,49 +434,71 @@ function SpawnManager:show_wave_start_countdown(seconds_remaining)
   end
 end
 
--- ===================================================================
--- REFACTORED Spawn_Group function
--- This version is cleaner and safer, preventing the multiple-callback bug.
--- ===================================================================
 function Spawn_Group(arena, group_index, type, amount, on_finished)
-    SpawnGlobals.last_spawn_point = group_index
-    amount = amount or 1
-    local spawn_interval = arena.time_between_spawns or 0.2 
-    
-    -- A simple counter to track spawns for this group
-    local spawned_count = 0
+  SpawnGlobals.last_spawn_point = group_index
+  amount = amount or 1
+  local spawn_interval = arena.time_between_spawns or 0.2
+  
+  -- A counter to track how many enemies have successfully spawned for this group.
+  local spawned_count = 0
+  -- A unique ID for our persistent timer so we can cancel it later.
+  local timer_id = "spawn_group_" .. random:uid()
 
-    -- The action to be performed by the timer: spawn one enemy.
-    local spawn_action = function()
-        -- Stop if we have already spawned the required amount. This is a safety check.
-        if spawned_count >= amount then return end
+  -- The action to be performed repeatedly by the timer.
+  local spawn_action = function()
+      -- 1. Try to spawn one enemy at the next offset position.
+      local spawn_marker = SpawnGlobals.get_spawn_marker(group_index)
+      -- Use the current spawned_count to get a unique offset.
+      local offset = SpawnGlobals.spawn_offsets[spawned_count + 1] or SpawnGlobals.spawn_offsets[1]
+      local spawn_x, spawn_y = spawn_marker.x + offset.x, spawn_marker.y + offset.y
 
-        local spawn_marker = SpawnGlobals.get_spawn_marker(group_index)
-        -- Use the spawned_count to get a unique offset for each enemy in the group
-        local offset = SpawnGlobals.spawn_offsets[spawned_count + 1] or SpawnGlobals.spawn_offsets[1]
-        local spawn_x, spawn_y = spawn_marker.x + offset.x, spawn_marker.y + offset.y
+      -- 2. If the spawn is successful, increment our counter.
+      --    If it fails (because Can_Spawn returns false), spawned_count is not
+      --    incremented, and the timer will simply try again on its next interval.
+      if Spawn_Enemy(arena, type, {x = spawn_x, y = spawn_y}) then
+          spawned_count = spawned_count + 1
+      end
 
-        if Spawn_Enemy(arena, type, {x = spawn_x, y = spawn_y}) then
-            spawned_count = spawned_count + 1
-        end
-    end
+      -- 3. Check if we have finished spawning the entire group.
+      if spawned_count >= amount then
+          -- Stop this timer from running again.
+          arena.t:cancel(timer_id)
+          -- Call the on_finished callback if it exists to signal completion.
+          if on_finished then
+              on_finished()
+          end
+      end
+  end
 
-    -- The function to call after the timer has run 'amount' times.
-    local after_action = function()
-        if on_finished then
-            on_finished()
-        end
-    end
+  -- Calculate any extra delay based on the number of enemies already on screen.
+  local group_delay = Calculate_Extra_Spawn_Delay(arena)
 
-    --add a delay based on the number of enemies on screen
-    local group_delay = Calculate_Extra_Spawn_Delay(arena)
+  -- After an initial delay, start the persistent timer.
+  arena.t:after(group_delay, function()
+      -- This timer will run every `spawn_interval` seconds *indefinitely*
+      -- until we explicitly cancel it inside `spawn_action` using its unique timer_id.
+      arena.t:every(spawn_interval, spawn_action, nil, nil, timer_id)
+  end)
+end
 
-    -- Create the trigger. It will run 'spawn_action' every 'spawn_interval' seconds,
-    -- a total of 'amount' times. When it's done, it will call 'after_action'.
-    -- We give it a unique tag using random:uid() to prevent any conflicts.
-    arena.t:after(group_delay, function()
-      arena.t:every(spawn_interval, spawn_action, amount, after_action, random:uid())
-    end)
+--spawns a single enemy at a location
+--if the location is occupied, the enemy will not spawn
+function Spawn_Enemy(arena, type, location)
+  local data = {}
+  if Can_Spawn(6, location) then
+      Spawn_Effect(arena, location, type)
+      if table.contains(special_enemies, type) then
+          hit4:play{pitch = random:float(0.8, 1.2), volume = 0.6}
+      else
+          hit3:play{pitch = random:float(0.8, 1.2), volume = 0.6}
+      end
+      Enemy{type = type, group = arena.main,
+      x = location.x, y = location.y,
+      level = arena.level, data = data}
+      return true
+  else
+      return false
+  end
 end
 
 function Countdown(arena)
@@ -502,27 +524,6 @@ function Spawn_Boss(arena, name)
   arena.spawning_enemies = false
   arena.wave_finished = true
   arena.finished = true
-end
-
---spawns a single enemy at a location
---if the location is occupied, the enemy will not spawn
-function Spawn_Enemy(arena, type, location)
-  local data = {}
-  if Can_Spawn(6, location) then
-    Spawn_Effect(arena, location, type)
-    if table.contains(special_enemies, type) then
-      hit4:play{pitch = random:float(0.8, 1.2), volume = 0.6}
-    else
-      hit3:play{pitch = random:float(0.8, 1.2), volume = 0.6}
-    end
-    Enemy{type = type, group = arena.main,
-    x = location.x, y = location.y,
-    level = arena.level, data = data}
-    return true
-  else
-    return false
-  end
-
 end
 
 function Spawn_Critters(arena, group_index, amount)
