@@ -518,7 +518,7 @@ end
 
 function Proc_Curse:curse(target, from)
   if not target then return end
-  glass_shatter:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+  earth1:play{pitch = random:float(0.8, 1.2), volume = 0.9}
 
   local randomx = random:float(-10, 10)
   local randomy = random:float(-10, 10)
@@ -532,6 +532,8 @@ function Proc_Curse:curse(target, from)
     debuff = self.buffdata
   
   }
+
+  self.tick_timer = 0
 end
 
 Proc_Root = Proc:extend()

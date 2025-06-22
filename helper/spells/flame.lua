@@ -31,7 +31,7 @@ function Helper.Spell.Flame:create(color, flamewidth, flameheight, damage, unit,
 
             if Helper.Spell.Flame.do_draw_particles then
                 flame.particle_interval_id = Helper.Time:set_interval(0.125, function()
-                    for i = 0, get_random(4, 8) do
+                    for i = 0, math.random(4, 8) do
                         local x = 0
                         local y = 0
                         while not (Helper.Geometry:is_inside_triangle(x, y, Helper.Geometry:get_triangle_from_height_and_width(flame.unit.x, flame.unit.y, flame.unit.x + flame.directionx, flame.unit.y + flame.directiony, flame.flameheight, flamewidth))

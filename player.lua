@@ -973,6 +973,10 @@ function Area:damage()
         self:apply_hit_effect(target)
       end
     end
+  elseif self.debuff then
+    for _, target in ipairs(targets) do
+      target:add_buff(self.debuff)
+    end
   elseif self.dmg > 0 then
     for _, target in ipairs(targets) do
       target:hit(self.dmg, self.unit)

@@ -63,6 +63,7 @@ PROC_TYPE_TO_DISPLAY = {
   [DAMAGE_TYPE_FIRE] = {text = 'fire', color = 'red'},
   [DAMAGE_TYPE_LIGHTNING] = {text = 'lightning', color = 'yellow'},
   [DAMAGE_TYPE_POISON] = {text = 'poison', color = 'green'},
+  [DAMAGE_TYPE_PHYSICAL] = {text = 'physical', color = 'brown'},
 }
 
 --this is the list of procs that are global, and not tied to a unit

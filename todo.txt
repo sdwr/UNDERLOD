@@ -24,6 +24,9 @@ that makes special enemies randomly drop gold
 
 TODO:
 
+-- add random wave spawns (all over)
+-- add enemies during boss waves
+
 -- add critical hit chance and critical hit damage
   --onHitCallbacks isn't enough for +crit
     needs to apply before hit, based on conditions (eg enemy chilled)

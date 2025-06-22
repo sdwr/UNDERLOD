@@ -521,7 +521,7 @@ item_to_item_data = {
     procs = {'frost'},
     tags = {'frostslow'}
   },
-  ['frostfield'] = {
+  ['frostbomb'] = {
     name = 'frostbomb',
     colors = {'blue'},
     cost = 10,

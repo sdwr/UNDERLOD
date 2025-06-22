@@ -147,8 +147,8 @@ function Helper.Spell:get_random_target_in_range(unit, range)
         end
 
         if #target_list > 0 then
-            return target_list[get_random(1, #target_list)]
-        end
+            local random_index = math.random(1, #target_list) 
+            return target_list[random_index]        end
     end
 
     return -1

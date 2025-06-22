@@ -493,9 +493,9 @@ function Spawn_Enemy(arena, type, location)
   local data = {}
   Spawn_Effect(arena, location, type)
   if table.contains(special_enemies, type) then
-      hit4:play{pitch = random:float(0.8, 1.2), volume = 0.6}
+      hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}
   else
-      hit3:play{pitch = random:float(0.8, 1.2), volume = 0.6}
+      hit3:play{pitch = random:float(0.8, 1.2), volume = 0.4}
   end
   Enemy{type = type, group = arena.main,
   x = location.x, y = location.y,

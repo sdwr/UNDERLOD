@@ -71,7 +71,7 @@ function Breathe_Fire:update_position(dt)
 end
 
 function Breathe_Fire:spawn_particles()
-  for i = 0, get_random(4, 8) do
+  for i = 0, math.random(4, 8) do
     local x = 0
     local y = 0
     while not (Helper.Geometry:is_inside_triangle(x, y, Helper.Geometry:get_triangle_from_height_and_width(self.unit.x, self.unit.y, self.unit.x + self.directionx, self.unit.y + self.directiony, self.flameheight, self.flamewidth))
