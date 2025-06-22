@@ -56,7 +56,7 @@ PROC_TYPE_TO_DISPLAY = {
   [PROC_ON_MOVE] = {text = 'onMove', color = 'green'},
   [PROC_ON_DEATH] = {text = 'onDeath', color = 'black'},
   [PROC_ON_KILL] = {text = 'onKill', color = 'black'},
-  [PROC_ON_ROUND_START] = {text = 'onRoundStart', color = 'black'},
+  [PROC_ON_ROUND_START] = {text = 'onStart', color = 'black'},
   [PROC_ON_SELL] = {text = 'onSell', color = 'black'},
 
   [DAMAGE_TYPE_COLD] = {text = 'cold', color = 'blue'},
