@@ -270,7 +270,12 @@ function SpawnManager:update(dt)
         if self.wave_delay_timer <= 0 then
             self.state = 'spawning_wave'
             -- This is the first kick-off of the chain.
-            self:spawn_next_group_in_chain()
+            self:create_wave_marker()
+            self.is_group_spawning = true
+            self.spawning_wave = true
+            self.arena.t:after(1, function()
+              self:spawn_next_group_in_chain()
+            end)
         end
 
     -- State: Spawning a wave
@@ -336,19 +341,21 @@ function SpawnManager:start_next_wave()
     -- 1. Determine the single spawn point for the entire wave.
     self.current_wave_spawn_marker_index = random:int(1, #SpawnGlobals.spawn_markers)
     SpawnGlobals.last_spawn_point = self.current_wave_spawn_marker_index
+end
 
-    -- 2. Create the persistent visual marker that will last the whole wave.
-    local center_marker_pos = SpawnGlobals.get_spawn_marker(self.current_wave_spawn_marker_index)
-    
-    -- Clean up any old marker just in case.
-    if self.persistent_wave_spawn_marker and not self.persistent_wave_spawn_marker.dead then
-        self.persistent_wave_spawn_marker:die()
-    end
-    self.persistent_wave_spawn_marker = SpawnMarker{
-        group = self.arena.effects,
-        x = center_marker_pos.x,
-        y = center_marker_pos.y
-    }
+function SpawnManager:create_wave_marker()
+  -- Create the persistent visual marker that will last the whole wave.
+  local center_marker_pos = SpawnGlobals.get_spawn_marker(self.current_wave_spawn_marker_index)
+
+  -- Clean up any old marker just in case.
+  if self.persistent_wave_spawn_marker and not self.persistent_wave_spawn_marker.dead then
+      self.persistent_wave_spawn_marker:die()
+  end
+  self.persistent_wave_spawn_marker = SpawnMarker{
+      group = self.arena.effects,
+      x = center_marker_pos.x,
+      y = center_marker_pos.y
+  }
 end
 
 function SpawnManager:spawn_next_group_in_chain()

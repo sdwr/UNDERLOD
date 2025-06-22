@@ -26,6 +26,7 @@ fns['init_enemy'] = function(self)
     spelldata = {
       group = main.current.main,
       team = "enemy",
+      cancel_on_death = true,
       rs = 45,
       color = red[0],
       dmg = self.dmg or 30,
