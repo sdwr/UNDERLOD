@@ -869,14 +869,14 @@ function Unit:onTickCallbacks(dt)
 end
 
 --warning, target can be either a unit or a coordinate
-function Unit:onAttackCallbacks(target)
+function Unit:onAttackCallbacks(target, spellclass, spelldata)
 
   for k, proc in ipairs(GLOBAL_PROC_LIST[PROC_ON_ATTACK]) do
-    proc:onAttack(target, self)
+    proc:onAttack(target, self, spellclass, spelldata)
   end
 
   for k, proc in ipairs(self.onAttackProcs) do
-    proc:onAttack(target, self)
+    proc:onAttack(target, self, spellclass, spelldata)
   end
 end
 

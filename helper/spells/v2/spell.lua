@@ -148,7 +148,7 @@ function Cast:cast()
   local spell = self.spellclass(self.spelldata)
   if self.instantspell then
     if self.spelldata.on_attack_callbacks and self.unit.onAttackCallbacks then
-      self.unit:onAttackCallbacks(self.target)
+      self.unit:onAttackCallbacks(self.target, self.spellclass, self.spelldata)
     end
     self.unit:end_cast(castcooldown)
   else
@@ -250,6 +250,10 @@ function Spell:validate_data()
 end
 
 function Spell:draw()
+  if self.double then
+    print('double spell', self.x, self.y)
+    graphics.circle(self.x, self.y, 10, red_transparent)
+  end
   if DEBUG_SPELLS then
     print('draw spell', self.unit, self.name)
   end
@@ -285,7 +289,7 @@ end
 function Spell:try_end_cast()
   if self.unit and self.unit.spellObject == self and self.unit.end_cast then
     if self.on_attack_callbacks and self.unit.onAttackCallbacks then
-      self.unit:onAttackCallbacks(self.target)
+      self.unit:onAttackCallbacks(self.target, self)
     end
     self.unit:end_cast(self.castcooldown)
     self.unit.spellObject = nil

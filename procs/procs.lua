@@ -651,6 +651,31 @@ function Proc_Bloodlust:onKill(target)
   end
 end
 
+Proc_Repeater = Proc:extend()
+function Proc_Repeater:init(args)
+  self.triggers = {PROC_ON_ATTACK}
+  self.scope = 'troop'
+
+  Proc_Repeater.super.init(self, args)
+
+  --define the proc's vars
+  self.chance_to_repeat = self.data.chance_to_repeat or 0.9
+
+end
+
+function Proc_Repeater:onAttack(target, unit, spellclass, spelldata)
+  Proc_Repeater.super.onAttack(self, target, unit, spellclass, spelldata)
+
+  if random:float(0, 1) < self.chance_to_repeat then
+    if spellclass and spelldata then
+      --copying the spell!
+      print('repeating spell', spellclass, spelldata)
+      local newspell = spellclass(spelldata)
+      newspell.double = true
+    end
+  end
+end
+
 
 --proc lightning
 --needs 2 procs, so that the attack counter only counts down on 1 hit per attack
@@ -2057,6 +2082,8 @@ proc_name_to_class = {
   ['bash'] = Proc_Bash,
   ['overkill'] = Proc_Overkill,
   ['bloodlust'] = Proc_Bloodlust,
+
+  ['repeater'] = Proc_Repeater,
 
   --yellow procs
   ['lightning'] = Proc_Lightning,
