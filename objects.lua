@@ -363,7 +363,7 @@ end
 function Unit:show_damage_number(dmg, damagetype)
   if state.show_damage_numbers == 'none' then return end
   if state.show_damage_numbers == 'enemies' and self.faction ~= 'enemy' then return end
-  if state.show_damage_numbers == 'friendlies' and self.faction ~= 'player' then return end
+  if state.show_damage_numbers == 'friendlies' and self.faction ~= 'friendly' then return end
 
   local color = damage_type_to_color[damagetype] or white[0]
   local roundedDmg = math.floor(dmg)
@@ -639,6 +639,8 @@ function Unit:get_item_stats()
           stats.area_size = (stats.area_size or 0) + amt
         elseif stat == buff_types['hp'] then
           stats.hp = (stats.hp or 0) + amt
+        elseif stat == buff_types['repeat_attack_chance'] then
+          stats.repeat_attack_chance = (stats.repeat_attack_chance or 0) + amt
         end
       end
     end
@@ -698,6 +700,7 @@ function Unit:calculate_stats(first_run)
   self.buff_range_a = 0
   self.buff_range_m = 1
   self.buff_cdr_m = 1
+  self.buff_repeat_attack_chance = 0
 
   self.eledmg_m = 1
 
@@ -774,6 +777,9 @@ function Unit:calculate_stats(first_run)
           elseif stat == buff_types['vamp'] then
             self.vamp = self.vamp + amtWithStacks
 
+          elseif stat == buff_types['repeat_attack_chance'] then
+            self.buff_repeat_attack_chance = self.buff_repeat_attack_chance + amtWithStacks
+
           --flat stats
           elseif stat == buff_types['flat_def'] then
             self.buff_def_a = self.buff_def_a + amtWithStacks
@@ -815,6 +821,8 @@ function Unit:calculate_stats(first_run)
             self.enrage_on_death = true
           elseif stat == buff_types['explode'] then
             self.canExplode = true
+          elseif stat == buff_types['repeat_attack_chance'] then
+            self.buff_repeat_attack_chance = self.buff_repeat_attack_chance + amt
           end
         end
       end
@@ -835,6 +843,8 @@ function Unit:calculate_stats(first_run)
   self.def = (self.base_def + self.class_def_a + self.buff_def_a)*self.class_def_m*self.buff_def_m
 
   self.aspd_m = 1/(self.base_aspd_m*self.buff_aspd_m)
+
+  self.repeat_attack_chance = self.buff_repeat_attack_chance
 
   -- Stats_Max_Aspd(self.buff_aspd_m)
   -- if self.buff_hp_m == 1 then
@@ -1293,35 +1303,40 @@ end
 function Unit:should_freeze_rotation()
   return self.freezerotation
     or (self.castObject and self.castObject.freeze_rotation)
-    or (self.spellObject and self.spellObject.freeze_rotation)
 end
 
-function Unit:end_cast(cooldown)
+function Unit:end_cast(cooldown, spell_duration)
   self.castcooldown = cooldown
   self.total_castcooldown = cooldown
   self.spelldata = nil
   self.freezerotation = false
-  if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
+
+  if self.state == unit_states['casting']then
     Helper.Unit:set_state(self, unit_states['normal'])
   end
 
   self.castObject = nil
-  self.spellObject = nil
+end
+
+function Unit:end_channel(cooldown)
+  if self.state == unit_states['channeling'] then
+
+    self.castcooldown = self.baseCooldown
+    self.total_castcooldown = self.baseCooldown
+    self.spelldata = nil
+    self.freezerotation = false
+    Helper.Unit:set_state(self, unit_states['normal'])
+  end
 end
 
 
 --remove the castObject before calling die()
 -- to prevent the infinite loop
-function Cancel_Cast_And_Spell(unit)
+function Cancel_Cast(unit)
   local castObject = unit.castObject
-  local spellObject = unit.spellObject
   unit.castObject = nil
-  unit.spellObject = nil
   if castObject then
     castObject:cancel()
-  end
-  if spellObject then
-    spellObject:cancel()
   end
 end
 
@@ -1337,14 +1352,14 @@ function Unit:cancel_cast()
     self.spelldata = nil
   end
 
-  Cancel_Cast_And_Spell(self)
+  Cancel_Cast(self)
 end
 
 function Unit:interrupt_cast()
-  if self.castObject or self.spellObject then
+  if self.castObject then
     self.castcooldown = self.baseCast or 1
     self.spelldata = nil
-    Cancel_Cast_And_Spell(self)
+    Cancel_Cast(self)
   end
 end
 
@@ -1355,8 +1370,11 @@ end
 
 function Unit:launch_at_facing(force_magnitude, duration)
   if self.state == unit_states['casting'] then
-    Helper.Unit:set_state(self, unit_states['channeling'])
+    self:end_cast()
+  elseif self.state == unit_states['channeling'] then
+    self:end_channel()
   end
+  Helper.Unit:set_state(self, unit_states['knockback'])
 
   duration = duration or 0.7
 
@@ -1398,7 +1416,9 @@ function Unit:launch_at_facing(force_magnitude, duration)
     self:set_damping(orig_damping)
     self:set_friction(orig_friction)
     self.is_launching = false
-    
+    if self.state == unit_states['knockback'] then
+      Helper.Unit:set_state(self, unit_states['normal'])
+    end
   end)
 
 

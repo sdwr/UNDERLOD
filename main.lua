@@ -1616,6 +1616,7 @@ function init()
     ['thorns'] = 'thorns',
     ['range'] = 'range',
     ['bash'] = 'chance to stun',
+    ['repeat_attack_chance'] = 'chance to repeat attack',
     ['enrage'] = 'enrage allies on death',
     ['gold'] = 'gold per round',
     ['heal'] = 'healing per second',
@@ -2706,7 +2707,7 @@ function open_options(self)
         index = index + 1
       end
       state.show_damage_numbers = DAMAGE_NUMBERS_SETTING[index]
-      show_damage_numbers = state.show_damage_numbers
+      show_damage_numbers = index
 
       b:set_text('show damage numbers: ' .. tostring(state.show_damage_numbers or 'off'))
     end }

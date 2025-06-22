@@ -41,7 +41,6 @@ function shared_init()
   music.volume = state.music_volume or 0.5
 
   show_combat_controls = state.show_combat_controls or true
-  show_damage_numbers = state.show_damage_numbers or DAMAGE_NUMBERS_SETTING[4]
 
   if state.volume_muted then sfx.volume = 0 end
   if state.music_muted then music.volume = 0 end

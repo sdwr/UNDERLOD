@@ -377,15 +377,15 @@ item_to_item_data = {
     stats = {},
     procs = {'bloodlust'}
   },
-  -- ['repeater'] = {
-  --   name = 'repeater',
-  --   colors = {},
-  --   cost = 10,
-  --   icon = 'repeater',
-  --   desc = 'Greatly increases attack speed',
-  --   stats = {aspd = 0.5},
-  --   procs = {}
-  -- },
+  ['repeater'] = {
+    name = 'repeater',
+    colors = {},
+    cost = 10,
+    icon = 'repeater',
+    desc = 'Adds a chance to repeat your attack',
+    stats = {repeat_attack_chance = 0.2},
+    procs = {}
+  },
 
   --yellow items
   ['medbow'] = {

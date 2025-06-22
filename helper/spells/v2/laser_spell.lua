@@ -41,8 +41,16 @@ function Laser_Spell:init(args)
   --can use with direction_lock or rotation_lock to lock the laser in place
   --after its initial facing is set
   self.lasermode = self.lasermode or 'target'
+  if self.lasermode == 'target' then
+    self.target = self.target or self.unit:my_target()
+  end
   self.direction_lock = self.direction_lock
   self.rotation_lock = self.rotation_lock
+
+  if self.fixed_x and self.fixed_y then
+    self.lasermode = 'fixed'
+  end
+
   self.rotation_offset = self.rotation_offset or 0
   self.r = self.r or 0
   self.length = self.length or 300
@@ -65,6 +73,7 @@ function Laser_Spell:init(args)
   self.lock_last_duration = self.lock_last_duration or 0
   --does the damage follow the unit
   self.fire_follows_unit = self.fire_follows_unit
+
   
 
   self.tick_interval = self.tick_interval or 0.1
@@ -116,11 +125,13 @@ function Laser_Spell:set_initial_coords()
     self.lineCoords = {self.x, self.y, Helper.Geometry:move_point_radians(self.x, self.y, self.r, self.length)}
   elseif self.lasermode == 'target' then
     local targetx, targety = 0, 0
-    if self.unit:my_target() then
-      targetx, targety = self.unit:my_target().x, self.unit:my_target().y
+    if self.target then
+      targetx, targety = self.target.x, self.target.y
     end
     local x2, y2 = self:get_end_location(self.x, self.y, targetx, targety)
     self.lineCoords = {self.x, self.y, x2, y2}
+
+    self.r = math.atan2(y2 - self.y, x2 - self.x)
   end
 end
 
@@ -132,15 +143,44 @@ function Laser_Spell:should_freeze_movement()
   end
 end
 
+function Laser_Spell:try_repeat_attack()
+  if not self.unit or self.unit.dead then return end
+  if self.is_repeat then return end
+
+  if random:float(0, 1) < self.unit.repeat_attack_chance then
+    local fixed_x, fixed_y = self.x, self.y
+    local fixed_r = self.r
+    local new_spelldata = Deep_Copy_Spelldata(self.spelldata)
+
+    --repeat immediately, because the laser takes time to charge
+    local spell = Laser_Spell(new_spelldata)
+    spell.x = fixed_x
+    spell.y = fixed_y
+    spell.fixed_x = fixed_x
+    spell.fixed_y = fixed_y
+    spell.r = fixed_r
+    spell.lasermode = 'fixed'
+    spell.is_repeat = true
+  end
+end
+
 function Laser_Spell:update(dt)
   if not self.unit or self.unit.dead then
-    self:die()
+    if not self.lasermode == 'fixed' then
+      self:die()
+    end
     return
+  end
+  if self.lasermode ~= 'fixed' then
+    if self.unit.state ~= unit_states['casting'] and self.unit.state ~= unit_states['channeling'] then
+      self:die()
+      return
+    end
   end
   
   Laser_Spell.super.update(self, dt)
-  self.x = self.unit.x
-  self.y = self.unit.y
+  self.x = self.fixed_x or self.unit.x
+  self.y = self.fixed_y or self.unit.y
 
   self:update_target_coords()
   self:update_coords()
@@ -157,9 +197,9 @@ end
 
 function Laser_Spell:update_target_coords()
   if self.lasermode == 'target' then
-    if self.unit:my_target() then
-      self.target_last_x = self.unit:my_target().x
-      self.target_last_y = self.unit:my_target().y
+    if self.target then
+      self.target_last_x = self.target.x
+      self.target_last_y = self.target.y
     end
   end
 end
@@ -172,7 +212,6 @@ function Laser_Spell:update_coords()
   local freeze_r = self.lasermode == 'rotate' and self.rotation_lock
   local update_d = self.lasermode == 'target' and not self.direction_lock and not self:should_freeze_movement()
   local freeze_d = self.lasermode == 'target' and (self.direction_lock or self:should_freeze_movement() )
-  
 
 
   if should_stay_fixed then
@@ -185,6 +224,7 @@ function Laser_Spell:update_coords()
   elseif update_d then
     local x2, y2 = self:get_end_location(self.x, self.y, self.target_last_x, self.target_last_y)
     self.lineCoords = {self.x, self.y, x2, y2}
+    self.r = math.atan2(y2 - self.y, x2 - self.x)
   elseif freeze_r then
     self.r = self.unit:get_angle() + self.rotation_offset
     self.lineCoords = {self.x, self.y, Helper.Geometry:move_point_radians(self.x, self.y, self.r, self.length)}
@@ -220,6 +260,8 @@ function Laser_Spell:fire_laser()
   self.is_firing = true
   --fire here
   shoot1:play{volume=0.2}
+
+  self:try_repeat_attack()
   
   if self.end_spell_on_fire then
     self:die()

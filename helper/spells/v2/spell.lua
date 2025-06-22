@@ -66,6 +66,7 @@ function Cast:init(args)
   args.group = args.group or main.current.main
 
   self:init_game_object(args)
+
   --unit and target and x and y are set in objects.lua 
   self.unit = self.unit
   self.target = self.target
@@ -145,16 +146,70 @@ function Cast:cast()
   if self.oncastfinish then
     self.oncastfinish(self)
   end
+
+  if self.instantspell then
+    self:try_repeat_attack(self.spellclass, self.spelldata)
+  end
+
   local spell = self.spellclass(self.spelldata)
+  
   if self.instantspell then
     if self.spelldata.on_attack_callbacks and self.unit.onAttackCallbacks then
       self.unit:onAttackCallbacks(self.target)
     end
-    self.unit:end_cast(castcooldown)
-  else
-    self.unit.spellObject = spell
+    self.unit:end_cast(castcooldown, self.spell_duration)
   end
   self:die()
+end
+
+-- only repeat instant spells, no channeling spells
+-- repeat triggers onattack callbacks, but doesn't end the unit's cast
+-- trigger spell after a delay
+function Cast:try_repeat_attack(spellclass, spelldata)
+  if not self.unit then return end
+
+  if random:float(0, 1) < self.unit.repeat_attack_chance then
+    --cast will probably be dead by the time it triggers
+    --so make the timer global
+    local unit = self.unit
+    local target = self.target
+    local new_spelldata = Deep_Copy_Spelldata(spelldata)
+
+    main.current.t:after(REPEAT_ATTACK_DELAY, function()
+      if unit and not unit.dead and target and not target.dead then
+        local spell = spellclass(new_spelldata)
+        if spelldata.on_attack_callbacks and self.unit.onAttackCallbacks then
+          self.unit:onAttackCallbacks(self.target)
+        end
+      end
+    end)
+  end
+end
+
+Deep_Copy_Spelldata = function(spelldata)
+  local new_spelldata = {}
+  for k, v in pairs(spelldata) do
+    if type(v) ~= 'table' and type(value) ~= 'userdata' and type(value) ~= 'function' then
+      new_spelldata[k] = v
+    end
+  end
+
+  new_spelldata.is_repeat = true
+
+  new_spelldata.unit = spelldata.unit
+  new_spelldata.target = spelldata.target
+  new_spelldata.group = spelldata.group
+  new_spelldata.on_attack_callbacks = spelldata.on_attack_callbacks
+
+  if spelldata.color then
+    new_spelldata.color = Color(spelldata.color.r, spelldata.color.g, spelldata.color.b, spelldata.color.a)
+  end
+
+  if spelldata.sound then
+    new_spelldata.sound = spelldata.sound
+  end
+
+  return new_spelldata
 end
 
 function Cast:cancel()
@@ -201,6 +256,8 @@ Spell = Object:extend()
 Spell:implement(GameObject)
 function Spell:init(args)
   args.group = args.group or main.current.effects
+  self.spelldata = args
+
 
   if DEBUG_SPELLS then
     print('creating spell: ', self.unit, self.name)
@@ -216,6 +273,9 @@ function Spell:init(args)
   end
 
 
+  if self.sound then
+    self.sound()
+  end
   --set some spell defaults, if they are not set in the data
 
   --instant casts are 0?
@@ -283,12 +343,11 @@ function Spell:cancel()
 end
 
 function Spell:try_end_cast()
-  if self.unit and self.unit.spellObject == self and self.unit.end_cast then
+  if self.unit and self.unit.end_cast then
     if self.on_attack_callbacks and self.unit.onAttackCallbacks then
       self.unit:onAttackCallbacks(self.target)
     end
     self.unit:end_cast(self.castcooldown)
-    self.unit.spellObject = nil
     if self.unit_dies_at_end then
       self.unit:die()
     end
@@ -309,6 +368,8 @@ function Spell:die()
   if DEBUG_SPELLS then
     print('destroying spell: ', self.name)
   end
-  self:try_end_cast()
+  if self.unit and self.unit.end_channel then
+    self.unit:end_channel()
+  end
   self.dead = true
 end
