@@ -303,6 +303,7 @@ BUGS:
 --------------
 
 floating damage numbers only half disappear
+ranged units stop just outside attack range
 
 PLAYER FEEDBACK
 

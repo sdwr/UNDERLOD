@@ -106,6 +106,8 @@ end
 -- unit constants
 MELEE_ATTACK_RANGE = 50
 
+AGGRO_RANGE_BOOST = 100
+
 
 -- Steering and Movement constants
 SEEK_DECELERATION = 1.1

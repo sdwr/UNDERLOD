@@ -26,7 +26,7 @@ function Troop:init(args)
   self.type = character_types[self.character]
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 40)
   
-  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 120)
+  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, self.attack_sensor.rs + AGGRO_RANGE_BOOST)
   self:set_character()
 
   Helper.Unit:set_state(self, unit_states['normal'])

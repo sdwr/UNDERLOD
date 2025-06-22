@@ -94,7 +94,7 @@ end
 
 function Archer_Troop:set_character()
   self.attack_sensor = Circle(self.x, self.y, self.base_attack_range)
-  self.aggro_sensor = Circle(self.x, self.y, self.base_attack_range + 20)
+  self.aggro_sensor = Circle(self.x, self.y, self.base_attack_range + AGGRO_RANGE_BOOST)
   --total cooldown is cooldownTime + castTime
   self.baseCooldown = attack_speeds['fast']
   self.cooldownTime = self.baseCooldown
