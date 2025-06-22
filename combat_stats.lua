@@ -8,6 +8,11 @@ NORMAL_ENEMIES_PER_GROUP = 6
 SPAWN_CHECKS = 10
 
 --stat constants
+TROOP_HP = 100
+TROOP_DAMAGE = 10
+TROOP_MS = 80
+
+
 REGULAR_ENEMY_HP = 20
 REGULAR_ENEMY_DAMAGE = 10
 REGULAR_ENEMY_MS = 40
@@ -208,9 +213,9 @@ _set_unit_base_stats = function(unit)
         unit.base_dmg = 5
         unit.base_mvspd = REGULAR_ENEMY_MS
     elseif unit.is_troop then
-        unit.base_hp = 100
-        unit.base_dmg = 10
-        unit.base_mvspd = 68
+        unit.base_hp = TROOP_HP
+        unit.base_dmg = TROOP_DAMAGE
+        unit.base_mvspd = TROOP_MS
     elseif unit.class == 'regular_enemy' then
         unit.base_hp = unit.base_hp or REGULAR_ENEMY_HP
         unit.base_dmg = unit.base_dmg or REGULAR_ENEMY_DAMAGE

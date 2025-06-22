@@ -331,7 +331,6 @@ function SpawnManager:start_next_wave()
     end
 
     print("Starting Wave: " .. self.current_wave_index)
-    self:show_wave_start_text()
     
     self.state = 'wave_delay'
     self.current_group_index = 1
@@ -418,12 +417,6 @@ function SpawnManager:show_wave_complete_text()
   spawn_mark2:play{pitch = 1, volume = 1.2}
   local text = Text2{group = self.arena.floor, x = gw/2, y = gh/2 - 48, lines = {{text = '[wavy_mid, cbyc]wave complete', font = fat_font, alignment = 'center'}}}
   text.t:after(self.timer - 0.2, function() text.t:tween(0.2, text, {sy = 0}, math.linear, function() text.sy = 0 end) end)
-end
-
-function SpawnManager:show_wave_start_text()
-  local text = Text2{group = self.arena.floor, x = gw/2, y = gh/2 - 48, lines = {{text = '[wavy_mid, red]wave starting', font = fat_font, alignment = 'center'}}}
-  pop1:play{pitch = random:float(0.95, 1.05), volume = 0.35}
-  text.t:after(STARTING_WAVE_TEXT_DURATION, function() text.dead = true end)
 end
 
 function SpawnManager:show_wave_start_countdown(seconds_remaining)
