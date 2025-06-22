@@ -470,32 +470,35 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   -- Create items with staggered timing
   local transition_duration = is_shop_start and TRANSITION_DURATION + 0.2 or 0
 
-  -- Check if shop level increased and animate the text
+ -- Check if the shop has actually leveled up since the last time we animated it.
   if self.shop_level > self.last_shop_level then
-    -- Shop level up animation
-    if not shop_already_rolled then
-      self.t:after(transition_duration, function()
-        -- Play level up sound
+    -- IT HAS: Play the level up animation and sound.
+    self.t:after(transition_duration, function()
         gold3:play{pitch = random:float(0.95, 1.05), volume = 0.7}
         
-        -- Create particle effects around the text
         for i = 1, 20 do
-          local angle = (i / 20) * 2 * math.pi
-          local distance = math.random() * 30
-          local particle_x = self.items_text_x + math.cos(angle) * distance
-          local particle_y = self.items_text_y + math.sin(angle) * distance
-          HitParticle{group = self.ui, x = particle_x, y = particle_y, color = yellow[0]}
+            local angle = (i / 20) * 2 * math.pi
+            local distance = math.random() * 30
+            local particle_x = self.items_text_x + math.cos(angle) * distance
+            local particle_y = self.items_text_y + math.sin(angle) * distance
+            HitParticle{group = self.ui, x = particle_x, y = particle_y, color = yellow[0]}
         end
         
-        -- Update the text
         self.items_text:set_text({{text = '[wavy_mid, fg]shop - Lv. ' .. self.shop_level, font = pixul_font, alignment = 'center'}})
-      end)
-      -- Delay item creation to happen after text animation
-      transition_duration = transition_duration + 0.5
-    else
-      self.items_text:set_text({{text = '[wavy_mid, fg]shop - Lv. ' .. self.shop_level, font = pixul_font, alignment = 'center'}})
-    end
+    end)
     
+    -- Delay item creation to happen after the text animation
+    transition_duration = transition_duration + 0.5
+    
+    -- IMPORTANT: Update last_shop_level immediately.
+    -- This "remembers" that we've played the animation for this level,
+    -- preventing it from running again on a reroll or re-entry.
+    self.last_shop_level = self.shop_level
+
+  else
+    -- IT HAS NOT: This is a reroll or a re-entry from the main menu.
+    -- Just set the text instantly without any animation.
+    self.items_text:set_text({{text = '[wavy_mid, fg]shop - Lv. ' .. self.shop_level, font = pixul_font, alignment = 'center'}})
   end
 
   --create items

@@ -2696,19 +2696,19 @@ function open_options(self)
       b:set_text('screen shake: ' .. tostring(state.no_screen_shake and 'no' or 'yes'))
     end }
 
-    self.show_damage_numbers_button = Button { group = self.options_ui, x = gw / 2 + 95, y = gh - 100, w = 180, force_update = true, button_text = '[bg10]show damage numbers: ' .. tostring(state.show_damage_numbers),
+    self.show_damage_numbers_button = Button { group = self.options_ui, x = gw / 2 + 95, y = gh - 100, w = 180, force_update = true, button_text = '[bg10]show damage numbers: ' .. tostring(state.show_damage_numbers or 'off'),
       fg_color = 'bg10', bg_color = 'bg', action = function(b)
       ui_switch1:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
-      local index = table.find(DAMAGE_NUMBERS_SETTING, state.show_damage_numbers)
+      local index = table.find(DAMAGE_NUMBERS_SETTING, state.show_damage_numbers) or 1
       if index == #DAMAGE_NUMBERS_SETTING or index == nil then
         index = 1
       else
         index = index + 1
       end
       state.show_damage_numbers = DAMAGE_NUMBERS_SETTING[index]
-      show_damage_numbers = DAMAGE_NUMBERS_SETTING[index]
+      show_damage_numbers = index
 
-      b:set_text('show damage numbers: ' .. tostring(state.show_damage_numbers))
+      b:set_text('show damage numbers: ' .. tostring(state.show_damage_numbers or 'off'))
     end }
 
     self.show_combat_controls_button = Button { group = self.options_ui, x = gw / 2, y = gh - 80, force_update = true, button_text = '[bg10]show combat controls: ' .. tostring(state.show_combat_controls and 'yes' or 'no'),
