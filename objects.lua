@@ -1370,8 +1370,11 @@ end
 
 function Unit:launch_at_facing(force_magnitude, duration)
   if self.state == unit_states['casting'] then
-    Helper.Unit:set_state(self, unit_states['channeling'])
+    self:end_cast()
+  elseif self.state == unit_states['channeling'] then
+    self:end_channel()
   end
+  Helper.Unit:set_state(self, unit_states['knockback'])
 
   duration = duration or 0.7
 
@@ -1413,7 +1416,9 @@ function Unit:launch_at_facing(force_magnitude, duration)
     self:set_damping(orig_damping)
     self:set_friction(orig_friction)
     self.is_launching = false
-    
+    if self.state == unit_states['knockback'] then
+      Helper.Unit:set_state(self, unit_states['normal'])
+    end
   end)
 
 
