@@ -20,6 +20,7 @@ require 'helper/spells/v2/summon'
 require 'helper/spells/v2/launch'
 require 'helper/spells/v2/prevent_casting'
 require 'helper/spells/v2/firewall_angled'
+require 'helper/spells/v2/area_spell'
 
 require 'helper/spells/v2/instants'
 

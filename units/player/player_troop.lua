@@ -3,7 +3,7 @@ Troop:implement(GameObject)
 Troop:implement(Physics)
 function Troop:init(args)
   self.class = 'troop'
-  self.faction = 'player'
+  self.faction = 'friendly'
   self.size = unit_size['medium']
   self.is_troop = true
   self.target_rally = nil

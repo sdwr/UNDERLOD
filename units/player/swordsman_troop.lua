@@ -10,6 +10,8 @@ function Swordsman_Troop:init(data)
   self.backswing = 0.1
   self.castcooldown = math.random() * (self.base_castcooldown or self.baseCast)
 
+  self.base_attack_area = 20
+
 end
 
 function Swordsman_Troop:update(dt)
@@ -38,34 +40,37 @@ function Swordsman_Troop:set_character()
 end
 
 function Swordsman_Troop:setup_cast()
-  local data = {
+  local cast_data = {
     name = 'attack',
-    viable = function() return Helper.Spell:target_is_in_range(self, self.attack_sensor.rs, true) end,
+    viable = function() return Helper.Spell:target_is_in_range(self) end,
     oncast = function() end,
-    oncastfinish = function() end,
-    unit = self,
-    target = self.target,
     castcooldown = self.cooldownTime,
     cast_length = self.castTime,
     backswing = self.backswing,
     instantspell = true,
-    spellclass = Area,
+    
+    -- This is the data for the actual spell that gets created.
+    spellclass = Area_Spell,
     spelldata = {
       group = main.current.effects,
-      sound = function() self:play_attack_sound() end,
-      on_attack_callbacks = true,
-      spell_duration = 0.1,
-      color = red[0],
-      areatype = 'target',
-      r = self.r,
-      w = 8 * self.area_size_m,
+      sound = self.play_attack_sound,
+      -- Core spell properties matching the new Area_v2 convention
       dmg = self.dmg,
-      area = self.area,
-      mods = self.mods,
+      radius = self.base_attack_area * self.area_size_m,
+      duration = 0.2, -- How long the visual effect lasts on screen.
+      color = orange[0],
+      opacity = 0.3,
+
+      area_type = 'target',
+              
+      -- The Area spell needs to know its caster and what team it's on.
+      unit = self,
       is_troop = true,
-    },
-  }
-  self:cast(data)
+      
+      }
+    }
+
+    self:cast(cast_data)
 end
 
 function Swordsman_Troop:set_state_functions()
