@@ -1680,42 +1680,44 @@ function ItemCard:draw()
 end
 
 
-function ItemCard:create_info_text()
-  self:remove_info_text()
-  if self.item then
-    self.info_text = InfoText{group = main.current.ui, force_update = true}
-    self.info_text:activate(build_item_text(self.item), nil, nil, nil, nil, 16, 4, nil, 2)
-    self.info_text.x, self.info_text.y = gw/2, gh/2 + ITEM_CARD_TEXT_HOVER_HEIGHT_OFFSET
-  end
-end
-
-function ItemCard:remove_info_text()
-  if self.info_text then
-    self.info_text:deactivate()
-    self.info_text.dead = true
-  end
-  self.info_text = nil
-end
-
-
 function ItemCard:on_mouse_enter()
   self.selected = true
   ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
   self.spring:pull(0.2, 200, 10)
-  self:create_info_text()
+
+  if self.tooltip then
+    self.tooltip:die()
+    self.tooltip = nil
+  end
+  
+  -- Create and position the new tooltip
+  self.tooltip = ItemTooltip{
+    group = main.current.ui,
+    item = self.item,
+    x = gw/2, 
+    y = gh/2
+  }
 end
 
 
 function ItemCard:on_mouse_exit()
   self.selected = false
-  self:remove_info_text()
+  -- Deactivate the tooltip, which will play its closing animation
+  if self.tooltip then
+    self.tooltip:die()
+    self.tooltip = nil
+  end
 end
 
 
 function ItemCard:die()
   self.dead = true
   self.cost_text = nil
-  self:remove_info_text()
+  -- Ensure the tooltip is removed when the card dies
+  if self.tooltip then
+    self.tooltip:die()
+    self.tooltip = nil
+  end
 end
 
 CharacterIcon = Object:extend()

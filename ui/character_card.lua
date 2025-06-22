@@ -224,7 +224,6 @@ function ItemPart:sellItem()
   --have to create the item first to remove it
   -- unit.items is just the item data, not the item object
   if self.parent.unit.items[self.i] then
-    print (self.parent.unit.items[self.i].name)
     local item = Create_Item(self.parent.unit.items[self.i].name)
     if item then
       if item.consumable then
@@ -241,7 +240,7 @@ function ItemPart:sellItem()
         Stats_Max_Gold()
       end
       item:sell()
-      self:remove_item_text()
+      self:remove_tooltip()
     end
   end
 
@@ -274,8 +273,7 @@ function ItemPart:update(dt)
   if input.m1.pressed and self.colliding_with_mouse and self:hasItem() then
     self.itemGrabbed = true
     self.looseItem = LooseItem{group = main.current.ui, item = self:getItem(), parent = self}
-    --remove item text
-    self:remove_item_text()
+    self:remove_tooltip()
   end
 
   if self.itemGrabbed and input.m1.released then
@@ -347,35 +345,17 @@ function ItemPart:draw(y)
     end
     
     if self.colliding_with_mouse and buyScreen and not buyScreen.loose_inventory_item then
-      if not self.info_text then
-        self:create_info_text()
+      if not self.tooltip then
+        self:create_tooltip()
       end
     else
-      self:remove_item_text()
+      self:remove_tooltip()
     end
     graphics.pop()
   end
 end
 
---item part
-function ItemPart:create_info_text()
-  self:remove_item_text()
-  if self:hasItem() then
-    local item = self:getItem()
-    self.info_text = InfoText{group = main.current.ui, force_update = true}
-    self.info_text:activate(build_item_text(item), nil, nil, nil, nil, 16, 4, nil, 2)
-    --set the position of the info text
-    self.info_text.x, self.info_text.y = gw/2, gh/2 - 50
-  end
-end
 
-function ItemPart:remove_item_text()
-  if self.info_text then
-    self.info_text:deactivate()
-    self.info_text.dead = true
-    self.info_text = nil
-  end
-end
 
 function ItemPart:die()
   self.dead = true
@@ -383,10 +363,9 @@ function ItemPart:die()
   if Active_Inventory_Slot == self then
     Active_Inventory_Slot = nil
   end
-  if self.info_text then
-    self.info_text:deactivate()
-    self.info_text.dead = true
-    self.info_text = nil
+  if self.tooltip then
+    self.tooltip:die()
+    self.tooltip = nil
   end
 end
 
@@ -394,16 +373,40 @@ function ItemPart:on_mouse_enter()
   ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
   self.selected = true
   self.spring:pull(0.2, 200, 10)
+
+  self:create_tooltip()
 end
 
 --BUG: calls as soon as entered sometimes
 function ItemPart:on_mouse_exit()
   self.selected = false
-  if self.info_text then
-    self.info_text:deactivate()
-    self.info_text.dead = true
+  if self.tooltip then 
+    self.tooltip:die() 
+    self.tooltip = nil
   end
-  self.info_text = nil
+end
+
+function ItemPart:create_tooltip()
+  if not self:hasItem() then return end
+
+  if self.tooltip then
+    self.tooltip:die()
+    self.tooltip = nil
+  end
+
+  self.tooltip = ItemTooltip{
+    group = main.current.ui,
+    item = self:getItem(),
+    x = gw/2, 
+    y = gh/2 - 50,
+  }
+end
+
+function ItemPart:remove_tooltip()
+  if self.tooltip then
+    self.tooltip:die()
+    self.tooltip = nil
+  end
 end
 
 

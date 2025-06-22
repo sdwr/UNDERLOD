@@ -46,7 +46,18 @@ CALL_PROC_MAP = {
   [PROC_ON_DEATH] = function(proc) return proc:onDeath() end,
   [PROC_ON_KILL] = function(proc, target) return proc:onKill(target) end,
   [PROC_ON_ROUND_START] = function(proc) return proc:onRoundStart() end,
+}
 
+PROC_TYPE_TO_DISPLAY = {
+  [PROC_ON_TICK] = {text = 'onTick', color = 'white'},
+  [PROC_ON_HIT] = {text = 'onHit', color = 'red'},
+  [PROC_ON_GOT_HIT] = {text = 'onGotHit', color = 'red'},
+  [PROC_ON_ATTACK] = {text = 'onAttack', color = 'blue'},
+  [PROC_ON_MOVE] = {text = 'onMove', color = 'green'},
+  [PROC_ON_DEATH] = {text = 'onDeath', color = 'black'},
+  [PROC_ON_KILL] = {text = 'onKill', color = 'black'},
+  [PROC_ON_ROUND_START] = {text = 'onRoundStart', color = 'black'},
+  [PROC_ON_SELL] = {text = 'onSell', color = 'black'},
 }
 
 --this is the list of procs that are global, and not tied to a unit
@@ -119,7 +130,9 @@ function Proc:addTriggers()
   elseif self.scope == 'global' then
     self:addTriggersToGlobal()
   else
-    print('proc not on team or troop (in proc)', self.name)
+    if DEBUG_PROCS then
+      print('proc not on team or troop (in proc)', self.name)
+    end
     self:die()
   end
 end

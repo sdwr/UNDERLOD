@@ -23,6 +23,10 @@ function Item:init(data)
   self.desc = data.desc
   self.stats = data.stats
   self.procs = {}
+
+  -- add triggers and damage types to the item from the procs
+  self.tags = {}
+
   --creates procs from the data, but this doesnt work on the unit
   -- (because the unit doesn't exist yet)
 
@@ -30,7 +34,20 @@ function Item:init(data)
   --combat expects the unit to exist, but the shop doesn't
   if data.procs then
     for k, v in pairs(data.procs) do
-      table.insert(self.procs, Create_Proc(v, nil, nil))
+      local proc = Create_Proc(v, nil, nil)
+      table.insert(self.procs, proc)
+
+      --add the proc's triggers and damage type to the item
+      if proc.damageType then
+        print('adding tag', proc.damageType)
+        table.insert(self.tags, proc.damageType)
+      end
+      if proc.triggers then
+        for _, trigger in ipairs(proc.triggers) do
+          print('adding tag', trigger)
+          table.insert(self.tags, trigger)
+        end
+      end
     end
   end
 end

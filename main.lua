@@ -1665,62 +1665,6 @@ function init()
     return out
   end
 
-  build_item_text = function(item)
-    local name = item.name or 'item name'
-    name = name:upper()
-
-    local out = {}
-    table.insert(out, { text = '[fg]' .. name, font = pixul_font, alignment = 'center', height_multiplier = 1.25 })
-
-    local stats = item.stats
-    if stats then
-      for key, val in pairs(stats) do
-        local text = ''
-        if key == 'gold' then
-          text = '[yellow] ' .. val .. ' ' .. (item_stat_lookup[key] or '')
-        elseif key == 'enrage' or key == 'ghost' then
-          text = '[yellow] ' .. (item_stat_lookup[key] or '')
-        elseif key == 'proc' then
-          text = '[yellow]' .. 'custom proc... add later'
-        else
-          text = '[yellow] ' .. val * 100 .. '% ' .. (item_stat_lookup[key] or '')
-        end
-        table.insert(out, { text = text, font = pixul_font, alignment = 'center', height_multiplier = 1.25 })
-      end
-    end
-
-    build_desc_lines(item.desc, out)
-    
-    table.insert(out, {
-      text = '[fg]Costs: ' .. item.cost,
-      font = pixul_font,
-      alignment = 'center',
-      height_multiplier = 1.25
-    })
-
-    return out
-  end
-
-  build_desc_lines = function(desc, out)
-    --only wrap at spaces
-    local last_space = 0
-    local more_lines = true
-    while more_lines do
-      local start = last_space + 1
-      local space = desc:find(' ', start + 30)
-      if space then
-        last_space = space
-      else
-        space = #desc
-      end
-      local line = desc:sub(start, space)
-      table.insert(out, { text = '[fg]' .. line, font = pixul_font, alignment = 'center', height_multiplier = 1.25 })
-      if space == #desc then
-        more_lines = false
-      end
-    end
-  end
-
   build_achievement_text = function(achieve)
     local name = achieve.name or 'achievement name'
     name = name:upper()
