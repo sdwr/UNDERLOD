@@ -1303,35 +1303,37 @@ end
 function Unit:should_freeze_rotation()
   return self.freezerotation
     or (self.castObject and self.castObject.freeze_rotation)
-    or (self.spellObject and self.spellObject.freeze_rotation)
 end
 
-function Unit:end_cast(cooldown)
+function Unit:end_cast(cooldown, spell_duration)
   self.castcooldown = cooldown
   self.total_castcooldown = cooldown
   self.spelldata = nil
   self.freezerotation = false
-  if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
-    Helper.Unit:set_state(self, unit_states['normal'])
+  if spell_duration and spell_duration > 0 then
+    if self.state == unit_states['casting'] then
+      self:set_state(unit_states['channeling'])
+      self.t:after(spell_duration, function() self:end_channel() end)
+    end
   end
 
   self.castObject = nil
-  self.spellObject = nil
+end
+
+function Unit:end_channel()
+  if self.state == unit_states['channeling'] then
+    Helper.Unit:set_state(self, unit_states['normal'])
+  end
 end
 
 
 --remove the castObject before calling die()
 -- to prevent the infinite loop
-function Cancel_Cast_And_Spell(unit)
+function Cancel_Cast(unit)
   local castObject = unit.castObject
-  local spellObject = unit.spellObject
   unit.castObject = nil
-  unit.spellObject = nil
   if castObject then
     castObject:cancel()
-  end
-  if spellObject then
-    spellObject:cancel()
   end
 end
 
@@ -1347,14 +1349,14 @@ function Unit:cancel_cast()
     self.spelldata = nil
   end
 
-  Cancel_Cast_And_Spell(self)
+  Cancel_Cast(self)
 end
 
 function Unit:interrupt_cast()
-  if self.castObject or self.spellObject then
+  if self.castObject then
     self.castcooldown = self.baseCast or 1
     self.spelldata = nil
-    Cancel_Cast_And_Spell(self)
+    Cancel_Cast(self)
   end
 end
 

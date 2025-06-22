@@ -156,9 +156,7 @@ function Cast:cast()
     if self.spelldata.on_attack_callbacks and self.unit.onAttackCallbacks then
       self.unit:onAttackCallbacks(self.target)
     end
-    self.unit:end_cast(castcooldown)
-  else
-    self.unit.spellObject = spell
+    self.unit:end_cast(castcooldown, self.spell_duration)
   end
   self:die()
 end
@@ -174,7 +172,7 @@ function Cast:try_repeat_attack(spellclass, spelldata)
     --so make the timer global
     local unit = self.unit
     local target = self.target
-    local new_spelldata = self:deep_copy_spelldata(spelldata)
+    local new_spelldata = Deep_Copy_Spelldata(spelldata)
 
     main.current.t:after(REPEAT_ATTACK_DELAY, function()
       if unit and not unit.dead and target and not target.dead then
@@ -187,7 +185,7 @@ function Cast:try_repeat_attack(spellclass, spelldata)
   end
 end
 
-function Cast:deep_copy_spelldata(spelldata)
+Deep_Copy_Spelldata = function(spelldata)
   local new_spelldata = {}
   for k, v in pairs(spelldata) do
     if type(v) ~= 'table' and type(value) ~= 'userdata' and type(value) ~= 'function' then
@@ -257,6 +255,7 @@ Spell = Object:extend()
 Spell:implement(GameObject)
 function Spell:init(args)
   args.group = args.group or main.current.effects
+  self.spelldata = args
 
 
   if DEBUG_SPELLS then
@@ -343,12 +342,11 @@ function Spell:cancel()
 end
 
 function Spell:try_end_cast()
-  if self.unit and self.unit.spellObject == self and self.unit.end_cast then
+  if self.unit and self.unit.end_cast then
     if self.on_attack_callbacks and self.unit.onAttackCallbacks then
       self.unit:onAttackCallbacks(self.target)
     end
     self.unit:end_cast(self.castcooldown)
-    self.unit.spellObject = nil
     if self.unit_dies_at_end then
       self.unit:die()
     end
@@ -369,6 +367,5 @@ function Spell:die()
   if DEBUG_SPELLS then
     print('destroying spell: ', self.name)
   end
-  self:try_end_cast()
   self.dead = true
 end

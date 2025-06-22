@@ -41,7 +41,7 @@ MAX_STACKS_BLOODLUST = 10
 
 SHOCK_DEF_REDUCTION = -0.04
 
-REPEAT_ATTACK_DELAY = 0.25
+REPEAT_ATTACK_DELAY = 0.7
 
 
 --add 0.25 to the scaling for each boss level (boss levels are every 6 levels)
