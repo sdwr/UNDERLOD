@@ -153,7 +153,7 @@ function Troop:update(dt)
           -- 3c. If we're in range but waiting for cooldown, stand still.
           else
               --self:set_velocity(0, 0)
-              self:steering_separate(16, troop_classes)
+              self:steering_separate(SEPARATION_RADIUS, troop_classes)
               -- Also, rotate to face the target while waiting.
               self:rotate_towards_object(target, 1)
           end
@@ -161,7 +161,7 @@ function Troop:update(dt)
           -- 4. NO TARGET
           -- If after all checks we still have no target, do nothing. Stand still.
           --self:set_velocity(0, 0)
-          self:steering_separate(16, troop_classes)
+          self:steering_separate(SEPARATION_RADIUS, troop_classes)
         end
       end
   end
