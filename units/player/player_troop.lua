@@ -342,16 +342,6 @@ function Troop:draw_knockback()
   graphics.circle(self.x, self.y, self.shape.w/2 + 1, red_transparent)
 end
 
-function Troop:shoot(r, mods)
-  mods = mods or {}
-
-  local crit = false
-  HitCircle{group = main.current.effects, x = self.x + 0.8*self.shape.w*math.cos(r), y = self.y + 0.8*self.shape.w*math.sin(r), rs = 6}
-  local t = {group = main.current.main, x = self.x + 1.6*self.shape.w*math.cos(r), y = self.y + 1.6*self.shape.w*math.sin(r), v = 250, r = r, color = self.color, dmg = self.dmg, crit = crit, character = self.character,
-  parent = self, level = self.level}
-  Projectile(table.merge(t, mods or {}))
-end
-
 function Troop:attack(area, mods)
 
   --on attack callbacks

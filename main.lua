@@ -15,7 +15,7 @@ require 'items'
 require 'buy_screen_utils'
 require 'buy_screen'
 require 'objects'
-require 'player'
+require 'miscellaneous_objects'
 require 'media'
 require 'spawns/spawn_includes'
 require 'enemies/level_manager'
@@ -453,14 +453,12 @@ function init()
     ['outlaw'] = 'Outlaw',
     ['blade'] = 'Blade',
     ['elementor'] = 'Elementor',
-    ['saboteur'] = 'Saboteur',
     ['stormweaver'] = 'Stormweaver',
     ['sage'] = 'Sage',
     ['squire'] = 'Squire',
     ['cannoneer'] = 'Cannoneer',
     ['dual_gunner'] = 'Dual Gunner',
     ['hunter'] = 'Hunter',
-    ['sentry'] = 'Sentry',
     ['chronomancer'] = 'Chronomancer',
     ['spellblade'] = 'Spellblade',
     ['psykeeper'] = 'Psykeeper',
@@ -522,14 +520,12 @@ function init()
     ['outlaw'] = red[0],
     ['blade'] = yellow[0],
     ['elementor'] = blue[0],
-    ['saboteur'] = orange[0],
     ['stormweaver'] = blue[0],
     ['sage'] = purple[0],
     ['squire'] = yellow[0],
     ['cannoneer'] = orange[0],
     ['dual_gunner'] = green[0],
     ['hunter'] = green[0],
-    ['sentry'] = green[0],
     ['chronomancer'] = blue[0],
     ['spellblade'] = blue[0],
     ['psykeeper'] = fg[0],
@@ -591,14 +587,12 @@ function init()
     ['outlaw'] = 'red',
     ['blade'] = 'yellow',
     ['elementor'] = 'blue',
-    ['saboteur'] = 'orange',
     ['stormweaver'] = 'blue',
     ['sage'] = 'purple',
     ['squire'] = 'yellow',
     ['cannoneer'] = 'orange',
     ['dual_gunner'] = 'green',
     ['hunter'] = 'green',
-    ['sentry'] = 'green',
     ['chronomancer'] = 'blue',
     ['spellblade'] = 'blue',
     ['psykeeper'] = 'fg',
@@ -686,7 +680,6 @@ function init()
     ['cannoneer'] = '[green]Ranger, [red]Nuker',
     ['dual_gunner'] = '[green]Ranger, [red]Rogue',
     -- ['hunter'] = '[green]Ranger, [orange]Conjurer, [yellow]Forcer',
-    ['sentry'] = '[green]Ranger, [orange]Builder',
     ['chronomancer'] = '[blue]Mage, Enchanter',
     ['spellblade'] = '[blue]Mage, [red]Rogue',
     ['psykeeper'] = '[green]Healer, [fg]Psyker',

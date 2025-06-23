@@ -925,7 +925,7 @@ function Arena:spawn_n_critters(p, j, n, pass, parent)
     SpawnEffect{group = self.effects, x = p.x + o.x, y = p.y + o.y, action = function(x, y)
       if not pass then
         check_circle:move_to(x, y)
-        local objects = self.main:get_objects_in_shape(check_circle, {Enemy, EnemyCritter, Critter, Player, Sentry, Automaton, Bomb, Volcano, Saboteur, Pet, Turret})
+        local objects = self.main:get_objects_in_shape(check_circle, {Enemy, EnemyCritter, Critter, Player})
         if #objects > 0 then self.enemy_spawns_prevented = self.enemy_spawns_prevented + 1; return end
       end
       critter3:play{pitch = random:float(0.8, 1.2), volume = 0.8}

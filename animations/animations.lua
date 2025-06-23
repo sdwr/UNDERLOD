@@ -464,5 +464,3 @@ enemy_sprite_scales = {
   ['mech2'] = MECH2_SPRITE_SCALE,
   ['mech3'] = MECH3_SPRITE_SCALE,
 }
-
-print('enemy_sprite_scales')
