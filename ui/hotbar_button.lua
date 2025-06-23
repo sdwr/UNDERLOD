@@ -60,7 +60,7 @@ HotbarButton = Object:extend()
 HotbarButton:implement(GameObject)
 function HotbarButton:init(args)
   self:init_game_object(args)
-  self.shape = Rectangle(self.x, self.y, args.w or (pixul_font:get_text_width(self.button_text) + 8), pixul_font.h + 4)
+  self.shape = Rectangle(self.x, self.y, args.w or (pixul_font:get_text_width(self.button_text) + 10), pixul_font.h + 10)
   self.interact_with_mouse = true
   self.text = Text({{text = '[' .. self.fg_color .. ']' .. self.button_text, font = pixul_font, alignment = 'center'}}, global_text_tags)
   self.selected = false
@@ -110,7 +110,7 @@ function HotbarButton:draw()
   if self.visible then
     graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
       if self.selected then
-        graphics.rectangle(self.x, self.y, self.shape.w+2, self.shape.h+2, 4,4,  _G['white'][0], 3)
+        graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4,4,  _G['white'][0], 3)
       end
       graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, bg[0])
       

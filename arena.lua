@@ -111,12 +111,15 @@ function Arena:on_enter(from)
   HotbarGlobals:clear_hotbar()
 
   Helper.Unit.team_button_width = 47
+  local total_width = #self.units * Helper.Unit.team_button_width + (#self.units - 1) * 5  -- Total width including spacing
+  local start_x = gw/2 - total_width/2  -- Center the entire hotbar
+  
   for i = 1, #self.units do
     local character = self.units[i].character
     local type = character_types[character]
     local number = i
-    local b = HotbarButton{group = self.ui, x = 50 + Helper.Unit.team_button_width/2 + (Helper.Unit.team_button_width + 5) * (i - 1), 
-                          y = gh - 20, force_update = true, button_text = tostring(i), w = Helper.Unit.team_button_width, fg_color = 'white', bg_color = 'bg',
+    local b = HotbarButton{group = self.ui, x = start_x + Helper.Unit.team_button_width/2 + (Helper.Unit.team_button_width + 5) * (i - 1), 
+                          y = gh - 15, force_update = true, button_text = tostring(i), w = Helper.Unit.team_button_width, fg_color = 'white', bg_color = 'bg',
                           color_marks = {[1] = character_colors[character]}, character = character,
                           action = function() 
                             Helper.Unit.selected_team_index = number
