@@ -86,6 +86,14 @@ function Helper.Geometry:random_in_radius(x, y, radius)
     return newx, newy
 end
 
+function Helper.Geometry:is_angle_between(angle, angle_start, angle_end)
+    local diff = angle_end - angle_start
+    if diff < 0 then
+        diff = diff + 2 * math.pi
+    end
+    return angle >= angle_start and angle <= angle_end + diff
+end
+
 
 
 function Helper.Geometry:distance_from_line(x, y, linex1, liney1, linex2, liney2)

@@ -1,19 +1,5 @@
 
 local fns = {}
-fns['attack'] = function(self, mods, color)
-  mods = mods or {}
-  local t = {team = "enemy", group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(20), color = color or self.color, dmg = self.dmg,
-    character = self.character, level = self.level, parent = self}
-
-  Helper.Unit:set_state(self, unit_states['frozen'])
-
-  self.t:after(0.3, function() 
-    Helper.Unit:set_state(self, unit_states['stopped'])
-    Area(table.merge(t, mods))
-    _G[random:table{'swordsman1', 'swordsman2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.75}
-  end, 'stopped')
-  self.t:after(0.4 + .4, function() Helper.Unit:set_state(self, unit_states['normal']) end, 'normal')
-end
 
 fns['init_enemy'] = function(self)
   
@@ -26,13 +12,38 @@ fns['init_enemy'] = function(self)
   self.color = grey[0]:clone()
   Set_Enemy_Shape(self, self.size)
 
-  self.stopChasingInRange = true
+  self.stopChasingInRange = false
   self.haltOnPlayerContact = true
 
   self.class = 'special_enemy'
   self.movementStyle = MOVEMENT_TYPE_SEEK
 
   self.base_mvspd = 40
+
+  self.attack_options = {}
+
+  local cleave = {
+    name = 'cleave',
+    viable = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end,
+    oncast = function() end,
+    instantspell = true,
+    castcooldown = 2,
+    cast_length = 0.2,
+    spellclass = Cleave,
+    spelldata = {
+      group = main.current.main,
+      team = "enemy",
+      target = function() return self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies) end,
+      cancel_on_death = true,
+      dmg = self.dmg or 20,
+      cone_radius = 40,
+      cone_angle = math.pi/3,
+      color = red[0],
+      parent = self
+    },
+  }
+
+  table.insert(self.attack_options, cleave)
 
 end
 
