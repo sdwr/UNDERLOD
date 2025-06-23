@@ -867,7 +867,7 @@ function Unit:calculate_stats(first_run)
 
   self.class_mvspd_m = self.class_mvspd_m*unit_stat_mult.mvspd
   self.max_move_v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m
-  self.max_v = self.max_move_v * 50
+  self.max_v = self.max_move_v
 end
 
 function Unit:onTickCallbacks(dt)

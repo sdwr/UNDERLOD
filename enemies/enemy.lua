@@ -187,6 +187,9 @@ function Enemy:update_move_seek()
       decel = 0
     end
     self:seek_point(self.target.x, self.target.y, decel, SEEK_WEIGHT)
+    self:wander(50, 200, 5)
+    self:rotate_towards_velocity(1)
+    self:steering_separate(16, {Enemy})
     -- self:rotate_towards_velocity(0.5)
   else
     -- dont need to move
@@ -214,6 +217,9 @@ function Enemy:update_move_random()
   end
 
   self:seek_point(self.random_dest.x, self.random_dest.y, SEEK_DECELERATION, SEEK_WEIGHT)
+  self:wander(50, 200, 5)
+  self:rotate_towards_velocity(1)
+  self:steering_separate(16, {Enemy})
 end
 
 function Enemy:draw()
