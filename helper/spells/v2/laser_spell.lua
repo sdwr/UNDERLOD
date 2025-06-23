@@ -145,6 +145,7 @@ end
 
 function Laser_Spell:try_repeat_attack()
   if not self.unit or self.unit.dead then return end
+  if not self.unit.repeat_attack_chance then return end
   if self.is_repeat then return end
 
   if random:float(0, 1) < self.unit.repeat_attack_chance then

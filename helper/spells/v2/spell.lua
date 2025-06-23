@@ -169,6 +169,7 @@ end
 -- trigger spell after a delay
 function Cast:try_repeat_attack(spellclass, spelldata)
   if not self.unit then return end
+  if not self.unit.repeat_attack_chance then return end
 
   if random:float(0, 1) < self.unit.repeat_attack_chance then
     --cast will probably be dead by the time it triggers

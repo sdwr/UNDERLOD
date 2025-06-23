@@ -1275,10 +1275,15 @@ function Unit:pick_cast()
   end
 
   if #viable_attacks == 0 then return false end
+  
 
   local attack = random:table(viable_attacks)
+  while #viable_attacks > 1 and self.last_cast == attack.name do
+    attack = random:table(viable_attacks)
+  end
 
   self:cast(attack)
+  self.last_cast = attack.name
   return true
 end
 

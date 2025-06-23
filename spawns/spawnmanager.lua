@@ -365,10 +365,7 @@ function SpawnManager:spawn_next_group_in_chain()
   if self.current_group_index > #wave_data then
       self.state = 'waiting_for_clear'
       if self.persistent_wave_spawn_marker and not self.persistent_wave_spawn_marker.dead then
-          print('killing wave marker')
-          print(self.persistent_wave_spawn_marker)
           self.persistent_wave_spawn_marker:die()
-          print('wave marker killed')
           self.persistent_wave_spawn_marker = nil
       end
       return
@@ -404,6 +401,7 @@ function SpawnManager:handle_boss_fight()
   local boss_name = ""
   if self.arena.level == 6 then boss_name = 'stompy'
   elseif self.arena.level == 11 then boss_name = 'dragon'
+  elseif self.arena.level == 16 then boss_name = 'heigan'
   -- ... and so on for other bosses
   end
   

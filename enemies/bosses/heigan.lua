@@ -13,6 +13,7 @@ fns['init_enemy'] = function(self)
   Set_Enemy_Shape(self, self.size)
   
   self.class = 'boss'
+  self.icon = 'beholder'
 
   --set sensors
   self.attack_sensor = Circle(self.x, self.y, 80)
@@ -35,7 +36,7 @@ fns['init_enemy'] = function(self)
     viable = function () return true end,
     castcooldown = 1,
     oncast = function() end,
-    cast_length = 1,
+    cast_length = BEHOLDER_CAST_TIME,
     spellclass = LaserBall,
     instantspell = true,
     spelldata = {
@@ -43,7 +44,7 @@ fns['init_enemy'] = function(self)
       team = "enemy",
       x = self.x,
       y = self.y,
-      color = orange[-5],
+      color = purple[-5],
       damage = 20,
       parent = self
     },
@@ -55,7 +56,7 @@ fns['init_enemy'] = function(self)
     viable = function () return true end,
     castcooldown = 1,
     oncast = function() end,
-    cast_length = 1,
+    cast_length = BEHOLDER_CAST_TIME,
     spellclass = Plasma_Barrage,
     spelldata = {
       group = main.current.main,
@@ -65,7 +66,7 @@ fns['init_enemy'] = function(self)
       y = self.y,
       movement_type = 'spiral',
       rotation_speed = 1,
-      color = orange[-5],
+      color = purple[-5],
       damage = 20,
       parent = self
     },
@@ -77,7 +78,7 @@ fns['init_enemy'] = function(self)
     viable = function () return true end,
     castcooldown = 1,
     oncast = function() end,
-    cast_length = 1,
+    cast_length = BEHOLDER_CAST_TIME,
     spellclass = Plasma_Barrage,
     spelldata = {
       group = main.current.main,
@@ -86,7 +87,7 @@ fns['init_enemy'] = function(self)
       x = self.x,
       y = self.y,
       movement_type = 'straight',
-      color = orange[-5],
+      color = purple[-5],
       damage = 20,
       parent = self
     },
@@ -98,7 +99,7 @@ fns['init_enemy'] = function(self)
     castcooldown = 1,
     instantspell = true,
     oncast = function() end,
-    cast_length = 1,
+    cast_length = BEHOLDER_CAST_TIME,
     spellclass = PlasmaBall,
     spelldata = {
       group = main.current.main,
@@ -106,7 +107,7 @@ fns['init_enemy'] = function(self)
       x = self.x,
       y = self.y,
       r = self.r,
-      color = orange[-5],
+      color = purple[-5],
       damage = 20,
       parent = self
     },
@@ -117,7 +118,7 @@ fns['init_enemy'] = function(self)
     viable = function() return self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies) end,
     castcooldown = 1,
     oncast = function() end,
-    cast_length = 1,
+    cast_length = BEHOLDER_CAST_TIME,
     spellclass = Stomp_Spell,
     spelldata = {
       group = main.current.main,
@@ -141,7 +142,15 @@ end
 
 fns['draw_enemy'] = function(self)
     graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
-    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 10, 10, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+
+    local sx = (self.shape.w / BEHOLDER_SPRITE_W) * BEHOLDER_SPRITE_SCALE
+    local sy = (self.shape.h / BEHOLDER_SPRITE_H) * BEHOLDER_SPRITE_SCALE
+    local animation_success = self:draw_animation(self.state, self.x, self.y, 0, sx, sy)
+
+    if not animation_success then
+      graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 10, 10, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+    end
+
     graphics.pop()
 end
 
