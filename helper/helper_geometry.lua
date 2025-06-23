@@ -87,11 +87,24 @@ function Helper.Geometry:random_in_radius(x, y, radius)
 end
 
 function Helper.Geometry:is_angle_between(angle, angle_start, angle_end)
-    local diff = angle_end - angle_start
-    if diff < 0 then
-        diff = diff + 2 * math.pi
+    -- Normalize all angles to 0-2π range
+    angle = angle % (2 * math.pi)
+    if angle < 0 then angle = angle + 2 * math.pi end
+    
+    angle_start = angle_start % (2 * math.pi)
+    if angle_start < 0 then angle_start = angle_start + 2 * math.pi end
+    
+    angle_end = angle_end % (2 * math.pi)
+    if angle_end < 0 then angle_end = angle_end + 2 * math.pi end
+    
+    -- Handle the case where the range crosses the 0/2π boundary
+    if angle_start > angle_end then
+        -- Range crosses the boundary (e.g., from 3π/2 to π/2)
+        return angle >= angle_start or angle <= angle_end
+    else
+        -- Normal range (e.g., from π/4 to 3π/4)
+        return angle >= angle_start and angle <= angle_end
     end
-    return angle >= angle_start and angle <= angle_end + diff
 end
 
 

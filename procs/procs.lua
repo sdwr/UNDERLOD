@@ -1745,9 +1745,8 @@ function Proc_Icenova:init(args)
     -- Define the proc's properties from data
     self.damage = (self.data.damage or 20) * (self.data.damageMulti or 1)
     self.damageType = self.data.damageType or DAMAGE_TYPE_COLD
-    self.radius_boost = self.data.radius_boost or 10
-    self.radius = self.data.radius or 30
-    self.radius_with_boost = self.radius + self.radius_boost
+    self.radius_boost = self.data.radius_boost or 0
+    self.radius = self.data.radius or 45
     self.duration = self.data.duration or 0.2
     self.chillAmount = self.data.chillAmount or 0.5
     self.chillDuration = self.data.chillDuration or 3
@@ -1765,6 +1764,7 @@ function Proc_Icenova:init(args)
     
     -- This will hold the visual effect object
     self.proc_display_area = nil 
+    self.attack_sensor = Circle(0, 0, self.radius)
 end
 
 -- ===================================================================
@@ -1775,6 +1775,8 @@ function Proc_Icenova:onTick(dt)
     Proc_Icenova.super.onTick(self, dt)
     if not self.unit or self.unit.dead then return end
 
+    self.attack_sensor:move_to(self.unit.x, self.unit.y)
+
     -- STATE: ON COOLDOWN
     if self.state == 'on_cooldown' then
         self.cooldown_timer = self.cooldown_timer - dt
@@ -1784,7 +1786,7 @@ function Proc_Icenova:onTick(dt)
 
     -- STATE: READY
     elseif self.state == 'ready' then
-        if Helper.Spell:there_is_target_in_range(self.unit, self.radius, nil) then
+        if #main.current.main:get_objects_in_shape(self.attack_sensor, main.current.enemies, nil) > 0 then
             -- Enemy found! Transition to the winding_up state.
             self.state = 'winding_up'
             self.windup_timer = self.procDelay
@@ -1797,7 +1799,7 @@ function Proc_Icenova:onTick(dt)
     -- STATE: WINDING UP
     elseif self.state == 'winding_up' then
         -- 1. Check for cancellation (no enemies left in range)
-        if not Helper.Spell:there_is_target_in_range(self.unit, self.radius, nil) then
+        if #main.current.main:get_objects_in_shape(self.attack_sensor, main.current.enemies, nil) == 0 then
             self.state = 'on_cooldown'
             self.cooldown_timer = self.cancel_cooldown
             self:destroy_proc_display_area() -- Destroy the visual effect
@@ -1842,7 +1844,7 @@ function Proc_Icenova:update_proc_display()
         local progress = 1 - (self.windup_timer / self.procDelay) -- Progress from 0 to 1
         progress = math.max(0, math.min(1, progress)) -- Clamp progress to prevent errors
         
-        self.proc_display_area.r = self.radius_with_boost * progress
+        self.proc_display_area.r = self.radius * progress
         self.proc_display_area.x = self.unit.x
         self.proc_display_area.y = self.unit.y
     end

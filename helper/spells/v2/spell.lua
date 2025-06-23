@@ -4,7 +4,7 @@
 -- self.attack_options = {}
 -- local fire = {
 --   name = 'fire',
---   viable = function() return Helper.Spell:there_is_target_in_range(self, 100) end,
+--   viable = function() return #main.current.main:get_objects_in_shape(Circle(self.x, self.y, 100), main.current.friendlies, nil) > 0 end,
 --   cast_length = 0.5,
 --   castcooldown = 0.5,
 --   rotation_lock = false,

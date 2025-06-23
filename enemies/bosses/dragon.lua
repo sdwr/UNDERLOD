@@ -27,7 +27,7 @@ fns['init_enemy'] = function(self)
 
   local fire = {
     name = 'fire',
-    viable = function() return Helper.Spell:there_is_target_in_range(self, 150) end,
+    viable = function() return #main.current.main:get_objects_in_shape(Circle(self.x, self.y, 150), main.current.friendlies, nil) > 0 end,
     castcooldown = 1,
     oncast = function(self) self.target = Helper.Spell:get_nearest_target(self) end,
     cast_length = 0.5,
