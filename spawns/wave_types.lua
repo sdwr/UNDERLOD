@@ -177,7 +177,7 @@ function Wave_Types:Get_Waves(level)
     wave = self:Two_Cleavers_Plus_One_Special(1)
     table.insert(waves, wave)
   elseif level == 4 then
-    wave = self:Generic(1, 2, 2)
+    wave = self:Basic_Plus_Two_Burst(1)
     table.insert(waves, wave)
     wave = self:Generic(1, 3, 2)
     table.insert(waves, wave)

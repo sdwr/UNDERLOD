@@ -1513,6 +1513,7 @@ function init()
     return anim8.newAnimation(grid(numbers, rowNumber), speed)
   end
 
+  --boss sprites
   GOLEM_CAST_TIME = 1.5
   GOLEM_ATTACK_FRAMES = 9
 
@@ -1537,22 +1538,6 @@ function init()
   golem_attack_a = create_animation(golem_attack_g, 1, 9, 128, 128, GOLEM_CAST_TIME / GOLEM_ATTACK_FRAMES)
   golem_hurt_a = create_animation(golem_hurt_g, 1, 4, 128, 128, 0.4)
   golem_death_a = create_animation(golem_death_g, 1, 8, 128, 128, 0.2)
-
-
-
-  SKELETON_CAST_TIME = 1
-
-  skeleton = Image(spriteFolder .. 'room8_skeleton')
-
-  skeleton_birth_g = create_grid(skeleton, 24, 24)
-  skeleton_idle_g = create_grid(skeleton, 24, 24)
-  skeleton_attack_g = create_grid(skeleton, 24, 24)
-
-
-  skeleton_birth_a = create_animation(skeleton_birth_g, 2, 8, 24, 24, 0.4)
-  skeleton_idle_a = create_animation(skeleton_idle_g, 6, 8, 24, 24, 0.4)
-  skeleton_attack_a = create_animation(skeleton_attack_g, 18, 8, 24, 24, 0.2)
-
 
   DRAGON_SPRITE_W = 144
   DRAGON_SPRITE_H = 128
@@ -1610,12 +1595,6 @@ function init()
     ['death'] = {golem_death_a, golem_death},
   }
 
-  skeleton_spritesheets = {
-    ['normal'] = {skeleton_idle_a, skeleton},
-    ['birth'] = {skeleton_birth_a, skeleton},
-    ['casting'] = {skeleton_attack_a, skeleton},
-  }
-
   dragon_spritesheets = {
     ['normal'] = {dragonHD_idle_a, dragonHD},
   }
@@ -1630,11 +1609,74 @@ function init()
     ['death'] = {beholder_death_a, beholder_death},
   }
 
+  --enemy sprites
+  SKELETON_CAST_TIME = 1
+
+  skeleton = Image(spriteFolder .. 'room8_skeleton')
+
+  skeleton_birth_g = create_grid(skeleton, 24, 24)
+  skeleton_idle_g = create_grid(skeleton, 24, 24)
+  skeleton_attack_g = create_grid(skeleton, 24, 24)
+
+
+  skeleton_birth_a = create_animation(skeleton_birth_g, 2, 8, 24, 24, 0.4)
+  skeleton_idle_a = create_animation(skeleton_idle_g, 6, 8, 24, 24, 0.4)
+  skeleton_attack_a = create_animation(skeleton_attack_g, 18, 8, 24, 24, 0.2)
+
+
+  LICH_CAST_TIME = 1
+  LICH_ATTACK_FRAMES = 8
+
+  LICH_SPRITE_W = 64
+  LICH_SPRITE_H = 64
+
+  LICH_SPRITE_SCALE = 3
+
+  lich_attack = Image(spriteFolder .. '/Lich2/Attack/Lich2_Attack_full')
+  lich_idle = Image(spriteFolder .. '/Lich2/Idle/Lich2_Idle_full')
+  lich_walk = Image(spriteFolder .. '/Lich2/Walk/Lich2_Walk_full')
+  lich_run = Image(spriteFolder .. '/Lich2/Run/Lich2_Run_full')
+  lich_hurt = Image(spriteFolder .. '/Lich2/Hurt/Lich2_Hurt_full')
+  lich_death = Image(spriteFolder .. '/Lich2/Death/Lich2_Death_full')
+
+  lich_attack_g = create_grid(lich_attack, 64, 64)
+  lich_idle_g = create_grid(lich_idle, 64, 64)
+  lich_walk_g = create_grid(lich_walk, 64, 64)
+  lich_run_g = create_grid(lich_run, 64, 64)
+  lich_hurt_g = create_grid(lich_hurt, 64, 64)
+  lich_death_g = create_grid(lich_death, 64, 64)
+
+  lich_attack_a = create_animation(lich_attack_g, 1, 8, 64, 64, LICH_CAST_TIME / LICH_ATTACK_FRAMES)
+  lich_idle_a = create_animation(lich_idle_g, 1, 4, 64, 64, 0.4)
+  lich_walk_a = create_animation(lich_walk_g, 1, 6, 64, 64, 0.2)
+  lich_run_a = create_animation(lich_run_g, 1, 6, 64, 64, 0.2)
+  lich_hurt_a = create_animation(lich_hurt_g, 1, 4, 64, 64, 0.4)
+  lich_death_a = create_animation(lich_death_g, 1, 10, 64, 64, 0.2)
+
+  lich_spritesheets = {
+
+    ['normal'] = {lich_idle_a, lich_idle},
+    ['walk'] = {lich_walk_a, lich_walk},
+    ['run'] = {lich_run_a, lich_run},
+    ['casting'] = {lich_attack_a, lich_attack},
+    ['channeling'] = {lich_attack_a, lich_attack},
+    ['hurt'] = {lich_hurt_a, lich_hurt},
+    ['death'] = {lich_death_a, lich_death},
+  }
+
+  skeleton_spritesheets = {
+    ['normal'] = {skeleton_idle_a, skeleton},
+    ['birth'] = {skeleton_birth_a, skeleton},
+    ['casting'] = {skeleton_attack_a, skeleton},
+  }
+
+  --all spritesheets
   enemy_spritesheets = {
     ['golem'] = golem_spritesheets,
     ['skeleton'] = skeleton_spritesheets,
     ['dragon'] = dragon_spritesheets,
     ['beholder'] = beholder_spritesheets,
+    ['lich'] = lich_spritesheets,
   }
 
   item_costs = {
