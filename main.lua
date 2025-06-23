@@ -29,20 +29,6 @@ if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
   require("lldebugger").start()
 end
 
--- Global damage number queue
-DAMAGE_NUMBER_LIMIT = 30
-DamageNumberQueue = {}
-
-function AddDamageNumber(ft)
-  table.insert(DamageNumberQueue, ft)
-  if #DamageNumberQueue > DAMAGE_NUMBER_LIMIT then
-    local oldest = table.remove(DamageNumberQueue, 1)
-    if oldest and not oldest.dead and oldest.destroy then
-      oldest:destroy()
-    end
-  end
-end
-
 function init()
   shared_init()
   SpawnGlobals.Init()

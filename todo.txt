@@ -308,7 +308,9 @@ BUGS:
 --------------
 
 floating damage numbers only half disappear
-ranged units stop just outside attack range
+floating damage numbers are hard to read
+laser troop can't move with space while casting 
+  (probably clobbered every frame? i dont know)
 
 PLAYER FEEDBACK
 
