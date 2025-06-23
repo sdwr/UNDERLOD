@@ -318,6 +318,21 @@ function Enemy:hit(damage, from, damageType, makesSound, cannotProcOnHit)
   if damageType == DAMAGE_TYPE_FIRE then
     self:burn(actual_damage, from)
   end
+
+  if damageType == DAMAGE_TYPE_LIGHTNING then
+    ChainLightning{
+      group = main.current.main, 
+      target = self, rs = 50, 
+      dmg = actual_damage, color = yellow[0], 
+      parent = self,
+      is_troop = not self.is_troop}
+  end
+
+  if damageType == DAMAGE_TYPE_SHOCK then
+    self:shock()
+  end
+
+
   
   self.hp = self.hp - actual_damage
   if self.hp > self.max_hp then self.hp = self.max_hp end

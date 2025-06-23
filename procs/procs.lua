@@ -681,7 +681,7 @@ end
 --needs 2 procs, so that the attack counter only counts down on 1 hit per attack
 Proc_Lightning = Proc:extend()
 function Proc_Lightning:init(args)
-  self.triggers = {PROC_ON_ATTACK, PROC_ON_HIT}
+  self.triggers = {PROC_ON_HIT}
   self.scope = 'troop'
 
   Proc_Lightning.super.init(self, args)
@@ -689,65 +689,15 @@ function Proc_Lightning:init(args)
   
 
   --define the proc's vars
-  self.damage = self.data.damage or 30
   self.damageType = DAMAGE_TYPE_LIGHTNING
-  self.chain = self.data.chain or 4
-  self.every_attacks = self.data.every_attacks or 4
-  self.radius = self.data.radius or 50
-  self.color = self.data.color or blue[0]
-
-  --define the procs memory
-  self.has_attacked = false
-  self.attacks_left = math.random(1, self.every_attacks)
-end
-
-function Proc_Lightning:onAttack(target)
-  Proc_Lightning.super.onAttack(self, target)
-  if self.attacks_left > 0 then
-    self.has_attacked = true
-  end
+  self.percent_damage_as_lightning = self.data.percent_damage_as_lightning or 0.3
 end
 
 function Proc_Lightning:onHit(target, damage)
   Proc_Lightning.super.onHit(self, target, damage)
-  if self.has_attacked then
-    self.has_attacked = false
-    self.attacks_left = self.attacks_left - 1
-    if self.attacks_left == 0 then
-      self.attacks_left = self.every_attacks
-
-      spark3:play{pitch = random:float(0.8, 1.2), volume = 0.7}
-      --remove level from spell
-      ChainLightning{
-        group = main.current.main, 
-        target = target, rs = self.radius, 
-        dmg = self.damage, color = self.color, 
-        parent = self.unit, 
-        level = 1}
-
-    end
-  end
-end
-Proc_Shock = Proc:extend()
-function Proc_Shock:init(args)
-  self.triggers = {PROC_ON_HIT}
-  self.scope = 'troop'
-
-  Proc_Shock.super.init(self, args)
   
-  
-
-  --define the proc's vars
-  self.color = self.data.color or yellow[0]
-  self.duration = 5
-end
-
-function Proc_Shock:onHit(target, damage, damageType)
-  Proc_Shock.super.onHit(self, target, damage, damageType)
-  
-  if damageType == DAMAGE_TYPE_LIGHTNING then
-    target:shock(self.duration)
-  end
+  local lightning_damage = damage * self.percent_damage_as_lightning
+  target:hit(lightning_damage, nil, self.damageType, false)
 end
 
 Proc_Overcharge = Proc:extend()
@@ -1300,7 +1250,7 @@ function Proc_Fire:init(args)
   
   
   --define the proc's vars
-  self.damageType = 'fire'
+  self.damageType = DAMAGE_TYPE_FIRE
   self.percent_damage_as_burn = self.data.percent_damage_as_burn or 0.3
 end
 
@@ -2028,7 +1978,6 @@ proc_name_to_class = {
   ['lightning'] = Proc_Lightning,
   ['radiance'] = Proc_Radiance,
   ['shield'] = Proc_Shield,
-  ['shock'] = Proc_Shock,
   --red procs
   ['fire'] = Proc_Fire,
   ['lavapool'] = Proc_Lavapool,

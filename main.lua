@@ -1249,6 +1249,7 @@ function init()
     [DAMAGE_TYPE_FIRE] = red[3],
     [DAMAGE_TYPE_BURN] = red[3],
     [DAMAGE_TYPE_LIGHTNING] = yellow[3],
+    [DAMAGE_TYPE_SHOCK] = yellow[3],
     [DAMAGE_TYPE_POISON] = green[3],
     [DAMAGE_TYPE_COLD] = blue[3],
   }

@@ -988,7 +988,8 @@ function Unit:isMoving(dt)
   return diff > 0.1
 end
 
---new stacking burn system
+--BURN SYSTEM
+
 function Unit:burn(damage, from)
   local existing_buff = self.buffs['burn']
   
@@ -1085,8 +1086,17 @@ function Unit:burn_explode(from)
     damage_type = DAMAGE_TYPE_BURN,
   }
   
-  -- Play explosion sound
-  explosion1:play{pitch = random:float(0.8, 1.2), volume = explosion_volume}
+  -- Play fire explosion sound
+  fire1:play{pitch = random:float(0.8, 1.2), volume = explosion_volume}
+end
+
+--SHOCK SYSTEM
+function Unit:shock()
+
+  local shockBuff = {name = 'shock', color = yellow[0], duration = 5, maxDuration = 5, stats = {buff_def_m = SHOCK_DEF_REDUCTION}}
+
+  self:remove_buff('shock')
+  self:add_buff(shockBuff)
 end
 
 function Unit:isShielded()
@@ -1117,19 +1127,6 @@ function Unit:redshield(duration)
   end
   self:remove_buff('redshield')
   self:add_buff(redshieldBuff)
-end
-
-function Unit:shock(duration)
-  local shockBuff = {name = 'shock', color = yellow[0], duration = duration, maxDuration = duration, stats = {buff_def_m = SHOCK_DEF_REDUCTION}}
-  local existing_buff = self.buffs['shock']
-
-  shockBuff.stacks = 1
-  if existing_buff then
-    shockBuff.stacks = math.min((existing_buff.stacks or 1) + 1, MAX_STACKS_SHOCK)
-  end
-
-  self:remove_buff('shock')
-  self:add_buff(shockBuff)
 end
 
 function Unit:stun(duration)

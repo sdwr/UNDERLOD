@@ -563,13 +563,13 @@ function ChainLightning:init(args)
   self:init_game_object(args)
   if not self.group.world then self.dead = true; return end
   self.dmg = args.dmg or 5
-  self.damageType = args.damageType or DAMAGE_TYPE_LIGHTNING
+  self.damageType = args.damageType or DAMAGE_TYPE_SHOCK
 
   self.attack_sensor = Circle(self.target.x, self.target.y, self.rs)
-  local total_targets = args.chain or 3
+  local total_targets = SHOCK_MAX_CHAINS or 4
 
   local target_classes = nil
-  if self.team == "enemy" then
+  if not self.is_troop then
     target_classes = main.current.friendlies
   else
     target_classes = main.current.enemies
@@ -577,42 +577,70 @@ function ChainLightning:init(args)
   
   self.targets = {self.target}
   self.i = 0
+  self.hit_targets = {} -- Track which targets have already been hit
 
   local bounce = function()
     self.i = self.i + 1
-    if #self.targets >= self.i then
-      local target = self.targets[self.i]
-      if not target then return end
-      target:hit(self.dmg, self.parent, self.damageType, false)
+    
+    -- Check if we've reached the end of available targets
+    if self.i > #self.targets then
+      self.dead = true
+      return
+    end
+    
+    local target = self.targets[self.i]
+    if not target or target.dead then
+      -- Target is invalid or dead, terminate the chain
+      self.dead = true
+      return
+    end
+    
+    -- Only hit target if it hasn't been hit before
+    if not self.hit_targets[target] then
+      target:hit(self.dmg, nil, self.damageType, false)
+      self.hit_targets[target] = true -- Mark as hit
+    end
+
+
+
+    local lastTarget = nil
+    local currentTarget = nil
+    if self.i == 1 then
+      lastTarget = self.parent
+      currentTarget = self.targets[self.i]
+    else
+      lastTarget = self.targets[self.i-1]
+      currentTarget = self.targets[self.i]
+    end
+
+    if lastTarget and currentTarget then
       spark2:play{pitch = random:float(0.8, 1.2), volume = 0.7}
-
-      local lastTarget = nil
-      local currentTarget = nil
-      if self.i == 1 then
-        lastTarget = self.parent
-        currentTarget = self.targets[self.i]
-      else
-        lastTarget = self.targets[self.i-1]
-        currentTarget = self.targets[self.i]
-      end
-
-      if lastTarget and currentTarget then
-        LightningLine{group = main.current.effects, src = lastTarget, dst = currentTarget, color = self.color}
-      end
+      LightningLine{group = main.current.effects, src = lastTarget, dst = currentTarget, color = self.color}
+      lastTarget:hit(self.dmg, nil, self.damageType, false)
+      currentTarget:hit(self.dmg, nil, self.damageType, false)
+      self.dmg = self.dmg * (1 - (SHOCK_DAMAGE_REDUCTION_PER_CHAIN or 0.2))
+    end
+    
+    -- Check if this was the last target in the chain
+    if self.i >= #self.targets then
+      self.dead = true
     end
   end
 
 
   local targets_in_range = self:get_objects_in_shape(self.attack_sensor, target_classes)
   for _, target in ipairs(targets_in_range) do
-    if target.id ~= self.target.id and #self.targets < total_targets then
+    if target ~= self.target and #self.targets < total_targets and not self.hit_targets[target] then
       table.insert(self.targets, target)
     end
   end
 
   
   bounce()
-  self.t:every(0.2, bounce, total_targets, function() self.dead = true end)
+  -- Only continue if we have more targets to chain to
+  if #self.targets > 1 then
+    self.t:every(0.2, bounce, #self.targets - 1, function() self.dead = true end)
+  end
 
 end
 
@@ -621,6 +649,10 @@ function ChainLightning:update(dt)
 end
 
 function ChainLightning:draw()
+end
+
+function ChainLightning:die()
+  self.dead = true
 end
 
 --------------------------
