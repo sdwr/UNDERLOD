@@ -378,7 +378,7 @@ function Burst:init(args)
   self.radius = self.radius or 8
   self.shape = Circle(self.x, self.y, self.radius)
 
-  self.color = red[0] or self.color
+  self.color = self.color or red[0]
   self.color = self.color:clone()
   self.color.a = 0.7
 
@@ -459,6 +459,7 @@ function Burst:explode()
       angle = angle + angle_between
       BurstBullet{
         group = self.group,
+        color = self.color,
         x = self.x,
         y = self.y,
         r = angle,
@@ -492,7 +493,7 @@ function BurstBullet:init(args)
   self.radius = self.radius or 4
   self.shape = Circle(self.x, self.y, self.radius)
 
-  self.color = red[0] or self.color
+  self.color = self.color or red[0]
   self.color = self.color:clone()
   self.color.a = 0.7
 

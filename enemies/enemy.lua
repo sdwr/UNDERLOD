@@ -1,3 +1,4 @@
+
 enemy_to_class = {}
 
 Enemy = Unit:extend()

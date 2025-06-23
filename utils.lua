@@ -127,7 +127,7 @@ end
 
 function find_enemy_spritesheet(enemy)
   local spritesheet = enemy_spritesheets[enemy.name] or enemy_spritesheets[enemy.icon] or enemy_spritesheets[enemy]
-  return spritesheet
+  return clone_spritesheet(spritesheet)
 end
 
 function get_progress_bar()
@@ -143,4 +143,24 @@ function get_progress_location()
     return bar:get_progress_location()
   end
   return {x = 0, y = 0}
+end
+
+function clone_spritesheet(spritesheet)
+  if not spritesheet then return nil end
+  
+  local cloned = {}
+  for state, data in pairs(spritesheet) do
+    if type(data) == 'table' and #data == 2 then
+      -- Clone the animation (first element) and keep the image reference (second element)
+      local animation = data[1]
+      local image = data[2]
+      
+      -- Use the animation's clone method
+      local new_animation = animation:clone()
+      cloned[state] = {new_animation, image}
+    else
+      cloned[state] = data
+    end
+  end
+  return cloned
 end
