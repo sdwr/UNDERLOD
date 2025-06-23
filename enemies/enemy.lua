@@ -1,4 +1,3 @@
-
 enemy_to_class = {}
 
 Enemy = Unit:extend()
@@ -149,7 +148,7 @@ function Enemy:update(dt)
       else
         --pass, add flee later
       end
-    elseif self.state == unit_states['frozen'] or unit_states['channeling'] then
+    elseif self.state == unit_states['frozen'] or self.state == unit_states['channeling'] then
       self:set_velocity(0,0)
     end
 

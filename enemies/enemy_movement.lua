@@ -99,7 +99,7 @@ function Update_Enemy_Movement(self, dt)
       else
           -- dont need to move
       end
-  elseif self.state == unit_states['frozen'] or unit_states['channeling'] then
+  elseif self.state == unit_states['frozen'] or self.state == unit_states['channeling'] then
     self:set_velocity(0,0)
   end
 

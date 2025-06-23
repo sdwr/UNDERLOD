@@ -204,6 +204,7 @@ function Unit:config_physics_object()
 
     self:set_damping(BOSS_DAMPING)
     self:set_restitution(BOSS_RESTITUTION)
+    self:set_friction(BOSS_FRICTION)
 
     self:set_mass(BOSS_MASS)
 
@@ -216,6 +217,7 @@ function Unit:config_physics_object()
 
     self:set_damping(SPECIAL_ENEMY_DAMPING)
     self:set_restitution(SPECIAL_ENEMY_RESTITUTION)
+    self:set_friction(ENEMY_FRICTION)
 
     self:set_mass(SPECIAL_ENEMY_MASS)
 
@@ -225,6 +227,7 @@ function Unit:config_physics_object()
     
     self:set_damping(REGULAR_ENEMY_DAMPING)
     self:set_restitution(REGULAR_ENEMY_RESTITUTION)
+    self:set_friction(ENEMY_FRICTION)
 
     self:set_mass(REGULAR_ENEMY_MASS)
 
@@ -233,12 +236,14 @@ function Unit:config_physics_object()
   elseif self.class == 'enemy_critter' then
     self:set_damping(CRITTER_DAMPING)
     self:set_restitution(CRITTER_RESTITUTION)
+    self:set_friction(ENEMY_FRICTION)
 
     self:set_mass(CRITTER_MASS)
     self:set_as_steerable(MAX_V, MAX_ENEMY_FORCE, 4*math.pi, 4)
   elseif self.class =='critter' then
     self:set_damping(CRITTER_DAMPING)
     self:set_restitution(CRITTER_RESTITUTION)
+    self:set_friction(ENEMY_FRICTION)
 
     self:set_mass(CRITTER_MASS)
     self:set_as_steerable(MAX_V, MAX_ENEMY_FORCE, 4*math.pi, 4)
@@ -252,6 +257,7 @@ function Unit:config_physics_object()
 
     self:set_damping(TROOP_DAMPING)
     self:set_restitution(TROOP_RESITUTION)
+    self:set_friction(TROOP_FRICTION)
 
     self:set_mass(TROOP_MASS)
 
@@ -866,7 +872,7 @@ function Unit:calculate_stats(first_run)
 
   self.class_mvspd_m = self.class_mvspd_m*unit_stat_mult.mvspd
   self.max_move_v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m
-  self.max_v = self.max_move_v
+  self.max_v = self.max_move_v * 50
 end
 
 function Unit:onTickCallbacks(dt)
@@ -1335,7 +1341,6 @@ function Unit:try_backswing()
   if self.castObject and self.castObject.backswing then
     if self.state == unit_states['casting'] then
       Helper.Unit:set_state(self, unit_states['stopped'])
-      print('backswing', self.castObject.backswing)
       self.t:after(self.castObject.backswing, function()
         if self.state == unit_states['stopped'] then
           Helper.Unit:set_state(self, unit_states['normal'])
