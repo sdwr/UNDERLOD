@@ -1999,6 +1999,7 @@ function init()
   }
 
   special_enemies = {
+    'cleaver',
     'laser',
     'stomper',
     'burst',
@@ -2030,6 +2031,7 @@ function init()
 
   special_enemy_by_tier = {
     [1] = {
+      'cleaver',
       'laser',
       'stomper',
       'burst',
@@ -2073,6 +2075,8 @@ function init()
     ['shooter'] = 100,
     ['seeker'] = 100,
     --special enemies t1
+    ['cleaver'] = 300,
+
     ['laser'] = 300,
     ['rager'] = 300,
     ['stomper'] = 300,
@@ -2100,6 +2104,8 @@ function init()
   enemy_to_color = {
     ['shooter'] = grey[0],
     ['seeker'] = grey[0],
+    ['cleaver'] = grey[0],
+
     ['rager'] = red[3],
     ['stomper'] = red[3],
     ['charger'] = red[3],

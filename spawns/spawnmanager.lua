@@ -365,7 +365,10 @@ function SpawnManager:spawn_next_group_in_chain()
   if self.current_group_index > #wave_data then
       self.state = 'waiting_for_clear'
       if self.persistent_wave_spawn_marker and not self.persistent_wave_spawn_marker.dead then
+          print('killing wave marker')
+          print(self.persistent_wave_spawn_marker)
           self.persistent_wave_spawn_marker:die()
+          print('wave marker killed')
           self.persistent_wave_spawn_marker = nil
       end
       return

@@ -22,6 +22,7 @@ require 'enemies/regular/burst'
 require 'enemies/regular/boomerang'
 require 'enemies/regular/plasma'
 require 'enemies/regular/firewall_caster'
+require 'enemies/regular/cleaver'
 
 require 'enemies/miniboss/bigstomper'
 

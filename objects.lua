@@ -34,6 +34,10 @@ function SpawnMarker:draw()
   graphics.pop()
 end
 
+function SpawnMarker:die()
+  self.dead = true
+end
+
 
 
 
