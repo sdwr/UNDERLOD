@@ -408,7 +408,7 @@ function SpawnManager:handle_boss_fight()
   if boss_name ~= "" then
       self.t:after(1.5, function() 
           Spawn_Boss(self.arena, boss_name) 
-          self.t:every(function() return LevelManager.activeBoss and LevelManager.activeBoss.dead end, 
+          self.t:every(function() return not LevelManager.activeBoss end, 
               function() self.arena:quit() end)
       end)
   end

@@ -1745,7 +1745,7 @@ function Proc_Icenova:init(args)
     -- Define the proc's properties from data
     self.damage = (self.data.damage or 20) * (self.data.damageMulti or 1)
     self.damageType = self.data.damageType or DAMAGE_TYPE_COLD
-    self.radius_boost = self.data.radius_boost or 0
+    self.radius_boost = self.data.radius_boost or 3
     self.radius = self.data.radius or 45
     self.duration = self.data.duration or 0.2
     self.chillAmount = self.data.chillAmount or 0.5
@@ -1844,7 +1844,7 @@ function Proc_Icenova:update_proc_display()
         local progress = 1 - (self.windup_timer / self.procDelay) -- Progress from 0 to 1
         progress = math.max(0, math.min(1, progress)) -- Clamp progress to prevent errors
         
-        self.proc_display_area.r = self.radius * progress
+        self.proc_display_area.r = (self.radius + self.radius_boost) * progress
         self.proc_display_area.x = self.unit.x
         self.proc_display_area.y = self.unit.y
     end
