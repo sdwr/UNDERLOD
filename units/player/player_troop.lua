@@ -80,7 +80,7 @@ function Troop:update(dt)
               self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
               self:rotate_towards_velocity(1)
           else
-              self:set_velocity(0, 0) -- Stop when we reach the cursor
+              --self:set_velocity(0, 0) -- Stop when we reach the cursor
           end
       end
 
@@ -152,7 +152,7 @@ function Troop:update(dt)
         
           -- 3c. If we're in range but waiting for cooldown, stand still.
           else
-              self:set_velocity(0, 0)
+              --self:set_velocity(0, 0)
               self:steering_separate(16, troop_classes)
               -- Also, rotate to face the target while waiting.
               self:rotate_towards_object(target, 1)
@@ -160,7 +160,7 @@ function Troop:update(dt)
         else
           -- 4. NO TARGET
           -- If after all checks we still have no target, do nothing. Stand still.
-          self:set_velocity(0, 0)
+          --self:set_velocity(0, 0)
           self:steering_separate(16, troop_classes)
         end
       end
@@ -490,7 +490,7 @@ function Troop:hit(damage, from, damageType, makesSound, cannotProcOnHit)
 
   if self.hp > 0 then
     if makesSound then
-      _G[random:table{'player_hit1', 'player_hit2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+      _G[random:table{'player_hit1', 'player_hit2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.8}
     end
   else
     if makesSound then

@@ -58,7 +58,8 @@ end
 
 function Wave_Types:Basic_Plus_Two_Special(tier)
   local wave = {}
-  local special = random:table(special_enemy_by_tier[tier])
+  -- local special = random:table(special_enemy_by_tier[tier])
+  local special = 'laser'
   local normal = random:table(normal_enemy_by_tier[tier])
   table.insert(wave, {normal, NORMAL_ENEMIES_PER_GROUP, nil})
   table.insert(wave, {special, 1, 'random'})
@@ -172,9 +173,9 @@ function Wave_Types:Get_Waves(level)
     wave = self:Two_Cleavers()
     table.insert(waves, wave)
   elseif level == 3 then
-    wave = self:Two_Cleavers_Plus_One_Special(1)
-    table.insert(waves, wave)
     wave = self:Basic_Plus_Two_Special(1)
+    table.insert(waves, wave)
+    wave = self:Two_Cleavers_Plus_One_Special(1)
     table.insert(waves, wave)
   elseif level == 4 then
     wave = self:Basic_Plus_Two_Burst(1)

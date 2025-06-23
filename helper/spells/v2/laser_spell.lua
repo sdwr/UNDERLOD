@@ -63,6 +63,7 @@ function Laser_Spell:init(args)
 
   self.charge_duration = self.charge_duration or 1
   self.fire_duration = self.fire_duration or 0.2
+  self.total_duration = self.charge_duration + self.fire_duration
   self.damage_once = self.damage_once
   self.already_damaged = {}
   self.fade_fire_draw = self.fade_fire_draw
@@ -98,6 +99,7 @@ function Laser_Spell:init(args)
   self.is_charging = true
   self.fire_time = 0
   self.is_firing = false
+  self.total_time = 0
   --for damage once
   self.has_damaged = false
   --for damage per tick
@@ -166,6 +168,7 @@ function Laser_Spell:try_repeat_attack()
 end
 
 function Laser_Spell:update(dt)
+  self.total_time = self.total_time + dt
   if not self.unit or self.unit.dead then
     if not self.lasermode == 'fixed' then
       self:die()
@@ -177,6 +180,10 @@ function Laser_Spell:update(dt)
       self:die()
       return
     end
+  end
+  if self.total_time > self.total_duration then
+    self:die()
+    return
   end
   
   Laser_Spell.super.update(self, dt)

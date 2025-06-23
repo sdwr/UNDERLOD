@@ -1683,6 +1683,19 @@ function init()
   slime_hurt_a = create_animation(slime_hurt_g, 1, 5, 64, 64, 0.4)
   slime_death_a = create_animation(slime_death_g, 1, 10, 64, 64, 0.2)
 
+  MECH_SPRITE_W = 80
+  MECH_SPRITE_H = 80
+
+  MECH_SPRITE_SCALE = 1.8
+
+  mech_idle = Image(spriteFolder .. '/Mech Assets Pack/Cyan/Animation/Mechani7done')
+
+  mech_idle_g = create_grid(mech_idle, 80, 80)
+  mech_idle_a = create_animation(mech_idle_g, 1, 36, 80, 80, 0.1)
+
+  mech_spritesheets = {
+    ['normal'] = {mech_idle_a, mech_idle},
+  }
 
   lich_spritesheets = {
 
@@ -1719,6 +1732,7 @@ function init()
     ['beholder'] = beholder_spritesheets,
     ['lich'] = lich_spritesheets,
     ['slime'] = slime_spritesheets,
+    ['mech'] = mech_spritesheets,
   }
 
   item_costs = {

@@ -208,7 +208,7 @@ function Helper.Unit:add_default_state_always_run_functions(unit)
 end
 
 function Helper.Unit:reset_animations(unit)
-    if unit.spritesheet then
+    if unit.spritesheet and not unit.single_animation then
         for k, v in pairs(unit.spritesheet) do
             v[1]:gotoFrame(1)
         end

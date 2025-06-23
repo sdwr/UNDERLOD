@@ -87,7 +87,6 @@ function EnemyCritter:hit(damage, from, damageType, makesSound, cannotProcOnHit)
   end
   self:onGotHitCallbacks(from, damage, damageType)
 
-  self:show_hp()
   if self.hp <= 0 then
     if from and from.onKillCallbacks then
       from:onKillCallbacks(self)
