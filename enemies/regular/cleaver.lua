@@ -6,7 +6,7 @@ fns['init_enemy'] = function(self)
   --set extra data from variables
   self.data = self.data or {}
   self.size = self.data.size or 'big'
-  self.icon = 'nil'
+  self.icon = 'slime'
 
   --create shape
   self.color = grey[0]:clone()
@@ -26,18 +26,19 @@ fns['init_enemy'] = function(self)
     oncast = function() end,
     instantspell = true,
     castcooldown = 2.5,
-    cast_length = 0,
+    cast_length = SLIME_CAST_TIME,
+    cast_sound = sword_swing,
+    cast_volume = 1,
     backswing = 1,
     spellclass = Cleave,
     spelldata = {
       group = main.current.main,
       team = "enemy",
-      sound = function() sword_swing:play({pitch = math.random(0.8, 1.2), volume = 0.8}) end,
       target = function() return self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies) end,
       cancel_on_death = true,
-      dmg = self.dmg or 20,
-      cone_radius = 40,
-      cone_angle = math.pi/2,
+      dmg = self.dmg or 25,
+      cone_radius = 50,
+      cone_angle = math.pi/1.5,
       color = red[0],
       parent = self
     },
@@ -48,12 +49,17 @@ fns['init_enemy'] = function(self)
 end
 
 fns['draw_enemy'] = function(self)
+  graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
 
-  local animation_success = self:draw_animation(self.state, self.x, self.y, 0, 2, 2)
+  local sx = (self.shape.w / SLIME_SPRITE_W) * SLIME_SPRITE_SCALE
+  local sy = (self.shape.h / SLIME_SPRITE_H) * SLIME_SPRITE_SCALE
+  local animation_success = self:draw_animation(self.state, self.x, self.y, 0, sx, sy)
 
   if not animation_success then
     graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
   end
+
+  graphics.pop()
 
 end
 

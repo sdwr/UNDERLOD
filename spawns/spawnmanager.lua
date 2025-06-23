@@ -228,7 +228,7 @@ function SpawnManager:init(arena)
     -- (States remain the same)
 
     -- Timers and Trackers
-    self.time_between_waves = arena.time_between_waves or 5
+    self.time_between_waves = arena.time_between_waves or 3
     self.max_enemies_on_screen = arena.max_enemies or 20
     
     self.timer = arena.entry_delay or 0.5

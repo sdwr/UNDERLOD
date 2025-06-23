@@ -1654,6 +1654,36 @@ function init()
   lich_hurt_a = create_animation(lich_hurt_g, 1, 4, 64, 64, 0.4)
   lich_death_a = create_animation(lich_death_g, 1, 10, 64, 64, 0.2)
 
+  SLIME_CAST_TIME = 0.3
+  SLIME_ATTACK_FRAMES = 5
+
+  SLIME_SPRITE_W = 64
+  SLIME_SPRITE_H = 64
+
+  SLIME_SPRITE_SCALE = 4
+
+  slime_attack = Image(spriteFolder .. '/Slime1/Attack/Slime1_Attack_full')
+  slime_idle = Image(spriteFolder .. '/Slime1/Idle/Slime1_Idle_full')
+  slime_walk = Image(spriteFolder .. '/Slime1/Walk/Slime1_Walk_full')
+  slime_run = Image(spriteFolder .. '/Slime1/Run/Slime1_Run_full')
+  slime_hurt = Image(spriteFolder .. '/Slime1/Hurt/Slime1_Hurt_full')
+  slime_death = Image(spriteFolder .. '/Slime1/Death/Slime1_Death_full')
+
+  slime_attack_g = create_grid(slime_attack, 64, 64)
+  slime_idle_g = create_grid(slime_idle, 64, 64)
+  slime_walk_g = create_grid(slime_walk, 64, 64)
+  slime_run_g = create_grid(slime_run, 64, 64)
+  slime_hurt_g = create_grid(slime_hurt, 64, 64)
+  slime_death_g = create_grid(slime_death, 64, 64)
+
+  slime_attack_a = create_animation(slime_attack_g, 1, 5, 64, 64, SLIME_CAST_TIME / SLIME_ATTACK_FRAMES)
+  slime_idle_a = create_animation(slime_idle_g, 1, 6, 64, 64, 0.2)
+  slime_walk_a = create_animation(slime_walk_g, 1, 8, 64, 64, 0.2)
+  slime_run_a = create_animation(slime_run_g, 1, 8, 64, 64, 0.2)
+  slime_hurt_a = create_animation(slime_hurt_g, 1, 5, 64, 64, 0.4)
+  slime_death_a = create_animation(slime_death_g, 1, 10, 64, 64, 0.2)
+
+
   lich_spritesheets = {
 
     ['normal'] = {lich_idle_a, lich_idle},
@@ -1671,6 +1701,16 @@ function init()
     ['casting'] = {skeleton_attack_a, skeleton},
   }
 
+  slime_spritesheets = {
+    ['normal'] = {slime_idle_a, slime_idle},
+    ['walk'] = {slime_walk_a, slime_walk},
+    ['run'] = {slime_run_a, slime_run},
+    ['casting'] = {slime_attack_a, slime_attack},
+    ['channeling'] = {slime_attack_a, slime_attack},
+    ['hurt'] = {slime_hurt_a, slime_hurt},
+    ['death'] = {slime_death_a, slime_death},
+  }
+
   --all spritesheets
   enemy_spritesheets = {
     ['golem'] = golem_spritesheets,
@@ -1678,6 +1718,7 @@ function init()
     ['dragon'] = dragon_spritesheets,
     ['beholder'] = beholder_spritesheets,
     ['lich'] = lich_spritesheets,
+    ['slime'] = slime_spritesheets,
   }
 
   item_costs = {
