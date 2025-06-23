@@ -1638,7 +1638,7 @@ function init()
   LICH_SPRITE_W = 64
   LICH_SPRITE_H = 64
 
-  LICH_SPRITE_SCALE = 2
+  LICH_SPRITE_SCALE = 3
 
   lich_attack = Image(spriteFolder .. '/Lich2/Attack/Lich2_Attack_full')
   lich_idle = Image(spriteFolder .. '/Lich2/Idle/Lich2_Idle_full')
@@ -1700,9 +1700,35 @@ function init()
   mech_idle_g = create_grid(mech_idle, 80, 80)
   mech_idle_a = create_animation(mech_idle_g, 1, 36, 80, 80, 0.1)
 
-  mech_spritesheets = {
-    ['normal'] = {mech_idle_a, mech_idle},
-  }
+  LIZARDMAN_SPRITE_W = 64
+  LIZARDMAN_SPRITE_H = 64
+
+  LIZARDMAN_CAST_TIME = 1
+  LIZARDMAN_ATTACK_FRAMES = 7
+
+  LIZARDMAN_SPRITE_SCALE = 3.5
+
+  lizardman_idle = Image(spriteFolder .. '/lizardmen/Lizardman1/Idle/Lizardman1_Idle_full')
+  lizardman_walk = Image(spriteFolder .. '/lizardmen/Lizardman1/Walk/Lizardman1_Walk_full')
+  lizardman_run = Image(spriteFolder .. '/lizardmen/Lizardman1/Run/Lizardman1_Run_full')
+  lizardman_attack = Image(spriteFolder .. '/lizardmen/Lizardman1/Attack/Lizardman1_Attack_full')
+  lizardman_hurt = Image(spriteFolder .. '/lizardmen/Lizardman1/Hurt/Lizardman1_Hurt_full')
+  lizardman_death = Image(spriteFolder .. '/lizardmen/Lizardman1/Death/Lizardman1_Death_full')
+
+  lizardman_idle_g = create_grid(lizardman_idle, 64, 64)
+  lizardman_walk_g = create_grid(lizardman_walk, 64, 64)
+  lizardman_run_g = create_grid(lizardman_run, 64, 64)
+  lizardman_attack_g = create_grid(lizardman_attack, 64, 64)
+  lizardman_hurt_g = create_grid(lizardman_hurt, 64, 64)
+  lizardman_death_g = create_grid(lizardman_death, 64, 64)
+
+  lizardman_idle_a = create_animation(lizardman_idle_g, 1, 4, 64, 64, 0.4)
+  lizardman_walk_a = create_animation(lizardman_walk_g, 1, 6, 64, 64, 0.2)
+  lizardman_run_a = create_animation(lizardman_run_g, 1, 8, 64, 64, 0.2)
+  lizardman_attack_a = create_animation(lizardman_attack_g, 1, 7, 64, 64, LIZARDMAN_CAST_TIME / LIZARDMAN_ATTACK_FRAMES)
+  lizardman_hurt_a = create_animation(lizardman_hurt_g, 1, 5, 64, 64, 0.4)
+  lizardman_death_a = create_animation(lizardman_death_g, 1, 7, 64, 64, 0.2)
+
 
   lich_spritesheets = {
 
@@ -1730,6 +1756,20 @@ function init()
     ['hurt'] = {slime_hurt_a, slime_hurt},
     ['death'] = {slime_death_a, slime_death},
   }
+  mech_spritesheets = {
+    ['normal'] = {mech_idle_a, mech_idle},
+  }
+
+  lizardman_spritesheets = {
+
+    ['normal'] = {lizardman_idle_a, lizardman_idle},
+    ['walk'] = {lizardman_walk_a, lizardman_walk},
+    ['run'] = {lizardman_run_a, lizardman_run},
+    ['casting'] = {lizardman_attack_a, lizardman_attack},
+    ['channeling'] = {lizardman_attack_a, lizardman_attack},
+    ['hurt'] = {lizardman_hurt_a, lizardman_hurt},
+    ['death'] = {lizardman_death_a, lizardman_death},
+  }
 
   --all spritesheets
   enemy_spritesheets = {
@@ -1740,7 +1780,9 @@ function init()
     ['lich'] = lich_spritesheets,
     ['slime'] = slime_spritesheets,
     ['mech'] = mech_spritesheets,
+    ['lizardman'] = lizardman_spritesheets,
   }
+
 
   item_costs = {
     ['smallsword'] = 3,

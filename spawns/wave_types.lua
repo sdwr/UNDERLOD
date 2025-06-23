@@ -183,13 +183,13 @@ function Wave_Types:Get_Waves(level)
     wave = self:Generic(1, 3, 2)
     table.insert(waves, wave)
   elseif level == 5 then
-    wave = self:Generic(1, 5, 3)
+    wave = self:Basic_Plus_Two_Boomerang(1)
     table.insert(waves, wave)
-    wave = self:Generic(1, 5, 5)
+    wave = self:Two_Basic_Three_Special(1)
   elseif level == 7 then
-    wave = self:Generic(1, 4, 4)
+    wave = self:Two_Basic_Three_Special(2)
     table.insert(waves, wave)
-    wave = self:Generic(1, 5, 5)
+    wave = self:Two_Basic_Three_Special(2)
     table.insert(waves, wave)
   elseif level == 8 then
     wave = self:Generic(1, 6, 3)
