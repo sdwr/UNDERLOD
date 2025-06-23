@@ -18,8 +18,6 @@ fns['init_enemy'] = function(self)
   self.class = 'special_enemy'
   self.movementStyle = MOVEMENT_TYPE_SEEK
 
-  self.base_mvspd = 40
-
   self.attack_options = {}
 
   local cleave = {
@@ -27,18 +25,19 @@ fns['init_enemy'] = function(self)
     viable = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end,
     oncast = function() end,
     instantspell = true,
-    castcooldown = 3,
-    cast_length = 0.2,
+    castcooldown = 2.5,
+    cast_length = 0,
     backswing = 1,
     spellclass = Cleave,
     spelldata = {
       group = main.current.main,
       team = "enemy",
+      sound = function() sword_swing:play({pitch = math.random(0.8, 1.2), volume = 0.8}) end,
       target = function() return self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies) end,
       cancel_on_death = true,
       dmg = self.dmg or 20,
       cone_radius = 40,
-      cone_angle = math.pi/3,
+      cone_angle = math.pi/2,
       color = red[0],
       parent = self
     },

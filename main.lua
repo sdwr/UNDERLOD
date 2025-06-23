@@ -161,6 +161,7 @@ function init()
   firebreath = Sound('firebreath.mp3', s)
 
   holylight = Sound('HolyLight.ogg', s)
+  sword_swing = Sound('sword swing.wav', s)
 
 
 

@@ -132,12 +132,12 @@ fns['init_enemy'] = function(self)
     }
   }
 
-  table.insert(self.attack_options, plasma_barrage_spiral)
-  table.insert(self.attack_options, plasma_barrage_straight)
+  -- table.insert(self.attack_options, plasma_barrage_spiral)
+  -- table.insert(self.attack_options, plasma_barrage_straight)
   table.insert(self.attack_options, safety_dance)
-  table.insert(self.attack_options, laser_ball)
-  table.insert(self.attack_options, plasma_ball)
-  table.insert(self.attack_options, quick_stomp)
+  -- table.insert(self.attack_options, laser_ball)
+  -- table.insert(self.attack_options, plasma_ball)
+  -- table.insert(self.attack_options, quick_stomp)
 end
 
 fns['draw_enemy'] = function(self)

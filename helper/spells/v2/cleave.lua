@@ -1,8 +1,3 @@
-
-
-
-
-
 Cleave = Object:extend()
 Cleave:implement(GameObject)
 
@@ -13,13 +8,13 @@ function Cleave:init(args)
     self.is_troop = false
     self.dmg = self.dmg or 30
     self.cone_radius = self.cone_radius or 40 -- The length of the cone
-    self.cone_angle = self.cone_angle or math.pi / 3 
+    self.cone_angle = self.cone_angle or math.pi / 2 
     self.knockback_force = self.knockback_force or LAUNCH_PUSH_FORCE_ENEMY
     self.knockback_duration = self.knockback_duration or KNOCKBACK_DURATION_ENEMY
-    self.duration = self.duration or 0.15 -- How long the visual stays on screen
+    self.duration = self.duration or 0.1 -- How long the visual stays on screen
     self.color = self.color or red[0]
     self.color_transparent = self.color:clone()
-    self.color_transparent.a = 0.2
+    self.color_transparent.a = 0.1
 
     self.attack_sensor = Circle(self.x, self.y, self.cone_radius)
 
@@ -35,11 +30,11 @@ function Cleave:init(args)
     -- Create the visual mesh for the cone
     self.mesh = self:create_cone_mesh()
 
-    -- Apply damage and knockback instantly
-    self:apply_effects()
+    -- Track units that have been affected to avoid hitting them multiple times
+    self.affected_units = {}
 
     -- Set a timer for the visual to disappear
-    self.t:after(self.duration, function() self:die() end)
+    self.time_elapsed = 0
 end
 
 function Cleave:apply_effects()
@@ -52,15 +47,26 @@ function Cleave:apply_effects()
 
   local angle_start = self.angle - (self.cone_angle / 2)
   local angle_end = self.angle + (self.cone_angle / 2)
+  
+  -- Calculate current cone radius based on progress
+  local progress = self.time_elapsed / self.duration
+  local current_radius = self.cone_radius * progress
 
   for _, target in ipairs(potential_targets) do
-    local angle_to_target = self.unit:angle_to_object(target)
-    
-    -- 2. Check if the target is within the angle of the cone
-    if Helper.Geometry:is_angle_between(angle_to_target, angle_start, angle_end) then
-      -- Target is inside the cone, apply effects!
-      target:hit(self.dmg, self.unit)
-      target:push(self.knockback_force, angle_to_target, nil, self.knockback_duration)
+    -- Skip if already affected
+    if not self.affected_units[target] then
+      local angle_to_target = self.unit:angle_to_object(target)
+      local distance_to_target = self.unit:distance_to_object(target)
+      
+      -- Check if the target is within the current cone radius and angle
+      if Helper.Geometry:is_angle_between(angle_to_target, angle_start, angle_end) and distance_to_target <= current_radius then
+        -- Target is inside the current cone, apply effects!
+        target:hit(self.dmg, self.unit)
+        target:push(self.knockback_force, angle_to_target, nil, self.knockback_duration)
+        
+        -- Mark as affected to avoid hitting again
+        self.affected_units[target] = true
+      end
     end
   end
 end
@@ -95,14 +101,38 @@ function Cleave:create_cone_mesh()
 end
 
 function Cleave:update(dt)
-  self:update_game_object(dt)
+  self:update_game_object(dt) 
+  self.time_elapsed = self.time_elapsed + dt
+  
+  -- Apply effects progressively as the cone grows
+  self:apply_effects()
+  
+  if self.time_elapsed > self.duration then
+    self:die()
+  end
 end
 
 function Cleave:draw()
     if self.mesh then
         graphics.push(self.x, self.y, 0)
-        graphics.set_color(self.color_transparent)
-        love.graphics.draw(self.mesh)
+        
+        -- Calculate the growth progress (0 to 1)
+        local progress = self.time_elapsed / self.duration
+        
+        -- Use draw_with_mask to create the growing cone effect
+        local draw_cone = function()
+            graphics.set_color(self.color_transparent)
+            love.graphics.draw(self.mesh)
+        end
+        
+        local draw_mask = function()
+            -- Draw a growing circle mask
+            local current_radius = self.cone_radius * progress
+            graphics.circle(self.unit.x, self.unit.y, current_radius, self.color_transparent)
+        end
+        
+        graphics.draw_with_mask(draw_cone, draw_mask)
+        
         graphics.pop()
     end
 end
