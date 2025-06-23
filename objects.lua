@@ -1414,6 +1414,11 @@ function Unit:delay_cast()
 
 end
 
+function Unit:is_facing_left()
+  local r = self:get_angle() or 0
+  return math.cos(r) < 0
+end
+
 function Unit:launch_at_facing(force_magnitude, duration)
   if self.state == unit_states['casting'] then
     self:end_cast()

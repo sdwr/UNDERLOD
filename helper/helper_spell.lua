@@ -234,30 +234,6 @@ function Helper.Spell:target_is_in_range(unit, range, points)
     return Helper.Spell:is_in_range(unit, target, range, points)
 end
 
--- remove this at some point
-function Helper.Spell:there_is_target_in_range(unit, range, points)
-    points = points or false
-    range = range + 30
-    
-    if not points then
-        for i, target in ipairs(Helper.Unit:get_list(not unit.is_troop)) do
-            if Helper.Geometry:distance(unit.x, unit.y, target.x, target.y) < range then
-                return true
-            end
-        end
-    else
-        for i, target in ipairs(Helper.Unit:get_list(not unit.is_troop)) do
-            for j, point in ipairs(target.points) do
-                if Helper.Geometry:distance(unit.x, unit.y, target.x + point.x, target.y + point.y) < range then
-                    return true
-                end
-            end
-        end
-    end
-
-    return false
-end
-
 function Helper.Spell:get_enemies_in_range(unit, range)
   local enemies = {}
   for i, troop in ipairs(Helper.Unit:get_list(not unit.is_troop)) do

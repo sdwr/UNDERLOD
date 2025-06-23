@@ -1612,6 +1612,13 @@ function init()
 
   --enemy sprites
   SKELETON_CAST_TIME = 1
+  SKELETON_ATTACK_FRAMES = 8
+
+  SKELETON_SPRITE_W = 24
+  SKELETON_SPRITE_H = 24
+
+  SKELETON_SPRITE_SCALE = 6
+
 
   skeleton = Image(spriteFolder .. 'room8_skeleton')
 
@@ -1631,7 +1638,7 @@ function init()
   LICH_SPRITE_W = 64
   LICH_SPRITE_H = 64
 
-  LICH_SPRITE_SCALE = 3
+  LICH_SPRITE_SCALE = 2
 
   lich_attack = Image(spriteFolder .. '/Lich2/Attack/Lich2_Attack_full')
   lich_idle = Image(spriteFolder .. '/Lich2/Idle/Lich2_Idle_full')

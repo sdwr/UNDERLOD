@@ -37,11 +37,22 @@ end
 
 fns['draw_enemy'] = function(self)
 
-  local animation_success = self:draw_animation(self.state, self.x, self.y, 0, 2, 2)
+  graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
+
+  local sx = (self.shape.w / SKELETON_SPRITE_W) * SKELETON_SPRITE_SCALE
+  local sy = (self.shape.h / SKELETON_SPRITE_H) * SKELETON_SPRITE_SCALE
+  
+  if self:is_facing_left() then
+    sx = -sx
+  end
+  
+  local animation_success = self:draw_animation(self.state, self.x, self.y, 0, sx, sy)
 
   if not animation_success then
     graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
   end
+
+  graphics.pop()
 
 end
 

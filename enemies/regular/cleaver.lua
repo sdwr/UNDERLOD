@@ -53,6 +53,11 @@ fns['draw_enemy'] = function(self)
 
   local sx = (self.shape.w / SLIME_SPRITE_W) * SLIME_SPRITE_SCALE
   local sy = (self.shape.h / SLIME_SPRITE_H) * SLIME_SPRITE_SCALE
+  
+  if self:is_facing_left() then
+    sx = -sx
+  end
+  
   local animation_success = self:draw_animation(self.state, self.x, self.y, 0, sx, sy)
 
   if not animation_success then
