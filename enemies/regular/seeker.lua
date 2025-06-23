@@ -20,7 +20,7 @@ fns['init_enemy'] = function(self)
   --set extra data from variables
   self.data = self.data or {}
   self.size = self.data.size or 'regular'
-  self.icon = 'skeleton'
+  self.icon = 'rat1'
 
   --create shape
   self.color = grey[0]:clone()
@@ -39,14 +39,14 @@ fns['draw_enemy'] = function(self)
 
   graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
 
-  local sx = (self.shape.w / SKELETON_SPRITE_W) * SKELETON_SPRITE_SCALE
-  local sy = (self.shape.h / SKELETON_SPRITE_H) * SKELETON_SPRITE_SCALE
+  local sx = (self.shape.w / RAT1_SPRITE_W) * RAT1_SPRITE_SCALE
+  local sy = (self.shape.h / RAT1_SPRITE_H) * RAT1_SPRITE_SCALE
   
   if self:is_facing_left() then
     sx = -sx
   end
   
-  local animation_success = self:draw_animation(self.state, self.x, self.y, 0, sx, sy)
+  local animation_success = self:draw_animation(self.state, self.x, self.y, 0)
 
   if not animation_success then
     graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)

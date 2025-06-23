@@ -72,7 +72,7 @@ fns['draw_enemy'] = function(self)
     sx = -sx
   end
   
-  local animation_success = self:draw_animation(self.state, self.x, self.y, 0, sx, sy)
+  local animation_success = self:draw_animation(self.state, self.x, self.y, 0)
 
   if not animation_success then
     graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)

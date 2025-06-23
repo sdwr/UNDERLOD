@@ -145,7 +145,7 @@ fns['draw_enemy'] = function(self)
 
     local sx = (self.shape.w / BEHOLDER_SPRITE_W) * BEHOLDER_SPRITE_SCALE
     local sy = (self.shape.h / BEHOLDER_SPRITE_H) * BEHOLDER_SPRITE_SCALE
-    local animation_success = self:draw_animation(self.state, self.x, self.y, 0, sx, sy)
+    local animation_success = self:draw_animation(self.state, self.x, self.y, 0)
 
     if not animation_success then
       graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 10, 10, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)

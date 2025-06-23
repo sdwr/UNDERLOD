@@ -1,4 +1,3 @@
-
 enemy_to_class = {}
 
 Enemy = Unit:extend()
@@ -69,28 +68,55 @@ function Enemy:update_animation(dt)
   end
 end
 
-function Enemy:draw_animation(state, x, y, r, sx, sy)
-  sx = sx or 1
-  sy = sy or 1
-  r = r or 0
+function Enemy:draw_animation(state, x, y, r)
+  -- Safety checks from Helper.Unit
+  if not self.spritesheet then
+    return false
+  end
+  if not self.icon then
+    print('no icon for unit ' .. self.type)
+    return false
+  end
+
+  local direction = self:is_facing_left() and -1 or 1
+  local sprite_size = enemy_sprite_sizes[self.icon]
+  if not sprite_size then
+    print('no sprite size for unit ' .. self.type)
+    return false
+  end
+
+  local animation = nil
+  local image = nil
+  local anim_set = self.spritesheet[state] or self.spritesheet['normal']
+  if anim_set then
+    animation = anim_set[1]
+    image = anim_set[2]
+  end
+
+  if not animation or not image then
+    print('no animation or image for unit ' .. self.type)
+    return false
+  end
+
+  local sprite_scale = enemy_sprite_scales[self.icon]
+  if not sprite_scale then
+    print('no sprite scale for unit ' .. self.type)
+    return false
+  end
   
-  local animation, image = nil, nil
+  -- Calculate scale using global constants
+  local scale_x = (self.shape.w / sprite_size[1]) * sprite_scale * direction
+  local scale_y = (self.shape.h / sprite_size[2]) * sprite_scale
+  
+  local frame_width, frame_height = animation:getDimensions()
+  local frame_center_x = frame_width / 2
+  local frame_center_y = frame_height / 2
 
-  if self.spritesheet and self.spritesheet[state] then
-    animation = self.spritesheet[state][1]
-    image = self.spritesheet[state][2]
-  elseif self.spritesheet and self.spritesheet['normal'] then
-    animation = self.spritesheet['normal'][1]
-    image = self.spritesheet['normal'][2]
-  end
+  graphics.push(x, y, 0, self.hfx.hit.x, self.hfx.hit.x)
+    animation:draw(image.image, x, y, r, scale_x, scale_y, frame_center_x, frame_center_y)
+  graphics.pop()
+  return true
 
-  if animation and image then
-    local frame_width, frame_height = animation:getDimensions()
-    animation:draw(image.image, x, y, r, sx, sy, frame_width / 2, frame_height / 2)
-    return true
-  end
-
-  return false
 end
 
 

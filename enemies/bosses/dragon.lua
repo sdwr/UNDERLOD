@@ -107,9 +107,7 @@ end
 fns['draw_enemy'] = function(self)
     graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
 
-    local sx = (self.shape.w / DRAGON_SPRITE_W) * DRAGON_SPRITE_SCALE
-    local sy = (self.shape.h / DRAGON_SPRITE_H) * DRAGON_SPRITE_SCALE
-    local animation_success = self:draw_animation(self.state, self.x, self.y, 0, sx, sy)
+    local animation_success = self:draw_animation(self.state, self.x, self.y, 0)
 
     if not animation_success then
       local points = self:make_regular_polygon(3, (self.shape.w / 2) / 60 * 70, self:get_angle())
