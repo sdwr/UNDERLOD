@@ -1754,7 +1754,7 @@ function Proc_Icenova:init(args)
 
     -- Cooldown and wind-up values
     self.cooldown = self.data.cooldown or 5
-    self.cancel_cooldown = self.data.cancel_cooldown or 0.5
+    self.cancel_cooldown = self.data.cancel_cooldown or 0.3
     self.procDelay = self.data.procDelay or 0.75 -- This is the wind-up duration
 
     -- State machine setup
