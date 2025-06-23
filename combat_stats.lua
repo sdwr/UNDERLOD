@@ -7,6 +7,9 @@ SPAWNS_IN_GROUP = 6
 NORMAL_ENEMIES_PER_GROUP = 6
 SPAWN_CHECKS = 10
 
+--make enemies more difficult after each boss
+
+
 --stat constants
 TROOP_HP = 100
 TROOP_DAMAGE = 10
@@ -43,22 +46,49 @@ SHOCK_DEF_REDUCTION = -0.04
 
 REPEAT_ATTACK_DELAY = 0.7
 
+BOSS_LEVELS = {6, 11, 16, 21}
+ENEMY_SCALING_PER_LEVEL = 0.15
+ENEMY_SCALING_PER_ZONE = 1
 
---add 0.25 to the scaling for each boss level (boss levels are every 6 levels)
-BOSS_HP_SCALING = function(level) return LEVEL_TO_TIER(level) end
 
+GET_LAST_BOSS_LEVEL = function(level)
+  --find the boss level before this one
+  local last_boss_level = 0
+  for _, boss_level in pairs(BOSS_LEVELS) do
+    if level <= boss_level then
+      break
+    else
+      last_boss_level = boss_level
+    end
+  end
+  return last_boss_level
+end
+
+--stat scaling per level in each zone
 REGULAR_ENEMY_SCALING = function(level)
-    return 1 + ((LEVEL_TO_TIER(level) - 1) / 4)
-    -- return math.pow(1.1, level) + ((LEVEL_TO_TIER(level) - 1) / 4)
-  end
+  local last_boss_level = GET_LAST_BOSS_LEVEL(level)
+  local boss_level_diff = level - last_boss_level
   
-  SPECIAL_ENEMY_SCALING = function(level) 
-    return 1 + ((LEVEL_TO_TIER(level) - 1) / 4)
-    -- return math.pow(1.1, level) + ((LEVEL_TO_TIER(level) - 1) / 4)
-  end
+  --want enemies up to 75% stronger than the first level of the area
+  return 1 + (boss_level_diff * ENEMY_SCALING_PER_LEVEL)
+end
+
+SPECIAL_ENEMY_SCALING = function(level)
+  local last_boss_level = GET_LAST_BOSS_LEVEL(level)
+  local boss_level_diff = level - last_boss_level
+  
+  --want enemies up to 75% stronger than the first level of the area
+  return 1 + (boss_level_diff * ENEMY_SCALING_PER_LEVEL)
+end
+
+--also want stat scaling per zone
+ZONE_SCALING = function(level)
+  local zone = LEVEL_TO_TIER(level)
+  return 1 + (zone * ENEMY_SCALING_PER_ZONE - 1)
+end
+
 
 -- unit stats
-
 unit_classes = {
     ['player'] = 'player',
     ['critter'] = 'critter',
@@ -227,19 +257,19 @@ _set_unit_base_stats = function(unit)
         unit.base_dmg = unit.base_dmg or REGULAR_ENEMY_DAMAGE
         unit.base_mvspd = unit.base_mvspd or REGULAR_ENEMY_MS
 
-        unit.base_hp = unit.base_hp * REGULAR_ENEMY_SCALING(level)
-        unit.base_dmg = unit.base_dmg  * REGULAR_ENEMY_SCALING(level)
+        unit.base_hp = unit.base_hp * REGULAR_ENEMY_SCALING(level) * ZONE_SCALING(level)
+        unit.base_dmg = unit.base_dmg  * REGULAR_ENEMY_SCALING(level) * ZONE_SCALING(level)
         unit.base_mvspd = unit.base_mvspd
     elseif unit.class == 'special_enemy' then
-        unit.base_hp = SPECIAL_ENEMY_HP * SPECIAL_ENEMY_SCALING(level)
-        unit.base_dmg = SPECIAL_ENEMY_DAMAGE  * SPECIAL_ENEMY_SCALING(level)
+        unit.base_hp = SPECIAL_ENEMY_HP * SPECIAL_ENEMY_SCALING(level) * ZONE_SCALING(level)
+        unit.base_dmg = SPECIAL_ENEMY_DAMAGE  * SPECIAL_ENEMY_SCALING(level) * ZONE_SCALING(level)
         unit.base_mvspd = SPECIAL_ENEMY_MS
     elseif unit.class == 'miniboss' then
-        unit.base_hp = 1000 * SPECIAL_ENEMY_SCALING(level)
-        unit.base_dmg = 20  * SPECIAL_ENEMY_SCALING(level)
+        unit.base_hp = 1000 * SPECIAL_ENEMY_SCALING(level) * ZONE_SCALING(level)
+        unit.base_dmg = 20  * SPECIAL_ENEMY_SCALING(level) * ZONE_SCALING(level)
         unit.base_mvspd = 55
     elseif unit.class == 'boss' then
-        unit.base_hp = BOSS_HP * BOSS_HP_SCALING(level)
+        unit.base_hp = BOSS_HP * ZONE_SCALING(level)
         unit.base_dmg = BOSS_DAMAGE
         unit.base_mvspd = BOSS_MS
     end

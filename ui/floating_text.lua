@@ -31,7 +31,7 @@ end
 
 function FloatingText:draw()
   if self.dead then return end
-  local screen_x, screen_y = worldToScreen(self.x, self.y)
+  local screen_x, screen_y = world_to_screen(self.x, self.y)
   local scale = math.floor(wh/gh)
   self.text:draw_to_full_res(screen_x, screen_y, 0, self.scale * scale, self.scale * scale, self.color)
 end
@@ -41,7 +41,3 @@ function FloatingText:destroy()
   self.dead = true
 end
 
-function worldToScreen(world_x, world_y)
-  local scale = math.floor(wh/gh)
-  return world_x * scale, world_y * scale
-end
