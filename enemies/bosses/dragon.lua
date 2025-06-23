@@ -14,6 +14,7 @@ fns['init_enemy'] = function(self)
   Set_Enemy_Shape(self, self.size)
   
   self.class = 'boss'
+  self.icon = 'dragon'
 
   --set attacks
   self.fireDmg = 5
@@ -105,8 +106,16 @@ end
 
 fns['draw_enemy'] = function(self)
     graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
-    local points = self:make_regular_polygon(3, (self.shape.w / 2) / 60 * 70, self:get_angle())
-    graphics.polygon(points, self.color)
+
+    local sx = (self.shape.w / DRAGON_SPRITE_W) * DRAGON_SPRITE_SCALE
+    local sy = (self.shape.h / DRAGON_SPRITE_H) * DRAGON_SPRITE_SCALE
+    local animation_success = self:draw_animation(self.state, self.x, self.y, 0, sx, sy)
+
+    if not animation_success then
+      local points = self:make_regular_polygon(3, (self.shape.w / 2) / 60 * 70, self:get_angle())
+      graphics.polygon(points, self.color)
+    end
+
     graphics.pop()
 end
 

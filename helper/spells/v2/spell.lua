@@ -157,8 +157,10 @@ function Cast:cast()
     if self.spelldata.on_attack_callbacks and self.unit.onAttackCallbacks then
       self.unit:onAttackCallbacks(self.target)
     end
-    self.unit:end_cast(castcooldown, self.spell_duration)
+  else 
+    Helper.Unit:set_state(self.unit, unit_states['channeling'])
   end
+  self.unit:end_cast(castcooldown, self.spell_duration)
   self:die()
 end
 
@@ -167,6 +169,7 @@ end
 -- trigger spell after a delay
 function Cast:try_repeat_attack(spellclass, spelldata)
   if not self.unit then return end
+  if not self.unit.repeat_attack_chance then return end
 
   if random:float(0, 1) < self.unit.repeat_attack_chance then
     --cast will probably be dead by the time it triggers
@@ -351,6 +354,8 @@ function Spell:try_end_cast()
     if self.unit_dies_at_end then
       self.unit:die()
     end
+  else
+    self:die()
   end
 end
 

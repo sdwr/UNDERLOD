@@ -270,6 +270,10 @@ s
   
   --all items are destroyed exiting buy screen, will trigger consumable effects
 
+
+  --JUST KING
+    - starts with 1 wave of 1, 1 wave of 2
+    - units can attack while moving
 --------------
 NEW FEATURE PLAN:
 

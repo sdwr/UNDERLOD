@@ -145,6 +145,7 @@ end
 
 function Laser_Spell:try_repeat_attack()
   if not self.unit or self.unit.dead then return end
+  if not self.unit.repeat_attack_chance then return end
   if self.is_repeat then return end
 
   if random:float(0, 1) < self.unit.repeat_attack_chance then
@@ -172,7 +173,7 @@ function Laser_Spell:update(dt)
     return
   end
   if self.lasermode ~= 'fixed' then
-    if self.unit.state ~= unit_states['casting'] and self.unit.state ~= unit_states['channeling'] then
+    if not table.any(unit_states_can_continue_cast, function(v) return self.unit.state == v end) then
       self:die()
       return
     end

@@ -363,7 +363,6 @@ function init()
 
   unit_states_enemy_can_move = {
     unit_states['normal'],
-    unit_states['stopped'],
     unit_states['rallying'],
     unit_states['following'],
     unit_states['casting_blocked'],
@@ -372,12 +371,24 @@ function init()
   unit_states_can_target = {
     unit_states['normal'],
     unit_states['casting_blocked'],
+    unit_states['following'],
+    
   }
 
   unit_states_can_cast = {
     unit_states['normal'],
+    unit_states['following'],
     unit_states['stopped'],
   }
+
+  unit_states_can_continue_cast = {
+    unit_states['normal'],
+    unit_states['following'],
+    unit_states['stopped'],
+    unit_states['casting'],
+    unit_states['channeling'],
+  }
+
   type_colors = {
     ['warrior'] = yellow[0],
     ['ranger'] = green[0],
@@ -1542,7 +1553,53 @@ function init()
   skeleton_idle_a = create_animation(skeleton_idle_g, 6, 8, 24, 24, 0.4)
   skeleton_attack_a = create_animation(skeleton_attack_g, 18, 8, 24, 24, 0.2)
 
+
+  DRAGON_SPRITE_W = 144
+  DRAGON_SPRITE_H = 128
+
+  DRAGON_SPRITE_W_HD = 191
+  DRAGON_SPRITE_H_HD = 161
+
+  DRAGON_SPRITE_SCALE = 1.5
+
+
+  dragonHD = Image(spriteFolder .. '/dragon2-HD/flying_dragon-red')
+
+  dragonHD_g = create_grid(dragonHD, DRAGON_SPRITE_W_HD, DRAGON_SPRITE_H_HD)
+
+  dragonHD_idle_a = create_animation(dragonHD_g, 3, 3, DRAGON_SPRITE_W_HD, DRAGON_SPRITE_H_HD, 0.4)
   
+
+  BEHOLDER_CAST_TIME = 1.5
+  BEHOLDER_ATTACK_FRAMES = 12
+
+  BEHOLDER_SPRITE_W = 64
+  BEHOLDER_SPRITE_H = 64
+
+  BEHOLDER_SPRITE_SCALE = 1.3
+
+  beholder_idle = Image(spriteFolder .. '/Beholder3/Idle/Beholder3_Idle_full')
+  beholder_walk = Image(spriteFolder .. '/Beholder3/Walk/Beholder3_Walk_full')
+  beholder_run = Image(spriteFolder .. '/Beholder3/Run/Beholder3_Run_full')
+  beholder_attack = Image(spriteFolder .. '/Beholder3/Attack/Beholder3_Attack_full')
+  beholder_hurt = Image(spriteFolder .. '/Beholder3/Hurt/Beholder3_Hurt_full')
+  beholder_death = Image(spriteFolder .. '/Beholder3/Death/Beholder3_Death_full')
+
+  beholder_idle_g = create_grid(beholder_idle, 64, 64)
+  beholder_walk_g = create_grid(beholder_walk, 64, 64)
+  beholder_run_g = create_grid(beholder_run, 64, 64)
+  beholder_attack_g = create_grid(beholder_attack, 64, 64)
+  beholder_hurt_g = create_grid(beholder_hurt, 64, 64)
+  beholder_death_g = create_grid(beholder_death, 64, 64)
+
+  beholder_idle_a = create_animation(beholder_idle_g, 1, 12, 64, 64, 0.2)
+  beholder_walk_a = create_animation(beholder_walk_g, 1, 8, 64, 64, 0.2)
+  beholder_run_a = create_animation(beholder_run_g, 1, 8, 64, 64, 0.2)
+  beholder_attack_a = create_animation(beholder_attack_g, 1, 12, 64, 64, BEHOLDER_CAST_TIME / BEHOLDER_ATTACK_FRAMES)
+  beholder_hurt_a = create_animation(beholder_hurt_g, 1, 6, 64, 64, 0.4)
+  beholder_death_a = create_animation(beholder_death_g, 1, 9, 64, 64, 0.2)
+
+
   golem_spritesheets = {
     ['normal'] = {golem_walk_a, golem_walk},
     ['walk'] = {golem_walk_a, golem_walk},
@@ -1559,9 +1616,25 @@ function init()
     ['casting'] = {skeleton_attack_a, skeleton},
   }
 
+  dragon_spritesheets = {
+    ['normal'] = {dragonHD_idle_a, dragonHD},
+  }
+
+  beholder_spritesheets = {
+    ['normal'] = {beholder_idle_a, beholder_idle},
+    ['walk'] = {beholder_walk_a, beholder_walk},
+    ['run'] = {beholder_run_a, beholder_run},
+    ['casting'] = {beholder_attack_a, beholder_attack},
+    ['channeling'] = {beholder_attack_a, beholder_attack},
+    ['hurt'] = {beholder_hurt_a, beholder_hurt},
+    ['death'] = {beholder_death_a, beholder_death},
+  }
+
   enemy_spritesheets = {
     ['golem'] = golem_spritesheets,
     ['skeleton'] = skeleton_spritesheets,
+    ['dragon'] = dragon_spritesheets,
+    ['beholder'] = beholder_spritesheets,
   }
 
   item_costs = {
@@ -1986,6 +2059,7 @@ function init()
   }
 
   special_enemies = {
+    'cleaver',
     'laser',
     'stomper',
     'burst',
@@ -2017,6 +2091,7 @@ function init()
 
   special_enemy_by_tier = {
     [1] = {
+      'cleaver',
       'laser',
       'stomper',
       'burst',
@@ -2060,6 +2135,8 @@ function init()
     ['shooter'] = 100,
     ['seeker'] = 100,
     --special enemies t1
+    ['cleaver'] = 300,
+
     ['laser'] = 300,
     ['rager'] = 300,
     ['stomper'] = 300,
@@ -2087,6 +2164,8 @@ function init()
   enemy_to_color = {
     ['shooter'] = grey[0],
     ['seeker'] = grey[0],
+    ['cleaver'] = grey[0],
+
     ['rager'] = red[3],
     ['stomper'] = red[3],
     ['charger'] = red[3],
@@ -2328,7 +2407,7 @@ function init()
   if not state.current_new_game_plus then state.current_new_game_plus = current_new_game_plus end
 
   show_damage_numbers = state.show_damage_numbers or DAMAGE_NUMBERS_SETTING[4]
-  show_combat_controls = state.show_combat_controls or true
+  show_combat_controls = not not state.show_combat_controls
 
   max_units = MAX_UNITS
 

@@ -105,6 +105,26 @@ function Wave_Types:Amount_Special(amount, tier)
   return wave
 end
 
+function Wave_Types:One_Cleaver()
+  local wave = {}
+  table.insert(wave, {'cleaver', 1, nil})
+  return wave
+end
+
+function Wave_Types:Two_Cleavers()
+  local wave = {}
+  table.insert(wave, {'cleaver', 2, nil})
+  return wave
+end
+
+function Wave_Types:Two_Cleavers_Plus_One_Special(tier)
+  local wave = {}
+  table.insert(wave, {'cleaver', 2, 'close'})
+  local special = random:table(special_enemy_by_tier[tier])
+  table.insert(wave, {special, 1, 'close'})
+  return wave
+end
+
 function Wave_Types:Three_Lasers()
   local wave = {}
   table.insert(wave, {'laser', 1, nil})
@@ -142,15 +162,19 @@ function Wave_Types:Get_Waves(level)
   local waves = {}
   local wave = nil
   if level == 1 then
-    wave = self:Generic(1, 2, 0)
+    wave = self:One_Cleaver()
+    table.insert(waves, wave)
+    wave = self:Two_Cleavers()
     table.insert(waves, wave)
   elseif level == 2 then
-    wave = self:Generic(1, 2, 1)
+    wave = self:Two_Cleavers()
+    table.insert(waves, wave)
+    wave = self:Two_Cleavers()
     table.insert(waves, wave)
   elseif level == 3 then
-    wave = self:Generic(1, 2, 1)
+    wave = self:Two_Cleavers_Plus_One_Special(1)
     table.insert(waves, wave)
-    wave = self:Generic(1, 2, 1)
+    wave = self:Two_Cleavers_Plus_One_Special(1)
     table.insert(waves, wave)
   elseif level == 4 then
     wave = self:Generic(1, 2, 2)

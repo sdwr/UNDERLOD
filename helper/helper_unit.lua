@@ -176,7 +176,6 @@ function Helper.Unit:add_default_state_change_functions(unit)
     
     unit.state_change_functions['following_or_rallying'] = function() end
     unit.state_change_functions['regain_control'] = function(self)
-        self:cancel_cast()
         self.being_pushed = false
         self.steering_enabled = true
     end

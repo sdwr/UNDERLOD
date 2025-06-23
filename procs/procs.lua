@@ -1476,52 +1476,52 @@ function Proc_Lavaman:spawn(coords)
 end
 
 
---should be global instead of per troop?
-Proc_FireExplode = Proc:extend()
-function Proc_FireExplode:init(args)
-  self.triggers = {PROC_ON_HIT}
-  self.scope = 'troop'
+-- --should be global instead of per troop?
+-- Proc_FireExplode = Proc:extend()
+-- function Proc_FireExplode:init(args)
+--   self.triggers = {PROC_ON_HIT}
+--   self.scope = 'troop'
 
-  Proc_FireExplode.super.init(self, args)
+--   Proc_FireExplode.super.init(self, args)
 
 
-  if not self.unit then return end
+--   if not self.unit then return end
 
-  --define the proc's vars
-  self.radius = self.data.radius or 25
-  self.color = self.data.color or red[0]
-  self.dmgMulti = self.data.dmgMulti or 0.2
-  self.sizeMulti = self.data.sizeMulti or 2
+--   --define the proc's vars
+--   self.radius = self.data.radius or 25
+--   self.color = self.data.color or red[0]
+--   self.dmgMulti = self.data.dmgMulti or 0.2
+--   self.sizeMulti = self.data.sizeMulti or 2
 
-  self.proc_chance = self.data.proc_chance or 0.2
+--   self.proc_chance = self.data.proc_chance or 0.2
 
-  self.is_troop = (self.unit and self.unit.is_troop) or false
+--   self.is_troop = (self.unit and self.unit.is_troop) or false
 
-end
+-- end
 
-function Proc_FireExplode:onHit(target, damage)
-  Proc_FireExplode.super.onHit(self, target, damage)
-  if math.random() < self.proc_chance then
-    self:explode(target)
-  end
-end
+-- function Proc_FireExplode:onHit(target, damage)
+--   Proc_FireExplode.super.onHit(self, target, damage)
+--   if math.random() < self.proc_chance then
+--     self:explode(target)
+--   end
+-- end
 
-function Proc_FireExplode:explode(target)
-  local damage = (target.max_hp * self.dmgMulti)
-  local radius = target.shape.w * self.sizeMulti
+-- function Proc_FireExplode:explode(target)
+--   local damage = (target.max_hp * self.dmgMulti)
+--   local radius = target.shape.w * self.sizeMulti
 
-  target:remove_buff('burn')
+--   target:remove_buff('burn')
 
-  cannoneer1:play{pitch = random:float(0.8, 1.2), volume = 1.2}
-  Area{
-    group = main.current.effects, 
-    x = target.x, y = target.y,
-    pick_shape = 'circle',
-    dmg = damage,
-    r = radius, duration = 0.2, color = self.color,
-    is_troop = self.is_troop,
-  }
-end
+--   cannoneer1:play{pitch = random:float(0.8, 1.2), volume = 1.2}
+--   Area{
+--     group = main.current.effects, 
+--     x = target.x, y = target.y,
+--     pick_shape = 'circle',
+--     dmg = damage,
+--     r = radius, duration = 0.2, color = self.color,
+--     is_troop = self.is_troop,
+--   }
+-- end
 
 Proc_Blazin = Proc:extend()
 function Proc_Blazin:init(args)
@@ -1887,49 +1887,35 @@ function Proc_Firenova:init(args)
 
   self.damage = self.data.damage or 10
   self.damageType = DAMAGE_TYPE_FIRE
-  self.every_attacks = self.data.every_attacks or 4
   self.radius = self.data.radius or 30
-  self.knockback_force = self.data.knockback_force or 50
+  self.knockback_force = self.data.knockback_force or LAUNCH_PUSH_FORCE_ENEMY
   self.knockback_duration = self.data.knockback_duration or 1
 
   self.color = self.data.color or red[0]
+  self.proc_chance = self.data.proc_chance or 0.2
 
-  --define the procs memory
-  self.has_attacked = false
-  self.attacks_left = math.random(1, self.every_attacks)
 end
 
 function Proc_Firenova:onAttack(target)
   Proc_Firenova.super.onAttack(self, target)
-  if self.attacks_left > 0 then
-    self.has_attacked = true
+  if target and target:has_buff('burn') and math.random() < self.proc_chance then
+    self:explode(target, self.damage)
   end
 end
 
-function Proc_Firenova:onHit(target, damage)
-  Proc_Firenova.super.onHit(self, target, damage)
-  if self.has_attacked then
-    self.has_attacked = false
-    self.attacks_left = self.attacks_left - 1
-    if self.attacks_left == 0 then
-      self.attacks_left = self.every_attacks
-
-      fire1:play{pitch = random:float(0.8, 1.2), volume = 0.8}
-      Area{
-        group = main.current.effects,
-        unit = self.unit,
-        x = target.x, y = target.y,
-        pick_shape = 'circle',
-        dmg = self.damage,
-        r = self.radius, duration = self.duration, color = self.color,
-        is_troop = self.unit.is_troop,
-        knockback_force = self.knockback_force,
-        knockback_duration = self.knockback_duration
-      }
-
-
-    end
-  end
+function Proc_Firenova:explode(target, damage)
+  fire1:play{pitch = random:float(0.8, 1.2), volume = 0.8}
+  Area{
+    group = main.current.effects,
+    unit = self.unit,
+    x = target.x, y = target.y,
+    pick_shape = 'circle',
+    dmg = self.damage,
+    r = self.radius, duration = self.duration, color = self.color,
+    is_troop = self.unit.is_troop,
+    knockback_force = self.knockback_force,
+    knockback_duration = self.knockback_duration
+  }
 end
 
 Proc_Glaciate = Proc:extend()
@@ -2090,7 +2076,7 @@ proc_name_to_class = {
   ['lavapool'] = Proc_Lavapool,
   ['firenova'] = Proc_Firenova,
   ['lavaman'] = Proc_Lavaman,
-  ['fireexplode'] = Proc_FireExplode,
+  -- ['fireexplode'] = Proc_FireExplode,
   ['blazin'] = Proc_Blazin,
   ['phoenix'] = Proc_Phoenix,
   --blue procs

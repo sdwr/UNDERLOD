@@ -34,6 +34,10 @@ function SpawnMarker:draw()
   graphics.pop()
 end
 
+function SpawnMarker:die()
+  self.dead = true
+end
+
 
 
 
@@ -1271,10 +1275,15 @@ function Unit:pick_cast()
   end
 
   if #viable_attacks == 0 then return false end
+  
 
   local attack = random:table(viable_attacks)
+  while #viable_attacks > 1 and self.last_cast == attack.name do
+    attack = random:table(viable_attacks)
+  end
 
   self:cast(attack)
+  self.last_cast = attack.name
   return true
 end
 
@@ -1306,23 +1315,48 @@ function Unit:should_freeze_rotation()
 end
 
 function Unit:end_cast(cooldown, spell_duration)
-  self.castcooldown = cooldown
-  self.total_castcooldown = cooldown
+  local random_cooldown = self:get_random_cooldown(cooldown)
+  self.castcooldown = random_cooldown
+  self.total_castcooldown = random_cooldown
   self.spelldata = nil
   self.freezerotation = false
 
   if self.state == unit_states['casting']then
-    Helper.Unit:set_state(self, unit_states['normal'])
+    if self:try_backswing() then
+      return
+    else
+      Helper.Unit:set_state(self, unit_states['normal'])
+    end
   end
 
   self.castObject = nil
 end
 
+function Unit:try_backswing()
+  if self.castObject and self.castObject.backswing then
+    if self.state == unit_states['casting'] then
+      Helper.Unit:set_state(self, unit_states['stopped'])
+      print('backswing', self.castObject.backswing)
+      self.t:after(self.castObject.backswing, function()
+        if self.state == unit_states['stopped'] then
+          Helper.Unit:set_state(self, unit_states['normal'])
+        end
+      end)
+      return true
+    end
+  end
+  return false
+end
+
+function Unit:get_random_cooldown(cooldown)
+  return cooldown + ((math.random() * RANDOM_COOLDOWN_VARIANCE) - 0.5 * RANDOM_COOLDOWN_VARIANCE)
+end
+
 function Unit:end_channel(cooldown)
   if self.state == unit_states['channeling'] then
-
-    self.castcooldown = self.baseCooldown
-    self.total_castcooldown = self.baseCooldown
+    local random_cooldown = self:get_random_cooldown(self.baseCooldown)
+    self.castcooldown = random_cooldown
+    self.total_castcooldown = random_cooldown
     self.spelldata = nil
     self.freezerotation = false
     Helper.Unit:set_state(self, unit_states['normal'])
@@ -1358,6 +1392,14 @@ end
 function Unit:interrupt_cast()
   if self.castObject then
     self.castcooldown = self.baseCast or 1
+    self.spelldata = nil
+    Cancel_Cast(self)
+  end
+end
+
+function Unit:interrupt_channel()
+  if self.state == unit_states['channeling'] then
+    self.castcooldown = 0
     self.spelldata = nil
     Cancel_Cast(self)
   end

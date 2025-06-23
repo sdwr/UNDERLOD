@@ -259,60 +259,6 @@ item_to_item_data = {
     procs = {},
   },
 
-  ['shortsword'] = {
-    name = 'shortsword',
-    colors = {},
-    cost = 5,
-    icon = 'sword',
-    desc = 'A short sword that slightly increases your damage',
-    stats = {dmg = 0.2},
-    procs = {},
-  },
-  ['longsword'] = {
-    name = 'longsword',
-    colors = {},
-    cost = 10,
-    icon = 'sword',
-    desc = 'A sword that increases your damage',
-    stats = {dmg = 0.4},
-    procs = {},
-  },
-  ['greatsword'] = {
-    name = 'greatsword',
-    colors = {},
-    cost = 15,
-    icon = 'sword',
-    desc = 'A sword that greatly increases your damage',
-    stats = {dmg = 0.6},
-    procs = {},
-  },
-
-  ['shortbow'] = {
-    name = 'shortbow',
-    colors = {},
-    cost = 5,
-    icon = 'bow',
-    desc = 'A dagger that slightly increases your attack speed',
-    stats = {aspd = 0.1},
-    procs = {},
-  }, 
-  ['mediumbowr'] = {
-    name = 'mediumbowr',
-    colors = {},
-    cost = 10,
-    icon = 'bow',
-    desc = 'A rapier that increases your attack speed',
-    stats = {aspd = 0.2},
-  },
-  ['longbow'] = {
-    name = 'longbow',
-    colors = {},
-    cost = 15,
-    icon = 'bow',
-    desc = 'A bow that greatly increases your attack speed',
-    stats = {aspd = 0.4},
-  },
-
   ['spikedcollar'] = {
     name = 'spikedcollar',
     colors = {},
@@ -382,7 +328,7 @@ item_to_item_data = {
     colors = {},
     cost = 10,
     icon = 'repeater',
-    desc = 'Adds a chance to repeat your attack',
+    desc = 'Adds a chance to repeat your attacks',
     stats = {repeat_attack_chance = 0.2},
     procs = {}
   },
@@ -475,7 +421,7 @@ item_to_item_data = {
     colors = {'red'},
     cost = 10,
     icon = 'lavapool',
-    desc = 'Your attacks trigger a pool of [red]lava[fg] under enemies',
+    desc = 'Your attacks create a pool of [red]lava[fg] under enemies',
     stats = {dmg = 0.25},
     procs = {'lavapool'},
     tags = {'firedmg'}
@@ -485,21 +431,21 @@ item_to_item_data = {
     colors = {'red'},
     cost = 10,
     icon = 'sun',
-    desc = 'Your attacks trigger an [red]explosion[fg] on enemies',
+    desc = 'Your attacks have a chance to make [red]burning[fg] enemies explode',
     stats = {},
     procs = {'firenova'},
     prereqs = {'firedmg'}
   },
-  ['fireexplode'] = {
-    name = 'fireexplode',
-    colors = {'red'},
-    cost = 15,
-    icon = 'sun',
-    desc = 'Hitting [red]burning[fg] enemy has a chance to [red[5]]explode[fg] for % max health',
-    stats = {dmg = 0.5},
-    procs = {'fireexplode'},
-    prereqs = {'firedmg'}
-  },
+  -- ['fireexplode'] = {
+  --   name = 'fireexplode',
+  --   colors = {'red'},
+  --   cost = 15,
+  --   icon = 'sun',
+  --   desc = 'Hitting [red]burning[fg] enemy has a chance to [red[5]]explode[fg] for % max health',
+  --   stats = {dmg = 0.5},
+  --   procs = {'fireexplode'},
+  --   prereqs = {'firedmg'}
+  -- },
   ['blazin'] = {
     name = 'blazin',
     colors = {'red'},
