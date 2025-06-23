@@ -317,6 +317,9 @@ function Laser_Spell:try_damage()
 end
 
 function Laser_Spell:draw()
+  if self.unit and self.unit.dead then
+    return
+  end
   local color = self.color
   local width = self.current_laser_aim_width
   if self.is_charging then

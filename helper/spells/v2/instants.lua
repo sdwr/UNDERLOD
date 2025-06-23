@@ -375,7 +375,7 @@ Burst:implement(GameObject)
 Burst:implement(Physics)
 function Burst:init(args)
   self:init_game_object(args)
-  self.radius = self.radius or 8
+  self.radius = self.radius or 6
   self.shape = Circle(self.x, self.y, self.radius)
 
   self.color = self.color or red[0]
@@ -413,16 +413,10 @@ function Burst:init(args)
 end
 
 function Burst:check_hits()
-  local hit_target = false
   local friendlies = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
-  for _, friendly in ipairs(friendlies) do
-    if not table.contains(self.already_damaged, friendly) then
-      hit_target = true
-      friendly:hit(self.damage, self.unit)
-      table.insert(self.already_damaged, friendly)
-    end
+  if #friendlies > 0 then
+    self:explode()
   end
-  return hit_target
 end
 
 function Burst:update(dt)
@@ -444,14 +438,25 @@ function Burst:update(dt)
   if Outside_Arena(self) then
     self:explode()
   end
-  if hit_target then
-    self:explode()
-  end
 end
 
 function Burst:explode()
   if not self.dead then
     explosion_new:play{pitch = random:float(0.95, 1.05), volume = 0.3}
+    
+    Area{
+      group = main.current.effects,
+      unit = self.unit,
+      is_troop = false,
+      x = self.x,
+      y = self.y,
+      r = self.radius * 2,
+      pick_shape = 'circle',
+      duration = 0.15,
+      dmg = self.damage,
+      color = self.color,
+      parent = self,
+    }
 
     local angle_between = 2*math.pi / self.num_pieces
     local angle = 0
@@ -466,7 +471,6 @@ function Burst:explode()
         speed = self.secondary_speed,
         distance = self.secondary_distance,
         damage = self.secondary_damage,
-        color = self.color,
         unit = self.unit,
       }
       
