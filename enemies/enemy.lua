@@ -62,6 +62,10 @@ function Enemy:update_animation(dt)
     local animation = self.spritesheet[self.state][1]
     local image = self.spritesheet[self.state][2]
     animation:update(dt)
+  elseif self.spritesheet and self.spritesheet['normal'] then
+    local animation = self.spritesheet['normal'][1]
+    local image = self.spritesheet['normal'][2]
+    animation:update(dt)
   end
 end
 

@@ -1553,6 +1553,21 @@ function init()
   skeleton_idle_a = create_animation(skeleton_idle_g, 6, 8, 24, 24, 0.4)
   skeleton_attack_a = create_animation(skeleton_attack_g, 18, 8, 24, 24, 0.2)
 
+
+  DRAGON_SPRITE_W = 144
+  DRAGON_SPRITE_H = 128
+
+  DRAGON_SPRITE_W_HD = 191
+  DRAGON_SPRITE_H_HD = 161
+
+  DRAGON_SPRITE_SCALE = 1.5
+
+
+  dragonHD = Image(spriteFolder .. '/dragon2-HD/flying_dragon-red')
+
+  dragonHD_g = create_grid(dragonHD, DRAGON_SPRITE_W_HD, DRAGON_SPRITE_H_HD)
+
+  dragonHD_idle_a = create_animation(dragonHD_g, 3, 3, DRAGON_SPRITE_W_HD, DRAGON_SPRITE_H_HD, 0.4)
   
   golem_spritesheets = {
     ['normal'] = {golem_walk_a, golem_walk},
@@ -1570,9 +1585,14 @@ function init()
     ['casting'] = {skeleton_attack_a, skeleton},
   }
 
+  dragon_spritesheets = {
+    ['normal'] = {dragonHD_idle_a, dragonHD},
+  }
+
   enemy_spritesheets = {
     ['golem'] = golem_spritesheets,
     ['skeleton'] = skeleton_spritesheets,
+    ['dragon'] = dragon_spritesheets,
   }
 
   item_costs = {
