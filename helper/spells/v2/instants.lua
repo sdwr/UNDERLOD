@@ -566,7 +566,7 @@ function ChainLightning:init(args)
   self.damageType = args.damageType or DAMAGE_TYPE_SHOCK
 
   self.attack_sensor = Circle(self.target.x, self.target.y, self.rs)
-  local total_targets = SHOCK_MAX_CHAINS or 4
+  local total_targets = SHOCK_MAX_CHAINS
 
   local target_classes = nil
   if not self.is_troop then
@@ -618,7 +618,7 @@ function ChainLightning:init(args)
       LightningLine{group = main.current.effects, src = lastTarget, dst = currentTarget, color = self.color}
       lastTarget:hit(self.dmg, nil, self.damageType, false)
       currentTarget:hit(self.dmg, nil, self.damageType, false)
-      self.dmg = self.dmg * (1 - (SHOCK_DAMAGE_REDUCTION_PER_CHAIN or 0.2))
+      self.dmg = self.dmg * (1 - (SHOCK_DAMAGE_REDUCTION_PER_CHAIN))
     end
     
     -- Check if this was the last target in the chain

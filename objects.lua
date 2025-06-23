@@ -1093,7 +1093,7 @@ end
 --SHOCK SYSTEM
 function Unit:shock()
 
-  local shockBuff = {name = 'shock', color = yellow[0], duration = 5, maxDuration = 5, stats = {buff_def_m = SHOCK_DEF_REDUCTION}}
+  local shockBuff = {name = 'shock', color = yellow[0], duration = SHOCK_DURATION, maxDuration = SHOCK_DURATION, stats = {buff_def_m = SHOCK_DEF_REDUCTION}}
 
   self:remove_buff('shock')
   self:add_buff(shockBuff)
