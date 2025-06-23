@@ -331,8 +331,9 @@ function Enemy:hit(damage, from, damageType, makesSound, cannotProcOnHit)
 
   if self.hp <= 0 then
     --on death callbacks
+    local overkill = - self.hp
     if from and from.onKillCallbacks then
-      from:onKillCallbacks(self)
+      from:onKillCallbacks(self, overkill)
     end
     self:onDeathCallbacks(from)
 

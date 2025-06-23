@@ -301,7 +301,7 @@ item_to_item_data = {
     colors = {},
     cost = 10,
     icon = 'mace',
-    desc = 'A weapon that inflicts [black]stun[fg] enemies',
+    desc = 'A weapon that gives you a chance to [black]stun[fg] enemies',
     stats = {bash = 0.2, dmg = 0.25},
     procs = {'bash'}
   },
@@ -310,7 +310,7 @@ item_to_item_data = {
     colors = {},
     cost = 10,
     icon = 'bomb',
-    desc = 'Enemies you kill [red[5]]explode[fg] for part of their max health',
+    desc = 'Enemies you kill [red[5]]explode[fg] for 2x the damage you overkilled them by',
     stats = {dmg = 0.5},
     procs = {'overkill'}
   },
@@ -319,7 +319,7 @@ item_to_item_data = {
     colors = {'purple'},
     cost = 10,
     icon = 'bloodlust',
-    desc = 'Get a stacking attack and movespeed buff when you kill an enemy',
+    desc = 'Your whole troop gets a stacking attack and movespeed buff when you kill an enemy',
     stats = {},
     procs = {'bloodlust'}
   },
@@ -332,12 +332,13 @@ item_to_item_data = {
     stats = {repeat_attack_chance = 0.2},
     procs = {}
   },
+
   -- ['pricklypear'] = {
   --   name = 'pricklypear',
   --   colors = {'green'},
   --   cost = 10,
   --   icon = 'cactus',
-  --   desc = 'Chance to instantly attack when hit',
+  --   desc = 'Chance to instantly retaliate when hit',
   --   stats = {},
   --   procs = {'retaliate'}
   -- },
@@ -348,20 +349,18 @@ item_to_item_data = {
     colors = {'yellow'},
     cost = 5,
     icon = 'bow',
-    desc = 'Your attacks trigger [yellow]lightning[fg] on enemies',
+    desc = 'Gain a % of your damage as [yellow]lightning[fg] damage',
     stats = {},
     procs = {'lightning'},
     tags = {'lightningdmg'}
   },
-  ['staticboots'] = {
-    name = 'staticboots',
+  ['berserker_greaves'] = {
+    name = 'berserker_greaves',
     colors = {'yellow'},
     cost = 10,
     icon = 'simpleboots',
-    desc = 'Increase movespeed and charge [yellow]lightning[fg] attacks while moving',
-    stats = {mvspd = 0.15},
-    procs = {'static'},
-    tags = {'lightningdmg'}
+    desc = 'Increased movespeed and attack speed',
+    stats = {mvspd = 0.15, aspd = 0.15},
   },
   ['radiance'] = {
     name = 'radiance',

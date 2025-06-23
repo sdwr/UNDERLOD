@@ -505,7 +505,8 @@ function Troop:hit(damage, from, damageType, makesSound, cannotProcOnHit)
 
     --on death callbacks
     if from and from.onKillCallbacks then
-      from:onKillCallbacks(self)
+      local overkill = - self.hp
+      from:onKillCallbacks(self, overkill)
     end
     self:onDeathCallbacks(from)
 

@@ -629,22 +629,26 @@ function Proc_Overkill:init(args)
   
 
   --define the proc's vars
-  self.overkillMulti = self.data.overkillMulti or 0.2
-  self.radius = self.data.sizeMulti or 2
+  self.overkillMulti = self.data.overkillMulti or 2
+  self.radius = self.data.radius or 30
   self.is_troop = (self.unit and self.unit.is_troop) or false
+  self.color = self.data.color or black[0]
+  self.color_transparent = Color(self.color.r, self.color.g, self.color.b, 0.15)
+  self.duration = self.data.duration or 0.15
 end
-function Proc_Overkill:onKill(target)
-  Proc_Overkill.super.onKill(self, target)
-  local damage = target.max_hp * self.overkillMulti
-  local radius = target.shape.w * self.radius
+function Proc_Overkill:onKill(target, overkill)
+  Proc_Overkill.super.onKill(self, target, overkill)
+  local damage = overkill * self.overkillMulti
+  local radius = self.radius
 
   cannoneer2:play{pitch = random:float(0.8, 1.2), volume = 0.5}
   Area{
     group = main.current.effects, 
     x = target.x, y = target.y,
     pick_shape = 'circle',
-    dmg = damage,
-    r = radius, duration = 0.2, color = black[0],
+    dmg = damage, 
+    r = radius, duration = self.duration, color = self.color_transparent,
+    fill_whole_area = true,
     is_troop = self.is_troop,
   }
 end
@@ -724,54 +728,6 @@ function Proc_Lightning:onHit(target, damage)
     end
   end
 end
-
---proc static
-Proc_Static = Proc:extend()
-function Proc_Static:init(args)
-  self.triggers = {PROC_ON_MOVE, PROC_ON_HIT}
-  self.scope = 'team'
-
-  Proc_Static.super.init(self, args)
-  
-  
-
-  --define the proc's vars
-  self.damage = self.data.damage or 20
-  self.damageType = DAMAGE_TYPE_LIGHTNING
-  self.chain = self.data.chain or 6
-  self.every_moves = self.data.every_moves or 500
-  self.radius = self.data.radius or 100
-  self.color = self.data.color or blue[0]
-
-  --define the procs memory
-  self.moves_left = self.every_moves
-end
-
-function Proc_Static:onMove(distance)
-  Proc_Static.super.onMove(self, distance)
-  if self.moves_left == 0 then return end
-
-  self.moves_left = math.max(0, self.moves_left - distance)
-  if self.moves_left == 0 then
-    --play sound
-    pop2:play{pitch = random:float(0.8, 1.2), volume = 1.2}
-  end
-end
-
-function Proc_Static:onHit(target, damage)
-  Proc_Static.super.onHit(self, target, damage)
-  if self.moves_left == 0 then
-    self.moves_left = self.every_moves
-    ChainLightning{
-      group = main.current.main, 
-      target = target, rs = self.radius, 
-      dmg = self.damage, color = self.color, 
-      parent = self.unit,
-      chain = self.chain,
-      level = 1}
-  end
-end
-
 Proc_Shock = Proc:extend()
 function Proc_Shock:init(args)
   self.triggers = {PROC_ON_HIT}
@@ -2070,7 +2026,6 @@ proc_name_to_class = {
 
   --yellow procs
   ['lightning'] = Proc_Lightning,
-  ['static'] = Proc_Static,
   ['radiance'] = Proc_Radiance,
   ['shield'] = Proc_Shield,
   ['shock'] = Proc_Shock,

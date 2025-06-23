@@ -24,6 +24,7 @@ function Area:init(args)
 
   self.color = self.color or fg[0]
   self.color_transparent = Color(args.color.r, args.color.g, args.color.b, 0.08)
+  self.fill_whole_area = args.fill_whole_area or false
 
   self.w = 0
   self.hidden = false
@@ -196,15 +197,23 @@ function Area:draw()
   local x2, y2 = self.x + w, self.y + w
   local lw = math.remap(w, 32, 256, 2, 4)
   if self.pick_shape == 'circle' then
-    graphics.circle(self.x, self.y, self.r, self.color_transparent)
-    graphics.circle(self.x, self.y, self.r, self.color, 1 * self.flashFactor)
+    if self.fill_whole_area then
+      graphics.circle(self.x, self.y, self.r, self.color)
+    else
+      graphics.circle(self.x, self.y, self.r, self.color_transparent)
+      graphics.circle(self.x, self.y, self.r, self.color, 1 * self.flashFactor)
+    end
   else
     graphics.polyline(self.color, lw, x1, y1 + w10, x1, y1, x1 + w10, y1)
     graphics.polyline(self.color, lw, x2 - w10, y1, x2, y1, x2, y1 + w10)
     graphics.polyline(self.color, lw, x2 - w10, y2, x2, y2, x2, y2 - w10)
     graphics.polyline(self.color, lw, x1, y2 - w10, x1, y2, x1 + w10, y2)
-    graphics.rectangle((x1+x2)/2, (y1+y2)/2, x2-x1, y2-y1, nil, nil, self.color_transparent)
-    graphics.rectangle((x1+x2)/2, (y1+y2)/2, x2-x1, y2-y1, nil, nil, self.color, 1 * self.flashFactor)
+    if self.fill_whole_area then
+      graphics.rectangle((x1+x2)/2, (y1+y2)/2, x2-x1, y2-y1, nil, nil, self.color)
+    else
+      graphics.rectangle((x1+x2)/2, (y1+y2)/2, x2-x1, y2-y1, nil, nil, self.color_transparent)
+      graphics.rectangle((x1+x2)/2, (y1+y2)/2, x2-x1, y2-y1, nil, nil, self.color, 1 * self.flashFactor)
+    end
   end
   graphics.pop()
 end
@@ -1021,9 +1030,9 @@ function Critter:hit(damage, from, damageType, makesSound, cannotProcOnHit)
   self:onGotHitCallbacks(from, damage, damageType)
 
   if self.hp <= 0 then
-    
+    local overkill = - self.hp
     if from and from.onKillCallbacks then
-      from:onKillCallbacks(self)
+      from:onKillCallbacks(self, overkill)
     end
     self:onDeathCallbacks(from)
     self:die()

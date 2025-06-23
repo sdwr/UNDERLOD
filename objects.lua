@@ -943,14 +943,14 @@ function Unit:onGotHitCallbacks(from, damage)
   end
 end
 
-function Unit:onKillCallbacks(target)
+function Unit:onKillCallbacks(target, overkill)
 
   for k, proc in ipairs(GLOBAL_PROC_LIST[PROC_ON_KILL]) do
     proc.globalUnit = self
-    proc:onKill(target)
+    proc:onKill(target, overkill)
   end
   for k, proc in ipairs(self.onKillProcs) do
-    proc:onKill(target)
+    proc:onKill(target, overkill)
   end
 end
 

@@ -88,8 +88,9 @@ function EnemyCritter:hit(damage, from, damageType, makesSound, cannotProcOnHit)
   self:onGotHitCallbacks(from, damage, damageType)
 
   if self.hp <= 0 then
+    local overkill = - self.hp
     if from and from.onKillCallbacks then
-      from:onKillCallbacks(self)
+      from:onKillCallbacks(self, overkill)
     end
     self:onDeathCallbacks(from)
     self:die() 
