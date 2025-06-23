@@ -3,17 +3,18 @@
 Area_Spell = Spell:extend()
 
 function Area_Spell:init(args)
-    Area_Spell.super.init(self, args) -- This loads all properties from spelldata onto `self`
+    self.duration = self.duration or 0.5
+    Area_Spell.super.init(self, args)
 
     -- Define default values for the spell's properties
     self.r = math.random() * 2 * math.pi
     self.radius = self.radius or 50
     self.fade_duration = self.fade_duration or 0.2
-    self.duration = self.duration or 0.5
     self.duration_minus_fade = self.duration - self.fade_duration
 
     self.dmg = self.dmg or 0
     self.damage_ticks = self.damage_ticks or false
+    self.damage_type = self.damage_type or DAMAGE_TYPE_PHYSICAL
     self.tick_rate = self.tick_rate or 0.2
     self.is_troop = self.is_troop or false
 
@@ -38,7 +39,7 @@ function Area_Spell:init(args)
     self.line_width = self.line_width or 1
 
     -- Internal state
-    self.targets_hit = {} -- Keep track of who we've hit to avoid double-damaging
+    self.targets_hit_map = {} -- Keep track of who we've hit to avoid double-damaging
     self.next_tick_time = self.tick_rate
     self.hidden = false
     self.current_duration = 0
@@ -84,21 +85,25 @@ function Area_Spell:apply_damage()
     local target_group = self.is_troop and main.current.enemies or main.current.friendlies
     local targets_in_area = main.current.main:get_objects_in_shape(self.shape, target_group)
 
+    local actual_targets_hit = {}
     for _, target in ipairs(targets_in_area) do
         -- Only damage targets we haven't already hit in this spell's lifetime
-        if not self.targets_hit[target.id] then
+        if not self.targets_hit_map[target.id] then
             if self.dmg > 0 then
-                target:hit(self.dmg, self.unit)
+                target:hit(self.dmg, self.unit, self.damage_type)
                 self:apply_hit_effect(target)
-            end
-            
+              end
+              
+              table.insert(actual_targets_hit, target)
             -- If it's not a DoT, mark as hit so it can't be hit again.
             -- For DoTs, we could clear this list each tick if we wanted to allow multiple hits.
             if not self.damage_ticks then
-                 self.targets_hit[target.id] = true
+                 self.targets_hit_map[target.id] = true
             end
         end
     end
+    
+    return actual_targets_hit
 end
 
 
@@ -111,6 +116,7 @@ end
 
 function Area_Spell:draw()
     if self.hidden then return end
+
 
     -- Simplified drawing, can be expanded as needed
     graphics.push(self.x, self.y, self.r)
@@ -139,4 +145,103 @@ end
 
 function Area_Spell:die()
     self.dead = true
+end
+
+-- =================================================================================
+-- Knockback Area Spell - Now with a cool shockwave effect!
+-- =================================================================================
+Knockback_Area_Spell = Area_Spell:extend()
+
+function Knockback_Area_Spell:init(args)
+    -- Call the parent init first to set up all the base spell properties
+    Knockback_Area_Spell.super.init(self, args)
+
+    -- Override properties for the knockback
+    self.damage_ticks = false
+    self.knockback_force = self.knockback_force or LAUNCH_PUSH_FORCE_ENEMY
+    self.knockback_duration = self.knockback_duration or KNOCKBACK_DURATION_BOSS
+
+    --[[
+        NEW VISUAL EFFECT PROPERTIES
+        Here we define the parameters for our concentric circle animation.
+    ]]
+    self.shockwaves = {} -- A table to hold all of our active shockwave circles
+    self.shockwave_speed = self.radius * 4 -- How fast the circles expand (pixels per second)
+    self.shockwave_interval = 0.08 -- How often a new circle is created (in seconds)
+    self.shockwave_spawn_timer = 0 -- A timer to track when to spawn the next circle
+end
+
+function Knockback_Area_Spell:update(dt)
+    -- We must call the parent update function! This handles the spell's lifetime,
+    -- duration, fading, and eventually calls :die().
+    Knockback_Area_Spell.super.update(self, dt)
+
+    --[[
+        VISUAL EFFECT UPDATE LOGIC
+    ]]
+    -- 1. Handle spawning new shockwaves
+    self.shockwave_spawn_timer = self.shockwave_spawn_timer - dt
+    if self.shockwave_spawn_timer <= 0 then
+        -- Add a new shockwave to our list. It starts at the center with full opacity.
+        table.insert(self.shockwaves, { radius = 0, opacity = 1 })
+        -- Reset the timer for the next one
+        self.shockwave_spawn_timer = self.shockwave_interval
+    end
+
+    -- 2. Update all existing shockwaves (we loop backwards when removing items)
+    for i = #self.shockwaves, 1, -1 do
+        local wave = self.shockwaves[i]
+
+        -- Make the circle expand
+        wave.radius = wave.radius + self.shockwave_speed * dt
+
+        -- If a wave has expanded past the spell's main radius, remove it
+        if wave.radius >= self.radius then
+            table.remove(self.shockwaves, i)
+        else
+            -- Otherwise, calculate its opacity so it fades out as it expands
+            wave.opacity = 1 - (wave.radius / self.radius)
+        end
+    end
+end
+
+function Knockback_Area_Spell:draw()
+    -- We are COMPLETELY REPLACING the parent draw function, so we DO NOT call super.draw()
+    if self.hidden then return end
+
+    -- "Additive" blending makes overlapping bright circles glow, which looks great for energy effects.
+    love.graphics.setBlendMode("add")
+    love.graphics.setLineWidth(2)
+
+    -- Loop through all our active shockwaves and draw them
+    for _, wave in ipairs(self.shockwaves) do
+        -- Set the color for this specific wave, using its calculated opacity
+        love.graphics.setColor(self.color.r, self.color.g, self.color.b, wave.opacity)
+
+        -- Draw the circle
+        love.graphics.circle("line", self.x, self.y, wave.radius)
+    end
+
+    -- IMPORTANT: Reset the graphics state so we don't mess up other game rendering
+    love.graphics.setBlendMode("alpha")
+    love.graphics.setColor(1, 1, 1, 1) -- Reset to white, full opacity
+    love.graphics.setLineWidth(1)
+end
+
+-- We can remove the :die() override if it only prints, but it's fine to leave it.
+function Knockback_Area_Spell:die()
+    Knockback_Area_Spell.super.die(self)
+end
+
+-- We no longer need to override apply_damage unless we want to change its logic.
+-- This is inherited automatically from the parent class.
+-- If you need the knockback logic, you must keep this function.
+function Knockback_Area_Spell:apply_damage()
+    local targets_hit = Knockback_Area_Spell.super.apply_damage(self)
+    for _, target in ipairs(targets_hit) do
+        -- Note: The original code used self.target, which might not be correct if the spell
+        -- is just an area effect. This calculates the angle from the spell's center.
+        local angle = math.atan2(target.y - self.y, target.x - self.x)
+        target:push(self.knockback_force, angle, false, self.knockback_duration)
+    end
 end

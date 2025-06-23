@@ -305,10 +305,10 @@ function Spell:init(args)
 end
 
 function Spell:validate_data()
-  if not self.unit then
-    print('error: spell needs unit to init')
-    return false
-  end
+  -- if not self.unit then
+  --   print('error: spell needs unit to init')
+  --   return false
+  -- end
   return true
 end
 
@@ -325,14 +325,15 @@ function Spell:update(dt)
   self:update_game_object(dt)
 
   Try_Cancel_Cast(self)
-  self.elapsedTime = Helper.Time.time - self.startTime
-  if self.elapsedTime > self.spell_duration then
-    self:die()
+  if self.startTime and self.spell_duration > 0 then
+    self.elapsedTime = Helper.Time.time - self.startTime
+    if self.elapsedTime > self.spell_duration then
+      self:die()
+    end
+    if self.elapsedTime > self.spell_duration + self.duration then
+      self:die()
+    end
   end
-  if self.elapsedTime > self.spell_duration + self.duration then
-    self:die()
-  end
-
 end
 
 function Spell:cancel()

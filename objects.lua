@@ -559,9 +559,13 @@ function Unit:update_buffs(dt)
       if v.duration <= v.nextTick then
         --add a really quiet short sound here, becauseit'll be playing all the time
         fire3:play{pitch = random:float(0.8, 1.2), volume = 0.15}
-        self:hit((v.dps/2), nil, DAMAGE_TYPE_PHYSICAL, false)
-        --1 second tick, could be changed
-        v.nextTick = v.nextTick - 0.5
+        
+        -- Calculate damage based on max HP and stacks
+        local burn_damage = self.max_hp * BURN_DAMAGE_PERCENT * (v.stacks or 1)
+        self:hit(burn_damage, nil, DAMAGE_TYPE_FIRE, false)
+        
+        --1 second tick
+        v.nextTick = v.nextTick - 1.0
       end
     end
 
@@ -968,19 +972,61 @@ function Unit:isMoving(dt)
   return diff > 0.1
 end
 
---only keep the highest dps buff
+--new stacking burn system
 function Unit:burn(dps, duration, from)
-  local burnBuff = {name = 'burn', color = red[0], duration = duration, maxDuration = duration, nextTick = duration, dps = dps}
   local existing_buff = self.buffs['burn']
   
-  if existing_buff and existing_buff.dps > burnBuff.dps then
-    return
+  if existing_buff then
+    -- Refresh duration and add a stack
+    existing_buff.duration = BURN_DURATION_SECONDS
+    existing_buff.maxDuration = BURN_DURATION_SECONDS
+    existing_buff.stacks = (existing_buff.stacks or 1) + 1
+    
+    -- Check if we're at max stacks and should explode
+    if existing_buff.stacks > BURN_MAX_STACKS then
+      self:burn_explode(from)
+      return
+    end
   else
-
-    self:remove_buff('burn')
+    -- Create new burn buff
+    local burnBuff = {
+      name = 'burn', 
+      color = red[0], 
+      duration = BURN_DURATION_SECONDS, 
+      maxDuration = BURN_DURATION_SECONDS, 
+      nextTick = 1.0, -- Tick every second
+      stacks = 1,
+      stacks_expire_together = true -- All stacks fall off at once
+    }
     self:add_buff(burnBuff)
   end
+end
 
+function Unit:burn_explode(from)
+  -- Remove the burn buff
+  self:remove_buff('burn')
+  
+  -- Calculate explosion damage based on max HP
+  local explosion_damage = self.max_hp * BURN_EXPLOSION_DAMAGE_PERCENT
+  
+  Knockback_Area_Spell{
+    group = main.current.effects,
+    is_troop = true,
+    x = self.x,
+    y = self.y,
+    radius = BURN_EXPLOSION_RADIUS,
+    dmg = explosion_damage,
+    duration = 0.3,
+    area_type = 'area',
+    pick_shape = 'circle',
+    color = red[0],
+    knockback_force = BURN_EXPLOSION_KNOCKBACK,
+    knockback_duration = KNOCKBACK_DURATION_BOSS,
+    damage_type = DAMAGE_TYPE_FIRE,
+  }
+  
+  -- Play explosion sound
+  explosion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
 end
 
 function Unit:isShielded()
