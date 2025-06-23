@@ -172,7 +172,7 @@ function Laser_Spell:update(dt)
     return
   end
   if self.lasermode ~= 'fixed' then
-    if self.unit.state ~= unit_states['casting'] and self.unit.state ~= unit_states['channeling'] then
+    if not table.any(unit_states_can_continue_cast, function(v) return self.unit.state == v end) then
       self:die()
       return
     end

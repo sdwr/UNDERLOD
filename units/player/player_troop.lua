@@ -50,6 +50,10 @@ function Troop:update(dt)
   -- This is one big if/elseif block. Only ONE of these can run per frame,
   -- which prevents state flickering. The order is based on priority.
 
+  if self.state == unit_states['normal'] or self.state == unit_states['following'] then
+    self:update_ai_logic()
+  end
+
   -- PRIORITY 1: Uninterruptible States
   -- If a unit is knocked back or frozen, it can't do anything else.
   if self.state == unit_states['knockback'] or self.state == unit_states['frozen'] then
@@ -61,9 +65,9 @@ function Troop:update(dt)
   -- If the unit is actively following the mouse.
   elseif self.state == unit_states['following'] then
 
-      self:cancel_cast()
-      self:clear_my_target()
-      self:clear_assigned_target()
+      -- self:cancel_cast()
+      -- self:clear_my_target()
+      -- self:clear_assigned_target()
 
       -- Check if we should STOP following.
       if input['m1'].released or input['space'].released then
@@ -137,9 +141,28 @@ function Troop:update(dt)
           Helper.Unit:set_state(self, unit_states['rallying'])
           self:set_rally_position(random:int(1, 10))
       else
-          -- If no player command, proceed with AI logic.
-          -- This is where the logic from 'state_always_run_functions' now lives.
-          self:update_ai_logic()
+        if self:my_target() then
+          local target = self:my_target()
+          if not self:in_range()() then
+            -- If target is out of range, move towards it. This is the "aggro" behavior.
+            self:seek_point(target.x, target.y, SEEK_DECELERATION, SEEK_WEIGHT)
+            self:steering_separate(SEPARATION_RADIUS, troop_classes)
+            self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
+            self:rotate_towards_velocity(1)
+        
+          -- 3c. If we're in range but waiting for cooldown, stand still.
+          else
+              self:set_velocity(0, 0)
+              self:steering_separate(16, troop_classes)
+              -- Also, rotate to face the target while waiting.
+              self:rotate_towards_object(target, 1)
+          end
+        else
+          -- 4. NO TARGET
+          -- If after all checks we still have no target, do nothing. Stand still.
+          self:set_velocity(0, 0)
+          self:steering_separate(16, troop_classes)
+        end
       end
   end
 
@@ -191,26 +214,7 @@ function Troop:update_ai_logic()
           -- If yes, commit to casting.
           -- NOTE: Your can_cast helper might do both checks, which is fine!
           self:setup_cast()
-
-      -- 3b. If we CANNOT attack, check if we need to move closer.
-      elseif not self:in_range()() then
-          -- If target is out of range, move towards it. This is the "aggro" behavior.
-          self:seek_point(target.x, target.y, SEEK_DECELERATION, SEEK_WEIGHT)
-          self:steering_separate(SEPARATION_RADIUS, troop_classes)
-          self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
-          self:rotate_towards_velocity(1)
-      
-      -- 3c. If we're in range but waiting for cooldown, stand still.
-      else
-          self:set_velocity(0, 0)
-          self:steering_separate(16, troop_classes)
-          -- Also, rotate to face the target while waiting.
-          self:rotate_towards_object(target, 1)
       end
-  else
-      -- 4. NO TARGET
-      -- If after all checks we still have no target, do nothing. Stand still.
-      self:set_velocity(0, 0)
   end
 end
 

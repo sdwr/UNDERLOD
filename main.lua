@@ -372,12 +372,25 @@ function init()
   unit_states_can_target = {
     unit_states['normal'],
     unit_states['casting_blocked'],
+    unit_states['following'],
+    unit_states['stopped'],
+    
   }
 
   unit_states_can_cast = {
     unit_states['normal'],
+    unit_states['following'],
     unit_states['stopped'],
   }
+
+  unit_states_can_continue_cast = {
+    unit_states['normal'],
+    unit_states['following'],
+    unit_states['stopped'],
+    unit_states['casting'],
+    unit_states['channeling'],
+  }
+
   type_colors = {
     ['warrior'] = yellow[0],
     ['ranger'] = green[0],

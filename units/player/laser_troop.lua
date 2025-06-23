@@ -35,7 +35,7 @@ function Laser_Troop:set_character()
   --total cooldown is cooldownTime + castTime
   self.baseCooldown = attack_speeds['fast']
   self.cooldownTime = self.baseCooldown
-  self.baseCast = attack_speeds['buff']
+  self.baseCast = 0
   self.castTime = self.baseCast
 
   self:set_state_functions()
@@ -48,7 +48,8 @@ function Laser_Troop:setup_cast()
     viable = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.enemies); return target end,
     oncast = function() end,
     castcooldown = self.cooldownTime,
-    cast_length = 0.1,
+    cast_length = 0,
+    backswing = 0.1,
     spellclass = Laser_Spell,
     spelldata = {
       group = main.current.main,

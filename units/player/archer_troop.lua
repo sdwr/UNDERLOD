@@ -4,9 +4,9 @@ function Archer_Troop:init(data)
   Archer_Troop.super.init(self, data)
 
 
-  self.baseCooldown = attack_speeds['buff']
+  self.baseCooldown = attack_speeds['ultra-fast']
   self.cooldownTime = self.baseCooldown
-  self.baseCast = attack_speeds['medium-cast']
+  self.baseCast = 0
   self.castTime = self.baseCast
   self.backswing = data.backswing or 0.1
   self.castcooldown = math.random() * (self.base_castcooldown or self.baseCast)

@@ -157,8 +157,10 @@ function Cast:cast()
     if self.spelldata.on_attack_callbacks and self.unit.onAttackCallbacks then
       self.unit:onAttackCallbacks(self.target)
     end
-    self.unit:end_cast(castcooldown, self.spell_duration)
+  else 
+    Helper.Unit:set_state(self.unit, unit_states['channeling'])
   end
+  self.unit:end_cast(castcooldown, self.spell_duration)
   self:die()
 end
 

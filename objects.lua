@@ -1363,6 +1363,14 @@ function Unit:interrupt_cast()
   end
 end
 
+function Unit:interrupt_channel()
+  if self.state == unit_states['channeling'] then
+    self.castcooldown = 0
+    self.spelldata = nil
+    Cancel_Cast(self)
+  end
+end
+
 --for channeling spells, if they are hit while casting
 function Unit:delay_cast()
 
