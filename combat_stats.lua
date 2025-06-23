@@ -31,17 +31,56 @@ BOSS_MS = 70
 REGULAR_PUSH_DAMAGE = 10
 SPECIAL_PUSH_DAMAGE = 20
 
--- elemental damage
-BURN_DPS_MULTIPLIER = 0.1
-BURN_DURATION = 3
-
 -- burn system constants
-BURN_DAMAGE_PERCENT = 0.005  -- 0.5% max HP per stack per second
-BURN_MAX_STACKS = 10
-BURN_DURATION_SECONDS = 5
-BURN_EXPLOSION_DAMAGE_PERCENT = 0.15  -- 15% max HP explosion damage
-BURN_EXPLOSION_RADIUS = 50
-BURN_EXPLOSION_KNOCKBACK = LAUNCH_PUSH_FORCE_BOSS
+BURN_EXPLOSION_BASE_RADIUS = 20
+BURN_EXPLOSION_BASE_KNOCKBACK = LAUNCH_PUSH_FORCE_ENEMY * 2/3
+BURN_EXPLOSION_BASE_KNOCKBACK_DURATION = 0.3
+
+BURN_THRESHOLD_FOR_INSTANT_EXPLOSION_PERCENT_OF_HP = 0.1
+BURN_MIN_EXPLOSION_THRESHOLD_PERCENT_OF_HP = 0.05
+BURN_EXPLOSION_POWER_CAP = 0.5
+BURN_CANCEL_IF_DPS_BELOW_PERCENT_OF_HP = 0.01
+
+BURN_EXPECTED_BASELINE_HP = REGULAR_ENEMY_HP
+
+
+BURN_QUALITY_INPUT_MIN = 1
+BURN_QUALITY_INPUT_MAX = BOSS_HP / REGULAR_ENEMY_HP
+
+BURN_QUALITY_OUTPUT_MIN = 0.5
+BURN_QUALITY_OUTPUT_MAX = 1.75
+
+function CALCULATE_BURN_QUALITY_FACTOR(baseline_hp)
+  local quality_ratio = (baseline_hp / BURN_EXPECTED_BASELINE_HP)
+  local quality_ratio_normalized = (quality_ratio - BURN_QUALITY_INPUT_MIN) / (BURN_QUALITY_INPUT_MAX - BURN_QUALITY_INPUT_MIN)
+
+  local normalized_quality = math.clamp(quality_ratio_normalized, 0, 1)
+  
+  local output_range = BURN_QUALITY_OUTPUT_MAX - BURN_QUALITY_OUTPUT_MIN
+  local final_quality_factor = BURN_QUALITY_OUTPUT_MIN + (output_range * normalized_quality)
+
+  return final_quality_factor
+end
+
+BURN_EFFORT_OUTPUT_MIN = 0.5
+BURN_EFFORT_OUTPUT_MAX = 1.25
+
+function CALCULATE_BURN_EFFORT_FACTOR(peak_damage, max_hp)
+  local effort_ratio = peak_damage / max_hp
+
+  local output_range = BURN_EFFORT_OUTPUT_MAX - BURN_EFFORT_OUTPUT_MIN
+  local final_effort_factor = BURN_EFFORT_OUTPUT_MIN + (effort_ratio * output_range)
+
+  return final_effort_factor
+end
+
+--we want to make sure the burn power never exceeds 3
+--so soft cap it as it approaches 3
+function NORMALIZE_BURN_POWER(power)
+   return math.min(power, 3)
+end
+
+BURN_DPS_DECAY_RATE = 0.25
 
 --proc constants
 MAX_STACKS_FIRE = 5
@@ -250,14 +289,20 @@ _set_unit_base_stats = function(unit)
     if unit:is(Player) then
       -- only for intro screen, actual units are is_troop
         unit.base_hp = 100
+        unit.baseline_hp = unit.base_hp
+        
         unit.base_dmg = 10
         unit.base_mvspd = 50
     elseif unit:is(EnemyCritter) or unit:is(Critter) then
         unit.base_hp = 25
+        unit.baseline_hp = unit.base_hp
+
         unit.base_dmg = 5
         unit.base_mvspd = REGULAR_ENEMY_MS
     elseif unit.is_troop then
         unit.base_hp = TROOP_HP
+        unit.baseline_hp = unit.base_hp
+
         unit.base_dmg = TROOP_DAMAGE
         unit.base_mvspd = TROOP_MS
     elseif unit.class == 'regular_enemy' then
@@ -265,19 +310,32 @@ _set_unit_base_stats = function(unit)
         unit.base_dmg = unit.base_dmg or REGULAR_ENEMY_DAMAGE
         unit.base_mvspd = unit.base_mvspd or REGULAR_ENEMY_MS
 
+        --store baseline for burn max hp calculation
+        unit.baseline_hp = unit.base_hp
+
         unit.base_hp = unit.base_hp * REGULAR_ENEMY_SCALING(level) * ZONE_SCALING(level)
         unit.base_dmg = unit.base_dmg  * REGULAR_ENEMY_SCALING(level) * ZONE_SCALING(level)
         unit.base_mvspd = unit.base_mvspd
     elseif unit.class == 'special_enemy' then
-        unit.base_hp = SPECIAL_ENEMY_HP * SPECIAL_ENEMY_SCALING(level) * ZONE_SCALING(level)
+
+        unit.base_hp = SPECIAL_ENEMY_HP
+        unit.baseline_hp = unit.base_hp
+
+        unit.base_hp = unit.base_hp * SPECIAL_ENEMY_SCALING(level) * ZONE_SCALING(level)
         unit.base_dmg = SPECIAL_ENEMY_DAMAGE  * SPECIAL_ENEMY_SCALING(level) * ZONE_SCALING(level)
         unit.base_mvspd = SPECIAL_ENEMY_MS
     elseif unit.class == 'miniboss' then
-        unit.base_hp = 1000 * SPECIAL_ENEMY_SCALING(level) * ZONE_SCALING(level)
-        unit.base_dmg = 20  * SPECIAL_ENEMY_SCALING(level) * ZONE_SCALING(level)
+        unit.base_hp = 1000
+        unit.baseline_hp = unit.base_hp
+
+        unit.base_hp = unit.base_hp * SPECIAL_ENEMY_SCALING(level) * ZONE_SCALING(level)
+        unit.base_dmg = unit.base_dmg  * SPECIAL_ENEMY_SCALING(level) * ZONE_SCALING(level)
         unit.base_mvspd = 55
     elseif unit.class == 'boss' then
-        unit.base_hp = BOSS_HP * ZONE_SCALING(level)
+        unit.base_hp = BOSS_HP
+        unit.baseline_hp = unit.base_hp
+
+        unit.base_hp = unit.base_hp * ZONE_SCALING(level)
         unit.base_dmg = BOSS_DAMAGE
         unit.base_mvspd = BOSS_MS
     end

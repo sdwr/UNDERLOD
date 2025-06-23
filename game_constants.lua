@@ -201,6 +201,7 @@ LASER_FIRE_TYPES = {'target', 'fixed_angle', 'rotating'}
 
 DAMAGE_TYPE_LIGHTNING = 'lightning'
 DAMAGE_TYPE_FIRE = 'fire'
+DAMAGE_TYPE_BURN = 'burn'
 DAMAGE_TYPE_PHYSICAL = 'physical'
 DAMAGE_TYPE_POISON = 'poison'
 DAMAGE_TYPE_COLD = 'cold'

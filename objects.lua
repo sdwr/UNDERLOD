@@ -552,25 +552,38 @@ function Unit:update_buffs(dt)
     end
 
     --dec duration
-    v.duration = v.duration - dt
+    if v.duration then
+      v.duration = v.duration - dt
+    end
 
-    --on buff tick
+    -- In your buff update loop, where 'v' is the burn buff table
     if k == 'burn' then
-      if v.duration <= v.nextTick then
-        --add a really quiet short sound here, becauseit'll be playing all the time
-        fire3:play{pitch = random:float(0.8, 1.2), volume = 0.15}
-        
-        -- Calculate damage based on max HP and stacks
-        local burn_damage = self.max_hp * BURN_DAMAGE_PERCENT * (v.stacks or 1)
-        self:hit(burn_damage, nil, DAMAGE_TYPE_FIRE, false)
-        
-        --1 second tick
-        v.nextTick = v.nextTick - 1.0
+      v.elapsed_time = v.elapsed_time + dt
+      
+      -- Check if it's time for a tick (e.g., every 1 second)
+      if v.elapsed_time >= 1 then
+          v.elapsed_time = v.elapsed_time - 1 -- Reset timer for the next tick
+
+          -- Play a subtle sound for the tick
+          
+          -- 1. Calculate the damage and decay amount for this tick
+          local damage_this_tick = v.total_damage * BURN_DPS_DECAY_RATE
+          fire3:play{pitch = random:float(0.8, 1.2), volume = 0.15}
+          
+          -- 2. Deal the damage
+          if damage_this_tick > 0 then
+              self:hit(damage_this_tick, nil, DAMAGE_TYPE_BURN, false)
+          end
+
+          v.total_damage = v.total_damage - damage_this_tick
+
+          
+          self:try_trigger_burn_explosion()
       end
     end
 
     --on buff end
-    if v.duration < 0 then
+    if v.duration and v.duration < 0 then
       if k == 'bash_cd' then
         self.canBash = true
       elseif k == 'stunned' then
@@ -942,6 +955,9 @@ function Unit:onKillCallbacks(target)
 end
 
 function Unit:onDeathCallbacks(from)
+  --some global procs here, could maybe be moved into onDeathProcs
+  self:burn_explode_or_fizzle()
+
   for k, proc in ipairs(GLOBAL_PROC_LIST[PROC_ON_DEATH]) do
     proc.globalUnit = self
     proc:onDeath(from)
@@ -973,60 +989,104 @@ function Unit:isMoving(dt)
 end
 
 --new stacking burn system
-function Unit:burn(dps, duration, from)
+function Unit:burn(damage, from)
   local existing_buff = self.buffs['burn']
   
   if existing_buff then
-    -- Refresh duration and add a stack
-    existing_buff.duration = BURN_DURATION_SECONDS
-    existing_buff.maxDuration = BURN_DURATION_SECONDS
-    existing_buff.stacks = (existing_buff.stacks or 1) + 1
-    
-    -- Check if we're at max stacks and should explode
-    if existing_buff.stacks > BURN_MAX_STACKS then
-      self:burn_explode(from)
-      return
-    end
+    -- Add damage to existing burn buff
+    existing_buff.total_damage = existing_buff.total_damage + damage
+    existing_buff.peak_damage = math.max(existing_buff.peak_damage, existing_buff.total_damage)
+
+
   else
     -- Create new burn buff
     local burnBuff = {
       name = 'burn', 
       color = red[0], 
-      duration = BURN_DURATION_SECONDS, 
-      maxDuration = BURN_DURATION_SECONDS, 
+      total_damage = damage, 
+      peak_damage = damage,
       nextTick = 1.0, -- Tick every second
-      stacks = 1,
-      stacks_expire_together = true -- All stacks fall off at once
+      elapsed_time = 0,
     }
     self:add_buff(burnBuff)
   end
 end
 
+function Unit:try_trigger_burn_explosion()
+  local burn_buff = self.buffs['burn']
+  if not burn_buff then return end
+
+  -- 4. Check the end conditions
+  local cancel_threshold = self.max_hp * BURN_CANCEL_IF_DPS_BELOW_PERCENT_OF_HP * BURN_DPS_DECAY_RATE
+
+  local damage_required_to_explode_instantly = self.max_hp * BURN_THRESHOLD_FOR_INSTANT_EXPLOSION_PERCENT_OF_HP
+  
+  if burn_buff.total_damage >= damage_required_to_explode_instantly then
+    self:burn_explode_or_fizzle()
+    return
+  elseif burn_buff.total_damage < cancel_threshold then
+      -- The burn has fizzled. Now we decide if it explodes or just disappears.
+      local min_explosion_threshold = self.max_hp * BURN_MIN_EXPLOSION_THRESHOLD_PERCENT_OF_HP
+      
+      if burn_buff.peak_damage >= min_explosion_threshold then
+          -- Condition Met: Fizzle with Explosion
+          -- The burn was powerful enough at its peak to warrant a final boom.
+          self:burn_explode_or_fizzle()
+      end
+      -- else: Condition Met: Fizzle without Explosion.
+      -- The peak was never high enough, so it just disappears silently.
+      
+      -- In both fizzle cases, we remove the buff.
+      self:remove_buff('burn')
+  end
+end
+
+function Unit:burn_explode_or_fizzle()
+  local burn_buff = self.buffs['burn']
+  if not burn_buff then return end
+
+  if burn_buff.total_damage >= BURN_MIN_EXPLOSION_THRESHOLD_PERCENT_OF_HP then
+    self:burn_explode()
+  else
+    self:remove_buff('burn')
+  end
+end
+
 function Unit:burn_explode(from)
   -- Remove the burn buff
+  local peak_damage = self.buffs['burn'].peak_damage
   self:remove_buff('burn')
   
   -- Calculate explosion damage based on max HP
-  local explosion_damage = self.max_hp * BURN_EXPLOSION_DAMAGE_PERCENT
+  local explosion_damage = peak_damage / 2
+
+  local total_power = CALCULATE_BURN_EFFORT_FACTOR(peak_damage, self.max_hp) + CALCULATE_BURN_QUALITY_FACTOR(self.baseline_hp)
+
+
+  local explosion_radius = BURN_EXPLOSION_BASE_RADIUS * (1 + total_power)
+  local explosion_knockback = BURN_EXPLOSION_BASE_KNOCKBACK * total_power
+  local explosion_knockback_duration = BURN_EXPLOSION_BASE_KNOCKBACK_DURATION * total_power
   
+  local explosion_volume = 0.3 * (1 + total_power)
+
   Knockback_Area_Spell{
     group = main.current.effects,
     is_troop = true,
     x = self.x,
     y = self.y,
-    radius = BURN_EXPLOSION_RADIUS,
+    radius = explosion_radius,
     dmg = explosion_damage,
     duration = 0.3,
     area_type = 'area',
     pick_shape = 'circle',
     color = red[0],
-    knockback_force = BURN_EXPLOSION_KNOCKBACK,
-    knockback_duration = KNOCKBACK_DURATION_BOSS,
-    damage_type = DAMAGE_TYPE_FIRE,
+    knockback_force = explosion_knockback,
+    knockback_duration = explosion_knockback_duration,
+    damage_type = DAMAGE_TYPE_BURN,
   }
   
   -- Play explosion sound
-  explosion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+  explosion1:play{pitch = random:float(0.8, 1.2), volume = explosion_volume}
 end
 
 function Unit:isShielded()

@@ -316,7 +316,7 @@ function Enemy:hit(damage, from, damageType, makesSound, cannotProcOnHit)
   self:show_damage_number(actual_damage, damageType)
 
   if damageType == DAMAGE_TYPE_FIRE then
-    self:burn(actual_damage * BURN_DPS_MULTIPLIER, BURN_DURATION, from)
+    self:burn(actual_damage, from)
   end
   
   self.hp = self.hp - actual_damage

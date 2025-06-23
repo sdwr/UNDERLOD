@@ -2419,7 +2419,6 @@ function init()
     [1] = {
       'cleaver',
       'laser',
-      'stomper',
       'burst',
       'boomerang',
       'charger',

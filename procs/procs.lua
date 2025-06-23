@@ -1345,13 +1345,14 @@ function Proc_Fire:init(args)
   
   --define the proc's vars
   self.damageType = 'fire'
-  self.burnDps = self.data.burnDamage or 15
+  self.percent_damage_as_burn = self.data.percent_damage_as_burn or 0.3
 end
 
 function Proc_Fire:onHit(target, damage)
   Proc_Fire.super.onHit(self, target, damage)
-  --need to add a burn debuff to the target
-  target:burn(self.burnDps, BURN_DURATION, self.unit)
+  --need to add a burn debuff to the Target
+  local burn_damage = damage * self.percent_damage_as_burn
+  target:hit(burn_damage, nil, DAMAGE_TYPE_FIRE, false)
 end
 
 Proc_Lavapool = Proc:extend()
