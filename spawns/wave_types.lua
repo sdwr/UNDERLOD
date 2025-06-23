@@ -193,17 +193,17 @@ function Wave_Types:Get_Waves(level)
     wave = self:Two_Basic_Three_Special(2)
     table.insert(waves, wave)
   elseif level == 8 then
-    wave = self:Generic(1, 6, 3)
+    wave = self:Two_Basic_Three_Special(2)
     table.insert(waves, wave)
-    wave = self:Generic(1, 3, 6)
+    wave = self:Two_Basic_Three_Special(2)
     table.insert(waves, wave)
   else
     --when there are lots of enemies, they should all be spawning far
-    wave = self:Generic(1, 5, 4)
+    wave = self:Generic(1, 2, 4)
     table.insert(waves, wave)
-    wave = self:Generic(1, 6, 6)
+    wave = self:Generic(1, 3, 5)
     table.insert(waves, wave)
-    wave = self:Generic(1, 8, 5)
+    wave = self:Generic(1, 4, 4)
     table.insert(waves, wave)
   end
   return waves
