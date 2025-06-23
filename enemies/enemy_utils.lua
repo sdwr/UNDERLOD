@@ -3,7 +3,7 @@ enemy_size_to_xy = {
   small = {x = 8, y = 6},
   regular = {x = 12, y = 6},
   regular_big = {x = 16, y = 12},
-  big = {x = 16, y = 12},
+  big = {x = 20, y = 14},
   huge = {x = 36, y = 24},
 
   stompy = {x = 46, y = 46},

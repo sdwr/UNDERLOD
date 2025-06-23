@@ -363,7 +363,6 @@ function init()
 
   unit_states_enemy_can_move = {
     unit_states['normal'],
-    unit_states['stopped'],
     unit_states['rallying'],
     unit_states['following'],
     unit_states['casting_blocked'],
@@ -373,7 +372,6 @@ function init()
     unit_states['normal'],
     unit_states['casting_blocked'],
     unit_states['following'],
-    unit_states['stopped'],
     
   }
 

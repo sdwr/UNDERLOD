@@ -27,8 +27,9 @@ fns['init_enemy'] = function(self)
     viable = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end,
     oncast = function() end,
     instantspell = true,
-    castcooldown = 2,
+    castcooldown = 3,
     cast_length = 0.2,
+    backswing = 1,
     spellclass = Cleave,
     spelldata = {
       group = main.current.main,
