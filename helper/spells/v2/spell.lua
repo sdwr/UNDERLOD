@@ -353,6 +353,8 @@ function Spell:try_end_cast()
     if self.unit_dies_at_end then
       self.unit:die()
     end
+  else
+    self:die()
   end
 end
 
