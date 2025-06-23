@@ -46,9 +46,6 @@ end
 
 fns['draw_enemy'] = function(self)
   graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
-
-  local sx = (self.shape.w / LICH_SPRITE_W) * LICH_SPRITE_SCALE
-  local sy = (self.shape.h / LICH_SPRITE_H) * LICH_SPRITE_SCALE
   
   local animation_success = self:draw_animation(self.state, self.x, self.y, 0)
 

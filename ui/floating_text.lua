@@ -10,7 +10,8 @@ function FloatingText:init(args)
   self.color = self.color:clone()
 
   self.duration = self.duration or 0
-  self.fade_duration = self.fade_duration or 1
+  self.fade_duration = self.fade_duration or 0.5
+  self.start_alpha = self.start_alpha or 0.85
   self.start_time = Helper.Time.time
   self.scale = self.scale or 1
 end
@@ -24,17 +25,23 @@ function FloatingText:update(dt)
     self:destroy()
   elseif time_passed > self.duration then
     local percentDissolved = (time_passed - self.duration) / self.fade_duration
-    self.color.a = 1 - (1 * percentDissolved)
+    self.color.a = self.start_alpha - (self.start_alpha * percentDissolved)
   end
 end
 
 function FloatingText:draw()
   if self.dead then return end
-  graphics.set_color(self.color)
-  self.text:draw(self.x, self.y, 0, self.scale, self.scale)
+  local screen_x, screen_y = worldToScreen(self.x, self.y)
+  local scale = math.floor(wh/gh)
+  self.text:draw_to_full_res(screen_x, screen_y, 0, self.scale * scale, self.scale * scale, self.color)
 end
 
 function FloatingText:destroy()
   self.text = nil
   self.dead = true
+end
+
+function worldToScreen(world_x, world_y)
+  local scale = math.floor(wh/gh)
+  return world_x * scale, world_y * scale
 end

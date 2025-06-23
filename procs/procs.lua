@@ -1833,7 +1833,7 @@ function Proc_Icenova:create_proc_display_area()
         x = self.unit.x, y = self.unit.y,
         pick_shape = 'circle',
         r = 0, -- Start with a radius of 0
-        duration = self.procDelay + 0.1, -- Give it a lifetime just longer than the wind-up
+        duration = self.procDelay, -- Give it a lifetime just longer than the wind-up
         color = self.color,
         dmg = 0,
     }

@@ -386,7 +386,7 @@ function Unit:show_damage_number(dmg, damagetype)
     x = self.x + random_offset(4),
     y = self.y + random_offset(4),
     rs = 6,
-    lines = {{text =  '' .. roundedDmg, font = pixul_mini}},
+    lines = {{text =  '' .. roundedDmg, font = pixul_font }},
     damage = roundedDmg,
   }
   Helper.DamageNumbers.Add(data)

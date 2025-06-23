@@ -100,6 +100,30 @@ function Text:draw(x, y, r, sx, sy)
   end
 end
 
+function Text:draw_to_full_res(x, y, r, sx, sy, color)
+  for _, line in ipairs(self.lines) do
+    for i, c in ipairs(line.characters) do
+      for k, v in pairs(self.text_tags) do
+        for _, tag in ipairs(c.tags) do
+          if tag == k then
+            if v.actions.draw then
+              v.actions.draw(c, i, self)
+            end
+          end
+        end
+      end
+      local color = color
+      table.insert(full_res_draws, function()
+        graphics.set_color(color)
+        graphics.push(x, y, r, sx, sy)
+        graphics.print(c.character, line.font, x + c.x - self.w/2, y + c.y - self.h/2, c.r or 0, c.sx or 1, c.sy or c.sx or 1, c.ox or 0, c.oy or 0)
+        graphics.pop()
+        graphics.set_color(self.white)
+      end)
+    end
+  end
+end
+
 
 function Text:format_text()
   self.w = 0

@@ -64,13 +64,6 @@ end
 
 fns['draw_enemy'] = function(self)
   graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
-
-  local sx = (self.shape.w / LIZARDMAN_SPRITE_W) * LIZARDMAN_SPRITE_SCALE
-  local sy = (self.shape.h / LIZARDMAN_SPRITE_H) * LIZARDMAN_SPRITE_SCALE
-
-  if self:is_facing_left() then
-    sx = -sx
-  end
   
   local animation_success = self:draw_animation(self.state, self.x, self.y, 0)
 
