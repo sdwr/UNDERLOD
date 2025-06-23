@@ -8,6 +8,7 @@ require 'helper/helper_lua'
 require 'helper/helper_unit'
 require 'helper/helper_graphics'
 require 'helper/helper_sound'
+require 'helper/helper_damage_numbers'
 
 Helper.initialized = false
 Helper.mousex = 0

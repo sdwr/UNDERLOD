@@ -12,9 +12,11 @@ function FloatingText:init(args)
   self.duration = self.duration or 0
   self.fade_duration = self.fade_duration or 1
   self.start_time = Helper.Time.time
+  self.scale = self.scale or 1
 end
 
 function FloatingText:update(dt)
+  if self.dead then return end
   self.text:update(dt)
   
   local time_passed = Helper.Time.time - self.start_time
@@ -27,8 +29,9 @@ function FloatingText:update(dt)
 end
 
 function FloatingText:draw()
+  if self.dead then return end
   graphics.set_color(self.color)
-  self.text:draw(self.x, self.y)
+  self.text:draw(self.x, self.y, 0, self.scale, self.scale)
 end
 
 function FloatingText:destroy()

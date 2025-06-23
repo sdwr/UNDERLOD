@@ -369,6 +369,9 @@ function Unit:hide_hp()
 end
 
 --have full data passed in instead of just type?
+--keep track of how many damage numbers are on screen
+--delete the oldest one when we hit the limit
+
 function Unit:show_damage_number(dmg, damagetype)
   if state.show_damage_numbers == 'none' then return end
   if state.show_damage_numbers == 'enemies' and self.faction ~= 'enemy' then return end
@@ -384,8 +387,9 @@ function Unit:show_damage_number(dmg, damagetype)
     y = self.y + random_offset(4),
     rs = 6,
     lines = {{text =  '' .. roundedDmg, font = pixul_mini}},
+    damage = roundedDmg,
   }
-  FloatingText(data)
+  Helper.DamageNumbers.Add(data)
 end
 
 function Unit:heal(amount)
@@ -1228,12 +1232,8 @@ function Unit:should_follow()
   local input = input['space'].down
   if input then
     Helper.Unit:clear_all_rally_points()
-    if self.cancel_cast then
-      self:cancel_cast()
-    end 
   end
   local canMove = table.any(unit_states_can_move, function(v) return self.state == v end)
-
   return input and canMove
 end
 

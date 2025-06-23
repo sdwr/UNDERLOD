@@ -33,6 +33,26 @@ function Troop:init(args)
   Helper.Unit:set_state(self, unit_states['normal'])
 end
 
+function Troop:follow_mouse()
+  -- If not, continue moving towards the mouse.
+  if self:distance_to_mouse() > 10 then
+    self:seek_mouse(SEEK_DECELERATION, SEEK_WEIGHT)
+    self:steering_separate(SEPARATION_RADIUS, troop_classes)
+    self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
+    self:rotate_towards_velocity(1)
+  else
+      --self:set_velocity(0, 0) -- Stop when we reach the cursor
+  end
+end
+
+function Troop:rally_to_point()
+  -- If not, continue moving towards the rally point.
+  self:seek_point(self.target_pos.x, self.target_pos.y, SEEK_DECELERATION, SEEK_WEIGHT)
+  self:steering_separate(SEPARATION_RADIUS, troop_classes)
+  self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
+  self:rotate_towards_velocity(1)
+end
+
 function Troop:update(dt)
   -- ===================================================================
   -- 1. ESSENTIAL HOUSEKEEPING (These should always run)
@@ -73,35 +93,23 @@ function Troop:update(dt)
       if input['m1'].released or input['space'].released then
           Helper.Unit:set_state(self, unit_states['normal'])
       else
-          -- If not, continue moving towards the mouse.
-          if self:distance_to_mouse() > 10 then
-              self:seek_mouse(SEEK_DECELERATION, SEEK_WEIGHT)
-              self:steering_separate(SEPARATION_RADIUS, troop_classes)
-              self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
-              self:rotate_towards_velocity(1)
-          else
-              --self:set_velocity(0, 0) -- Stop when we reach the cursor
-          end
+        self:follow_mouse()
+
       end
 
   -- If the unit is moving to a rally point.
   elseif self.state == unit_states['rallying'] then
 
-      self:cancel_cast()
-      -- clear my target (but not assigned target)
-      self:clear_my_target()
+    -- clear my target (but not assigned target)
+    self:clear_my_target()
 
-      -- Check if we have arrived at the rally point.
-      local distance_to_target_pos = math.distance(self.x, self.y, self.target_pos.x, self.target_pos.y)
-      if distance_to_target_pos < 9 or not self.rallying then -- Also stop if rally is cancelled
-          Helper.Unit:set_state(self, unit_states['normal'])
-      else
-          -- If not, continue moving towards the rally point.
-          self:seek_point(self.target_pos.x, self.target_pos.y, SEEK_DECELERATION, SEEK_WEIGHT)
-          self:steering_separate(SEPARATION_RADIUS, troop_classes)
-          self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
-          self:rotate_towards_velocity(1)
-      end
+    -- Check if we have arrived at the rally point.
+    local distance_to_target_pos = math.distance(self.x, self.y, self.target_pos.x, self.target_pos.y)
+    if distance_to_target_pos < 9 or not self.rallying then -- Also stop if rally is cancelled
+        Helper.Unit:set_state(self, unit_states['normal'])
+    else
+        self:rally_to_point()
+    end
 
   -- PRIORITY 3: Action States (Busy States)
   -- If the unit is in the middle of casting an ability.
@@ -114,13 +122,19 @@ function Troop:update(dt)
         end
       end
 
-      self:set_velocity(0, 0)
-      -- We can, however, allow it to rotate towards its target.
-      if self.target then
-          self:rotate_towards_object(self.target, 1)
+      -- Allow movement while casting - troops can shoot while moving
+      if self:should_follow() then
+        self:follow_mouse()
+      elseif self.rallying then
+        self:rally_to_point()
+      elseif self:my_target() then
+        -- In range, allow some movement for positioning
+        self:steering_separate(SEPARATION_RADIUS, troop_classes)
+        self:rotate_towards_object(self:my_target(), 1)
+      else
+        -- No target, allow normal movement
+        self:steering_separate(SEPARATION_RADIUS, troop_classes)
       end
-      -- NOTE: The 'Cast' object is now responsible for setting the state
-      -- to 'stopped' or 'normal' when it finishes.
 
   -- If the unit is in its "backswing" after an attack.
   elseif self.state == unit_states['stopped'] then
