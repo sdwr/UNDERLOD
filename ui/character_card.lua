@@ -48,8 +48,6 @@ function CharacterCard:init(args)
   
   self.interact_with_mouse = true
 
-  self.procIcons = {}
-
   self.parts = {}
   self.items = {}
   
@@ -59,8 +57,6 @@ function CharacterCard:init(args)
   --texts
   self:initText()
 
-  -- self:addProcIcon()
-  -- self:addProcIcon()
 
   --otherwise have duplicate text somehow?? 
   Refresh_All_Cards_Text()
@@ -88,23 +84,6 @@ function CharacterCard:initText()
   self:refreshText()
   
   self.proc_text = nil
-end
-
-function CharacterCard:addProcIcon()
-  local proc_x = self.x + CHARACTER_CARD_PROC_X
-  local proc_y = self.y + CHARACTER_CARD_PROC_Y
-
-  local x = proc_x + (#self.procIcons * CHARACTER_CARD_PROC_X_SPACING)
-
-  local procIcon = ProcIcon{
-    group = main.current.main, 
-    x = x, 
-    y = proc_y, 
-    text = 'proc text', 
-    color = red[0],
-    proc = {name = 'proc', desc = 'proc description'}
-  }
-  table.insert(self.procIcons, procIcon)
 end
 
 function CharacterCard:refreshText()
@@ -143,54 +122,6 @@ function CharacterCard:die()
   self.stat_text.dead = true
   self.dead = true
 end
-
-ProcIcon = Object:extend()
-ProcIcon:implement(GameObject)
-function ProcIcon:init(args)
-  self:init_game_object(args)
-  self.shape = Circle(self.x, self.y, 10)
-  self.interact_with_mouse = true
-  self.text = build_proc_text(self.proc)
-  self.info_text = nil
-end
-
-function ProcIcon:update(dt)
-  self:update_game_object(dt)
-  if self.colliding_with_mouse then
-    if not self.info_text then
-      self:create_info_text()
-    end
-  else
-    if self.info_text then
-      self.info_text:deactivate()
-      self.info_text.dead = true
-      self.info_text = nil
-    end
-  end
-end
-
-function ProcIcon:draw()
-  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.x)
-  graphics.circle(self.x, self.y, 5, self.color)
-  graphics.pop()
-end
-
-function ProcIcon:create_info_text()
-  self.info_text = InfoText{group = main.current.ui, force_update = true}
-  self.info_text:activate(self.text, nil, nil, nil, nil, 16, 4, nil, 2)
-  --set the position of the info text
-  self.info_text.x, self.info_text.y = gw/2, gh/2 + 10
-end
-
-function ProcIcon:die()
-  self.dead = true
-  if self.info_text then
-    self.info_text:deactivate()
-    self.info_text.dead = true
-    self.info_text = nil
-  end
-end
-
 
 ItemPart = Object:extend()
 ItemPart:implement(GameObject)

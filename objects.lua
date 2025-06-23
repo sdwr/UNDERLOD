@@ -377,7 +377,7 @@ function Unit:show_damage_number(dmg, damagetype)
   if state.show_damage_numbers == 'enemies' and self.faction ~= 'enemy' then return end
   if state.show_damage_numbers == 'friendlies' and self.faction ~= 'friendly' then return end
 
-  local color = damage_type_to_color[damagetype] or white[0]
+  local color = DAMAGE_TYPE_TO_COLOR[damagetype] or white[0]
   local roundedDmg = math.floor(dmg)
 
   local data = {
