@@ -588,37 +588,41 @@ function ChainLightning:init(args)
       return
     end
     
-    local target = self.targets[self.i]
-    if not target or target.dead then
+    local currentTarget = self.targets[self.i]
+    if not currentTarget or currentTarget.dead then
       -- Target is invalid or dead, terminate the chain
       self.dead = true
       return
     end
     
     -- Only hit target if it hasn't been hit before
-    if not self.hit_targets[target] then
-      target:hit(self.dmg, nil, self.damageType, false)
-      self.hit_targets[target] = true -- Mark as hit
+    if not self.hit_targets[currentTarget] then
+      currentTarget:hit(self.dmg, nil, self.damageType, false)
+      self.hit_targets[currentTarget] = true -- Mark as hit
     end
 
-
-
     local lastTarget = nil
-    local currentTarget = nil
     if self.i == 1 then
       lastTarget = self.parent
-      currentTarget = self.targets[self.i]
     else
       lastTarget = self.targets[self.i-1]
-      currentTarget = self.targets[self.i]
     end
 
     if lastTarget and currentTarget then
       spark2:play{pitch = random:float(0.8, 1.2), volume = 0.7}
       LightningLine{group = main.current.effects, src = lastTarget, dst = currentTarget, color = self.color}
-      lastTarget:hit(self.dmg, nil, self.damageType, false)
-      currentTarget:hit(self.dmg, nil, self.damageType, false)
-      self.dmg = self.dmg * (1 - (SHOCK_DAMAGE_REDUCTION_PER_CHAIN))
+    end
+    
+    -- Look for new targets from the current target
+    if self.i < total_targets then
+      local current_sensor = Circle(currentTarget.x, currentTarget.y, self.rs)
+      local new_targets = self:get_objects_in_shape(current_sensor, target_classes)
+      
+      for _, new_target in ipairs(new_targets) do
+        if new_target ~= currentTarget and not self.hit_targets[new_target] and #self.targets < total_targets then
+          table.insert(self.targets, new_target)
+        end
+      end
     end
     
     -- Check if this was the last target in the chain
@@ -627,21 +631,11 @@ function ChainLightning:init(args)
     end
   end
 
-
-  local targets_in_range = self:get_objects_in_shape(self.attack_sensor, target_classes)
-  for _, target in ipairs(targets_in_range) do
-    if target ~= self.target and #self.targets < total_targets and not self.hit_targets[target] then
-      table.insert(self.targets, target)
-    end
-  end
-
-  
   bounce()
   -- Only continue if we have more targets to chain to
   if #self.targets > 1 then
     self.t:every(0.2, bounce, #self.targets - 1, function() self.dead = true end)
   end
-
 end
 
 function ChainLightning:update(dt)
