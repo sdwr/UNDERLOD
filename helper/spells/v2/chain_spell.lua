@@ -28,6 +28,7 @@ function ChainSpell:init(args)
   self.range = args.range or 50                -- The radius to search for the next target.
   self.delay = args.delay or 0.15                -- The time in seconds between each chain link.
   self.target_classes = args.target_classes or {}-- Table of classes to consider valid targets (e.g., main.current.enemies).
+  self.target_condition = args.target_condition or function() return true end
 
   -- Callback functions to be defined by the spell implementation.
   -- on_hit(spell, target): Action to perform on the target (e.g., deal damage).
@@ -104,6 +105,7 @@ function ChainSpell:find_next_targets(from_target)
   for _, p_target in ipairs(potential_targets) do
     -- Stop looking if we've already queued up the maximum number of targets.
     if #self.targets >= self.max_chains then break end
+    if not self.target_condition(p_target) then break end
 
     -- Add the target if it hasn't been hit yet.
     -- Our main loop (`process_next_link`) already checks `hit_targets`, but checking
@@ -139,6 +141,7 @@ function ChainLightning:init(args)
   self.group = args.group or main.current.main
   self.target = args.target
   self.parent = args.parent
+  self.range = args.range or 50
   self.is_troop = args.is_troop or false
   self.dmg = args.dmg or 5
   self.damageType = args.damageType or DAMAGE_TYPE_SHOCK
@@ -158,7 +161,7 @@ function ChainLightning:init(args)
     parent = self.parent,
     target = self.target,
     max_chains = SHOCK_MAX_CHAINS,
-    range = self.rs, -- Use the radius specified in the original arguments
+    range = self.range, -- Use the radius specified in the original arguments
     target_classes = target_classes,
 
     -- ## Define Callbacks ##
@@ -187,6 +190,76 @@ function ChainLightning:init(args)
   ChainSpell.init(self, spell_args)
 end
 
+--[[
+  ChainHeal
+  An implementation of ChainSpell that heals friendly targets.
+--]]
+ChainHeal = ChainSpell:extend()
+
+function ChainHeal:init(args)
+  -- 1. Define heal-specific parameters
+  self.group = args.group or main.current.main
+  self.target = args.target
+  self.parent = args.parent
+  self.range = args.range or 50
+  self.heal_amount = args.heal_amount or 10
+  self.time_between_bounces = args.time_between_bounces or 0.3
+  self.is_troop = args.is_troop or false
+  self.color = args.color or {0.2, 0.9, 0.3, 1} -- Healing green
+
+  -- Define the targeting logic to ONLY hit friendlies.
+  local target_classes
+  if not self.is_troop then
+    target_classes = main.current.enemies -- Assuming enemies healing enemies
+  else
+    target_classes = main.current.friendlies -- Assuming troops healing friendlies
+  end
+
+  local target_condition = function(target)
+    return target.hp < target.max_hp
+  end
+
+  -- 2. Create the configuration table for the base ChainSpell.
+  local spell_args = {
+    group = self.group,
+    parent = self.parent,
+    target = self.target,
+    max_chains = args.max_chains or 4,
+    delay = self.time_between_bounces,
+    range = self.range,
+    target_classes = target_classes,
+
+    -- ## Define Callbacks ##
+
+    -- on_hit: This function is called on each target in the chain.
+    on_hit = function(spell, target)
+      print('chain heal on hit', target.hp, target.max_hp)
+      -- Assuming targets have a 'heal' method or we can add health directly.
+      if target.heal then
+        target:heal(self.heal_amount)
+      else
+        target.hp = math.min(target.max_hp, target.hp + self.heal_amount)
+      end
+    end,
+
+    -- on_bounce: This function creates the visual and audio effects.
+    on_bounce = function(spell, from_target, to_target)
+      -- Play a gentle sound for healing
+      heal1:play{pitch = random:float(0.9, 1.1), volume = 0.3}
+      
+      -- Create our new HealLine effect
+      HealLine{
+        group = main.current.effects,
+        src = from_target,
+        dst = to_target,
+        color = self.color
+      }
+    end
+  }
+
+  -- 3. Initialize the base ChainSpell with our configuration.
+  ChainSpell.init(self, spell_args)
+end
 
 
 --line effects
@@ -256,4 +329,50 @@ function LightningLine:generate()
       table.insert(self.points, line.y1)
     end
   end
+end
+
+--[[
+  HealLine
+  A visual effect for a flowing line of healing energy between two points.
+  Similar to LightningLine, but with a distinct visual style for healing.
+--]]
+HealLine = Object:extend()
+HealLine:implement(GameObject)
+
+function HealLine:init(args)
+  self:init_game_object(args)
+  self.src = args.src
+  self.dst = args.dst
+  self.duration = args.duration or 0.2
+  self.w = args.w or 4
+  self.color = args.color or green[0]-- A nice green color for healing
+  self.color = self.color:clone()
+  self.color.a = 0.5
+
+  -- Animate the line width for a "pulse" effect
+  self.t:tween(self.duration, self, {w = 1}, math.linear, function() self.dead = true end)
+
+  -- Add some particle effects for flair
+  for i = 1, 3 do
+    HitParticle{
+      group = main.current.effects,
+      x = self.dst.x,
+      y = self.dst.y,
+      color = self.color,
+      v = random:float(25, 50),
+      duration = 0.3
+    }
+  end
+end
+
+function HealLine:update(dt)
+  self:update_game_object(dt)
+end
+
+function HealLine:draw()
+  -- Draw a simple, clean line for the healing effect
+  love.graphics.setLineWidth(self.w)
+  love.graphics.setColor(self.color.r, self.color.g, self.color.b, self.color.a)
+  love.graphics.line(self.src.x, self.src.y, self.dst.x, self.dst.y)
+  love.graphics.setLineWidth(1) -- Reset line width
 end

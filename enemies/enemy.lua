@@ -323,7 +323,7 @@ function Enemy:hit(damage, from, damageType, makesSound, cannotProcOnHit)
   if damageType == DAMAGE_TYPE_LIGHTNING then
     ChainLightning{
       group = main.current.main, 
-      target = self, rs = 50, 
+      target = self, range = 50, 
       dmg = actual_damage, color = yellow[0], 
       parent = self,
       is_troop = not self.is_troop}

@@ -427,6 +427,7 @@ function Proc_HealingWave:init(args)
   self.healAmount = self.data.healAmount or 25
   self.radius = self.data.radius or 75
   self.color = self.data.color or green[0]
+  self.max_chains = self.data.max_chains or 4
 
   --proc memory
   self.tick_timer = 0
@@ -440,31 +441,36 @@ function Proc_HealingWave:onTick(dt, from)
     return
   end
 
-  --only tick once per tick
+  --only tick once per team per tick
   if not self.team:is_first_alive_troop(from) then return end
 
+  --only cast once per tick_interval (to prevent casting at first instance of damage in round)
   self.tick_timer = self.tick_timer + dt
   if self.tick_timer < self.tick_interval then return end
+  self.tick_timer = 0
 
+  local hurtTroop = self.team:get_random_hurt_troop()
+  if not hurtTroop then return end
 
-  self:cast(from)
+  self:cast(hurtTroop)
+
 end
 
 function Proc_HealingWave:cast(from)
 
-  heal1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
   self.tick_timer = 0
+  print('healing wave', self.healAmount, self.max_chains, self.radius)
 
-  local randomx = random:float(-10, 10)
-  local randomy = random:float(-10, 10)
-
-  Area{
-    group = main.current.effects, 
-    x = from.x + randomx, y = from.y + randomy,
-    pick_shape = 'circle',
-    dmg = 0, r = self.radius, duration = 0.2, color = self.color,
+  ChainHeal{
+    group = main.current.main,
     is_troop = from.is_troop,
-    heal = self.healAmount
+    parent = from,
+    target = from,
+    heal_amount = self.healAmount,
+    max_chains = self.max_chains,
+    range = self.radius,
+    color = self.color,
+
   }
 
 end

@@ -189,6 +189,7 @@ function Helper.Unit:add_default_state_always_run_functions(unit)
         self.state_always_run_functions['normal_or_stopped'](self)
     end
     unit.state_always_run_functions['frozen'] = function() end
+    unit.state_always_run_functions['stunned'] = function() end
     unit.state_always_run_functions['casting'] = function() end
     unit.state_always_run_functions['casting_blocked'] = function() end
     unit.state_always_run_functions['channeling'] = function() end
@@ -218,12 +219,24 @@ end
 
 function Helper.Unit:run_state_always_run_functions()
     for i, unit in ipairs(Helper.Unit:get_list(true)) do
-        unit.state_always_run_functions[unit.state](unit)
-        unit.state_always_run_functions['always_run'](unit)
+        if unit.state_always_run_functions[unit.state] then
+            unit.state_always_run_functions[unit.state](unit)
+        else
+            print('no state always run function for state', unit.state)
+        end
+        if unit.state_always_run_functions['always_run'] then
+            unit.state_always_run_functions['always_run'](unit)
+        end
     end
     for i, unit in ipairs(Helper.Unit:get_list(false)) do
-        unit.state_always_run_functions[unit.state](unit)
-        unit.state_always_run_functions['always_run'](unit)
+        if unit.state_always_run_functions[unit.state] then
+            unit.state_always_run_functions[unit.state](unit)
+        else
+            print('no state always run function for state', unit.state)
+        end
+        if unit.state_always_run_functions['always_run'] then
+            unit.state_always_run_functions['always_run'](unit)
+        end
     end
 end
 

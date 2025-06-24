@@ -211,10 +211,31 @@ function Team:is_first_alive_troop(troop)
   return troop == aliveTroop
 end
 
+function Team:get_random_hurt_troop()
+  local hurtTroops = {}
+  for i, troop in ipairs(self.troops) do
+    if troop.hp < troop.max_hp then
+      table.insert(hurtTroops, troop)
+    end
+  end
+  if #hurtTroops == 0 then return nil end
+  return hurtTroops[random:int(1, #hurtTroops)]
+end
+
 function Team:get_alive_troop_count()
   local count = 0
   for i, troop in ipairs(self.troops) do
     if not troop.dead then
+      count = count + 1
+    end
+  end
+  return count
+end
+
+function Team:get_hurt_troop_count()
+  local count = 0
+  for i, troop in ipairs(self.troops) do
+    if troop.hp < troop.max_hp then
       count = count + 1
     end
   end
