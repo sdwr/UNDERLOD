@@ -248,7 +248,20 @@ item_to_item_data = {
   --   procs = {'craggy'}
   -- },
 
-  --stat items (brown?)
+
+  -- 5 COST ITEMS
+  -----------------------------------------
+
+  --colorless items
+  ['heartofgold'] = {
+    name = 'heartofgold',
+    colors = {},
+    cost = 5,
+    icon = 'turtle',
+    desc = 'A heart that provides gold every round',
+    stats = {hp = 0.1, gold = 2}
+  },
+
   ['flimsyboots'] = {
     name = 'flimsyboots',
     colors = {},
@@ -259,35 +272,95 @@ item_to_item_data = {
     procs = {},
   },
 
+  ['holduground'] = {
+    name = 'holduground',
+    colors = {},
+    cost = 5,
+    icon = 'rock',
+    desc = 'Gain a stacking attack speed buff the longer you stand still',
+    stats = {},
+    procs = {'holduground'}
+  },
+
   ['spikedcollar'] = {
     name = 'spikedcollar',
     colors = {},
-    cost = 10,
+    cost = 5,
     icon = 'spikedcollar',
     desc = 'When hit, deals AoE[brown]thorns[fg] damage with a chance to [brown]stun[fg] enemies',
     stats = {},
     procs = {'spikedcollar'}
   },
 
+  --5 cost colored items
+  ['fire'] = {
+    name = 'fire',
+    colors = {'red'},
+    cost = 5,
+    icon = 'fire',
+    desc = 'Deal an extra % of your damage as [red]fire[fg] damage. [red]Burning[fg] enemies [red]explode[fg] at max stacks',
+    stats = {},
+    procs = {'fire'},
+    tags = {'fire'}
+  },
 
-  --econ items
-  -- ['sackofcash'] = {
-  --   name = 'sackofcash',
-  --   colors = {},
-  --   cost = 5,
-  --   icon = 'sackofcash',
-  --   desc = 'Special enemies have a chance to drop gold when they die',
-  --   stats = {hp = 0.2},
-  --   procs = {'sackofcash'}
-  -- },
-  ['heartofgold'] = {
-    name = 'heartofgold',
-    colors = {},
+  ['lightning'] = {
+    name = 'medbow',
+    colors = {'yellow'},
+    cost = 5,
+    icon = 'fire',
+    desc = 'Gain a % of your damage as [yellow]lightning[fg] damage. Lightning damage chains to enemies inflicting [yellow]shock[fg], increasing their damage taken',
+    stats = {},
+    procs = {'lightning'},
+    tags = {'lightning'}
+  },
+
+  ['cold'] = {
+    name = 'cold',
+    colors = {'blue'},
+    cost = 5,
+    icon = 'orb',
+    desc = 'Your attacks inflict [blue]frost[fg] on enemies',
+    stats = {dmg = 0.1},
+    procs = {'cold'},
+    tags = {'cold'}
+  },
+
+  ['frostnova'] = {
+    name = 'frostnova',
+    colors = {'blue'},
     cost = 5,
     icon = 'turtle',
-    desc = 'A heart that provides gold every round',
-    stats = {hp = 0.1, gold = 2}
+    desc = 'Enemies coming near you trigger an explosion of [blue]cold[fg] damage',
+    stats = {},
+    procs = {'frostnova'},
+    tags = {'cold'}
   },
+
+  ['entangle'] = {
+    name = 'entangle',
+    colors = {'green'},
+    cost = 5,
+    icon = 'root',
+    desc = 'Periodically [brown]root[fg] nearby enemies, preventing them from moving',
+    stats = {dmg = 0.25},
+    procs = {'root'},
+  },
+  ['healingwave'] = {
+    name = 'healingwave',
+    colors = {'green'},
+    cost = 5,
+    icon = 'gem',
+    desc = 'Periodically [green]heal[fg] nearby allies for a % of your max health',
+    stats = {hp = 0.4},
+    procs = {'healingwave'},
+    tags = {'heal'},
+  },
+
+
+  --10 COST ITEMS
+  -----------------------------------------
+
   ['stockmarket'] = {
     name = 'stockmarket',
     colors = {},
@@ -301,16 +374,25 @@ item_to_item_data = {
     colors = {},
     cost = 10,
     icon = 'mace',
-    desc = 'A weapon that gives you a chance to [black]stun[fg] enemies',
+    desc = 'Your attacks have a chance to [black]stun[fg] enemies',
     stats = {bash = 0.2, dmg = 0.25},
     procs = {'bash'}
   },
+  -- ['pricklypear'] = {
+  --   name = 'pricklypear',
+  --   colors = {'green'},
+  --   cost = 10,
+  --   icon = 'cactus',
+  --   desc = 'Chance to instantly retaliate with an attack when hit',
+  --   stats = {},
+  --   procs = {'retaliate'}
+  -- },
   ['overkill'] = {
     name = 'overkill',
     colors = {},
     cost = 10,
     icon = 'bomb',
-    desc = 'Enemies you kill [red[5]]explode[fg] for 2x the damage you overkilled them by',
+    desc = 'Enemies you kill explode for 2x the overkill damage',
     stats = {dmg = 0.5},
     procs = {'overkill'}
   },
@@ -319,7 +401,7 @@ item_to_item_data = {
     colors = {'purple'},
     cost = 10,
     icon = 'bloodlust',
-    desc = 'Your whole troop gets a stacking attack and movespeed buff when you kill an enemy',
+    desc = 'Your whole troop gets a stacking attack and movespeed buff when it kills an enemy',
     stats = {},
     procs = {'bloodlust'}
   },
@@ -328,162 +410,9 @@ item_to_item_data = {
     colors = {},
     cost = 10,
     icon = 'repeater',
-    desc = 'Adds a chance to repeat your attacks',
-    stats = {repeat_attack_chance = 0.2},
+    desc = 'Adds a chance to instantly repeat your attacks',
+    stats = {repeat_attack_chance = 0.25},
     procs = {}
-  },
-
-  -- ['pricklypear'] = {
-  --   name = 'pricklypear',
-  --   colors = {'green'},
-  --   cost = 10,
-  --   icon = 'cactus',
-  --   desc = 'Chance to instantly retaliate when hit',
-  --   stats = {},
-  --   procs = {'retaliate'}
-  -- },
-
-  --yellow items
-  ['medbow'] = {
-    name = 'medbow',
-    colors = {'yellow'},
-    cost = 5,
-    icon = 'bow',
-    desc = 'Gain a % of your damage as [yellow]lightning[fg] damage. Lightning damage chains to enemies inflicting [yellow]shock[fg], increasing their damage taken',
-    stats = {},
-    procs = {'lightning'},
-    tags = {'lightningdmg'}
-  },
-  ['berserker_greaves'] = {
-    name = 'berserker_greaves',
-    colors = {'yellow'},
-    cost = 10,
-    icon = 'simpleboots',
-    desc = 'Increased movespeed and attack speed',
-    stats = {mvspd = 0.15, aspd = 0.15},
-  },
-  ['radiance'] = {
-    name = 'radiance',
-    colors = {'yellow'},
-    cost = 10,
-    icon = 'sun',
-    desc = 'Gain a shield and a damage aura',
-    stats = {},
-    procs = {'radiance', 'shield'}
-  },
-  ['shock'] = {
-    name = 'shock',
-    colors = {'yellow'},
-    cost = 10,
-    icon = 'lightning',
-    desc = 'Your lightning damage inflicts [yellow]shock[fg] on enemies, increasing their damage taken',
-    stats = {aspd = 0.15},
-    procs = {'shock'},
-    tags = {'shock'},
-    prereqs = {'lightningdmg'}
-  },
-
-  --still need to add
-  -- ['bubble'] = {
-  --   name = 'bubble',
-  --   colors = {'yellow'},
-  --   cost = 5,
-  --   icon = 'bubblewand',
-  --   desc = 'Periodically create a bubble shield around you that blocks all damage',
-  --   stats = {hp = 0.1},
-  --   procs = {'bubble'}
-  -- },
-
-  --red items
-  ['fire'] = {
-    name = 'fire',
-    colors = {'red'},
-    cost = 5,
-    icon = 'fire',
-    desc = 'Deal an extra % of your damage as [red]fire[fg] damage. [red]Burning[fg] enemies [red]explode[fg] at max stacks',
-    stats = {},
-    procs = {'fire'},
-    tags = {'firedmg'}
-  },
-  ['lavaman'] = {
-    name = 'lavaman',
-    colors = {'red'},
-    cost = 5,
-    icon = 'monster',
-    desc = 'Summon [red]burning[fg] minions to fight for you',
-    stats = {},
-    procs = {'lavaman'},
-    tags = {}
-  },
-  ['lavapool'] = {
-    name = 'lavapool',
-    colors = {'red'},
-    cost = 10,
-    icon = 'lavapool',
-    desc = 'When a [red]burning[fg] enemy dies, it creates a pool of [red]lava[fg] under enemies',
-    stats = {dmg = 0.25},
-    procs = {'lavapool'},
-    tags = {'firedmg'}
-  },
-  ['firenova'] = {
-    name = 'firenova',
-    colors = {'red'},
-    cost = 10,
-    icon = 'sun',
-    desc = 'Your attacks have a chance to make [red]burning[fg] enemies explode',
-    stats = {},
-    procs = {'firenova'},
-    prereqs = {'firedmg'}
-  },
-  -- ['fireexplode'] = {
-  --   name = 'fireexplode',
-  --   colors = {'red'},
-  --   cost = 15,
-  --   icon = 'sun',
-  --   desc = 'Hitting [red]burning[fg] enemy has a chance to [red[5]]explode[fg] for % max health',
-  --   stats = {dmg = 0.5},
-  --   procs = {'fireexplode'},
-  --   prereqs = {'firedmg'}
-  -- },
-  ['blazin'] = {
-    name = 'blazin',
-    colors = {'red'},
-    cost = 10,
-    icon = 'simpleboots',
-    desc = 'Gain attack speed per [red]burning[fg] enemy',
-    stats = {dmg = 0.25},
-    procs = {'blazin'},
-    prereqs = {'firedmg'}
-  },
-  ['phoenix'] = {
-    name = 'phoenix',
-    colors = {'red'},
-    cost = 10,
-    icon = 'cactus',
-    desc = 'The first time this unit dies, it is revived with 50% health',
-    procs = {'phoenix'}
-  },
-
-  --blue items
-  ['frostorb'] = {
-    name = 'frostorb',
-    colors = {'blue'},
-    cost = 5,
-    icon = 'orb',
-    desc = 'Your attacks inflict [blue]frost[fg] on enemies',
-    stats = {dmg = 0.1},
-    procs = {'frost'},
-    tags = {'frostslow'}
-  },
-  ['frostbomb'] = {
-    name = 'frostbomb',
-    colors = {'blue'},
-    cost = 10,
-    icon = 'bomb',
-    desc = 'Your attacks create a [blue]frostfield[fg] under enemies',
-    stats = {dmg = 0.1},
-    procs = {'frostfield'},
-    tags = {'frostslow'}
   },
   ['reticle'] = {
     name = 'reticle',
@@ -494,24 +423,76 @@ item_to_item_data = {
     stats = {range = 0.15, dmg = 0.25},
     procs = {}
   },
-  ['holduground'] = {
-    name = 'holduground',
-    colors = {'blue'},
-    cost = 5,
-    icon = 'rock',
-    desc = 'Standing still stacks an attack speed buff',
-    stats = {},
-    procs = {'holduground'}
+  ['berserker_greaves'] = {
+    name = 'berserker_greaves',
+    colors = {'yellow'},
+    cost = 10,
+    icon = 'simpleboots',
+    desc = 'Increased movespeed and attack speed',
+    stats = {mvspd = 0.15, aspd = 0.15},
   },
-  ['icenova'] = {
-    name = 'icenova',
-    colors = {'blue'},
-    cost = 5,
-    icon = 'turtle',
-    desc = 'Enemies coming near you trigger a [blue]frostnova[fg]',
+  ['phoenix'] = {
+    name = 'phoenix',
+    colors = {},
+    cost = 10,
+    icon = 'cactus',
+    desc = 'The first time this unit dies in a round, it is revived with invincibility for 3 seconds',
+    procs = {'phoenix'}
+  },
+
+  --10 cost colored items
+  ['radiance'] = {
+    name = 'radiance',
+    colors = {'red'},
+    cost = 10,
+    icon = 'sun',
+    desc = 'Gain a shield and a [red]fire[fg] damage aura',
     stats = {},
-    procs = {'icenova'},
-    tags = {'frostslow'}
+    procs = {'radiance', 'shield'},
+    tags = {'fire'}
+  },
+
+  ['lavapool'] = {
+    name = 'lavapool',
+    colors = {'red'},
+    cost = 10,
+    icon = 'lavapool',
+    desc = 'When a [red]burning[fg] enemy dies, it creates a pool of [red]lava[fg]',
+    stats = {dmg = 0.25},
+    procs = {'lavapool'},
+    tags = {'fire'}
+  },
+  ['blazin'] = {
+    name = 'blazin',
+    colors = {'red'},
+    cost = 10,
+    icon = 'simpleboots',
+    desc = 'Gain attack speed per [red]burning[fg] enemy',
+    stats = {dmg = 0.25},
+    procs = {'blazin'},
+    prereqs = {'fire'}
+  },
+
+  -- ['frostbomb'] = {
+  --   name = 'frostbomb',
+  --   colors = {'blue'},
+  --   cost = 10,
+  --   icon = 'bomb',
+  --   desc = 'Your attacks create a [blue]frostfield[fg] under enemies',
+  --   stats = {dmg = 0.1},
+  --   procs = {'frostfield'},
+  --   tags = {'cold'}
+  -- },
+  ['glaciate'] = {
+    name = 'glaciate',
+    colors = {'blue'},
+    cost = 10,
+    icon = 'icefang',
+    desc = 'Your attacks on [blue]chilled[fg] have a chance to [blue]freeze[fg] them',
+    stats = {dmg = 0.1},
+    procs = {'glaciate'},
+    prereqs = {'cold'},
+    tags = {'freeze'}
   },
   ['shatterlance'] = {
     name = 'shatterlance',
@@ -521,19 +502,30 @@ item_to_item_data = {
     desc = 'Your hits on chilled enemies deal extra damage',
     stats = {dmg = 0.1},
     procs = {'shatterlance'},
-    prereqs = {'frostslow'}
+    prereqs = {'cold'}
   },
-  ['glaciate'] = {
-    name = 'glaciate',
-    colors = {'blue'},
-    cost = 10,
-    icon = 'icefang',
-    desc = 'Your attacks on [blue]slowed[fg] have a chance to [blue]freeze[fg] them',
-    stats = {dmg = 0.1},
-    procs = {'glaciate'},
-    prereqs = {'frostslow'},
-    tags = {'freeze'}
-  },
+  
+  -- ['lavaman'] = {
+  --   name = 'lavaman',
+  --   colors = {'red'},
+  --   cost = 5,
+  --   icon = 'monster',
+  --   desc = 'Summon [red]burning[fg] minions to fight for you',
+  --   stats = {},
+  --   procs = {'lavaman'},
+  --   tags = {}
+  -- },
+  -- ['fireexplode'] = {
+  --   name = 'fireexplode',
+  --   colors = {'red'},
+  --   cost = 15,
+  --   icon = 'sun',
+  --   desc = 'Hitting [red]burning[fg] enemy has a chance to [red[5]]explode[fg] for % max health',
+  --   stats = {dmg = 0.5},
+  --   procs = {'fireexplode'},
+  --   prereqs = {'fire'}
+  -- },
+
   ['glacialprison'] = {
     name = 'glacialprison',
     colors = {'blue'},
@@ -542,21 +534,12 @@ item_to_item_data = {
     desc = 'Killing a [blue]frozen[fg] enemy creates a [blue]ice prison[fg] that slows enemies',
     stats = {dmg = 0.25},
     procs = {'glacialprison'},
-    prereqs = {'frostslow'}
+    prereqs = {'cold'}
   },
   
   
   --green items
-  ['healingleaf'] = {
-    name = 'healingleaf',
-    colors = {'green'},
-    cost = 5,
-    icon = 'leaf',
-    desc = 'Periodically [green]heal[fg] yourself',
-    stats = {},
-    procs = {'heal'},
-    tags = {'heal'},
-  },
+
   ['sacrificialclam'] = {
     name = 'sacrificialclam',
     colors = {'purple'},
@@ -568,16 +551,6 @@ item_to_item_data = {
     prereqs = {'heal'},
     tags = {'sacrifice'}
   },
-  ['healingwave'] = {
-    name = 'healingwave',
-    colors = {'green'},
-    cost = 10,
-    icon = 'gem',
-    desc = 'Periodically [green]heal[fg] all nearby allies',
-    stats = {hp = 0.4},
-    procs = {'healingwave'},
-    tags = {'heal'},
-  },
   ['curse'] = {
     name = 'curse',
     colors = {'purple'},
@@ -586,15 +559,6 @@ item_to_item_data = {
     desc = 'Periodically [purple]curse[fg] nearby enemies, causing them to take more damage',
     stats = {dmg = 0.25},
     procs = {'curse'},
-  },
-  ['entangle'] = {
-    name = 'entangle',
-    colors = {'green'},
-    cost = 10,
-    icon = 'root',
-    desc = 'Periodically [brown]root[fg] nearby enemies, preventing them from moving',
-    stats = {dmg = 0.25},
-    procs = {'root'},
   },
 
   
@@ -711,17 +675,17 @@ item_to_item_data = {
     desc = 'Killing a [red]burning[fg] enemy has a chance to explode for % max health',
     stats = {dmg = 0.5},
     procs = {'firebomb'},
-    prereqs = {'firedmg'}
+    prereqs = {'fire'}
   },
   ['waterelemental'] = {
     name = 'frostbite',
     colors = {'blue'},
     cost = 15,
-    icon = 'frost',
+    icon = 'cold',
     desc = 'Killing a [blue]chilled[fg] enemy has a chance to spawn a water elemental',
     stats = {dmg = 0.5},
     procs = {'waterelemental'},
-    prereqs = {'frostslow'}
+    prereqs = {'cold'}
   },
   ['shockwave'] = {
     name = 'shockwave',
@@ -757,7 +721,7 @@ item_to_item_data = {
     desc = 'Makes your [red]fire[fg] damage [blue]slow[fg], and your [blue]frost[fg] damage [red]burn[fg]',
     stats = {dmg = 0.5},
     procs = {'fire'},
-    prereqs = {'firedmg', 'frostslow'}
+    prereqs = {'fire', 'cold'}
   },
   ['omegastar'] = {
     name = 'omegastar',
@@ -767,6 +731,6 @@ item_to_item_data = {
     desc = 'Increases all elemental damage. You [green]heal[fg] for a portion of elemental damage dealt',
     stats = {dmg = 0.5},
     procs = {'eledmg, elevamp'},
-    prereqs = {'firedmg', 'frostslow', 'lightningdmg'}
+    prereqs = {'fire', 'cold', 'lightning'}
   },
 }

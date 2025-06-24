@@ -1639,15 +1639,15 @@ function Proc_Holduground:die()
   if not self.unit then return end
   self.unit:remove_buff(self.buffname)
 end
-Proc_Icenova = Proc:extend()
+Proc_Frostnova = Proc:extend()
 
 -- ===================================================================
 -- INITIALIZATION
 -- ===================================================================
-function Proc_Icenova:init(args)
+function Proc_Frostnova:init(args)
     self.triggers = {PROC_ON_TICK}
     self.scope = 'troop'
-    Proc_Icenova.super.init(self, args)
+    Proc_Frostnova.super.init(self, args)
 
     -- Define the proc's properties from data
     self.damage = (self.data.damage or 20) * (self.data.damageMulti or 1)
@@ -1678,8 +1678,8 @@ end
 -- ON TICK: The State Machine
 -- This is the heart of the proc, handling all logic every frame.
 -- ===================================================================
-function Proc_Icenova:onTick(dt)
-    Proc_Icenova.super.onTick(self, dt)
+function Proc_Frostnova:onTick(dt)
+    Proc_Frostnova.super.onTick(self, dt)
     if not self.unit or self.unit.dead then return end
 
     self.attack_sensor:move_to(self.unit.x, self.unit.y)
@@ -1731,7 +1731,7 @@ end
 -- VISUAL EFFECT HELPERS
 -- ===================================================================
 
-function Proc_Icenova:create_proc_display_area()
+function Proc_Frostnova:create_proc_display_area()
     -- If an old one somehow exists, destroy it first.
     self:destroy_proc_display_area()
 
@@ -1746,7 +1746,7 @@ function Proc_Icenova:create_proc_display_area()
     }
 end
 
-function Proc_Icenova:update_proc_display()
+function Proc_Frostnova:update_proc_display()
     if self.proc_display_area and not self.proc_display_area.dead then
         local progress = 1 - (self.windup_timer / self.procDelay) -- Progress from 0 to 1
         progress = math.max(0, math.min(1, progress)) -- Clamp progress to prevent errors
@@ -1757,7 +1757,7 @@ function Proc_Icenova:update_proc_display()
     end
 end
 
-function Proc_Icenova:destroy_proc_display_area()
+function Proc_Frostnova:destroy_proc_display_area()
     if self.proc_display_area then
         self.proc_display_area.dead = true
         self.proc_display_area = nil
@@ -1768,7 +1768,7 @@ end
 -- CAST ACTION
 -- ===================================================================
 
-function Proc_Icenova:cast()
+function Proc_Frostnova:cast()
     self:destroy_proc_display_area()
     glass_shatter:play{pitch = random:float(0.8, 1.2), volume = 0.8}
 
@@ -1986,10 +1986,10 @@ proc_name_to_class = {
   ['blazin'] = Proc_Blazin,
   ['phoenix'] = Proc_Phoenix,
   --blue procs
-  ['frost'] = Proc_Frost,
+  ['cold'] = Proc_Frost,
   ['frostfield'] = Proc_Frostfield,
   ['holduground'] = Proc_Holduground,
-  ['icenova'] = Proc_Icenova,
+  ['frostnova'] = Proc_Frostnova,
   ['glaciate'] = Proc_Glaciate,
   ['shatterlance'] = Proc_Shatterlance,
   ['glacialprison'] = Proc_Glacialprison,
