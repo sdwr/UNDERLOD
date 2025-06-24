@@ -463,7 +463,6 @@ end
 function Proc_HealingWave:cast(from)
 
   self.tick_timer = 0
-  print('healing wave', self.healAmount, self.max_chains, self.radius)
 
   ChainHeal{
     group = main.current.main,

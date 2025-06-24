@@ -307,7 +307,7 @@ item_to_item_data = {
     colors = {'red'},
     cost = 5,
     icon = 'fire',
-    desc = 'Deal a % of your damage as extra [red]fire[fg] damage. [red]Burning[fg] enemies can [red]explode[fg]',
+    desc = 'Deal a % of your damage as extra [red]fire[fg] damage. [red]Burning[fg] enemies [red]explode[fg]',
     stats = {},
     procs = {'fire'},
     tags = {'fire'}
@@ -329,7 +329,7 @@ item_to_item_data = {
     colors = {'blue'},
     cost = 5,
     icon = 'orb',
-    desc = 'Deal a % of your damage as extra [blue]cold[fg] damage. [blue]Chilled[fg] enemies can [blue]freeze[fg]',
+    desc = 'Deal a % of your damage as extra [blue]cold[fg] damage. [blue]Chilled[fg] enemies [blue]freeze[fg]',
     stats = {dmg = 0.1},
     procs = {'cold'},
     tags = {'cold'}
@@ -499,7 +499,7 @@ item_to_item_data = {
     colors = {'yellow'},
     cost = 10,
     icon = 'lightning',
-    desc = '[yellow]Shocked[fg] enemies share their damage taken with other nearby [yellow]shocked[fg] enemies',
+    desc = 'All [yellow]shocked[fg] enemies share their damage taken with other nearby [yellow]shocked[fg] enemies',
     stats = {dmg = 0.25},
     procs = {'sympatheticvoltage'},
     prereqs = {'lightning'}
@@ -509,7 +509,7 @@ item_to_item_data = {
     colors = {'yellow'},
     cost = 10,
     icon = 'lightning',
-    desc = 'Damaging a [yellow]shocked[fg] enemy has a chance to spawn a [yellow]lightning ball[fg]',
+    desc = 'Hitting a [yellow]shocked[fg] enemy has a chance to spawn a [yellow]lightning ball[fg]',
     stats = {dmg = 0.25},
     procs = {'balllightning'},
     prereqs = {'shock'}
