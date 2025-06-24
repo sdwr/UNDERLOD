@@ -36,6 +36,7 @@ function init()
 
   math.randomseed(os.time())
 
+
   input:bind('move_left', { 'a', 'left', 'dpleft', 'm1' })
   input:bind('move_right', { 'd', 'e', 's', 'right', 'dpright', 'm2' })
   input:bind('enter', { 'space', 'return', 'fleft', 'fdown', 'fright' })
@@ -1276,6 +1277,8 @@ function init()
   main_song_instance = song7:play { volume = state.music_volume or 0.5 }
   main = Main()
 
+  enable_custom_cursor('simple')
+
   main:add(MainMenu 'mainmenu')
   main:go_to('mainmenu')
 
@@ -1304,20 +1307,10 @@ end
 love.frame = 0
 function update(dt)
   main:update(dt)
+  
   if love.USE_PROFILER then
     Run_Profiler()
   end
-
-  --[[
-  if input.b.pressed then
-    -- debugging_memory = not debugging_memory
-    for k, v in pairs(system.type_count()) do
-      print(k, v)
-    end
-    print("-- " .. math.round(tonumber(collectgarbage("count"))/1024, 3) .. "MB --")
-    print()
-  end
-  ]] --
 
   if input.k.pressed then
     if sx > 1 and sy > 1 then
@@ -1370,7 +1363,7 @@ function close_achievements(self)
 end
 
 function open_options(self)
-  input:set_mouse_visible(true)
+  -- input:set_mouse_visible(true)
   trigger:tween(0.25, _G, { slow_amount = 0 }, math.linear, function()
     slow_amount = 0
     self.paused = true
@@ -1450,9 +1443,9 @@ function open_options(self)
         end
         system.save_state()
         if self:is(MainMenu) or self:is(BuyScreen) then
-          input:set_mouse_visible(true)
+          -- input:set_mouse_visible(true)
         elseif self:is(Arena) then
-          input:set_mouse_visible(true)
+          -- input:set_mouse_visible(true)
         end
       end, 'pause')
     end }
@@ -1642,6 +1635,7 @@ function open_options(self)
     end
 
     self.quit_button = Button { group = self.options_ui, x = gw / 2, y = gh - 25, force_update = true, button_text = 'quit', fg_color = 'bg10', bg_color = 'bg', action = function()
+      cleanup_global_cursor()
       system.save_state()
       --steam.shutdown()
       love.event.quit()
@@ -1717,9 +1711,9 @@ function close_options(self, remain_paused)
     end
     system.save_state()
     if self:is(MainMenu) or self:is(BuyScreen) then
-      input:set_mouse_visible(true)
+      -- input:set_mouse_visible(true)
     elseif self:is(Arena) then
-      input:set_mouse_visible(true)
+      -- input:set_mouse_visible(true)
     end
   end, 'pause')
 end
@@ -1730,4 +1724,35 @@ function love.run()
     window_width = 'max',
     window_height = 'max',
   })
+end
+
+-- Cursor mode management functions
+function set_cursor_mode(mode)
+  if global_custom_cursor then
+    global_custom_cursor.mode = mode
+  end
+end
+
+function enable_custom_cursor(mode)
+  if not global_custom_cursor then
+    global_custom_cursor = CustomCursor{}
+  end
+  global_custom_cursor.mode = mode or 'simple'
+  input:set_mouse_visible(false)
+end
+
+function set_cursor_simple()
+  set_cursor_mode('simple')
+end
+
+function set_cursor_animated()
+  set_cursor_mode('animated')
+end
+
+function cleanup_global_cursor()
+  if global_custom_cursor then
+    global_custom_cursor:die()
+    global_custom_cursor = nil
+  end
+  input:set_mouse_visible(true)
 end

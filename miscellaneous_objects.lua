@@ -1,4 +1,3 @@
-
 Area = Object:extend()
 Area:implement(GameObject)
 function Area:init(args)
@@ -911,25 +910,46 @@ end
 -- A custom cursor effect that changes when the left mouse button is held down.
 -- ====================================================================
 
+-- ====================================================================
+-- CustomCursor Class
+-- A custom cursor effect that changes when the left mouse button is held down.
+-- Version 2: Uses a pointer/arrow shape instead of a circle.
+-- ====================================================================
+
+-- ====================================================================
+-- CustomCursor Class
+-- A custom cursor effect that changes when the left mouse button is held down.
+-- Version 3: Corrected to draw all elements at absolute positions.
+-- ====================================================================
+
 CustomCursor = Object:extend()
 CustomCursor:implement(GameObject)
 
 function CustomCursor:init(args)
+    args.group = main.cursorGroup
     self:init_game_object(args)
     
+    -- Define cursor mode: 'simple' for menus/buy screen, 'animated' for arena
+    self.mode = args.mode or 'simple'
+    
     -- Define the cursor's appearance and animations
-    self.idle_radius = 2
-    self.pull_radius = 4
+    self.idle_pulse_radius = 3
+    self.pull_pulse_radius = 5
     
     self.idle_pulse_speed = 1.5
     self.pull_pulse_speed = 4
     
     self.ring_spin_speed = 3
+
+    self.pointer_scale = 0.5
     
     -- Colors (assuming yellow[0] is your base yellow color)
     self.base_color = yellow[0]:clone()
     self.pulse_color = yellow[0]:clone()
     self.ring_color = yellow[0]:clone()
+
+    self.outline_color = black[0]:clone()
+    self.outline_color.a = 0.9
 
     -- Timers for animations, driven by the game clock for smoothness
     self.pulse_timer = 0
@@ -940,8 +960,11 @@ function CustomCursor:update(dt)
     self:update_game_object(dt)
 
     -- Update cursor position to follow the mouse
-    self.x = Helper.mousex
-    self.y = Helper.mousey
+    local mouse_x, mouse_y = love.mouse.getPosition()
+    mouse_x = mouse_x / sx
+    mouse_y = mouse_y / sx
+    self.x = mouse_x
+    self.y = mouse_y
     
     -- Update animation timers
     self.pulse_timer = self.pulse_timer + dt
@@ -952,65 +975,101 @@ function CustomCursor:update(dt)
 end
 
 function CustomCursor:draw()
-    -- Check if the left mouse button is being held down
-    if input['m1'].down then
-        self:draw_pull_state()
+    if self.mode == 'simple' then
+        self:draw_simple_mode()
     else
-        self:draw_idle_state()
+        -- Check if the left mouse button is being held down
+        if input['m1'].down then
+            self:draw_pull_state()
+        else
+            self:draw_idle_state()
+        end
     end
+end
+
+function CustomCursor:draw_pointer_shape(x, y, scale)
+  scale = scale or 1
+  local angle = -math.pi / 4 -- -45 degrees for a standard top-left pointing cursor
+
+  -- Define shape dimensions based on scale
+  local head_height = 14 * scale
+  local head_width = 14 * scale
+  local tail_width = 4 * scale
+  local tail_height = 10 * scale
+
+  -- Use push/translate/rotate to handle all transformations
+  graphics.push(x, y)
+      graphics.translate(x, y)
+      graphics.rotate(angle)
+      
+      -- We draw all shapes relative to the new (0,0) origin.
+
+      -- Draw Outline first (slightly larger shapes in black)
+      -- Outline for head (triangle)
+      local outline_triangle_points = {0, -head_height/2, -head_width/2, head_height/2, head_width/2, head_height/2}
+      graphics.polygon(outline_triangle_points, self.outline_color)
+      -- Outline for tail (rectangle)
+      graphics.rectangle(0, head_height/2 + tail_height/2, tail_width + 2, tail_height + 2, 0, 0,self.outline_color)
+
+      -- Draw Fill on top
+      -- Fill for head (triangle)
+      local inner_triangle_points = {0, (-head_height/2)+1, (-head_width/2)+1, (head_height/2)-1, (head_width/2)-1, (head_height/2)-1}
+      graphics.polygon(inner_triangle_points, self.base_color)
+      -- Fill for tail (rectangle)
+      graphics.rectangle(0, head_height/2 + tail_height/2, tail_width, tail_height, 0, 0, self.base_color)
+
+  graphics.pop()
+end
+
+function CustomCursor:draw_simple_mode()
+    -- Simple pointer cursor for menus
+    self:draw_pointer_shape(self.x, self.y, self.pointer_scale)
 end
 
 function CustomCursor:draw_idle_state()
     -- --- Idle Pulse Effect ---
-    -- Use a sine wave for a smooth back-and-forth pulse
-    local pulse_alpha = (math.sin(self.pulse_timer * self.idle_pulse_speed) + 1) / 2 -- Varies from 0 to 1
-    local pulse_radius_offset = pulse_alpha * 5 -- Pulse expands by up to 5 pixels
-    
-    -- Set the alpha (transparency) of the pulse color
-    -- It becomes more transparent as it expands
-    self.pulse_color.a = 1 - pulse_alpha
-    
-    -- Draw the pulse effect first (behind the main circle)
-    graphics.circle(self.x, self.y, self.idle_radius + pulse_radius_offset, self.pulse_color)
+    --scales between 0 and 0.25
+    local pulse_alpha_effect = (math.sin(self.pulse_timer * self.idle_pulse_speed) + 1) / 8
+    local pulse_radius_offset = pulse_alpha_effect * 6
+    self.pulse_color.a = 0.6 + pulse_alpha_effect
+    graphics.circle(self.x, self.y, self.idle_pulse_radius + pulse_radius_offset, self.pulse_color)
 
     -- --- Main Idle Cursor ---
-    -- Draw the solid, smaller circle on top
-    graphics.circle(self.x, self.y, self.idle_radius, self.base_color)
+    --self:draw_pointer_shape(self.x, self.y, self.pointer_scale)
 end
 
 function CustomCursor:draw_pull_state()
     -- --- Pulling Pulse Effect ---
-    -- A faster, more energetic "throbbing" pulse
     local pulse_alpha = (math.sin(self.pulse_timer * self.pull_pulse_speed) + 1) / 2
-    local pulse_radius_offset = pulse_alpha * 3
-    
+    local pulse_radius_offset = pulse_alpha * 4
     self.pulse_color.a = (1 - pulse_alpha) * 0.7
+    graphics.circle(self.x, self.y, self.pull_pulse_radius + pulse_radius_offset, self.pulse_color)
     
-    -- Draw the pulse effect
-    graphics.circle(self.x, self.y, self.pull_radius + pulse_radius_offset, self.pulse_color)
-    
-    -- --- Main Pulling Cursor ---
-    -- Draw the larger, solid circle
-    graphics.circle(self.x, self.y, self.pull_radius, self.base_color)
-
     -- --- Spinning Vortex Ring ---
-    -- This mimics the dashed border from the CSS by drawing two opposing arcs
-    local ring_radius = self.pull_radius * 1.6
+    local ring_radius = self.pull_pulse_radius * 1.6
     self.ring_color.a = 0.8
     
-    -- Use push/pop and rotate to spin the arcs
-    graphics.push(self.x, self.y, self.ring_angle)
-        -- Draw two arcs. A 120-degree arc (2.09 radians) with a 60-degree gap looks good.
-        graphics.arc('open', self.x, self.y, ring_radius, 0, 2.09, self.ring_color, 2)
-        graphics.arc('open', self.x, self.y, ring_radius, math.pi, math.pi + 2.09, self.ring_color, 2)
+    -- Use a standard push/translate/rotate/pop block for the spinning effect
+    graphics.push(self.x, self.y)
+        -- Move the coordinate system's origin to the cursor's position
+        graphics.translate(self.x, self.y)
+        -- Rotate the entire coordinate system
+        graphics.rotate(self.ring_angle)
+        -- Draw the arcs at the new origin (0,0)
+        graphics.arc('open', 0, 0, ring_radius, 0, 2.09, self.ring_color, 2)
+        graphics.arc('open', 0, 0, ring_radius, math.pi, math.pi + 2.09, self.ring_color, 2)
     graphics.pop()
+
+    -- --- Main Pulling Cursor ---
+    -- Draw the pointer shape slightly larger to indicate power
+    --self:draw_pointer_shape(self.x, self.y, self.pointer_scale)
 end
 
--- Since this is a permanent object, it doesn't need a die function unless you
--- want to explicitly remove it when changing game states, etc.
 function CustomCursor:die()
     self.dead = true
 end
+
+
 
 
 Corpse = Object:extend()

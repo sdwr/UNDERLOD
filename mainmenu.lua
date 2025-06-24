@@ -11,6 +11,9 @@ function MainMenu:on_enter(from)
   slow_amount = 1
   trigger:tween(2, main_song_instance, {volume = 0.5, pitch = 1}, math.linear)
 
+  -- Set cursor to simple mode for main menu
+  set_cursor_simple()
+
   --steam.friends.setRichPresence('steam_display', '#StatusFull')
   --steam.friends.setRichPresence('text', 'Main Menu')
 
@@ -155,6 +158,7 @@ function MainMenu:on_enter(from)
     end
   end}
   self.quit_button = Button{group = self.main_ui, x = 37, y = gh/2 + 78, force_update = true, button_text = 'quit', fg_color = 'bg10', bg_color = 'bg', action = function(b)
+    cleanup_global_cursor()
     system.save_state()
     --steam.shutdown()
     love.event.quit()

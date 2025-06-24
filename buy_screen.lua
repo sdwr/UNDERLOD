@@ -60,7 +60,10 @@ function BuyScreen:on_enter(from)
     self.first_shop = true
   end
 
-  input:set_mouse_visible(true)
+  -- input:set_mouse_visible(true)
+  
+  -- Set cursor to simple mode for buy screen
+  set_cursor_simple()
   
   --steam.friends.setRichPresence('steam_display', '#StatusFull')
   --steam.friends.setRichPresence('text', 'Shop - Level ' .. self.level)

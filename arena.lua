@@ -35,7 +35,10 @@ function Arena:on_enter(from)
   --if not state.mouse_control then
     --input:set_mouse_visible(false)
   --end
-  input:set_mouse_visible(true)
+  --input:set_mouse_visible(true)  -- Commented out to allow custom cursor
+  
+  -- Set cursor to animated mode for arena
+  set_cursor_animated()
 
   trigger:tween(2, main_song_instance, {volume = 0.5, pitch = 1}, math.linear)
 
@@ -185,6 +188,9 @@ function Arena:on_exit()
   Kill_Teams()
   self.hotbar:clear_hotbar()
   Helper:release()
+  
+  -- Set cursor back to simple mode when leaving arena
+  set_cursor_simple()
 end
 
 
@@ -465,7 +471,7 @@ end
 
 function Arena:die()
   if not self.died_text and not self.won and not self.arena_clear_text then
-    input:set_mouse_visible(true)
+    -- input:set_mouse_visible(true)
     self.t:cancel('divine_punishment')
     self.died = true
     locked_state = false
@@ -801,7 +807,7 @@ function Arena:on_win()
   self:gain_gold(ARENA_TRANSITION_TIME)
 
   if not self.win_text and not self.win_text2 then
-    input:set_mouse_visible(true)
+    -- input:set_mouse_visible(true)
     self.won = true
     locked_state = false
 
