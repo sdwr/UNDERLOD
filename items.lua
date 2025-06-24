@@ -281,6 +281,15 @@ item_to_item_data = {
     stats = {aspd = 0.2},
     procs = {}
   },
+  ['basher'] = {
+    name = 'basher',
+      colors = {},
+      cost = 5,
+      icon = 'mace',
+      desc = 'Your attacks have a chance to [black]stun[fg] enemies',
+      stats = {bash = 0.2, dmg = 0.1},
+      procs = {'bash'}
+    },
 
   -- ['spikedcollar'] = {
   --   name = 'spikedcollar',
@@ -360,15 +369,6 @@ item_to_item_data = {
     desc = 'Gain interest on your gold (1 per ' .. math.floor(1 / INTEREST_AMOUNT).. ', up to ' .. MAX_INTEREST .. ')',
     stats = {hp = 0.2}
   },
-  ['basher'] = {
-  name = 'basher',
-    colors = {},
-    cost = 10,
-    icon = 'mace',
-    desc = 'Your attacks have a chance to [black]stun[fg] enemies',
-    stats = {bash = 0.2, dmg = 0.25},
-    procs = {'bash'}
-  },
   ['shieldslam'] = {
     name = 'shieldslam',
     colors = {},
@@ -401,7 +401,7 @@ item_to_item_data = {
     colors = {'purple'},
     cost = 10,
     icon = 'bloodlust',
-    desc = 'Your whole troop gets a stacking attack and movespeed buff when it kills an enemy',
+    desc = 'Gain a stacking attack and movespeed buff when you kill an enemy',
     stats = {},
     procs = {'bloodlust'}
   },
@@ -410,7 +410,7 @@ item_to_item_data = {
     colors = {},
     cost = 10,
     icon = 'repeater',
-    desc = 'Adds a chance to instantly repeat your attacks',
+    desc = 'A quick repeater',
     stats = {repeat_attack_chance = 0.25},
     procs = {}
   },
@@ -419,7 +419,7 @@ item_to_item_data = {
     colors = {'blue'},
     cost = 10,
     icon = 'repeater',
-    desc = 'A reticle that increases range',
+    desc = 'See further',
     stats = {range = 0.15, dmg = 0.25},
     procs = {}
   },
@@ -428,7 +428,7 @@ item_to_item_data = {
     colors = {'yellow'},
     cost = 10,
     icon = 'simpleboots',
-    desc = 'Increased movespeed and attack speed',
+    desc = 'Be faster',
     stats = {mvspd = 0.15, aspd = 0.15},
   },
   ['phoenix'] = {
@@ -436,18 +436,18 @@ item_to_item_data = {
     colors = {},
     cost = 10,
     icon = 'cactus',
-    desc = 'The first time this unit dies in a round, it is revived with invincibility for 3 seconds',
+    desc = 'The first time you die in a round, you are revived',
     procs = {'phoenix'}
   },
-  ['noblesacrifice'] = {
-    name = 'noblesacrifice',
-    colors = {'green'},
-    cost = 10,
-    icon = 'skull',
-    desc = 'Heal all nearby enemies on death',
-    stats = {},
-    procs = {'noblesacrifice'},
-  },
+  -- ['noblesacrifice'] = {
+  --   name = 'noblesacrifice',
+  --   colors = {'green'},
+  --   cost = 10,
+  --   icon = 'skull',
+  --   desc = 'Heal all nearby enemies on death',
+  --   stats = {},
+  --   procs = {'noblesacrifice'},
+  -- },
 
   --10 cost colored items
   ['radiance'] = {

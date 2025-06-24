@@ -139,7 +139,9 @@ RAT1_ATTACK_FRAMES = 8
 RAT1_SPRITE_W = 128
 RAT1_SPRITE_H = 128
 
-RAT1_SPRITE_SCALE = 8
+RAT_SPRITE_SCALE = 6
+
+RAT1_SPRITE_SCALE = RAT_SPRITE_SCALE
 
 rat1_idle = Image(spriteFolder .. '/giantRat/Rat1/Idle/Rat1_Idle_full')
 rat1_walk = Image(spriteFolder .. '/giantRat/Rat1/Walk/Rat1_Walk_full')
@@ -168,7 +170,7 @@ RAT2_ATTACK_FRAMES = 8
 RAT2_SPRITE_W = 128
 RAT2_SPRITE_H = 128
 
-RAT2_SPRITE_SCALE = 8
+RAT2_SPRITE_SCALE = RAT_SPRITE_SCALE
 
 rat2_idle = Image(spriteFolder .. '/giantRat/Rat2/Idle/Rat2_Idle_full')
 rat2_walk = Image(spriteFolder .. '/giantRat/Rat2/Walk/Rat2_Walk_full')
@@ -197,7 +199,7 @@ RAT3_ATTACK_FRAMES = 8
 RAT3_SPRITE_W = 128
 RAT3_SPRITE_H = 128
 
-RAT3_SPRITE_SCALE = 8
+RAT3_SPRITE_SCALE = RAT_SPRITE_SCALE
 
 rat3_idle = Image(spriteFolder .. '/giantRat/Rat3/Idle/Rat3_Idle_full')
 rat3_walk = Image(spriteFolder .. '/giantRat/Rat3/Walk/Rat3_Walk_full')

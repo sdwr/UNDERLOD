@@ -705,7 +705,7 @@ function Proc_Shieldslam:onAttack(target, unit)
   
   local r = unit:angle_to_object(target)
   -- only knockback once
-  
+
   if  target.state ~= unit_states['knockback'] then
     target:push(self.knockback_force, r, false, self.knockback_duration)
   end
@@ -1219,9 +1219,9 @@ function Proc_Radiance:init(args)
   
 
   --define the proc's vars
-  self.radius = self.data.radius or 50
+  self.radius = self.data.radius or 60
   self.damage = self.data.damage or 20
-  self.damageType = 'fire'
+  self.damageType = DAMAGE_TYPE_FIRE
 end
 
 function Proc_Radiance:onTick(dt)
@@ -1513,7 +1513,7 @@ function Proc_Phoenix:init(args)
   Proc_Phoenix.super.init(self, args)
   
   self.color = self.data.color or white[0]
-  self.invulnerable_duration = self.data.invulnerable_duration or 1.5
+  self.invulnerable_duration = self.data.invulnerable_duration or 2.5
   
   --define the proc's vars
   self.team_index = nil
