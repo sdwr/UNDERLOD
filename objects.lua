@@ -1020,10 +1020,9 @@ function Unit:burn_explode(from)
 
   local total_power = CALCULATE_BURN_EFFORT_FACTOR(peak_damage, self.max_hp) + CALCULATE_BURN_QUALITY_FACTOR(self.baseline_hp)
 
-
   local explosion_radius = BURN_EXPLOSION_BASE_RADIUS * (1 + total_power)
-  local explosion_knockback = BURN_EXPLOSION_BASE_KNOCKBACK * total_power
-  local explosion_knockback_duration = BURN_EXPLOSION_BASE_KNOCKBACK_DURATION * total_power
+  local explosion_knockback = BURN_EXPLOSION_BASE_KNOCKBACK * (1 + total_power)
+  local explosion_knockback_duration = BURN_EXPLOSION_BASE_KNOCKBACK_DURATION * (0.6 + total_power)
   
   local explosion_volume = 0.3 * (1 + total_power)
 
