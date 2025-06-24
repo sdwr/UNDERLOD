@@ -194,6 +194,9 @@ function Unit:init_unit()
   self.hfx:add('shoot', 1)
   self.hp_bar = HPBar{group = main.current.effects, parent = self, isBoss = self.isBoss}
   self.effect_bar = EffectBar{group = main.current.effects, parent = self}
+
+  --chill system
+  self.freeze_gauge = 0
   
   Helper.Unit:set_state(self, unit_states['normal'])
 end
@@ -512,6 +515,21 @@ function Unit:draw_channeling()
   -- end
 end
 
+function Unit:draw_frozen()
+  if self.state == unit_states['frozen'] then
+    local color = black_transparent
+    if self.buffs['freeze'] then
+      color = blue_transparent
+    elseif self.buffs['stunned'] then
+      color = black_transparent
+    elseif self.buffs['rooted'] then
+      color = brown_transparent
+    end
+    
+    graphics.circle(self.x, self.y, self.shape.w/2 + 2, color)
+  end
+end
+
 function Unit:draw_cast_timer()
   if self.state == unit_states['casting'] then
     if self.castObject and self.castObject.hide_cast_timer then return end
@@ -544,7 +562,7 @@ function Unit:update_buffs(dt)
     if k == 'rooted' then
       Helper.Unit:set_state(self, unit_states['stopped'])
     end
-    if k == 'frozen' then
+    if k == 'freeze' then
       Helper.Unit:set_state(self, unit_states['frozen'])
     end
     if k == 'invulnerable' then
@@ -582,6 +600,10 @@ function Unit:update_buffs(dt)
       end
     end
 
+    if k == 'chill' then
+      self:freeze_gauge_fill(CHILL_FREEZE_GAUGE_FILL_PER_SECOND * dt)
+    end
+
     --on buff end
     if v.duration and v.duration < 0 then
       if k == 'bash_cd' then
@@ -594,7 +616,8 @@ function Unit:update_buffs(dt)
         if self.state == unit_states['stopped'] then
           Helper.Unit:set_state(self, unit_states['normal'])
         end
-      elseif k == 'frozen' then
+      elseif k == 'freeze' then
+        self:on_freeze_expired()
         if self.state == unit_states['frozen'] then
           Helper.Unit:set_state(self, unit_states['normal'])
         end
@@ -1055,6 +1078,8 @@ end
 
 function Unit:burn_explode(from)
   -- Remove the burn buff
+  if not self.buffs['burn'] then return end
+
   local peak_damage = self.buffs['burn'].peak_damage
   self:remove_buff('burn')
   
@@ -1097,6 +1122,43 @@ function Unit:shock()
 
   self:remove_buff('shock')
   self:add_buff(shockBuff)
+end
+
+--CHILL SYSTEM
+function Unit:chill(damage, from)
+  --add chill buff
+  local chillBuff = {name = 'chill', color = blue[0], duration = CHILL_DURATION, maxDuration = CHILL_DURATION, stats = {mvspd = -1 * CHILL_SLOW_PERCENT}}
+  self:remove_buff('chill')
+  self:add_buff(chillBuff)
+
+  --add freeze gauge from damage
+  local damage_percent = damage / self.max_hp
+  local freeze_gauge_fill_amount = damage_percent * FREEZE_GAUGE_GAINED_PER_DAMAGE_PERCENT
+
+end
+
+function Unit:freeze(from)
+  freeze_sound:play{pitch = random:float(0.8, 1.2), volume = 1.2}
+  local freezeBuff = {name = 'freeze', duration = FREEZE_DURATION, maxDuration = FREEZE_DURATION}
+  self:add_buff(freezeBuff)
+end
+
+function Unit:freeze_gauge_fill(amount)
+  local freeze_buff = self.buffs['freeze']
+  local freeze_immunity_buff = self.buffs['freeze_immunity']
+  if freeze_buff or freeze_immunity_buff then return end
+  
+  self.freeze_gauge = self.freeze_gauge + amount
+  if self.freeze_gauge > FREEZE_GAUGE_MAX then
+    self:freeze()
+    self.freeze_gauge = 0
+  end
+end
+
+function Unit:on_freeze_expired()
+  self.freeze_gauge = 0
+  local freeze_immunity_buff = {name = 'freeze_immunity', duration = FREEZE_IMMUNITY_DURATION, maxDuration = FREEZE_IMMUNITY_DURATION}
+  self:add_buff(freeze_immunity_buff)
 end
 
 function Unit:isShielded()
@@ -1159,24 +1221,6 @@ function Unit:slow(amount, duration, from)
     self:add_buff(slowBuff)
   end
 
-end
-
---only keep the highest chill amount
-function Unit:chill(amount, duration, from)
-  local chillBuff = {name = 'chilled', color = blue[0], duration = duration, maxDuration = duration, stats = {mvspd = -1 * amount}}
-  local existing_buff = self.buffs['chilled']
-  
-  if existing_buff and existing_buff.stats.mvspd > chillBuff.stats.mvspd then
-    return
-  else
-    self:remove_buff('chilled')
-    self:add_buff(chillBuff)
-  end
-end
-
-function Unit:freeze(duration, from)
-  local freezeBuff = {name = 'frozen', color = blue[0], duration = duration, maxDuration = duration}
-  self:add_buff(freezeBuff)
 end
 
 function Unit:set_invulnerable(duration)

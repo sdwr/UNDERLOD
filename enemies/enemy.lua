@@ -254,6 +254,7 @@ function Enemy:draw()
   self.draw_enemy(self)
   self:draw_launching()
   self:draw_channeling()
+  self:draw_frozen()
   self:draw_cast_timer()
 end
 
@@ -330,6 +331,10 @@ function Enemy:hit(damage, from, damageType, makesSound, cannotProcOnHit)
 
   if damageType == DAMAGE_TYPE_SHOCK then
     self:shock()
+  end
+
+  if damageType == DAMAGE_TYPE_COLD then
+    self:chill(actual_damage, from)
   end
 
 

@@ -378,6 +378,15 @@ item_to_item_data = {
     stats = {bash = 0.2, dmg = 0.25},
     procs = {'bash'}
   },
+  ['shieldslam'] = {
+    name = 'shieldslam',
+    colors = {},
+    cost = 10,
+    icon = 'shield',
+    desc = 'Your attacks knock enemies back',
+    stats = {dmg = 0.25},
+    procs = {'shieldslam'}
+  },
   -- ['pricklypear'] = {
   --   name = 'pricklypear',
   --   colors = {'green'},
@@ -439,6 +448,15 @@ item_to_item_data = {
     desc = 'The first time this unit dies in a round, it is revived with invincibility for 3 seconds',
     procs = {'phoenix'}
   },
+  ['noblesacrifice'] = {
+    name = 'noblesacrifice',
+    colors = {'green'},
+    cost = 10,
+    icon = 'skull',
+    desc = 'Heal all nearby enemies on death',
+    stats = {},
+    procs = {'noblesacrifice'},
+  },
 
   --10 cost colored items
   ['radiance'] = {
@@ -449,17 +467,6 @@ item_to_item_data = {
     desc = 'Gain a shield and a [red]fire[fg] damage aura',
     stats = {},
     procs = {'radiance', 'shield'},
-    tags = {'fire'}
-  },
-
-  ['lavapool'] = {
-    name = 'lavapool',
-    colors = {'red'},
-    cost = 10,
-    icon = 'lavapool',
-    desc = 'When a [red]burning[fg] enemy dies, it creates a pool of [red]lava[fg]',
-    stats = {dmg = 0.25},
-    procs = {'lavapool'},
     tags = {'fire'}
   },
   ['blazin'] = {
@@ -473,7 +480,61 @@ item_to_item_data = {
     prereqs = {'fire'}
   },
 
-  -- ['frostbomb'] = {
+
+  ['shatterlance'] = {
+    name = 'shatterlance',
+    colors = {'blue'},
+    cost = 10,
+    icon = 'icefang',
+    desc = 'Killing a frozen enemy shatters them, creating a [blue]cold[fg] explosion',
+    stats = {dmg = 0.1},
+    procs = {'shatterlance'},
+    prereqs = {'cold'}
+  },
+  ['waterelemental'] = {
+    name = 'frostbite',
+    colors = {'blue'},
+    cost = 10,
+    icon = 'cold',
+    desc = 'Killing a [blue]chilled[fg] enemy has a chance to spawn a water elemental',
+    stats = {dmg = 0.5},
+    procs = {'waterelemental'},
+    prereqs = {'cold'}
+  },
+
+
+  ['sympatheticvoltage'] = {
+    name = 'sympatheticvoltage',
+    colors = {'yellow'},
+    cost = 10,
+    icon = 'lightning',
+    desc = '[yellow]Shocked[fg] enemies share their damage taken with other nearby [yellow]shocked[fg] enemies',
+    stats = {dmg = 0.25},
+    procs = {'sympatheticvoltage'},
+    prereqs = {'lightning'}
+  },
+  ['balllightning'] = {
+    name = 'balllightning',
+    colors = {'yellow'},
+    cost = 10,
+    icon = 'lightning',
+    desc = 'Damaging a [yellow]shocked[fg] enemy has a chance to spawn a [yellow]lightning ball[fg]',
+    stats = {dmg = 0.25},
+    procs = {'balllightning'},
+    prereqs = {'shock'}
+  },
+
+  ['curse'] = {
+    name = 'curse',
+    colors = {'purple'},
+    cost = 10,
+    icon = 'skull',
+    desc = 'Periodically [purple]curse[fg] nearby enemies, causing them to take more damage',
+    stats = {dmg = 0.25},
+    procs = {'curse'},
+  },
+
+    -- ['frostbomb'] = {
   --   name = 'frostbomb',
   --   colors = {'blue'},
   --   cost = 10,
@@ -483,27 +544,18 @@ item_to_item_data = {
   --   procs = {'frostfield'},
   --   tags = {'cold'}
   -- },
-  ['glaciate'] = {
-    name = 'glaciate',
-    colors = {'blue'},
-    cost = 10,
-    icon = 'icefang',
-    desc = 'Your attacks on [blue]chilled[fg] have a chance to [blue]freeze[fg] them',
-    stats = {dmg = 0.1},
-    procs = {'glaciate'},
-    prereqs = {'cold'},
-    tags = {'freeze'}
-  },
-  ['shatterlance'] = {
-    name = 'shatterlance',
-    colors = {'blue'},
-    cost = 10,
-    icon = 'icefang',
-    desc = 'Your hits on chilled enemies deal extra damage',
-    stats = {dmg = 0.1},
-    procs = {'shatterlance'},
-    prereqs = {'cold'}
-  },
+    -- ['glaciate'] = {
+  --   name = 'glaciate',
+  --   colors = {'blue'},
+  --   cost = 10,
+  --   icon = 'icefang',
+  --   desc = 'Your attacks on [blue]chilled[fg] have a chance to [blue]freeze[fg] them',
+  --   stats = {dmg = 0.1},
+  --   procs = {'glaciate'},
+  --   prereqs = {'cold'},
+  --   tags = {'freeze'}
+  -- },
+
   
   -- ['lavaman'] = {
   --   name = 'lavaman',
@@ -526,6 +578,16 @@ item_to_item_data = {
   --   prereqs = {'fire'}
   -- },
 
+  ['lavapool'] = {
+    name = 'lavapool',
+    colors = {'red'},
+    cost = 15,
+    icon = 'lavapool',
+    desc = 'When a [red]burning[fg] enemy dies, it creates a pool of [red]lava[fg]',
+    stats = {dmg = 0.25},
+    procs = {'lavapool'},
+    tags = {'fire'}
+  },
   ['glacialprison'] = {
     name = 'glacialprison',
     colors = {'blue'},
@@ -542,23 +604,14 @@ item_to_item_data = {
 
   ['sacrificialclam'] = {
     name = 'sacrificialclam',
-    colors = {'purple'},
+    colors = {'green'},
     cost = 10,
     icon = 'clam',
-    desc = 'Periodically [purple]sacrifice[fg] health to grant nearby allies attack speed',
+    desc = 'All nearby allies gain attack speed',
     stats = {dmg = 0.25},
     procs = {'sacrificialclam'},
     prereqs = {'heal'},
     tags = {'sacrifice'}
-  },
-  ['curse'] = {
-    name = 'curse',
-    colors = {'purple'},
-    cost = 10,
-    icon = 'skull',
-    desc = 'Periodically [purple]curse[fg] nearby enemies, causing them to take more damage',
-    stats = {dmg = 0.25},
-    procs = {'curse'},
   },
 
   
@@ -569,7 +622,7 @@ item_to_item_data = {
     colors = {'yellow'},
     cost = 10,
     icon = 'reticle',
-    desc = 'Repeated attacks on the same target increase your attack speed',
+    desc = 'More attacks on the same target increase your attack speed',
     stats = {mvspd = 0.15},
     procs = {'overcharge'}
   },
@@ -578,40 +631,30 @@ item_to_item_data = {
     colors = {'red'},
     cost = 10,
     icon = 'reticle',
-    desc = 'Repeated attacks on the same target increase your damage',
+    desc = 'More attacks on the same target increase your damage',
     stats = {dmg = 0.25},
     procs = {'powercharge'}
   },
-  ['vulncharge'] = {
-    name = 'vulncharge',
-    colors = {'purple'},
-    cost = 10,
-    icon = 'reticle',
-    desc = 'Repeated attacks on the same target increase the damage they take',
-    stats = {dmg = 0.25},
-    procs = {'vulncharge'}
-  },
+  -- ['vulncharge'] = {
+  --   name = 'vulncharge',
+  --   colors = {'purple'},
+  --   cost = 10,
+  --   icon = 'reticle',
+  --   desc = 'More attacks on the same target increase the damage they take',
+  --   stats = {dmg = 0.25},
+  --   procs = {'vulncharge'}
+  -- },
 
   --todo items
   ['rimeheart'] = {
     name = 'rimeheart',
     colors = {'blue'},
-    cost = 10,
+    cost = 15,
     icon = 'heart',
-    desc = 'Attacking a [blue]frozen[fg] enemy is always a critical hit. Killing a [blue]frozen[fg] enemy shatters them',
+    desc = 'Attacking a [blue]frozen[fg] enemy is always a critical hit.',
     stats = {dmg = 0.25},
     procs = {'rimeheart'},
     prereqs = {'freeze'}
-  },
-  ['balllightning'] = {
-    name = 'balllightning',
-    colors = {'yellow'},
-    cost = 10,
-    icon = 'lightning',
-    desc = 'Damaging a [yellow]shocked[fg] enemy has a chance to spawn a [yellow]lightning ball[fg]',
-    stats = {dmg = 0.25},
-    procs = {'balllightning'},
-    prereqs = {'shock'}
   },
   --triforce
   ['triforce'] = {
@@ -667,26 +710,6 @@ item_to_item_data = {
   
   --elemental on death effects
 
-  ['firebomb'] = {
-    name = 'firebomb',
-    colors = {'red'},
-    cost = 15,
-    icon = 'bomb',
-    desc = 'Killing a [red]burning[fg] enemy has a chance to explode for % max health',
-    stats = {dmg = 0.5},
-    procs = {'firebomb'},
-    prereqs = {'fire'}
-  },
-  ['waterelemental'] = {
-    name = 'frostbite',
-    colors = {'blue'},
-    cost = 15,
-    icon = 'cold',
-    desc = 'Killing a [blue]chilled[fg] enemy has a chance to spawn a water elemental',
-    stats = {dmg = 0.5},
-    procs = {'waterelemental'},
-    prereqs = {'cold'}
-  },
   ['shockwave'] = {
     name = 'shockwave',
     colors = {'yellow'},

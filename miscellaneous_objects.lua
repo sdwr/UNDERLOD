@@ -104,7 +104,7 @@ function Area:damage()
   elseif self.chillAmount then
     for _, target in ipairs(targets) do
       if self:can_hit_with_effect(target, 'chilled') then
-        target:chill(self.chillAmount, self.chillDuration, self.unit)
+        target:chill(self.dmg, self.unit)
         target:hit(self.dmg, self.unit)
         self:apply_hit_effect(target)
       end

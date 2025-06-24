@@ -1533,14 +1533,15 @@ function Proc_Frost:init(args)
   Proc_Frost.super.init(self, args)
 
   --define the proc's vars
-  self.chill_amount = self.data.chill_amount or 0.3
-  self.chill_duration = self.data.chill_duration or 2
+  self.damage_type = DAMAGE_TYPE_COLD
+  self.percent_damage_as_chill = self.data.percent_damage_as_chill or 0.3
 end
 
 function Proc_Frost:onHit(target, damage)
   Proc_Frost.super.onHit(self, target, damage)
 
-  target:chill(self.chill_amount, self.chill_duration, self.unit)
+  local chill_damage = damage * self.percent_damage_as_chill
+  target:hit(chill_damage, nil, DAMAGE_TYPE_COLD, false)
 end
 
 Proc_Frostfield = Proc:extend()

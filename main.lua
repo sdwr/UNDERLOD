@@ -162,6 +162,7 @@ function init()
 
   holylight = Sound('HolyLight.ogg', s)
   sword_swing = Sound('sword swing.wav', s)
+  freeze_sound = Sound('ice_cracking_trimmed.wav', s)
 
 
 

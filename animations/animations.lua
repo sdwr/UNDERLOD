@@ -255,7 +255,7 @@ SLIME_ATTACK_FRAMES = 5
 SLIME_SPRITE_W = 64
 SLIME_SPRITE_H = 64
 
-SLIME_SPRITE_SCALE = 4
+SLIME_SPRITE_SCALE = 3.5
 
 slime_attack = Image(spriteFolder .. '/Slime1/Attack/Slime1_Attack_full')
 slime_idle = Image(spriteFolder .. '/Slime1/Idle/Slime1_Idle_full')
