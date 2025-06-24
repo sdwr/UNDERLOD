@@ -488,7 +488,7 @@ item_to_item_data = {
     cost = 10,
     icon = 'cold',
     desc = 'Killing a [blue]chilled[fg] enemy has a chance to spawn a water elemental',
-    stats = {dmg = 0.5},
+    stats = {dmg = 0.25},
     procs = {'waterelemental'},
     prereqs = {'cold'}
   },

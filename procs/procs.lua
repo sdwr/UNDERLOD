@@ -1094,7 +1094,7 @@ function Proc_WaterElemental:init(args)
   self.radius = self.data.radius or 30
   self.color = self.data.color or blue[0]
 
-  self.chance_to_proc = self.data.chance_to_proc or 0.2
+  self.chance_to_proc = self.data.chance_to_proc or 0.3
 
   self.is_troop = true
 
@@ -1108,12 +1108,14 @@ end
 function Proc_WaterElemental:onKill(target)
   Proc_WaterElemental.super.onKill(self, target)
   
+  print('water elemental proc', self.target, self.unit)
   if not self.unit then return end
 
-  if not target or not target:has_buff('chilled') then return end
+  if not target or not target:has_buff('chill') then return end
 
   self:checkSummons()
 
+  print('summoning water elemental', self.chance_to_proc, self.summoned, self.maxSummons)
   if math.random() < self.chance_to_proc and self.summoned < self.maxSummons then
     self:summon(target)
   end
