@@ -343,7 +343,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'gem',
     desc = 'Periodically [green]heal[fg] nearby allies for a % of your max health',
-    stats = {hp = 0.4},
+    stats = {},
     procs = {'healingwave'},
     tags = {'heal'},
   },

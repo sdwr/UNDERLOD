@@ -516,16 +516,14 @@ function Unit:draw_channeling()
 end
 
 function Unit:draw_frozen()
-  if self.state == unit_states['frozen'] then
+  if self.state == unit_states['stunned'] then
     local color = black_transparent
     if self.buffs['freeze'] then
       color = blue_transparent
     elseif self.buffs['stunned'] then
       color = black_transparent
-    elseif self.buffs['rooted'] then
-      color = brown_transparent
     end
-    
+
     graphics.circle(self.x, self.y, self.shape.w/2 + 2, color)
   end
 end
@@ -557,13 +555,13 @@ function Unit:update_buffs(dt)
   for k, v in pairs(self.buffs) do
     --on buff start
     if k == 'stunned' then
-      Helper.Unit:set_state(self, unit_states['frozen'])
+      Helper.Unit:set_state(self, unit_states['stunned'])
     end
     if k == 'rooted' then
       Helper.Unit:set_state(self, unit_states['stopped'])
     end
     if k == 'freeze' then
-      Helper.Unit:set_state(self, unit_states['frozen'])
+      Helper.Unit:set_state(self, unit_states['stunned'])
     end
     if k == 'invulnerable' then
       self.invulnerable = true
@@ -609,7 +607,7 @@ function Unit:update_buffs(dt)
       if k == 'bash_cd' then
         self.canBash = true
       elseif k == 'stunned' then
-        if self.state == unit_states['frozen'] then
+        if self.state == unit_states['stunned'] then
           Helper.Unit:set_state(self, unit_states['normal'])
         end
       elseif k == 'rooted' then
@@ -618,7 +616,7 @@ function Unit:update_buffs(dt)
         end
       elseif k == 'freeze' then
         self:on_freeze_expired()
-        if self.state == unit_states['frozen'] then
+        if self.state == unit_states['stunned'] then
           Helper.Unit:set_state(self, unit_states['normal'])
         end
       elseif k == 'invulnerable' then

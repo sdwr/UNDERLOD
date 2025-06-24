@@ -83,6 +83,7 @@ end
 function Helper.Unit:set_state(unit, state)
     local previous_state = unit.state
     unit.state = state
+
     if previous_state ~= state then
         Helper.Unit:reset_animations(unit)
         if unit.state_change_functions and unit.state_change_functions[state] then

@@ -175,7 +175,7 @@ function Enemy:update(dt)
       else
         --pass, add flee later
       end
-    elseif self.state == unit_states['frozen'] or self.state == unit_states['channeling'] then
+    elseif table.any(unit_states_enemy_no_velocity, function(v) return self.state == v end) then
       self:set_velocity(0,0)
     end
 

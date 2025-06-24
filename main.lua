@@ -344,6 +344,7 @@ function init()
   unit_states = {
     ['normal'] = 'normal',
     ['frozen'] = 'frozen',
+    ['stunned'] = 'stunned',
     ['casting'] = 'casting',
     ['channeling'] = 'channeling',
     ['stopped'] = 'stopped',
@@ -369,6 +370,12 @@ function init()
     unit_states['rallying'],
     unit_states['following'],
     unit_states['casting_blocked'],
+  }
+
+  unit_states_enemy_no_velocity = {
+    unit_states['stunned'],
+    unit_states['frozen'],
+    unit_states['channeling'],
   }
 
   unit_states_can_target = {
