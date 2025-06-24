@@ -906,6 +906,113 @@ function RallyCircle:die()
   self.dead = true
 end
 
+-- ====================================================================
+-- CustomCursor Class
+-- A custom cursor effect that changes when the left mouse button is held down.
+-- ====================================================================
+
+CustomCursor = Object:extend()
+CustomCursor:implement(GameObject)
+
+function CustomCursor:init(args)
+    self:init_game_object(args)
+    
+    -- Define the cursor's appearance and animations
+    self.idle_radius = 7
+    self.pull_radius = 11
+    
+    self.idle_pulse_speed = 1.5
+    self.pull_pulse_speed = 4
+    
+    self.ring_spin_speed = 3
+    
+    -- Colors (assuming yellow[0] is your base yellow color)
+    self.base_color = yellow[0]:clone()
+    self.pulse_color = yellow[0]:clone()
+    self.ring_color = yellow[0]:clone()
+
+    -- Timers for animations, driven by the game clock for smoothness
+    self.pulse_timer = 0
+    self.ring_angle = 0
+end
+
+function CustomCursor:update(dt)
+    self:update_game_object(dt)
+
+    -- Update cursor position to follow the mouse
+    self.x = Helper.mousex
+    self.y = Helper.mousey
+    
+    -- Update animation timers
+    self.pulse_timer = self.pulse_timer + dt
+    self.ring_angle = (self.ring_angle + dt * self.ring_spin_speed) % (2 * math.pi)
+
+    -- The cursor is always active and doesn't die
+    self.dead = false
+end
+
+function CustomCursor:draw()
+    -- Check if the left mouse button is being held down
+    if input['m1'].down then
+        self:draw_pull_state()
+    else
+        self:draw_idle_state()
+    end
+end
+
+function CustomCursor:draw_idle_state()
+    -- --- Idle Pulse Effect ---
+    -- Use a sine wave for a smooth back-and-forth pulse
+    local pulse_alpha = (math.sin(self.pulse_timer * self.idle_pulse_speed) + 1) / 2 -- Varies from 0 to 1
+    local pulse_radius_offset = pulse_alpha * 5 -- Pulse expands by up to 5 pixels
+    
+    -- Set the alpha (transparency) of the pulse color
+    -- It becomes more transparent as it expands
+    self.pulse_color.a = 1 - pulse_alpha
+    
+    -- Draw the pulse effect first (behind the main circle)
+    graphics.circle(self.x, self.y, self.idle_radius + pulse_radius_offset, self.pulse_color)
+
+    -- --- Main Idle Cursor ---
+    -- Draw the solid, smaller circle on top
+    graphics.circle(self.x, self.y, self.idle_radius, self.base_color)
+end
+
+function CustomCursor:draw_pull_state()
+    -- --- Pulling Pulse Effect ---
+    -- A faster, more energetic "throbbing" pulse
+    local pulse_alpha = (math.sin(self.pulse_timer * self.pull_pulse_speed) + 1) / 2
+    local pulse_radius_offset = pulse_alpha * 3
+    
+    self.pulse_color.a = (1 - pulse_alpha) * 0.7
+    
+    -- Draw the pulse effect
+    graphics.circle(self.x, self.y, self.pull_radius + pulse_radius_offset, self.pulse_color)
+    
+    -- --- Main Pulling Cursor ---
+    -- Draw the larger, solid circle
+    graphics.circle(self.x, self.y, self.pull_radius, self.base_color)
+
+    -- --- Spinning Vortex Ring ---
+    -- This mimics the dashed border from the CSS by drawing two opposing arcs
+    local ring_radius = self.pull_radius * 1.6
+    self.ring_color.a = 0.8
+    
+    -- Use push/pop and rotate to spin the arcs
+    graphics.push(self.x, self.y, self.ring_angle)
+        -- Draw two arcs. A 120-degree arc (2.09 radians) with a 60-degree gap looks good.
+        graphics.arc('line', self.x, self.y, ring_radius, 0, 2.09, self.ring_color, 2)
+        graphics.arc('line', self.x, self.y, ring_radius, math.pi, math.pi + 2.09, self.ring_color, 2)
+    graphics.pop()
+end
+
+-- Since this is a permanent object, it doesn't need a die function unless you
+-- want to explicitly remove it when changing game states, etc.
+function CustomCursor:die()
+    self.dead = true
+end
+
+
 Corpse = Object:extend()
 Corpse:implement(GameObject)
 Corpse:implement(Physics)

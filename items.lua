@@ -420,7 +420,7 @@ item_to_item_data = {
     colors = {'red'},
     cost = 10,
     icon = 'lavapool',
-    desc = 'Your attacks create a pool of [red]lava[fg] under enemies',
+    desc = 'When a [red]burning[fg] enemy dies, it creates a pool of [red]lava[fg] under enemies',
     stats = {dmg = 0.25},
     procs = {'lavapool'},
     tags = {'firedmg'}
@@ -480,7 +480,7 @@ item_to_item_data = {
     colors = {'blue'},
     cost = 10,
     icon = 'bomb',
-    desc = 'Your attacks trigger a [blue]frostfield[fg] under enemies',
+    desc = 'Your attacks create a [blue]frostfield[fg] under enemies',
     stats = {dmg = 0.1},
     procs = {'frostfield'},
     tags = {'frostslow'}
@@ -518,7 +518,7 @@ item_to_item_data = {
     colors = {'blue'},
     cost = 10,
     icon = 'icefang',
-    desc = 'Your hits on chilled enemies have a chance to deal extra damage',
+    desc = 'Your hits on chilled enemies deal extra damage',
     stats = {dmg = 0.1},
     procs = {'shatterlance'},
     prereqs = {'frostslow'}
@@ -531,14 +531,15 @@ item_to_item_data = {
     desc = 'Your attacks on [blue]slowed[fg] have a chance to [blue]freeze[fg] them',
     stats = {dmg = 0.1},
     procs = {'glaciate'},
-    prereqs = {'frostslow'}
+    prereqs = {'frostslow'},
+    tags = {'freeze'}
   },
   ['glacialprison'] = {
     name = 'glacialprison',
     colors = {'blue'},
     cost = 15,
     icon = 'icefang',
-    desc = 'Killing a [blue]chilled[fg] enemy creates a [blue]ice prison[fg] that slows enemies',
+    desc = 'Killing a [blue]frozen[fg] enemy creates a [blue]ice prison[fg] that slows enemies',
     stats = {dmg = 0.25},
     procs = {'glacialprison'},
     prereqs = {'frostslow'}
@@ -625,6 +626,38 @@ item_to_item_data = {
     desc = 'Repeated attacks on the same target increase the damage they take',
     stats = {dmg = 0.25},
     procs = {'vulncharge'}
+  },
+
+  --todo items
+  ['rimeheart'] = {
+    name = 'rimeheart',
+    colors = {'blue'},
+    cost = 10,
+    icon = 'heart',
+    desc = 'Attacking a [blue]frozen[fg] enemy is always a critical hit. Killing a [blue]frozen[fg] enemy shatters them',
+    stats = {dmg = 0.25},
+    procs = {'rimeheart'},
+    prereqs = {'freeze'}
+  },
+  ['balllightning'] = {
+    name = 'balllightning',
+    colors = {'yellow'},
+    cost = 10,
+    icon = 'lightning',
+    desc = 'Damaging a [yellow]shocked[fg] enemy has a chance to spawn a [yellow]lightning ball[fg]',
+    stats = {dmg = 0.25},
+    procs = {'balllightning'},
+    prereqs = {'shock'}
+  },
+  --triforce
+  ['triforce'] = {
+    name = 'triforce',
+    colors = {'red', 'blue', 'yellow'},
+    cost = 15,
+    icon = 'triforce',
+    desc = 'Deal more damage to enemies for every elemental effect they have',
+    stats = {dmg = 0.25},
+    procs = {'triforce'},
   },
 
   --global stat boosts

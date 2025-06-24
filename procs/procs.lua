@@ -1869,7 +1869,6 @@ function Proc_Shatterlance:init(args)
   Proc_Shatterlance.super.init(self, args)
 
   self.damageMulti = self.data.damageMulti or 0.5
-  self.proc_chance = self.data.proc_chance or 0.2
 end
 
 function Proc_Shatterlance:onHit(target, damage)
@@ -1900,7 +1899,7 @@ end
 
 function Proc_Glacialprison:onKill(target)
   Proc_Glacialprison.super.onKill(self, target)
-  if target:has_buff('chilled') then
+  if target:has_buff('frozen') then
     
     glass_shatter:play{pitch = random:float(0.8, 1.2), volume = 0.5}
 
