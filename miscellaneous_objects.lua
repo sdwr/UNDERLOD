@@ -918,8 +918,8 @@ function CustomCursor:init(args)
     self:init_game_object(args)
     
     -- Define the cursor's appearance and animations
-    self.idle_radius = 7
-    self.pull_radius = 11
+    self.idle_radius = 2
+    self.pull_radius = 4
     
     self.idle_pulse_speed = 1.5
     self.pull_pulse_speed = 4
@@ -1001,8 +1001,8 @@ function CustomCursor:draw_pull_state()
     -- Use push/pop and rotate to spin the arcs
     graphics.push(self.x, self.y, self.ring_angle)
         -- Draw two arcs. A 120-degree arc (2.09 radians) with a 60-degree gap looks good.
-        graphics.arc('line', self.x, self.y, ring_radius, 0, 2.09, self.ring_color, 2)
-        graphics.arc('line', self.x, self.y, ring_radius, math.pi, math.pi + 2.09, self.ring_color, 2)
+        graphics.arc('open', self.x, self.y, ring_radius, 0, 2.09, self.ring_color, 2)
+        graphics.arc('open', self.x, self.y, ring_radius, math.pi, math.pi + 2.09, self.ring_color, 2)
     graphics.pop()
 end
 
