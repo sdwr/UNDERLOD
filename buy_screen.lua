@@ -516,7 +516,7 @@ function BuyScreen:set_items(shop_level, is_shop_start)
       end)
     end
   end
-  self.t:after((item_count * 0.3) + transition_duration, function()
+  self.t:after(((item_count-1) * 0.3) + transition_duration, function()
     self.reroll_button.interact_with_mouse = true
     self.lock_button.interact_with_mouse = true
   end)
