@@ -262,35 +262,35 @@ item_to_item_data = {
     stats = {hp = 0.1, gold = 2}
   },
 
-  ['flimsyboots'] = {
-    name = 'flimsyboots',
+  ['sword'] = {
+    name = 'sword',
     colors = {},
     cost = 5,
-    icon = 'simpleboots',
-    desc = 'A pair of boots that slightly increases your movespeed',
-    stats = {mvspd = 0.1},
-    procs = {},
+    icon = 'sword',
+    desc = 'Deal more damage',
+    stats = {dmg = 0.25},
+    procs = {}
   },
 
-  ['holduground'] = {
-    name = 'holduground',
+  ['dagger'] = {
+    name = 'dagger',
     colors = {},
     cost = 5,
-    icon = 'rock',
-    desc = 'Gain a stacking attack speed buff the longer you stand still',
-    stats = {},
-    procs = {'holduground'}
+    icon = 'dagger',
+    desc = 'Attack more quickly',
+    stats = {aspd = 0.2},
+    procs = {}
   },
 
-  ['spikedcollar'] = {
-    name = 'spikedcollar',
-    colors = {},
-    cost = 5,
-    icon = 'spikedcollar',
-    desc = 'When hit, deals AoE[brown]thorns[fg] damage with a chance to [brown]stun[fg] enemies',
-    stats = {},
-    procs = {'spikedcollar'}
-  },
+  -- ['spikedcollar'] = {
+  --   name = 'spikedcollar',
+  --   colors = {},
+  --   cost = 5,
+  --   icon = 'spikedcollar',
+  --   desc = 'When hit, deals AoE[brown]thorns[fg] damage with a chance to [brown]stun[fg] enemies',
+  --   stats = {},
+  --   procs = {'spikedcollar'}
+  -- },
 
   --5 cost colored items
   ['fire'] = {
@@ -337,15 +337,6 @@ item_to_item_data = {
     tags = {'cold'}
   },
 
-  ['entangle'] = {
-    name = 'entangle',
-    colors = {'green'},
-    cost = 5,
-    icon = 'root',
-    desc = 'Periodically [brown]root[fg] nearby enemies, preventing them from moving',
-    stats = {dmg = 0.25},
-    procs = {'root'},
-  },
   ['healingwave'] = {
     name = 'healingwave',
     colors = {'green'},
@@ -532,6 +523,15 @@ item_to_item_data = {
     desc = 'Periodically [purple]curse[fg] nearby enemies, causing them to take more damage',
     stats = {dmg = 0.25},
     procs = {'curse'},
+  },
+  ['entangle'] = {
+    name = 'entangle',
+    colors = {'green'},
+    cost = 10,
+    icon = 'root',
+    desc = 'Periodically [brown]root[fg] nearby enemies, preventing them from moving',
+    stats = {dmg = 0.25},
+    procs = {'root'},
   },
 
     -- ['frostbomb'] = {
