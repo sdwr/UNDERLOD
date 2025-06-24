@@ -424,6 +424,8 @@ function Proc_HealingWave:init(args)
   --define the proc's vars
   self.tick_interval = self.data.tick_interval or 5
 
+  self.heal_percent = self.data.heal_percent or 0.2
+  --overwritten in proc
   self.healAmount = self.data.healAmount or 25
   self.radius = self.data.radius or 75
   self.color = self.data.color or green[0]
@@ -453,6 +455,7 @@ function Proc_HealingWave:onTick(dt, from)
   local hurtTroop = self.team:get_random_hurt_troop()
   if not hurtTroop then return end
 
+  self.healAmount = hurtTroop.max_hp * self.heal_percent
   self:cast(hurtTroop)
 
 end
