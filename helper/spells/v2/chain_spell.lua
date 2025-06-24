@@ -1,4 +1,3 @@
-
 -----------------------------------------------------------
 --[[
   ChainSpell
@@ -105,12 +104,11 @@ function ChainSpell:find_next_targets(from_target)
   for _, p_target in ipairs(potential_targets) do
     -- Stop looking if we've already queued up the maximum number of targets.
     if #self.targets >= self.max_chains then break end
-    if not self.target_condition(p_target) then break end
 
     -- Add the target if it hasn't been hit yet.
     -- Our main loop (`process_next_link`) already checks `hit_targets`, but checking
     -- here too prevents adding useless entries to the `targets` list.
-    if not self.hit_targets[p_target] then
+    if not self.hit_targets[p_target] and self.target_condition(p_target) then
         table.insert(self.targets, p_target)
     end
   end
@@ -233,7 +231,6 @@ function ChainHeal:init(args)
 
     -- on_hit: This function is called on each target in the chain.
     on_hit = function(spell, target)
-      print('chain heal on hit', target.hp, target.max_hp)
       -- Assuming targets have a 'heal' method or we can add health directly.
       if target.heal then
         target:heal(self.heal_amount)
@@ -343,26 +340,107 @@ function HealLine:init(args)
   self:init_game_object(args)
   self.src = args.src
   self.dst = args.dst
-  self.duration = args.duration or 0.2
+  self.duration = args.duration or 0.3
   self.w = args.w or 4
-  self.color = args.color or green[0]-- A nice green color for healing
+  self.color = args.color or green[0]
   self.color = self.color:clone()
-  self.color.a = 0.5
-
+  self.color.a = 0.7
+  
+  -- Healing-specific parameters
+  self.flow_segments = args.flow_segments or math.random(4, 8)
+  self.flow_amplitude = args.flow_amplitude or 3
+  self.healing_particles = args.healing_particles or 5
+  
+  -- Generate the flowing path
+  self:generate_flowing_path()
+  
   -- Animate the line width for a "pulse" effect
   self.t:tween(self.duration, self, {w = 1}, math.linear, function() self.dead = true end)
-
-  -- Add some particle effects for flair
-  for i = 1, 3 do
-    HitParticle{
+  
+  -- Create healing circles at both ends
+  HealCircle{group = main.current.effects, x = self.src.x, y = self.src.y, rs = 8, color = self.color, duration = self.duration}
+  HealCircle{group = main.current.effects, x = self.dst.x, y = self.dst.y, rs = 8, color = self.color, duration = self.duration}
+  
+  -- Add flowing healing particles along the path
+  for i = 1, self.healing_particles do
+    local t = (i - 1) / (self.healing_particles - 1)
+    local point = self:get_point_at_time(t)
+    HealingParticle{
       group = main.current.effects,
-      x = self.dst.x,
-      y = self.dst.y,
+      x = point.x,
+      y = point.y,
       color = self.color,
-      v = random:float(25, 50),
-      duration = 0.3
+      v = random:float(20, 40),
+      duration = self.duration * 0.8
     }
   end
+  
+  -- Add extra particles at the destination
+  for i = 1, 3 do
+    HealingParticle{
+      group = main.current.effects,
+      x = self.dst.x + random:float(-5, 5),
+      y = self.dst.y + random:float(-5, 5),
+      color = self.color,
+      v = random:float(15, 30),
+      duration = 0.4
+    }
+  end
+end
+
+function HealLine:generate_flowing_path()
+  self.path_points = {}
+  
+  -- Start with the source point
+  table.insert(self.path_points, {x = self.src.x, y = self.src.y})
+  
+  -- Generate flowing intermediate points
+  for i = 1, self.flow_segments do
+    local t = i / (self.flow_segments + 1)
+    local base_x = self.src.x + (self.dst.x - self.src.x) * t
+    local base_y = self.src.y + (self.dst.y - self.src.y) * t
+    
+    -- Add perpendicular offset for flowing effect
+    local dx = self.dst.x - self.src.x
+    local dy = self.dst.y - self.src.y
+    local length = math.sqrt(dx * dx + dy * dy)
+    
+    if length > 0 then
+      local perp_x = -dy / length
+      local perp_y = dx / length
+      
+      -- Use sine wave for smooth flowing motion
+      local offset = math.sin(t * math.pi * 2) * self.flow_amplitude
+      
+      local x = base_x + perp_x * offset
+      local y = base_y + perp_y * offset
+      
+      table.insert(self.path_points, {x = x, y = y})
+    end
+  end
+  
+  -- End with the destination point
+  table.insert(self.path_points, {x = self.dst.x, y = self.dst.y})
+end
+
+function HealLine:get_point_at_time(t)
+  if #self.path_points <= 1 then
+    return {x = self.src.x, y = self.src.y}
+  end
+  
+  local segment_count = #self.path_points - 1
+  local segment_index = math.floor(t * segment_count)
+  local segment_t = (t * segment_count) - segment_index
+  
+  segment_index = math.min(segment_index, segment_count - 1)
+  
+  local p1 = self.path_points[segment_index + 1]
+  local p2 = self.path_points[segment_index + 2]
+  
+  return {
+    x = p1.x + (p2.x - p1.x) * segment_t,
+    y = p1.y + (p2.y - p1.y) * segment_t
+  }
 end
 
 function HealLine:update(dt)
@@ -370,9 +448,82 @@ function HealLine:update(dt)
 end
 
 function HealLine:draw()
-  -- Draw a simple, clean line for the healing effect
+  if #self.path_points < 2 then return end
+  
+  -- Draw the flowing healing line
   love.graphics.setLineWidth(self.w)
   love.graphics.setColor(self.color.r, self.color.g, self.color.b, self.color.a)
-  love.graphics.line(self.src.x, self.src.y, self.dst.x, self.dst.y)
-  love.graphics.setLineWidth(1) -- Reset line width
+  
+  -- Draw the path as a series of connected lines
+  for i = 1, #self.path_points - 1 do
+    local p1 = self.path_points[i]
+    local p2 = self.path_points[i + 1]
+    love.graphics.line(p1.x, p1.y, p2.x, p2.y)
+  end
+  
+  love.graphics.setLineWidth(1)
+end
+
+--[[
+  HealCircle
+  A gentle healing circle effect for the endpoints of healing chains.
+--]]
+HealCircle = Object:extend()
+HealCircle:implement(GameObject)
+
+function HealCircle:init(args)
+  self:init_game_object(args)
+  self.rs = args.rs or 8
+  self.color = args.color or green[0]
+  self.duration = args.duration or 0.3
+  
+  -- Animate the circle size
+  self.t:tween(self.duration, self, {rs = 2}, math.linear, function() self.dead = true end)
+end
+
+function HealCircle:update(dt)
+  self:update_game_object(dt)
+end
+
+function HealCircle:draw()
+  love.graphics.setColor(self.color.r, self.color.g, self.color.b, self.color.a * 0.6)
+  love.graphics.circle('line', self.x, self.y, self.rs)
+end
+
+--[[
+  HealingParticle
+  A gentle particle effect for healing spells.
+--]]
+HealingParticle = Object:extend()
+HealingParticle:implement(GameObject)
+
+function HealingParticle:init(args)
+  self:init_game_object(args)
+  self.v = args.v or 30
+  self.color = args.color or green[0]
+  self.duration = args.duration or 0.3
+  
+  -- Gentle upward motion with some randomness
+  self.vx = random:float(-10, 10)
+  self.vy = -self.v + random:float(-10, 10)
+  
+  -- Track the initial time for alpha calculation
+  self.start_time = 0
+  
+  -- Animate the particle fading
+  self.t:tween(self.duration, self, {vx = 0, vy = 0}, math.linear, function() self.dead = true end)
+end
+
+function HealingParticle:update(dt)
+  self:update_game_object(dt)
+  self.x = self.x + self.vx * dt
+  self.y = self.y + self.vy * dt
+  self.start_time = self.start_time + dt
+end
+
+function HealingParticle:draw()
+  local alpha = 1 - (self.start_time / self.duration)
+  alpha = math.max(0, math.min(1, alpha))
+  love.graphics.setColor(self.color.r, self.color.g, self.color.b, self.color.a * alpha)
+  love.graphics.circle('fill', self.x, self.y, 2)
 end

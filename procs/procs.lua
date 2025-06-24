@@ -430,7 +430,8 @@ function Proc_HealingWave:init(args)
   self.max_chains = self.data.max_chains or 4
 
   --proc memory
-  self.tick_timer = 0
+  --random 0-1, not full range
+  self.tick_timer = math.random()
 end
 
 function Proc_HealingWave:onTick(dt, from)
