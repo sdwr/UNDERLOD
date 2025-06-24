@@ -338,10 +338,6 @@ function Troop:draw_cooldown_timer()
   end
 end
 
-function Troop:draw_knockback()
-  graphics.circle(self.x, self.y, self.shape.w/2 + 1, red_transparent)
-end
-
 function Troop:attack(area, mods)
 
   --on attack callbacks

@@ -456,6 +456,12 @@ function Unit:draw_frozen()
   end
 end
 
+function Unit:draw_knockback()
+  if self.state == unit_states['knockback'] then
+    graphics.circle(self.x, self.y, self.shape.w/2, red_transparent)
+  end
+end
+
 function Unit:draw_cast_timer()
   if self.state == unit_states['casting'] then
     if self.castObject and self.castObject.hide_cast_timer then return end

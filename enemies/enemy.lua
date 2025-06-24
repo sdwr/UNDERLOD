@@ -255,6 +255,7 @@ function Enemy:draw()
   self:draw_launching()
   self:draw_channeling()
   self:draw_frozen()
+  self:draw_knockback()
   self:draw_cast_timer()
 end
 
@@ -406,6 +407,7 @@ function Enemy:push(f, r, push_invulnerable, duration)
 
     -- self.state = unit_states['knockback']
 
+    Helper.Unit:set_state(self, unit_states['knockback'])
     self.push_invulnerable = push_invulnerable
     self.push_force = n*f
     self.being_pushed = true
