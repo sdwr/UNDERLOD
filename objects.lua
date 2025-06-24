@@ -1069,7 +1069,7 @@ function Unit:chill(damage, from)
 end
 
 function Unit:freeze(from)
-  freeze_sound:play{pitch = random:float(0.8, 1.2), volume = 1.2}
+  freeze_sound:play{pitch = random:float(0.8, 1.2), volume = 1.8}
   local freezeBuff = {name = 'freeze', duration = FREEZE_DURATION, maxDuration = FREEZE_DURATION}
   self:add_buff(freezeBuff)
 end

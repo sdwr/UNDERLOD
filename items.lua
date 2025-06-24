@@ -5,7 +5,7 @@
 
 function Create_Item(name)
   if not item_to_item_data[name] then
-    print('item not found')
+    print('item' .. name .. ' not found')
     return nil
   end
 
@@ -314,7 +314,7 @@ item_to_item_data = {
   },
 
   ['lightning'] = {
-    name = 'medbow',
+    name = 'lightning',
     colors = {'yellow'},
     cost = 5,
     icon = 'fire',
@@ -477,13 +477,13 @@ item_to_item_data = {
     colors = {'blue'},
     cost = 10,
     icon = 'icefang',
-    desc = 'Killing a frozen enemy shatters them, creating a [blue]cold[fg] explosion',
+    desc = 'Attacking a [blue]frozen[fg] creates a [blue]cold[fg] explosion',
     stats = {dmg = 0.1},
     procs = {'shatterlance'},
     prereqs = {'cold'}
   },
   ['waterelemental'] = {
-    name = 'frostbite',
+    name = 'waterelemental',
     colors = {'blue'},
     cost = 10,
     icon = 'cold',

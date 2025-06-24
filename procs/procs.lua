@@ -1896,21 +1896,37 @@ end
 
 Proc_Shatterlance = Proc:extend()
 function Proc_Shatterlance:init(args)
-  self.triggers = {PROC_ON_HIT}
+  self.triggers = {PROC_ON_ATTACK}
   self.scope = 'troop'
   
   Proc_Shatterlance.super.init(self, args)
 
-  self.damageMulti = self.data.damageMulti or 0.5
+  self.damageType = DAMAGE_TYPE_COLD
+  self.damageMulti = self.data.damageMulti or 2.5
+  self.fallback_damage = self.data.fallback_damage or 20
+  self.radius = self.data.radius or 60
+  self.color = self.data.color or blue[0]
 end
 
-function Proc_Shatterlance:onHit(target, damage)
-  Proc_Shatterlance.super.onHit(self, target, damage)
-  if target:has_buff('chilled') then
-    if math.random() < self.proc_chance then
-      target:hit(damage * self.damageMulti, self.unit, DAMAGE_TYPE_COLD, true, true)
-    end
+function Proc_Shatterlance:onAttack(target, from)
+  Proc_Shatterlance.super.onAttack(self, target, from)
+  if target:has_buff('freeze') then
+    local damage = from.dmg or self.fallback_damage
+    damage = damage * self.damageMulti
+    self:explode(target, damage)
   end
+end
+
+function Proc_Shatterlance:explode(target, damage)
+  Area{
+    group = main.current.effects,
+    x = target.x, y = target.y,
+    pick_shape = 'circle',
+    dmg = damage,
+    r = self.radius, color = self.color,
+    is_troop = self.unit.is_troop,
+    damage_type = self.damageType,
+  }
 end
 
 Proc_Glacialprison = Proc:extend()

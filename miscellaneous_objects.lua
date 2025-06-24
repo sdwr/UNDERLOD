@@ -17,7 +17,8 @@ function Area:init(args)
     self.shape = Rectangle(self.x, self.y, w, h, self.r)
   end
 
-  self.dmg = self.dmg
+  self.dmg = self.dmg or 0
+  self.damage_type = self.damage_type or DAMAGE_TYPE_PHYSICAL
   self.flashFactor = self.dmg / 30
   if self.flashFactor == 0 then self.flashFactor = 0.5 end
 
@@ -129,7 +130,7 @@ function Area:damage()
     end
   elseif self.dmg > 0 then
     for _, target in ipairs(targets) do
-      target:hit(self.dmg, self.unit)
+      target:hit(self.dmg, self.unit, self.damage_type)
       self:apply_hit_effect(target)
     end
   end
