@@ -686,7 +686,30 @@ function Proc_Bloodlust:onKill(target)
   end
 end
 
+Proc_Shieldslam = Proc:extend()
+function Proc_Shieldslam:init(args)
+  self.triggers = {PROC_ON_ATTACK}
+  self.scope = 'troop'
 
+  Proc_Shieldslam.super.init(self, args)
+  
+  --define the proc's vars
+  self.knockback_force = LAUNCH_PUSH_FORCE_ENEMY
+  self.knockback_duration = KNOCKBACK_DURATION_ENEMY
+end
+
+function Proc_Shieldslam:onAttack(target, unit)
+  Proc_Shieldslam.super.onAttack(self, target)
+  if not target then return end
+  if not unit then return end
+  
+  local r = unit:angle_to_object(target)
+  -- only knockback once
+  
+  if  target.state ~= unit_states['knockback'] then
+    target:push(self.knockback_force, r, false, self.knockback_duration)
+  end
+end
 --proc lightning
 --needs 2 procs, so that the attack counter only counts down on 1 hit per attack
 Proc_Lightning = Proc:extend()
@@ -1983,6 +2006,8 @@ proc_name_to_class = {
   ['bash'] = Proc_Bash,
   ['overkill'] = Proc_Overkill,
   ['bloodlust'] = Proc_Bloodlust,
+
+  ['shieldslam'] = Proc_Shieldslam,
 
   --yellow procs
   ['lightning'] = Proc_Lightning,
