@@ -111,8 +111,8 @@ function Unit:init_unit()
   self:config_physics_object()
 
   --also set in child classes
-  self.castcooldown = 0
-  self.total_castcooldown = 0
+  self.castcooldown = self.castcooldown or 0
+  self.total_castcooldown = self.castcooldown or 0
 
   self.target = nil
   self.assigned_target = nil

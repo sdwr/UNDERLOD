@@ -374,6 +374,7 @@ Burst = Object:extend()
 Burst:implement(GameObject)
 Burst:implement(Physics)
 function Burst:init(args)
+  print('casting burst', Helper.Time.time - BURST_SPAWN_TIME)
   self:init_game_object(args)
   self.radius = self.radius or 6
   self.shape = Circle(self.x, self.y, self.radius)
