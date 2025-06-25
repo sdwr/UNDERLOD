@@ -172,7 +172,7 @@ function ChainLightning:init(args)
 
     -- on_bounce: This function creates the visual and audio effects between targets.
     on_bounce = function(spell, from_target, to_target)
-      spark2:play{pitch = random:float(0.8, 1.2), volume = 0.7}
+      spark2:play{pitch = random:float(0.8, 1.2), volume = 0.4}
       -- The LightningLine effect is a separate, temporary object.
       LightningLine{
         group = main.current.effects,
@@ -270,12 +270,19 @@ function LightningLine:init(args)
   self.w = 3
   self.generations = args.generations or 3
   self.max_offset = args.max_offset or 8
+  self.duration = args.duration or 0.067 -- Reduce by 33%
   self:generate()
-  self.t:tween(self.duration or 0.1, self, {w = 1}, math.linear, function() self.dead = true end)
+  self.t:tween(self.duration, self, {w = 1}, math.linear, function() self.dead = true end)
+  
   self.color = args.color or blue[0]
-  HitCircle{group = main.current.effects, x = self.src.x, y = self.src.y, rs = 6, color = fg[0], duration = self.duration or 0.1}
+  self.color = self.color:clone()
+  self.color.a = 0.5
+
+  self.hit_circle_radius = args.hit_circle_radius or 3
+
+  HitCircle{group = main.current.effects, x = self.src.x, y = self.src.y, rs = self.hit_circle_radius, color = fg[0], duration = self.duration}
   for i = 1, 2 do HitParticle{group = main.current.effects, x = self.src.x, y = self.src.y, color = self.color} end
-  HitCircle{group = main.current.effects, x = self.dst.x, y = self.dst.y, rs = 6, color = fg[0], duration = self.duration or 0.1}
+  HitCircle{group = main.current.effects, x = self.dst.x, y = self.dst.y, rs = self.hit_circle_radius, color = fg[0], duration = self.duration}
   HitParticle{group = main.current.effects, x = self.dst.x, y = self.dst.y, color = self.color}
 end
 
