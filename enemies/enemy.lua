@@ -358,7 +358,9 @@ function Enemy:hit(damage, from, damageType, makesSound, cannotProcOnHit)
     self:onDeathCallbacks(from)
 
     self:die()
-    for i = 1, random:int(4, 6) do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color} end
+    for i = 1, random:int(2, 3) do 
+      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color} 
+    end
     HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 12}:scale_down(0.3):change_color(0.5, self.color)
     magic_hit1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
 
