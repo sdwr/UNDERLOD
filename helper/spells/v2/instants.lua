@@ -430,7 +430,7 @@ function Burst:init(args)
           vy = random:float(-20, 20),
           rs = random:float(self.radius * 0.2, self.radius * 0.4),
           -- Slower, more organic movement
-          speed = random:float(0.4, 0.8),
+          speed = random:float(0.1, 0.3),
           -- Add some randomness to movement
           wobble = random:float(0, 2 * math.pi),
           wobble_speed = random:float(1, 3)
