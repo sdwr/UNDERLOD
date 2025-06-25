@@ -420,14 +420,20 @@ function Burst:init(args)
 
   -- Create the data for our internal swirling blobs
   self.blobs = {}
-  local num_blobs = random:int(2, 4)
+  local num_blobs = random:int(3, 5)
   for i = 1, num_blobs do
       table.insert(self.blobs, {
-          dist = random:float(0, self.radius * 0.8),
+          -- Lava lamp style movement - blobs have their own paths
+          x = random:float(-self.radius * 0.5, self.radius * 0.5),
+          y = random:float(-self.radius * 0.5, self.radius * 0.5),
+          vx = random:float(-20, 20),
+          vy = random:float(-20, 20),
           rs = random:float(self.radius * 0.2, self.radius * 0.4),
-          -- TWEAK: Increased speed for more noticeable movement
-          speed = random:float(1.5, 3.0),
-          angle_offset = random:float(0, 2 * math.pi)
+          -- Slower, more organic movement
+          speed = random:float(0.4, 0.8),
+          -- Add some randomness to movement
+          wobble = random:float(0, 2 * math.pi),
+          wobble_speed = random:float(1, 3)
       })
   end
 
@@ -444,6 +450,34 @@ function Burst:update(dt)
   self:update_game_object(dt)
   local hit_target = self:check_hits()
   self.elapsed = self.elapsed + dt
+
+  -- Update blob positions for lava lamp movement
+  for _, blob in ipairs(self.blobs) do
+    -- Update blob position
+    blob.x = blob.x + blob.vx * dt * blob.speed
+    blob.y = blob.y + blob.vy * dt * blob.speed
+    
+    -- Add wobble to movement
+    local wobble_x = math.sin(self.elapsed * blob.wobble_speed) * 2
+    local wobble_y = math.cos(self.elapsed * blob.wobble_speed) * 2
+    blob.x = blob.x + wobble_x * dt
+    blob.y = blob.y + wobble_y * dt
+    
+    -- Bounce off the edges of the burst (lava lamp effect)
+    local distance_from_center = math.sqrt(blob.x * blob.x + blob.y * blob.y)
+    local max_distance = self.radius - blob.rs
+    
+    if distance_from_center > max_distance then
+      -- Bounce back towards center
+      local angle = math.atan2(blob.y, blob.x)
+      blob.x = math.cos(angle) * max_distance
+      blob.y = math.sin(angle) * max_distance
+      
+      -- Reverse velocity with some randomness
+      blob.vx = -blob.vx * 0.8 + random:float(-10, 10)
+      blob.vy = -blob.vy * 0.8 + random:float(-10, 10)
+    end
+  end
 
   local x = self.x
   local y = self.y
@@ -506,9 +540,8 @@ function Burst:draw()
   -- This creates the "holes" in our stencil.
   local mask_action = function()
       for _, blob in ipairs(self.blobs) do
-          local current_angle = self.elapsed * blob.speed + blob.angle_offset
-          local blob_x = self.x + math.cos(current_angle) * blob.dist
-          local blob_y = self.y + math.sin(current_angle) * blob.dist
+          local blob_x = self.x + blob.x
+          local blob_y = self.y + blob.y
           graphics.circle(blob_x, blob_y, blob.rs)
       end
   end
@@ -520,9 +553,8 @@ function Burst:draw()
 
   -- 3. Draw the lighter blobs first, so they appear underneath.
   for _, blob in ipairs(self.blobs) do
-      local current_angle = self.elapsed * blob.speed + blob.angle_offset
-      local blob_x = self.x + math.cos(current_angle) * blob.dist
-      local blob_y = self.y + math.sin(current_angle) * blob.dist
+      local blob_x = self.x + blob.x
+      local blob_y = self.y + blob.y
       graphics.circle(blob_x, blob_y, blob.rs, self.blob_color)
   end
 
