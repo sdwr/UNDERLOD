@@ -132,7 +132,7 @@ end
 
 function BuyScreen:update(dt)
   if main_song_instance and main_song_instance:isStopped() then
-    main_song_instance = silence:play{volume = 0.5}
+    main_song_instance = title_music:play{volume = 1}
   end
 
   if not self.paused then

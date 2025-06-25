@@ -213,7 +213,7 @@ end
 
 function MainMenu:update(dt)
   if main_song_instance:isStopped() then
-    main_song_instance = song7:play{volume = 0.5}
+    main_song_instance = title_music:play{volume = 1}
   end
 
   if input.escape.pressed then

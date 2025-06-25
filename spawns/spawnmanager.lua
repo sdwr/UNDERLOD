@@ -491,9 +491,17 @@ function Spawn_Enemy(arena, type, location)
   else
       hit3:play{pitch = random:float(0.8, 1.2), volume = 0.4}
   end
-  Enemy{type = type, group = arena.main,
+  local enemy = Enemy{type = type, group = arena.main,
   x = location.x, y = location.y,
   level = arena.level, data = data}
+  
+  -- Set enemy to frozen for 1 second on spawn
+  Helper.Unit:set_state(enemy, unit_states['frozen'])
+  enemy.t:after(1, function()
+    if enemy.state == unit_states['frozen'] then
+      Helper.Unit:set_state(enemy, unit_states['normal'])
+    end
+  end)
 end
 
 function Countdown(arena)

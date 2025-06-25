@@ -209,7 +209,7 @@ function Arena:update(dt)
   if not self.paused then
   
     if main_song_instance:isStopped() then
-      main_song_instance = _G[random:table{'derp1', 'song2'}]:play{volume = state.music_volume or 0.5}
+      main_song_instance = title_music:play{volume = state.music_volume or 1}
     end
 
     if not self.initial_units_spawned then

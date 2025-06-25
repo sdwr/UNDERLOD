@@ -163,6 +163,7 @@ function init()
   holylight = Sound('HolyLight.ogg', s)
   sword_swing = Sound('sword swing.wav', s)
   freeze_sound = Sound('ice_cracking_trimmed.wav', s)
+  title_music = Sound('Debussy - Reverie.mp3', { tags = { music } })
 
 
 
@@ -1282,7 +1283,7 @@ function init()
 
   max_units = MAX_UNITS
 
-  main_song_instance = song7:play { volume = state.music_volume or 0.5 }
+  main_song_instance = title_music:play { volume = state.music_volume or 1 }
   main = Main()
 
   enable_custom_cursor('simple')
