@@ -382,10 +382,17 @@ function Burst:init(args)
   self.color = self.color:clone()
   self.color.a = 0.7
 
+  -- NEW: A separate, brighter, more opaque color for the internal blobs
+  self.blob_color = self.color:clone()
+  self.blob_color.a = 0.95
+  self.blob_color.r = math.min(1, self.color.r * 1.5)
+  self.blob_color.g = math.min(1, self.color.g * 1.5)
+  self.blob_color.b = math.min(1, self.color.b * 1.5)
+
   self.damage = self.damage or 30
   self.num_pieces = self.num_pieces or 10
   
-  self.speed = self.speed or 100
+  self.speed = self.speed or 70
 
   if self.spelltype == "targeted" then
     self.r = Get_Angle_For_Target(self)
@@ -410,6 +417,20 @@ function Burst:init(args)
   self.elapsed = 0
   cannoneer1:play{volume=0.7}
   self.t:after(self.duration, function() self:die() end)
+
+  -- Create the data for our internal swirling blobs
+  self.blobs = {}
+  local num_blobs = random:int(2, 4)
+  for i = 1, num_blobs do
+      table.insert(self.blobs, {
+          dist = random:float(0, self.radius * 0.8),
+          rs = random:float(self.radius * 0.2, self.radius * 0.4),
+          -- TWEAK: Increased speed for more noticeable movement
+          speed = random:float(1.5, 3.0),
+          angle_offset = random:float(0, 2 * math.pi)
+      })
+  end
+
 end
 
 function Burst:check_hits()
@@ -479,10 +500,35 @@ function Burst:explode()
   end
 end
 
+
 function Burst:draw()
-  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.x)
-    graphics.circle(self.x, self.y, self.shape.rs, self.color)
-  graphics.pop()
+  -- 1. Define the mask action: draw all the blobs.
+  -- This creates the "holes" in our stencil.
+  local mask_action = function()
+      for _, blob in ipairs(self.blobs) do
+          local current_angle = self.elapsed * blob.speed + blob.angle_offset
+          local blob_x = self.x + math.cos(current_angle) * blob.dist
+          local blob_y = self.y + math.sin(current_angle) * blob.dist
+          graphics.circle(blob_x, blob_y, blob.rs)
+      end
+  end
+
+  -- 2. Define the main drawing action: draw the semi-transparent main orb.
+  local orb_action = function()
+      graphics.circle(self.x, self.y, self.radius, self.color)
+  end
+
+  -- 3. Draw the lighter blobs first, so they appear underneath.
+  for _, blob in ipairs(self.blobs) do
+      local current_angle = self.elapsed * blob.speed + blob.angle_offset
+      local blob_x = self.x + math.cos(current_angle) * blob.dist
+      local blob_y = self.y + math.sin(current_angle) * blob.dist
+      graphics.circle(blob_x, blob_y, blob.rs, self.blob_color)
+  end
+
+  -- 4. Use the inverted mask to draw the main orb *around* the blobs.
+  -- The third argument 'true' inverts the mask.
+  graphics.draw_with_mask(orb_action, mask_action, true)
 end
 
 function Burst:die()

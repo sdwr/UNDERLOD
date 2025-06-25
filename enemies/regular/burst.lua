@@ -14,6 +14,9 @@ fns['init_enemy'] = function(self)
   self.icon = 'lich'
   self.movementStyle = MOVEMENT_TYPE_RANDOM
 
+  self.baseCast = attack_speeds['medium-slow']
+  self.castcooldown = self.baseCast
+
   --set attacks
 
   self.attack_options = {}
@@ -22,7 +25,7 @@ fns['init_enemy'] = function(self)
     name = 'burst',
     viable = function () return true end,
     oncast = function() end,
-    castcooldown = 2.5,
+    castcooldown = self.castcooldown,
     instantspell = true,
     cast_length = LICH_CAST_TIME,
     spellclass = Burst,
@@ -34,7 +37,7 @@ fns['init_enemy'] = function(self)
       y = self.y,
       color = purple[0],
       damage = self.dmg,
-      speed = 100,
+      speed = 70,
       num_pieces = 8,
       parent = self
     }
