@@ -23,12 +23,11 @@ function Enemy:init(args)
   self.stopChasingInRange = not not self.stopChasingInRange
   self.haltOnPlayerContact = not not self.haltOnPlayerContact
 
-  self.castcooldown = math.random() * (self.base_castcooldown or self.baseCast)
+  self.castcooldown = self.castcooldown or 2
   
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20 + self.shape.w / 2)
   self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 1000)
   
-  self.base_castcooldown = self.base_castcooldown or 3
   self.last_attack_started = 0
 
   self.random_dest = {x = self.x, y = self.y}
@@ -120,7 +119,7 @@ function Enemy:draw_animation(state, x, y, r)
 end
 
 
---set castcooldown and self.base_castcooldown in the enemy file (init)
+--set castcooldown and in the enemy file (init)
 function Enemy:update(dt)
     self:update_game_object(dt)
     self:update_cast_cooldown(dt)

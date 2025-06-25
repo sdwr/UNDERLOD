@@ -92,7 +92,7 @@ function Laser_Spell:init(args)
     self.laser_width = self.laser_width * self.unit.area_size_m
   end
 
-  self.charge_sound = laser_charging:play{volume = 0.3}
+  self.charge_sound = laser_charging:play{volume = 0.15}
 
   -- memory
   self.charge_time = 0

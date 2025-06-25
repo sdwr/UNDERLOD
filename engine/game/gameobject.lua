@@ -62,6 +62,11 @@ function GameObject:update_game_object(dt)
   self.hfx:update(dt)
   self.spring:update(dt)
   if self.body then self:update_physics(dt) end
+  
+  -- Update state stack if this is a Unit
+  if self.update_state_stack then
+    self:update_state_stack(dt)
+  end
 
   if self.shape then
     if self.shape.vertices and self.body then

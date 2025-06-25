@@ -22,9 +22,9 @@ fns['init_enemy'] = function(self)
   --set special attrs
   --castTime is what is used to determine the spell duration 
   -- and is set to a default if baseCast is not set
-  self.baseCast = attack_speeds['medium-fast']
+  self.baseCast = attack_speeds['medium']
 
-  self.castcooldown = attack_speeds['medium']
+  self.castcooldown = attack_speeds['medium-slow']
 
   self.direction_lock = false
   self.rotation_lock = false
@@ -71,8 +71,8 @@ fns['init_enemy'] = function(self)
       fire_follows_unit = false,
       fade_fire_draw = true,
       fade_in_aim_draw = true,
-      lock_last_duration = 0.75,
-      charge_duration = 1.5,
+      lock_last_duration = 1.5,
+      charge_duration = self.baseCast,
     },
   }
 
