@@ -11,6 +11,10 @@ fns['init_enemy'] = function(self)
   Set_Enemy_Shape(self, self.size)
 
   self.class = 'special_enemy'
+  self.icon = 'ent'
+
+  self.baseCast = attack_speeds['medium-slow']
+  self.castcooldown = self.baseCast
 
   --set attacks
 
@@ -20,9 +24,9 @@ fns['init_enemy'] = function(self)
     name = 'boomerang',
     viable = function () return true end,
     oncast = function() end,
-    castcooldown = 1,
+    castcooldown = self.castcooldown,
     instantspell = true,
-    cast_length = 1,
+    cast_length = ENT_CAST_TIME,
     spellclass = Boomerang,
     spelldata = {
       group = main.current.main,
@@ -45,7 +49,15 @@ fns['init_enemy'] = function(self)
 end
 
 fns['draw_enemy'] = function(self)
-  graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+  graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
+
+  local animation_success = self:draw_animation(self.state, self.x, self.y, 0)
+
+  if not animation_success then
+    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+  end
+
+  graphics.pop()
 end
  
 enemy_to_class['boomerang'] = fns

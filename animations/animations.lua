@@ -20,12 +20,12 @@ GOLEM_SPRITE_H = 128
 
 GOLEM_SPRITE_SCALE = 3
 
-golem_idle = Image(spriteFolder .. 'golems/Golem1/Idle/Golem1_Idle_full')
-golem_walk = Image(spriteFolder .. 'golems/Golem1/Walk/Golem1_Walk_full')
-golem_run = Image(spriteFolder .. 'golems/Golem1/Run/Golem1_Run_full')
-golem_attack = Image(spriteFolder .. 'golems/Golem1/Attack/Golem1_Attack_full')
-golem_hurt = Image(spriteFolder .. 'golems/Golem1/Hurt/Golem1_Hurt_full')
-golem_death = Image(spriteFolder .. 'golems/Golem1/Death/Golem1_Death_full')
+golem_idle = Image(spriteFolder .. 'golems/Golem1/Idle/Golem1_Idle_full', 'nearest')
+golem_walk = Image(spriteFolder .. 'golems/Golem1/Walk/Golem1_Walk_full', 'nearest')
+golem_run = Image(spriteFolder .. 'golems/Golem1/Run/Golem1_Run_full', 'nearest')
+golem_attack = Image(spriteFolder .. 'golems/Golem1/Attack/Golem1_Attack_full', 'nearest')
+golem_hurt = Image(spriteFolder .. 'golems/Golem1/Hurt/Golem1_Hurt_full', 'nearest')
+golem_death = Image(spriteFolder .. 'golems/Golem1/Death/Golem1_Death_full', 'nearest')
 
 golem_idle_g = create_grid(golem_idle, 128, 128)
 golem_walk_g = create_grid(golem_walk, 128, 128)
@@ -51,7 +51,7 @@ DRAGON_SPRITE_H_HD = 161
 DRAGON_SPRITE_SCALE = 1.5
 
 
-dragonHD = Image(spriteFolder .. '/dragon2-HD/flying_dragon-red')
+dragonHD = Image(spriteFolder .. '/dragon2-HD/flying_dragon-red', 'nearest')
 
 dragonHD_g = create_grid(dragonHD, DRAGON_SPRITE_W_HD, DRAGON_SPRITE_H_HD)
 
@@ -66,12 +66,12 @@ BEHOLDER_SPRITE_H = 64
 
 BEHOLDER_SPRITE_SCALE = 1.3
 
-beholder_idle = Image(spriteFolder .. '/Beholder3/Idle/Beholder3_Idle_full')
-beholder_walk = Image(spriteFolder .. '/Beholder3/Walk/Beholder3_Walk_full')
-beholder_run = Image(spriteFolder .. '/Beholder3/Run/Beholder3_Run_full')
-beholder_attack = Image(spriteFolder .. '/Beholder3/Attack/Beholder3_Attack_full')
-beholder_hurt = Image(spriteFolder .. '/Beholder3/Hurt/Beholder3_Hurt_full')
-beholder_death = Image(spriteFolder .. '/Beholder3/Death/Beholder3_Death_full')
+beholder_idle = Image(spriteFolder .. '/Beholder3/Idle/Beholder3_Idle_full', 'nearest')
+beholder_walk = Image(spriteFolder .. '/Beholder3/Walk/Beholder3_Walk_full', 'nearest')
+beholder_run = Image(spriteFolder .. '/Beholder3/Run/Beholder3_Run_full', 'nearest')
+beholder_attack = Image(spriteFolder .. '/Beholder3/Attack/Beholder3_Attack_full', 'nearest')
+beholder_hurt = Image(spriteFolder .. '/Beholder3/Hurt/Beholder3_Hurt_full', 'nearest')
+beholder_death = Image(spriteFolder .. '/Beholder3/Death/Beholder3_Death_full', 'nearest')
 
 beholder_idle_g = create_grid(beholder_idle, 64, 64)
 beholder_walk_g = create_grid(beholder_walk, 64, 64)
@@ -122,7 +122,7 @@ SKELETON_SPRITE_H = 24
 SKELETON_SPRITE_SCALE = 6
 
 
-skeleton = Image(spriteFolder .. 'room8_skeleton')
+skeleton = Image(spriteFolder .. 'room8_skeleton', 'nearest')
 
 skeleton_birth_g = create_grid(skeleton, 24, 24)
 skeleton_idle_g = create_grid(skeleton, 24, 24)
@@ -143,12 +143,12 @@ RAT_SPRITE_SCALE = 6
 
 RAT1_SPRITE_SCALE = RAT_SPRITE_SCALE
 
-rat1_idle = Image(spriteFolder .. '/giantRat/Rat1/Idle/Rat1_Idle_full')
-rat1_walk = Image(spriteFolder .. '/giantRat/Rat1/Walk/Rat1_Walk_full')
-rat1_run = Image(spriteFolder .. '/giantRat/Rat1/Run/Rat1_Run_full')
-rat1_attack = Image(spriteFolder .. '/giantRat/Rat1/Attack/Rat1_Attack_full')
-rat1_hurt = Image(spriteFolder .. '/giantRat/Rat1/Hurt/Rat1_Hurt_full')
-rat1_death = Image(spriteFolder .. '/giantRat/Rat1/Death/Rat1_Death_full')
+rat1_idle = Image(spriteFolder .. '/giantRat/Rat1/Idle/Rat1_Idle_full', 'nearest')
+rat1_walk = Image(spriteFolder .. '/giantRat/Rat1/Walk/Rat1_Walk_full', 'nearest')
+rat1_run = Image(spriteFolder .. '/giantRat/Rat1/Run/Rat1_Run_full', 'nearest')
+rat1_attack = Image(spriteFolder .. '/giantRat/Rat1/Attack/Rat1_Attack_full', 'nearest')
+rat1_hurt = Image(spriteFolder .. '/giantRat/Rat1/Hurt/Rat1_Hurt_full', 'nearest')
+rat1_death = Image(spriteFolder .. '/giantRat/Rat1/Death/Rat1_Death_full', 'nearest')
 
 rat1_idle_g = create_grid(rat1_idle, 128, 128)
 rat1_walk_g = create_grid(rat1_walk, 128, 128)
@@ -172,12 +172,12 @@ RAT2_SPRITE_H = 128
 
 RAT2_SPRITE_SCALE = RAT_SPRITE_SCALE
 
-rat2_idle = Image(spriteFolder .. '/giantRat/Rat2/Idle/Rat2_Idle_full')
-rat2_walk = Image(spriteFolder .. '/giantRat/Rat2/Walk/Rat2_Walk_full')
-rat2_run = Image(spriteFolder .. '/giantRat/Rat2/Run/Rat2_Run_full')
-rat2_attack = Image(spriteFolder .. '/giantRat/Rat2/Attack/Rat2_Attack_full')
-rat2_hurt = Image(spriteFolder .. '/giantRat/Rat2/Hurt/Rat2_Hurt_full')
-rat2_death = Image(spriteFolder .. '/giantRat/Rat2/Death/Rat2_Death_full')
+rat2_idle = Image(spriteFolder .. '/giantRat/Rat2/Idle/Rat2_Idle_full', 'nearest')
+rat2_walk = Image(spriteFolder .. '/giantRat/Rat2/Walk/Rat2_Walk_full', 'nearest')
+rat2_run = Image(spriteFolder .. '/giantRat/Rat2/Run/Rat2_Run_full', 'nearest')
+rat2_attack = Image(spriteFolder .. '/giantRat/Rat2/Attack/Rat2_Attack_full', 'nearest')
+rat2_hurt = Image(spriteFolder .. '/giantRat/Rat2/Hurt/Rat2_Hurt_full', 'nearest')
+rat2_death = Image(spriteFolder .. '/giantRat/Rat2/Death/Rat2_Death_full', 'nearest')
 
 rat2_idle_g = create_grid(rat2_idle, 128, 128)
 rat2_walk_g = create_grid(rat2_walk, 128, 128)
@@ -201,12 +201,12 @@ RAT3_SPRITE_H = 128
 
 RAT3_SPRITE_SCALE = RAT_SPRITE_SCALE
 
-rat3_idle = Image(spriteFolder .. '/giantRat/Rat3/Idle/Rat3_Idle_full')
-rat3_walk = Image(spriteFolder .. '/giantRat/Rat3/Walk/Rat3_Walk_full')
-rat3_run = Image(spriteFolder .. '/giantRat/Rat3/Run/Rat3_Run_full')
-rat3_attack = Image(spriteFolder .. '/giantRat/Rat3/Attack/Rat3_Attack_full')
-rat3_hurt = Image(spriteFolder .. '/giantRat/Rat3/Hurt/Rat3_Hurt_full')
-rat3_death = Image(spriteFolder .. '/giantRat/Rat3/Death/Rat3_Death_full')
+rat3_idle = Image(spriteFolder .. '/giantRat/Rat3/Idle/Rat3_Idle_full', 'nearest')
+rat3_walk = Image(spriteFolder .. '/giantRat/Rat3/Walk/Rat3_Walk_full', 'nearest')
+rat3_run = Image(spriteFolder .. '/giantRat/Rat3/Run/Rat3_Run_full', 'nearest')
+rat3_attack = Image(spriteFolder .. '/giantRat/Rat3/Attack/Rat3_Attack_full', 'nearest')
+rat3_hurt = Image(spriteFolder .. '/giantRat/Rat3/Hurt/Rat3_Hurt_full', 'nearest')
+rat3_death = Image(spriteFolder .. '/giantRat/Rat3/Death/Rat3_Death_full', 'nearest')
 
 rat3_idle_g = create_grid(rat3_idle, 128, 128)
 rat3_walk_g = create_grid(rat3_walk, 128, 128)
@@ -230,12 +230,12 @@ LICH_SPRITE_H = 64
 
 LICH_SPRITE_SCALE = 3
 
-lich_attack = Image(spriteFolder .. '/Lich2/Attack/Lich2_Attack_full')
-lich_idle = Image(spriteFolder .. '/Lich2/Idle/Lich2_Idle_full')
-lich_walk = Image(spriteFolder .. '/Lich2/Walk/Lich2_Walk_full')
-lich_run = Image(spriteFolder .. '/Lich2/Run/Lich2_Run_full')
-lich_hurt = Image(spriteFolder .. '/Lich2/Hurt/Lich2_Hurt_full')
-lich_death = Image(spriteFolder .. '/Lich2/Death/Lich2_Death_full')
+lich_attack = Image(spriteFolder .. '/Lich2/Attack/Lich2_Attack_full', 'nearest')
+lich_idle = Image(spriteFolder .. '/Lich2/Idle/Lich2_Idle_full', 'nearest')
+lich_walk = Image(spriteFolder .. '/Lich2/Walk/Lich2_Walk_full', 'nearest')
+lich_run = Image(spriteFolder .. '/Lich2/Run/Lich2_Run_full', 'nearest')
+lich_hurt = Image(spriteFolder .. '/Lich2/Hurt/Lich2_Hurt_full', 'nearest')
+lich_death = Image(spriteFolder .. '/Lich2/Death/Lich2_Death_full', 'nearest')
 
 lich_attack_g = create_grid(lich_attack, 64, 64)
 lich_idle_g = create_grid(lich_idle, 64, 64)
@@ -259,12 +259,12 @@ SLIME_SPRITE_H = 64
 
 SLIME_SPRITE_SCALE = 3.5
 
-slime_attack = Image(spriteFolder .. '/Slime1/Attack/Slime1_Attack_full')
-slime_idle = Image(spriteFolder .. '/Slime1/Idle/Slime1_Idle_full')
-slime_walk = Image(spriteFolder .. '/Slime1/Walk/Slime1_Walk_full')
-slime_run = Image(spriteFolder .. '/Slime1/Run/Slime1_Run_full')
-slime_hurt = Image(spriteFolder .. '/Slime1/Hurt/Slime1_Hurt_full')
-slime_death = Image(spriteFolder .. '/Slime1/Death/Slime1_Death_full')
+slime_attack = Image(spriteFolder .. '/Slime1/Attack/Slime1_Attack_full', 'nearest')
+slime_idle = Image(spriteFolder .. '/Slime1/Idle/Slime1_Idle_full', 'nearest')
+slime_walk = Image(spriteFolder .. '/Slime1/Walk/Slime1_Walk_full', 'nearest')
+slime_run = Image(spriteFolder .. '/Slime1/Run/Slime1_Run_full', 'nearest')
+slime_hurt = Image(spriteFolder .. '/Slime1/Hurt/Slime1_Hurt_full', 'nearest')
+slime_death = Image(spriteFolder .. '/Slime1/Death/Slime1_Death_full', 'nearest')
 
 slime_attack_g = create_grid(slime_attack, 64, 64)
 slime_idle_g = create_grid(slime_idle, 64, 64)
@@ -285,7 +285,7 @@ MECH1_SPRITE_H = 80
 
 MECH1_SPRITE_SCALE = 1.8
 
-mech1_idle = Image(spriteFolder .. '/Mech Assets Pack/Grey/Animation/Mechani4done')
+mech1_idle = Image(spriteFolder .. '/Mech Assets Pack/Grey/Animation/Mechani4done', 'nearest')
 
 mech1_idle_g = create_grid(mech1_idle, 80, 80)
 mech1_idle_a = create_animation(mech1_idle_g, 1, 36, 80, 80, 0.1)
@@ -295,7 +295,7 @@ MECH2_SPRITE_H = 80
 
 MECH2_SPRITE_SCALE = 1.8
 
-mech2_idle = Image(spriteFolder .. '/Mech Assets Pack/Cyan/Animation/Mechani7done')
+mech2_idle = Image(spriteFolder .. '/Mech Assets Pack/Cyan/Animation/Mechani7done', 'nearest')
 
 mech2_idle_g = create_grid(mech2_idle, 80, 80)
 mech2_idle_a = create_animation(mech2_idle_g, 1, 36, 80, 80, 0.1)
@@ -305,7 +305,7 @@ MECH3_SPRITE_H = 80
 
 MECH3_SPRITE_SCALE = 1.8
 
-mech3_idle = Image(spriteFolder .. '/Mech Assets Pack/Green/Animation/Mechanidone')
+mech3_idle = Image(spriteFolder .. '/Mech Assets Pack/Green/Animation/Mechanidone', 'nearest')
 
 mech3_idle_g = create_grid(mech3_idle, 80, 80)
 mech3_idle_a = create_animation(mech3_idle_g, 1, 36, 80, 80, 0.1)
@@ -319,12 +319,12 @@ LIZARDMAN_ATTACK_FRAMES = 7
 
 LIZARDMAN_SPRITE_SCALE = 3.5
 
-lizardman_idle = Image(spriteFolder .. '/lizardmen/Lizardman1/Idle/Lizardman1_Idle_full')
-lizardman_walk = Image(spriteFolder .. '/lizardmen/Lizardman1/Walk/Lizardman1_Walk_full')
-lizardman_run = Image(spriteFolder .. '/lizardmen/Lizardman1/Run/Lizardman1_Run_full')
-lizardman_attack = Image(spriteFolder .. '/lizardmen/Lizardman1/Attack/Lizardman1_Attack_full')
-lizardman_hurt = Image(spriteFolder .. '/lizardmen/Lizardman1/Hurt/Lizardman1_Hurt_full')
-lizardman_death = Image(spriteFolder .. '/lizardmen/Lizardman1/Death/Lizardman1_Death_full')
+lizardman_idle = Image(spriteFolder .. '/lizardmen/Lizardman1/Idle/Lizardman1_Idle_full', 'nearest')
+lizardman_walk = Image(spriteFolder .. '/lizardmen/Lizardman1/Walk/Lizardman1_Walk_full', 'nearest')
+lizardman_run = Image(spriteFolder .. '/lizardmen/Lizardman1/Run/Lizardman1_Run_full', 'nearest')
+lizardman_attack = Image(spriteFolder .. '/lizardmen/Lizardman1/Attack/Lizardman1_Attack_full', 'nearest')
+lizardman_hurt = Image(spriteFolder .. '/lizardmen/Lizardman1/Hurt/Lizardman1_Hurt_full', 'nearest')
+lizardman_death = Image(spriteFolder .. '/lizardmen/Lizardman1/Death/Lizardman1_Death_full', 'nearest')
 
 lizardman_idle_g = create_grid(lizardman_idle, 64, 64)
 lizardman_walk_g = create_grid(lizardman_walk, 64, 64)
@@ -339,6 +339,37 @@ lizardman_run_a = create_animation(lizardman_run_g, 1, 8, 64, 64, 0.2)
 lizardman_attack_a = create_animation(lizardman_attack_g, 1, 7, 64, 64, LIZARDMAN_CAST_TIME / LIZARDMAN_ATTACK_FRAMES)
 lizardman_hurt_a = create_animation(lizardman_hurt_g, 1, 5, 64, 64, 0.4)
 lizardman_death_a = create_animation(lizardman_death_g, 1, 7, 64, 64, 0.2)
+
+ENT_SPRITE_W = 128
+ENT_SPRITE_H = 128
+
+ENT_CAST_TIME = 1
+ENT_ATTACK_FRAMES = 7
+
+ENT_SPRITE_SCALE = 4.5
+
+--nearest filter is to fix the texture bleed on the edges of the image
+ent_idle = Image(spriteFolder .. '/Ent1/Idle/Ent1_Idle_full', 'nearest')
+ent_walk = Image(spriteFolder .. '/Ent1/Walk/Ent1_Walk_full', 'nearest')
+ent_run = Image(spriteFolder .. '/Ent1/Run/Ent1_Run_full', 'nearest')
+ent_attack = Image(spriteFolder .. '/Ent1/Attack/Ent1_Attack_full', 'nearest')
+ent_hurt = Image(spriteFolder .. '/Ent1/Hurt/Ent1_Hurt_full', 'nearest')
+ent_death = Image(spriteFolder .. '/Ent1/Death/Ent1_Death_full', 'nearest')
+
+
+ent_idle_g = create_grid(ent_idle, 128, 128)
+ent_walk_g = create_grid(ent_walk, 128, 128)
+ent_run_g = create_grid(ent_run, 128, 128)
+ent_attack_g = create_grid(ent_attack, 128, 128)
+ent_hurt_g = create_grid(ent_hurt, 128, 128)
+ent_death_g = create_grid(ent_death, 128, 128)
+
+ent_idle_a = create_animation(ent_idle_g, 1, 4, 128, 128, 0.4)
+ent_walk_a = create_animation(ent_walk_g, 1, 6, 128, 128, 0.2)
+ent_run_a = create_animation(ent_run_g, 1, 8, 128, 128, 0.2)
+ent_attack_a = create_animation(ent_attack_g, 1, 7, 128, 128, ENT_CAST_TIME / ENT_ATTACK_FRAMES)
+ent_hurt_a = create_animation(ent_hurt_g, 1, 4, 128, 128, 0.4)
+ent_death_a = create_animation(ent_death_g, 1, 6, 128, 128, 0.4)
 
 skeleton_spritesheets = {
   ['normal'] = {skeleton_idle_a, skeleton},
@@ -419,6 +450,16 @@ lizardman_spritesheets = {
   ['death'] = {lizardman_death_a, lizardman_death},
 }
 
+ent_spritesheets = {
+  ['normal'] = {ent_idle_a, ent_idle},
+  ['walk'] = {ent_walk_a, ent_walk},
+  ['run'] = {ent_run_a, ent_run},
+  ['casting'] = {ent_attack_a, ent_attack},
+  ['channeling'] = {ent_attack_a, ent_attack},
+  ['hurt'] = {ent_hurt_a, ent_hurt},
+  ['death'] = {ent_death_a, ent_death},
+}
+
 --all spritesheets
 enemy_spritesheets = {
   ['golem'] = golem_spritesheets,
@@ -434,6 +475,7 @@ enemy_spritesheets = {
   ['rat1'] = rat1_spritesheets,
   ['rat2'] = rat2_spritesheets,
   ['rat3'] = rat3_spritesheets,
+  ['ent'] = ent_spritesheets,
 }
 enemy_sprite_sizes = {
   ['golem'] = {GOLEM_SPRITE_W, GOLEM_SPRITE_H},
@@ -449,6 +491,7 @@ enemy_sprite_sizes = {
   ['mech1'] = {MECH1_SPRITE_W, MECH1_SPRITE_H},
   ['mech2'] = {MECH2_SPRITE_W, MECH2_SPRITE_H},
   ['mech3'] = {MECH3_SPRITE_W, MECH3_SPRITE_H},
+  ['ent'] = {ENT_SPRITE_W, ENT_SPRITE_H},
 }
 
 enemy_sprite_scales = {
@@ -465,4 +508,5 @@ enemy_sprite_scales = {
   ['mech1'] = MECH1_SPRITE_SCALE,
   ['mech2'] = MECH2_SPRITE_SCALE,
   ['mech3'] = MECH3_SPRITE_SCALE,
+  ['ent'] = ENT_SPRITE_SCALE,
 }

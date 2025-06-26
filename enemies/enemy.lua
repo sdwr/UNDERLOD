@@ -111,6 +111,7 @@ function Enemy:draw_animation(state, x, y, r)
   local frame_center_x = frame_width / 2
   local frame_center_y = frame_height / 2
 
+
   graphics.push(x, y, 0, self.hfx.hit.x, self.hfx.hit.x)
     animation:draw(image.image, x, y, r, scale_x, scale_y, frame_center_x, frame_center_y)
   graphics.pop()

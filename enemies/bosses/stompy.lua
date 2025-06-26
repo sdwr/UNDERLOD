@@ -33,6 +33,9 @@ fns['init_enemy'] = function(self)
 
   self.stopChasingInRange = false
 
+  self.baseCast = attack_speeds['medium-slow']
+  self.castcooldown = self.baseCast
+
 --set sensors
   self.attack_sensor = Circle(self.x, self.y, 80)
 
@@ -44,7 +47,7 @@ fns['init_enemy'] = function(self)
   local stomp = {
     name = 'stomp',
     viable = function() return self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies) end,
-    castcooldown = 1,
+    castcooldown = self.castcooldown,
     oncast = function() end,
     cast_length = 0.1,
     cast_sound = usurer1,
@@ -69,7 +72,7 @@ fns['init_enemy'] = function(self)
   local mortar = {
     name = 'mortar',
     viable = function() return true end,
-    castcooldown = 2,
+    castcooldown = self.castcooldown,
     oncast = function() end,
     instantspell = true,
     cast_length = GOLEM_CAST_TIME,
@@ -91,7 +94,7 @@ fns['init_enemy'] = function(self)
   local avalanche = {
     name = 'avalanche',
     viable = function() return true end,
-    castcooldown = 4,
+    castcooldown = self.castcooldown,
     instantspell = true,
     cast_length = GOLEM_CAST_TIME,
     cast_sound = usurer1,
@@ -111,7 +114,7 @@ fns['init_enemy'] = function(self)
   local charge = {
     name = 'charge',
     viable = function() return true end,
-    castcooldown = 3,
+    castcooldown = self.castcooldown,
     cast_length = 0.1,
     oncast = function() end,
     cast_sound = usurer1,
@@ -137,7 +140,7 @@ fns['init_enemy'] = function(self)
   local prevent_casting = {
     name = 'prevent_casting',
     viable = function() return true end,
-    castcooldown = 3,
+    castcooldown = self.castcooldown,
     cast_length = 0.5,
     oncast = function() end,
     spellclass = PreventCasting_Spell,

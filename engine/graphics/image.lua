@@ -1,7 +1,10 @@
 -- The base Image class.
 Image = Object:extend()
-function Image:init(asset_name)
+function Image:init(asset_name, filter)
   self.image = love.graphics.newImage("assets/images/" .. asset_name .. ".png")
+  if filter then
+    self.image:setFilter(filter, filter)
+  end
   self.w = self.image:getWidth()
   self.h = self.image:getHeight()
 end

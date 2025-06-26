@@ -397,7 +397,7 @@ function Burst:init(args)
   if self.spelltype == "targeted" then
     self.r = Get_Angle_For_Target(self)
     self.distance = Get_Distance_To_Target(self)
-    self.distance = math.random(self.distance - 50, self.distance + 50)
+    self.distance = math.random(self.distance - 100, self.distance + 100)
     self.distance = math.max(self.distance, 100)
     self.distance = math.min(self.distance, 250)
   else
