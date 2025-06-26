@@ -88,7 +88,7 @@ function AchievementsPanel:update(dt)
             self.info_text:activate({
                 {text = '[fg]' .. title, font = pixul_font, alignment = 'center'},
                 {text = text, font = pixul_font, alignment = 'center'},
-            }, nil, nil, nil, nil, 16, 4, nil, 2)
+            }, nil, nil, nil, nil, 12, 2, nil, 1)
             self.info_text.x, self.info_text.y = gw/2, gh/2
         else
             slot.is_hovered = false
