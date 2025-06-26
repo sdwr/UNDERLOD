@@ -259,7 +259,6 @@ Helper.Unit.team_button_width = 0
 
 function Helper.Unit:get_team_by_index(index)
     if index < 1 or index > #Helper.Unit.teams then
-        print('no team with index ' .. index)
         return nil
     end
     return Helper.Unit.teams[index]
