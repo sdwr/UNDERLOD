@@ -39,15 +39,16 @@ function Swordsman_Troop:set_character()
   self:set_state_functions()
 end
 
-function Swordsman_Troop:setup_cast()
+function Swordsman_Troop:setup_cast(target)
   local cast_data = {
     name = 'attack',
-    viable = function() return Helper.Spell:target_is_in_range(self) end,
+    viable = function() return true end,
     oncast = function() end,
     castcooldown = self.cooldownTime,
     cast_length = self.castTime,
     backswing = self.backswing,
     instantspell = true,
+    target = target,
     
     -- This is the data for the actual spell that gets created.
     spellclass = Area_Spell,

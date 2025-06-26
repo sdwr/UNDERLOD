@@ -42,15 +42,16 @@ function Laser_Troop:set_character()
   self.castcooldown = math.random() * (self.base_castcooldown or self.baseCast)
 end
 
-function Laser_Troop:setup_cast()
+function Laser_Troop:setup_cast(target)
   local data = {
     name = 'laser',
-    viable = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.enemies); return target end,
+    viable = function() return true end,
     oncast = function() end,
     castcooldown = self.cooldownTime,
     cast_length = 0,
     backswing = 0.1,
     spellclass = Laser_Spell,
+    target = target,
     spelldata = {
       group = main.current.main,
       spell_duration = 10,

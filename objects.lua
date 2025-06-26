@@ -1286,15 +1286,19 @@ end
 function Unit:in_range()
   return function()
     local target = self:my_target()
-    local target_size_offset = 0
-    if self.attack_range and self.attack_range < MELEE_ATTACK_RANGE and target and not target.dead then
-      target_size_offset = target.shape.w/2
-    end
-    return target and 
-      not target.dead and 
-      table.any(unit_states_can_target, function(v) return self.state == v end) and 
-      self:distance_to_object(target) - target_size_offset < self.attack_sensor.rs
+    return self:in_range_of_target(target)
   end
+end
+
+function Unit:in_range_of_target(target)
+  local target_size_offset = 0
+  if self.attack_range and self.attack_range < MELEE_ATTACK_RANGE and target and not target.dead then
+    target_size_offset = target.shape.w/2
+  end
+  return target and 
+    not target.dead and 
+    table.any(unit_states_can_target, function(v) return self.state == v end) and 
+    self:distance_to_object(target) - target_size_offset < self.attack_sensor.rs
 end
 
 function Unit:in_aggro_range()
@@ -1404,7 +1408,12 @@ function Unit:cast(castData)
     castCopy.x = self.x
     castCopy.y = self.y
     castCopy.unit = self
-    castCopy.target = self:my_target()
+    print('in cast')
+    if castData.target then
+        print('castCopy.target', castData.target.type, castData.target.class)
+    end
+    castCopy.target = castData.target or self:my_target()
+    print('castCopy.target', castCopy.target.type, castCopy.target.class)
     self.castObject = Cast(castCopy)
   else
     print('spellclass not found', castData.name)

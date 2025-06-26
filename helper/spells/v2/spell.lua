@@ -29,20 +29,22 @@
 -- or the unit should be able to cancel the spellObject if it dies or is stunned
 
 Try_Cancel_Cast = function(self)
+  print('Try_Cancel_Cast', self.unit.type, self.target)
   if self.cancel_on_death and (not self.unit or self.unit.dead) then
     self:cancel()
   end
   if self.cancel_on_range then
     if 
-      not (self.unit and self.unit.target)
+      not (self.unit and self.target)
       or
-      Get_Distance_To_Target(self.unit) > self.cancel_range
+      Get_Distance_To_Target(self.unit, self.target) > self.cancel_range
       then
       self:cancel()
     end
   end
   if self.cancel_no_target and 
-    (not self.unit or not self.unit:my_target() or self.unit:my_target().dead == true) then
+    (not self.unit or not self.target or self.target.dead == true) then
+    print('cancel_no_target', self.unit.type, self.target)
     self:cancel()
   end
 end

@@ -123,13 +123,37 @@ function Helper.Unit:cast_off_cooldown(unit)
 end
 
 function Helper.Unit:can_cast(unit, points)
-    -- We can only cast if we have a valid target in the first place.
-    if unit and unit:my_target() then
-        return table.any(unit_states_can_cast, function(v) return unit.state == v end)
-            and unit:in_range()()  -- The key change: Use the same logic as the movement check.
-            and Helper.Unit:cast_off_cooldown(unit)
+    if not table.any(unit_states_can_cast, function(v) return unit.state == v end) then
+        return false
     end
+
+    if not Helper.Unit:cast_off_cooldown(unit) then
+        return false
+    end
+
+    -- We can only cast if we have a valid target in the first place.
+    local assigned_target = unit.assigned_target
+    local proximity_target = unit.target
+
+    local can_hit_assigned_target = false
+    local can_hit_proximity_target = false
+    
+    if unit and (assigned_target or proximity_target) then
+        if assigned_target then
+            can_hit_assigned_target = unit:in_range_of_target(assigned_target)
+        end
+        if proximity_target then
+            can_hit_proximity_target = unit:in_range_of_target(proximity_target)
+        end
+    end
+    if can_hit_assigned_target then
+        return assigned_target
+    elseif can_hit_proximity_target then
+        return proximity_target
+    end
+
     return false
+
 end
 
 

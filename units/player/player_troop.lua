@@ -224,10 +224,12 @@ function Troop:update_ai_logic()
   if target then
       -- 3a. CHECK IF WE CAN ATTACK.
       -- We must be in range AND our cast must be off cooldown.
-      if Helper.Unit:can_cast(self) then
-          -- If yes, commit to casting.
-          -- NOTE: Your can_cast helper might do both checks, which is fine!
-          self:setup_cast()
+      -- NOTE: checks both assigned and proximity targets
+      -- falls back to proximity target if assigned target is not in range
+      local target = Helper.Unit:can_cast(self)
+      if target then
+        -- If yes, commit to casting.
+        self:setup_cast(target)
       end
   end
 end

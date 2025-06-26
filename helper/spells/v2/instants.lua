@@ -1,9 +1,4 @@
-function Get_Angle_For_Target(self)
-  local target = self.target
-  if not target and self.unit then
-    target = self.unit:my_target()
-  end
-
+function Get_Angle_For_Target(self, target)
   if target then
     return math.atan2(self.target.y - self.y, self.target.x - self.x)
   else
@@ -11,12 +6,7 @@ function Get_Angle_For_Target(self)
   end
 end
 
-function Get_Distance_To_Target(self)
-  local target = self.target
-  if not target and self.unit then
-    target = self.unit:my_target()
-  end
-
+function Get_Distance_To_Target(self, target)
   if target then
     return math.sqrt((self.target.y - self.y)^2 + (self.target.x - self.x)^2)
   else
@@ -395,8 +385,8 @@ function Burst:init(args)
   self.speed = self.speed or 70
 
   if self.spelltype == "targeted" then
-    self.r = Get_Angle_For_Target(self)
-    self.distance = Get_Distance_To_Target(self)
+    self.r = Get_Angle_For_Target(self, self.target)
+    self.distance = Get_Distance_To_Target(self, self.target)
     self.distance = math.random(self.distance - 100, self.distance + 100)
     self.distance = math.max(self.distance, 100)
     self.distance = math.min(self.distance, 250)
