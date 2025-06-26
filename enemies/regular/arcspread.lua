@@ -10,6 +10,7 @@ fns['init_enemy'] = function(self)
   Set_Enemy_Shape(self, self.size)
 
   self.class = 'special_enemy'
+  self.icon = 'iceslime'
   self.movementStyle = MOVEMENT_TYPE_RANDOM
 
   --set attacks
@@ -19,6 +20,9 @@ fns['init_enemy'] = function(self)
     name = 'arcspread',
     viable = function () return true end,
     oncast = function() end,
+    cast_sound = arcspread_full_sound,
+    cast_sound_at_start = true,
+    cast_volume = 0.8,
     castcooldown = 2,
     instantspell = true,
     cast_length = 1.5,
@@ -41,7 +45,15 @@ fns['init_enemy'] = function(self)
 end
 
 fns['draw_enemy'] = function(self)
-  graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+  graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
+
+  local animation_success = self:draw_animation(self.state, self.x, self.y, 0)
+
+  if not animation_success then
+    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+  end
+
+  graphics.pop()
 end
  
 enemy_to_class['arcspread'] = fns

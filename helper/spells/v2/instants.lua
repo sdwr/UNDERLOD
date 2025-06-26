@@ -104,8 +104,6 @@ function Arcspread:init(args)
   
   self.angle = math.random(2*math.pi)
 
-
-  arcspread_sound:play{volume=0.8}
   self:create_arcs()
   self:die()
 end

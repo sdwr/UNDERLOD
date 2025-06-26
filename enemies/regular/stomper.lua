@@ -13,6 +13,7 @@ fns['init_enemy'] = function(self)
   Set_Enemy_Shape(self, self.size)
 
   self.class = 'special_enemy'
+  self.icon = 'golem3'
 
   --set attacks
   self.attack_options = {}
@@ -30,7 +31,7 @@ fns['init_enemy'] = function(self)
       rs = 45,
       color = red[0],
       dmg = self.dmg or 30,
-      spell_duration = 1,
+      spell_duration = GOLEM3_CAST_TIME,
       level = self.level,
       parent = self
     },
@@ -39,8 +40,16 @@ fns['init_enemy'] = function(self)
   table.insert(self.attack_options, stomp)
 end
 
-fns['draw_enemy'] = function(self)   
-  graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+fns['draw_enemy'] = function(self)
+  graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
+  
+  local animation_success = self:draw_animation(self.state, self.x, self.y, 0)
+
+  if not animation_success then
+    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+  end
+
+  graphics.pop()
 end
 
 enemy_to_class['stomper'] = fns

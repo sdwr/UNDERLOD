@@ -188,7 +188,7 @@ function Wave_Types:Get_Waves(level)
     wave = self:Two_Basic_Three_Special(1)
     table.insert(waves, wave)
   elseif level == 7 then
-    wave = self:Two_Basic_Three_Special(2)
+    wave = self:Mortar_And_Arc()
     table.insert(waves, wave)
     wave = self:Two_Basic_Three_Special(2)
     table.insert(waves, wave)

@@ -58,6 +58,37 @@ golem_attack_a = create_animation(golem_attack_g, 1, 9, 128, 128, GOLEM_CAST_TIM
 golem_hurt_a = create_animation(golem_hurt_g, 1, 4, 128, 128, 0.4)
 golem_death_a = create_animation(golem_death_g, 1, 8, 128, 128, 0.2)
 
+GOLEM3_CAST_TIME = 1.5
+GOLEM3_ATTACK_FRAMES = 9
+
+GOLEM3_SPRITE_W = 128
+GOLEM3_SPRITE_H = 128
+
+GOLEM3_SPRITE_SCALE = 4
+
+golem3_idle = Image(spriteFolder .. 'golems/Golem3/Idle/Golem3_Idle_full', 'nearest')
+golem3_walk = Image(spriteFolder .. 'golems/Golem3/Walk/Golem3_Walk_full', 'nearest')
+golem3_run = Image(spriteFolder .. 'golems/Golem3/Run/Golem3_Run_full', 'nearest')
+golem3_attack = Image(spriteFolder .. 'golems/Golem3/Attack/Golem3_Attack_full', 'nearest')
+golem3_hurt = Image(spriteFolder .. 'golems/Golem3/Hurt/Golem3_Hurt_full', 'nearest')
+golem3_death = Image(spriteFolder .. 'golems/Golem3/Death/Golem3_Death_full', 'nearest')
+
+golem3_idle_g = create_grid(golem3_idle, 128, 128)
+golem3_walk_g = create_grid(golem3_walk, 128, 128)
+golem3_run_g = create_grid(golem3_run, 128, 128)
+golem3_attack_g = create_grid(golem3_attack, 128, 128)
+golem3_hurt_g = create_grid(golem3_hurt, 128, 128)
+golem3_death_g = create_grid(golem3_death, 128, 128)
+
+
+golem3_idle_a = create_animation(golem3_idle_g, 1, 4, 128, 128, 0.4)
+golem3_walk_a = create_animation(golem3_walk_g, 1, 8, 128, 128, 0.2)
+golem3_run_a = create_animation(golem3_run_g, 1, 8, 128, 128, 0.2)
+golem3_attack_a = create_animation(golem3_attack_g, 1, 9, 128, 128, GOLEM3_CAST_TIME / GOLEM3_ATTACK_FRAMES)
+golem3_hurt_a = create_animation(golem3_hurt_g, 1, 4, 128, 128, 0.4)
+golem3_death_a = create_animation(golem3_death_g, 1, 8, 128, 128, 0.2)
+
+
 DRAGON_SPRITE_W = 144
 DRAGON_SPRITE_H = 128
 
@@ -296,6 +327,36 @@ slime_run_a = create_animation(slime_run_g, 1, 8, 64, 64, 0.2)
 slime_hurt_a = create_animation(slime_hurt_g, 1, 5, 64, 64, 0.4)
 slime_death_a = create_animation(slime_death_g, 1, 10, 64, 64, 0.2)
 
+ICESLIME_CAST_TIME = 1.5
+ICESLIME_ATTACK_FRAMES = 6
+
+ICESLIME_SPRITE_W = 64
+ICESLIME_SPRITE_H = 64
+
+ICESLIME_SPRITE_SCALE = 3.5
+
+iceslime_attack = Image(spriteFolder .. '/slime-mobs-2/Slime1/Attack/Slime1_Attack_full', 'nearest')
+iceslime_idle = Image(spriteFolder .. '/slime-mobs-2/Slime1/Idle/Slime1_Idle_full', 'nearest')
+iceslime_walk = Image(spriteFolder .. '/slime-mobs-2/Slime1/Walk/Slime1_Walk_full', 'nearest')
+iceslime_run = Image(spriteFolder .. '/slime-mobs-2/Slime1/Run/Slime1_Run_full', 'nearest')
+iceslime_hurt = Image(spriteFolder .. '/slime-mobs-2/Slime1/Hurt/Slime1_Hurt_full', 'nearest')
+iceslime_death = Image(spriteFolder .. '/slime-mobs-2/Slime1/Death/Slime1_Death_full', 'nearest')
+
+iceslime_attack_g = create_grid(iceslime_attack, 64, 64)
+iceslime_idle_g = create_grid(iceslime_idle, 64, 64)
+iceslime_walk_g = create_grid(iceslime_walk, 64, 64)
+iceslime_run_g = create_grid(iceslime_run, 64, 64)
+iceslime_hurt_g = create_grid(iceslime_hurt, 64, 64)
+iceslime_death_g = create_grid(iceslime_death, 64, 64)
+
+iceslime_attack_a = create_animation(iceslime_attack_g, 1, 6, 64, 64, ICESLIME_CAST_TIME / ICESLIME_ATTACK_FRAMES)
+iceslime_idle_a = create_animation(iceslime_idle_g, 1, 6, 64, 64, 0.2)
+iceslime_walk_a = create_animation(iceslime_walk_g, 1, 8, 64, 64, 0.2)
+iceslime_run_a = create_animation(iceslime_run_g, 1, 8, 64, 64, 0.2)
+iceslime_hurt_a = create_animation(iceslime_hurt_g, 1, 5, 64, 64, 0.4)
+iceslime_death_a = create_animation(iceslime_death_g, 1, 10, 64, 64, 0.2)
+
+
 MECH1_SPRITE_W = 80
 MECH1_SPRITE_H = 80
 
@@ -445,6 +506,16 @@ slime_spritesheets = {
   ['death'] = {slime_death_a, slime_death},
 }
 
+iceslime_spritesheets = { 
+  ['normal'] = {iceslime_idle_a, iceslime_idle},
+  ['walk'] = {iceslime_walk_a, iceslime_walk},
+  ['run'] = {iceslime_run_a, iceslime_run},
+  ['casting'] = {iceslime_attack_a, iceslime_attack},
+  ['channeling'] = {iceslime_attack_a, iceslime_attack},
+  ['hurt'] = {iceslime_hurt_a, iceslime_hurt},
+  ['death'] = {iceslime_death_a, iceslime_death},
+}
+
 mech1_spritesheets = {
   ['normal'] = {mech1_idle_a, mech1_idle},
 }
@@ -478,6 +549,16 @@ ent_spritesheets = {
   ['death'] = {ent_death_a, ent_death},
 }
 
+golem3_spritesheets = {
+  ['normal'] = {golem3_idle_a, golem3_idle},
+  ['walk'] = {golem3_walk_a, golem3_walk},
+  ['run'] = {golem3_run_a, golem3_run},
+  ['casting'] = {golem3_attack_a, golem3_attack},
+  ['channeling'] = {golem3_attack_a, golem3_attack},
+  ['hurt'] = {golem3_hurt_a, golem3_hurt},
+  ['death'] = {golem3_death_a, golem3_death},
+}
+
 --all spritesheets
 enemy_spritesheets = {
   ['golem'] = golem_spritesheets,
@@ -486,6 +567,7 @@ enemy_spritesheets = {
   ['beholder'] = beholder_spritesheets,
   ['lich'] = lich_spritesheets,
   ['slime'] = slime_spritesheets,
+  ['iceslime'] = iceslime_spritesheets,
   ['mech1'] = mech1_spritesheets,
   ['mech2'] = mech2_spritesheets,
   ['mech3'] = mech3_spritesheets,
@@ -494,6 +576,7 @@ enemy_spritesheets = {
   ['rat2'] = rat2_spritesheets,
   ['rat3'] = rat3_spritesheets,
   ['ent'] = ent_spritesheets,
+  ['golem3'] = golem3_spritesheets,
 }
 enemy_sprite_sizes = {
   ['golem'] = {GOLEM_SPRITE_W, GOLEM_SPRITE_H},
@@ -502,6 +585,7 @@ enemy_sprite_sizes = {
   ['beholder'] = {BEHOLDER_SPRITE_W, BEHOLDER_SPRITE_H},
   ['lich'] = {LICH_SPRITE_W, LICH_SPRITE_H},
   ['slime'] = {SLIME_SPRITE_W, SLIME_SPRITE_H},
+  ['iceslime'] = {ICESLIME_SPRITE_W, ICESLIME_SPRITE_H},
   ['rat1'] = {RAT1_SPRITE_W, RAT1_SPRITE_H},
   ['rat2'] = {RAT2_SPRITE_W, RAT2_SPRITE_H},
   ['rat3'] = {RAT3_SPRITE_W, RAT3_SPRITE_H},
@@ -510,6 +594,7 @@ enemy_sprite_sizes = {
   ['mech2'] = {MECH2_SPRITE_W, MECH2_SPRITE_H},
   ['mech3'] = {MECH3_SPRITE_W, MECH3_SPRITE_H},
   ['ent'] = {ENT_SPRITE_W, ENT_SPRITE_H},
+  ['golem3'] = {GOLEM3_SPRITE_W, GOLEM3_SPRITE_H},
 }
 
 enemy_sprite_scales = {
@@ -519,6 +604,7 @@ enemy_sprite_scales = {
   ['beholder'] = BEHOLDER_SPRITE_SCALE,
   ['lich'] = LICH_SPRITE_SCALE,
   ['slime'] = SLIME_SPRITE_SCALE,
+  ['iceslime'] = ICESLIME_SPRITE_SCALE,
   ['rat1'] = RAT1_SPRITE_SCALE,
   ['rat2'] = RAT2_SPRITE_SCALE,
   ['rat3'] = RAT3_SPRITE_SCALE,
@@ -527,4 +613,5 @@ enemy_sprite_scales = {
   ['mech2'] = MECH2_SPRITE_SCALE,
   ['mech3'] = MECH3_SPRITE_SCALE,
   ['ent'] = ENT_SPRITE_SCALE,
+  ['golem3'] = GOLEM3_SPRITE_SCALE,
 }

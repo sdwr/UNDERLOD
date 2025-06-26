@@ -96,6 +96,11 @@ function Cast:init(args)
   self.startTime = Helper.Time.time
   self.elapsedTime = 0
 
+  if self.cast_sound and self.cast_sound_at_start then
+    self.cast_volume = self.cast_volume or 1
+    self.cast_sound:play{volume=self.cast_volume}
+  end
+
   Helper.Unit:set_state(self.unit, unit_states['casting'])
 end
 
@@ -138,7 +143,7 @@ function Cast:cast()
   local castcooldown = self.castcooldown or 1
   self.spelldata.castcooldown = castcooldown
 
-  if self.cast_sound then
+  if self.cast_sound and not self.cast_sound_at_start then
     self.cast_volume = self.cast_volume or 1
     self.cast_sound:play{volume = self.cast_volume}
   end

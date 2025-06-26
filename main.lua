@@ -164,6 +164,7 @@ function init()
   sword_swing = Sound('sword swing.wav', s)
   freeze_sound = Sound('ice_cracking_trimmed.wav', s)
   arcspread_sound = Sound('arcspread.wav', s)
+  arcspread_full_sound = Sound('arcspread_full.wav', s)
   title_music = Sound('Debussy - Reverie.mp3', { tags = { music } })
 
 
