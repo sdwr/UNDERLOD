@@ -19,6 +19,7 @@ EXPECTED_SAVE_FIELDS = {
   'times_rerolled',
   'show_damage_numbers',
   'show_combat_controls',
+  'difficulty',
 }
 
 USER_STATS = {}

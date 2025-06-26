@@ -1,4 +1,3 @@
-
 -- example usage:
 --on enemy
 -- self.attack_options = {}
@@ -197,7 +196,7 @@ end
 Deep_Copy_Spelldata = function(spelldata)
   local new_spelldata = {}
   for k, v in pairs(spelldata) do
-    if type(v) ~= 'table' and type(value) ~= 'userdata' and type(value) ~= 'function' then
+    if type(v) ~= 'table' and type(v) ~= 'userdata' then
       new_spelldata[k] = v
     end
   end

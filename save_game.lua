@@ -10,6 +10,10 @@ function Start_New_Run()
     state[field] = data[field]
   end
 
+  -- Set difficulty from state if present
+  data.difficulty = state.difficulty or 'normal'
+  state.difficulty = data.difficulty
+
   return data
 end
 
@@ -40,6 +44,7 @@ function Collect_Save_Data_From_State(state)
   end
   data.locked_state = locked_state
   data.gold = gold
+  data.difficulty = state.difficulty
 
   Validate_Save_Data(data)
   return data
@@ -55,6 +60,7 @@ function Load_Save_Data_Into_State(state, data)
 
   locked_state = data.locked_state
   gold = data.gold
+  state.difficulty = data.difficulty
 
 end
 
@@ -71,7 +77,7 @@ function Create_Blank_Save_Data()
   data.locked_state = false
   data.reroll_shop = true
   data.times_rerolled = 0
-
+  data.difficulty =  'normal'
   return data
 end
 

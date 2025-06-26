@@ -89,7 +89,7 @@ function MainMenu:on_enter(from)
 
   --continue game
   if(run and not not next(run)) then
-    self.arena_continue_button = Button{group = self.main_ui, x = 52, y = gh/2 - 10, force_update = true, button_text = 'continue',  fg_color = 'bg10', bg_color = 'bg', action = function(b)
+    self.arena_continue_button = Button{group = self.main_ui, x = 52, y = gh/2 + 12, force_update = true, button_text = 'continue',  fg_color = 'bg10', bg_color = 'bg', action = function(b)
       ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
       ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
       ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
@@ -119,7 +119,10 @@ function MainMenu:on_enter(from)
     end}
   end
   --start new game
-  self.arena_run_button = Button{group = self.main_ui, x = 49, y = gh/2 + 12, force_update = true, button_text = 'new run', fg_color = 'bg10', bg_color = 'bg', action = function(b)
+  self.new_game_label = Text({{text = '[wavy_mid, bg10]new game:', font = pixul_font, alignment = 'left'}}, global_text_tags)
+
+  self.arena_run_button_normal = Button{group = self.main_ui, x = 110, y = gh/2 - 10, force_update = true, button_text = 'normal', fg_color = 'bg10', bg_color = 'bg', action = function(b)
+    state.difficulty = 'normal'
     ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
@@ -135,18 +138,45 @@ function MainMenu:on_enter(from)
         'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
         'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
       }
-      
       current_new_game_plus = current_new_game_plus or 0
       system.save_state()
       main:add(BuyScreen'buy_screen')
-      
       run_time = 0
       locked_state = false
-
       local new_run = Start_New_Run()
+      new_run.difficulty = 'normal'
       main:go_to('buy_screen', new_run)
     end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
   end}
+
+  self.arena_run_button_hard = Button{group = self.main_ui, x = 160, y = gh/2 - 10, force_update = true, button_text = 'hard', fg_color = 'bg10', bg_color = 'bg', action = function(b)
+    state.difficulty = 'hard'
+    ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
+      self.transitioning = true
+      slow_amount = 1
+      run_passive_pool = {
+        'centipede', 'ouroboros_technique_r', 'ouroboros_technique_l', 'amplify', 'resonance', 'ballista', 'call_of_the_void', 'crucio', 'speed_3', 'damage_4', 'shoot_5', 'death_6', 'lasting_7',
+        'defensive_stance', 'offensive_stance', 'kinetic_bomb', 'porcupine_technique', 'last_stand', 'seeping', 'deceleration', 'annihilation', 'malediction', 'hextouch', 'whispers_of_doom',
+        'tremor', 'heavy_impact', 'fracture', 'meat_shield', 'hive', 'baneling_burst', 'blunt_arrow', 'explosive_arrow', 'divine_machine_arrow', 'chronomancy', 'awakening', 'divine_punishment',
+        'assassination', 'flying_daggers', 'ultimatum', 'magnify', 'echo_barrage', 'unleash', 'reinforce', 'payback', 'enchanted', 'freezing_field', 'burning_field', 'gravity_field', 'magnetism',
+        'insurance', 'dividends', 'berserking', 'unwavering_stance', 'unrelenting_stance', 'blessing', 'haste', 'divine_barrage', 'orbitism', 'psyker_orbs', 'psychosink', 'rearm', 'taunt', 'construct_instability',
+        'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
+        'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
+      }
+      current_new_game_plus = current_new_game_plus or 0
+      system.save_state()
+      main:add(BuyScreen'buy_screen')
+      run_time = 0
+      locked_state = false
+      local new_run = Start_New_Run()
+      new_run.difficulty = 'hard'
+      main:go_to('buy_screen', new_run)
+    end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
+  end}
+
   self.achievements_panel = AchievementsPanel{group = self.ui}
   self.options_button = Button{group = self.main_ui, x = 47, y = gh/2 + 56, force_update = true, button_text = 'options', fg_color = 'bg10', bg_color = 'bg', action = function(b)
     if not self.paused then
@@ -206,6 +236,9 @@ function MainMenu:on_exit()
   self.flashes = nil
   self.hfx = nil
   self.title_text = nil
+  self.new_game_label = nil
+  self.arena_run_button_normal = nil
+  self.arena_run_button_hard = nil
 end
 
 
@@ -233,6 +266,7 @@ function MainMenu:update(dt)
     self.effects:update(dt*slow_amount)
     self.main_ui:update(dt*slow_amount)
     if self.title_text then self.title_text:update(dt) end
+    if self.new_game_label then self.new_game_label:update(dt) end
     self.ui:update(dt*slow_amount)
     
     -- Update Helper system for unit functionality
@@ -263,6 +297,7 @@ function MainMenu:draw()
 
   self.main_ui:draw()
   self.title_text:draw(70, gh/2 - 40)
+  if self.new_game_label then self.new_game_label:draw(49, gh/2 - 10) end
   self.ui:draw()
   if self.paused then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
   self.options_ui:draw()

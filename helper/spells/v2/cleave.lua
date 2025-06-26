@@ -11,10 +11,10 @@ function Cleave:init(args)
     self.cone_angle = self.cone_angle or math.pi / 2 
     self.knockback_force = self.knockback_force or LAUNCH_PUSH_FORCE_ENEMY
     self.knockback_duration = self.knockback_duration or KNOCKBACK_DURATION_ENEMY
-    self.duration = self.duration or 0.1 -- How long the visual stays on screen
+    self.duration = self.duration or 0.15 -- How long the visual stays on screen
     self.color = self.color or red[0]
     self.color_transparent = self.color:clone()
-    self.color_transparent.a = 0.1
+    self.color_transparent.a = 0.3
 
     self.attack_sensor = Circle(self.x, self.y, self.cone_radius)
 
