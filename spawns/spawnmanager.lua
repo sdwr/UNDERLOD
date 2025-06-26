@@ -241,6 +241,9 @@ function SpawnManager:init(arena)
     
     -- *** FIX: Add a flag to prevent re-triggering the spawn chain. ***
     self.is_group_spawning = false
+    
+    -- New property for handling kicker delays
+    self.delay_timer = 0
 
     -- Check if this is a boss level
     if table.contains(BOSS_ROUNDS, arena.level) then
@@ -255,6 +258,11 @@ function SpawnManager:update(dt)
     if self.state == 'finished' then return end
 
     self.timer = self.timer - dt
+    
+    -- Update delay timer for kicker groups
+    if self.delay_timer > 0 then
+        self.delay_timer = self.delay_timer - dt
+    end
 
     -- (States 'entry_delay', 'waiting_for_clear', 'between_waves_delay', 'boss_fight' are unchanged)
 
@@ -379,6 +387,12 @@ function SpawnManager:spawn_next_group_in_chain()
       return
   end
   
+  -- Check if we're currently delayed by a kicker
+  if self.delay_timer > 0 then
+      self.timer = 0.5 -- Set timer to retry and exit.
+      return
+  end
+  
   self.timer = 0
 
   -- *** FIX: Set the flag to true BEFORE starting the spawn group. ***
@@ -395,7 +409,7 @@ function SpawnManager:spawn_next_group_in_chain()
       self.current_group_index = self.current_group_index + 1
   end
 
-  Spawn_Group(self.arena, self.current_wave_spawn_marker_index, group_data, on_group_finished_spawning)
+  Spawn_Group(self.arena, self.current_wave_spawn_marker_index, group_data, on_group_finished_spawning, self)
 end
 
 function SpawnManager:handle_boss_fight()
@@ -429,54 +443,112 @@ function SpawnManager:show_wave_start_countdown(seconds_remaining)
   end
 end
 
-
--- This MODIFIED function spawns a single group rapidly at a given point.
--- It no longer creates its own visual marker or has an initial delay.
-function Spawn_Group(arena, group_index, group_data, on_finished)
-  local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
-    SpawnGlobals.last_spawn_point = group_index
+-- This MODIFIED function now includes a 1-second warning for 'kicker' spawns.
+  function Spawn_Group(arena, group_index, group_data, on_finished, spawn_manager)
+    local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
     amount = amount or 1
-    -- A shorter interval for "rapid succession" feel between units in a group.
-    local spawn_interval = arena.time_between_spawns or 0.1
-    
-    local spawned_count = 0
-    local timer_id = "spawn_group_" .. random:uid()
 
-    -- The action to be performed repeatedly by the timer.
-    local spawn_action = function()
-        -- 1. Get the position from the persistent wave marker's index.
-        local spawn_marker = SpawnGlobals.get_spawn_marker(group_index)
-        
-        -- Use the current spawned_count to cycle through available offsets safely.
-        local offset_index = (spawned_count % #SpawnGlobals.spawn_offsets) + 1
-        local offset = SpawnGlobals.spawn_offsets[offset_index]
-        
-        if offset then
-            local spawn_x, spawn_y = spawn_marker.x + offset.x, spawn_marker.y + offset.y
+    -- Handle 'kicker' type with its special delay and marker logic.
+    if spawn_type == 'kicker' then
+        local total_delay = 5
+        local marker_warning_time = 1 -- How long the marker is visible before enemies appear.
+        local initial_delay = total_delay - marker_warning_time
 
-            -- 2. If the spawn is successful, increment our counter.
-            Spawn_Enemy(arena, type, {x = spawn_x, y = spawn_y})
-            spawned_count = spawned_count + 1
-        else
-            -- Failsafe in case of bad offset data.
-            print("Warning: Invalid spawn offset.")
-            spawned_count = spawned_count + 1 
+        -- Set the main delay on the spawn manager. This blocks other groups for the *total* duration.
+        if spawn_manager then
+            spawn_manager.delay_timer = total_delay
         end
 
-        -- 3. Check if we have finished spawning the entire group.
-        if spawned_count >= amount then
-            -- Stop this timer from running again.
-            arena.t:cancel(timer_id)
-            -- Call the callback to signal completion, which will trigger the next group.
-            if on_finished then
-                on_finished()
-            end
-        end
+        -- Determine the kicker's unique spawn location index ahead of time.
+        local kicker_spawn_marker_index = random:int(1, #SpawnGlobals.spawn_markers)
+        
+        -- 1. Wait for the initial delay (4 seconds), then show the marker.
+        arena.t:after(initial_delay, function()
+            -- Get the actual coordinates for the spawn.
+            local kicker_spawn_pos = SpawnGlobals.get_spawn_marker(kicker_spawn_marker_index)
+
+            -- Create the visual marker. It will now be visible for `marker_warning_time` seconds.
+            local temp_kicker_marker = SpawnMarker{
+                group = arena.effects,
+                x = kicker_spawn_pos.x,
+                y = kicker_spawn_pos.y
+            }
+
+            -- 2. Now, wait for the final `marker_warning_time` (1 second) before spawning.
+            arena.t:after(marker_warning_time, function()
+                -- The total 5-second delay is now complete. Unblock the spawn manager's timer.
+                if spawn_manager then
+                    spawn_manager.delay_timer = 0
+                end
+
+                -- Define the callback to clean up the marker *after* the group has finished spawning.
+                local on_kicker_group_finished = function()
+                    if temp_kicker_marker and not temp_kicker_marker.dead then
+                        temp_kicker_marker:die()
+                    end
+                    if on_finished then
+                        on_finished()
+                    end
+                end
+                
+                -- Call the internal spawner to begin creating enemies.
+                Spawn_Group_Internal(arena, kicker_spawn_marker_index, group_data, on_kicker_group_finished)
+            end)
+        end)
+        
+        -- Exit so the default logic doesn't run.
+        return
     end
 
-    -- Immediately start the spawner timer.
-    -- The visual marker is already present, created by the SpawnManager.
-    arena.t:every(spawn_interval, spawn_action, nil, nil, timer_id)
+    -- For all non-kicker spawn types, proceed as normal.
+    Spawn_Group_Internal(arena, group_index, group_data, on_finished)
+end
+
+function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
+  local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
+  SpawnGlobals.last_spawn_point = group_index
+  amount = amount or 1
+
+  -- Default to the index passed in.
+  local spawn_marker_index = group_index
+  
+  -- FIX: Separated 'kicker' from 'random'. A kicker's location is already
+  -- randomized in Spawn_Group, so we just use the index it was given.
+  if spawn_type == 'far' then
+      spawn_marker_index = Get_Far_Spawn(group_index)
+  elseif spawn_type == 'random' then -- Only 'random', not 'kicker'
+      spawn_marker_index = random:int(1, #SpawnGlobals.spawn_markers)
+  elseif spawn_type == 'close' then
+      spawn_marker_index = Get_Close_Spawn(group_index)
+  end
+  
+  local spawn_interval = arena.time_between_spawns or 0.1
+  local spawned_count = 0
+  local timer_id = "spawn_group_" .. random:uid()
+
+  local spawn_action = function()
+      local spawn_marker = SpawnGlobals.get_spawn_marker(spawn_marker_index)
+      local offset_index = (spawned_count % #SpawnGlobals.spawn_offsets) + 1
+      local offset = SpawnGlobals.spawn_offsets[offset_index]
+      
+      if offset then
+          local spawn_x, spawn_y = spawn_marker.x + offset.x, spawn_marker.y + offset.y
+          Spawn_Enemy(arena, type, {x = spawn_x, y = spawn_y})
+          spawned_count = spawned_count + 1
+      else
+          print("Warning: Invalid spawn offset.")
+          spawned_count = spawned_count + 1 
+      end
+
+      if spawned_count >= amount then
+          arena.t:cancel(timer_id)
+          if on_finished then
+              on_finished()
+          end
+      end
+  end
+
+  arena.t:every(spawn_interval, spawn_action, nil, nil, timer_id)
 end
 
 --spawns a single enemy at a location
