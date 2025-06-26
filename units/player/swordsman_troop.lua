@@ -58,6 +58,7 @@ function Swordsman_Troop:setup_cast()
       dmg = self.dmg,
       radius = self.base_attack_area * self.area_size_m,
       duration = 0.2, -- How long the visual effect lasts on screen.
+      damage_ticks = false,
       color = orange[0],
       opacity = 0.3,
 
