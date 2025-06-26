@@ -1,221 +1,175 @@
+-- File: achievements/AchievementsPanel.lua
+-- A self-contained UI panel for displaying achievements, driven by the existing achievement data files.
 
+require 'achievements/achievement_unlocks' -- Use the existing achievement data file
 
 AchievementsPanel = Object:extend()
 AchievementsPanel:implement(GameObject)
 function AchievementsPanel:init(args)
-  self:init_game_object(args)
-  
-  self.x = gw/2
-  self.y = gh/2
-  self.w = gw - 230
-  self.h = gh - 100
+    self:init_game_object(args)
+    self.x = args.x or gw - 100 -- Move to right side
+    self.y = args.y or gh / 2
+    
+    -- Grid layout properties to fit the 34 achievements
+    self.columns = 5
+    self.rows = 7
+    self.slot_size = 24 -- Even smaller slots
+    self.slot_padding = 3 -- Minimal padding
+    self.grid_w = self.columns * (self.slot_size + self.slot_padding) - self.slot_padding
+    self.grid_h = self.rows * (self.slot_size + self.slot_padding) - self.slot_padding
+    
+    -- Adjust panel size to match grid
+    self.w = self.grid_w + 20 -- Add small margin
+    self.h = self.grid_h + 40 -- Add margin for title and bottom
+    self.visible = true
+    self.slots = {}
+    
+    -- Colors for different states
+    self.colors = {
+        locked_bg = {0.1, 0.1, 0.1, 0.8},
+        unlocked_bg = {0.2, 0.2, 0.25, 0.8},
+        active_border = {1, 0.8, 0.2, 1},
+        hover_bg = {0.3, 0.3, 0.35, 0.8},
+        white_border = {1, 1, 1, 1},
+    }
 
-  self.shape = Rectangle(self.x, self.y, self.w, self.h)
-  self.interact_with_mouse = true
+    self.title_text = Text({{text = 'AAchievements', font = pixul_font, alignment = 'center'}}, global_text_tags)
 
-  --memory
-  self.scroll_location = 0
-  self.mouse_over = false
-  self.achievement_locations = {}
-  self.popup_text = nil
+    self:populate_slots()
+end
 
+function AchievementsPanel:populate_slots()
+    -- Iterate through the ordered index of achievements from your file
+    for i, id in ipairs(ACHIEVEMENTS_INDEX) do
+        local data = ACHIEVEMENTS_TABLE[id]
+        if not data then
+            print("Warning: No data found for achievement ID: " .. id)
+        else
+            local col = (i - 1) % self.columns
+            local row = math.floor((i - 1) / self.columns)
+            
+            local slot_x = self.x - self.grid_w / 2 + col * (self.slot_size + self.slot_padding) + self.slot_size / 2
+            local slot_y = self.y - self.grid_h / 2 + row * (self.slot_size + self.slot_padding) + self.slot_size / 2 -- Removed offset for title
+            
+            local slot = {
+                id = id,
+                data = data,
+                x = slot_x, y = slot_y,
+                w = self.slot_size, h = self.slot_size,
+                is_hovered = false,
+            }
+            -- Construct the icon path from the icon name
+            slot.icon_image = love.graphics.newImage('assets/images/amplify.png')
+            table.insert(self.slots, slot)
+        end
+    end
 end
 
 function AchievementsPanel:update(dt)
-  self:update_mouseover()
-  self:updateScroll()
-  self:updateClose()
-end
+    if not self.visible then return end
 
-function AchievementsPanel:update_mouseover()
-  local x, y = self.group:get_mouse_position()
-
-  if self.shape:is_colliding_with_point(x, y) then
-    self.mouse_over = true
-  else
-    self.mouse_over = false
-  end
-  if not self:highlightedAchievement() then
-    self:clearPopupText()
-  end
-end
-
-function AchievementsPanel:updateScroll()
-  if not self.mouse_over then return end
-
-  if input.wheel_up.pressed then
-    self.scroll_location = self.scroll_location + SCROLL_SPEED
-    self.scroll_location = math.min(self.scroll_location, MAX_SCROLL_LOCATION)
-  end
-  if input.wheel_down.pressed then
-    self.scroll_location = self.scroll_location - SCROLL_SPEED
-    self.scroll_location = math.max(self.scroll_location, MIN_SCROLL_LOCATION)
-  end
-end
-
-function AchievementsPanel:updateClose()
-  if not self.mouse_over then return end
-  local x, y = self.group:get_mouse_position()
-  if x > self.x + self.w/2 - 15 and x < self.x + self.w/2 + 5 and y > self.y - self.h/2 - 5  and y < self.y - self.h/2 + 15 then
-    if input.m1.pressed then
-      close_achievements(main.current)
+    self.title_text:update(dt)
+    local mx, my = camera:get_mouse_position()
+    self.hovered_slot = nil
+    for _, slot in ipairs(self.slots) do
+        if is_point_in_rectangle(mx, my, slot.x - slot.w/2, slot.y - slot.h/2, slot.w, slot.h) then
+            slot.is_hovered = true
+            self.hovered_slot = slot -- Keep track of the hovered slot for the tooltip
+            
+            -- Show info text for hovered slot
+            if not self.info_text then
+                self.info_text = InfoText{group = main.current.ui}
+            end
+            
+            local is_unlocked = ACHIEVEMENTS_UNLOCKED[slot.id]
+            local title = slot.data.name
+            local text = is_unlocked and slot.data.desc or "Locked"
+            
+            self.info_text:activate({
+                {text = '[fg]' .. title, font = pixul_font, alignment = 'center'},
+                {text = text, font = pixul_font, alignment = 'center'},
+            }, nil, nil, nil, nil, 16, 4, nil, 2)
+            self.info_text.x, self.info_text.y = gw/2, gh/2
+        else
+            slot.is_hovered = false
+        end
     end
-  end
+    
+    -- Hide info text if no slot is hovered
+    if not self.hovered_slot and self.info_text then
+        self.info_text:deactivate()
+        self.info_text.dead = true
+        self.info_text = nil
+    end
 end
 
 function AchievementsPanel:draw()
+    if not self.visible then return end
 
-  local mask = function()
-    graphics.rectangle(self.x, self.y, self.w, self.h, nil, nil, white[1])
-  end
+    -- Draw main panel background
+    love.graphics.setColor(0, 0, 0, 0.7)
+    love.graphics.rectangle('fill', self.x - self.w/2, self.y - self.h/2, self.w, self.h, 10)
 
-  local drawAll = function()
-    self:drawAll()
-  end
+    self.title_text:draw(self.x, self.y - self.h/2 + 10)
 
-  graphics.push(self.x, self.y, 0, self.sx * self.spring.x, self.sy * self.spring.x)
-    graphics.draw_with_mask(drawAll, mask)
-    self:drawCloseButton()
-  graphics.pop()
-  self:drawPopupText()
-end
+    -- Draw slots
+    for _, slot in ipairs(self.slots) do
+        local is_unlocked = ACHIEVEMENTS_UNLOCKED[slot.id]
+        -- is_active_check doesn't exist in your new data, so we'll default to false.
+        -- This could be added to ACHIEVEMENTS_TABLE later if needed.
+        local is_active = false 
+        
+        -- Determine background color
+        if slot.is_hovered and is_unlocked then
+            love.graphics.setColor(self.colors.hover_bg)
+        elseif is_unlocked then
+            love.graphics.setColor(self.colors.unlocked_bg)
+        else
+            love.graphics.setColor(self.colors.locked_bg)
+        end
+        love.graphics.rectangle('fill', slot.x - slot.w/2, slot.y - slot.h/2, slot.w, slot.h)
 
---happens inside the push
-function AchievementsPanel:drawCloseButton()
-  graphics.rectangle(self.x + self.w/2 - 5, self.y - self.h/2 + 5, 20, 20, nil, nil, white[3])
-  graphics.print("X", pixul_font, self.x + self.w/2 - 12, self.y - self.h/2 - 4, nil, 2, 2, nil, nil, red[2])
-end
+        -- Draw white border
+        love.graphics.setColor(self.colors.white_border)
+        love.graphics.setLineWidth(1)
+        love.graphics.rectangle('line', slot.x - slot.w/2, slot.y - slot.h/2, slot.w, slot.h)
 
-function AchievementsPanel:drawPopupText()
-  if not self.mouse_over then return end
-  local achievement = self:highlightedAchievement()
-  if not achievement then return end
+        -- Draw icon, desaturated if locked
+        if is_unlocked then
+            love.graphics.setColor(1, 1, 1, 1)
+        else
+            love.graphics.setColor(0.3, 0.3, 0.3, 1)
+        end
+        local icon_scale = (self.slot_size * 0.6) / slot.icon_image:getWidth()
+        love.graphics.draw(slot.icon_image, slot.x, slot.y, 0, icon_scale, icon_scale, slot.icon_image:getWidth()/2, slot.icon_image:getHeight()/2)
 
-  self:clearPopupText()
-
-  self.popup_text = InfoText{group = main.current.options_ui, force_update = true}
-  self.popup_text:activate(build_achievement_text(achievement), nil, nil, nil, nil, 16, 4, nil, 2)
-  self.popup_text.x, self.popup_text.y = gw/2, gh/2
-end
-
-function AchievementsPanel:clearPopupText()
-  if not self.popup_text then return end
-  self.popup_text.dead = true
-  self.popup_text = nil
-end
-
-function AchievementsPanel:drawAll()
-  local color = bg[1]:clone()
-  color.a = 0.8
-  graphics.rectangle(self.x, self.y, self.w, self.h, nil, nil, color)
-  
-  local start_x = (self.x - self.w / 2) + ACHIEVEMENT_SIZE/2 + ACHIEVEMENT_SPACING
-  local start_y = (self.y - self.h / 2) +  ACHIEVEMENT_SIZE/2 + ACHIEVEMENT_SPACING
-
-  local computed_y = start_y + (self.scroll_location * SCROLL_SPEED)
-
-  local space_between = ACHIEVEMENT_SIZE + ACHIEVEMENT_SPACING
-
-  local x = start_x
-  local y = computed_y
-  local count = 0
-
-  self.achievement_locations = {}
-  for i, achievement_name in ipairs(ACHIEVEMENTS_INDEX) do
-    self.achievement_locations[achievement_name] = {x = x, y = y}
-    local achievement = ACHIEVEMENTS_TABLE[achievement_name]
-    local unlocked = ACHIEVEMENTS_UNLOCKED[achievement_name]
-
-    --should calculate whether they are visible on screen before drawing
-    local color = white[1]:clone()
-    local borderColor = fg[0]:clone()
-
-    if unlocked then
-      color = green[0]:clone()
-      borderColor = yellow[0]:clone()
+        -- Draw active border if applicable
+        if is_active then
+            love.graphics.setColor(self.colors.active_border)
+            love.graphics.setLineWidth(3)
+            love.graphics.rectangle('line', slot.x - slot.w/2, slot.y - slot.h/2, slot.w, slot.h)
+            love.graphics.setLineWidth(1)
+        end
     end
 
-    color.a = 0.5
-    graphics.rectangle(x , y, ACHIEVEMENT_SIZE, ACHIEVEMENT_SIZE, nil, nil, color)
-    local image = find_item_image(achievement.icon)
+    love.graphics.setColor(1, 1, 1, 1) -- Reset color
+end
 
-    image:draw(x, y, 0, 0.7, 0.7)
-
-    graphics.rectangle(x, y, ACHIEVEMENT_SIZE, ACHIEVEMENT_SIZE, nil, nil, borderColor, 3)
-
-    x = x + space_between
-    count = count + 1
-
-    if count % ACHIEVEMENTS_PER_ROW == 0 then
-      x = start_x
-      y = y + space_between
+function AchievementsPanel:mousepressed(x, y, button)
+    if not self.visible then return end
+    if button == 1 then
+        for _, slot in ipairs(self.slots) do
+            if slot.is_hovered then
+                print("Clicked on achievement: " .. slot.data.name)
+            end
+        end
     end
-  end
 end
 
-function AchievementsPanel:highlightedAchievement()
-  local x, y = self.group:get_mouse_position()
-  for achievement_name, location in pairs(self.achievement_locations) do
-    local x1 = location.x - ACHIEVEMENT_SIZE/2
-    local y1 = location.y - ACHIEVEMENT_SIZE/2
-    local x2 = x1 + ACHIEVEMENT_SIZE
-    local y2 = y1 + ACHIEVEMENT_SIZE
-
-    if x > x1 and x < x2 and y > y1 and y < y2 then
-      return ACHIEVEMENTS_TABLE[achievement_name]
-    end
-  end
-  return nil
+function AchievementsPanel:show()
+    self.visible = true
 end
 
-function AchievementsPanel:die()
-  self:clearPopupText()
-  self.dead = true
-end
-
-
-AchievementToast = Object:extend()
-AchievementToast:implement(GameObject)
-function AchievementToast:init(args)
-  self:init_game_object(args)
-  
-  self.w = 130
-  self.h = 50
-  self.x = gw - self.w/2
-  self.y = gh - self.h/2
-
-  self.shape = Rectangle(self.x, self.y, self.w, self.h)
-  self.interact_with_mouse = true
-
-  self.bg_color = bg[1]
-
-  --memory
-  self.scroll_location = 0
-  self.mouse_over = false
-
-  self.achievement = args.achievement
-  self.duration = 3 or args.duration
-end
-
-function AchievementToast:update(dt)
-  self.duration = self.duration - dt
-  if self.duration < 0 then
-    self:die()
-  end
-end
-
-function AchievementToast:draw()
-
-  local image = find_item_image(self.achievement.icon)
-
-  graphics.push(self.x, self.y, 0, self.sx * self.spring.x, self.sy * self.spring.x)
-    graphics.rectangle(self.x, self.y, self.w, self.h, nil, nil, self.bg_color)
-    graphics.print(self.achievement.name, pixul_font, self.x - 30, self.y - 20, nil, 1, 1, nil, nil, white[1])
-    graphics.print(self.achievement.desc, pixul_font, self.x - 30, self.y, nil, 0.9, 0.9, nil, nil, white[1])
-    image:draw(self.x - 50, self.y, 0, 0.7, 0.7)
-  graphics.pop()
-end
-
-function AchievementToast:die()
-  self.dead = true
+function AchievementsPanel:hide()
+    self.visible = false
 end

@@ -169,3 +169,7 @@ function world_to_screen(world_x, world_y)
   local scale = math.floor(wh/gh)
   return world_x * scale, world_y * scale
 end
+
+function is_point_in_rectangle(x, y, rect_x, rect_y, rect_w, rect_h)
+  return x > rect_x and x < rect_x + rect_w and y > rect_y and y < rect_y + rect_h
+end

@@ -1357,20 +1357,6 @@ function draw()
   end
 end
 
-function open_achievements(self)
-  self.paused = true
-  self.achievements_panel = AchievementsPanel{group = self.options_ui}
-
-end
-
-function close_achievements(self)
-  self.paused = false
-  if self.achievements_panel then
-    self.achievements_panel:die()
-    self.achievements_panel = nil
-  end
-end
-
 function open_options(self)
   -- input:set_mouse_visible(true)
   trigger:tween(0.25, _G, { slow_amount = 0 }, math.linear, function()

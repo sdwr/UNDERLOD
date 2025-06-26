@@ -142,14 +142,14 @@ function MainMenu:on_enter(from)
       main:go_to('buy_screen', new_run)
     end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
   end}
-  --disable achievements for now
   -- self.achievements_button = Button{group = self.main_ui, x = 65, y = gh/2 + 34, force_update = true, button_text = 'achievements', fg_color = 'bg10', bg_color = 'bg', action = function(b)
-  --     if not self.paused then
-  --       open_achievements(self)
-  --     else
-  --       close_achievements(self)
-  --     end
+  --   if self.achievements_panel.visible then
+  --     self.achievements_panel:hide()
+  --   else
+  --     self.achievements_panel:show()
+  --   end
   -- end}
+  self.achievements_panel = AchievementsPanel{group = self.achievements_ui}
   self.options_button = Button{group = self.main_ui, x = 47, y = gh/2 + 56, force_update = true, button_text = 'options', fg_color = 'bg10', bg_color = 'bg', action = function(b)
     if not self.paused then
       open_options(self)
@@ -220,7 +220,6 @@ function MainMenu:update(dt)
     if not self.paused then
       open_options(self)
     else
-      close_achievements(self)
       close_options(self)
     end
   end
@@ -237,6 +236,7 @@ function MainMenu:update(dt)
     self.main_ui:update(dt*slow_amount)
     if self.title_text then self.title_text:update(dt) end
     self.ui:update(dt*slow_amount)
+    self.achievements_panel:update(dt*slow_amount)
   else
     self.options_ui:update(dt*slow_amount)
   end
@@ -260,6 +260,7 @@ function MainMenu:draw()
   self.main_ui:draw()
   self.title_text:draw(70, gh/2 - 40)
   self.ui:draw()
+  self.achievements_panel:draw()
   if self.paused then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
   self.options_ui:draw()
 end
