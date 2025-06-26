@@ -278,7 +278,7 @@ function SpawnManager:update(dt)
         if self.wave_delay_timer <= 0 then
             self.state = 'spawning_wave'
             -- This is the first kick-off of the chain.
-            self:create_wave_marker()
+            -- self:create_wave_marker()
             self.is_group_spawning = true
             self.spawning_wave = true
             self.arena.t:after(1, function()
@@ -352,21 +352,6 @@ function SpawnManager:start_next_wave()
     SpawnGlobals.last_spawn_point = self.current_wave_spawn_marker_index
 end
 
-function SpawnManager:create_wave_marker()
-  -- Create the persistent visual marker that will last the whole wave.
-  local center_marker_pos = SpawnGlobals.get_spawn_marker(self.current_wave_spawn_marker_index)
-
-  -- Clean up any old marker just in case.
-  if self.persistent_wave_spawn_marker and not self.persistent_wave_spawn_marker.dead then
-      self.persistent_wave_spawn_marker:die()
-  end
-  self.persistent_wave_spawn_marker = SpawnMarker{
-      group = self.arena.effects,
-      x = center_marker_pos.x,
-      y = center_marker_pos.y
-  }
-end
-
 function SpawnManager:spawn_next_group_in_chain()
   if self.state ~= 'spawning_wave' then return end
 
@@ -374,10 +359,10 @@ function SpawnManager:spawn_next_group_in_chain()
 
   if self.current_group_index > #wave_data then
       self.state = 'waiting_for_clear'
-      if self.persistent_wave_spawn_marker and not self.persistent_wave_spawn_marker.dead then
-          self.persistent_wave_spawn_marker:die()
-          self.persistent_wave_spawn_marker = nil
-      end
+      -- if self.persistent_wave_spawn_marker and not self.persistent_wave_spawn_marker.dead then
+      --     self.persistent_wave_spawn_marker:die()
+      --     self.persistent_wave_spawn_marker = nil
+      -- end
       return
   end
 
@@ -418,10 +403,10 @@ function SpawnManager:handle_boss_fight()
   
   if boss_name ~= "" then
       self.t:after(1.5, function() 
-          Spawn_Boss(self.arena, boss_name) 
-          self.t:every(function() return not LevelManager.activeBoss end, 
-              function() self.arena:quit() end)
+        -- Just call Spawn_Boss. It handles everything now.
+        Spawn_Boss(self.arena, boss_name) 
       end)
+      self.state = 'waiting_for_clear' -- Set manager to a waiting state
   end
 end
 
@@ -443,65 +428,42 @@ function SpawnManager:show_wave_start_countdown(seconds_remaining)
   end
 end
 
--- This MODIFIED function now includes a 1-second warning for 'kicker' spawns.
-  function Spawn_Group(arena, group_index, group_data, on_finished, spawn_manager)
-    local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
-    amount = amount or 1
+function Spawn_Group(arena, group_index, group_data, on_finished, spawn_manager)
+  local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
+  amount = amount or 1
 
-    -- Handle 'kicker' type with its special delay and marker logic.
-    if spawn_type == 'kicker' then
-        local total_delay = 5
-        local marker_warning_time = 1 -- How long the marker is visible before enemies appear.
-        local initial_delay = total_delay - marker_warning_time
+  -- Handle 'kicker' type with its special delay.
+  -- The individual enemy markers are now handled by Spawn_Enemy.
+  if spawn_type == 'kicker' then
+      local total_delay = 5
 
-        -- Set the main delay on the spawn manager. This blocks other groups for the *total* duration.
-        if spawn_manager then
-            spawn_manager.delay_timer = total_delay
-        end
+      -- Set the main delay on the spawn manager. This blocks other groups.
+      if spawn_manager then
+          spawn_manager.delay_timer = total_delay
+      end
 
-        -- Determine the kicker's unique spawn location index ahead of time.
-        local kicker_spawn_marker_index = random:int(1, #SpawnGlobals.spawn_markers)
-        
-        -- 1. Wait for the initial delay (4 seconds), then show the marker.
-        arena.t:after(initial_delay, function()
-            -- Get the actual coordinates for the spawn.
-            local kicker_spawn_pos = SpawnGlobals.get_spawn_marker(kicker_spawn_marker_index)
+      -- Determine the kicker's unique spawn location index ahead of time.
+      local kicker_spawn_marker_index = random:int(1, #SpawnGlobals.spawn_markers)
+      
+      -- After the total delay, start the spawning process for this group.
+      arena.t:after(total_delay, function()
+          -- Unblock the spawn manager's delay check so the next group can be scheduled.
+          if spawn_manager then
+              spawn_manager.delay_timer = 0
+          end
+          
+          -- Call the internal spawner. It will handle spawning enemies
+          -- one-by-one, and each call to Spawn_Enemy will create a marker.
+          -- The original on_finished callback is passed directly.
+          Spawn_Group_Internal(arena, kicker_spawn_marker_index, group_data, on_finished)
+      end)
+      
+      -- Exit so the default logic doesn't run for the kicker.
+      return
+  end
 
-            -- Create the visual marker. It will now be visible for `marker_warning_time` seconds.
-            local temp_kicker_marker = SpawnMarker{
-                group = arena.effects,
-                x = kicker_spawn_pos.x,
-                y = kicker_spawn_pos.y
-            }
-
-            -- 2. Now, wait for the final `marker_warning_time` (1 second) before spawning.
-            arena.t:after(marker_warning_time, function()
-                -- The total 5-second delay is now complete. Unblock the spawn manager's timer.
-                if spawn_manager then
-                    spawn_manager.delay_timer = 0
-                end
-
-                -- Define the callback to clean up the marker *after* the group has finished spawning.
-                local on_kicker_group_finished = function()
-                    if temp_kicker_marker and not temp_kicker_marker.dead then
-                        temp_kicker_marker:die()
-                    end
-                    if on_finished then
-                        on_finished()
-                    end
-                end
-                
-                -- Call the internal spawner to begin creating enemies.
-                Spawn_Group_Internal(arena, kicker_spawn_marker_index, group_data, on_kicker_group_finished)
-            end)
-        end)
-        
-        -- Exit so the default logic doesn't run.
-        return
-    end
-
-    -- For all non-kicker spawn types, proceed as normal.
-    Spawn_Group_Internal(arena, group_index, group_data, on_finished)
+  -- For all non-kicker spawn types, proceed as normal.
+  Spawn_Group_Internal(arena, group_index, group_data, on_finished)
 end
 
 function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
@@ -551,29 +513,31 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
   arena.t:every(spawn_interval, spawn_action, nil, nil, timer_id)
 end
 
---spawns a single enemy at a location
---if the location is occupied, the enemy will not spawn
+-- This function now uses the new helper to spawn enemies with a warning.
 function Spawn_Enemy(arena, type, location)
-  local data = {}
-  Spawn_Effect(arena, location, type)
-  if table.contains(special_enemies, type) then
-      hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}
-  else
-      hit3:play{pitch = random:float(0.8, 1.2), volume = 0.4}
-  end
-  local enemy = Enemy{type = type, group = arena.main,
-  x = location.x, y = location.y,
-  level = 1, data = data}
-  
-  -- Set enemy to frozen for 1 second on spawn
-  Helper.Unit:set_state(enemy, unit_states['frozen'])
-  enemy.t:after(1, function()
-    if enemy.state == unit_states['frozen'] then
-      Helper.Unit:set_state(enemy, unit_states['normal'])
-    end
-  end)
+  -- Define the action of creating the enemy, to be used as a callback.
+  local create_enemy_action = function()
+      local data = {}
+      if table.contains(special_enemies, type) then
+          hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}
+      else
+          hit3:play{pitch = random:float(0.8, 1.2), volume = 0.4}
+      end
+      local enemy = Enemy{type = type, group = arena.main,
+                          x = location.x, y = location.y,
+                          level = 1, data = data}
 
-  return enemy
+      -- Set enemy to frozen for 1 second on spawn.
+      Helper.Unit:set_state(enemy, unit_states['frozen'])
+      enemy.t:after(1, function()
+          if enemy and not enemy.dead and enemy.state == unit_states['frozen'] then
+              Helper.Unit:set_state(enemy, unit_states['normal'])
+          end
+      end)
+  end
+
+  -- Use the new helper to create the enemy with a 1-second warning marker.
+  Create_Unit_With_Warning(arena, location, 1, create_enemy_action)
 end
 
 function Countdown(arena)
@@ -590,50 +554,78 @@ function Countdown(arena)
 end
 
 function Spawn_Boss(arena, name)
-  --set twice because of initial delay
   arena.spawning_enemies = true
   arena.wave_finished = false
   
-  Spawn_Effect(arena, SpawnGlobals.boss_spawn_point, name)
-  LevelManager.activeBoss = Enemy{type = name, isBoss = true, group = arena.main, x = SpawnGlobals.boss_spawn_point.x, y = SpawnGlobals.boss_spawn_point.y, level = arena.level}
-  arena.spawning_enemies = false
-  arena.wave_finished = true
-  arena.finished = true
+  -- Define the action of creating the boss.
+  local create_boss_action = function()
+      LevelManager.activeBoss = Enemy{type = name, isBoss = true, group = arena.main, x = SpawnGlobals.boss_spawn_point.x, y = SpawnGlobals.boss_spawn_point.y, level = arena.level}
+      arena.spawning_enemies = false
+      arena.wave_finished = true
+      arena.finished = true
+  end
+
+  -- Spawn the boss with a longer, more dramatic 2.5-second warning.
+  Create_Unit_With_Warning(arena, SpawnGlobals.boss_spawn_point, 2.5, create_boss_action)
 end
 
 function Spawn_Critters(arena, group_index, amount)
-  --set twice because of initial delay
   arena.spawning_enemies = true
   
-  local spawn_marker = SpawnGlobals.corner_spawns[group_index]
-  Spawn_Effect(arena, spawn_marker, 'critter')
-  local index = 1
+  local spawn_location_base = SpawnGlobals.corner_spawns[group_index]
+  local spawned_count = 0
+
+  -- This timer schedules the *warnings* for the critters.
   arena.t:every(arena.time_between_spawns, function()
-    alert1:play{pitch = 1, volume = 0.5}
+      -- Use an offset for each critter.
+      local offset_index = (spawned_count % #SpawnGlobals.spawn_offsets) + 1
+      local offset = SpawnGlobals.spawn_offsets[offset_index]
+      local spawn_pos = {x = spawn_location_base.x + offset.x, y = spawn_location_base.y + offset.y}
 
-    local offset = SpawnGlobals.spawn_offsets[index]
-    local spawn_x, spawn_y = spawn_marker.x + offset.x, spawn_marker.y + offset.y
-    EnemyCritter{group = arena.main, x = spawn_x, y = spawn_y, color = grey[0], v = 10}
+      -- Define the creation action for this specific critter.
+      local create_critter_action = function()
+          alert1:play{pitch = 1, volume = 0.5}
+          EnemyCritter{group = arena.main, x = spawn_pos.x, y = spawn_pos.y, color = grey[0], v = 10}
+      end
+      
+      -- Spawn this critter with its own short warning marker.
+      Create_Unit_With_Warning(arena, spawn_pos, 0.5, create_critter_action)
+      
+      spawned_count = spawned_count + 1
   end, amount, function() SetSpawning(arena, false) end)
-
-
-end
-
-function Spawn_Effect(arena, location, type)
-
-  -- spawn_mark2:play{pitch = 1.2, volume = 0.5}
-  -- camera:shake(4, 0.25)
-  local effect_magnitude = 2
-  if table.contains(special_enemies, type) then
-    effect_magnitude = 8
-  elseif table.contains(boss_enemies, type) then
-    effect_magnitude = 12
-  end
-
-  SpawnEffect{group = arena.effects, x = location.x, y = location.y, effect_magnitude = effect_magnitude}
-
 end
 
 function SetSpawning(arena, b)
   arena.spawning_enemies = b
+end
+
+-- ===================================================================
+-- NEW Helper Function
+-- Creates a spawn marker, waits, then creates a unit via a callback.
+-- This is the new core of all enemy spawning.
+-- ===================================================================
+function Create_Unit_With_Warning(arena, location, warning_time, creation_callback)
+  warning_time = warning_time or 1 -- Default to a 1-second warning
+
+  -- 1. Create the visual marker immediately.
+  local marker = SpawnMarker{
+      group = arena.effects,
+      x = location.x,
+      y = location.y
+  }
+  -- Play a sound to accompany the visual warning.
+  spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.4}
+
+  -- 2. Schedule the unit creation and marker cleanup to happen after the delay.
+  arena.t:after(warning_time, function()
+      -- Clean up the temporary marker.
+      if marker and not marker.dead then
+          marker:die()
+      end
+
+      -- Call the provided function to actually create the unit.
+      if creation_callback then
+          creation_callback()
+      end
+  end)
 end
