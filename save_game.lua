@@ -91,6 +91,11 @@ function Create_Blank_Game_Stats()
   stats.heigan_defeated = 0
   stats.final_boss_defeated = 0
 
+  stats.stompy_defeated_hard = 0
+  stats.dragon_defeated_hard = 0
+  stats.heigan_defeated_hard = 0
+  stats.final_boss_defeated_hard = 0
+
   stats.max_gold = 0 --done (in arena and sell item)
   stats.total_rerolls = 0 --done
   stats.total_items_sold = 0 --done

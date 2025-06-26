@@ -384,7 +384,6 @@ function SpawnManager:spawn_next_group_in_chain()
   self.is_group_spawning = true
 
   local group_data = wave_data[self.current_group_index]
-  local enemy_type, amount = group_data[1], group_data[2]
 
   -- *** FIX: The callback now correctly manages the flag. ***
   local on_group_finished_spawning = function()
@@ -394,7 +393,7 @@ function SpawnManager:spawn_next_group_in_chain()
       self.current_group_index = self.current_group_index + 1
   end
 
-  Spawn_Group(self.arena, self.current_wave_spawn_marker_index, enemy_type, amount, on_group_finished_spawning)
+  Spawn_Group(self.arena, self.current_wave_spawn_marker_index, group_data, on_group_finished_spawning)
 end
 
 function SpawnManager:handle_boss_fight()
@@ -431,7 +430,8 @@ end
 
 -- This MODIFIED function spawns a single group rapidly at a given point.
 -- It no longer creates its own visual marker or has an initial delay.
-function Spawn_Group(arena, group_index, type, amount, on_finished)
+function Spawn_Group(arena, group_index, group_data, on_finished)
+  local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
     SpawnGlobals.last_spawn_point = group_index
     amount = amount or 1
     -- A shorter interval for "rapid succession" feel between units in a group.
