@@ -493,7 +493,7 @@ function Spawn_Enemy(arena, type, location)
   end
   local enemy = Enemy{type = type, group = arena.main,
   x = location.x, y = location.y,
-  level = arena.level, data = data}
+  level = 1, data = data}
   
   -- Set enemy to frozen for 1 second on spawn
   Helper.Unit:set_state(enemy, unit_states['frozen'])
@@ -502,6 +502,8 @@ function Spawn_Enemy(arena, type, location)
       Helper.Unit:set_state(enemy, unit_states['normal'])
     end
   end)
+
+  return enemy
 end
 
 function Countdown(arena)

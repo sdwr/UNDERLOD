@@ -244,6 +244,9 @@ function Arena:update(dt)
     --     self:target_enemy(targets[1])
     --   end
     -- end
+    if all_troops_dead(self) then
+      self:die()
+    end
   end
 
   if self.shop_text then self.shop_text:update(dt) end
@@ -457,17 +460,6 @@ function Arena:draw()
   if self.in_credits then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent_2) end
   self.credits:draw()
 end
-
-function Arena:all_troops_dead()
-  local troops = self.main:get_objects_by_classes(self.troops)
-
-  if #troops == 0 then return true end
-  for _, troop in ipairs(troops) do
-    if troop.dead ~= true then return false end
-  end
-  return true
-end
-
 
 function Arena:die()
   if not self.died_text and not self.won and not self.arena_clear_text then

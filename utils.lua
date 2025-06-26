@@ -103,6 +103,16 @@ function rally_offsets(i)
   return offsets[i]
 end
 
+function all_troops_dead(state)
+  local troops = state.main:get_objects_by_classes(state.troops)
+
+  if #troops == 0 then return true end
+  for _, troop in ipairs(troops) do
+    if troop.dead ~= true then return false end
+  end
+  return true
+end
+
 function sum_vectors(v1, v2)
   return {x = v1.x + v2.x, y = v1.y + v2.y}
 end

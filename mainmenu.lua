@@ -13,6 +13,7 @@ function MainMenu:on_enter(from)
 
   -- Set cursor to simple mode for main menu
   set_cursor_simple()
+  self.run_autobattle = false
 
   --steam.friends.setRichPresence('steam_display', '#StatusFull')
   --steam.friends.setRichPresence('text', 'Main Menu')
@@ -42,10 +43,23 @@ function MainMenu:on_enter(from)
   self.main:enable_trigger_between('troop', 'enemy_projectile')
   self.main:enable_trigger_between('enemy_projectile', 'enemy')
   self.main:enable_trigger_between('troop', 'ghost')
+  self.main:enable_trigger_between('enemy', 'troop')
+
+  self.damage_dealt = 0
+  self.damage_taken = 0
 
   self.troops = troop_classes
   self.enemies = enemy_classes
   self.friendlies = friendly_classes
+  self.enemies_without_critters = enemy_classes_without_critters
+  self.friendlies_without_critters = friendly_classes_without_critters
+
+  self.units = {}
+
+  -- Initialize Helper system for unit functionality
+  if not Helper.initialized then
+    Helper:init()
+  end
 
   -- Spawn solids and player
   self.x1, self.y1 = gw/2 - 0.8*gw/2, gh/2 - 0.8*gh/2
@@ -65,17 +79,8 @@ function MainMenu:on_enter(from)
     Star{group = star_group, x = p.x, y = p.y}
   end)
 
-  self.units = {
-    {character = 'swordsman', level = 1},
-    {character = 'archer', level = 1},
-    {character = 'shaman', level = 1},
-  }
-
-  for i, unit in ipairs(self.units) do
-    for j=0,4 do
-      local troop_data = {group = self.main, x = gw/2 + random:float(-48, 48), y = gh/2 + 16 + random:float(-48, 48), character = unit.character, level = unit.level}
-      Create_Troop(troop_data)
-    end
+  if self.run_autobattle then
+    self.autobattle = MainMenuAutoBattle{group = self.main}
   end
 
   self.title_text = Text({{text = '[wavy_mid, fg]UNDERLOD', font = fat_font, alignment = 'center'}}, global_text_tags)
@@ -229,6 +234,9 @@ function MainMenu:update(dt)
     self.main_ui:update(dt*slow_amount)
     if self.title_text then self.title_text:update(dt) end
     self.ui:update(dt*slow_amount)
+    
+    -- Update Helper system for unit functionality
+    Helper:update(dt*slow_amount)
   else
     self.options_ui:update(dt*slow_amount)
   end
@@ -240,6 +248,10 @@ function MainMenu:draw()
   self.main:draw()
   self.post_main:draw()
   self.effects:draw()
+  
+  -- Draw Helper system elements (unit effects, etc.)
+  Helper:draw()
+  
   graphics.draw_with_mask(function()
     star_canvas:draw(0, 0, 0, 1, 1)
   end, function()

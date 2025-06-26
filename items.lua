@@ -125,11 +125,13 @@ function Get_Random_Item(shop_level, units, all_items)
     end
 
     --check if the item is already in the shop
+    if all_items then
     table.any(all_items, function(item)
       if item and item.name == v.name then
-        already_in_shop = true
-      end
-    end)
+          already_in_shop = true
+        end
+      end)
+    end
 
 
     if has_cost and has_prereqs and not already_in_shop then

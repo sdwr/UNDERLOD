@@ -507,9 +507,6 @@ function Troop:hit(damage, from, damageType, makesSound, cannotProcOnHit)
     self:onDeathCallbacks(from)
 
     self:die()
-    if main.current:all_troops_dead() then
-      main.current:die()
-    end
 
     if self.dot_area then self.dot_area.dead = true; self.dot_area = nil end
   end
