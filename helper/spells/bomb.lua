@@ -5,6 +5,7 @@ Helper.Spell.Bomb.prelist = {}
 
 function Helper.Spell.Bomb:create(color, damage_troops, damage, radius, unit, armed_duration, explode_radius, x, y)
 
+    damage = get_dmg_value(damage)
     local bomb = {
         x = x,
         y = y,

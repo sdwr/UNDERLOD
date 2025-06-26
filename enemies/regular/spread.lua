@@ -1,4 +1,3 @@
-
 local fns = {}
 fns['init_enemy'] = function(self)
 
@@ -31,7 +30,7 @@ fns['init_enemy'] = function(self)
       freeze_rotation = true,
       spell_duration = 10,
       color = blue[0],
-      damage = self.dmg,
+      damage = function() return self.dmg end,
       laser_aim_width = 6,
       damage_troops = true,
       damage_once = true,

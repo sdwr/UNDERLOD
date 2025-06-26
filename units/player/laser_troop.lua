@@ -56,7 +56,7 @@ function Laser_Troop:setup_cast()
       spell_duration = 10,
       color = blue[0],
       on_attack_callbacks = true,
-      damage = self.dmg,
+      damage = function() return self.dmg end,
       reduce_pierce_damage = true,
       lasermode = 'target',
       laser_aim_width = 1,

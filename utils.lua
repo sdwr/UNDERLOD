@@ -183,3 +183,10 @@ end
 function is_point_in_rectangle(x, y, rect_x, rect_y, rect_w, rect_h)
   return x > rect_x and x < rect_x + rect_w and y > rect_y and y < rect_y + rect_h
 end
+
+function get_dmg_value(dmg)
+  if type(dmg) == 'function' then
+    return dmg()
+  end
+  return dmg or 0
+end

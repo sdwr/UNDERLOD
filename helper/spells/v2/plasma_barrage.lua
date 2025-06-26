@@ -18,7 +18,7 @@ function Plasma_Barrage:init(args)
   self.r_offset = self.r_offset or math.pi / 6
 
   self.explosion_radius = self.explosion_radius or 12
-  self.damage = self.damage or 30
+  self.damage = get_dmg_value(self.damage)
 
   self.speed = self.speed or 100
   self.rotation_speed = self.rotation_speed or 1
@@ -151,7 +151,7 @@ function PlasmaBall:explode()
     r = self.explosion_radius,
     pick_shape = 'circle',
     duration = 0.15,
-    dmg = self.explosion_damage,
+    damage = self.explosion_damage,
     is_troop = false,
     color = self.color, 
   }

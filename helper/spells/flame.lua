@@ -5,6 +5,7 @@ Helper.Spell.Flame.do_draw_particles = true
 Helper.Spell.Flame.list = {}
 
 function Helper.Spell.Flame:create(color, flamewidth, flameheight, damage, unit, follow_target, follow_speed)
+    damage = get_dmg_value(damage)
     if unit:my_target() then
         local i, flame = find_in_list(Helper.Spell.Flame.list, unit, function(value) return value.unit end)
         if flame == -1 then

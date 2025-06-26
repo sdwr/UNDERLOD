@@ -1,10 +1,8 @@
-
-
 local fns = {}
 
 fns['attack'] = function(self, area, mods, color)
   mods = mods or {}
-  local t = {team = "enemy", group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(area or 64), color = color or self.color, dmg = self.dmg,
+  local t = {team = "enemy", group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(area or 64), color = color or self.color, damage = function() return self.dmg end,
     character = self.character, level = self.level, parent = self}
 
   Helper.Unit:set_state(self, unit_states['frozen'])
@@ -64,7 +62,7 @@ fns['init_enemy'] = function(self)
       rs = self.attack_sensor.rs,
       knockback = true,
       color = grey[0],
-      dmg = 30,
+      damage = function() return self.dmg end,
       parent = self
     }
   }
@@ -85,7 +83,7 @@ fns['init_enemy'] = function(self)
       spell_duration = 10,
       num_shots = 3,
       shot_interval = 0.7,
-      dmg = 20,
+      damage = function() return self.dmg end,
       rs = 25,
       parent = self
     }
@@ -107,7 +105,7 @@ fns['init_enemy'] = function(self)
       team = "enemy",
       x = self.x,
       y = self.y,
-      dmg = 20
+      damage = function() return self.dmg end
     }
   }
 
@@ -132,7 +130,7 @@ fns['init_enemy'] = function(self)
       x = self.x,
       y = self.y,
       color = red[0],
-      dmg = 30,
+      damage = function() return self.dmg end,
       parent = self
     }
   }

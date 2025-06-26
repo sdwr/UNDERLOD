@@ -32,7 +32,7 @@ function Arrow:init(args)
 
   self.shape = Rectangle(self.x, self.y, self.r, self.r)
   
-  self.damage = self.damage or 10
+  self.damage = get_dmg_value(self.damage)
   self.speed = 400
   self.color = self.color or blue[0]
   self.unit = self.unit
@@ -87,7 +87,7 @@ function Arcspread:init(args)
   
   self.color = self.color or blue[2]
 
-  self.damage = self.damage or 30
+  self.damage = get_dmg_value(self.damage)
   self.pierce = self.pierce
   self.thickness = self.thickness or 1
   self.numArcs = self.numArcs or 4
@@ -148,7 +148,7 @@ function DamageArc:init(args)
   self:init_game_object(args)
   self.color = self.color or red[0]
 
-  self.damage = self.damage or 30
+  self.damage = get_dmg_value(self.damage)
 
   self.pierce = self.pierce or 0
   self.angle = self.angle or 0
@@ -235,7 +235,7 @@ function Avalanche:init(args)
   if not self.group.world then self.dead = true; return end
   self.color = grey[0]
   self.rs = self.rs or 25
-  self.dmg = self.dmg or 30
+  self.damage = get_dmg_value(self.damage)
 
   self.timesToCast = 15
 
@@ -245,7 +245,7 @@ function Avalanche:init(args)
     if self.unit and self.unit.dead then self:die(); return end
     local x, y = math.random(self.rs, gw - self.rs), math.random(self.rs, gh - self.rs)
     Stomp{group = main.current.main, unit = self.unit, team = self.team, x = x, y = y,
-      rs = self.rs, color = self.color, dmg = self.dmg, chargeTime = 1.5, knockback = true, 
+      rs = self.rs, color = self.color, damage = self.damage, chargeTime = 1.5, knockback = true, 
       parent = self}
   end, self.timesToCast, function() self:die() end, 'avalanche')
 
@@ -279,7 +279,7 @@ function Boomerang:init(args)
   self.color = self.color:clone()
   self.color.a = 0.7
 
-  self.damage = self.damage or 30
+  self.damage = get_dmg_value(self.damage)
 
   self.speed = self.speed or 125
 
@@ -388,7 +388,7 @@ function Burst:init(args)
   self.blob_color.g = math.min(1, self.color.g * 1.5)
   self.blob_color.b = math.min(1, self.color.b * 1.5)
 
-  self.damage = self.damage or 30
+  self.damage = get_dmg_value(self.damage)
   self.num_pieces = self.num_pieces or 10
   
   self.speed = self.speed or 70
@@ -507,7 +507,7 @@ function Burst:explode()
       r = self.radius * 2,
       pick_shape = 'circle',
       duration = 0.15,
-      dmg = self.damage,
+      damage = self.damage,
       color = self.color,
       parent = self,
     }
@@ -578,7 +578,7 @@ function BurstBullet:init(args)
   self.color = self.color:clone()
   self.color.a = 0.7
 
-  self.damage = self.damage or 20
+  self.damage = get_dmg_value(self.damage)
 
   self.distance = self.distance or 50
   self.speed = self.speed or 100
@@ -646,7 +646,7 @@ function FireWall:init(args)
   self.color = red[0]:clone()
   self.color.a = 0.6
   
-  self.dmg = self.dmg or 50
+  self.damage = get_dmg_value(self.damage)
   --starts on one side of the screen and moves to the other
   self.speed = 60
   self.direction = self.direction or -1
@@ -679,7 +679,7 @@ end
 function FireWall:try_damage(unit)
   if not table.contains(self.damaged_units, unit) then
     table.insert(self.damaged_units, unit)
-    unit:hit(self.dmg, self.unit)
+    unit:hit(self.damage, self.unit)
   end
 end
 
@@ -719,7 +719,7 @@ function FireWall:create_segmented_wall()
           speed = self.speed,
           direction = self.direction,
           color = self.color,
-          dmg = self.dmg,
+          damage = self.damage,
           parent = self}
       table.insert(self.segments, segment)
     end
@@ -746,7 +746,7 @@ function FireWall:create_half_wall()
       speed = self.speed,
       direction = self.direction,
       color = self.color,
-      dmg = self.dmg,
+      damage = self.damage,
       parent = self}
   table.insert(self.segments, segment)
 end
@@ -774,7 +774,7 @@ function FireSegment:init(args)
   self.shape = Rectangle(self.x, self.y, self.w, self.h)
   self.currentTime = 0
   self.speed = self.speed or 100
-  self.dmg = self.dmg or 50
+  self.damage = get_dmg_value(self.damage)
 
   self.particle_interval = 0.1
   self.particle_elapsed = 0
@@ -849,7 +849,7 @@ function LaserBall:init(args)
   self.rotation_speed = 0.5
   self.speed = 100
 
-  self.damage = 20
+  self.damage = get_dmg_value(self.damage)
 
   self.r = math.random(2*math.pi)
   self:set_angle(self.r)

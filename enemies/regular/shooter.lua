@@ -1,5 +1,3 @@
-
-
 local fns = {}
 
 
@@ -33,7 +31,7 @@ fns['init_enemy'] = function(self)
       group = main.current.effects,
       spell_duration = 1,
       color = blue[0],
-      damage = self.dmg,
+      damage = function() return self.dmg end,
       bullet_size = 5,
     },
   }
@@ -52,6 +50,8 @@ EnemyProjectile:implement(GameObject)
 EnemyProjectile:implement(Physics)
 function EnemyProjectile:init(args)
   self:init_game_object(args)
+
+  self.damage = get_dmg_value(self.damage)
   if tostring(self.x) == tostring(0/0) or tostring(self.y) == tostring(0/0) then self.dead = true; return end
   self:set_as_rectangle(10, 4, 'dynamic', 'enemy_projectile')
 end
@@ -102,16 +102,16 @@ end
 function EnemyProjectile:on_trigger_enter(other, contact)
   if other:is(Player) or other.is_troop then
     self:die(self.x, self.y, nil, random:int(2, 3))
-    other:hit(self.dmg, self.unit)
+    other:hit(self.damage, self.unit)
 
   elseif other:is(Critter) then
     self:die(self.x, self.y, nil, random:int(2, 3))
-    other:hit(self.dmg, self.unit)
+    other:hit(self.damage, self.unit)
 
   elseif other:is(Enemy) or other:is(EnemyCritter) then
     if self.source == 'shooter' then
       self:die(self.x, self.y, nil, random:int(2, 3))
-      other:hit(0.5*self.dmg, self.unit)
+      other:hit(0.5*self.damage, self.unit)
     end
   end
 end

@@ -30,7 +30,7 @@ function Archer_Troop:setup_cast()
       on_attack_callbacks = true,
       spell_duration = 1,
       color = blue[0],
-      damage = self.dmg,
+      damage = function() return self.dmg end,
 
     }
   }

@@ -3,6 +3,7 @@ Helper.Spell.DamageLine = {}
 Helper.Spell.DamageLine.list = {}
 
 function Helper.Spell.DamageLine:create(unit, color, linewidth, damage_troops, damage, x1, y1, x2, y2)
+    damage = get_dmg_value(damage)
     local damage_line = {
         unit = unit,
         x1 = x1,

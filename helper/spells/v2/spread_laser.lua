@@ -6,7 +6,7 @@ function Spread_Laser:init(args)
 
   self.color = self.color or red[0]
   self.laser_aim_widths = self.laser_aim_width or 6
-  self.damage = self.damage or 30
+  self.damage = get_dmg_value(self.damage)
   self.damage_troops = self.damage_troops or true
 
   self.num_shots = self.num_shots or 3

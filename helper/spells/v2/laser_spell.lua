@@ -79,7 +79,7 @@ function Laser_Spell:init(args)
 
   self.tick_interval = self.tick_interval or 0.1
 
-  self.damage = self.damage or 30
+  self.damage = get_dmg_value(self.damage)
   self.reduce_pierce_damage = self.reduce_pierce_damage
   self.reduce_pierce_damage_amount = self.reduce_pierce_damage_amount or 0.2
 

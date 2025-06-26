@@ -1,4 +1,3 @@
-
 local fns = {}
 fns['init_enemy'] = function(self)
 
@@ -28,7 +27,7 @@ fns['init_enemy'] = function(self)
       spell_duration = 10,
       num_shots = 3,
       shot_interval = 0.7,
-      dmg = 30,
+      damage = function() return self.dmg end,
       rs = 25,
       parent = self
     }

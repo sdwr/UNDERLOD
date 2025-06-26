@@ -1,5 +1,3 @@
-
-
 local fns = {}
 
 fns['init_enemy'] = function(self)
@@ -30,7 +28,7 @@ fns['init_enemy'] = function(self)
       cancel_on_death = true,
       rs = 45,
       color = red[0],
-      dmg = self.dmg or 30,
+      damage = function() return self.dmg end,
       spell_duration = GOLEM3_CAST_TIME,
       level = self.level,
       parent = self

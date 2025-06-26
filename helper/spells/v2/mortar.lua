@@ -1,4 +1,3 @@
-
 Mortar_Spell = Spell:extend()
 function Mortar_Spell:init(args)
   Mortar_Spell.super.init(self, args)
@@ -11,7 +10,7 @@ function Mortar_Spell:init(args)
   self.num_shots = self.num_shots or 3
   self.shot_interval = self.shot_interval or 0.7
 
-  self.dmg = self.dmg or 30
+  self.damage = get_dmg_value(self.damage)
   self.rs = self.rs or 25
 
   --memory
@@ -48,7 +47,7 @@ function Mortar_Spell:fire()
     rs = self.rs,
     knockback = self.knockback,
     color = self.color,
-    dmg = self.dmg,
+    damage = self.damage,
     level = self.level,
   }
 

@@ -56,7 +56,7 @@ fns['init_enemy'] = function(self)
         spelldata = {
             group = main.current.effects,
             unit = self,
-            dmg = self.dmg, -- Use the damage value from the enemy unit itself
+            damage = function() return self.dmg end, -- Use the damage value from the enemy unit itself
             spell_duration = 5,
             -- Customize the firewall projectile's properties here
             travel_distance = 400,

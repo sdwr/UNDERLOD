@@ -7,6 +7,7 @@ function Stomp_Spell:init(args)
 
   orb1:play({volume = 0.5})
 
+  self.damage = get_dmg_value(self.damage)
   self.knockback = self.knockback or false
 
   self.color = self.color or red[0]
@@ -41,7 +42,7 @@ function Stomp_Spell:die()
   end
   if #targets > 0 then self.spring:pull(0.05, 200, 10) end
   for _, target in ipairs(targets) do
-    target:hit(self.dmg, self.unit)
+    target:hit(self.damage, self.unit)
     if self.knockback then
       target:push(LAUNCH_PUSH_FORCE_BOSS, self.unit:angle_to_object(target))
     else

@@ -141,7 +141,7 @@ function ChainLightning:init(args)
   self.parent = args.parent
   self.range = args.range or 50
   self.is_troop = args.is_troop or false
-  self.dmg = args.dmg or 5
+  self.damage = get_dmg_value(args.damage)
   self.damageType = args.damageType or DAMAGE_TYPE_SHOCK
   self.color = args.color or {1, 1, 1, 1}
 
@@ -167,7 +167,7 @@ function ChainLightning:init(args)
     -- on_hit: This function is called on each target in the chain.
     on_hit = function(spell, target)
       -- 'spell' is the ChainLightning instance. 'self' would also work here.
-      target:hit(self.dmg, nil, self.damageType, false)
+      target:hit(self.damage, nil, self.damageType, false)
     end,
 
     -- on_bounce: This function creates the visual and audio effects between targets.

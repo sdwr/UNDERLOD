@@ -2,6 +2,8 @@ Area = Object:extend()
 Area:implement(GameObject)
 function Area:init(args)
   self:init_game_object(args)
+
+  self.damage = get_dmg_value(self.damage)
   
   if self.areatype == 'target' then
     if self.target then
@@ -17,9 +19,9 @@ function Area:init(args)
     self.shape = Rectangle(self.x, self.y, w, h, self.r)
   end
 
-  self.dmg = self.dmg or 0
+  self.damage = get_dmg_value(self.damage)
   self.damage_type = self.damage_type or DAMAGE_TYPE_PHYSICAL
-  self.flashFactor = self.dmg / 30
+  self.flashFactor = self.damage / 30
   if self.flashFactor == 0 then self.flashFactor = 0.5 end
 
   self.color = self.color or fg[0]
@@ -75,7 +77,7 @@ function Area:damage()
     for _, target in ipairs(targets) do
       if self:can_hit_with_effect(target, 'rooted') then
         target:root(self.rootDuration, self.unit)
-        target:hit(self.dmg, self.unit)
+        target:hit(self.damage, self.unit)
         self:apply_hit_effect(target)
       end
     end
@@ -84,7 +86,7 @@ function Area:damage()
     for _, target in ipairs(targets) do
       if self:can_hit_with_effect(target, 'shocked') then
         target:shock(self.shockDuration, self.unit)
-        target:hit(self.dmg, self.unit)
+        target:hit(self.damage, self.unit)
         self:apply_hit_effect(target)
       end
     end
@@ -97,7 +99,7 @@ function Area:damage()
       if self:can_hit_with_effect(target, 'stunned') then
         if math.random() < stun_chance then
           target:stun()
-          target:hit(self.dmg, self.unit)
+          target:hit(self.damage, self.unit)
           self:apply_hit_effect(target)
         end
       end
@@ -106,8 +108,8 @@ function Area:damage()
   elseif self.chillAmount then
     for _, target in ipairs(targets) do
       if self:can_hit_with_effect(target, 'chilled') then
-        target:chill(self.dmg, self.unit)
-        target:hit(self.dmg, self.unit)
+        target:chill(self.damage, self.unit)
+        target:hit(self.damage, self.unit)
         self:apply_hit_effect(target)
       end
     end
@@ -120,7 +122,7 @@ function Area:damage()
   elseif self.knockback_force then
     for _, target in ipairs(targets) do
       if self:can_hit_with_knockback(target) then
-        target:hit(self.dmg, self.unit)
+        target:hit(self.damage, self.unit)
         target:push(self.knockback_force, self.unit:angle_to_object(target), nil, self.knockback_duration)
         self:apply_hit_effect(target)
       end
@@ -129,9 +131,9 @@ function Area:damage()
     for _, target in ipairs(targets) do
       target:add_buff(self.debuff)
     end
-  elseif self.dmg > 0 then
+  elseif self.damage > 0 then
     for _, target in ipairs(targets) do
-      target:hit(self.dmg, self.unit, self.damage_type)
+      target:hit(self.damage, self.unit, self.damage_type)
       self:apply_hit_effect(target)
     end
   end
@@ -181,7 +183,7 @@ end
 function Area:update_ticks(dt)
   self.current_time = self.current_time + dt
   if self.current_time >= self.tick_rate and self.active 
-    and self.dmg > 0 then
+    and self.damage > 0 then
     self:damage()
     self.current_time = 0
   end
@@ -227,6 +229,8 @@ function DotArea:init(args)
   self:init_game_object(args)
   self:make_shape()
 
+  self.damage = get_dmg_value(self.damage)
+
   self.closest_sensor = Circle(self.x, self.y, 128)
 
   if not self.character or self.character == 'base' then
@@ -238,7 +242,7 @@ function DotArea:init(args)
         targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
       end
       for _, target in ipairs(targets) do
-        target:hit(self.dmg/5)
+        target:hit(self.damage/5)
         for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
         for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
       end
@@ -249,7 +253,7 @@ function DotArea:init(args)
     local enemies = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
     if #enemies > 0 then self.spring:pull(0.05, 200, 10) end
     for _, enemy in ipairs(enemies) do
-      enemy:hit(self.dmg/5, self.parent)
+      enemy:hit(self.damage/5, self.parent)
       enemy:slow(0.8, 1, nil)
       HitCircle{group = main.current.effects, x = enemy.x, y = enemy.y, rs = 6, color = fg[0], duration = 0.1}
       for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = self.color} end
@@ -480,10 +484,12 @@ function BreatheFire:init(args)
   self:init_game_object(args)
   if not self.group.world then self.dead = true; return end
 
+  self.damage = get_dmg_value(self.damage)
+
 
   self.currentTime = 0
   self.dot_area = DotArea{follows_caster = true, area_type = 'triangle', team = self.team,
-    group = main.current.effects, x = self.x, y = self.y, rs = self.rs, caster = self.parent, parent = self, dmg = self.dmg, duration = self.duration,
+    group = main.current.effects, x = self.x, y = self.y, rs = self.rs, caster = self.parent, parent = self, damage = self.damage, duration = self.duration,
     color = self.color}
   Helper.Unit:set_state(self.parent, unit_states['channeling'])
   pyro1:play{volume=0.9}
@@ -596,6 +602,8 @@ function Stomp:init(args)
 
   self.draw_under_units = true
 
+  self.damage = get_dmg_value(self.damage)
+
   self.state = "charging"
 
   orb1:play({volume = 0.5})
@@ -640,7 +648,7 @@ function Stomp:stomp()
     else
       target:slow(0.3, 1, nil)
     end
-    target:hit(self.dmg, self.unit)
+    target:hit(self.damage, self.unit)
     HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
 
 
@@ -672,6 +680,8 @@ Mortar:implement(Physics)
 function Mortar:init(args)
   self:init_game_object(args)
 
+  self.damage = get_dmg_value(self.damage)
+
   self.state = "charging"
 
   Helper.Unit:set_state(self.parent, unit_states['frozen'])
@@ -691,7 +701,7 @@ end
 
 function Mortar:fire()
   cannoneer1:play{pitch = random:float(0.95, 1.05), volume = 0.9}
-  Stomp{group = main.current.main, unit = self.unit, team = self.team, x = self.target.x + math.random(-10, 10), y = self.target.y + math.random(-10, 10), rs = self.rs, color = self.color, dmg = self.dmg, level = self.level, parent = self}
+  Stomp{group = main.current.main, unit = self.unit, team = self.team, x = self.target.x + math.random(-10, 10), y = self.target.y + math.random(-10, 10), rs = self.rs, color = self.color, damage = self.damage, level = self.level, parent = self}
 end
 
 function Mortar:recover()

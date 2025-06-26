@@ -4,6 +4,8 @@ Helper.Spell.DamageCircle.duration = 0.25
 Helper.Spell.DamageCircle.list = {}
 
 function Helper.Spell.DamageCircle:create(unit, color, damage_troops, damage, radius, x, y)
+    
+    damage = get_dmg_value(damage)
     local damage_circle = {
         unit = unit,
         x = x,

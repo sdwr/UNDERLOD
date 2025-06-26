@@ -1,4 +1,3 @@
-
 local fns = {}
 fns['init_enemy'] = function(self)
   --set extra variables from data
@@ -32,7 +31,7 @@ fns['init_enemy'] = function(self)
       unit = self,
       target = self.target,
       color = blue2[5],
-      damage = self.dmg,
+      damage = function() return self.dmg end,
       pierce = 1,
       thickness = 2,
       numArcs = 4,

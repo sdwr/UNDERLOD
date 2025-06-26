@@ -279,7 +279,7 @@ function Proc_SpikedCollar:create_area()
     group = main.current.effects,
     x = self.unit.x, y = self.unit.y,
     pick_shape = 'circle',
-    dmg = self.damage, r = self.radius, duration = 0.2, color = self.color,
+    damage = self.damage, r = self.radius, duration = 0.2, color = self.color,
     is_troop = self.unit.is_troop,
     damage_ticks = false,
     stunDuration = self.stunDuration,
@@ -534,7 +534,7 @@ function Proc_Curse:curse(target, from)
     group = main.current.effects, 
     x = target.x + randomx, y = target.y + randomy,
     pick_shape = 'circle',
-    dmg = 0, r = self.radius, duration = 0.2, color = self.color,
+    damage = 0, r = self.radius, duration = 0.2, color = self.color,
     is_troop = from.is_troop,
     debuff = self.buffdata
   
@@ -597,7 +597,7 @@ function Proc_Root:root(target, from)
     group = main.current.effects, 
     x = target.x + randomx, y = target.y + randomy,
     pick_shape = 'circle',
-    dmg = 0, r = self.radius, duration = 0.2, color = self.color,
+    damage = 0, r = self.radius, duration = 0.2, color = self.color,
     is_troop = from.is_troop,
     rootDuration = self.rootDuration
   
@@ -653,7 +653,7 @@ function Proc_Overkill:onKill(target, overkill)
     group = main.current.effects, 
     x = target.x, y = target.y,
     pick_shape = 'circle',
-    dmg = damage, 
+    damage = damage, 
     r = radius, duration = self.duration, color = self.color_transparent,
     fill_whole_area = true,
     is_troop = self.is_troop,
@@ -1071,7 +1071,7 @@ function Proc_Firebomb:explode(target)
     group = main.current.effects,
     x = target.x, y = target.y,
     pick_shape = 'circle',
-    dmg = self.damage, r = self.radius, duration = 0.2, color = self.color,
+    damage = self.damage, r = self.radius, duration = 0.2, color = self.color,
     is_troop = self.is_troop
   }
 
@@ -1194,7 +1194,7 @@ function Proc_Shockwave:shockwave(target)
     group = main.current.effects,
     x = target.x, y = target.y,
     pick_shape = 'circle',
-    dmg = self.damage, r = self.radius, duration = 0.2, color = self.color,
+    damage = self.damage, r = self.radius, duration = 0.2, color = self.color,
     is_troop = self.is_troop,
     shockDuration = 5,
   }
@@ -1338,7 +1338,7 @@ function Proc_Lavapool:onHit(target, damage)
         damage_ticks = true,
         tick_rate = self.tick_rate,
         tick_immediately = true,
-        dmg = self.damage,
+        damage = self.damage,
         r = self.radius, duration = self.duration, color = self.color,
         is_troop = self.unit.is_troop,
         burnDps = 10,

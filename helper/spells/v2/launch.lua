@@ -13,7 +13,7 @@ function Launch_Spell:init(args)
     self.fire_distance = self.fire_distance or 200
     self.already_damaged = {}
 
-    self.damage = self.dmg or 40
+    self.damage = get_dmg_value(self.damage)
     self.impulse_magnitude = self.impulse_magnitude or 13000
 
     self.lineCoords = {0, 0, 0, 0}

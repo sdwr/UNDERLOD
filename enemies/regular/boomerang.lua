@@ -1,4 +1,3 @@
-
 local fns = {}
 fns['init_enemy'] = function(self)
 
@@ -37,7 +36,7 @@ fns['init_enemy'] = function(self)
       y = self.y,
       spelltype = "targeted",
       color = yellow[0],
-      damage = self.dmg,
+      damage = function() return self.dmg end,
       speed = 100,
       distance = 300,
       parent = self

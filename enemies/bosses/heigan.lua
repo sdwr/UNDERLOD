@@ -1,5 +1,3 @@
-
-
 local fns = {}
 
 fns['init_enemy'] = function(self)
@@ -45,7 +43,7 @@ fns['init_enemy'] = function(self)
       x = self.x,
       y = self.y,
       color = purple[-5],
-      damage = 20,
+      damage = function() return self.dmg end,
       parent = self
     },
   }
@@ -67,7 +65,7 @@ fns['init_enemy'] = function(self)
       movement_type = 'spiral',
       rotation_speed = 1,
       color = purple[-5],
-      damage = 20,
+      damage = function() return self.dmg end,
       parent = self
     },
   }
@@ -88,7 +86,7 @@ fns['init_enemy'] = function(self)
       y = self.y,
       movement_type = 'straight',
       color = purple[-5],
-      damage = 20,
+      damage = function() return self.dmg end,
       parent = self
     },
   }
@@ -108,7 +106,7 @@ fns['init_enemy'] = function(self)
       y = self.y,
       r = self.r,
       color = purple[-5],
-      damage = 20,
+      damage = function() return self.dmg end,
       parent = self
     },
   }
@@ -127,7 +125,7 @@ fns['init_enemy'] = function(self)
       y = self.y,
       color = orange[-5],
       rs = 50,
-      dmg = 50,
+      damage = function() return self.dmg end,
       parent = self,
     }
   }

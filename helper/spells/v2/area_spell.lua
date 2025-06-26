@@ -12,7 +12,7 @@ function Area_Spell:init(args)
     self.fade_duration = self.fade_duration or 0.2
     self.duration_minus_fade = self.duration - self.fade_duration
 
-    self.dmg = self.dmg or 0
+    self.damage = get_dmg_value(self.damage)
     self.damage_ticks = self.damage_ticks or false
     self.damage_type = self.damage_type or DAMAGE_TYPE_PHYSICAL
     self.tick_rate = self.tick_rate or 0.2
@@ -89,8 +89,8 @@ function Area_Spell:apply_damage()
     for _, target in ipairs(targets_in_area) do
         -- Only damage targets we haven't already hit in this spell's lifetime
         if not self.targets_hit_map[target.id] then
-            if self.dmg > 0 then
-                target:hit(self.dmg, self.unit, self.damage_type)
+            if self.damage > 0 then
+                target:hit(self.damage, self.unit, self.damage_type)
                 self:apply_hit_effect(target)
               end
               

@@ -6,7 +6,7 @@ function Cleave:init(args)
 
     -- Define default values for the cleave
     self.is_troop = false
-    self.dmg = self.dmg or 30
+    self.damage = get_dmg_value(self.damage)
     self.cone_radius = self.cone_radius or 40 -- The length of the cone
     self.cone_angle = self.cone_angle or math.pi / 2 
     self.knockback_force = self.knockback_force or LAUNCH_PUSH_FORCE_ENEMY
@@ -61,7 +61,7 @@ function Cleave:apply_effects()
       -- Check if the target is within the current cone radius and angle
       if Helper.Geometry:is_angle_between(angle_to_target, angle_start, angle_end) and distance_to_target <= current_radius then
         -- Target is inside the current cone, apply effects!
-        target:hit(self.dmg, self.unit)
+        target:hit(self.damage, self.unit)
         target:push(self.knockback_force, angle_to_target, nil, self.knockback_duration)
         
         -- Mark as affected to avoid hitting again

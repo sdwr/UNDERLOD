@@ -1,4 +1,3 @@
-
 local fns = {}
 fns['init_enemy'] = function(self)
 
@@ -36,7 +35,7 @@ fns['init_enemy'] = function(self)
       x = self.x,
       y = self.y,
       color = purple[0],
-      damage = self.dmg,
+      damage = function() return self.dmg end,
       speed = 70,
       num_pieces = 8,
       parent = self

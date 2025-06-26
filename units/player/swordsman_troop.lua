@@ -56,7 +56,7 @@ function Swordsman_Troop:setup_cast()
       group = main.current.effects,
       sound = self.play_attack_sound,
       -- Core spell properties matching the new Area_v2 convention
-      dmg = self.dmg,
+      damage = function() return self.dmg end,
       radius = self.base_attack_area * self.area_size_m,
       duration = 0.2, -- How long the visual effect lasts on screen.
       damage_ticks = false,

@@ -20,7 +20,7 @@ function EnemyFirewallSpell:init(args)
         y = caster.y,
         r = caster:get_angle(), -- Set the firewall's angle to the caster's angle
         unit = caster,          -- The caster, for team checking and damage attribution
-        dmg = self.dmg or 25,
+        damage = get_dmg_value(self.damage),
         spell_duration = self.spell_duration or 5,
         knockback_force = self.knockback_force or 90,
         travel_distance = self.travel_distance or 450,
@@ -60,7 +60,7 @@ function EnemyFirewall:init(args)
     self.color = red[0]:clone()
     self.color.a = 0.7
     
-    self.dmg = self.dmg or 25
+    self.damage = get_dmg_value(self.damage)
     self.knockback_force = self.knockback_force or 12000
     self.spell_duration = self.spell_duration or 5
     self.current_duration = 0
@@ -150,7 +150,7 @@ function EnemyFirewall:on_hit(unit)
 
     table.insert(self.hit_units, unit)
     
-    unit:hit(self.dmg, self.unit)
+    unit:hit(self.damage, self.unit)
     
     player_hit1:play{pitch = random:float(0.95, 1.05), volume = 1.2}
     
