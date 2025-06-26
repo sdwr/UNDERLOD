@@ -1,4 +1,3 @@
-
 ProgressBar = Object:extend()
 ProgressBar:implement(GameObject)
 function ProgressBar:init(args)

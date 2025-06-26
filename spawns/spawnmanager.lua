@@ -289,14 +289,18 @@ function SpawnManager:update(dt)
     
      -- State: Waiting for all enemies to be defeated
     elseif self.state == 'waiting_for_clear' then
-      if #self.arena.main:get_objects_by_classes(self.arena.enemies) <= 0 then
+      local enemy_count = #self.arena.main:get_objects_by_classes(self.arena.enemies)
+      
+      if enemy_count <= 0 then
           if self.current_wave_index >= #self.level_data.waves then
               if main.current.progress_bar:is_complete() then
                   self.state = 'finished'
                   self.arena:quit()
               end
           else
-              if self.arena.progress_bar:highest_wave_complete() == self.current_wave_index then
+              -- Check if the current wave is complete by checking if progress >= required for current wave
+              local current_wave_required = self.arena.progress_bar.wave_cumulative_power[self.current_wave_index]
+              if current_wave_required and self.arena.progress_bar.progress >= current_wave_required then
                   self.current_wave_index = self.current_wave_index + 1
                   self.state = 'between_waves_delay'
                   self.timer = self.time_between_waves
@@ -330,8 +334,6 @@ function SpawnManager:start_next_wave()
         return
     end
 
-    print("Starting Wave: " .. self.current_wave_index)
-    
     self.state = 'wave_delay'
     self.current_group_index = 1
     self.timer = 0

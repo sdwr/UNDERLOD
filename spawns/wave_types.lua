@@ -1,4 +1,3 @@
-
 --wave has a list {{enemy, #, nil}, {enemy, #, 'random'}, ...}
 --enemy is the name of the enemy, # is the number to spawn
 -- and random is where to spawn them relative to the last group
