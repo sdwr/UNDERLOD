@@ -8,19 +8,20 @@ AchievementsPanel:implement(GameObject)
 function AchievementsPanel:init(args)
     self:init_game_object(args)
     self.x = args.x or gw - 100 -- Move to right side
-    self.y = args.y or gh / 2
+    self.y = args.y or gh / 2 -- Move down a bit
     
-    -- Grid layout properties to fit the 34 achievements
-    self.columns = 5
-    self.rows = 7
-    self.slot_size = 24 -- Even smaller slots
-    self.slot_padding = 3 -- Minimal padding
+    -- Grid layout properties to fit the 34 achievements in top 3/4 of screen
+    self.columns = 6
+    self.rows = 6
+    self.slot_size = 20 -- Much smaller slots
+    self.slot_padding = 2 -- Minimal padding
     self.grid_w = self.columns * (self.slot_size + self.slot_padding) - self.slot_padding
     self.grid_h = self.rows * (self.slot_size + self.slot_padding) - self.slot_padding
+    self.grid_y_offset = -40 -- Offset for the grid
     
-    -- Adjust panel size to match grid
+    -- Adjust panel size to match grid + space for text at bottom
     self.w = self.grid_w + 20 -- Add small margin
-    self.h = self.grid_h + 40 -- Add margin for title and bottom
+    self.h = self.grid_h + 140 -- Add margin for title and bottom text section
     self.visible = true
     self.slots = {}
     
@@ -34,6 +35,12 @@ function AchievementsPanel:init(args)
     }
 
     self.title_text = Text({{text = 'AAchievements', font = pixul_font, alignment = 'center'}}, global_text_tags)
+    
+    -- Text section for selected achievement
+    self.selected_achievement = nil
+    self.achievement_title_text = nil
+    self.achievement_desc_text = nil
+    self.achievement_unlocks_text = nil
 
     self:populate_slots()
 end
@@ -49,7 +56,7 @@ function AchievementsPanel:populate_slots()
             local row = math.floor((i - 1) / self.columns)
             
             local slot_x = self.x - self.grid_w / 2 + col * (self.slot_size + self.slot_padding) + self.slot_size / 2
-            local slot_y = self.y - self.grid_h / 2 + row * (self.slot_size + self.slot_padding) + self.slot_size / 2 -- Removed offset for title
+            local slot_y = self.y - self.grid_h / 2 + row * (self.slot_size + self.slot_padding) + self.slot_size / 2 + self.grid_y_offset -- Move grid up 20 pixels
             
             local slot = {
                 id = id,
@@ -74,32 +81,38 @@ function AchievementsPanel:update(dt)
     for _, slot in ipairs(self.slots) do
         if is_point_in_rectangle(mx, my, slot.x - slot.w/2, slot.y - slot.h/2, slot.w, slot.h) then
             slot.is_hovered = true
-            self.hovered_slot = slot -- Keep track of the hovered slot for the tooltip
-            
-            -- Show info text for hovered slot
-            if not self.info_text then
-                self.info_text = InfoText{group = main.current.ui}
-            end
-            
-            local is_unlocked = ACHIEVEMENTS_UNLOCKED[slot.id]
-            local title = slot.data.name
-            local text = is_unlocked and slot.data.desc or "Locked"
-            
-            self.info_text:activate({
-                {text = '[fg]' .. title, font = pixul_font, alignment = 'center'},
-                {text = text, font = pixul_font, alignment = 'center'},
-            }, nil, nil, nil, nil, 12, 2, nil, 1)
-            self.info_text.x, self.info_text.y = gw/2, gh/2
+            self.hovered_slot = slot
         else
             slot.is_hovered = false
         end
     end
     
-    -- Hide info text if no slot is hovered
-    if not self.hovered_slot and self.info_text then
-        self.info_text:deactivate()
-        self.info_text.dead = true
-        self.info_text = nil
+    -- Update achievement text if selection changed
+    if self.hovered_slot and self.hovered_slot ~= self.selected_achievement then
+        self.selected_achievement = self.hovered_slot
+        local is_unlocked = ACHIEVEMENTS_UNLOCKED[self.selected_achievement.id]
+        local title = self.selected_achievement.data.name
+        local desc = self.selected_achievement.data.desc
+        local unlocks = self.selected_achievement.data.unlocks or 'unlocks xxx'
+        self.achievement_title_text = Text({{text = '[fg]' .. title, font = pixul_font, alignment = 'center'}}, global_text_tags)
+        self.achievement_desc_text = Text({{text = desc, font = pixul_font, alignment = 'center'}}, global_text_tags)
+        self.achievement_unlocks_text = Text({{text = unlocks, font = pixul_font, alignment = 'center'}}, global_text_tags)
+    elseif not self.hovered_slot and self.selected_achievement then
+        self.selected_achievement = nil
+        self.achievement_title_text = nil
+        self.achievement_desc_text = nil
+        self.achievement_unlocks_text = nil
+    end
+    
+    -- Update text objects
+    if self.achievement_title_text then
+        self.achievement_title_text:update(dt)
+    end
+    if self.achievement_desc_text then
+        self.achievement_desc_text:update(dt)
+    end
+    if self.achievement_unlocks_text then
+        self.achievement_unlocks_text:update(dt)
     end
 end
 
@@ -107,10 +120,11 @@ function AchievementsPanel:draw()
     if not self.visible then return end
 
     -- Draw main panel background
-    love.graphics.setColor(0, 0, 0, 0.7)
+    local bg_color = bg[-2]
+    love.graphics.setColor(bg_color.r, bg_color.g, bg_color.b, bg_color.a)
     love.graphics.rectangle('fill', self.x - self.w/2, self.y - self.h/2, self.w, self.h, 10)
 
-    self.title_text:draw(self.x, self.y - self.h/2 + 10)
+    self.title_text:draw(self.x, self.y - self.h/2 + 20)
 
     -- Draw slots
     for _, slot in ipairs(self.slots) do
@@ -130,7 +144,11 @@ function AchievementsPanel:draw()
         love.graphics.rectangle('fill', slot.x - slot.w/2, slot.y - slot.h/2, slot.w, slot.h)
 
         -- Draw white border
-        love.graphics.setColor(self.colors.white_border)
+        local border_color = self.colors.white_border
+        if is_unlocked then
+          border_color = {yellow[0].r, yellow[0].g, yellow[0].b, yellow[0].a} 
+        end
+        love.graphics.setColor(border_color)
         love.graphics.setLineWidth(1)
         love.graphics.rectangle('line', slot.x - slot.w/2, slot.y - slot.h/2, slot.w, slot.h)
 
@@ -152,6 +170,18 @@ function AchievementsPanel:draw()
         end
     end
 
+    -- Draw achievement text section at bottom
+    if self.achievement_title_text and self.achievement_desc_text then
+        -- Draw title
+        self.achievement_title_text:draw(self.x, self.y + self.grid_h/2 - 20)
+        
+        -- Draw description
+        self.achievement_desc_text:draw(self.x, self.y + self.grid_h/2 + 5)
+
+        -- Draw unlocks
+        self.achievement_unlocks_text:draw(self.x, self.y + self.grid_h/2 + 35)
+    end
+    
     love.graphics.setColor(1, 1, 1, 1) -- Reset color
 end
 
