@@ -163,6 +163,7 @@ function init()
   holylight = Sound('HolyLight.ogg', s)
   sword_swing = Sound('sword swing.wav', s)
   freeze_sound = Sound('ice_cracking_trimmed.wav', s)
+  arcspread_sound = Sound('arcspread.wav', s)
   title_music = Sound('Debussy - Reverie.mp3', { tags = { music } })
 
 

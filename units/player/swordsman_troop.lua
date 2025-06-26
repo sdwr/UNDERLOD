@@ -35,6 +35,7 @@ function Swordsman_Troop:set_character()
   --cooldowns
   self.baseCooldown = attack_speeds['medium-fast']
   self.cooldownTime = self.baseCooldown
+  self.castcooldown = self.baseCast
 
   self:set_state_functions()
 end
