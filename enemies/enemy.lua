@@ -56,6 +56,10 @@ function Enemy:has_animation(state)
 end
 
 function Enemy:update_animation(dt)
+  if self.state == unit_states['stunned'] then
+    return
+  end
+
   if self.spritesheet and self.spritesheet[self.state] then
     local animation = self.spritesheet[self.state][1]
     local image = self.spritesheet[self.state][2]
@@ -77,7 +81,15 @@ function Enemy:draw_animation(state, x, y, r)
     return false
   end
 
-  local direction = self:is_facing_left() and -1 or 1
+  local direction = 1
+  --only update direction if not stunned
+  if self.state ~= unit_states['stunned'] then
+    direction = self:is_facing_left() and -1 or 1
+    self.last_direction = direction
+  else
+    direction = self.last_direction
+  end
+
   local sprite_size = enemy_sprite_sizes[self.icon]
   if not sprite_size then
     print('no sprite size for unit ' .. self.type)
@@ -111,6 +123,13 @@ function Enemy:draw_animation(state, x, y, r)
   local frame_center_x = frame_width / 2
   local frame_center_y = frame_height / 2
 
+  --draw chill as a circle under the enemy
+  if self.buffs['chill'] then
+    local color = blue[0]:clone()
+    color.a = 0.5
+    graphics.circle(x, y, self.shape.w/2 + 2, color)
+  end
+
 
   graphics.push(x, y, 0, self.hfx.hit.x, self.hfx.hit.x)
     animation:draw(image.image, x, y, r, scale_x, scale_y, frame_center_x, frame_center_y)
@@ -121,6 +140,8 @@ function Enemy:draw_animation(state, x, y, r)
     mask_color = FREEZE_MASK_COLOR
   elseif self.buffs['stunned'] then
     mask_color = STUN_MASK_COLOR
+  elseif self.buffs['burn'] then
+    mask_color = BURN_MASK_COLOR
   end
 
   if mask_color ~= nil then

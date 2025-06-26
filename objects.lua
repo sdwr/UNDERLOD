@@ -417,7 +417,9 @@ end
 function Unit:draw_buffs()
   local i = 0.5
   for _ , buff in pairs(self.buffs) do
-    if buff.color then
+    if buff.name == 'chill' and self:get_buff('freeze') then
+      --dont draw chill if freeze is present
+    elseif buff.color then
       graphics.circle(self.x, self.y, ((self.shape.w) / 2) + (i), buff.color, 1)
       i = i + 1
     end
@@ -449,6 +451,8 @@ function Unit:draw_status_effects()
     color = blue_transparent
   elseif self.buffs['stunned'] then
     color = black_transparent
+  elseif self.buffs['burn'] then
+    color = red_transparent
   end
 
   if color then
@@ -957,8 +961,7 @@ function Unit:burn(damage, from)
   else
     -- Create new burn buff
     local burnBuff = {
-      name = 'burn', 
-      color = red[0], 
+      name = 'burn',
       total_damage = damage, 
       peak_damage = damage,
       nextTick = 1.0, -- Tick every second
@@ -1058,7 +1061,7 @@ end
 --CHILL SYSTEM
 function Unit:chill(damage, from)
   --add chill buff
-  local chillBuff = {name = 'chill', color = blue[0], duration = CHILL_DURATION, maxDuration = CHILL_DURATION, stats = {mvspd = -1 * CHILL_SLOW_PERCENT}}
+  local chillBuff = {name = 'chill', duration = CHILL_DURATION, maxDuration = CHILL_DURATION, stats = {mvspd = -1 * CHILL_SLOW_PERCENT}}
   self:remove_buff('chill')
   self:add_buff(chillBuff)
 
@@ -1122,11 +1125,27 @@ function Unit:redshield(duration)
   self:add_buff(redshieldBuff)
 end
 
-function Unit:stun(duration)
+function Unit:stun()
   --dont stun bosses
   if self.class == 'boss' then
     return
   end
+
+  local duration  = STUN_DURATION_BOSS
+
+  if self.class == 'regular_enemy' then
+    duration = STUN_DURATION_REGULAR_ENEMY
+  elseif self.class == 'special_enemy' then
+    duration = STUN_DURATION_SPECIAL_ENEMY
+  elseif self.class == 'critter' then
+    duration = STUN_DURATION_CRITTER
+  elseif self.class == 'miniboss' then
+    duration = STUN_DURATION_MINIBOSS
+  elseif self.class == 'boss' then
+    duration = STUN_DURATION_BOSS
+  end
+
+  player_hit_wall1:play{pitch = random:float(0.8, 1.2), volume = 1.2}
   local stunBuff = {name = 'stunned', duration = duration}
   self:add_buff(stunBuff)
   self:interrupt_cast()

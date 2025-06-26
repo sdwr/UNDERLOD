@@ -175,7 +175,6 @@ function Proc_Craggy:init(args)
   self.cooldown = self.data.cooldown or 1
   self.chance = self.data.chance or 0.1
   self.damage = self.data.damage or 15
-  self.stunDuration = self.data.stunDuration or 1.5
 
 end
 function Proc_Craggy:onGotHit(from, damage)
@@ -187,7 +186,7 @@ function Proc_Craggy:onGotHit(from, damage)
     arrow_hit_wall2:play{pitch = random:float(0.8, 1.2), volume = 0.9}
     
     if from and from.hp and from.hp > 0 then
-      from:stun(self.stunDuration)
+      from:stun()
       from:hit(self.damage, self.unit)
     end
   end
@@ -307,7 +306,6 @@ function Proc_Bash:init(args)
   self.cooldown = self.data.cooldown or 2
   self.chance = self.data.chance or 0.2
   self.damage = self.data.damage or 10
-  self.stunDuration = self.data.stunDuration or 1
 end
 function Proc_Bash:onHit(target, damage)
   Proc_Bash.super.onHit(self, target, damage)
@@ -317,7 +315,7 @@ function Proc_Bash:onHit(target, damage)
 
     arrow_hit_wall2:play{pitch = random:float(0.8, 1.2), volume = 0.9}
 
-    target:stun(self.stunDuration)
+    target:stun()
     target:hit(self.damage, self.unit)
   end
 end

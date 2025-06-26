@@ -89,13 +89,14 @@ function Area:damage()
       end
     end
 
-  elseif self.stunDuration then
+  --changed stun to flat duration based on enemy type
+  elseif self.stunsTargets then
     local stun_chance = self.stunChance or 1
     for _, target in ipairs(targets) do
 
       if self:can_hit_with_effect(target, 'stunned') then
         if math.random() < stun_chance then
-          target:stun(self.stunDuration, self.unit)
+          target:stun()
           target:hit(self.dmg, self.unit)
           self:apply_hit_effect(target)
         end
