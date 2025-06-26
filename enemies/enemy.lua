@@ -11,6 +11,7 @@ function Enemy:init(args)
   self:setExtraFunctions()
   Helper.Unit:add_custom_variables_to_unit(self)
   Helper.Unit:set_state(self, unit_states['normal'])
+  self.size = self.size or enemy_type_to_size[self.type]
   self.init_enemy(self)
   self:init_unit()
   self:init_hitbox_points()

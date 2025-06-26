@@ -20,7 +20,6 @@ fns['init_enemy'] = function(self)
 
   --load extra data from variables
   self.data = self.data or {}
-  self.size = self.data.size or 'big'
 
 
   --create shape

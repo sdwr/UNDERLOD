@@ -10,7 +10,6 @@ local fns = {}
 fns['init_enemy'] = function(self)
     -- Set extra variables from data
     self.data = self.data or {}
-    self.size = self.data.size or 'big'
 
     -- Create shape and set a fire-themed color
     self.color = red[0]:clone()

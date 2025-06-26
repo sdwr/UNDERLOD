@@ -537,7 +537,7 @@ function Spawn_Enemy(arena, type, location)
   end
 
   -- Use the new helper to create the enemy with a 1-second warning marker.
-  Create_Unit_With_Warning(arena, location, 2, create_enemy_action)
+  Create_Unit_With_Warning(arena, location, 2, create_enemy_action, type)
 end
 
 function Countdown(arena)
@@ -566,7 +566,7 @@ function Spawn_Boss(arena, name)
   end
 
   -- Spawn the boss with a longer, more dramatic 2.5-second warning.
-  Create_Unit_With_Warning(arena, SpawnGlobals.boss_spawn_point, 2.5, create_boss_action)
+  Create_Unit_With_Warning(arena, SpawnGlobals.boss_spawn_point, 2.5, create_boss_action, name)
 end
 
 function Spawn_Critters(arena, group_index, amount)
@@ -589,7 +589,7 @@ function Spawn_Critters(arena, group_index, amount)
       end
       
       -- Spawn this critter with its own short warning marker.
-      Create_Unit_With_Warning(arena, spawn_pos, 1, create_critter_action)
+      Create_Unit_With_Warning(arena, spawn_pos, 1, create_critter_action, group_index, 'critter')
       
       spawned_count = spawned_count + 1
   end, amount, function() SetSpawning(arena, false) end)
@@ -604,8 +604,8 @@ end
 -- Creates a spawn marker, waits, then creates a unit via a callback.
 -- This is the new core of all enemy spawning.
 -- ===================================================================
-function Create_Unit_With_Warning(arena, location, warning_time, creation_callback)
-  warning_time = warning_time or 2 -- Default to a 1-second warning
+function Create_Unit_With_Warning(arena, location, warning_time, creation_callback, enemy_type)
+  warning_time = warning_time or 2 -- Default to a 2-second warning
 
   -- 1. Create the new animated circle effect.
   -- It will animate for the duration of the warning_time and then self-destruct.
@@ -613,7 +613,8 @@ function Create_Unit_With_Warning(arena, location, warning_time, creation_callba
       group = arena.floor,
       x = location.x,
       y = location.y,
-      duration = warning_time
+      duration = warning_time,
+      enemy_type = enemy_type -- Pass the enemy type for size calculation
   }
   -- Play a sound to accompany the visual warning.
   spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.4}

@@ -11,6 +11,16 @@ enemy_size_to_xy = {
   boss = {x = 60, y = 60},
 }
 
+-- ===================================================================
+-- Helper function to get default size for enemy type
+-- ===================================================================
+function Get_Enemy_Default_Size(enemy_type)
+  if enemy_type_to_size and enemy_type_to_size[enemy_type] then
+    return enemy_type_to_size[enemy_type]
+  end
+  return 'regular' -- Default fallback
+end
+
 Set_Enemy_Shape = function(enemy, size)
   local xy = enemy_size_to_xy[size]
   if not xy then

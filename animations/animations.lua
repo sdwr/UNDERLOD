@@ -1,4 +1,3 @@
-
 local spriteFolder = 'newSprites/'
 
 
@@ -614,4 +613,44 @@ enemy_sprite_scales = {
   ['mech3'] = MECH3_SPRITE_SCALE,
   ['ent'] = ENT_SPRITE_SCALE,
   ['golem3'] = GOLEM3_SPRITE_SCALE,
+}
+
+-- ===================================================================
+-- Enemy Type to Size Mapping
+-- Maps enemy type names to their size categories for spawn circle sizing
+-- ===================================================================
+enemy_type_to_size = {
+  -- Bosses
+  ['dragon'] = 'boss',
+  ['heigan'] = 'heigan',
+  ['stompy'] = 'stompy',
+  
+  -- Regular enemies
+  ['arcspread'] = 'big',
+  ['assassin'] = 'big',
+  ['laser'] = 'big',
+  ['mortar'] = 'big',
+  ['rager'] = 'big',
+  ['seeker'] = 'regular',
+  ['shooter'] = 'regular_big',
+  ['spawner'] = 'big',
+  ['spread'] = 'big',
+  ['stomper'] = 'big',
+  ['summoner'] = 'big',
+  ['bomb'] = 'big',
+  ['charger'] = 'big',
+  ['burst'] = 'big',
+  ['boomerang'] = 'big',
+  ['plasma'] = 'big',
+  ['firewall_caster'] = 'big',
+  ['cleaver'] = 'big',
+  
+  -- Minibosses
+  ['bigstomper'] = 'huge',
+  
+  -- Static enemies
+  ['dragonegg'] = 'small',
+  
+  -- Environmental enemies
+  ['critter'] = 'critter',
 }

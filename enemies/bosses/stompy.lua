@@ -21,7 +21,6 @@ fns['init_enemy'] = function(self)
   
   --set extra variables from data
   self.data = self.data or {}
-  self.size = self.data.size or 'stompy'
 
   --create shape
   self.color = grey[0]:clone()

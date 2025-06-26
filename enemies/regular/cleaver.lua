@@ -5,7 +5,6 @@ fns['init_enemy'] = function(self)
   
   --set extra data from variables
   self.data = self.data or {}
-  self.size = self.data.size or 'big'
   self.icon = 'slime'
 
   --create shape

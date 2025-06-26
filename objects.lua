@@ -8,7 +8,23 @@ AnimatedSpawnCircle:implement(GameObject)
 function AnimatedSpawnCircle:init(args)
     self:init_game_object(args)
     self.radius = 0
-    self.max_radius = 6 -- The final radius of the circle
+    
+    -- Calculate size based on enemy type if provided
+    if args.enemy_type and enemy_type_to_size and enemy_size_to_xy then
+        local size_category = enemy_type_to_size[args.enemy_type]
+        if size_category and enemy_size_to_xy[size_category] then
+            local size_xy = enemy_size_to_xy[size_category]
+            -- Calculate the actual size the enemy will be (use the larger dimension)
+            local enemy_size = math.max(size_xy.x, size_xy.y)
+            -- Make the spawn circle proportional to the enemy size
+            self.max_radius = math.max(6, enemy_size / 2)
+        else
+            self.max_radius = 6 -- Default fallback
+        end
+    else
+        self.max_radius = 6 -- Default size
+    end
+    
     self.outline_color = red[0]:clone()
     self.fill_color = red[0]:clone()
     self.opacity = 0.3 -- Start with low opacity
