@@ -281,7 +281,7 @@ function SpawnManager:update(dt)
             -- self:create_wave_marker()
             self.is_group_spawning = true
             self.spawning_wave = true
-            self.arena.t:after(1, function()
+            self.arena.t:after(0.5, function()
               self:spawn_next_group_in_chain()
             end)
         end
@@ -529,7 +529,7 @@ function Spawn_Enemy(arena, type, location)
 
       -- Set enemy to frozen for 1 second on spawn.
       Helper.Unit:set_state(enemy, unit_states['frozen'])
-      enemy.t:after(1, function()
+      enemy.t:after(0.3, function()
           if enemy and not enemy.dead and enemy.state == unit_states['frozen'] then
               Helper.Unit:set_state(enemy, unit_states['normal'])
           end
