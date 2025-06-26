@@ -115,6 +115,20 @@ function Enemy:draw_animation(state, x, y, r)
   graphics.push(x, y, 0, self.hfx.hit.x, self.hfx.hit.x)
     animation:draw(image.image, x, y, r, scale_x, scale_y, frame_center_x, frame_center_y)
   graphics.pop()
+
+  local mask_color = nil
+  if self.buffs['freeze'] then
+    mask_color = FREEZE_MASK_COLOR
+  elseif self.buffs['stunned'] then
+    mask_color = STUN_MASK_COLOR
+  end
+
+  if mask_color ~= nil then
+    love.graphics.setColor(mask_color.r, mask_color.g, mask_color.b, mask_color.a)
+    animation:draw(image.image, x, y, r, scale_x, scale_y, frame_center_x, frame_center_y)
+    love.graphics.setColor(1, 1, 1, 1)
+  end
+
   return true
 
 end
@@ -254,7 +268,10 @@ function Enemy:draw()
   self.draw_enemy(self)
   self:draw_launching()
   self:draw_channeling()
-  self:draw_frozen()
+  --the animation will draw the status effects if it exists
+  if not self.spritesheet then
+    self:draw_status_effects()
+  end
   self:draw_knockback()
   self:draw_cast_timer()
 end

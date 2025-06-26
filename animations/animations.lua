@@ -11,6 +11,18 @@ function create_animation(grid, rowNumber, numberPerRow, w, h, speed)
   return anim8.newAnimation(grid(numbers, rowNumber), speed)
 end
 
+--status effects
+FREEZE_MASK_COLOR = nil
+
+STUN_MASK_COLOR = nil
+
+function set_status_effect_mask_colors()
+  FREEZE_MASK_COLOR = blue[0]:clone()
+  FREEZE_MASK_COLOR.a = 0.5
+  STUN_MASK_COLOR = black[0]:clone()
+  STUN_MASK_COLOR.a = 0.5
+end
+
 --boss sprites
 GOLEM_CAST_TIME = 1.5
 GOLEM_ATTACK_FRAMES = 9
@@ -353,8 +365,10 @@ ent_idle = Image(spriteFolder .. '/Ent1/Idle/Ent1_Idle_full', 'nearest')
 ent_walk = Image(spriteFolder .. '/Ent1/Walk/Ent1_Walk_full', 'nearest')
 ent_run = Image(spriteFolder .. '/Ent1/Run/Ent1_Run_full', 'nearest')
 ent_attack = Image(spriteFolder .. '/Ent1/Attack/Ent1_Attack_full', 'nearest')
-ent_hurt = Image(spriteFolder .. '/Ent1/Hurt/Ent1_Hurt_full', 'nearest')
-ent_death = Image(spriteFolder .. '/Ent1/Death/Ent1_Death_full', 'nearest')
+ent_hurt = Image(spriteFolder .. '/Ent1/Hurt/Ent1_Hurt_full')
+ent_hurt.image:setFilter('nearest', 'nearest')
+ent_death = Image(spriteFolder .. '/Ent1/Death/Ent1_Death_full')
+ent_death.image:setFilter('nearest', 'nearest')
 
 
 ent_idle_g = create_grid(ent_idle, 128, 128)

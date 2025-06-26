@@ -443,15 +443,15 @@ function Unit:draw_channeling()
   -- end
 end
 
-function Unit:draw_frozen()
-  if self.state == unit_states['stunned'] then
-    local color = black_transparent
-    if self.buffs['freeze'] then
-      color = blue_transparent
-    elseif self.buffs['stunned'] then
-      color = black_transparent
-    end
+function Unit:draw_status_effects()
+  local color = nil
+  if self.buffs['freeze'] then
+    color = blue_transparent
+  elseif self.buffs['stunned'] then
+    color = black_transparent
+  end
 
+  if color then
     graphics.circle(self.x, self.y, self.shape.w/2 + 2, color)
   end
 end
@@ -1127,7 +1127,7 @@ function Unit:stun(duration)
   if self.class == 'boss' then
     return
   end
-  local stunBuff = {name = 'stunned', color = black[0], duration = duration}
+  local stunBuff = {name = 'stunned', duration = duration}
   self:add_buff(stunBuff)
   self:interrupt_cast()
 end

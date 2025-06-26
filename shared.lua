@@ -30,6 +30,8 @@ function shared_init()
   bg_off = Color(46, 46, 46)
   bg_gradient = GradientImage('vertical', Color(128, 128, 128, 0), Color(0, 0, 0, 0.3))
 
+  set_status_effect_mask_colors()
+
   graphics.set_background_color(bg[0])
   graphics.set_color(fg[0])
   slow_amount = 1
