@@ -1,40 +1,46 @@
-SpawnMarker = Object:extend()
-SpawnMarker:implement(GameObject)
-function SpawnMarker:init(args)
-  self:init_game_object(args)
-  self.color = red[0]
-  self.r = random:float(0, 2*math.pi)
-  self.spring:pull(random:float(0.4, 0.6), 200, 10)
-  self.t:after(1.125, function() self.dead = true end)
-  self.m = 1
-  self.n = 0
-  pop3:play{pitch = 1, volume = 0.15}
-  self.t:every({0.195, 0.24}, function()
-    self.hidden = not self.hidden
-    self.m = self.m*random:float(0.84, 0.87)
-  end, nil, nil, 'blink')
+-- ===================================================================
+-- NEW Animated Spawn Circle Class
+-- Draws a circle outline that animates from the center outwards.
+-- ===================================================================
+AnimatedSpawnCircle = Object:extend()
+AnimatedSpawnCircle:implement(GameObject)
+
+function AnimatedSpawnCircle:init(args)
+    self:init_game_object(args)
+    self.radius = 0
+    self.max_radius = 6 -- The final radius of the circle
+    self.outline_color = red[0]:clone()
+    self.fill_color = red[0]:clone()
+    self.opacity = 0.3 -- Start with low opacity
+    self.line_width = 1
+    local duration = args.duration or 2
+
+    -- Tween the radius from 0 to max_radius and opacity from 0.3 to 0.8 over the specified duration.
+    self.t:tween(duration, self, {radius = self.max_radius, opacity = 0.8}, math.linear, function()
+        -- Once the animation is complete, the object destroys itself.
+        self:die()
+    end)
 end
 
-
-function SpawnMarker:update(dt)
+function AnimatedSpawnCircle:update(dt)
   self:update_game_object(dt)
-  self.t:set_every_multiplier('blink', self.m)
+  -- self.radius = self.radius + self.max_radius*dt
 end
 
-
-function SpawnMarker:draw()
-  if self.hidden then return end
-  graphics.push(self.x, self.y, self.r, self.spring.x, self.spring.x)
-    graphics.push(self.x, self.y, self.r + math.pi/4)
-      graphics.rectangle(self.x, self.y, 24, 6, 4, 4, self.color)
-    graphics.pop()
-    graphics.push(self.x, self.y, self.r + 3*math.pi/4)
-      graphics.rectangle(self.x, self.y, 24, 6, 4, 4, self.color)
-    graphics.pop()
-  graphics.pop()
+function AnimatedSpawnCircle:draw()
+    -- Set the color opacity for drawing
+    local original_alpha = self.fill_color.a
+    self.fill_color.a = self.opacity
+    
+    -- Draw the circle outline with the current animated radius.
+    graphics.circle(self.x, self.y, self.max_radius, self.fill_color, self.line_width)
+    graphics.circle(self.x, self.y, self.radius, self.fill_color)
+    
+    -- Restore original alpha
+    self.fill_color.a = original_alpha
 end
 
-function SpawnMarker:die()
+function AnimatedSpawnCircle:die()
   self.dead = true
 end
 

@@ -537,7 +537,7 @@ function Spawn_Enemy(arena, type, location)
   end
 
   -- Use the new helper to create the enemy with a 1-second warning marker.
-  Create_Unit_With_Warning(arena, location, 1, create_enemy_action)
+  Create_Unit_With_Warning(arena, location, 2, create_enemy_action)
 end
 
 function Countdown(arena)
@@ -589,7 +589,7 @@ function Spawn_Critters(arena, group_index, amount)
       end
       
       -- Spawn this critter with its own short warning marker.
-      Create_Unit_With_Warning(arena, spawn_pos, 0.5, create_critter_action)
+      Create_Unit_With_Warning(arena, spawn_pos, 1, create_critter_action)
       
       spawned_count = spawned_count + 1
   end, amount, function() SetSpawning(arena, false) end)
@@ -605,24 +605,22 @@ end
 -- This is the new core of all enemy spawning.
 -- ===================================================================
 function Create_Unit_With_Warning(arena, location, warning_time, creation_callback)
-  warning_time = warning_time or 1 -- Default to a 1-second warning
+  warning_time = warning_time or 2 -- Default to a 1-second warning
 
-  -- 1. Create the visual marker immediately.
-  local marker = SpawnMarker{
-      group = arena.effects,
+  -- 1. Create the new animated circle effect.
+  -- It will animate for the duration of the warning_time and then self-destruct.
+  AnimatedSpawnCircle{
+      group = arena.floor,
       x = location.x,
-      y = location.y
+      y = location.y,
+      duration = warning_time
   }
   -- Play a sound to accompany the visual warning.
   spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.4}
 
-  -- 2. Schedule the unit creation and marker cleanup to happen after the delay.
+  -- 2. Schedule the unit creation to happen after the delay.
   arena.t:after(warning_time, function()
-      -- Clean up the temporary marker.
-      if marker and not marker.dead then
-          marker:die()
-      end
-
+      -- The visual effect is already gone at this point.
       -- Call the provided function to actually create the unit.
       if creation_callback then
           creation_callback()
