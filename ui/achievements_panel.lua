@@ -156,6 +156,7 @@ function AchievementsPanel:update(dt)
         -- Handle reset button click using standard input system
         if self.reset_button.is_hovered and input.m1.pressed then
             Reset_All_Achievements()
+            Reset_User_Stats()
             return
         end
     end
