@@ -307,6 +307,8 @@ get the playthrough to be fun:
 BUGS:
 --------------
 
+being rooted reset animation but not cast, very confusing
+
 floating damage numbers only half disappear
 floating damage numbers are hard to read
 laser troop can't move with space while casting 
