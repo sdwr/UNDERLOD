@@ -1165,6 +1165,14 @@ function init()
     'stompy',
     'dragon',
     'heigan',
+    'final_boss',
+  }
+
+  level_to_boss_enemy = {
+    [6] = 'stompy',
+    [11] = 'dragon',
+    [16] = 'heigan',
+    [21] = 'final_boss',
   }
 
   normal_enemy_by_tier = {

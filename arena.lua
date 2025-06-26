@@ -302,6 +302,16 @@ function Arena:quit()
     self:demo_end()
   else
     print('beat level')
+    if Is_Boss_Level(self.level) then
+      if self.level == 6 then USER_STATS.stompy_defeated = USER_STATS.stompy_defeated + 1
+      elseif self.level == 11 then USER_STATS.dragon_defeated = USER_STATS.dragon_defeated + 1
+      elseif self.level == 16 then USER_STATS.heigan_defeated = USER_STATS.heigan_defeated + 1
+      elseif self.level == 21 then USER_STATS.final_boss_defeated = USER_STATS.final_boss_defeated + 1
+      end
+    end
+    system.save_stats()
+    Check_All_Achievements()
+
     if not self.arena_clear_text then self.arena_clear_text = Text2{group = self.ui, x = gw/2, y = gh/2 - 48, lines = {{text = '[wavy_mid, cbyc]arena clear!', font = fat_font, alignment = 'center'}}} end
     self:gain_gold(ARENA_TRANSITION_TIME)
     self.t:after(ARENA_TRANSITION_TIME, function()

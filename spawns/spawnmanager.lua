@@ -399,11 +399,7 @@ end
 
 function SpawnManager:handle_boss_fight()
   local boss_name = ""
-  if self.arena.level == 6 then boss_name = 'stompy'
-  elseif self.arena.level == 11 then boss_name = 'dragon'
-  elseif self.arena.level == 16 then boss_name = 'heigan'
-  -- ... and so on for other bosses
-  end
+  boss_name = level_to_boss_enemy[self.arena.level]
   
   if boss_name ~= "" then
       self.t:after(1.5, function() 
