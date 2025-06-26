@@ -46,7 +46,7 @@ function Area:init(args)
   self.active = true
 
   if not self.damage_ticks then
-    self:damage()
+    self:try_damage()
   end
 
   --self.t:tween(0.05, self, {w = args.w}, math.cubic_in_out, function() self.spring:pull(0.15 * self.flashFactor) end)
@@ -57,7 +57,7 @@ function Area:init(args)
   end)
 end
 
-function Area:damage()
+function Area:try_damage()
 
   local targets = {}
   if self.is_troop then
@@ -184,7 +184,7 @@ function Area:update_ticks(dt)
   self.current_time = self.current_time + dt
   if self.current_time >= self.tick_rate and self.active 
     and self.damage > 0 then
-    self:damage()
+    self:try_damage()
     self.current_time = 0
   end
 end
@@ -758,7 +758,7 @@ function Laser:fire()
   self.state = 'firing'
   self:stopSound()
   self.fire_sound = shoot1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
-  self.t:every(self.tick, function() self:damage() end)
+  self.t:every(self.tick, function() self:try_damage() end)
 end
 
 function Laser:stopSound()
@@ -766,7 +766,7 @@ function Laser:stopSound()
   if self.fire_sound then self.fire_sound:stop() end
 end
 
-function Laser:damage()
+function Laser:try_damage()
   local target_classes = self.damage_troops and main.current.friendlies or main.current.enemies
   local targets = main.current.main:get_objects_in_shape(self.shape, target_classes)
   for _, target in ipairs(targets) do
