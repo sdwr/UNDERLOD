@@ -1,6 +1,6 @@
 -- ===================================================================
 -- NEW Animated Spawn Circle Class
--- Draws a circle outline with an exclamation point in the center.
+-- Draws a circle outline that flashes twice before disappearing.
 -- ===================================================================
 AnimatedSpawnCircle = Object:extend()
 AnimatedSpawnCircle:implement(GameObject)
@@ -19,7 +19,7 @@ function AnimatedSpawnCircle:init(args)
             -- Make the spawn circle proportional to the enemy size
             self.radius = math.max(6, enemy_size / 2)
         else
-            self.max_raradiusdius = 6 -- Default fallback
+            self.radius = 6 -- Default fallback
         end
     else
         self.radius = 6 -- Default size
@@ -34,25 +34,43 @@ function AnimatedSpawnCircle:init(args)
 
     self.line_width = 2
     local duration = args.duration or 2
-    self.t:after(duration, function()
-      self:die()
-    end)
 
+    -- ===================================================================
+    -- Flashing Animation Logic
+    -- ===================================================================
+    self.visible = true -- Start visible
+
+    -- Define when the flashing should start and how long each flash is
+    local flash_start_time = duration * 0.6 -- Start flashing in the last 40% of the duration
+    local flash_interval = (duration - flash_start_time) / 4 -- Divide the remaining time into 4 parts for two flashes
+
+    -- Schedule the flashes
+    self.t:after(flash_start_time, function() self.visible = false end)
+    self.t:after(flash_start_time + flash_interval * 1, function() self.visible = true end)
+    self.t:after(flash_start_time + flash_interval * 2, function() self.visible = false end)
+    self.t:after(flash_start_time + flash_interval * 3, function() self.visible = true end)
+
+    -- Schedule the object to be destroyed at the end of its duration
+    self.t:after(duration, function()
+        self:die()
+    end)
 end
 
 function AnimatedSpawnCircle:update(dt)
-  self:update_game_object(dt)
-  -- self.radius = self.radius + self.max_radius*dt
+    self:update_game_object(dt)
 end
 
 function AnimatedSpawnCircle:draw()
+    -- Only draw the object if it's currently visible
+    if not self.visible then return end
+
     graphics.circle(self.x, self.y, self.radius, self.fill_color, self.line_width)
     
     exclamation_point_small:draw(self.x, self.y, 0, self.exclamation_point_scale_x, self.exclamation_point_scale_y, 1, 1)
 end
 
 function AnimatedSpawnCircle:die()
-  self.dead = true
+    self.dead = true
 end
 
 

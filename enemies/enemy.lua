@@ -57,7 +57,7 @@ function Enemy:has_animation(state)
 end
 
 function Enemy:update_animation(dt)
-  if self.state == unit_states['stunned'] then
+  if self.state == unit_states['stunned'] or self.state == unit_states['knockback'] then
     return
   end
 

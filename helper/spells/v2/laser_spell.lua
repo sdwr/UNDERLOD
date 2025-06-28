@@ -318,32 +318,64 @@ end
 
 function Laser_Spell:draw()
   if self.unit and self.unit.dead then
-    return
+      return
   end
-  local color = self.color
-  local width = self.current_laser_aim_width
-  if self.is_charging then
-    color = self.aim_color_transparent
-    width = self.current_laser_aim_width
-    if self.fade_in_aim_draw then
-      self.aim_color_transparent.a = 0.4 * (self.charge_time / self.charge_duration)
-    end
-  elseif self.is_firing then
-    color = self.color_transparent
-    width = self.laser_width
-    if self.fade_fire_draw then
-      width = width * (1 - self.fire_time / self.fire_duration)
-    end
-  end
-  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
-    graphics.line(self.lineCoords[1], self.lineCoords[2], self.lineCoords[3], self.lineCoords[4], color, width)
-  graphics.pop()
 
+  -- The aiming/charging phase remains the same visually.
+  if self.is_charging then
+      local color = self.aim_color_transparent
+      local width = self.current_laser_aim_width
+      if self.fade_in_aim_draw then
+          self.aim_color_transparent.a = 0.4 * (self.charge_time / self.charge_duration)
+      end
+      graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
+          graphics.line(self.lineCoords[1], self.lineCoords[2], self.lineCoords[3], self.lineCoords[4], color, width)
+      graphics.pop()
+
+  -- ===================================================================
+  -- ENHANCED Firing Visuals
+  -- ===================================================================
+  elseif self.is_firing then
+      -- Calculate the base width of the laser, which fades over time.
+      local base_width = self.laser_width
+      if self.fade_fire_draw then
+          base_width = base_width * (1 - self.fire_time / self.fire_duration)
+      end
+
+      -- Define colors for the layers. For better performance, these should be
+      -- cloned and stored in the class's init() function.
+      local outer_glow_color = self.color_transparent
+      local white_core_color = {r=255, g=255, b=255, a=200}
+      local yellow_center_color = {r=255, g=255, b=0, a=255}
+
+      -- Define the widths for each layer as a percentage of the base width.
+      local outer_glow_width = base_width
+      local white_core_width = base_width * 0.6
+      local yellow_center_width = base_width * 0.2
+
+      graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
+          -- 1. Draw the outer glow (widest, most transparent).
+          if outer_glow_width > 0 then
+              graphics.line(self.lineCoords[1], self.lineCoords[2], self.lineCoords[3], self.lineCoords[4], outer_glow_color, outer_glow_width)
+          end
+          -- 2. Draw the white core on top for a bright highlight.
+          if white_core_width > 0 then
+              graphics.line(self.lineCoords[1], self.lineCoords[2], self.lineCoords[3], self.lineCoords[4], white_core_color, white_core_width)
+          end
+          -- 3. Draw the intense yellow center last.
+          if yellow_center_width > 0 then
+              graphics.line(self.lineCoords[1], self.lineCoords[2], self.lineCoords[3], self.lineCoords[4], yellow_center_color, yellow_center_width)
+          end
+      graphics.pop()
+  end
+
+  -- The circular effect at the laser's origin remains the same.
   if self.is_firing and self.draw_spawn_circle then
-    local circle_radius = self.laser_width/2 * (1 - (self.fire_time / self.fire_duration))
-    graphics.circle(self.x, self.y, circle_radius, self.color_transparent)
+      local circle_radius = self.laser_width / 2 * (1 - (self.fire_time / self.fire_duration))
+      graphics.circle(self.x, self.y, circle_radius, self.color_transparent)
   end
 end
+
 
 --helper
 
