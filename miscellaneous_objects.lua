@@ -594,85 +594,160 @@ end
 Stomp = Object:extend()
 Stomp:implement(GameObject)
 Stomp:implement(Physics)
+
 function Stomp:init(args)
-  self:init_game_object(args)
-  self.attack_sensor = Circle(self.x, self.y, self.rs)
-  self.currentTime = 0
-  self.knockback = self.knockback or false
+    self:init_game_object(args)
+    self.attack_sensor = Circle(self.x, self.y, self.rs)
+    self.currentTime = 0
+    self.knockback = self.knockback or false
+    self.draw_under_units = true
+    self.damage = get_dmg_value(self.damage)
+    self.state = "charging"
+    self.visual_phase = "charging" -- charging, impact
 
-  self.draw_under_units = true
+    orb1:play({volume = 0.5})
 
-  self.damage = get_dmg_value(self.damage)
+    -- Main effect colors
+    self.color = self.color or red[0]
+    self.color.a = 0.5
+    self.white_color = fg[0]:clone()
+    self.white_color.a = 0.8
+    self.impact_color = yellow[0]:clone()
+    self.impact_color.a = 0.5
 
-  self.state = "charging"
+    -- Properties for the charging animation
+    self.current_color = self.color:clone()
+    self.circle_thickness = 4
+    self.inner_radius = 0 -- Starts as a filled circle
+    self.outer_radius = self.attack_sensor.rs
 
-  orb1:play({volume = 0.5})
+    -- Property for the impact animation
+    self.impact_radius = 0
 
-  self.color = self.color or red[0]
-  self.color_transparent = self.color:clone()
-  self.color_transparent.a = 0.2
+    self.recoveryTime = (self.chargeTime or 1) + 0.25
+    local total_time = self.chargeTime or 1
 
-  self.recoveryTime = self.chargeTime or 1
-  self.recoveryTime = self.recoveryTime + 0.25
-  
+    -- Timing for each phase of the charging animation
+    local phase1_end = total_time * 0.4  -- Time to transition from filled to open circle
+    local phase2_end = total_time * 0.7  -- Time to transition to white and thick
+    local phase3_end = total_time * 1.0  -- Time to transition back to original color
 
-  self.t:after(self.chargeTime or 1, function() self:stomp() end)
-  self.t:after(self.recoveryTime, function() self:recover() end)
+    self.show_inner_circle = true
 
+    -- ===================================================================
+    -- NEW Animation Sequence using Tweens
+    -- ===================================================================
+
+    -- 1. Starts as a filled circle. After a delay, tween inner_radius to "hollow out" the circle.
+    self.t:tween(phase1_end, self, {inner_radius = self.attack_sensor.rs - 4}, math.linear)
+
+    -- 2. After the first phase, tween to a thicker, white circle (8px thick).
+    -- To thicken evenly, we expand the outer radius and shrink the inner radius.
+    self.t:after(phase1_end, function()
+      -- Expand outwards by 2px and inwards by 2px to create an 8px total thickness.
+      self.t:tween(phase2_end - phase1_end, self, {outer_radius = self.attack_sensor.rs + 2, inner_radius = self.attack_sensor.rs - 6}, math.linear)
+      -- Also tween the color to white.
+      self.t:tween(phase2_end - phase1_end, self.current_color, {r = self.white_color.r, g = self.white_color.g, b = self.white_color.b}, math.linear)
+  end)
+
+    -- 3. After the second phase, tween back to the original 4px thickness and color.
+    self.t:after(phase2_end, function()
+      self.t:tween(phase3_end - phase2_end, self, {outer_radius = self.attack_sensor.rs, inner_radius = self.attack_sensor.rs - 4}, math.linear)
+      self.t:tween(phase3_end - phase2_end, self.current_color, {r = self.color.r, g = self.color.g, b = self.color.b}, math.linear)
+  end)
+
+    -- Schedule the main actions
+    self.t:after(total_time, function() self:stomp() end)
+    self.t:after(self.recoveryTime, function() self:recover() end)
 end
 
 function Stomp:update(dt)
-  if self.unit and self.unit.dead then self.dead = true; return end
-  self:update_game_object(dt)
-  self.attack_sensor:move_to(self.x, self.y)
-  self.currentTime = self.currentTime + dt
+    if self.unit and self.unit.dead then self.dead = true; return end
+    self:update_game_object(dt)
+    self.attack_sensor:move_to(self.x, self.y)
+    self.currentTime = self.currentTime + dt
 end
 
 function Stomp:stomp()
-  if self then self.state = "recovering" else return end
+    if not self or self.dead then return end
+    self.state = "recovering"
+    self.visual_phase = "impact"
 
-  usurer1:play{pitch = random:float(0.95, 1.05), volume = 1.6}
+    self.current_color = self.color:clone()
+    self.current_color.a = 0.3
 
-  local targets = {}
-  if self.team == 'enemy' then
-    targets = main.current.main:get_objects_in_shape(self.attack_sensor, main.current.friendlies)
-  else
-    targets = main.current.main:get_objects_in_shape(self.attack_sensor, main.current.enemies)
-  end
-  if #targets > 0 then self.spring:pull(0.05, 200, 10) end
-  for _, target in ipairs(targets) do
-    if self.knockback then
-      -- Reverse the angle by adding math.pi
-      local angle = target:angle_to_object(self) + math.pi
-      target:push(LAUNCH_PUSH_FORCE_BOSS, angle)
+    earth2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    
+    -- 5. On impact, start the expanding yellow circle animation.
+    self.t:tween(0.2, self, {impact_radius = self.attack_sensor.rs}, math.linear)
+
+    local targets = {}
+    if self.team == 'enemy' then
+        targets = main.current.main:get_objects_in_shape(self.attack_sensor, main.current.friendlies)
     else
-      target:slow(0.3, 1, nil)
+        targets = main.current.main:get_objects_in_shape(self.attack_sensor, main.current.enemies)
     end
-    target:hit(self.damage, self.unit)
-    HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
 
-
-    for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
-    for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
-  end
+    if #targets > 0 then self.spring:pull(0.05, 200, 10) end
+    for _, target in ipairs(targets) do
+        if self.knockback then
+            local angle = target:angle_to_object(self) + math.pi
+            target:push(LAUNCH_PUSH_FORCE_BOSS, angle)
+        else
+            target:slow(0.3, 1, nil)
+        end
+        target:hit(self.damage, self.unit)
+        HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
+        for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
+        for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
+    end
 end
 
 function Stomp:recover()
-  if self then self.dead = true else return end
-  if self.parent and self.parent.state == 'frozen' then self.parent.state = 'normal' end
+    if self then self.dead = true end
+    if self.parent and self.parent.state == 'frozen' then self.parent.state = 'normal' end
 end
 
+-- ===================================================================
+-- REFACTORED DRAW FUNCTION
+-- ===================================================================
 function Stomp:draw()
-  if self.hidden then return end
+    if self.hidden then return end
 
-  if self.state == 'charging' then
     graphics.push(self.x, self.y, self.r + (self.vr or 0), self.spring.x, self.spring.x)
-      -- graphics.circle(self.x, self.y, self.shape.rs + random:float(-1, 1), self.color, 2)
-      graphics.circle(self.x, self.y, self.attack_sensor.rs * math.min(self.currentTime / (self.chargeTime or 1), 1) , self.color_transparent)
-      graphics.circle(self.x, self.y, self.attack_sensor.rs, self.color, 1)
+
+    if self.visual_phase == "charging" then
+        -- Draw the outer circle (the main effect)
+        local outer_circle = function() 
+          graphics.circle(self.x, self.y, self.outer_radius, self.current_color) 
+        end
+        
+        -- Draw an inner circle with the background color to create the "hollow" effect.
+        -- This is a simple masking technique.
+        local inner_circle = function() 
+          graphics.circle(self.x, self.y, self.inner_radius, self.current_color) 
+        end
+        
+        -- Draw the outline on top.
+        if self.show_inner_circle then
+          graphics.draw_with_mask(outer_circle, inner_circle, true)
+        else
+          graphics.circle(self.x, self.y, self.outer_radius, self.current_color, self.circle_thickness)
+        end
+
+    elseif self.visual_phase == "impact" then
+        -- 5. Draw the expanding yellow impact circle.
+        if self.knockback then
+          graphics.circle(self.x, self.y, self.impact_radius, self.impact_color, 4)
+        else
+          graphics.circle(self.x, self.y, self.attack_sensor.rs, self.current_color)
+        end
+    end
+    
+    -- Reset graphics state to avoid affecting other objects
     graphics.pop()
-  end
 end
+
 
 Mortar = Object:extend()
 Mortar:implement(GameObject)
