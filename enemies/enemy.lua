@@ -141,6 +141,8 @@ function Enemy:draw_animation(state, x, y, r)
     mask_color = FREEZE_MASK_COLOR
   elseif self.buffs['stunned'] then
     mask_color = STUN_MASK_COLOR
+  elseif self.state == unit_states['knockback'] then
+    mask_color = KNOCKBACK_MASK_COLOR
   elseif self.buffs['burn'] then
     mask_color = BURN_MASK_COLOR
   end
@@ -293,8 +295,8 @@ function Enemy:draw()
   --the animation will draw the status effects if it exists
   if not self.spritesheet then
     self:draw_status_effects()
+    self:draw_knockback()
   end
-  self:draw_knockback()
   self:draw_cast_timer()
 end
 

@@ -15,15 +15,19 @@ FREEZE_MASK_COLOR = nil
 
 STUN_MASK_COLOR = nil
 
+KNOCKBACK_MASK_COLOR = nil
+
 BURN_MASK_COLOR = nil
 
 function set_status_effect_mask_colors()
   FREEZE_MASK_COLOR = blue[0]:clone()
-  FREEZE_MASK_COLOR.a = 0.5
+  FREEZE_MASK_COLOR.a = 0.8
   STUN_MASK_COLOR = black[0]:clone()
-  STUN_MASK_COLOR.a = 0.5
+  STUN_MASK_COLOR.a = 0.8
   BURN_MASK_COLOR = red[0]:clone()
-  BURN_MASK_COLOR.a = 0.5
+  BURN_MASK_COLOR.a = 0.3
+  KNOCKBACK_MASK_COLOR = red[0]:clone()
+  KNOCKBACK_MASK_COLOR.a = 0.9
 end
 
 --boss sprites
