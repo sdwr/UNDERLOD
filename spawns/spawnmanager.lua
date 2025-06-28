@@ -584,7 +584,7 @@ function Spawn_Critters(arena, group_index, amount)
 
       -- Define the creation action for this specific critter.
       local create_critter_action = function()
-          alert1:play{pitch = 1, volume = 0.5}
+          alert1:play{pitch = 1, volume = 0.3}
           EnemyCritter{group = arena.main, x = spawn_pos.x, y = spawn_pos.y, color = grey[0], v = 10}
       end
       
@@ -617,7 +617,7 @@ function Create_Unit_With_Warning(arena, location, warning_time, creation_callba
       enemy_type = enemy_type -- Pass the enemy type for size calculation
   }
   -- Play a sound to accompany the visual warning.
-  spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.4}
+  spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
 
   -- 2. Schedule the unit creation to happen after the delay.
   arena.t:after(warning_time, function()
