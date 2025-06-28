@@ -342,6 +342,11 @@ function init()
   gloves                = Image(d .. 'fingerlessgloves')
   frostorb              = Image(d .. 'frostorb')
 
+  exclamation_point_small = Image('exclamation_point_small')
+  EXCLAMATION_POINT_W = 150
+  EXCLAMATION_POINT_H = 160
+  EXCLAMATION_POINT_SCALE = 4
+
 -- normal and stopped are tied together for the purpose of attacking
 -- rallying and following are tied together for the purpose of moving
   unit_states = {

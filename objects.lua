@@ -1,6 +1,6 @@
 -- ===================================================================
 -- NEW Animated Spawn Circle Class
--- Draws a circle outline that animates from the center outwards.
+-- Draws a circle outline with an exclamation point in the center.
 -- ===================================================================
 AnimatedSpawnCircle = Object:extend()
 AnimatedSpawnCircle:implement(GameObject)
@@ -17,25 +17,27 @@ function AnimatedSpawnCircle:init(args)
             -- Calculate the actual size the enemy will be (use the larger dimension)
             local enemy_size = math.max(size_xy.x, size_xy.y)
             -- Make the spawn circle proportional to the enemy size
-            self.max_radius = math.max(6, enemy_size / 2)
+            self.radius = math.max(6, enemy_size / 2)
         else
-            self.max_radius = 6 -- Default fallback
+            self.max_raradiusdius = 6 -- Default fallback
         end
     else
-        self.max_radius = 6 -- Default size
+        self.radius = 6 -- Default size
     end
+
+    self.exclamation_point_size = self.radius * 0.5
+    self.exclamation_point_scale_x = (self.exclamation_point_size / EXCLAMATION_POINT_W) * EXCLAMATION_POINT_SCALE
+    self.exclamation_point_scale_y = (self.exclamation_point_size / EXCLAMATION_POINT_H) * EXCLAMATION_POINT_SCALE
     
     self.outline_color = red[0]:clone()
     self.fill_color = red[0]:clone()
-    self.opacity = 0.3 -- Start with low opacity
-    self.line_width = 1
-    local duration = args.duration or 2
 
-    -- Tween the radius from 0 to max_radius and opacity from 0.3 to 0.8 over the specified duration.
-    self.t:tween(duration, self, {radius = self.max_radius, opacity = 0.8}, math.linear, function()
-        -- Once the animation is complete, the object destroys itself.
-        self:die()
+    self.line_width = 2
+    local duration = args.duration or 2
+    self.t:after(duration, function()
+      self:die()
     end)
+
 end
 
 function AnimatedSpawnCircle:update(dt)
@@ -44,16 +46,9 @@ function AnimatedSpawnCircle:update(dt)
 end
 
 function AnimatedSpawnCircle:draw()
-    -- Set the color opacity for drawing
-    local original_alpha = self.fill_color.a
-    self.fill_color.a = self.opacity
+    graphics.circle(self.x, self.y, self.radius, self.fill_color, self.line_width)
     
-    -- Draw the circle outline with the current animated radius.
-    graphics.circle(self.x, self.y, self.max_radius, self.fill_color, self.line_width)
-    graphics.circle(self.x, self.y, self.radius, self.fill_color)
-    
-    -- Restore original alpha
-    self.fill_color.a = original_alpha
+    exclamation_point_small:draw(self.x, self.y, 0, self.exclamation_point_scale_x, self.exclamation_point_scale_y, 1, 1)
 end
 
 function AnimatedSpawnCircle:die()
