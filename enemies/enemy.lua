@@ -169,6 +169,9 @@ function Enemy:update(dt)
     self:update_animation(dt)
 
     self:calculate_stats()
+
+    if self.type == 'mortar' then
+    end
     
     self.random_dest_timer = self.random_dest_timer - dt
 

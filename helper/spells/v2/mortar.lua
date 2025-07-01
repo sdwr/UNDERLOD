@@ -33,7 +33,10 @@ end
 
 function Mortar_Spell:fire()
 
-  local target = self.unit:my_target()
+  self.shots_left = self.shots_left - 1
+  if self.shots_left <= 0 then self:die() end
+
+  local target = self.target
   if not target then return end
   cannoneer1:play{pitch = random:float(0.95, 1.05), volume = 0.9}
 
@@ -45,12 +48,11 @@ function Mortar_Spell:fire()
     y = target.y + math.random(-10, 10),
     target = target,
     rs = self.rs,
+    chargeTime = 1.5,
     knockback = self.knockback,
     color = self.color,
     damage = self.damage,
     level = self.level,
   }
 
-  self.shots_left = self.shots_left - 1
-  if self.shots_left <= 0 then self:die() end
 end

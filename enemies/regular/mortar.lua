@@ -19,7 +19,7 @@ fns['init_enemy'] = function(self)
     name = 'mortar',
     viable = function() return self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) end,
     castcooldown = 1,
-    oncast = function() end,
+    oncast = function() self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) end,
     cast_length = 1,
     spellclass = Mortar_Spell,
     spelldata = {

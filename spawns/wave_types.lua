@@ -88,6 +88,19 @@ function Wave_Types:Two_Basic_Three_Special(tier)
   return wave
 end
 
+function Wave_Types:Basic_Plus_Three_Special(tier)
+  local wave = {}
+  local special = random:table(special_enemy_by_tier[tier])
+  local normal = random:table(normal_enemy_by_tier[tier])
+  table.insert(wave, {normal, NORMAL_ENEMIES_PER_GROUP, nil})
+  table.insert(wave, {special, 1, 'random'})
+  special = random:table(special_enemy_by_tier[tier])
+  table.insert(wave, {special, 1, 'random'})
+  special = random:table(special_enemy_by_tier[tier])
+  table.insert(wave, {special, 1, 'random'})
+  return wave
+end
+
 function Wave_Types:Amount_Special(amount, tier)
   local wave = {}
   
@@ -198,18 +211,19 @@ function Wave_Types:Get_Waves(level)
   elseif level == 5 then
     wave = self:Basic_Plus_Two_Boomerang(1)
     table.insert(waves, wave)
-    wave = self:Two_Basic_Three_Special(1)
+    wave = self:Basic_Plus_Two_Special(1)
     table.insert(waves, wave)
   elseif level == 7 then
     wave = self:Mortar_And_Arc()
     self:Add_Group(wave, {'boomerang', 2, 'kicker'})
     table.insert(waves, wave)
-    wave = self:Two_Basic_Three_Special(2)
+    wave = self:Basic_Plus_Three_Special(2)
     table.insert(waves, wave)
   elseif level == 8 then
-    wave = self:Two_Basic_Three_Special(2)
+    wave = self:Basic_Plus_Three_Special(2)
     table.insert(waves, wave)
-    wave = self:Two_Basic_Three_Special(2)
+    wave = self:Basic_Plus_Two_Special(2)
+    self:Add_Group(wave, {'boomerang', 2, 'kicker'})
     table.insert(waves, wave)
   elseif level == 9 then
     wave = self:Two_Basic_Two_Firewall(2)

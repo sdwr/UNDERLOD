@@ -14,6 +14,9 @@ fns['init_enemy'] = function(self)
   self.icon = 'goblin'
   self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium-long'])
 
+  self.baseCooldown = attack_speeds['medium']
+  self.cooldownTime = self.baseCooldown
+
   --set attacks
   self.attack_options = {}
 
@@ -21,8 +24,8 @@ fns['init_enemy'] = function(self)
     name = 'shoot',
     viable = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end,
     oncast = function() self.target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies) end,
-    cast_length = 1.2,
-    castcooldown = 1,
+    cast_length = GOBLIN_CAST_TIME,
+    castcooldown = self.cooldownTime,
     cancel_on_range = true,
     cancel_range = self.attack_sensor.rs * 1.05,
     instantspell = true,
@@ -32,7 +35,7 @@ fns['init_enemy'] = function(self)
       spell_duration = 1,
       color = blue[0],
       damage = function() return self.dmg end,
-      bullet_size = 5,
+      bullet_size = 2,
     },
   }
   table.insert(self.attack_options, shoot)
