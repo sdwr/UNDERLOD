@@ -315,22 +315,27 @@ function SpawnManager:update(dt)
     elseif self.state == 'waiting_for_clear' then
       local enemy_count = #self.arena.main:get_objects_by_classes(self.arena.enemies)
       
-      if enemy_count <= 0 then
-          if self.current_wave_index >= #self.level_data.waves then
-              if main.current.progress_bar:is_complete() then
-                  self.state = 'finished'
-                  self.arena:quit()
-              end
-          else
-              -- Check if the current wave is complete by checking if progress >= required for current wave
-              local current_wave_required = self.arena.progress_bar.wave_cumulative_power[self.current_wave_index]
-              if current_wave_required and self.arena.progress_bar.progress >= current_wave_required then
-                  self.current_wave_index = self.current_wave_index + 1
-                  self.state = 'between_waves_delay'
-                  self.timer = self.time_between_waves
-                  self:show_wave_complete_text()
-              end
-          end
+      if table.contains(BOSS_ROUNDS, self.arena.level) then
+        if self.arena.finished and enemy_count <= 0 then
+            self.state = 'finished'
+            self.arena:quit()
+        end
+      elseif enemy_count <= 0 then
+        if self.current_wave_index >= #self.level_data.waves then
+            if main.current.progress_bar:is_complete() then
+                self.state = 'finished'
+                self.arena:quit()
+            end
+        else
+            -- Check if the current wave is complete by checking if progress >= required for current wave
+            local current_wave_required = self.arena.progress_bar.wave_cumulative_power[self.current_wave_index]
+            if current_wave_required and self.arena.progress_bar.progress >= current_wave_required then
+                self.current_wave_index = self.current_wave_index + 1
+                self.state = 'between_waves_delay'
+                self.timer = self.time_between_waves
+                self:show_wave_complete_text()
+            end
+        end
       end
 
     -- State: Paused between waves
@@ -342,7 +347,7 @@ function SpawnManager:update(dt)
     -- State: Boss Fight Logic
     elseif self.state == 'boss_fight' then
         self:handle_boss_fight()
-        self.state = 'finished'
+        self.state = 'waiting_for_clear'
     end
 end
 
@@ -422,7 +427,6 @@ function SpawnManager:handle_boss_fight()
         -- Just call Spawn_Boss. It handles everything now.
         Spawn_Boss(self.arena, boss_name) 
       end)
-      self.state = 'waiting_for_clear' -- Set manager to a waiting state
   end
 end
 
