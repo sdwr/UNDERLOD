@@ -16,6 +16,7 @@ fns['init_enemy'] = function(self)
     Set_Enemy_Shape(self, self.size)
 
     self.class = 'special_enemy'
+    self.icon = 'dragon'
     self.movementStyle = MOVEMENT_TYPE_RANDOM -- Moves around randomly
 
     -- Set stats and cooldowns
@@ -69,8 +70,15 @@ end
 
 -- Draw function for the Firewall Caster
 fns['draw_enemy'] = function(self)
-    -- Draws a rectangle, flashing white on hit, and using a different color if silenced.
-    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+    graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
+
+    local animation_success = self:draw_animation(self.state, self.x, self.y, 0)
+    
+    if not animation_success then
+        graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+    end
+
+    graphics.pop()
 end
 
 -- Add this new enemy type to the global enemy class table

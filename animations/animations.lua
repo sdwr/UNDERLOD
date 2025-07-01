@@ -98,7 +98,7 @@ DRAGON_SPRITE_H = 128
 DRAGON_SPRITE_W_HD = 191
 DRAGON_SPRITE_H_HD = 161
 
-DRAGON_SPRITE_SCALE = 1.5
+DRAGON_SPRITE_SCALE = 2
 
 
 dragonHD = Image(spriteFolder .. '/dragon2-HD/flying_dragon-red', 'nearest')
