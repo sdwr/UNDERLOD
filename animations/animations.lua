@@ -302,7 +302,34 @@ goblin_hurt_a = create_animation(goblin_hurt_g, 1, 4, 64, 64, 0.4)
 goblin_death_a = create_animation(goblin_death_g, 1, 6, 64, 64, 0.2)
 
 
+PLANT_CAST_TIME = 1
+PLANT_ATTACK_FRAMES = 7
 
+PLANT_SPRITE_W = 64
+PLANT_SPRITE_H = 64
+
+PLANT_SPRITE_SCALE = 2.5
+
+plant1_idle = Image(spriteFolder .. '/plants/Plant1/Idle/Plant1_Idle_full', 'nearest')
+plant1_walk = Image(spriteFolder .. '/plants/Plant1/Walk/Plant1_Walk_full', 'nearest')
+plant1_run = Image(spriteFolder .. '/plants/Plant1/Run/Plant1_Run_full', 'nearest')
+plant1_attack = Image(spriteFolder .. '/plants/Plant1/Attack/Plant1_Attack_full', 'nearest')
+plant1_hurt = Image(spriteFolder .. '/plants/Plant1/Hurt/Plant1_Hurt_full', 'nearest')
+plant1_death = Image(spriteFolder .. '/plants/Plant1/Death/Plant1_Death_full', 'nearest')
+
+plant1_idle_g = create_grid(plant1_idle, 64, 64)
+plant1_walk_g = create_grid(plant1_walk, 64, 64)
+plant1_run_g = create_grid(plant1_run, 64, 64)
+plant1_attack_g = create_grid(plant1_attack, 64, 64)
+plant1_hurt_g = create_grid(plant1_hurt, 64, 64)
+plant1_death_g = create_grid(plant1_death, 64, 64)
+
+plant1_idle_a = create_animation(plant1_idle_g, 1, 4, 64, 64, 0.4)
+plant1_walk_a = create_animation(plant1_walk_g, 1, 6, 64, 64, 0.2)
+plant1_run_a = create_animation(plant1_run_g, 1, 8, 64, 64, 0.2)
+plant1_attack_a = create_animation(plant1_attack_g, 1, 7, 64, 64, PLANT_CAST_TIME / PLANT_ATTACK_FRAMES)
+plant1_hurt_a = create_animation(plant1_hurt_g, 1, 5, 64, 64, 0.4)
+plant1_death_a = create_animation(plant1_death_g, 1, 10, 64, 64, 0.2)
 
 LICH_CAST_TIME = 1
 LICH_ATTACK_FRAMES = 8
@@ -530,6 +557,16 @@ goblin_spritesheets = {
   ['death'] = {goblin_death_a, goblin_death},
 }
 
+plant1_spritesheets = {
+  ['normal'] = {plant1_idle_a, plant1_idle},
+  ['walk'] = {plant1_walk_a, plant1_walk},
+  ['run'] = {plant1_run_a, plant1_run},
+  ['casting'] = {plant1_attack_a, plant1_attack},
+  ['channeling'] = {plant1_attack_a, plant1_attack},
+  ['hurt'] = {plant1_hurt_a, plant1_hurt},
+  ['death'] = {plant1_death_a, plant1_death},
+}
+
 lich_spritesheets = {
 
   ['normal'] = {lich_idle_a, lich_idle},
@@ -611,6 +648,7 @@ enemy_spritesheets = {
   ['dragon'] = dragon_spritesheets,
   ['beholder'] = beholder_spritesheets,
   ['lich'] = lich_spritesheets,
+  ['plant1'] = plant1_spritesheets,
   ['goblin'] = goblin_spritesheets,
   ['slime'] = slime_spritesheets,
   ['iceslime'] = iceslime_spritesheets,
@@ -630,6 +668,7 @@ enemy_sprite_sizes = {
   ['dragon'] = {DRAGON_SPRITE_W, DRAGON_SPRITE_H},
   ['beholder'] = {BEHOLDER_SPRITE_W, BEHOLDER_SPRITE_H},
   ['lich'] = {LICH_SPRITE_W, LICH_SPRITE_H},
+  ['plant1'] = {PLANT_SPRITE_W, PLANT_SPRITE_H},
   ['goblin'] = {GOBLIN_SPRITE_W, GOBLIN_SPRITE_H},
   ['slime'] = {SLIME_SPRITE_W, SLIME_SPRITE_H},
   ['iceslime'] = {ICESLIME_SPRITE_W, ICESLIME_SPRITE_H},
@@ -650,6 +689,7 @@ enemy_sprite_scales = {
   ['dragon'] = DRAGON_SPRITE_SCALE,
   ['beholder'] = BEHOLDER_SPRITE_SCALE,
   ['lich'] = LICH_SPRITE_SCALE,
+  ['plant1'] = PLANT_SPRITE_SCALE,
   ['goblin'] = GOBLIN_SPRITE_SCALE,
   ['slime'] = SLIME_SPRITE_SCALE,
   ['iceslime'] = ICESLIME_SPRITE_SCALE,

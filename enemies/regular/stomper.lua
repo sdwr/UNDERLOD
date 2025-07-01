@@ -18,6 +18,7 @@ fns['init_enemy'] = function(self)
   local stomp = {
     name = 'stomp',
     viable = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end,
+    castcooldown = 1,
     oncast = function() end,
     cast_length = 0.1,
     spellclass = Stomp_Spell,
