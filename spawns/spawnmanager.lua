@@ -532,7 +532,7 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
       
       -- Note: The original code did not add the offset to the marker position.
       -- Assuming this was a bug, it has been corrected here.
-      local spawn_x, spawn_y = spawn_marker.x, spawn_marker.y
+      local spawn_x, spawn_y = spawn_marker.x + offset.x, spawn_marker.y + offset.y
 
       -- 2. Check if the specific spawn point is clear
       local spawn_radius = 20
