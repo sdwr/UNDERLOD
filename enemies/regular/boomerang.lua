@@ -14,6 +14,8 @@ fns['init_enemy'] = function(self)
   self.baseCast = attack_speeds['medium-slow']
   self.castcooldown = self.baseCast
 
+  self.stopChasingInRange = true
+
   --set attacks
 
   self.attack_options = {}

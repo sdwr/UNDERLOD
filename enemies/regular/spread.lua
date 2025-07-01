@@ -9,9 +9,9 @@ fns['init_enemy'] = function(self)
   Set_Enemy_Shape(self, self.size)
 
   self.class = 'special_enemy'
-  
   self.cast_time = 0
-
+  
+  self.stopChasingInRange = true
   --set attacks
   self.attack_options = {}
 

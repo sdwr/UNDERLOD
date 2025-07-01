@@ -17,6 +17,8 @@ fns['init_enemy'] = function(self)
   self.baseCooldown = attack_speeds['medium']
   self.cooldownTime = self.baseCooldown
 
+  self.stopChasingInRange = true
+
   --set attacks
   self.attack_options = {}
 
