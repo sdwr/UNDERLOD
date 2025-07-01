@@ -55,4 +55,7 @@ function Summon_Spell:die()
   self:spawn()
 
   Summon_Spell.super.die(self)
+  if self.unit_dies_at_end and self.unit then
+    self.unit:die()
+  end
 end

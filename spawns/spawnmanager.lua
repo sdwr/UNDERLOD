@@ -45,6 +45,11 @@ function SpawnGlobals.Init()
     {x = right_x, y = gh - y_corner_offset},
   }
 
+  SpawnGlobals.mid_spawns = {
+    {x = gw/2, y = y_corner_offset},
+    {x = gw/2, y = gh - y_corner_offset},
+  }
+
   SpawnGlobals.boss_spawn_point = {x = right_x, y = mid_y}
 
   SpawnGlobals.last_spawn_point = nil

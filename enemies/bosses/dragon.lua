@@ -43,7 +43,6 @@ fns['init_enemy'] = function(self)
       spell_duration = 5,
       follow_target = true,
       freeze_rotation = true,
-      follow_speed = 32,
     }, 
   }
 

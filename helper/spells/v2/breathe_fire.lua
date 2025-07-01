@@ -21,7 +21,7 @@ function Breathe_Fire:init(args)
   self.color_transparent.a = 0.2
   
   self.follow_target = self.follow_target
-  self.follow_speed = self.follow_speed or 60
+  self.rotation_speed = self.rotation_speed or 5  -- degrees per second
 
   local target = self.unit:my_target()
   self.directionx = target.x - self.unit.x
@@ -36,6 +36,8 @@ function Breathe_Fire:init(args)
 end
 
 function Breathe_Fire:update(dt)
+  if self.dead then return end
+
   Breathe_Fire.super.update(self, dt)
   self:update_position(dt)
   self.next_tick = self.next_tick - dt
@@ -52,21 +54,39 @@ function Breathe_Fire:update(dt)
 end
 
 function Breathe_Fire:update_position(dt)
-  local x = self.x + self.directionx
-  local y = self.y + self.directiony
-
+  -- Mode 1: Follow the unit's target
   if self.follow_target then
     local target = self.unit:my_target()
-    if target then
-      x, y = Helper.Geometry.rotate_to(self.x, self.y, x, y, target.x, target.y, self.follow_speed)
-      self.directionx = x - self.x
-      self.directiony = y - self.y
+    if not target then return end
+
+    local max_rotation_this_frame = self.rotation_speed * dt
+    local current_angle = math.atan2(self.directiony, self.directionx)
+    local target_angle = math.atan2(target.y - self.unit.y, target.x - self.unit.x)
+    local angle_diff = target_angle - current_angle
+
+    -- Find the shortest rotation path
+    if angle_diff > math.pi then
+      angle_diff = angle_diff - 2 * math.pi
+    elseif angle_diff < -math.pi then
+      angle_diff = angle_diff + 2 * math.pi
     end
+
+    -- Clamp the rotation and apply it
+    local rotation_to_apply_degrees = math.max(-max_rotation_this_frame, math.min(max_rotation_this_frame, math.deg(angle_diff)))
+    local new_angle_radians = current_angle + math.rad(rotation_to_apply_degrees)
+    self.directionx = math.cos(new_angle_radians)
+    self.directiony = math.sin(new_angle_radians)
+
+  -- Mode 2: Sweep back and forth at a fixed speed
   else
-    local rotatedx, rotatedy = Helper.Geometry:rotate_point(x, y, self.x, self.y, 80 * self.rotation_direction)
-    x, y = Helper.Geometry.rotate_to(self.x, self.y, x, y, rotatedx, rotatedy, self.follow_speed)
-    self.directionx = x - self.x
-    self.directiony = y - self.y
+    -- Note: The logic that reverses self.rotation_direction every
+    -- self.rotate_tick_interval is still in your main update() function.
+    local rotation_this_frame = self.rotation_speed * self.rotation_direction * dt
+    local current_angle = math.atan2(self.directiony, self.directionx)
+    local new_angle = current_angle + math.rad(rotation_this_frame)
+    
+    self.directionx = math.cos(new_angle)
+    self.directiony = math.sin(new_angle)
   end
 end
 
