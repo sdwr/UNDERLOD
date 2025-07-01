@@ -60,6 +60,7 @@ fns['init_enemy'] = function(self)
             spell_duration = 5,
             -- Customize the firewall projectile's properties here
             travel_distance = 400,
+            speed = 55,
             width = 70,
             thickness = 18,
         },

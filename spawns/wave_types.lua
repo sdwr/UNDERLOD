@@ -202,6 +202,7 @@ function Wave_Types:Get_Waves(level)
     table.insert(waves, wave)
   elseif level == 7 then
     wave = self:Mortar_And_Arc()
+    self:Add_Group(wave, {'boomerang', 2, 'kicker'})
     table.insert(waves, wave)
     wave = self:Two_Basic_Three_Special(2)
     table.insert(waves, wave)

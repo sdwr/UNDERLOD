@@ -19,6 +19,7 @@ function EnemyFirewallSpell:init(args)
         x = caster.x,
         y = caster.y,
         r = caster:get_angle(), -- Set the firewall's angle to the caster's angle
+        speed = self.speed or 80,
         unit = caster,          -- The caster, for team checking and damage attribution
         damage = get_dmg_value(self.damage),
         spell_duration = self.spell_duration or 5,
@@ -66,7 +67,7 @@ function EnemyFirewall:init(args)
     self.current_duration = 0
     
     -- Movement logic
-    self.speed = 80
+    self.speed = self.speed or 80
     self.angle = self.r or 0
     self.vx = math.cos(self.angle) * self.speed
     self.vy = math.sin(self.angle) * self.speed
