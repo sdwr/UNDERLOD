@@ -960,6 +960,12 @@ function Unit:onDeathCallbacks(from)
   for k, proc in ipairs(self.onDeathProcs) do
     proc:onDeath(from)
   end
+
+  if main.current and main.current:is(Arena) then
+    if self.class == 'troop' then
+      main.current:slow_everything(0.5, 1)
+    end
+  end
 end
 
 function Unit:onMoveCallbacks(distance)

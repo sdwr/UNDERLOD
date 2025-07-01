@@ -85,7 +85,7 @@ function Arena:on_enter(from)
   self.gold_picked_up = 0
   self.damage_dealt = 0
   self.damage_taken = 0
-  self.main_slow_amount = .67
+  self.main_slow_amount = 1
   self.enemies = enemy_classes
   self.enemies_without_critters = enemy_classes_without_critters
   self.troops = troop_classes
@@ -160,6 +160,15 @@ function Arena:spawn_critters(spawn_point, amount)
   Spawn_Critters(self, spawn_point, amount)
 end
 
+function Arena:slow_everything(amount, duration)
+  duration = duration or 1
+  amount = amount or 0.5
+  self.main_slow_amount = 1 - amount
+  music_slow_amount = 1 - amount
+  self.t:tween(duration, _G, {music_slow_amount = 1}, math.linear)
+  self.t:tween(duration, self, {main_slow_amount = 1}, math.linear)
+end
+
 
 function Arena:on_exit()
   self.floor:destroy()
@@ -195,6 +204,10 @@ end
 
 
 function Arena:update(dt)
+
+  if self.main_slow_amount ~= 1 then
+    dt = dt * self.main_slow_amount
+  end
 
   if self.needs_first_update then
     self.needs_first_update = false

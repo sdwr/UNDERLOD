@@ -328,13 +328,16 @@ function Create_Team(args)
 end
 
 function Create_Troop(args)
+  local troop
   if args.character == 'laser' then
-    return Laser_Troop(args)
+    troop = Laser_Troop(args)
   elseif args.character == 'swordsman' then
-    return Swordsman_Troop(args)
+    troop = Swordsman_Troop(args)
   elseif args.character == 'archer' then
-    return Archer_Troop(args)
+    troop = Archer_Troop(args)
   else
-    return Troop(args)
+    troop = Troop(args)
   end
+  
+  return troop
 end
