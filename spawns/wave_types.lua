@@ -81,9 +81,9 @@ function Wave_Types:Two_Basic_Three_Special(tier)
   local special = random:table(special_enemy_by_tier[tier])
   local normal = random:table(normal_enemy_by_tier[tier])
   table.insert(wave, {special, 1, nil})
-  table.insert(wave, {normal, 2, 'random'})
+  table.insert(wave, {normal, 5, 'random'})
   table.insert(wave, {special, 1, 'random'})
-  table.insert(wave, {normal, 2, 'random'})
+  table.insert(wave, {normal, 5, 'random'})
   table.insert(wave, {special, 1, 'random'})
   return wave
 end

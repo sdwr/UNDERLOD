@@ -289,27 +289,17 @@ function SpawnManager:update(dt)
       end
     -- State: Countdown before the wave's spawning begins
     elseif self.state == 'wave_delay' then
-        self.wave_delay_timer = self.wave_delay_timer - dt
-        self:show_wave_start_countdown(get_starting_wave_countdown_value(self.wave_delay_timer))
-        if self.wave_delay_timer <= 0 then
-            self.state = 'spawning_wave'
-            -- This is the first kick-off of the chain.
-            -- self:create_wave_marker()
-            self.is_group_spawning = true
-            self.spawning_wave = true
-            self.arena.t:after(0.5, function()
-              self:spawn_next_group_in_chain()
-            end)
-        end
+      self.wave_delay_timer = self.wave_delay_timer - dt
+      self:show_wave_start_countdown(get_starting_wave_countdown_value(self.wave_delay_timer))
+      if self.wave_delay_timer <= 0 then
+          -- This state now just means the wave is active. The 'spawn_wave' function handles all logic.
+          self.state = 'spawning_wave' 
+          self:spawn_wave()
+      end
 
-    -- State: Spawning a wave
+  -- State: Spawning a wave
     elseif self.state == 'spawning_wave' then
-        -- *** FIX: Only try to spawn if a group is NOT currently spawning. ***
-        -- This prevents the update loop from firing while the callback chain is active.
-        -- It also serves as the retry mechanism if spawning was paused by max_enemies.
-        if not self.is_group_spawning and self.timer <= 0 then
-            self:spawn_next_group_in_chain()
-        end
+      --pass
     
      -- State: Waiting for all enemies to be defeated
     elseif self.state == 'waiting_for_clear' then
@@ -373,49 +363,50 @@ function SpawnManager:start_next_wave()
     SpawnGlobals.last_spawn_point = self.current_wave_spawn_marker_index
 end
 
-function SpawnManager:spawn_next_group_in_chain()
-  if self.state ~= 'spawning_wave' then return end
-
+-- New function to replace 'spawn_next_group_in_chain'
+function SpawnManager:spawn_wave()
   local wave_data = self.level_data.waves[self.current_wave_index]
-
-  if self.current_group_index > #wave_data then
+  if not wave_data then
       self.state = 'waiting_for_clear'
-      -- if self.persistent_wave_spawn_marker and not self.persistent_wave_spawn_marker.dead then
-      --     self.persistent_wave_spawn_marker:die()
-      --     self.persistent_wave_spawn_marker = nil
-      -- end
       return
   end
 
-  local num_enemies = #self.arena.main:get_objects_by_classes(self.arena.enemies_without_critters)
-  if num_enemies >= self.max_enemies_on_screen then
-      self.timer = 0.5 -- Set timer to retry and exit.
-      return
-  end
-  
-  -- Check if we're currently delayed by a kicker
-  if self.delay_timer > 0 then
-      self.timer = 0.5 -- Set timer to retry and exit.
-      return
-  end
-  
-  self.timer = 0
-
-  -- *** FIX: Set the flag to true BEFORE starting the spawn group. ***
-  -- This locks the update() loop from interfering.
-  self.is_group_spawning = true
-
-  local group_data = wave_data[self.current_group_index]
-
-  -- *** FIX: The callback now correctly manages the flag. ***
-  local on_group_finished_spawning = function()
-      -- Spawning for this group is done. Set flag to false.
-      self.is_group_spawning = false
-      
-      self.current_group_index = self.current_group_index + 1
+  -- 1. Count how many non-kicker groups need to be tracked for completion.
+  local parallel_group_count = 0
+  for _, group_data in ipairs(wave_data) do
+      if group_data[3] ~= 'kicker' then
+          parallel_group_count = parallel_group_count + 1
+      end
   end
 
-  Spawn_Group(self.arena, self.current_wave_spawn_marker_index, group_data, on_group_finished_spawning, self)
+  local finished_parallel_groups = 0
+  -- This callback will be shared by all non-kicker groups.
+  local on_parallel_group_done = function()
+      finished_parallel_groups = finished_parallel_groups + 1
+      -- Once all parallel groups are done, we can wait for the player to clear them.
+      if finished_parallel_groups >= parallel_group_count then
+          self.state = 'waiting_for_clear'
+      end
+  end
+
+  -- If a wave only contains kickers, transition state immediately.
+  if parallel_group_count == 0 then
+      self.state = 'waiting_for_clear'
+  end
+
+  -- 2. Loop through the wave data and initiate ALL groups.
+  for _, group_data in ipairs(wave_data) do
+      local spawn_type = group_data[3]
+      if spawn_type == 'kicker' then
+          -- Kickers run on their own long timers and don't affect the state transition.
+          -- The 'on_finished' callback is nil because we aren't tracking them here.
+          Spawn_Group(self.arena, self.current_wave_spawn_marker_index, group_data, nil, self)
+      else
+          -- All other groups are spawned immediately and run in parallel.
+          -- Pass the shared callback so we know when they're all done.
+          Spawn_Group(self.arena, self.current_wave_spawn_marker_index, group_data, on_parallel_group_done, self)
+      end
+  end
 end
 
 function SpawnManager:handle_boss_fight()
@@ -450,7 +441,7 @@ end
 
 function Spawn_Group(arena, group_index, group_data, on_finished, spawn_manager)
   local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
-  amount = amount or 1
+
 
   -- Handle 'kicker' type with its special delay.
   -- The individual enemy markers are now handled by Spawn_Enemy.
@@ -488,12 +479,9 @@ end
 
 function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
   local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
-  SpawnGlobals.last_spawn_point = group_index
+  local spawn_marker_index = group_index
   amount = amount or 1
 
-  -- Default to the index passed in.
-  local spawn_marker_index = group_index
-  
   -- Determine the final spawn marker location
   if spawn_type == 'far' then
       spawn_marker_index = Get_Far_Spawn(group_index)
@@ -503,87 +491,60 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
       spawn_marker_index = Get_Close_Spawn(group_index)
   end
   
-  local spawn_interval = arena.time_between_spawns or 0.1
-  local check_again_delay = 0.25 -- How long to wait before re-checking a blocked area
-  local spawned_count = 0
+  local spawn_interval = 0
   
-  -- Forward-declare the function so it can call itself in the timer
-  local spawn_action
-
-  spawn_action = function()
-      -- 1. Check if we are done spawning the whole group
-      if spawned_count >= amount then
-          if on_finished then
-              on_finished()
-          end
-          return -- End the timer chain
+  -- This counter tracks how many of the parallel spawns have completed.
+  local finished_count = 0
+  
+  -- This callback will be passed to each individual spawner.
+  local on_single_unit_done = function()
+      finished_count = finished_count + 1
+      -- Once all units have spawned, call the original on_finished callback.
+      if finished_count >= amount and on_finished then
+          on_finished()
       end
-
-      local spawn_marker = SpawnGlobals.get_spawn_marker(spawn_marker_index)
-      local offset_index = (spawned_count % #SpawnGlobals.spawn_offsets) + 1
-      local offset = SpawnGlobals.spawn_offsets[offset_index]
-
-      -- This should not happen, but it's good practice to guard against it
-      if not offset then
-          print("Error: Invalid spawn offset. Halting spawn group.")
-          if on_finished then on_finished() end
-          return
-      end
-      
-      -- Note: The original code did not add the offset to the marker position.
-      -- Assuming this was a bug, it has been corrected here.
-      local spawn_x, spawn_y = spawn_marker.x + offset.x, spawn_marker.y + offset.y
-
-      -- 2. Check if the specific spawn point is clear
-      local spawn_radius = 20
-      local spawn_circle = Circle(spawn_x, spawn_y, spawn_radius)
-      -- NOTE: Corrected this line to use a valid object list from the arena
-      local objects_in_spawn_area = arena.main:get_objects_in_shape(spawn_circle, arena.all_unit_classes)
-
-      -- 3. If the area is blocked, stall by rescheduling this exact check
-      if #objects_in_spawn_area > 0 then
-          -- We do NOT increment spawned_count. We will try to spawn this same unit again.
-          arena.t:after(check_again_delay, spawn_action)
-          return
-      end
-
-      -- 4. The area is clear, so we can spawn the unit
-      Spawn_Enemy(arena, type, {x = spawn_x, y = spawn_y})
-      spawned_count = spawned_count + 1
-
-      -- 5. Schedule the *next* spawn in the sequence
-      arena.t:after(spawn_interval, spawn_action)
   end
 
-  -- Kick off the very first spawn attempt
-  spawn_action()
+  -- This loop INITIATES all spawn processes at roughly the same time.
+  for i = 1, amount do
+    local spawn_marker = SpawnGlobals.get_spawn_marker(spawn_marker_index)
+    local offset_index = ((i - 1) % #SpawnGlobals.spawn_offsets) + 1
+    local offset = SpawnGlobals.spawn_offsets[offset_index]
+    local location = {x = spawn_marker.x + offset.x, y = spawn_marker.y + offset.y}
+
+    -- Define the function that creates the unit
+    local create_enemy_action = function()
+        Spawn_Enemy(arena, type, location)
+    end
+    
+    -- Call the "smart" spawner for this single unit. It will handle its own
+    -- stalling if the area is blocked. We pass it our completion tracker.
+    arena.t:after(0.1 * i, function()
+      Create_Unit_With_Warning(arena, location, 2, type, create_enemy_action, on_single_unit_done)
+    end)
+  end
 end
 
--- This function now uses the new helper to spawn enemies with a warning.
+-- This function is now just a simple unit factory.
 function Spawn_Enemy(arena, type, location)
-  -- Define the action of creating the enemy, to be used as a callback.
-  local create_enemy_action = function()
-      local data = {}
-      if table.contains(special_enemies, type) then
-          hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}
-      else
-          hit3:play{pitch = random:float(0.8, 1.2), volume = 0.4}
-      end
-      local enemy = Enemy{type = type, group = arena.main,
-                          x = location.x, y = location.y,
-                          level = 1, data = data}
-
-      -- Set enemy to frozen for 1 second on spawn.
-      Helper.Unit:set_state(enemy, unit_states['frozen'])
-      enemy.t:after(0.3, function()
-          if enemy and not enemy.dead and enemy.state == unit_states['frozen'] then
-              Helper.Unit:set_state(enemy, unit_states['normal'])
-          end
-      end)
+  local data = {}
+  if table.contains(special_enemies, type) then
+      hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}
+  else
+      hit3:play{pitch = random:float(0.8, 1.2), volume = 0.4}
   end
+  
+  local enemy = Enemy{type = type, group = arena.main,
+                      x = location.x, y = location.y,
+                      level = 1, data = data}
 
-  -- Use the new helper to create the enemy with a 1-second warning marker.
-  Create_Unit_With_Warning(arena, location, 2, create_enemy_action, type)
+  -- Set enemy to frozen for 1 second on spawn.
+  Helper.Unit:set_state(enemy, unit_states['frozen'])
+  enemy.t:after(0.3, function()
+      if enemy and not enemy.dead and enemy.state == unit_states['frozen'] then
+          Helper.Unit:set_state(enemy, unit_states['normal'])
+      end
+  end)
 end
 
 function Countdown(arena)
@@ -646,31 +607,56 @@ function SetSpawning(arena, b)
 end
 
 -- ===================================================================
--- NEW Helper Function
--- Creates a spawn marker, waits, then creates a unit via a callback.
--- This is the new core of all enemy spawning.
+-- REVISED Helper Function
+-- Shows a warning marker immediately, then stalls until the space is clear to spawn.
 -- ===================================================================
-function Create_Unit_With_Warning(arena, location, warning_time, creation_callback, enemy_type)
-  warning_time = warning_time or 2 -- Default to a 2-second warning
+function Create_Unit_With_Warning(arena, location, warning_time, enemy_type, creation_callback, on_spawn_success_callback)
+  local check_again_delay = 0.25 
+  local spawn_radius = 10
+  local enemy_size = enemy_type_to_size[enemy_type]
 
-  -- 1. Create the new animated circle effect.
-  -- It will animate for the duration of the warning_time and then self-destruct.
-  AnimatedSpawnCircle{
-      group = arena.floor,
-      x = location.x,
-      y = location.y,
-      duration = warning_time,
-      enemy_type = enemy_type -- Pass the enemy type for size calculation
+  if enemy_size then
+    local enemy_width = enemy_size_to_xy[enemy_size].x
+    spawn_radius = enemy_width / 2
+  end
+
+  -- 1. Create the visual warning marker immediately.
+  -- We get a reference to it so we can destroy it manually later.
+  local warning_marker = AnimatedSpawnCircle{
+      group = arena.floor, x = location.x, y = location.y,
+      duration = 1000, -- Give it a long duration so it doesn't fade early
+      enemy_type = enemy_type
   }
-  -- Play a sound to accompany the visual warning.
   spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
 
-  -- 2. Schedule the unit creation to happen after the delay.
+  -- 2. After the initial warning time, start checking if the space is clear.
   arena.t:after(warning_time, function()
-      -- The visual effect is already gone at this point.
-      -- Call the provided function to actually create the unit.
-      if creation_callback then
-          creation_callback()
+      
+      local attempt_final_spawn -- Forward-declare for the self-rescheduling timer
+      
+      attempt_final_spawn = function()
+        -- Check if the area is occupied
+        local spawn_circle = Circle(location.x, location.y, spawn_radius)
+        local objects_in_spawn_area = arena.main:get_objects_in_shape(spawn_circle, arena.all_unit_classes)
+          
+          -- If the area is still blocked, stall and retry this check in a moment.
+          -- The visual warning marker remains on-screen during this stall.
+          if #objects_in_spawn_area > 0 then
+              arena.t:after(check_again_delay, attempt_final_spawn)
+              return
+          end
+          
+          -- The area is finally clear! Time to spawn.
+          
+          -- First, remove the warning marker since the unit is now appearing.
+          warning_marker.dead = true
+          
+          -- Then, run the callbacks to create the unit and notify the spawn manager.
+          if creation_callback then creation_callback() end
+          if on_spawn_success_callback then on_spawn_success_callback() end
       end
+
+      -- Start the first attempt to spawn.
+      attempt_final_spawn()
   end)
 end

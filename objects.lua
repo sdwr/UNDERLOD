@@ -1107,7 +1107,7 @@ function Unit:chill(damage, from)
 end
 
 function Unit:freeze(from)
-  freeze_sound:play{pitch = random:float(0.8, 1.2), volume = 1.8}
+  freeze_sound:play{pitch = random:float(0.8, 1.2), volume = 1.1}
   local freezeBuff = {name = 'freeze', duration = FREEZE_DURATION, maxDuration = FREEZE_DURATION}
   self:add_buff(freezeBuff)
 end
@@ -1429,7 +1429,7 @@ function Unit:update_cast_cooldown(dt)
     print('no castcooldown in update_cast_cooldown', self.type)
     return
   end
-  
+
   if self.castcooldown > 0 then
     self.castcooldown = self.castcooldown - dt
   end
