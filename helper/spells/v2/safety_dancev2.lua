@@ -85,9 +85,9 @@ function SafetyDanceSpell:apply_damage()
     self.targets_hit_this_tick = {} -- Reset hit targets for this Tick
     local target_classes = {Helper.Unit.troop, Helper.Unit.boss}
     if self.damage_troops then
-      target_classes = main.current.friendlies
+        target_classes = main.current.friendlies
     else 
-      target_classes = main.current.enemies
+        target_classes = main.current.enemies
     end
 
     for _, zone in ipairs(self.damage_zones) do
@@ -114,26 +114,85 @@ function SafetyDanceSpell:draw()
     end
 end
 
+-- ===================================================================
+-- NEW HELPER FUNCTION
+-- This function draws a tiled hexagonal pattern inside a given rectangle.
+-- ===================================================================
+function SafetyDanceSpell:draw_tiled_hexagons(zone, color, mode)
+    mode = mode or 'fill' -- Default to filled hexagons
+    local hex_radius = 12 -- The size of each hexagon tile
+
+    -- Pre-calculate hexagon geometry constants for a pointy-topped hexagon
+    local hex_height = math.sqrt(3) * hex_radius
+    local hex_width = 2 * hex_radius
+    
+    -- Get the boundaries of the rectangular zone
+    local start_x, end_x = zone.x - zone.w / 2, zone.x + zone.w / 2
+    local start_y, end_y = zone.y - zone.h / 2, zone.y + zone.h / 2
+
+    local row = 0
+    -- Iterate through the vertical space of the zone
+    for y = start_y - hex_height, end_y + hex_height, hex_height do
+        row = row + 1
+        -- Iterate through the horizontal space of the zone
+        for x = start_x - hex_width, end_x + hex_width, hex_width * 0.75 do
+            -- Apply horizontal offset for every other row to create a staggered grid
+            local current_x = x
+            if row % 2 == 0 then
+                current_x = x + hex_width * 0.375
+            end
+
+            -- Calculate the 6 vertices for a single hexagon
+            local points = {}
+            for i = 0, 5 do
+                local angle = math.pi / 3 * i
+                table.insert(points, current_x + hex_radius * math.cos(angle))
+                table.insert(points, y + hex_radius * math.sin(angle))
+            end
+
+            -- Draw the hexagon using the specified mode ('fill' or 'line')
+            graphics.polygon(points, color, mode == 'line' and 1 or nil)
+        end
+    end
+end
+
+-- ===================================================================
+-- REFACTORED: draw_aiming_rects
+-- Now draws a grid of hexagon outlines.
+-- ===================================================================
 function SafetyDanceSpell:draw_aiming_rects()
     local pctCharged = self.charge_timer / self.charge_duration
     local alpha = math.min(pctCharged * 0.4, 0.4)
     local color = self.color:clone()
     color.a = alpha
 
+    -- Use a stencil to ensure hexagons only draw inside the zone's rectangle
     for _, zone in ipairs(self.damage_zones) do
-        graphics.rectangle(zone.x, zone.y, zone.w, zone.h, 0, 0, color)
-        graphics.rectangle(zone.x, zone.y, zone.w - 10, zone.h - 10, 0, 0, color)
+      graphics.push(zone.x, zone.y)
+        graphics.draw_with_mask(
+            function() self:draw_tiled_hexagons(zone, color, 'line') end,
+            function() graphics.rectangle(zone.x, zone.y, zone.w, zone.h, nil, nil, color) end
+        )
+        graphics.pop()
     end
 end
 
+-- ===================================================================
+-- REFACTORED: draw_active_rects
+-- Now draws a solid field of filled hexagons.
+-- ===================================================================
 function SafetyDanceSpell:draw_active_rects()
     local color = self.color:clone()
     -- Optional: Fade out the effect as its duration ends
     local fade_pct = self.active_timer / self.active_duration
     color.a = 0.8 * (1 - fade_pct)
 
+    -- Use a stencil to ensure hexagons only draw inside the zone's rectangle
     for _, zone in ipairs(self.damage_zones) do
-        graphics.rectangle(zone.x, zone.y, zone.w, zone.h, 0, 0, color)
+        graphics.draw_with_mask(
+            function() self:draw_tiled_hexagons(zone, color, 'fill') end,
+            function() graphics.rectangle(zone.x, zone.y, zone.w, zone.h, nil, nil, color) end
+        )
     end
 end
 
