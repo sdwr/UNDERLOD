@@ -31,9 +31,25 @@ function CharacterSelectOverlay:init(args)
   local x3 = gw/2 + w + w_between
   local card_y = gh/2
 
-  self.cards[1] = ShopCard{group = self.group, x = x1, y = card_y, w = w, h = h, unit = unit1, parent = self, i = 1}
+  local unit1_locked = true
+  local unit3_locked = true
+  
+  if USER_STATS.stompy_defeated >= 1 then
+    unit1_locked = false
+  end
+  if USER_STATS.dragon_defeated >= 1 then
+    unit3_locked = false
+  end
+
+  self.cards[1] = ShopCard{group = self.group, 
+  x = x1, y = card_y, w = w, h = h, 
+  unit = unit1, parent = self, i = 1, locked = unit1_locked}
+
   self.cards[2] = ShopCard{group = self.group, x = x2, y = card_y, w = w, h = h, unit = unit2, parent = self, i = 2}
-  self.cards[3] = ShopCard{group = self.group, x = x3, y = card_y, w = w, h = h, unit = unit3, parent = self, i = 3}
+
+  self.cards[3] = ShopCard{group = self.group, 
+  x = x3, y = card_y, w = w, h = h, 
+  unit = unit3, parent = self, i = 3, locked = unit3_locked}
 
   --disable clicking for the first .25 seconds
   self.interact_with_mouse = false
@@ -108,6 +124,11 @@ function ShopCard:update(dt)
       return
     end
 
+    if self.locked then
+      print('cant buy unit')
+      return
+    end
+
     main.current:buy_unit(self.unit)
     ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     _G[random:table{'coins1', 'coins2', 'coins3'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
@@ -146,6 +167,13 @@ function ShopCard:draw()
       graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, bg[2])
     end
     graphics.rectangle(self.x, self.y, self.w, self.h, 4, 4, bg[1], 5)
+
+    if self.locked then
+      self.locked_size = self.w * 0.5
+      self.locked_scale_x = (self.locked_size / LOCKED_W) * LOCKED_SCALE
+      self.locked_scale_y = (self.locked_size / LOCKED_H) * LOCKED_SCALE
+      locked_image:draw(self.x, self.y + 10, 0, self.locked_scale_x, self.locked_scale_y, 0, 0, bg[1])
+    end
   graphics.pop()
 end
 

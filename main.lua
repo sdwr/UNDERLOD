@@ -343,9 +343,16 @@ function init()
   frostorb              = Image(d .. 'frostorb')
 
   exclamation_point_small = Image('exclamation_point_small')
+  
   EXCLAMATION_POINT_W = 150
   EXCLAMATION_POINT_H = 160
   EXCLAMATION_POINT_SCALE = 4
+  
+  locked_image = Image(d ..'locked')
+  LOCKED_W = 360
+  LOCKED_H = 360
+  LOCKED_SCALE = 1.5
+
 
 -- normal and stopped are tied together for the purpose of attacking
 -- rallying and following are tied together for the purpose of moving
