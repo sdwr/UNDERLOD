@@ -472,7 +472,16 @@ item_to_item_data = {
     procs = {'blazin'},
     prereqs = {'fire'}
   },
-
+  ['volcano'] = {
+    name = 'volcano',
+    colors = {'red'},
+    cost = 10,
+    icon = 'volcano',
+    desc = 'Attacking a [red]burning[fg] enemy has a chance to create a [red]lava pool[fg]',
+    stats = {dmg = 0.25},
+    procs = {'volcano'},
+    prereqs = {'fire'}
+  },
 
   ['shatterlance'] = {
     name = 'shatterlance',
@@ -580,16 +589,6 @@ item_to_item_data = {
   --   prereqs = {'fire'}
   -- },
 
-  ['lavapool'] = {
-    name = 'lavapool',
-    colors = {'red'},
-    cost = 15,
-    icon = 'lavapool',
-    desc = 'When a [red]burning[fg] enemy dies, it creates a pool of [red]lava[fg]',
-    stats = {dmg = 0.25},
-    procs = {'lavapool'},
-    tags = {'fire'}
-  },
   ['glacialprison'] = {
     name = 'glacialprison',
     colors = {'blue'},

@@ -1331,42 +1331,36 @@ function Proc_Fire:onHit(target, damage)
   target:hit(burn_damage, nil, DAMAGE_TYPE_FIRE, false)
 end
 
-Proc_Lavapool = Proc:extend()
-function Proc_Lavapool:init(args)
-  self.triggers = {PROC_ON_ATTACK, PROC_ON_HIT}
+Proc_Volcano = Proc:extend()
+function Proc_Volcano:init(args)
+  self.triggers = {PROC_ON_ATTACK}
   self.scope = 'troop'
 
-  Proc_Lavapool.super.init(self, args)
+  Proc_Volcano.super.init(self, args)
   
 
   --define the proc's vars
+  self.chance_to_proc = self.data.chance_to_proc or 0.2
   self.duration = self.data.duration or 3
   self.color = self.data.color or red[0]
   self.damage = self.data.damage or 10
   self.tick_rate = self.data.tick_rate or 1
-  self.radius = self.data.radius or 25
-  self.every_attacks = self.data.every_attacks or 4
+  self.radius = self.data.radius or 35
 
   --define the procs memory
-  self.has_attacked = false
-  self.attacks_left = math.random(1, self.every_attacks)
 end
 
-function Proc_Lavapool:onAttack(target)
-  Proc_Lavapool.super.onAttack(self, target)
-  if self.attacks_left > 0 then
-    self.has_attacked = true
+function Proc_Volcano:onAttack(target)
+  Proc_Volcano.super.onAttack(self, target)
+
+  if not target or not target:has_buff('burn') then return end
+
+  if math.random() < self.chance_to_proc then
+    self:create_lava_pool(target)
   end
 end
 
-function Proc_Lavapool:onHit(target, damage)
-  Proc_Lavapool.super.onHit(self, target, damage)
-  if self.has_attacked then
-    self.has_attacked = false
-    self.attacks_left = self.attacks_left - 1
-    if self.attacks_left == 0 then
-      self.attacks_left = self.every_attacks
-
+function Proc_Volcano:create_lava_pool(target)
       --remove level from spell
       Area{
         group = main.current.floor,
@@ -1382,8 +1376,6 @@ function Proc_Lavapool:onHit(target, damage)
         burnDps = 10,
         burnDuration = 2
       }
-    end
-  end
 end
 
 Proc_Lavaman = Proc:extend()
@@ -2077,7 +2069,7 @@ proc_name_to_class = {
   ['sympatheticvoltage'] = Proc_SympatheticVoltage,
   --red procs
   ['fire'] = Proc_Fire,
-  ['lavapool'] = Proc_Lavapool,
+  ['volcano'] = Proc_Volcano,
   ['firenova'] = Proc_Firenova,
   ['lavaman'] = Proc_Lavaman,
   -- ['fireexplode'] = Proc_FireExplode,
