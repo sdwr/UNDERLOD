@@ -1273,6 +1273,44 @@ function Proc_Shield:die()
   trigger:cancel(self.manual_trigger)
 end
 
+Proc_SympatheticVoltage = Proc:extend()
+function Proc_SympatheticVoltage:init(args)
+  self.triggers = {PROC_ON_ATTACK}
+  self.scope = 'troop'
+
+  Proc_SympatheticVoltage.super.init(self, args)
+
+  --define the proc's vars
+  self.chance_to_proc = self.data.chance_to_proc or 0.2
+  self.damage = self.data.damage or 10
+  self.color = self.data.color or yellow[0]
+end
+
+function Proc_SympatheticVoltage:onAttack(target)
+  Proc_SympatheticVoltage.super.onAttack(self, target)
+
+  if not self.unit then return end
+
+  if not target or not target:has_buff('shock') then return end
+
+  if math.random() < self.chance_to_proc then
+    self:create_lightning_ball(target)
+  end
+  
+end
+
+function Proc_SympatheticVoltage:create_lightning_ball(target)
+  LightningBall{
+    group = main.current.main,
+    x = target.x, y = target.y,
+    duration = 4,
+    damage = self.damage,
+    num_targets = 3,
+    tick_rate = 1,
+  }
+end
+
+
 Proc_Fire = Proc:extend()
 function Proc_Fire:init(args)
   self.triggers = {PROC_ON_HIT}
@@ -2036,6 +2074,7 @@ proc_name_to_class = {
   ['lightning'] = Proc_Lightning,
   ['radiance'] = Proc_Radiance,
   ['shield'] = Proc_Shield,
+  ['sympatheticvoltage'] = Proc_SympatheticVoltage,
   --red procs
   ['fire'] = Proc_Fire,
   ['lavapool'] = Proc_Lavapool,

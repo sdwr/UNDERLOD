@@ -658,6 +658,11 @@ function FireWall:init(args)
   end
   self.x = self.start_x
 
+  self.angle = 0
+  if self.direction == -1 then
+    self.angle = math.pi
+  end
+
   --hole in the wall
   self.wall_type = self.wall_type or 'segments'
   self.num_segments = self.num_segments or 4
@@ -683,8 +688,9 @@ function FireWall:try_damage(unit)
 
     local push_angle = self.angle
     local knockback_duration = KNOCKBACK_DURATION_ENEMY
+    local knockback_force = LAUNCH_PUSH_FORCE_SPECIAL_ENEMY
     
-    unit:push(self.knockback_force, push_angle, nil, knockback_duration)
+    unit:push(knockback_force, push_angle, nil, knockback_duration)
 
     unit:hit(self.damage, self.unit)
     
@@ -990,6 +996,151 @@ function LaserBall:bounce(nx, ny)
   return self.r
 end
 -----------------------------------------
+
+-- ====================================================================
+-- LightningBall Class
+-- A projectile that travels in a random direction, periodically
+-- zapping nearby enemies with lightning.
+-- ====================================================================
+
+LightningBall = Object:extend()
+LightningBall:implement(GameObject)
+LightningBall:implement(Physics)
+
+function LightningBall:init(args)
+    self:init_game_object(args)
+    
+    -- Core Properties
+    self.radius = self.radius or 8
+    self:set_as_circle(self.radius, 'dynamic', 'effect')
+    self.shape = Circle(self.x, self.y, self.radius)
+
+    -- Visuals
+    self.color = self.color or yellow[0]
+    self.color = self.color:clone()
+    self.color.a = 0.5
+    self.core_color = white[0]:clone()
+    self.core_color.a = 0.8
+    self.sparks = {}
+    self:create_sparks()
+
+    -- Behavior Properties
+    self.damage = self.damage or 15
+    self.shock_duration = self.shock_duration or 3
+    self.speed = self.speed or 30
+    self.duration = self.duration or 4
+    self.tick_rate = self.tick_rate or 1.5
+    self.num_targets = self.num_targets or 3
+    self.max_target_distance = self.max_target_distance or 75
+
+    -- Movement
+    self.r = random:float(0, 2 * math.pi)
+    self:set_angle(self.r)
+    local vx = math.cos(self.r) * self.speed
+    local vy = math.sin(self.r) * self.speed
+    self:set_velocity(vx, vy)
+
+    -- Timers and State
+    self.elapsed = 0
+    self.next_tick = self.tick_rate
+    self.recently_shocked = {}
+end
+
+function LightningBall:update(dt)
+    self:update_game_object(dt)
+    self.elapsed = self.elapsed + dt
+    self.next_tick = self.next_tick - dt
+
+    -- Expire after duration
+    if self.elapsed >= self.duration then
+        self:die()
+        return
+    end
+
+    -- Check if it's time to shock targets
+    if self.next_tick <= 0 then
+        self:find_and_shock_targets()
+        self.next_tick = self.tick_rate
+    end
+    
+    -- Update the visual effect
+    self:update_sparks(dt)
+end
+
+function LightningBall:find_and_shock_targets()
+    -- Find all potential targets (assuming this gets all enemy units)
+    local potential_targets = Helper.Unit:get_list(false)
+    
+    -- Sort targets by distance to find the closest ones
+    table.sort(potential_targets, function(a, b)
+        return self:distance_to_object(a) < self:distance_to_object(b)
+    end)
+
+    local targets_shocked_this_tick = 0
+    for _, target in ipairs(potential_targets) do
+        if self:distance_to_object(target) > self.max_target_distance then
+            break
+        end
+
+        if targets_shocked_this_tick >= self.num_targets then
+            break
+        end
+
+        -- Shock the target
+        target:hit(self.damage, nil, DAMAGE_TYPE_LIGHTNING, false) -- Assuming units have an apply_shock method
+
+        -- Create the lightning visual effect
+        LightningLine{
+            group = main.current.effects,
+            src = self,
+            dst = target,
+            color = self.color,
+            generations = 4,
+            max_offset = 12
+        }
+        
+        targets_shocked_this_tick = targets_shocked_this_tick + 1
+    end
+    
+    if targets_shocked_this_tick > 0 then
+      spark2:play{pitch = random:float(0.8, 1.2), volume = 0.4}
+    end
+end
+
+-- Visual effect logic
+function LightningBall:create_sparks()
+    for i = 1, 5 do
+        table.insert(self.sparks, {
+            angle = random:float(0, 2 * math.pi),
+            dist = random:float(self.radius * 0.5, self.radius * 1.2),
+            speed = random:float(2, 4),
+            size = random:float(1, 3)
+        })
+    end
+end
+
+function LightningBall:update_sparks(dt)
+    for _, spark in ipairs(self.sparks) do
+        spark.angle = (spark.angle + spark.speed * dt) % (2 * math.pi)
+    end
+end
+
+function LightningBall:draw()
+    -- Draw the crackling sparks
+    for _, spark in ipairs(self.sparks) do
+        local spark_x = self.x + math.cos(spark.angle) * spark.dist
+        local spark_y = self.y + math.sin(spark.angle) * spark.dist
+        graphics.circle(spark_x, spark_y, spark.size, self.color)
+    end
+
+    -- Draw the solid white core
+    graphics.circle(self.x, self.y, self.radius * 0.6, self.core_color)
+end
+
+function LightningBall:die()
+    self.dead = true
+end
+
 
 GoldItem = Object:extend()
 GoldItem:implement(GameObject)
