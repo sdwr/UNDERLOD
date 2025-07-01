@@ -101,6 +101,8 @@ function Cleave:create_cone_mesh()
 end
 
 function Cleave:update(dt)
+  if self.dead then return end
+  
   self:update_game_object(dt) 
   self.time_elapsed = self.time_elapsed + dt
   
