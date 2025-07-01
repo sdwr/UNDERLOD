@@ -743,3 +743,15 @@ enemy_type_to_size = {
   -- Environmental enemies
   ['critter'] = 'critter',
 }
+
+enemy_size_to_num_particles = {
+  ['small'] = 3,
+  ['regular'] = 4,
+  ['regular_big'] = 5,
+  ['big'] = 6,
+  ['huge'] = 7,
+  ['boss'] = 10,
+  ['heigan'] = 10,
+  ['stompy'] = 10,
+  ['critter'] = 3,
+}

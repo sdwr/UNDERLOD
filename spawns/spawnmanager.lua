@@ -528,15 +528,12 @@ end
 -- This function is now just a simple unit factory.
 function Spawn_Enemy(arena, type, location)
   local data = {}
-  if table.contains(special_enemies, type) then
-      hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}
-  else
-      hit3:play{pitch = random:float(0.8, 1.2), volume = 0.4}
-  end
   
   local enemy = Enemy{type = type, group = arena.main,
                       x = location.x, y = location.y,
                       level = 1, data = data}
+
+  Spawn_Enemy_Effect(arena, enemy)
 
   -- Set enemy to frozen for 1 second on spawn.
   Helper.Unit:set_state(enemy, unit_states['frozen'])
@@ -567,6 +564,8 @@ function Spawn_Boss(arena, name)
   -- Define the action of creating the boss.
   local create_boss_action = function()
       LevelManager.activeBoss = Enemy{type = name, isBoss = true, group = arena.main, x = SpawnGlobals.boss_spawn_point.x, y = SpawnGlobals.boss_spawn_point.y, level = arena.level}
+      Spawn_Enemy_Effect(arena, LevelManager.activeBoss)
+
       arena.spawning_enemies = false
       arena.wave_finished = true
       arena.finished = true
@@ -591,8 +590,8 @@ function Spawn_Critters(arena, group_index, amount)
 
       -- Define the creation action for this specific critter.
       local create_critter_action = function()
-          alert1:play{pitch = 1, volume = 0.3}
           EnemyCritter{group = arena.main, x = spawn_pos.x, y = spawn_pos.y, color = grey[0], v = 10}
+          Spawn_Enemy_Effect(arena, enemy)
       end
       
       -- Spawn this critter with its own short warning marker.
@@ -604,6 +603,66 @@ end
 
 function SetSpawning(arena, b)
   arena.spawning_enemies = b
+end
+
+function Spawn_Enemy_Effect(arena, enemy)
+  local enemy_type = enemy.type
+  local enemy_size = enemy_type_to_size[enemy_type]
+  local enemy_width = enemy_size_to_xy[enemy_size].x
+
+  local color = enemy.color
+
+  Spawn_Enemy_Sound(arena, enemy)
+  
+  -- Add spawn wobble/hit effect to the enemy
+  enemy.hfx:use('hit', 0.3, 200, 10, 0.2)
+  enemy.spring:pull(0.2, 200, 10) -- Add spring wobble effect
+  
+  -- Add screen shake for bosses
+  if enemy.isBoss then
+    camera:shake(3, 0.3)
+  end
+  
+  local num_particles = enemy_size_to_num_particles[enemy_size]
+  for i = 1, num_particles do
+    local particle = HitParticle{
+      group = arena.effects,
+      color = color,
+      x = enemy.x, y = enemy.y,
+      type = 'effect',
+      size = 1,
+      speed = 10,
+      direction = random:float(0, 2 * math.pi),
+      duration = 1,
+      fade_out = true,
+      fade_out_duration = 1,
+    }
+  end
+end
+
+function Spawn_Enemy_Sound(arena, enemy)
+  local enemy_type = enemy.type
+  local enemy_size = enemy_type_to_size[enemy_type]
+
+  if enemy_size == 'small' then
+    hit3:play{pitch = random:float(0.8, 1.2), volume = 0.4}
+  elseif enemy_size == 'regular' then
+    hit3:play{pitch = random:float(0.8, 1.2), volume = 0.4}
+  elseif enemy_size == 'regular_big' then
+    hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}
+  elseif enemy_size == 'big' then
+    hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}
+  elseif enemy_size == 'huge' then
+    hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}
+  elseif enemy_size == 'boss' then
+    hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}
+  elseif enemy_size == 'heigan' then
+    hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}
+  elseif enemy_size == 'stompy' then
+    hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}
+  elseif enemy_size == 'critter' then
+    alert1:play{pitch = 1, volume = 0.3}
+  end
 end
 
 -- ===================================================================

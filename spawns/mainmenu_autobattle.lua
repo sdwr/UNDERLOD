@@ -179,6 +179,7 @@ function MainMenuAutoBattle:spawn_enemy()
         
     local enemy = Spawn_Enemy(main.current, enemy_type, {x = x, y = y})
     if enemy then
+        Spawn_Enemy_Effect(main.current, enemy)
         table.insert(self.enemies, enemy)
     end
 end

@@ -36,8 +36,9 @@ function Summon_Spell:spawn()
       local offset = SpawnGlobals.spawn_offsets[i % #SpawnGlobals.spawn_offsets]
       local x, y = self.x + offset.x, self.y + offset.y
       if Can_Spawn(2, {x = x, y = y}) then
-          EnemyCritter{group = main.current.main, x = x, y = y, color = grey[0], r = random:float(0, 2*math.pi), 
+          local enemy = EnemyCritter{group = main.current.main, x = x, y = y, color = grey[0], r = random:float(0, 2*math.pi), 
           v = 10, parent = self.unit}
+          Spawn_Enemy_Effect(main.current, enemy)
       end
     end
   else
@@ -45,7 +46,8 @@ function Summon_Spell:spawn()
       local offset = SpawnGlobals.spawn_offsets[i % #SpawnGlobals.spawn_offsets]
       local x, y = self.x + offset.x, self.y + offset.y
       if Can_Spawn(6, {x = x, y = y}) then
-          Enemy{type = self.type, group = main.current.main, x = self.x + x, y = self.y + y, level = self.level, parent = self.unit}
+          local enemy = Enemy{type = self.type, group = main.current.main, x = self.x + x, y = self.y + y, level = self.level, parent = self.unit}
+          Spawn_Enemy_Effect(main.current, enemy)
       end
     end
   end
