@@ -227,8 +227,10 @@ function Wave_Types:Get_Waves(level)
     table.insert(waves, wave)
   elseif level == 9 then
     wave = self:Two_Basic_Two_Firewall(2)
+    self:Add_Group(wave, {'seeker', NORMAL_ENEMIES_PER_GROUP, 'kicker'})
     table.insert(waves, wave)
     wave = self:Two_Basic_Two_Firewall(2)
+    self:Add_Group(wave, {'shooter', NORMAL_ENEMIES_PER_GROUP, 'kicker'})
     table.insert(waves, wave)
     --when there are lots of enemies, they should all be spawning far
   else

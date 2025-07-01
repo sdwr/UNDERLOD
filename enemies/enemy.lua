@@ -247,6 +247,9 @@ end
 function Enemy:update_move_seek()
   if self:in_range()() and self.stopChasingInRange then
     -- dont need to move
+    self:wander(10, 10, 5)
+    self:rotate_towards_velocity(1)
+    self:steering_separate(8, {Enemy}, 4)
   elseif self.target then
   --can't change speed?
     local decel = SEEK_DECELERATION
@@ -254,9 +257,9 @@ function Enemy:update_move_seek()
       decel = 0
     end
     self:seek_point(self.target.x, self.target.y, decel, SEEK_WEIGHT)
-    self:wander(50, 200, 5)
+    self:wander(10, 10, 5)
     self:rotate_towards_velocity(1)
-    self:steering_separate(16, {Enemy}, 8)
+    self:steering_separate(8, {Enemy}, 4)
     -- self:rotate_towards_velocity(0.5)
   else
     -- dont need to move

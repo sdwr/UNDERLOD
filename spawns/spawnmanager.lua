@@ -477,12 +477,17 @@ function Spawn_Group(arena, group_index, group_data, on_finished, spawn_manager)
   Spawn_Group_Internal(arena, group_index, group_data, on_finished)
 end
 
+-- ===================================================================
+-- REFACTORED: Spawn_Group_Internal
+-- This version dynamically calculates spawn offsets in a grid to prevent
+-- units from overlapping, regardless of the group size.
+-- ===================================================================
 function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
   local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
   local spawn_marker_index = group_index
   amount = amount or 1
 
-  -- Determine the final spawn marker location
+  -- Determine the final spawn marker location based on type
   if spawn_type == 'far' then
       spawn_marker_index = Get_Far_Spawn(group_index)
   elseif spawn_type == 'random' then
@@ -491,15 +496,44 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
       spawn_marker_index = Get_Close_Spawn(group_index)
   end
   
-  local spawn_interval = 0
+  local spawn_marker = SpawnGlobals.get_spawn_marker(spawn_marker_index)
+
+  -- === DYNAMIC OFFSET CALCULATION ===
+  -- Get the size of the enemy to calculate appropriate spacing.
+  -- Assumes the existence of these helper tables.
+  local enemy_size_name = enemy_type_to_size[type] or 'regular'
+  local enemy_dimensions = enemy_size_to_xy[enemy_size_name] or {x = 12, y = 12}
   
-  -- This counter tracks how many of the parallel spawns have completed.
+  -- Use the larger dimension (width or height) as the base for spacing, and add a small buffer.
+  local spacing = math.max(enemy_dimensions.x, enemy_dimensions.y) + 8 
+
+  -- Dynamically generate offsets in a grid pattern.
+  local offsets = {}
+  -- Arrange units in a rough square grid (e.g., 9 units -> 3x3 grid, 10 units -> 4x3 grid)
+  local num_columns = math.ceil(math.sqrt(amount)) 
+  for i = 1, amount do
+      local row = math.floor((i - 1) / num_columns)
+      local col = (i - 1) % num_columns
+      
+      -- Calculate position relative to the center of the grid to keep it centered on the spawn_marker
+      local base_offset_x = (col - (num_columns - 1) / 2) * spacing
+      local base_offset_y = (row - (math.ceil(amount / num_columns) - 1) / 2) * spacing
+      
+      -- Add random jitter to the base position to break up the perfect grid.
+      -- The jitter amount is a fraction of the spacing to prevent major overlaps.
+      local jitter_x = random:float(-spacing / 3, spacing / 3)
+      local jitter_y = random:float(-spacing / 3, spacing / 3)
+
+      local final_offset_x = base_offset_x + jitter_x
+      local final_offset_y = base_offset_y + jitter_y
+      
+      table.insert(offsets, {x = final_offset_x, y = final_offset_y})
+  end
+  -- === END DYNAMIC OFFSET CALCULATION ===
+
   local finished_count = 0
-  
-  -- This callback will be passed to each individual spawner.
   local on_single_unit_done = function()
       finished_count = finished_count + 1
-      -- Once all units have spawned, call the original on_finished callback.
       if finished_count >= amount and on_finished then
           on_finished()
       end
@@ -507,23 +541,20 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
 
   -- This loop INITIATES all spawn processes at roughly the same time.
   for i = 1, amount do
-    local spawn_marker = SpawnGlobals.get_spawn_marker(spawn_marker_index)
-    local offset_index = ((i - 1) % #SpawnGlobals.spawn_offsets) + 1
-    local offset = SpawnGlobals.spawn_offsets[offset_index]
-    local location = {x = spawn_marker.x + offset.x, y = spawn_marker.y + offset.y}
+      local offset = offsets[i]
+      local location = {x = spawn_marker.x + offset.x, y = spawn_marker.y + offset.y}
 
-    -- Define the function that creates the unit
-    local create_enemy_action = function()
-        Spawn_Enemy(arena, type, location)
-    end
-    
-    -- Call the "smart" spawner for this single unit. It will handle its own
-    -- stalling if the area is blocked. We pass it our completion tracker.
-    arena.t:after(0.1 * i, function()
-      Create_Unit_With_Warning(arena, location, 2, create_enemy_action, type, on_single_unit_done)
-    end)
+      local create_enemy_action = function()
+          Spawn_Enemy(arena, type, location)
+      end
+      
+      -- Stagger the spawn warnings slightly for a better visual effect.
+      arena.t:after(0.1 * i, function()
+          Create_Unit_With_Warning(arena, location, 2, create_enemy_action, type, on_single_unit_done)
+      end)
   end
 end
+
 
 -- This function is now just a simple unit factory.
 function Spawn_Enemy(arena, type, location)
