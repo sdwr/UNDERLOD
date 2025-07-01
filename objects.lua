@@ -1425,6 +1425,11 @@ function Unit:pick_cast()
 end
 
 function Unit:update_cast_cooldown(dt)
+  if not self.castcooldown then
+    print('no castcooldown in update_cast_cooldown', self.type)
+    return
+  end
+  
   if self.castcooldown > 0 then
     self.castcooldown = self.castcooldown - dt
   end

@@ -11,6 +11,7 @@ fns['init_enemy'] = function(self)
   Set_Enemy_Shape(self, self.size)
 
   self.class = 'regular_enemy'
+  self.icon = 'goblin'
   self.attack_sensor = Circle(self.x, self.y, attack_ranges['medium-long'])
 
   --set attacks
@@ -38,7 +39,13 @@ fns['init_enemy'] = function(self)
 end
 
 fns['draw_enemy'] = function(self)   
-  graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
+  local animation_success = self:draw_animation(self.state, self.x, self.y, 0)
+
+  if not animation_success then
+      graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+    end
+  graphics.pop()
 end
 
 enemy_to_class['shooter'] = fns
