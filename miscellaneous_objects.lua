@@ -1070,8 +1070,8 @@ function CustomCursor:draw()
     if self.mode == 'simple' then
         self:draw_simple_mode()
     else
-        -- Check if the left mouse button is being held down
-        if input['m1'].down then
+        -- Check if the left mouse button is being held down OR space is held
+        if input['m1'].down or Helper.Unit.space_held then
             self:draw_pull_state()
         else
             self:draw_idle_state()

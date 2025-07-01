@@ -114,14 +114,24 @@ function Arena:on_enter(from)
   HotbarGlobals:clear_hotbar()
 
   Helper.Unit.team_button_width = 47
-  local total_width = #self.units * Helper.Unit.team_button_width + (#self.units - 1) * 5  -- Total width including spacing
+  local total_width = (#self.units + 1) * Helper.Unit.team_button_width + #self.units * 5  -- Total width including spacing (+1 for space button)
   local start_x = gw/2 - total_width/2  -- Center the entire hotbar
+  
+  -- Add space button at the beginning
+  local space_button = HotbarButton{group = self.ui, x = start_x + Helper.Unit.team_button_width/2, 
+                    y = gh - 15, force_update = true, button_text = 'SPACE', w = Helper.Unit.team_button_width, fg_color = 'white', bg_color = 'bg',
+                    color_marks = {}, character = 'space',
+                    action = function() 
+                      -- Space button action - this will be handled by input system
+                    end
+                  }
+  self.hotbar:add_button(0, space_button)  -- Use index 0 for space button
   
   for i = 1, #self.units do
     local character = self.units[i].character
     local type = character_types[character]
     local number = i
-    local b = HotbarButton{group = self.ui, x = start_x + Helper.Unit.team_button_width/2 + (Helper.Unit.team_button_width + 5) * (i - 1), 
+    local b = HotbarButton{group = self.ui, x = start_x + Helper.Unit.team_button_width/2 + (Helper.Unit.team_button_width + 5) * i, 
                           y = gh - 15, force_update = true, button_text = tostring(i), w = Helper.Unit.team_button_width, fg_color = 'white', bg_color = 'bg',
                           color_marks = {[1] = character_colors[character]}, character = character,
                           action = function() 

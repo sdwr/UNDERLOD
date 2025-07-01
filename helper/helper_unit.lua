@@ -2,6 +2,7 @@ Helper.Unit = {}
 
 Helper.Unit.cast_flash_duration = 0.08
 Helper.Unit.do_draw_points = false
+Helper.Unit.space_held = false
 
 function Helper.Unit:get_list(troop_list)
     if troop_list == nil then
@@ -309,12 +310,29 @@ function Helper.Unit:is_a_team_target(target)
     return false
 end
 
+function Helper.Unit:all_teams_target_flagged_enemy(enemy)
+    for i, team in ipairs(Helper.Unit.teams) do
+        team:clear_team_target()
+        team:clear_rally_point()
+        team:set_team_target(enemy)
+    end
+end
+
+function Helper.Unit:all_teams_set_rally_point(x, y)
+    for i, team in ipairs(Helper.Unit.teams) do
+        team:clear_team_target()
+        team:clear_rally_point()
+        team:set_rally_point(x, y)
+    end
+end
+
 
 --select + target from input
 function Helper.Unit:select()
     if not Helper.mouse_on_button then
         local flag = false
         --should be on key release, not press? or at least only check the first press
+
         if input['m2'].pressed then
 
             for i, enemy in ipairs(self:get_list(false)) do
@@ -326,25 +344,37 @@ function Helper.Unit:select()
             --target the flagged enemy with the selected troop
             if flag then
                 local flagged_enemy = Helper.Spell:get_nearest_target_from_point(Helper.mousex, Helper.mousey, false)
-                local selected_team = Helper.Unit:get_team_by_index(self.selected_team_index)
+                if Helper.Unit.space_held then
+                    --make all units target the flagged enemy
+                    Helper.Unit:all_teams_target_flagged_enemy(flagged_enemy)
+                else
+                    --just the selected team target the flagged enemy
+                    local selected_team = Helper.Unit:get_team_by_index(self.selected_team_index)
 
-                if selected_team then
-                    selected_team:clear_team_target()
-                    selected_team:clear_rally_point()
-                    selected_team:set_team_target(flagged_enemy)
+                    if selected_team then
+                        selected_team:clear_team_target()
+                        selected_team:clear_rally_point()
+                        selected_team:set_team_target(flagged_enemy)
+                    end
                 end
 
             else
-                --untarget the flagged enemy for the selected troop, if there is one
-                local selected_team = Helper.Unit:get_team_by_index(self.selected_team_index)
+                local x, y = Helper.mousex, Helper.mousey
+                if Helper.Unit.space_held then
+                    --make all units untarget the flagged enemy
+                    Helper.Unit:all_teams_set_rally_point(x, y)
+                else
+                    --untarget the flagged enemy for the selected troop, if there is one
+                    local selected_team = Helper.Unit:get_team_by_index(self.selected_team_index)
 
-                if selected_team then
-                    selected_team:clear_team_target()
-                    selected_team:clear_rally_point()
-                    
-                    --draw a rally point for the selected troops
-                    --and rally the selected troops to the point
-                    selected_team:set_rally_point(Helper.mousex, Helper.mousey)
+                    if selected_team then
+                        selected_team:clear_team_target()
+                        selected_team:clear_rally_point()
+                        
+                        --draw a rally point for the selected troops
+                        --and rally the selected troops to the point
+                        selected_team:set_rally_point(x, y)
+                    end
                 end
 
             end
@@ -359,9 +389,15 @@ function Helper.Unit:select()
                 selected_team:clear_rally_point()
                 selected_team:set_troop_state_to_following()
             end
-        elseif input['space'].down then
+        elseif input['space'].pressed then
+            Helper.Unit.space_held = true
+            main.current.hotbar.hotbar_by_index[0]:action_animation()
+            main.current.hotbar:select_by_index(0)
             --move "move all units" in here?
             -- still split between troop update and here
+        elseif input['space'].released then
+            Helper.Unit.space_held = false
+            main.current.hotbar:select_by_old_index()
         end
     end
 

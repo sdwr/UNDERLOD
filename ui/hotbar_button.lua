@@ -6,6 +6,7 @@ function HotbarGlobals:init(args)
   self.hotbar_by_index = {}
   self.selected_character = nil
   self.selected_index = nil
+  self.old_selected_index = nil
 end
 
 function HotbarGlobals:clear_hotbar()
@@ -42,6 +43,11 @@ function HotbarGlobals:select_by_index(index)
     return
   end
 
+  if index == 0 then
+    self.old_selected_index = self.selected_index
+  end
+
+
   if self.selected_index then
     self.hotbar_by_index[self.selected_index].selected = false
     self.hotbar_by_index[self.selected_index]:update_text()
@@ -50,6 +56,14 @@ function HotbarGlobals:select_by_index(index)
   self.hotbar_by_index[index].selected = true
   self.hotbar_by_index[index]:action()
   self.hotbar_by_index[index]:update_text()
+end
+
+function HotbarGlobals:select_by_old_index()
+  if not self.old_selected_index then
+    print('no old selected index')
+    return
+  end
+  self:select_by_index(self.old_selected_index)
 end
 
 
