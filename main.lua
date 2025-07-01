@@ -1194,31 +1194,21 @@ function init()
 
   special_enemy_by_tier = {
     [1] = {
-      'cleaver',
-      'laser',
+      'mortar',
       'burst',
-      'boomerang',
       'charger',
       
     },
     [2] = {
       'laser',
-      'stomper',
-      'burst',
       'boomerang',
-
-      'plasma',
-      'spread',
-      
-      'mortar',
-      'summoner',
-      'arcspread',
-
       'firewall_caster',
+
     },
     [3] = {
-      'summoner',
-      -- 'assassin',
+      'arcspread',
+      'burst',
+      'plasma',
     },
   }
 

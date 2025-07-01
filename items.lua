@@ -363,14 +363,14 @@ item_to_item_data = {
   --10 COST ITEMS
   -----------------------------------------
 
-  ['stockmarket'] = {
-    name = 'stockmarket',
-    colors = {},
-    cost = 10,
-    icon = 'linegoesup',
-    desc = 'Gain interest on your gold (1 per ' .. math.floor(1 / INTEREST_AMOUNT).. ', up to ' .. MAX_INTEREST .. ')',
-    stats = {hp = 0.2}
-  },
+  -- ['stockmarket'] = {
+  --   name = 'stockmarket',
+  --   colors = {},
+  --   cost = 10,
+  --   icon = 'linegoesup',
+  --   desc = 'Gain interest on your gold (1 per ' .. math.floor(1 / INTEREST_AMOUNT).. ', up to ' .. MAX_INTEREST .. ')',
+  --   stats = {hp = 0.2}
+  -- },
   ['shieldslam'] = {
     name = 'shieldslam',
     colors = {},
