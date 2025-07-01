@@ -290,16 +290,16 @@ function AchievementsPanel:draw()
         end
     end
 
-    -- Draw achievement text section at bottom
+    -- Draw achievement text section in center of screen
     if self.achievement_title_text and self.achievement_desc_text then
         -- Draw title
-        self.achievement_title_text:draw(self.x, self.y + self.grid_h/2 - 20)
+        self.achievement_title_text:draw(gw/2, gh/2 - 20)
         
         -- Draw description
-        self.achievement_desc_text:draw(self.x, self.y + self.grid_h/2 + 5)
+        self.achievement_desc_text:draw(gw/2, gh/2 + 5)
 
         -- Draw unlocks
-        self.achievement_unlocks_text:draw(self.x, self.y + self.grid_h/2 + 35)
+        self.achievement_unlocks_text:draw(gw/2, gh/2 + 35)
     end
     
     love.graphics.setColor(1, 1, 1, 1) -- Reset color
