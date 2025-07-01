@@ -4,7 +4,8 @@ ItemTooltip:implement(GameObject)
 -- Constants for layout
 local PADDING = 8
 local HEADER_HEIGHT = 8
-local TOOLTIP_WIDTH = 220 -- A fixed width makes layout much easier
+local STATS_DESC_PADDING = 16 -- New: Specific padding for this gap
+local TOOLTIP_WIDTH = 220
 
 function ItemTooltip:init(args)
   self:init_game_object(args)
@@ -65,7 +66,7 @@ function ItemTooltip:init(args)
 
   -- 5. Calculate total dimensions for the background
   self.w = TOOLTIP_WIDTH
-  self.h = self.name_text.h + self.stats_text.h + self.desc_text.h + PADDING * 5
+  self.h = self.name_text.h + self.stats_text.h + self.desc_text.h + (PADDING * 4)
 
   -- Start the activation animation
   self:activate()
@@ -83,28 +84,36 @@ function ItemTooltip:draw()
   local left_x = cx - self.w/2
   local right_x = cx + self.w/2
   
-  -- Start drawing from the top
+  -- current_y will always represent the top boundary for the next element.
   local current_y = top_y
 
-  -- Draw Header
+  -- 1. Draw Header
+  -- Your header has custom left/right alignment, so we'll treat it specially.
   self.tags_text:draw(left_x + self.tags_text.w/2 + PADDING/2, current_y + self.tags_text.h/2 + PADDING/2)
   self.cost_text:draw(right_x - PADDING, current_y + PADDING)
-  current_y = current_y + PADDING + HEADER_HEIGHT
+  -- Advance past the header section.
+  current_y = current_y + PADDING
 
-  -- Draw Name
-  self.name_text:draw(cx, current_y)
+  -- 2. Draw Name
+  -- Advance to the vertical center of the Name text for drawing.
+  self.name_text:draw(cx, current_y + self.name_text.h / 2)
+  -- Advance past the Name text.
   current_y = current_y + self.name_text.h + PADDING
 
-  -- Draw Stats
+  -- 3. Draw Stats
   if self.stats_text.h > 0 then
-      self.stats_text:draw(cx, current_y)
+      -- Advance to the vertical center of the Stats text.
+      self.stats_text:draw(cx, current_y + self.stats_text.h / 2)
+      -- Advance past the Stats text.
       current_y = current_y + self.stats_text.h + PADDING
-  else
-    current_y = current_y + PADDING
   end
   
-  -- Draw Description
-  self.desc_text:draw(cx, current_y)
+  -- Advance to the vertical center of the Description text.
+  self.desc_text:draw(cx, current_y + self.desc_text.h / 2)
+  current_y = current_y + self.desc_text.h + PADDING
+  -- No need to advance current_y further, as this is the last element.
+
+  self.h = current_y - top_y
 
   graphics.pop()
 end
