@@ -188,12 +188,37 @@ function ShopCard:on_mouse_enter()
     type_icon.selected = true
     type_icon.spring:pull(0.1, 200, 10)
   end
+  
+  -- Show info text for locked cards
+  if self.locked then
+    local unlock_text = ""
+    if self.i == 1 then
+      unlock_text = "Defeat Stompy to unlock"
+    elseif self.i == 3 then
+      unlock_text = "Defeat the Dragon to unlock"
+    end
+    
+    if unlock_text ~= "" then
+      self.info_text = InfoText{group = self.group, force_update = true}
+      self.info_text:activate({
+        {text = '[fg]' .. unlock_text, font = pixul_font, alignment = 'center'},
+      }, nil, nil, nil, nil, 16, 4, nil, 2)
+      self.info_text.x, self.info_text.y = self.x, self.y
+    end
+  end
 end
 
 
 function ShopCard:on_mouse_exit()
   self.selected = false
   for _, type_icon in ipairs(self.type_icons) do type_icon.selected = false end
+  
+  -- Remove info text when mouse leaves
+  if self.info_text then
+    self.info_text:deactivate()
+    self.info_text.dead = true
+    self.info_text = nil
+  end
 end
 
 
