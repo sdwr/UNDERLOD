@@ -204,7 +204,7 @@ function Arena:on_exit()
 end
 
 
-function Arena:update(dt)
+function Arena:update(dt, is_lagging)
 
   if self.needs_first_update then
     self.needs_first_update = false
@@ -287,12 +287,20 @@ function Arena:update(dt)
   main_song_instance.pitch = math.clamp(slow_amount*music_slow_amount, 0.05, 1)
 
   if not self.paused then
+    local last_time
+    if is_lagging then last_time = os.clock() end
+    self.main:update(dt*slow_amount, is_lagging) -- Pass the flag down
+    if is_lagging then print(string.format("      - Group 'main' update took: %.2fms", (os.clock() - last_time) * 1000)); last_time = os.clock() end
+
     star_group:update(dt*slow_amount)
     self.floor:update(dt*slow_amount)
     self.main:update(dt*slow_amount)
     self.post_main:update(dt*slow_amount)
     self.effects:update(dt*slow_amount)
     self.ui:update(dt*slow_amount)
+
+    if is_lagging then print(string.format("      - Other groups update took: %.2fms", (os.clock() - last_time) * 1000)); last_time = os.clock() end
+
 
     Helper:update(dt*slow_amount)
     LevelManager.update(dt)

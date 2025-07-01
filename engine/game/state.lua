@@ -68,14 +68,14 @@ function Main:init(name)
 end
 
 
-function Main:update(dt)
+function Main:update(dt, is_lagging)
   for _, state in pairs(self.states) do
     if state.active or state.persistent_update then
-      state:update(dt)
+      state:update(dt, is_lagging)
     end
   end
-  self.transitions:update(dt)
-  self.cursorGroup:update(dt)
+  self.transitions:update(dt, is_lagging)
+  self.cursorGroup:update(dt, is_lagging)
 end
 
 

@@ -2,6 +2,7 @@ require 'save_game'
 require 'engine'
 require 'shared'
 require 'utils'
+require 'util/profiler/profilerv2'
 require 'game_constants'
 require 'combat_stats/init'
 require 'achievements/achievements'
@@ -1329,8 +1330,11 @@ function init()
 end
 
 love.frame = 0
-function update(dt)
-  main:update(dt)
+function update(dt, is_lagging)
+  if is_lagging then
+    print('update is_lagging')
+  end
+  main:update(dt, is_lagging)
   
   if love.USE_PROFILER then
     Run_Profiler()

@@ -49,27 +49,38 @@ function Group:init()
 end
 
 
-function Group:update(dt)
+function Group:update(dt, is_lagging)
   self.t:update(dt)
-  for _, object in ipairs(self.objects) do
-    if object.force_update then
-      object:update(1/refresh_rate)
-    else
-      object:update(dt)
-    end
-  end
-  if self.world then self.world:update(dt) end
 
+  local last_time
+  if is_lagging then last_time = os.clock() end
+
+  -- 1. Profile the main object update loop
+  for _, object in ipairs(self.objects) do
+      if object.force_update then
+          object:update(1/refresh_rate, is_lagging) -- Pass the flag down
+      else
+          object:update(dt, is_lagging) -- Pass the flag down
+      end
+  end
+  if is_lagging then print(string.format("        - All object:update() calls took: %.2fms", (os.clock() - last_time) * 1000)); last_time = os.clock() end
+
+  -- 2. Profile the physics world update
+  if self.world then self.world:update(dt) end
+  if is_lagging and self.world then print(string.format("        - Physics world:update() took: %.2fms", (os.clock() - last_time) * 1000)); last_time = os.clock() end
+
+  -- 3. Profile the cell grid rebuilding
   self.cells = {}
   for _, object in ipairs(self.objects) do
-    local cx, cy = math.floor(object.x/self.cell_size), math.floor(object.y/self.cell_size)
-    if tostring(cx) == tostring(0/0) or tostring(cy) == tostring(0/0) then
-    else
-      if not self.cells[cx] then self.cells[cx] = {} end
-      if not self.cells[cx][cy] then self.cells[cx][cy] = {} end
-      table.insert(self.cells[cx][cy], object)
-    end
+      local cx, cy = math.floor(object.x/self.cell_size), math.floor(object.y/self.cell_size)
+      if tostring(cx) ~= 'nan' and tostring(cy) ~= 'nan' then
+          if not self.cells[cx] then self.cells[cx] = {} end
+          if not self.cells[cx][cy] then self.cells[cx][cy] = {} end
+          table.insert(self.cells[cx][cy], object)
+      end
   end
+  if is_lagging then print(string.format("        - Cell grid rebuild took: %.2fms", (os.clock() - last_time) * 1000)); last_time = os.clock() end
+
 
   for i = #self.objects, 1, -1 do
     if self.objects[i].dead then

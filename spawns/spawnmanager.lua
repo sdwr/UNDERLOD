@@ -199,8 +199,8 @@ function Spawn_Teams(arena)
           local jitter_x = math.random(-4, 4)
           local jitter_y = math.random(-4, 4)
           
-          local x = spawn_x + offset.x + jitter_x
-          local y = spawn_y + offset.y + jitter_y
+          local x = spawn_x
+          local y = spawn_y 
           
           team:add_troop(x, y)
       end

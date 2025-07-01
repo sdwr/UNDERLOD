@@ -116,60 +116,100 @@ function engine_run(config)
   if not web then refresh_rate = flags.refreshrate
   else refresh_rate = 60 end
 
+-- In engine_run(), replace the entire returned function with this:
   return function()
     if love.event then
-      love.event.pump()
-      for name, a, b, c, d, e, f in love.event.poll() do
-        if name == "quit" then
-          if not love.quit or not love.quit() then
-            system.save_state()
-            --steam.shutdown()
-            return a or 0
-          end
-        elseif name == "focus" then
-          --[[]
-          if main.current:is(Arena) then
-            if not a then open_options(main.current)
-            else close_options(main.current) end
-          end
-          ]]--
-        elseif name == "keypressed" then input.keyboard_state[a] = true; input.last_key_pressed = a
-        elseif name == "keyreleased" then input.keyboard_state[a] = false
-        elseif name == "mousepressed" then input.mouse_state[input.mouse_buttons[c]] = true; input.last_key_pressed = input.mouse_buttons[c]
-        elseif name == "mousereleased" then input.mouse_state[input.mouse_buttons[c]] = false
-        elseif name == "wheelmoved" then if b == 1 then input.mouse_state.wheel_up = true elseif b == -1 then input.mouse_state.wheel_down = true end
-        elseif name == "gamepadpressed" then input.gamepad_state[input.index_to_gamepad_button[b]] = true; input.last_key_pressed = input.index_to_gamepad_button[b]
-        elseif name == "gamepadreleased" then input.gamepad_state[input.index_to_gamepad_button[b]] = false
-        elseif name == "gamepadaxis" then input.gamepad_axis[input.index_to_gamepad_axis[b]] = c
-        elseif name == "textinput" then input:textinput(a) end
-      end
+        love.event.pump()
+        for name, a, b, c, d, e, f in love.event.poll() do
+            if name == "quit" then
+                if not love.quit or not love.quit() then
+                    system.save_state()
+                    return a or 0
+                end
+            elseif name == "keypressed" then input.keyboard_state[a] = true; input.last_key_pressed = a
+            elseif name == "keyreleased" then input.keyboard_state[a] = false
+            elseif name == "mousepressed" then input.mouse_state[input.mouse_buttons[c]] = true; input.last_key_pressed = input.mouse_buttons[c]
+            elseif name == "mousereleased" then input.mouse_state[input.mouse_buttons[c]] = false
+            elseif name == "wheelmoved" then if b == 1 then input.mouse_state.wheel_up = true elseif b == -1 then input.mouse_state.wheel_down = true end
+            elseif name == "gamepadpressed" then input.gamepad_state[input.index_to_gamepad_button[b]] = true; input.last_key_pressed = input.index_to_gamepad_button[b]
+            elseif name == "gamepadreleased" then input.gamepad_state[input.index_to_gamepad_button[b]] = false
+            elseif name == "gamepadaxis" then input.gamepad_axis[input.index_to_gamepad_axis[b]] = c
+            elseif name == "textinput" then input:textinput(a) end
+        end
     end
 
     if love.timer then dt = love.timer.step() end
 
-    --steam.runCallbacks()
     accumulator = accumulator + dt
+
+    -- ====================================================================
+    -- PROFILING LOGIC
+    -- ====================================================================
+    -- Check if we are lagging (i.e., we have to run more than one update step)
+    local is_lagging = accumulator >= fixed_dt * 2
+    if is_lagging then
+        print(string.format("--- Lag Spike: Simulating %d steps to catch up ---", math.floor(accumulator / fixed_dt)))
+    end
+    -- ====================================================================
+
+    local step_number = 0
     while accumulator >= fixed_dt do
-      frame = frame + 1
-      input:update(fixed_dt)
-      trigger:update(fixed_dt)
-      camera:update(fixed_dt)
-      local mx, my = love.mouse.getPosition()
-      mouse:set(mx/sx, my/sy)
-      mouse_dt:set(mouse.x - last_mouse.x, mouse.y - last_mouse.y)
-      update(fixed_dt)
-      system.update()
-      input.last_key_pressed = nil
-      last_mouse:set(mouse.x, mouse.y)
-      accumulator = accumulator - fixed_dt
-      time = time + fixed_dt
+        step_number = step_number + 1
+        local last_time, step_start_time
+
+        -- Only run detailed profiling if we are lagging
+        if is_lagging then
+            step_start_time = os.clock()
+            last_time = step_start_time
+            print(string.format("  - Step %d:", step_number))
+        end
+        
+        frame = frame + 1
+        input:update(fixed_dt)
+        if is_lagging then 
+            print(string.format("    - input:update took: %.2fms", (os.clock() - last_time) * 1000)); last_time = os.clock()
+        end
+
+        trigger:update(fixed_dt)
+        if is_lagging then
+            print(string.format("    - trigger:update took: %.2fms", (os.clock() - last_time) * 1000)); last_time = os.clock()
+        end
+        
+        camera:update(fixed_dt)
+        if is_lagging then
+            print(string.format("    - camera:update took: %.2fms", (os.clock() - last_time) * 1000)); last_time = os.clock()
+        end
+        
+        local mx, my = love.mouse.getPosition()
+        mouse:set(mx/sx, my/sy)
+        mouse_dt:set(mouse.x - last_mouse.x, mouse.y - last_mouse.y)
+
+        update(fixed_dt, is_lagging) -- This is your main game update
+        if is_lagging then
+            print(string.format("    - main update() took: %.2fms", (os.clock() - last_time) * 1000)); last_time = os.clock()
+        end
+
+        system.update()
+        if is_lagging then
+            print(string.format("    - system.update took: %.2fms", (os.clock() - last_time) * 1000)); last_time = os.clock()
+        end
+        
+        -- Final timing for the step
+        if is_lagging then
+            print(string.format("    - Total Step Time: %.2fms", (os.clock() - step_start_time) * 1000))
+        end
+
+        input.last_key_pressed = nil
+        last_mouse:set(mouse.x, mouse.y)
+        accumulator = accumulator - fixed_dt
+        time = time + fixed_dt
     end
 
     if love.graphics and love.graphics.isActive() then
-      love.graphics.origin()
-      love.graphics.clear(love.graphics.getBackgroundColor())
-      draw()
-      love.graphics.present()
+        love.graphics.origin()
+        love.graphics.clear(love.graphics.getBackgroundColor())
+        draw()
+        love.graphics.present()
     end
 
     if love.timer then love.timer.sleep(0.001) end
