@@ -917,7 +917,7 @@ function init()
     ['thorns'] = 'thorns',
     ['range'] = 'range',
     ['bash'] = 'chance to stun',
-    ['repeat_attack_chance'] = 'chance for double attack',
+    ['repeat_attack_chance'] = 'double attack chance',
     ['enrage'] = 'enrage allies on death',
     ['gold'] = 'gold per round',
     ['heal'] = 'healing per second',

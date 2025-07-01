@@ -670,12 +670,21 @@ function Unit:get_item_stats()
     end
   end
 
+  local stats_with_names = {}
+  for k, v in pairs(stats) do
+    if item_stat_lookup[k] then
+      stats_with_names[item_stat_lookup[k]] = v
+    else
+      stats_with_names[k] = v
+    end
+  end
+
   -- if stats.hp and stats.hp == 0 then
   --   Stats_Max_Dmg_Without_Hp(stats.dmg or 0)
   -- end
 
   -- Stats_Max_Aspd(stats.aspd or 0)
-  return stats
+  return stats_with_names
 
 end
 

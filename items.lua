@@ -501,7 +501,7 @@ item_to_item_data = {
     colors = {'yellow'},
     cost = 10,
     icon = 'lightning',
-    desc = 'Attacking a [yellow]shocked[fg] enemy has a chance create a [yellow]lightning ball[fg]',
+    desc = 'Attacking a [yellow]shocked[fg] enemy has a chance to create a [yellow]lightning ball[fg]',
     stats = {dmg = 0.25},
     procs = {'sympatheticvoltage'},
     prereqs = {'lightning'}
