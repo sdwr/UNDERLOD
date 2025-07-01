@@ -24,7 +24,7 @@ fns['init_enemy'] = function(self)
     viable = function() return true end, -- Can always be cast
     
     -- The time the unit will be locked in the 'casting' state
-    cast_length = 3.0, 
+    cast_length = BEHOLDER_CAST_TIME, 
     castcooldown = 8.0, -- The cooldown after the spell is cast
     
     spellclass = SafetyDanceSpell,
@@ -36,7 +36,7 @@ fns['init_enemy'] = function(self)
     spelldata = {
         damage = 25,
         total_zones = 4,
-        charge_duration = 3.0, -- Should match the cast_length
+        charge_duration = 4.5, -- Should match the cast_length
         active_duration = 2.0, -- How long the damage zones stay active
         color = orange[-5],
         damage_troops = true,
@@ -144,11 +144,11 @@ fns['init_enemy'] = function(self)
     }
   }
 
-  -- table.insert(self.attack_options, plasma_barrage_spiral)
-  -- table.insert(self.attack_options, plasma_barrage_straight)
+  table.insert(self.attack_options, plasma_barrage_spiral)
+  table.insert(self.attack_options, plasma_barrage_straight)
   table.insert(self.attack_options, safety_dance)
-  -- table.insert(self.attack_options, laser_ball)
-  -- table.insert(self.attack_options, plasma_ball)
+  table.insert(self.attack_options, laser_ball)
+  table.insert(self.attack_options, plasma_ball)
   -- table.insert(self.attack_options, quick_stomp)
 end
 

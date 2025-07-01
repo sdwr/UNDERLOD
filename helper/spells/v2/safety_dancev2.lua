@@ -120,7 +120,8 @@ end
 -- ===================================================================
 function SafetyDanceSpell:draw_tiled_hexagons(zone, color, mode)
     mode = mode or 'fill' -- Default to filled hexagons
-    local hex_radius = 12 -- The size of each hexagon tile
+    -- TWEAK: Increased the radius to make each hexagon larger, resulting in fewer hexagons overall.
+    local hex_radius = 18
 
     -- Pre-calculate hexagon geometry constants for a pointy-topped hexagon
     local hex_height = math.sqrt(3) * hex_radius
@@ -134,12 +135,14 @@ function SafetyDanceSpell:draw_tiled_hexagons(zone, color, mode)
     -- Iterate through the vertical space of the zone
     for y = start_y - hex_height, end_y + hex_height, hex_height do
         row = row + 1
+        -- TWEAK: Increased the horizontal step to create a small gap between hexagons, preventing overlap.
+        local horizontal_step = hex_width * 0.8
         -- Iterate through the horizontal space of the zone
-        for x = start_x - hex_width, end_x + hex_width, hex_width * 0.75 do
+        for x = start_x - hex_width, end_x + hex_width, horizontal_step do
             -- Apply horizontal offset for every other row to create a staggered grid
             local current_x = x
             if row % 2 == 0 then
-                current_x = x + hex_width * 0.375
+                current_x = x + horizontal_step / 2
             end
 
             -- Calculate the 6 vertices for a single hexagon
@@ -168,12 +171,10 @@ function SafetyDanceSpell:draw_aiming_rects()
 
     -- Use a stencil to ensure hexagons only draw inside the zone's rectangle
     for _, zone in ipairs(self.damage_zones) do
-      graphics.push(zone.x, zone.y)
         graphics.draw_with_mask(
             function() self:draw_tiled_hexagons(zone, color, 'line') end,
             function() graphics.rectangle(zone.x, zone.y, zone.w, zone.h, nil, nil, color) end
         )
-        graphics.pop()
     end
 end
 
@@ -197,4 +198,3 @@ function SafetyDanceSpell:draw_active_rects()
 end
 
 -- The Spell:die() function from the parent class will handle cleanup.
-
