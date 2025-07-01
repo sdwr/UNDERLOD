@@ -520,7 +520,7 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
     -- Call the "smart" spawner for this single unit. It will handle its own
     -- stalling if the area is blocked. We pass it our completion tracker.
     arena.t:after(0.1 * i, function()
-      Create_Unit_With_Warning(arena, location, 2, type, create_enemy_action, on_single_unit_done)
+      Create_Unit_With_Warning(arena, location, 2, create_enemy_action, type, on_single_unit_done)
     end)
   end
 end
@@ -596,7 +596,7 @@ function Spawn_Critters(arena, group_index, amount)
       end
       
       -- Spawn this critter with its own short warning marker.
-      Create_Unit_With_Warning(arena, spawn_pos, 1, create_critter_action, group_index, 'critter')
+      Create_Unit_With_Warning(arena, spawn_pos, 1, create_critter_action, 'critter', group_index)
       
       spawned_count = spawned_count + 1
   end, amount, function() SetSpawning(arena, false) end)
@@ -610,7 +610,7 @@ end
 -- REVISED Helper Function
 -- Shows a warning marker immediately, then stalls until the space is clear to spawn.
 -- ===================================================================
-function Create_Unit_With_Warning(arena, location, warning_time, enemy_type, creation_callback, on_spawn_success_callback)
+function Create_Unit_With_Warning(arena, location, warning_time, creation_callback, enemy_type, on_spawn_success_callback)
   local check_again_delay = 0.25 
   local spawn_radius = 10
   local enemy_size = enemy_type_to_size[enemy_type]

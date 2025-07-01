@@ -2004,6 +2004,14 @@ function Proc_Elevamp:init(args)
   self.unit:add_buff(self.buffdata)
 end
 
+Proc_Triforce = Proc:extend()
+function Proc_Triforce:init(args)
+  self.triggers = {}
+  self.scope = 'troop'
+  
+  
+end
+
 
 
 proc_name_to_class = {
@@ -2070,6 +2078,7 @@ proc_name_to_class = {
   ['shockwave'] = Proc_Shockwave,
 
   -- elemental procs
+  ['triforce'] = Proc_Triforce,
   ['eledmg'] = Proc_Eledmg,
   ['elevamp'] = Proc_Elevamp
 }
