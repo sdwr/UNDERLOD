@@ -2,6 +2,7 @@ require 'save_game'
 require 'engine'
 require 'shared'
 require 'utils'
+require 'util/profiler/profilerv2'
 require 'game_constants'
 require 'combat_stats/init'
 require 'achievements/achievements'
@@ -1330,6 +1331,7 @@ end
 
 love.frame = 0
 function update(dt)
+
   main:update(dt)
   
   if love.USE_PROFILER then
@@ -1363,6 +1365,7 @@ function update(dt)
 end
 
 function draw()
+  Profiler:mark('start draw')
   shared_draw(function()
     main:draw()
   end)
@@ -1370,6 +1373,7 @@ function draw()
   if love.USE_PROFILER then
     Draw_Profiler()
   end
+  Profiler:mark('end draw')
 end
 
 function open_options(self)

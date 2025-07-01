@@ -147,18 +147,27 @@ function engine_run(config)
 
     if love.timer then dt = love.timer.step() end
 
+    Profiler:start_frame()
+    Profiler:mark('start')
+
     --steam.runCallbacks()
     accumulator = accumulator + dt
     while accumulator >= fixed_dt do
       frame = frame + 1
       input:update(fixed_dt)
+      Profiler:mark('after input')
       trigger:update(fixed_dt)
+      Profiler:mark('aftertrigger')
       camera:update(fixed_dt)
+      Profiler:mark('aftercamera')
       local mx, my = love.mouse.getPosition()
       mouse:set(mx/sx, my/sy)
       mouse_dt:set(mouse.x - last_mouse.x, mouse.y - last_mouse.y)
+      Profiler:mark('aftermouse')
       update(fixed_dt)
+      Profiler:mark('afterupdate')
       system.update()
+      Profiler:mark('aftersystem')
       input.last_key_pressed = nil
       last_mouse:set(mouse.x, mouse.y)
       accumulator = accumulator - fixed_dt
@@ -172,6 +181,7 @@ function engine_run(config)
       love.graphics.present()
     end
 
+    Profiler:end_frame_and_print()
     if love.timer then love.timer.sleep(0.001) end
   end
 end

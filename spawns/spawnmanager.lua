@@ -470,6 +470,7 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
   local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
   SpawnGlobals.last_spawn_point = group_index
   amount = amount or 1
+  amount = 20
 
   -- Default to the index passed in.
   local spawn_marker_index = group_index
@@ -484,33 +485,22 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
       spawn_marker_index = Get_Close_Spawn(group_index)
   end
   
-  local spawn_interval = arena.time_between_spawns or 0.1
-  local spawned_count = 0
-  local timer_id = "spawn_group_" .. random:uid()
-
+  local spawn_marker = SpawnGlobals.get_spawn_marker(spawn_marker_index)
+  
+  -- Spawn all enemies at the same spot and time
   local spawn_action = function()
-      local spawn_marker = SpawnGlobals.get_spawn_marker(spawn_marker_index)
-      local offset_index = (spawned_count % #SpawnGlobals.spawn_offsets) + 1
-      local offset = SpawnGlobals.spawn_offsets[offset_index]
-      
-      if offset then
-          local spawn_x, spawn_y = spawn_marker.x + offset.x, spawn_marker.y + offset.y
+      for i = 1, amount do
+          local spawn_x, spawn_y = spawn_marker.x, spawn_marker.y
           Spawn_Enemy(arena, type, {x = spawn_x, y = spawn_y})
-          spawned_count = spawned_count + 1
-      else
-          print("Warning: Invalid spawn offset.")
-          spawned_count = spawned_count + 1 
       end
-
-      if spawned_count >= amount then
-          arena.t:cancel(timer_id)
-          if on_finished then
-              on_finished()
-          end
+      
+      if on_finished then
+          on_finished()
       end
   end
 
-  arena.t:every(spawn_interval, spawn_action, nil, nil, timer_id)
+  -- Execute the spawn action immediately
+  spawn_action()
 end
 
 -- This function now uses the new helper to spawn enemies with a warning.
