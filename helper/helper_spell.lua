@@ -1,6 +1,5 @@
 Helper.Spell = {}
 
-
 require 'helper/spells/flame'
 require 'helper/spells/damage_circle'
 require 'helper/spells/damage_line'
@@ -26,6 +25,8 @@ require 'helper/spells/v2/cleave'
 require 'helper/spells/v2/chain_spell'
 
 require 'helper/spells/v2/instants'
+
+
 
 Helper.Spell.spells = {
     Helper.Spell.Flame,

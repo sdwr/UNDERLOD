@@ -33,7 +33,7 @@ fns['init_enemy'] = function(self)
     self.attack_options = {}
 
     local firewall_attack = {
-        name = 'firewall',
+        name = 'firewall_caster',
         
         -- The attack is viable if there is any friendly unit within its large aggro sensor range.
         viable = function() 

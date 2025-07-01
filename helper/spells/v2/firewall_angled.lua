@@ -84,6 +84,15 @@ function EnemyFirewall:init(args)
     -- Keep track of units we've already hit to prevent multi-hits
     self.hit_units = {}
 
+    
+    self.particle_interval = 0.1
+    self.particle_elapsed = 0
+
+    self.shader = love.graphics.newShader("helper/spells/v2/shaders/firewall.frag")
+    self.flash_amount = 0
+    self.flash_duration = 0.2
+    self.flash_timer = 0
+
 end
 
 -- This function calculates the world coordinates of the firewall's 4 corners
@@ -114,6 +123,7 @@ function EnemyFirewall:update(dt)
     self.y = self.y + self.vy * dt
     
     self:update_corners()
+    self:add_particles()
     
     self.current_duration = self.current_duration + dt
     if self.current_duration >= self.spell_duration then
@@ -121,8 +131,38 @@ function EnemyFirewall:update(dt)
         return
     end
 
+    self.particle_elapsed = self.particle_elapsed + dt
+
+      -- Update the flash timer
+  if self.flash_timer > 0 then
+    self.flash_timer = self.flash_timer - dt
+    -- Create a fade-out effect for the flash
+    self.flash_amount = self.flash_timer / self.flash_duration
+  else
+      self.flash_amount = 0
+  end
+  
+    self.shader:send("time", self.current_duration)
+    self.shader:send("flash_amount", self.flash_amount)
+
     self:check_collisions()
+    
 end
+
+function EnemyFirewall:add_particles()
+    if self.particle_elapsed > self.particle_interval then
+      self.particle_elapsed = 0
+      for i = 1, 5 do
+        local x = self.x + random:float(-self.w/2, self.w/2)
+        local y = self.y + random:float(-self.h/2, self.h/2)
+        HitParticle{group = main.current.effects, 
+          x = x, y = y, 
+          color = self.color,
+          v = random:float(30, 60)
+        }
+      end
+    end
+  end
 
 -- Checks for collisions using manual point-in-polygon logic
 function EnemyFirewall:check_collisions()
@@ -134,12 +174,19 @@ function EnemyFirewall:check_collisions()
                 local point_y = unit.y + point.y
                 
                 if Helper.Geometry:is_point_in_polygon(point_x, point_y, self.corners) then
+                    self:flash()
                     self:on_hit(unit)
                     break 
                 end
             end
         end
     end
+end
+
+-- Add this new function to the FireSegment object
+function EnemyFirewall:flash()
+    -- This resets the flash timer, which is then handled in update()
+    self.flash_timer = self.flash_duration
 end
 
 -- This function is called when a collision is detected
@@ -161,10 +208,17 @@ function EnemyFirewall:on_hit(unit)
 end
 
 function EnemyFirewall:draw()
+    -- Set the shader
+    love.graphics.setShader(self.shader)
+
     -- Draw the main firewall visual
+    -- The shader will transform this simple rectangle
     graphics.push(self.x, self.y, self.angle + math.pi / 2)
         graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, self.color)
     graphics.pop()
+
+    -- Unset the shader so it doesn't affect other objects
+    love.graphics.setShader()
 
 end
 

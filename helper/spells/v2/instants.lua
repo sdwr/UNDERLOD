@@ -679,7 +679,18 @@ end
 function FireWall:try_damage(unit)
   if not table.contains(self.damaged_units, unit) then
     table.insert(self.damaged_units, unit)
+    player_hit1:play{pitch = random:float(0.95, 1.05), volume = 1.2}
+
+    local push_angle = self.angle
+    local knockback_duration = KNOCKBACK_DURATION_ENEMY
+    
+    unit:push(self.knockback_force, push_angle, nil, knockback_duration)
+
     unit:hit(self.damage, self.unit)
+    
+    return true
+  else
+    return false
   end
 end
 
@@ -778,6 +789,13 @@ function FireSegment:init(args)
 
   self.particle_interval = 0.1
   self.particle_elapsed = 0
+
+  
+  self.shader = love.graphics.newShader("helper/spells/v2/shaders/firewall.frag")
+  self.flash_amount = 0
+  self.flash_duration = 0.2
+  self.flash_timer = 0
+
 end
 
 function FireSegment:update(dt)
@@ -787,6 +805,18 @@ function FireSegment:update(dt)
 
   self.currentTime = self.currentTime + dt
   self.particle_elapsed = self.particle_elapsed + dt
+
+  -- Update the flash timer
+  if self.flash_timer > 0 then
+    self.flash_timer = self.flash_timer - dt
+    -- Create a fade-out effect for the flash
+    self.flash_amount = self.flash_timer / self.flash_duration
+  else
+      self.flash_amount = 0
+  end
+  
+  self.shader:send("time", self.currentTime)
+  self.shader:send("flash_amount", self.flash_amount)
 
   self.x = self.x + self.speed * self.direction * dt
   self.shape:move_to(self.x, self.y)
@@ -809,16 +839,28 @@ function FireSegment:add_particles()
 end
 
 function FireSegment:draw()
+  love.graphics.setShader(self.shader)
+
   graphics.push(self.x, self.y, 0, self.spring.x, self.spring.x)
     graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 2, 2, self.color)
   graphics.pop()
+  
+  love.graphics.setShader()
 end
 
 function FireSegment:check_hits()
   local friendlies = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
   for _, troop in ipairs(friendlies) do
-    self.parent:try_damage(troop)
+    if self.parent:try_damage(troop) then
+      self:flash()
+    end
   end
+end
+
+-- Add this new function to the FireSegment object
+function FireSegment:flash()
+  -- This resets the flash timer, which is then handled in update()
+  self.flash_timer = self.flash_duration
 end
 
 function FireSegment:die()

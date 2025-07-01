@@ -140,6 +140,15 @@ function Wave_Types:Mortar_And_Arc()
   return wave
 end
 
+function Wave_Types:Two_Basic_Two_Firewall(tier)
+  local wave = {}
+  local normal = random:table(normal_enemy_by_tier[tier])
+  table.insert(wave, {normal, NORMAL_ENEMIES_PER_GROUP, nil})
+  table.insert(wave, {'firewall_caster', 1, 'random'})
+  table.insert(wave, {'firewall_caster', 1, 'random'})
+  return wave
+end
+
 function Wave_Types:Basic_Plus_Two_Burst(tier)
   local wave = {}
   local normal = random:table(normal_enemy_by_tier[tier])
@@ -201,7 +210,11 @@ function Wave_Types:Get_Waves(level)
     table.insert(waves, wave)
     wave = self:Two_Basic_Three_Special(2)
     table.insert(waves, wave)
-  else
+  elseif level == 9 then
+    wave = self:Two_Basic_Two_Firewall(2)
+    table.insert(waves, wave)
+    wave = self:Two_Basic_Two_Firewall(2)
+    table.insert(waves, wave)
     --when there are lots of enemies, they should all be spawning far
     wave = self:Generic(1, 2, 4)
     table.insert(waves, wave)
