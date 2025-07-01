@@ -35,7 +35,10 @@ function Swordsman_Troop:set_character()
   --cooldowns
   self.baseCooldown = attack_speeds['medium-fast']
   self.cooldownTime = self.baseCooldown
-  self.castcooldown = self.baseCast
+  self.baseCast = 0
+  self.castTime = self.baseCast
+  self.backswing = 0.2
+  self.castcooldown = math.random() * (self.base_castcooldown or self.baseCast)
 
   self:set_state_functions()
 end
@@ -43,8 +46,10 @@ end
 function Swordsman_Troop:setup_cast()
   local cast_data = {
     name = 'attack',
-    viable = function() return Helper.Spell:target_is_in_range(self) end,
+    viable = function() return Helper.Spell:target_is_in_range(self, self.attack_sensor.rs, false) end,
     oncast = function() end,
+    unit = self,
+    target = self:my_target(),
     castcooldown = self.cooldownTime,
     cast_length = self.castTime,
     backswing = self.backswing,
@@ -72,7 +77,7 @@ function Swordsman_Troop:setup_cast()
       }
     }
 
-    self:cast(cast_data)
+    self.castObject = Cast(cast_data)
 end
 
 function Swordsman_Troop:set_state_functions()

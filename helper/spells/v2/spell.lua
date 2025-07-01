@@ -81,6 +81,10 @@ function Cast:init(args)
     return
   end
   self.spelldata.unit = self.unit
+  
+  if self.unit then
+    self.unit.castcooldown = self.castcooldown
+  end
 
   --vars from data
   self.rotation_lock = self.rotation_lock or false
