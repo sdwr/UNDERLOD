@@ -138,64 +138,75 @@ function Kill_Teams()
   end
 end
 
---spawns troops in centre of arena, two rows if over 4 units
+--spawns troops in triangle formation around centre of arena
 function Spawn_Teams(arena)
-  local spawn_y
-  if #arena.units > 4 then
-    spawn_y = gh/2 - 50
-  else
-    spawn_y = gh/2 - 20
-  end
-
-  local spawn_x = gw/2 - 50
-
   --clear Helper.Unit.teams
   Helper.Unit.teams = {}
   
   for i, unit in ipairs(arena.units) do
-    --add a new team
-    local team = Team(i, unit)
-    table.insert(Helper.Unit.teams, i, team)
+      --add a new team
+      local team = Team(i, unit)
+      table.insert(Helper.Unit.teams, i, team)
 
-    local column_offset = (i-1) % 4
+      -- Triangle formation positions
+      local spawn_x, spawn_y
+      if i == 1 then
+          -- First team: top of triangle
+          spawn_x = gw/2
+          spawn_y = gh/2 - 30
+      elseif i == 2 then
+          -- Second team: bottom right of triangle
+          spawn_x = gw/2 + 50
+          spawn_y = gh/2 + 30
+      elseif i == 3 then
+          -- Third team: bottom left of triangle
+          spawn_x = gw/2 - 50
+          spawn_y = gh/2 + 30
+      else
+          -- Additional teams: spread out in a larger triangle or circle
+          local angle = (i - 1) * (2 * math.pi / math.max(#arena.units, 3))
+          local radius = 80
+          spawn_x = gw/2 + math.cos(angle) * radius
+          spawn_y = gh/2 + math.sin(angle) * radius
+      end
 
-    if i == 5 then
-    --make a second row
-      spawn_x = gw/2 - 50
-      spawn_y = gh/2 + 10
-    end
+      team:set_troop_data({
+          group = arena.main,
+          x = spawn_x,
+          y = spawn_y,
+          level = unit.level,
+          character = unit.character,
+          items = unit.items,
+          passives = arena.passives
+      })
+      
+      -- ====================================================================
+      -- MODIFIED SPAWN LOGIC
+      -- Spawns 5 troops in a cluster with random jitter.
+      -- ====================================================================
+      
+      -- Define the 5 base positions for the cluster (like the '5' on a die)
+      local offsets = {
+          {x = 0, y = 0},       -- Center
+          {x = -8, y = -6},   -- Top-left
+          {x = 8, y = -6},    -- Top-right
+          {x = -8, y = 6},    -- Bottom-left
+          {x = 8, y = 6}      -- Bottom-right
+      }
 
+      for _, offset in ipairs(offsets) do
+          -- Add a small random jitter to make the cluster look more natural
+          local jitter_x = math.random(-4, 4)
+          local jitter_y = math.random(-4, 4)
+          
+          local x = spawn_x + offset.x + jitter_x
+          local y = spawn_y + offset.y + jitter_y
+          
+          team:add_troop(x, y)
+      end
+      -- ====================================================================
 
-    team:set_troop_data({
-      group = arena.main,
-      x = spawn_x ,
-      y = spawn_y,
-      level = unit.level,
-      character = unit.character,
-      items = unit.items,
-      passives = arena.passives
-    })
-    for row_offset=0, 4 do
-      local x = spawn_x + (column_offset*20)
-      local y = spawn_y + (row_offset*10)
-      team:add_troop(x, y)
-    end
-
-    --add items to team / troops here
-    --instead of in the unit creation
-    -- that way we can distinguish between global/team/troop items
-
-    --a team item still needs to have triggers when the troop does stuff (ATTACK, KILL, MOVE)
-    --but it should apply to all troops in the team
-
-    --the proc on the troop will be the same, only difference is there is 1 copy of the proc
-    --and not 5
-
-    --only problem is that the item needs to be applied to the troops before its first tick
-
-    team:apply_item_procs()
-
-    
+      team:apply_item_procs()
   end
 end
 
