@@ -193,9 +193,9 @@ function ShopCard:on_mouse_enter()
   if self.locked then
     local unlock_text = ""
     if self.i == 1 then
-      unlock_text = "Defeat Stompy to unlock"
+      unlock_text = "Defeat Stompy (level 6) to unlock"
     elseif self.i == 3 then
-      unlock_text = "Defeat the Dragon to unlock"
+      unlock_text = "Defeat the Dragon (level 11) to unlock"
     end
     
     if unlock_text ~= "" then
