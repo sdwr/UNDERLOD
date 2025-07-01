@@ -216,6 +216,7 @@ function Wave_Types:Get_Waves(level)
     wave = self:Two_Basic_Two_Firewall(2)
     table.insert(waves, wave)
     --when there are lots of enemies, they should all be spawning far
+  else
     wave = self:Generic(1, 2, 4)
     table.insert(waves, wave)
     wave = self:Generic(1, 2, 4)
