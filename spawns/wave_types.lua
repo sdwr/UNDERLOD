@@ -185,7 +185,7 @@ function Wave_Types:Get_Waves(level)
     wave = self:Basic_Plus_One_Special(1)
     table.insert(waves, wave)
   elseif level == 3 then
-    wave = self:Basic_Plus_Two_Special(1)
+    wave = self:Basic_Plus_One_Special(1)
     self:Add_Group(wave, {'burst', 1, 'kicker'})
     table.insert(waves, wave)
     wave = self:Two_Cleavers_Plus_One_Special(1)

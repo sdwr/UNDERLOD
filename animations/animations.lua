@@ -25,7 +25,7 @@ function set_status_effect_mask_colors()
   STUN_MASK_COLOR = black[0]:clone()
   STUN_MASK_COLOR.a = 0.8
   BURN_MASK_COLOR = red[0]:clone()
-  BURN_MASK_COLOR.a = 0.3
+  BURN_MASK_COLOR.a = 0.4
   KNOCKBACK_MASK_COLOR = red[0]:clone()
   KNOCKBACK_MASK_COLOR.a = 0.9
 end

@@ -42,7 +42,11 @@ function shared_init()
   music = SoundTag()
   music.volume = state.music_volume or 0.5
 
-  show_combat_controls = state.show_combat_controls or true
+  if state.show_combat_controls == true then
+    state.show_combat_controls = true
+  else
+    state.show_combat_controls = false
+  end
 
   if state.volume_muted then sfx.volume = 0 end
   if state.music_muted then music.volume = 0 end
@@ -760,7 +764,6 @@ function TutorialPopup:create_text()
       checked = true, -- Set the initial state
       action = function(parent, is_checked)
         state.show_combat_controls = is_checked
-        show_combat_controls = is_checked
         parent.checked = is_checked
         system.save_state()
       end

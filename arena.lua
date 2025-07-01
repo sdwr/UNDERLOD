@@ -209,7 +209,7 @@ function Arena:update(dt)
   if self.needs_first_update then
     self.needs_first_update = false
 
-    if show_combat_controls then
+    if state.show_combat_controls then
       self.tutorial_popup:open()
       self.in_tutorial = true
       self.paused = true
@@ -652,7 +652,7 @@ function Arena:gain_gold(duration)
   for _, unit in ipairs(self.starting_units) do
     for _, item in ipairs(unit.items) do
       if item.name == 'heartofgold' then
-        event = {type = 'bonus_gold', amount = item.stats.gold}
+        event = {type = 'bonus gold', amount = item.stats.gold}
         table.insert(self.gold_events, event)
       end
       if item.name == 'stockmarket' then
@@ -710,7 +710,7 @@ function Arena:process_gold_event()
   elseif event.type == 'picked_up' then
     plusgold = event.amount
     plusgoldtext = '[wavy_mid, yellow[0]]' .. tostring(plusgold) .. ' ' .. event.type
-  elseif event.type == 'bonus_gold' then
+  elseif event.type == 'bonus gold' then
     plusgold = event.amount
     plusgoldtext = '[wavy_mid, yellow[0]]' .. tostring(plusgold) .. ' ' .. event.type
   elseif event.type == 'interest' then

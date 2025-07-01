@@ -1293,8 +1293,8 @@ function init()
   current_new_game_plus = state.current_new_game_plus or new_game_plus
   if not state.current_new_game_plus then state.current_new_game_plus = current_new_game_plus end
 
-  show_damage_numbers = state.show_damage_numbers or DAMAGE_NUMBERS_SETTING[4]
-  show_combat_controls = not not state.show_combat_controls
+  state.show_damage_numbers = state.show_damage_numbers or DAMAGE_NUMBERS_SETTING[4]
+  state.show_combat_controls = not not state.show_combat_controls
 
   max_units = MAX_UNITS
 
