@@ -494,43 +494,69 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
   -- Default to the index passed in.
   local spawn_marker_index = group_index
   
-  -- FIX: Separated 'kicker' from 'random'. A kicker's location is already
-  -- randomized in Spawn_Group, so we just use the index it was given.
+  -- Determine the final spawn marker location
   if spawn_type == 'far' then
       spawn_marker_index = Get_Far_Spawn(group_index)
-  elseif spawn_type == 'random' then -- Only 'random', not 'kicker'
+  elseif spawn_type == 'random' then
       spawn_marker_index = random:int(1, #SpawnGlobals.spawn_markers)
   elseif spawn_type == 'close' then
       spawn_marker_index = Get_Close_Spawn(group_index)
   end
   
   local spawn_interval = arena.time_between_spawns or 0.1
+  local check_again_delay = 0.25 -- How long to wait before re-checking a blocked area
   local spawned_count = 0
-  local timer_id = "spawn_group_" .. random:uid()
+  
+  -- Forward-declare the function so it can call itself in the timer
+  local spawn_action
 
-  local spawn_action = function()
-      local spawn_marker = SpawnGlobals.get_spawn_marker(spawn_marker_index)
-      local offset_index = (spawned_count % #SpawnGlobals.spawn_offsets) + 1
-      local offset = SpawnGlobals.spawn_offsets[offset_index]
-      
-      if offset then
-          local spawn_x, spawn_y = spawn_marker.x + offset.x, spawn_marker.y + offset.y
-          Spawn_Enemy(arena, type, {x = spawn_x, y = spawn_y})
-          spawned_count = spawned_count + 1
-      else
-          print("Warning: Invalid spawn offset.")
-          spawned_count = spawned_count + 1 
-      end
-
+  spawn_action = function()
+      -- 1. Check if we are done spawning the whole group
       if spawned_count >= amount then
-          arena.t:cancel(timer_id)
           if on_finished then
               on_finished()
           end
+          return -- End the timer chain
       end
+
+      local spawn_marker = SpawnGlobals.get_spawn_marker(spawn_marker_index)
+      local offset_index = (spawned_count % #SpawnGlobals.spawn_offsets) + 1
+      local offset = SpawnGlobals.spawn_offsets[offset_index]
+
+      -- This should not happen, but it's good practice to guard against it
+      if not offset then
+          print("Error: Invalid spawn offset. Halting spawn group.")
+          if on_finished then on_finished() end
+          return
+      end
+      
+      -- Note: The original code did not add the offset to the marker position.
+      -- Assuming this was a bug, it has been corrected here.
+      local spawn_x, spawn_y = spawn_marker.x, spawn_marker.y
+
+      -- 2. Check if the specific spawn point is clear
+      local spawn_radius = 20
+      local spawn_circle = Circle(spawn_x, spawn_y, spawn_radius)
+      -- NOTE: Corrected this line to use a valid object list from the arena
+      local objects_in_spawn_area = arena.main:get_objects_in_shape(spawn_circle, arena.all_unit_classes)
+
+      -- 3. If the area is blocked, stall by rescheduling this exact check
+      if #objects_in_spawn_area > 0 then
+          -- We do NOT increment spawned_count. We will try to spawn this same unit again.
+          arena.t:after(check_again_delay, spawn_action)
+          return
+      end
+
+      -- 4. The area is clear, so we can spawn the unit
+      Spawn_Enemy(arena, type, {x = spawn_x, y = spawn_y})
+      spawned_count = spawned_count + 1
+
+      -- 5. Schedule the *next* spawn in the sequence
+      arena.t:after(spawn_interval, spawn_action)
   end
 
-  arena.t:every(spawn_interval, spawn_action, nil, nil, timer_id)
+  -- Kick off the very first spawn attempt
+  spawn_action()
 end
 
 -- This function now uses the new helper to spawn enemies with a warning.

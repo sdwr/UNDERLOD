@@ -91,6 +91,9 @@ function Arena:on_enter(from)
   self.troops = troop_classes
   self.friendlies = friendly_classes
   self.friendlies_without_critters = friendly_classes_without_critters
+  
+  self.all_unit_classes = all_unit_classes
+
   self.troop_list = {}
   self.color = self.color or fg[0]
 
