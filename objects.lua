@@ -73,6 +73,71 @@ function AnimatedSpawnCircle:die()
     self.dead = true
 end
 
+-- ===================================================================
+-- TroopDeathEffect Class
+-- A beam of light that shoots up and fades out when a troop dies.
+-- ===================================================================
+TroopDeathEffect = Object:extend()
+TroopDeathEffect:implement(GameObject)
+
+function TroopDeathEffect:init(args)
+  self:init_game_object(args)
+
+  -- Visual Properties
+  self.color = {r = 230, g = 255, b = 255} -- A bright, light cyan/white
+  self.alpha = 0.7          -- Controls the fade for the whole effect
+  
+  -- Beam Properties
+  self.w = 0                             -- Initial width of the beam
+  self.h = 0                             -- Initial height of the beam
+
+  self.inner_w = 0
+  self.inner_h = 0
+
+  -- Circle Properties (NEW)
+  self.circle_radius = 0                   -- The circle starts at radius 0 and expands
+  self.inner_circle_radius = 0
+
+  local duration = 0.5 -- Total duration of the effect in seconds
+
+  -- Animate the beam shrinking
+  self.t:tween(duration, self, {h = 100}, math.linear)
+  self.t:tween(duration * 0.8, self, {w = 12}, math.ease_in_quad)
+  
+  -- Animate the circle expanding outwards (NEW)
+  self.t:tween(duration, self, {circle_radius = 15}, math.ease_out_quad)
+  self.t:tween(duration, self, {inner_circle_radius = 8}, math.ease_out_quad)
+  
+  -- Animate the alpha for all parts fading to zero, and kill the object on completion
+  self.t:tween(duration, self, {alpha = 0}, math.linear, function()
+      self.dead = true
+  end)
+end
+
+function TroopDeathEffect:update(dt)
+    -- This just calls the base update to process the tweens (self.t:update)
+    self:update_game_object(dt)
+end
+
+function TroopDeathEffect:draw()
+  self.color.a = self.alpha
+
+  self.inner_w = self.w * 0.5
+  self.inner_h = self.h * 0.5
+
+  graphics.push(self.x, self.y)
+  -- 1. Draw the rising beam of light
+  graphics.rectangle(self.x, self.y - self.h/2, self.w, self.h, nil, nil, self.color)
+  graphics.rectangle(self.x, self.y - self.inner_h/2, self.inner_w, self.inner_h, nil, nil, self.color)
+
+  -- 2. Draw the expanding circle (NEW)
+  graphics.circle(self.x, self.y, self.circle_radius, self.color)
+  graphics.circle(self.x, self.y, self.inner_circle_radius, self.color)
+  graphics.pop()
+end
+
+
+
 
 WallKnife = Object:extend()
 WallKnife:implement(GameObject)
@@ -959,6 +1024,14 @@ function Unit:onDeathCallbacks(from)
 
   for k, proc in ipairs(self.onDeathProcs) do
     proc:onDeath(from)
+  end
+
+  if main.current and main.current:is(Arena) then
+    if self.class == 'troop' then
+      shoot1:play{pitch = random:float(0.8, 1.2), volume = 1.2}
+      main.current:slow_everything(0.9, 1.3)
+      TroopDeathEffect{group = main.current.effects, x = self.x, y = self.y}
+    end
   end
 end
 
