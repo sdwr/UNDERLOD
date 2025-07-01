@@ -21,11 +21,26 @@ fns['init_enemy'] = function(self)
 
   local safety_dance = {
     name = 'safety_dance',
-    viable = function () return true end,
-    castcooldown = 1,
-    cast = function()
-      Helper.Spell.SafetyDance:create_all(self, orange[-5], true, 'one_safe', 4, 25)
-    end
+    viable = function() return true end, -- Can always be cast
+    
+    -- The time the unit will be locked in the 'casting' state
+    cast_length = 3.0, 
+    castcooldown = 8.0, -- The cooldown after the spell is cast
+    
+    spellclass = SafetyDanceSpell,
+    
+    -- This spell is not instant; it has its own duration after the cast.
+    instantspell = false, 
+    
+    -- This data is passed to the SafetyDanceSpell:init() function
+    spelldata = {
+        damage = 25,
+        total_zones = 4,
+        charge_duration = 3.0, -- Should match the cast_length
+        active_duration = 2.0, -- How long the damage zones stay active
+        color = orange[-5],
+        damage_troops = true,
+    }
   }
 
   local laser_ball = {
@@ -129,11 +144,11 @@ fns['init_enemy'] = function(self)
     }
   }
 
-  -- table.insert(self.attack_options, plasma_barrage_spiral)
-  -- table.insert(self.attack_options, plasma_barrage_straight)
+  table.insert(self.attack_options, plasma_barrage_spiral)
+  table.insert(self.attack_options, plasma_barrage_straight)
   table.insert(self.attack_options, safety_dance)
-  -- table.insert(self.attack_options, laser_ball)
-  -- table.insert(self.attack_options, plasma_ball)
+  table.insert(self.attack_options, laser_ball)
+  table.insert(self.attack_options, plasma_ball)
   -- table.insert(self.attack_options, quick_stomp)
 end
 
