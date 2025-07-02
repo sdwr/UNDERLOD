@@ -187,7 +187,7 @@ function Proc_Craggy:onGotHit(from, damage)
     
     if from and from.hp and from.hp > 0 then
       from:stun()
-      from:hit(self.damage, self.unit)
+      from:hit(self.damage, self.unit, DAMAGE_TYPE_PHYSICAL, true, false)
     end
   end
 end
@@ -316,7 +316,7 @@ function Proc_Bash:onHit(target, damage)
     arrow_hit_wall2:play{pitch = random:float(0.8, 1.2), volume = 0.9}
 
     target:stun()
-    target:hit(self.damage, self.unit)
+    target:hit(self.damage, self.unit, DAMAGE_TYPE_PHYSICAL, false, true)
   end
 end
 
@@ -727,7 +727,7 @@ function Proc_Lightning:onHit(target, damage)
   Proc_Lightning.super.onHit(self, target, damage)
   
   local lightning_damage = damage * self.percent_damage_as_lightning
-  target:hit(lightning_damage, nil, self.damageType, false)
+  target:hit(lightning_damage, nil, self.damageType, false, true)
 end
 
 Proc_Overcharge = Proc:extend()
@@ -1233,7 +1233,7 @@ function Proc_Radiance:onTick(dt)
         enemy:add_buff({name = 'radianceburn', damage = self.damage, duration = 1})
         
         --Helper.Sound:play_radiance()
-        enemy:hit(self.damage, nil, self.damageType)
+        enemy:hit(self.damage, nil, self.damageType, false, true)
       end
     end
   end
@@ -1328,7 +1328,7 @@ function Proc_Fire:onHit(target, damage)
   Proc_Fire.super.onHit(self, target, damage)
   --need to add a burn debuff to the Target
   local burn_damage = damage * self.percent_damage_as_burn
-  target:hit(burn_damage, nil, DAMAGE_TYPE_FIRE, false)
+  target:hit(burn_damage, self.unit, DAMAGE_TYPE_FIRE, false, true)
 end
 
 Proc_Volcano = Proc:extend()
@@ -1575,7 +1575,7 @@ function Proc_Phoenix:onDeath()
         group = main.current.effects,
         x = location.x, y = location.y,
         pick_shape = 'circle',
-        dmg = 0,
+        damage = 0,
         r = 6, duration = 0.4, color = self.color,
         is_troop = self.unit.is_troop,
         unit = troop,
@@ -1603,7 +1603,7 @@ function Proc_Frost:onHit(target, damage)
   Proc_Frost.super.onHit(self, target, damage)
 
   local chill_damage = damage * self.percent_damage_as_chill
-  target:hit(chill_damage, nil, DAMAGE_TYPE_COLD, false)
+  target:hit(chill_damage, self.unit, DAMAGE_TYPE_COLD, false, true)
 end
 
 Proc_Frostfield = Proc:extend()
@@ -1650,7 +1650,7 @@ function Proc_Frostfield:onHit(target, damage)
         x= target.x, y = target.y,
         pick_shape = 'circle',
         damage_ticks = true,
-        dmg = 0,
+        damage = 0,
         r = self.radius, duration = self.duration, color = self.color,
         is_troop = self.unit.is_troop,
         chillAmount = self.chill_amount,
@@ -1713,7 +1713,7 @@ function Proc_Frostnova:init(args)
     Proc_Frostnova.super.init(self, args)
 
     -- Define the proc's properties from data
-    self.damage = (self.data.damage or 20) * (self.data.damageMulti or 1)
+    self.damage = (self.data.damage or 10) * (self.data.damageMulti or 1)
     self.damageType = self.data.damageType or DAMAGE_TYPE_COLD
     self.radius_boost = self.data.radius_boost or 3
     self.radius = self.data.radius or 45
@@ -1805,7 +1805,7 @@ function Proc_Frostnova:create_proc_display_area()
         r = 0, -- Start with a radius of 0
         duration = self.procDelay, -- Give it a lifetime just longer than the wind-up
         color = self.color,
-        dmg = 0,
+        damage = 0,
     }
 end
 
@@ -1840,13 +1840,12 @@ function Proc_Frostnova:cast()
         unit = self.unit,
         x = self.unit.x, y = self.unit.y,
         pick_shape = 'circle',
-        dmg = self.damage,
+        damage = self.damage,
+        damage_type = self.damageType,
         r = self.radius + self.radius_boost, 
         duration = self.duration, 
         color = self.color,
         is_troop = self.unit.is_troop,
-        chillAmount = self.chillAmount,
-        chillDuration = self.chillDuration,
     }
 end
 
@@ -1882,7 +1881,7 @@ function Proc_Firenova:explode(target, damage)
     unit = self.unit,
     x = target.x, y = target.y,
     pick_shape = 'circle',
-    dmg = self.damage,
+    damage = self.damage,
     r = self.radius, duration = self.duration, color = self.color,
     is_troop = self.unit.is_troop,
     knockback_force = self.knockback_force,
@@ -1952,7 +1951,7 @@ function Proc_Shatterlance:explode(target, damage)
     group = main.current.effects,
     x = target.x, y = target.y,
     pick_shape = 'circle',
-    dmg = damage,
+    damage = damage,
     r = self.radius, color = self.color,
     is_troop = self.unit.is_troop,
     damage_type = self.damageType,
@@ -1987,7 +1986,7 @@ function Proc_Glacialprison:onKill(target)
       x = target.x, y = target.y,
       unit = self.unit,
       pick_shape = 'circle',  
-      dmg = self.damage,
+      damage = self.damage,
       r = self.radius, duration = self.duration, color = self.color,
       damage_ticks = true,
       tick_rate = self.tick_rate,

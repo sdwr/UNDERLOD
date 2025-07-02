@@ -40,6 +40,13 @@ function Team:init(i, unit)
   self.index = i
   self.unit = unit
   self.color = character_colors[unit.character]
+  
+  -- Combat tracking
+  self.total_damage_dealt = 0
+  self.kills = 0
+  self.round_start_time = love.timer.getTime()
+  self.round_end_time = nil
+  self.data_saved_to_unit = false
 end
 
 function Team:set_troop_data(data)
@@ -51,6 +58,7 @@ function Team:add_troop(x, y)
   self.troop_data.y = y
   local troop = Create_Troop(self.troop_data)
   troop.team = self.index
+  troop.created_at = love.timer.getTime()
   table.insert(self.troops, troop)
   
   return troop
@@ -255,7 +263,7 @@ end
 
 function Team:damage_all_troops(damage, from, damageType)
   for i, troop in ipairs(self.troops) do
-    troop:hit(damage, from, damageType)
+    troop:hit(damage, from, damageType, true, false)
   end
 end
 
@@ -309,12 +317,79 @@ function Team:add_proc(proc)
 end
 
 function Team:die()
+  -- Save combat data to unit before dying
+  self:save_combat_data_to_unit()
+  
   for i, troop in ipairs(self.troops) do
     troop:die()
+    if not troop.died_at then
+      troop.died_at = love.timer.getTime()
+    end
   end
   for i, proc in ipairs(self.procs) do
     proc:die()
   end
+end
+
+function Team:record_damage(damage)
+  self.total_damage_dealt = self.total_damage_dealt + damage
+end
+
+function Team:record_kill()
+  self.kills = self.kills + 1
+end
+
+function Team:save_combat_data_to_unit()
+  if self.data_saved_to_unit then return end
+  
+  self.round_end_time = love.timer.getTime()
+  
+  -- Calculate duration from round start until last troop dies or end of round
+  local last_troop_death_time = self.round_start_time
+  for _, troop in ipairs(self.troops) do
+    if troop.died_at and troop.died_at > last_troop_death_time then
+      last_troop_death_time = troop.died_at
+    end
+  end
+  
+  -- Use the later of last troop death or round end
+  local effective_end_time = math.max(last_troop_death_time, self.round_end_time)
+  local round_duration = effective_end_time - self.round_start_time
+  
+  -- Calculate DPS over the effective round duration
+  local dps = round_duration > 0 and (self.total_damage_dealt / round_duration) or 0
+  
+  -- Save data to the unit
+  self.unit.last_round_dps = dps
+  self.unit.last_round_damage = self.total_damage_dealt
+  self.unit.last_round_kills = self.kills
+  self.unit.last_round_survived = #self.troops > 0 and not self.all_troops_dead
+  self.unit.last_round_time_alive = round_duration
+  
+  self.data_saved_to_unit = true
+end
+
+function Team:check_all_troops_dead()
+  local all_dead = true
+  for i, troop in ipairs(self.troops) do
+    if not troop.dead then
+      all_dead = false
+      break
+    end
+  end
+  
+  if all_dead and not self.all_troops_dead then
+    self.all_troops_dead = true
+    -- Don't save data here, wait for arena transition
+    -- But also don't destroy the team - keep it alive for data collection
+  end
+  
+  return all_dead
+end
+
+function Team:should_destroy()
+  -- Only destroy the team if we've already saved the data
+  return self.data_saved_to_unit
 end
 
 -- character = name of unit (on buy screen)
@@ -338,3 +413,5 @@ function Create_Troop(args)
     return Troop(args)
   end
 end
+
+

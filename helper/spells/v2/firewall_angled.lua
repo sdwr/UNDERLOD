@@ -198,7 +198,7 @@ function EnemyFirewall:on_hit(unit)
 
     table.insert(self.hit_units, unit)
     
-    unit:hit(self.damage, self.unit)
+    unit:hit(self.damage, self.unit, nil, true, true)
     
     player_hit1:play{pitch = random:float(0.95, 1.05), volume = 1.2}
     

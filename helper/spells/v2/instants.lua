@@ -65,7 +65,7 @@ function Arrow:update(dt)
 
   if math.distance(self.x, self.y, self.target.x, self.target.y) < 10 then
     hit2:play{volume=0.5}
-    self.target:hit(self.damage, self.unit)
+    self.target:hit(self.damage, self.unit, nil, true, false)
     self:die()
   end
 end
@@ -201,7 +201,7 @@ function DamageArc:try_damage()
 
   for _, target in ipairs(targets) do
     dot1:play{pitch = random:float(0.95, 1.05), volume = 0.7}
-    target:hit(self.damage, self.unit)
+    target:hit(self.damage, self.unit, nil, true, true)
     table.insert(self.targets_hit, target)
 
   end
@@ -343,7 +343,7 @@ function Boomerang:check_hits()
   local friendlies = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
   for _, friendly in ipairs(friendlies) do
     if not table.contains(self.already_damaged, friendly) then
-      friendly:hit(self.damage, self.unit)
+      friendly:hit(self.damage, self.unit, nil, true, true)
       table.insert(self.already_damaged, friendly)
     end
   end
@@ -616,7 +616,7 @@ end
 function BurstBullet:check_hits()
   local friendlies = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
   if #friendlies > 0 then
-    friendlies[1]:hit(self.damage, self.unit)
+    friendlies[1]:hit(self.damage, self.unit, nil, true, true)
     self:die()
   end
 end
@@ -692,7 +692,7 @@ function FireWall:try_damage(unit)
     
     unit:push(knockback_force, push_angle, nil, knockback_duration)
 
-    unit:hit(self.damage, self.unit)
+    unit:hit(self.damage, self.unit, nil, true, true)
     
     return true
   else
@@ -1087,7 +1087,7 @@ function LightningBall:find_and_shock_targets()
         end
 
         -- Shock the target
-        target:hit(self.damage, nil, DAMAGE_TYPE_LIGHTNING, false) -- Assuming units have an apply_shock method
+        target:hit(self.damage, nil, DAMAGE_TYPE_LIGHTNING, false, true) -- Assuming units have an apply_shock method
 
         -- Create the lightning visual effect
         LightningLine{

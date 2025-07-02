@@ -61,7 +61,7 @@ function Cleave:apply_effects()
       -- Check if the target is within the current cone radius and angle
       if Helper.Geometry:is_angle_between(angle_to_target, angle_start, angle_end) and distance_to_target <= current_radius then
         -- Target is inside the current cone, apply effects!
-        target:hit(self.damage, self.unit)
+        target:hit(self.damage, self.unit, nil, true, false)
         target:push(self.knockback_force, angle_to_target, nil, self.knockback_duration)
         
         -- Mark as affected to avoid hitting again
@@ -102,7 +102,7 @@ end
 
 function Cleave:update(dt)
   if self.dead then return end
-  
+
   self:update_game_object(dt) 
   self.time_elapsed = self.time_elapsed + dt
   

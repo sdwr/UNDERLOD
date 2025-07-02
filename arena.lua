@@ -772,6 +772,20 @@ function Arena:set_timer_text()
   self.timer_text = Text({{text = '[wavy_mid, yellow[0] ' .. tostring(math.floor(self.time_elapsed)) .. 's', font = pixul_font, alignment = 'center'}}, global_text_tags)
 end
 
+function Arena:update_units_with_combat_data()
+  -- Update the saved units with combat data from teams
+  for i, saved_unit in ipairs(self.units) do
+    -- Find the corresponding team by character and position
+    for j, team in ipairs(Helper.Unit.teams) do
+      if team.unit.character == saved_unit.character and j == i then
+        -- Save combat data from team to saved unit
+        team:save_combat_data_to_unit()
+        break
+      end
+    end
+  end
+end
+
 
 --beat level (win)
 function Arena:transition()
@@ -779,6 +793,8 @@ function Arena:transition()
   ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
   TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or self.color, transition_action = function(t)
 
+    -- Update units with combat data before transitioning
+    self:update_units_with_combat_data()
 
     Reset_Global_Proc_List()
     slow_amount = 1

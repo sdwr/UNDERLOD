@@ -111,7 +111,7 @@ function Breathe_Fire:deal_damage()
   for _, target in ipairs(Helper.Unit:get_list(not self.unit.is_troop)) do
     if Helper.Geometry:is_inside_triangle(target.x, target.y, Helper.Geometry:get_triangle_from_height_and_width(self.unit.x, self.unit.y, self.unit.x + self.directionx, self.unit.y + self.directiony, self.flameheight, self.flamewidth))
       and Helper.Geometry:distance(self.unit.x, self.unit.y, target.x, target.y) < self.flameheight then
-      target:hit(self.damage, self.unit)
+      target:hit(self.damage, self.unit, nil, true, false)
       --HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
     end
   end

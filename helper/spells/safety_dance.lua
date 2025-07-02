@@ -122,7 +122,7 @@ function Helper.Spell.SafetyDance:hit(spell)
         targets = main.current.main:get_objects_in_shape(rect, main.current.friendlies)
     end
     for _, target in ipairs(targets) do
-        target:hit(spell.damage, spell.unit)
+        target:hit(spell.damage, spell.unit, nil, true, false)
         table.insert(spell.targets_hit, target)
 
         HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}

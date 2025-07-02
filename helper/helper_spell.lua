@@ -283,7 +283,7 @@ function Helper.Spell:damage_points()
         for j, point_damage in ipairs(unit.point_damages) do
             if not is_in_list(counted_damage_source_unit, point_damage.damage_source_unit) then
                 table.insert(counted_damage_source_unit, point_damage.damage_source_unit)
-                unit:hit(point_damage.damage, point_damage.damage_source_unit)
+                unit:hit(point_damage.damage, point_damage.damage_source_unit, nil, true, false)
             end
             local x = point_damage.point.unit.x + point_damage.point.x
             local y = point_damage.point.unit.y + point_damage.point.y

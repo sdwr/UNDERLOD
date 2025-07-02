@@ -95,7 +95,7 @@ function SafetyDanceSpell:apply_damage()
         for _, unit in ipairs(units_in_zone) do
             -- Ensure we only hit each unit once per damage tick
             if not self.targets_hit_this_tick[unit] then
-                unit:hit(self.damage, self.unit)
+                unit:hit(self.damage, self.unit, nil, true, true)
                 self.targets_hit_this_tick[unit] = true
 
                 -- Visual/Audio feedback for the hit

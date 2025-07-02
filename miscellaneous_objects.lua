@@ -77,7 +77,7 @@ function Area:try_damage()
     for _, target in ipairs(targets) do
       if self:can_hit_with_effect(target, 'rooted') then
         target:root(self.rootDuration, self.unit)
-        target:hit(self.damage, self.unit)
+        target:hit(self.damage, self.unit, self.damage_type, true, true)
         self:apply_hit_effect(target)
       end
     end
@@ -86,7 +86,7 @@ function Area:try_damage()
     for _, target in ipairs(targets) do
       if self:can_hit_with_effect(target, 'shocked') then
         target:shock(self.shockDuration, self.unit)
-        target:hit(self.damage, self.unit)
+        target:hit(self.damage, self.unit, self.damage_type, true, true)
         self:apply_hit_effect(target)
       end
     end
@@ -99,7 +99,7 @@ function Area:try_damage()
       if self:can_hit_with_effect(target, 'stunned') then
         if math.random() < stun_chance then
           target:stun()
-          target:hit(self.damage, self.unit)
+          target:hit(self.damage, self.unit, self.damage_type, true, true)
           self:apply_hit_effect(target)
         end
       end
@@ -109,7 +109,7 @@ function Area:try_damage()
     for _, target in ipairs(targets) do
       if self:can_hit_with_effect(target, 'chilled') then
         target:chill(self.damage, self.unit)
-        target:hit(self.damage, self.unit)
+        target:hit(self.damage, self.unit, self.damage_type, true, true)
         self:apply_hit_effect(target)
       end
     end
@@ -122,7 +122,7 @@ function Area:try_damage()
   elseif self.knockback_force then
     for _, target in ipairs(targets) do
       if self:can_hit_with_knockback(target) then
-        target:hit(self.damage, self.unit)
+        target:hit(self.damage, self.unit, self.damage_type, true, true)
         target:push(self.knockback_force, self.unit:angle_to_object(target), nil, self.knockback_duration)
         self:apply_hit_effect(target)
       end
@@ -133,7 +133,7 @@ function Area:try_damage()
     end
   elseif self.damage > 0 then
     for _, target in ipairs(targets) do
-      target:hit(self.damage, self.unit, self.damage_type)
+      target:hit(self.damage, self.unit, self.damage_type, true, true)
       self:apply_hit_effect(target)
     end
   end
@@ -242,7 +242,7 @@ function DotArea:init(args)
         targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
       end
       for _, target in ipairs(targets) do
-        target:hit(self.damage/5)
+        target:hit(self.damage/5, self.parent, self.damage_type, true, true)
         for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
         for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
       end
@@ -253,7 +253,7 @@ function DotArea:init(args)
     local enemies = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
     if #enemies > 0 then self.spring:pull(0.05, 200, 10) end
     for _, enemy in ipairs(enemies) do
-      enemy:hit(self.damage/5, self.parent)
+      enemy:hit(self.damage/5, self.parent, self.damage_type, true, true)
       enemy:slow(0.8, 1, nil)
       HitCircle{group = main.current.effects, x = enemy.x, y = enemy.y, rs = 6, color = fg[0], duration = 0.1}
       for i = 1, 1 do HitParticle{group = main.current.effects, x = enemy.x, y = enemy.y, color = self.color} end
@@ -384,7 +384,7 @@ function ForceArea:init(args)
         elementor1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
         local enemies = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
         for _, enemy in ipairs(enemies) do
-          enemy:hit(4*self.parent.dmg)
+          enemy:hit(4*self.parent.dmg, self.parent, self.damage_type, true, true)
           enemy:push(50*(self.knockback_m or 1), self:angle_to_object(enemy))
         end
       end
@@ -700,7 +700,7 @@ function Stomp:stomp()
         else
             target:slow(0.3, 1, nil)
         end
-        target:hit(self.damage, self.unit)
+        target:hit(self.damage, self.unit, self.damage_type, true, false)
         HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
         for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = self.color} end
         for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
@@ -850,7 +850,7 @@ function Laser:try_damage()
   local target_classes = self.damage_troops and main.current.friendlies or main.current.enemies
   local targets = main.current.main:get_objects_in_shape(self.shape, target_classes)
   for _, target in ipairs(targets) do
-    target:hit(self.dps * self.tick, self.parent)
+    target:hit(self.dps * self.tick, self.parent, self.damage_type, true, true)
   end
 
 end
@@ -1261,7 +1261,7 @@ end
 function Critter:attack()
   if self.target and not self.target.dead then
     swordsman1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
-    self.target:hit(self.dmg, self, self.dmg_type)
+    self.target:hit(self.dmg, self, self.dmg_type, true, false)
   end
 end
 
@@ -1280,6 +1280,14 @@ function Critter:hit(damage, from, damageType, makesSound, cannotProcOnHit)
   self.hp = self.hp - damage
 
   self:show_damage_number(damage, damageType)
+  
+  -- Track damage dealt by the attacker (for teams)
+  if from and from.team then
+    local attacker_team = Helper.Unit.teams[from.team]
+    if attacker_team then
+      attacker_team:record_damage(damage)
+    end
+  end
 
   --on hit callbacks
   if from and from.onHitCallbacks and not cannotProcOnHit then
@@ -1293,6 +1301,15 @@ function Critter:hit(damage, from, damageType, makesSound, cannotProcOnHit)
       from:onKillCallbacks(self, overkill)
     end
     self:onDeathCallbacks(from)
+    
+    -- Track kill for the attacker (for teams)
+    if from and from.team then
+      local attacker_team = Helper.Unit.teams[from.team]
+      if attacker_team then
+        attacker_team:record_kill()
+      end
+    end
+    
     self:die()
   end
 end
@@ -1366,7 +1383,7 @@ function Critter:on_collision_enter(other, contact)
       dmg = 20
     end
     self:push(push_force, self:angle_to_object(other) + math.pi, nil, duration)
-    self:hit(dmg, other, nil, false)
+    self:hit(dmg, other, nil, true, false)
   end
 end
 
