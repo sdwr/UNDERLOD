@@ -62,8 +62,12 @@ function shared_init()
   full_res_character_canvas = Canvas(ww, wh)
   full_res_character_draws = {}
 
-  main_effects_canvas = Canvas(gw, gh, {stencil = true})
-  main_effects_draws = {}
+  -- for drawing effects over top of animated units
+  -- dont need for now, looks ok drawing them under
+
+  -- main_effects_canvas = Canvas(gw, gh, {stencil = true})
+  -- main_effects_draws = {}
+  
   full_res_canvas = Canvas(ww, wh)
   full_res_draws = {}
 
@@ -112,12 +116,12 @@ function shared_draw(draw_action)
     full_res_character_draws = {}
   end)
 
-  main_effects_canvas:draw_to(function()
-    for i, drawFn in ipairs(main_effects_draws) do
-      drawFn()
-    end
-    main_effects_draws = {}
-  end)
+  -- main_effects_canvas:draw_to(function()
+  --   for i, drawFn in ipairs(main_effects_draws) do
+  --     drawFn()
+  --   end
+  --   main_effects_draws = {}
+  -- end)
   
   full_res_canvas:draw_to(function()
     if not IN_TRANSITION then
