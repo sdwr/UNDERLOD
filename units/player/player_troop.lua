@@ -480,6 +480,11 @@ function Troop:hit(damage, from, damageType, makesSound, cannotProcOnHit)
 
   self:show_damage_number(damage, damageType)
   
+  -- Track damage dealt by the attacker
+  if from and from.total_damage_dealt then
+    from.total_damage_dealt = from.total_damage_dealt + actual_damage
+  end
+  
   --on hit callbacks
   if from and from.onHitCallbacks and not cannotProcOnHit then
     from:onHitCallbacks(self, actual_damage, damageType)
@@ -505,6 +510,11 @@ function Troop:hit(damage, from, damageType, makesSound, cannotProcOnHit)
       from:onKillCallbacks(self, overkill)
     end
     self:onDeathCallbacks(from)
+    
+    -- Track kill for the attacker
+    if from and from.kills then
+      from.kills = from.kills + 1
+    end
 
     self:die()
 
@@ -553,7 +563,7 @@ function Troop:on_collision_enter(other, contact)
     end
     
     self:push(push_force, self:angle_to_object(other) + math.pi, nil, duration)
-    self:hit(dmg, other, nil, false)
+    self:hit(dmg, other, nil, false, true)
   elseif table.any(main.current.friendlies, function(v) return other:is(v) end) then
       -- Handle knockback propagation
       if self.state == unit_states['knockback'] and other.state ~= unit_states['knockback'] then

@@ -90,7 +90,7 @@ function Area_Spell:apply_damage()
         -- Only damage targets we haven't already hit in this spell's lifetime
         if not self.targets_hit_map[target.id] then
             if self.damage > 0 then
-                target:hit(self.damage, self.unit, self.damage_type)
+                target:hit(self.damage, self.unit, self.damage_type, true, false)
                 self:apply_hit_effect(target)
               end
               

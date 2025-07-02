@@ -187,7 +187,7 @@ function Proc_Craggy:onGotHit(from, damage)
     
     if from and from.hp and from.hp > 0 then
       from:stun()
-      from:hit(self.damage, self.unit)
+      from:hit(self.damage, self.unit, DAMAGE_TYPE_PHYSICAL, true, false)
     end
   end
 end
@@ -316,7 +316,7 @@ function Proc_Bash:onHit(target, damage)
     arrow_hit_wall2:play{pitch = random:float(0.8, 1.2), volume = 0.9}
 
     target:stun()
-    target:hit(self.damage, self.unit)
+    target:hit(self.damage, self.unit, DAMAGE_TYPE_PHYSICAL, false, true)
   end
 end
 
@@ -727,7 +727,7 @@ function Proc_Lightning:onHit(target, damage)
   Proc_Lightning.super.onHit(self, target, damage)
   
   local lightning_damage = damage * self.percent_damage_as_lightning
-  target:hit(lightning_damage, nil, self.damageType, false)
+  target:hit(lightning_damage, nil, self.damageType, false, true)
 end
 
 Proc_Overcharge = Proc:extend()
@@ -1233,7 +1233,7 @@ function Proc_Radiance:onTick(dt)
         enemy:add_buff({name = 'radianceburn', damage = self.damage, duration = 1})
         
         --Helper.Sound:play_radiance()
-        enemy:hit(self.damage, nil, self.damageType)
+        enemy:hit(self.damage, nil, self.damageType, false, true)
       end
     end
   end
@@ -1328,7 +1328,7 @@ function Proc_Fire:onHit(target, damage)
   Proc_Fire.super.onHit(self, target, damage)
   --need to add a burn debuff to the Target
   local burn_damage = damage * self.percent_damage_as_burn
-  target:hit(burn_damage, nil, DAMAGE_TYPE_FIRE, false)
+  target:hit(burn_damage, nil, DAMAGE_TYPE_FIRE, false, true)
 end
 
 Proc_Volcano = Proc:extend()
@@ -1603,7 +1603,7 @@ function Proc_Frost:onHit(target, damage)
   Proc_Frost.super.onHit(self, target, damage)
 
   local chill_damage = damage * self.percent_damage_as_chill
-  target:hit(chill_damage, nil, DAMAGE_TYPE_COLD, false)
+  target:hit(chill_damage, nil, DAMAGE_TYPE_COLD, false, true)
 end
 
 Proc_Frostfield = Proc:extend()

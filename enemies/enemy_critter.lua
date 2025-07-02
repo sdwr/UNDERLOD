@@ -66,7 +66,7 @@ end
 function EnemyCritter:attack()
   if self.target and not self.target.dead then
     swordsman1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
-    self.target:hit(self.dmg, self)
+    self.target:hit(self.dmg, self, nil, true, false)
   end
 end
 
@@ -81,6 +81,11 @@ function EnemyCritter:hit(damage, from, damageType, makesSound, cannotProcOnHit)
 
   self.hp = self.hp - damage
   self:show_damage_number(damage, damageType)
+  
+  -- Track damage dealt by the attacker
+  if from and from.total_damage_dealt then
+    from.total_damage_dealt = from.total_damage_dealt + damage
+  end
 
   if from and from.onHitCallbacks and not cannotProcOnHit then
     from:onHitCallbacks(self, damage, damageType)
@@ -93,6 +98,12 @@ function EnemyCritter:hit(damage, from, damageType, makesSound, cannotProcOnHit)
       from:onKillCallbacks(self, overkill)
     end
     self:onDeathCallbacks(from)
+    
+    -- Track kill for the attacker
+    if from and from.kills then
+      from.kills = from.kills + 1
+    end
+    
     self:die() 
   end
 end

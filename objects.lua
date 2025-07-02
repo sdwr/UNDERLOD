@@ -161,6 +161,11 @@ function Unit:init_unit()
   --chill system
   self.freeze_gauge = 0
   
+  -- Combat tracking
+  self.total_damage_dealt = 0
+  self.kills = 0
+  self.time_alive = 0
+  
   Helper.Unit:set_state(self, unit_states['normal'])
 end
 
@@ -299,8 +304,14 @@ function Unit:init_hitbox_points()
   end
 end
 
-
-
+function Unit:update(dt)
+  self:update_game_object(dt)
+  
+  -- Track time alive
+  if not self.dead then
+    self.time_alive = self.time_alive + dt
+  end
+end
 
 function Unit:bounce(nx, ny)
   local vx, vy = self:get_velocity()
@@ -561,7 +572,7 @@ function Unit:update_buffs(dt)
           
           -- 2. Deal the damage
           if damage_this_tick > 0 then
-              self:hit(damage_this_tick, nil, DAMAGE_TYPE_BURN, false)
+              self:hit(damage_this_tick, nil, DAMAGE_TYPE_BURN, false, true)
           end
 
           v.total_damage = v.total_damage - damage_this_tick

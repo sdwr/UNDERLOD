@@ -255,7 +255,7 @@ end
 
 function Team:damage_all_troops(damage, from, damageType)
   for i, troop in ipairs(self.troops) do
-    troop:hit(damage, from, damageType)
+    troop:hit(damage, from, damageType, true, false)
   end
 end
 

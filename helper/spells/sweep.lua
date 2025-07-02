@@ -93,7 +93,7 @@ function Helper.Spell.Sweep:update()
                                                                                                                     Helper.window_width + width*2 - Helper.Spell.Sweep.sweep_speed * t, Helper.Spell.Sweep.list[i].y2) then
                     target.damage_taken_at['sweep'] = Helper.Time.time
 
-                    target:hit(Helper.Spell.Sweep.list[i].damage)
+                    target:hit(Helper.Spell.Sweep.list[i].damage, nil, nil, true, false)
                     HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
                     for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = blue[0]} end
                     for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
@@ -106,7 +106,7 @@ function Helper.Spell.Sweep:update()
                                                                                                                     width*4/5 + Helper.Spell.Sweep.sweep_speed * t, Helper.Spell.Sweep.list[i].y2) then
                     target.damage_taken_at['sweep'] = Helper.Time.time
 
-                    target:hit(Helper.Spell.Sweep.list[i].damage)
+                    target:hit(Helper.Spell.Sweep.list[i].damage, nil, nil, true, false)
                     HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 6, color = fg[0], duration = 0.1}
                     for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = blue[0]} end
                     for i = 1, 1 do HitParticle{group = main.current.effects, x = target.x, y = target.y, color = target.color} end
