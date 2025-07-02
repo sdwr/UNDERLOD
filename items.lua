@@ -261,7 +261,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'turtle',
     desc = 'A heart that provides gold every round',
-    stats = {hp = 0.1, gold = 2}
+    stats = {hp = 0.1, gold = 1}
   },
 
   ['sword'] = {
@@ -332,7 +332,7 @@ item_to_item_data = {
     cost = 5,
     icon = 'orb',
     desc = 'Deal a % of your damage as extra [blue]cold[fg] damage. [blue]Chilled[fg] enemies [blue]freeze[fg]',
-    stats = {dmg = 0.1},
+    stats = {},
     procs = {'cold'},
     tags = {'cold'}
   },
@@ -623,7 +623,7 @@ item_to_item_data = {
     colors = {'yellow'},
     cost = 10,
     icon = 'reticle',
-    desc = 'More attacks on the same target increase your attack speed',
+    desc = 'Attacks on the same target increase your attack speed',
     stats = {mvspd = 0.15},
     procs = {'overcharge'}
   },
@@ -632,7 +632,7 @@ item_to_item_data = {
     colors = {'red'},
     cost = 10,
     icon = 'reticle',
-    desc = 'More attacks on the same target increase your damage',
+    desc = 'Attacks on the same target increase your damage',
     stats = {dmg = 0.25},
     procs = {'powercharge'}
   },
