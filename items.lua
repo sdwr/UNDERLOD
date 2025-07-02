@@ -488,7 +488,7 @@ item_to_item_data = {
     colors = {'blue'},
     cost = 10,
     icon = 'icefang',
-    desc = 'Attacking a [blue]frozen[fg] creates a [blue]cold[fg] explosion',
+    desc = 'Attacking a [blue]frozen[fg] enemy creates a [blue]cold[fg] explosion',
     stats = {dmg = 0.1},
     procs = {'shatterlance'},
     prereqs = {'cold'}

@@ -34,21 +34,22 @@ function AnimatedSpawnCircle:init(args)
 
     self.line_width = 2
     local duration = args.duration or 2
+    local expected_spawn_time = args.expected_spawn_time or 2
 
     -- ===================================================================
     -- Flashing Animation Logic
     -- ===================================================================
     self.visible = true -- Start visible
+    self.is_flashing = false -- Track if we're in flashing state
 
-    -- Define when the flashing should start and how long each flash is
-    local flash_start_time = duration * 0.6 -- Start flashing in the last 40% of the duration
-    local flash_interval = (duration - flash_start_time) / 4 -- Divide the remaining time into 4 parts for two flashes
+    local flash_start_time = math.max(0, expected_spawn_time - 1)
+    local flash_interval = 0.5 
 
-    -- Schedule the flashes
-    self.t:after(flash_start_time, function() self.visible = false end)
-    self.t:after(flash_start_time + flash_interval * 1, function() self.visible = true end)
-    self.t:after(flash_start_time + flash_interval * 2, function() self.visible = false end)
-    self.t:after(flash_start_time + flash_interval * 3, function() self.visible = true end)
+    -- Schedule when to start flashing
+    self.t:after(flash_start_time, function() 
+        self.is_flashing = true
+        self:start_flashing()
+    end)
 
     -- Schedule the object to be destroyed at the end of its duration
     self.t:after(duration, function()
@@ -58,6 +59,18 @@ end
 
 function AnimatedSpawnCircle:update(dt)
     self:update_game_object(dt)
+end
+
+function AnimatedSpawnCircle:start_flashing()
+    -- Only start flashing if we're not already dead
+    if self.dead then return end
+    
+    -- Toggle visibility every 0.2 seconds
+    self.t:every(0.2, function()
+        if not self.dead then
+            self.visible = not self.visible
+        end
+    end)
 end
 
 function AnimatedSpawnCircle:draw()
@@ -1094,7 +1107,7 @@ function Unit:burn_explode(from)
     x = self.x,
     y = self.y,
     radius = explosion_radius,
-    dmg = explosion_damage,
+    damage = explosion_damage,
     duration = 0.3,
     area_type = 'area',
     pick_shape = 'circle',

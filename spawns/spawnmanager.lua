@@ -715,6 +715,7 @@ function Create_Unit_With_Warning(arena, location, warning_time, creation_callba
   local warning_marker = AnimatedSpawnCircle{
       group = arena.floor, x = location.x, y = location.y,
       duration = 1000, -- Give it a long duration so it doesn't fade early
+      expected_spawn_time = warning_time,
       enemy_type = enemy_type
   }
   spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
