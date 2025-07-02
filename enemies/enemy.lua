@@ -399,6 +399,12 @@ function Enemy:hit(damage, from, damageType, makesSound, cannotProcOnHit)
     end
   end
 
+  --check death before callbacks
+  -- so the unit can't die twice
+  if self.hp <= 0 then
+    self:die()
+  end
+
   --callbacks
   if from and from.onHitCallbacks and not cannotProcOnHit then
     from:onHitCallbacks(self, actual_damage, damageType)
@@ -421,7 +427,6 @@ function Enemy:hit(damage, from, damageType, makesSound, cannotProcOnHit)
       end
     end
 
-    self:die()
     for i = 1, random:int(2, 3) do 
       HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color} 
     end
