@@ -572,7 +572,7 @@ function Unit:update_buffs(dt)
           
           -- 2. Deal the damage
           if damage_this_tick > 0 then
-              self:hit(damage_this_tick, nil, DAMAGE_TYPE_BURN, false, true)
+              self:hit(damage_this_tick, v.from, DAMAGE_TYPE_BURN, false, true)
           end
 
           v.total_damage = v.total_damage - damage_this_tick
@@ -1009,6 +1009,7 @@ function Unit:burn(damage, from)
   
   if existing_buff then
     -- Add damage to existing burn buff
+    existing_buff.from = from
     existing_buff.total_damage = existing_buff.total_damage + damage
     existing_buff.peak_damage = math.max(existing_buff.peak_damage, existing_buff.total_damage)
 
@@ -1017,6 +1018,7 @@ function Unit:burn(damage, from)
     -- Create new burn buff
     local burnBuff = {
       name = 'burn',
+      from = from,
       total_damage = damage, 
       peak_damage = damage,
       nextTick = 1.0, -- Tick every second
@@ -1071,6 +1073,7 @@ function Unit:burn_explode(from)
   if not self.buffs['burn'] then return end
 
   local peak_damage = self.buffs['burn'].peak_damage
+  local from = self.buffs['burn'].from
   self:remove_buff('burn')
   
   -- Calculate explosion damage based on max HP
@@ -1087,6 +1090,7 @@ function Unit:burn_explode(from)
   Knockback_Area_Spell{
     group = main.current.effects,
     is_troop = true,
+    unit = from,
     x = self.x,
     y = self.y,
     radius = explosion_radius,
