@@ -56,9 +56,17 @@ function shared_init()
   pixul_font_huge = Font('PixulBrush', 30)
   pixul_mini = Font('PixulBrush', 5)
   background_canvas = Canvas(gw, gh)
+
   main_canvas = Canvas(gw, gh, {stencil = true})
+
+  full_res_character_canvas = Canvas(ww, wh)
+  full_res_character_draws = {}
+
+  main_effects_canvas = Canvas(gw, gh, {stencil = true})
+  main_effects_draws = {}
   full_res_canvas = Canvas(ww, wh)
   full_res_draws = {}
+
   shadow_canvas = Canvas(gw, gh)
   shadow_shader = Shader(nil, 'shadow.frag')
   star_canvas = Canvas(gw, gh, {stencil = true})
@@ -96,6 +104,20 @@ function shared_draw(draw_action)
     draw_action()
     if flashing then graphics.rectangle(gw/2, gh/2, gw, gh, nil, nil, flash_color) end
   end)
+
+  full_res_character_canvas:draw_to(function()
+    for i, drawFn in ipairs(full_res_character_draws) do
+      drawFn()
+    end
+    full_res_character_draws = {}
+  end)
+
+  main_effects_canvas:draw_to(function()
+    for i, drawFn in ipairs(main_effects_draws) do
+      drawFn()
+    end
+    main_effects_draws = {}
+  end)
   
   full_res_canvas:draw_to(function()
     if not IN_TRANSITION then
@@ -117,6 +139,8 @@ function shared_draw(draw_action)
   background_canvas:draw(x, y, 0, sx, sy)
   shadow_canvas:draw(x + 1.5*sx, y + 1.5*sy, 0, sx, sy)
   main_canvas:draw(x, y, 0, sx, sy)
+  full_res_character_canvas:draw(x, y)
+  main_effects_canvas:draw(x, y, 0, sx, sy)
   full_res_canvas:draw(x, y)
 end
 

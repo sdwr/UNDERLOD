@@ -103,16 +103,14 @@ fns['init_enemy'] = function(self)
 end
 
 fns['draw_enemy'] = function(self)
-    graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
-
     local animation_success = self:draw_animation(self.state, self.x, self.y, 0)
 
     if not animation_success then
+      graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
       local points = self:make_regular_polygon(3, (self.shape.w / 2) / 60 * 70, self:get_angle())
       graphics.polygon(points, self.color)
+      graphics.pop()
     end
-
-    graphics.pop()
 end
 
 enemy_to_class['dragon'] = fns

@@ -61,15 +61,13 @@ fns['attack'] = function(self, area, mods, color)
 end
 
 fns['draw_enemy'] = function(self)
-  graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
-  
   local animation_success = self:draw_animation(self.state, self.x, self.y, 0)
 
   if not animation_success then
+    graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
     graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+    graphics.pop()
   end
-
-  graphics.pop()
 end
 
 enemy_to_class['charger'] = fns

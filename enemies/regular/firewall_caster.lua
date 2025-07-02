@@ -70,16 +70,15 @@ fns['init_enemy'] = function(self)
 end
 
 -- Draw function for the Firewall Caster
-fns['draw_enemy'] = function(self)
-    graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
-
+fns['draw_enemy'] = function(self)    
     local animation_success = self:draw_animation(self.state, self.x, self.y, 0)
     
     if not animation_success then
+        graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
         graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
+        graphics.pop()
     end
 
-    graphics.pop()
 end
 
 -- Add this new enemy type to the global enemy class table

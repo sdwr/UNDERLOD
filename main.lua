@@ -22,6 +22,7 @@ require 'enemies/level_manager'
 require 'enemies/enemy_includes'
 require 'units/units'
 require 'util/fpscounter'
+require 'util/draw_animations'
 
 love.profiler = require('util/profiler/profile')
 require 'util/runprofiler'
