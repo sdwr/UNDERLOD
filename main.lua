@@ -820,24 +820,66 @@ function init()
     return info_text
   end
 
-  build_character_text = function(unit)
-    local item_stats = get_unit_stats(unit)
-    local buffs = get_unit_buffs(unit)
-
+  build_round_stats_text = function(unit)
     local text_lines = {}
-    local next_line = { text = '', font = pixul_font, alignment = 'center' }
-    for k, v in pairs(item_stats) do
-      next_line = { text = '', font = pixul_font, alignment = 'center' }
-      next_line.text = '[yellow[0]]+' .. (v * 100) .. '% ' .. k:capitalize()
-      table.insert(text_lines, next_line)
+    
+    -- Format damage and DPS
+    local damage_text = math.floor(unit.last_round_damage)
+    local dps_text = string.format("%.1f", unit.last_round_dps)
+    
+    -- Add damage line
+    table.insert(text_lines, { 
+      text = '[red]DMG: [red]' .. damage_text, 
+      font = pixul_font, 
+      alignment = 'center' 
+    })
+    
+    -- Add DPS line
+    table.insert(text_lines, { 
+      text = '[green]DPS: [green]' .. dps_text, 
+      font = pixul_font, 
+      alignment = 'center' 
+    })
+    
+    -- Add kills if available
+    if unit.last_round_kills and unit.last_round_kills > 0 then
+      table.insert(text_lines, { 
+        text = '[yellow]Kills: [yellow]' .. unit.last_round_kills, 
+        font = pixul_font, 
+        alignment = 'center' 
+      })
     end
-
+    
     local text2 = Text2 { group = main.current.ui, x = 0, y = 0,
       lines = text_lines, font = pixul_font, alignment = 'center',
       force_update = false }
-
-
+    
     return text2
+  end
+
+  build_character_text = function(unit)
+    -- Check if unit has combat data from previous round
+    if unit.last_round_dps and unit.last_round_damage then
+      return build_round_stats_text(unit)
+    else
+      -- Fall back to item stats if no combat data
+      local item_stats = get_unit_stats(unit)
+      local buffs = get_unit_buffs(unit)
+
+      local text_lines = {}
+      local next_line = { text = '', font = pixul_font, alignment = 'center' }
+      for k, v in pairs(item_stats) do
+        next_line = { text = '', font = pixul_font, alignment = 'center' }
+        next_line.text = '[yellow[0]]+' .. (v * 100) .. '% ' .. k:capitalize()
+        table.insert(text_lines, next_line)
+      end
+
+      local text2 = Text2 { group = main.current.ui, x = 0, y = 0,
+        lines = text_lines, font = pixul_font, alignment = 'center',
+        force_update = false }
+
+      return text2
+    end
   end
 
   local ylb1 = function(lvl)

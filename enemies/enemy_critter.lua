@@ -82,9 +82,12 @@ function EnemyCritter:hit(damage, from, damageType, makesSound, cannotProcOnHit)
   self.hp = self.hp - damage
   self:show_damage_number(damage, damageType)
   
-  -- Track damage dealt by the attacker
-  if from and from.total_damage_dealt then
-    from.total_damage_dealt = from.total_damage_dealt + damage
+  -- Track damage dealt by the attacker (for teams)
+  if from and from.team then
+    local attacker_team = Helper.Unit.teams[from.team]
+    if attacker_team then
+      attacker_team:record_damage(damage)
+    end
   end
 
   if from and from.onHitCallbacks and not cannotProcOnHit then
@@ -99,9 +102,12 @@ function EnemyCritter:hit(damage, from, damageType, makesSound, cannotProcOnHit)
     end
     self:onDeathCallbacks(from)
     
-    -- Track kill for the attacker
-    if from and from.kills then
-      from.kills = from.kills + 1
+    -- Track kill for the attacker (for teams)
+    if from and from.team then
+      local attacker_team = Helper.Unit.teams[from.team]
+      if attacker_team then
+        attacker_team:record_kill()
+      end
     end
     
     self:die() 

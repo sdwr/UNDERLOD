@@ -480,9 +480,12 @@ function Troop:hit(damage, from, damageType, makesSound, cannotProcOnHit)
 
   self:show_damage_number(damage, damageType)
   
-  -- Track damage dealt by the attacker
-  if from and from.total_damage_dealt then
-    from.total_damage_dealt = from.total_damage_dealt + actual_damage
+  -- Track damage dealt by the attacker (for teams)
+  if from and from.team then
+    local attacker_team = Helper.Unit.teams[from.team]
+    if attacker_team then
+      attacker_team:record_damage(actual_damage)
+    end
   end
   
   --on hit callbacks
@@ -511,9 +514,12 @@ function Troop:hit(damage, from, damageType, makesSound, cannotProcOnHit)
     end
     self:onDeathCallbacks(from)
     
-    -- Track kill for the attacker
-    if from and from.kills then
-      from.kills = from.kills + 1
+    -- Track kill for the attacker (for teams)
+    if from and from.team then
+      local attacker_team = Helper.Unit.teams[from.team]
+      if attacker_team then
+        attacker_team:record_kill()
+      end
     end
 
     self:die()

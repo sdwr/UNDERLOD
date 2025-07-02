@@ -773,17 +773,13 @@ function Arena:set_timer_text()
 end
 
 function Arena:update_units_with_combat_data()
-  -- Update the saved units with combat data from the arena
+  -- Update the saved units with combat data from teams
   for i, saved_unit in ipairs(self.units) do
-    -- Find the corresponding arena unit by character and position
-    for j, arena_unit in ipairs(self.starting_units) do
-      if arena_unit.character == saved_unit.character and j == i then
-        -- Copy combat data from arena unit to saved unit
-        saved_unit.last_round_dps = arena_unit.total_damage_dealt / math.max(self.time_elapsed, 1)
-        saved_unit.last_round_damage = arena_unit.total_damage_dealt or 0
-        saved_unit.last_round_kills = arena_unit.kills or 0
-        saved_unit.last_round_survived = not arena_unit.dead
-        saved_unit.last_round_time_alive = arena_unit.time_alive or self.time_elapsed
+    -- Find the corresponding team by character and position
+    for j, team in ipairs(Helper.Unit.teams) do
+      if team.unit.character == saved_unit.character and j == i then
+        -- Save combat data from team to saved unit
+        team:save_combat_data_to_unit()
         break
       end
     end
