@@ -1133,7 +1133,7 @@ end
 --CHILL SYSTEM
 function Unit:chill(damage, from)
   --add chill buff
-  local chillBuff = {name = 'chill', duration = CHILL_DURATION, maxDuration = CHILL_DURATION, stats = {mvspd = -1 * CHILL_SLOW_PERCENT}}
+  local chillBuff = {name = 'chill', color = blue[0], duration = CHILL_DURATION, maxDuration = CHILL_DURATION, stats = {mvspd = -1 * CHILL_SLOW_PERCENT}}
   self:remove_buff('chill')
   self:add_buff(chillBuff)
 

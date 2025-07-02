@@ -65,12 +65,6 @@ function DrawAnimations.draw_enemy_animation(enemy, state, x, y, r)
   -- Add drawing functions to full_res_character_canvas
   table.insert(full_res_character_draws, function()
     
-    --draw chill as a circle under the enemy
-    if enemy.buffs['chill'] then
-      local color = blue[0]:clone()
-      color.a = 0.5
-      graphics.circle(screen_x, screen_y, (enemy.shape.w/2 + 2) * screen_scale, color)
-    end
     graphics.push(screen_x, screen_y, 0, enemy.hfx.hit.x, enemy.hfx.hit.x)
       animation:draw(image.image, screen_x, screen_y, r, scale_x * screen_scale, scale_y * screen_scale, frame_center_x, frame_center_y)
     graphics.pop()
