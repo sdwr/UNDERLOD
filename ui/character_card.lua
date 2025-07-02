@@ -90,10 +90,10 @@ function CharacterCard:createButtons()
   -- Create "Last Round" button
   self.last_round_button = Button{
     group = main.current.ui,
-    x = self.x - 25,
+    x = self.x,
     y = self.y - self.h/2 + 30,
-    w = 40,
-    h = 20,
+    w = 60,
+    h = 18,
     bg_color = 'bg',
     fg_color = 'bg10',
     button_text = 'Last Round',
@@ -103,10 +103,10 @@ function CharacterCard:createButtons()
   -- Create "Unit Stats" button
   self.unit_stats_button = Button{
     group = main.current.ui,
-    x = self.x + 25,
-    y = self.y - self.h/2 + 30,
-    w = 40,
-    h = 20,
+    x = self.x,
+    y = self.y - self.h/2 + 55,
+    w = 60,
+    h = 18,
     bg_color = 'bg',
     fg_color = 'bg10',
     button_text = 'Unit Stats',
