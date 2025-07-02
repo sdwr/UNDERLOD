@@ -66,7 +66,7 @@ function DrawAnimations.draw_enemy_animation(enemy, state, x, y, r)
   table.insert(full_res_character_draws, function()
     
     --draw chill as a circle under the enemy
-    if true then
+    if enemy.buffs['chill'] then
       local color = blue[0]:clone()
       color.a = 0.5
       graphics.circle(screen_x, screen_y, (enemy.shape.w/2 + 2) * screen_scale, color)
