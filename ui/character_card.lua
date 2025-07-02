@@ -81,19 +81,131 @@ end
 
 function CharacterCard:initText()
   self.name_text = Text({{text = '[' .. self.character_color_string .. '[3]]' .. self.character, font = pixul_font, alignment = 'center'}}, global_text_tags)
-  self:refreshText()
+  self:createButtons()
   
   self.proc_text = nil
 end
 
-function CharacterCard:refreshText()
-  if self.stat_text then
-    self.stat_text.dead = true
+function CharacterCard:createButtons()
+  -- Create "Last Round" button
+  self.last_round_button = Button{
+    group = main.current.ui,
+    x = self.x - 25,
+    y = self.y - self.h/2 + 30,
+    w = 40,
+    h = 20,
+    bg_color = 'bg',
+    fg_color = 'bg10',
+    button_text = 'Last Round',
+    action = function() end -- No action on click, just hover
+  }
+  
+  -- Create "Unit Stats" button
+  self.unit_stats_button = Button{
+    group = main.current.ui,
+    x = self.x + 25,
+    y = self.y - self.h/2 + 30,
+    w = 40,
+    h = 20,
+    bg_color = 'bg',
+    fg_color = 'bg10',
+    button_text = 'Unit Stats',
+    action = function() end -- No action on click, just hover
+  }
+  
+  -- Store references for hover detection
+  self.last_round_button.parent = self
+  self.unit_stats_button.parent = self
+end
+
+function CharacterCard:show_round_stats_popup()
+  if self.unit.last_round_dps and self.unit.last_round_damage then
+    local text_lines = {}
+    
+    -- Format damage and DPS
+    local damage_text = math.floor(self.unit.last_round_damage)
+    local dps_text = string.format("%.1f", self.unit.last_round_dps)
+    
+    -- Add damage line
+    table.insert(text_lines, { 
+      text = '[red]DMG: [red]' .. damage_text, 
+      font = pixul_font, 
+      alignment = 'center' 
+    })
+    
+    -- Add DPS line
+    table.insert(text_lines, { 
+      text = '[green]DPS: [green]' .. dps_text, 
+      font = pixul_font, 
+      alignment = 'center' 
+    })
+    
+    -- Add kills if available
+    if self.unit.last_round_kills and self.unit.last_round_kills > 0 then
+      table.insert(text_lines, { 
+        text = '[yellow]Kills: [yellow]' .. self.unit.last_round_kills, 
+        font = pixul_font, 
+        alignment = 'center' 
+      })
+    end
+    
+    self.popup = InfoText{group = main.current.ui, force_update = false}
+    self.popup:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
+    self.popup.x = self.x
+    self.popup.y = self.y - self.h/2 + 60
   end
-  self.stat_text = build_character_text(self.unit)
-  table.insert(ALL_CARD_TEXTS, self.stat_text)
-  self.stat_text.x = self.x
-  self.stat_text.y = self.y - self.h/2 + 30 + self.stat_text.h/2
+end
+
+function CharacterCard:show_unit_stats_popup()
+  local item_stats = get_unit_stats(self.unit)
+  local text_lines = {}
+  
+  for k, v in pairs(item_stats) do
+    table.insert(text_lines, { 
+      text = '[yellow[0]]+' .. (v * 100) .. '% ' .. k:capitalize(), 
+      font = pixul_font, 
+      alignment = 'center' 
+    })
+  end
+  
+  -- Check if we actually have any stats (hash table, so check if it's empty)
+  local has_stats = false
+  for _ in pairs(item_stats) do
+    has_stats = true
+    break
+  end
+  
+  if not has_stats then
+    table.insert(text_lines, { 
+      text = '[fg]No item stats', 
+      font = pixul_font, 
+      alignment = 'center' 
+    })
+  end
+  
+  self.popup = InfoText{group = main.current.ui, force_update = false}
+  self.popup:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
+  self.popup.x = self.x
+  self.popup.y = self.y - self.h/2 + 60
+end
+
+function CharacterCard:hide_popup()
+  if self.popup then
+    self.popup:deactivate()
+    self.popup = nil
+  end
+end
+
+function CharacterCard:refreshText()
+  -- Remove old buttons if they exist
+  if self.last_round_button then
+    self.last_round_button.dead = true
+  end
+  if self.unit_stats_button then
+    self.unit_stats_button.dead = true
+  end
+  
+  self:createButtons()
 end
 
 function CharacterCard:draw()
@@ -102,13 +214,29 @@ function CharacterCard:draw()
   graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, self.background_color)
   --draw text
   self.name_text:draw(self.x, self.y - (self.h/2) + 10)
-  self.stat_text:draw()
 
   graphics.pop()
 end
   
 function CharacterCard:update(dt)
   self:update_game_object(dt)
+  
+  -- Check button hover states and show/hide popups
+  if self.last_round_button and self.last_round_button.selected and not self.last_round_hovered then
+    self.last_round_hovered = true
+    self:show_round_stats_popup()
+  elseif self.last_round_button and not self.last_round_button.selected and self.last_round_hovered then
+    self.last_round_hovered = false
+    self:hide_popup()
+  end
+  
+  if self.unit_stats_button and self.unit_stats_button.selected and not self.unit_stats_hovered then
+    self.unit_stats_hovered = true
+    self:show_unit_stats_popup()
+  elseif self.unit_stats_button and not self.unit_stats_button.selected and self.unit_stats_hovered then
+    self.unit_stats_hovered = false
+    self:hide_popup()
+  end
 end
 
 function CharacterCard:die()
@@ -119,7 +247,18 @@ function CharacterCard:die()
     end
   end
   self.name_text.dead = true
-  self.stat_text.dead = true
+  
+  -- Clean up buttons
+  if self.last_round_button then
+    self.last_round_button.dead = true
+  end
+  if self.unit_stats_button then
+    self.unit_stats_button.dead = true
+  end
+  
+  -- Clean up popup
+  self:hide_popup()
+  
   self.dead = true
 end
 
