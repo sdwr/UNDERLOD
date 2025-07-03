@@ -10,11 +10,11 @@ function BuyScreen:init(name)
 end
 
 function BuyScreen:on_exit()
+  Kill_All_Cards()
   self.main:destroy()
   self.effects:destroy()
   self.ui:destroy()
   self.t:destroy()
-  Kill_All_Cards()
   self.main = nil
   self.effects = nil
   self.ui = nil

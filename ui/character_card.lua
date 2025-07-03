@@ -28,6 +28,7 @@ function Kill_All_Cards()
   for i, card in ipairs(Character_Cards) do
     card:die()
   end
+  Character_Cards = {}
   for i, text in ipairs(ALL_CARD_TEXTS) do
     text.dead = true
   end
@@ -90,7 +91,7 @@ end
 function CharacterCard:createUIElements()
     -- Ensure old elements are removed before creating new ones to prevent duplicates.
     if self.unit_stats_icon then self.unit_stats_icon.dead = true end
-    if self.last_round_display then self.last_round_display:deactivate() end
+    if self.last_round_display then self.last_round_display.dead = true end
 
     -- Create unit stats icon (small button next to class name)
     self.unit_stats_icon = Button{
@@ -111,52 +112,59 @@ end
 
 
 function CharacterCard:create_last_round_display()
-    -- Get all units to compare stats
-    local all_units = {}
-    for _, card in ipairs(Character_Cards) do
-        if card.unit and card.unit.last_round_damage then
-            table.insert(all_units, card.unit)
-        end
+  -- Get all units to compare stats
+  local all_units = {}
+  for _, card in ipairs(Character_Cards) do
+    if card.unit and card.unit.last_round_damage then
+      table.insert(all_units, card.unit)
     end
-    
-    -- Find the best stats
-    local best_damage, best_dps, best_kills = 0, 0, 0
-    for _, unit in ipairs(all_units) do
-        if unit.last_round_damage and unit.last_round_damage > best_damage then best_damage = unit.last_round_damage end
-        if unit.last_round_dps and unit.last_round_dps > best_dps then best_dps = unit.last_round_dps end
-        if unit.last_round_kills and unit.last_round_kills > best_kills then best_kills = unit.last_round_kills end
+  end
+  
+  -- Find best stats
+  local best_damage = 0
+  local best_dps = 0
+  local best_kills = 0
+  
+  for _, unit in ipairs(all_units) do
+    if unit.last_round_damage and unit.last_round_damage > best_damage then
+      best_damage = unit.last_round_damage
     end
-    
-    -- Create text lines for last round stats
-    local text_lines = {}
-    table.insert(text_lines, {text = '[bg10]Last Round', font = pixul_font, alignment = 'left'})
-    
-    if self.unit.last_round_dps and self.unit.last_round_damage then
-        local damage_text = math.floor(self.unit.last_round_damage)
-        local dps_text = string.format("%.1f", self.unit.last_round_dps)
-        
-        local damage_star = (self.unit.last_round_damage == best_damage and best_damage > 0) and ' *' or ''
-        table.insert(text_lines, {text = '[red]DMG: [red]' .. damage_text .. damage_star, font = pixul_font, alignment = 'left'})
-        
-        local dps_star = (self.unit.last_round_dps == best_dps and best_dps > 0) and ' *' or ''
-        table.insert(text_lines, {text = '[green]DPS: [green]' .. dps_text .. dps_star, font = pixul_font, alignment = 'left'})
-        
-        if self.unit.last_round_kills then
-            local kills_star = (self.unit.last_round_kills == best_kills and best_kills > 0) and ' *' or ''
-            table.insert(text_lines, {text = '[yellow]Kills: [yellow]' .. self.unit.last_round_kills .. kills_star, font = pixul_font, alignment = 'left'})
-        end
-    else
-        table.insert(text_lines, {text = '[bg10]No data', font = pixul_font, alignment = 'left'})
-        table.insert(text_lines, {text = '', font = pixul_font, alignment = 'left'})
-        table.insert(text_lines, {text = '', font = pixul_font, alignment = 'left'})
+    if unit.last_round_dps and unit.last_round_dps > best_dps then
+      best_dps = unit.last_round_dps
     end
+    if unit.last_round_kills and unit.last_round_kills > best_kills then
+      best_kills = unit.last_round_kills
+    end
+  end
+  
+  -- Create text lines for last round stats
+  local text_lines = {}
+  table.insert(text_lines, {text = '[bg10]Last Round', font = pixul_font, alignment = 'left'})
+  
+  if self.unit.last_round_dps and self.unit.last_round_damage then
+    local damage_text = math.floor(self.unit.last_round_damage)
+    local dps_text = string.format("%.1f", self.unit.last_round_dps)
     
-    self.last_round_display = InfoText{group = main.current.ui, force_update = false, bg_color = bg[0]}
-    self.last_round_display:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
-    self.last_round_display.x = self.x
-    self.last_round_display.y = self.y - self.h/2 + 50
-    -- Set alignment to top-left so all cards start at the same height
-    self.last_round_display.text.alignment = 'left'
+    local damage_star = (self.unit.last_round_damage == best_damage and best_damage > 0) and ' *' or ''
+    table.insert(text_lines, {text = '[red]DMG: [red]' .. damage_text .. damage_star, font = pixul_font, alignment = 'left'})
+    
+    local dps_star = (self.unit.last_round_dps == best_dps and best_dps > 0) and ' *' or ''
+    table.insert(text_lines, {text = '[green]DPS: [green]' .. dps_text .. dps_star, font = pixul_font, alignment = 'left'})
+    
+    if self.unit.last_round_kills and self.unit.last_round_kills > 0 then
+      local kills_star = (self.unit.last_round_kills == best_kills and best_kills > 0) and ' *' or ''
+      table.insert(text_lines, {text = '[blue]Kills: [blue]' .. self.unit.last_round_kills .. kills_star, font = pixul_font, alignment = 'left'})
+    end
+  else
+    table.insert(text_lines, {text = '[bg10]no data', font = pixul_font, alignment = 'left'})
+    table.insert(text_lines, {text = '', font = pixul_font, alignment = 'left'})
+    table.insert(text_lines, {text = '', font = pixul_font, alignment = 'left'})
+  end
+  
+  -- Create the Text2 for last round stats
+  self.last_round_display = Text2{group = main.current.ui, lines = text_lines}
+  self.last_round_display.x = self.x
+  self.last_round_display.y = self.y - self.h/2 + 50
 end
 
 -- FIX: This function now correctly calls the refactored UI creation function.
@@ -213,7 +221,6 @@ function CharacterCard:refreshText()
   -- Remove old last round display if it exists
   if self.last_round_display then
     self.last_round_display.dead = true
-    self.last_round_display:deactivate()
     self.last_round_display = nil
   end
   
@@ -261,7 +268,6 @@ function CharacterCard:die()
   -- Clean up last round display
   if self.last_round_display then
     self.last_round_display.dead = true
-    self.last_round_display:deactivate()
     self.last_round_display = nil
   end
   
@@ -499,4 +505,18 @@ end
 function ItemPart:unhighlight()
 self.highlighted = false
 self.spring:pull(0.05, 200, 10)
+end
+
+function CharacterCard:update_button_positions()
+  -- Update unit stats icon position
+  if self.unit_stats_icon then
+    self.unit_stats_icon.x = self.x + 35
+    self.unit_stats_icon.y = self.y - self.h/2 + 10
+  end
+  
+  -- Update last round display position
+  if self.last_round_display then
+    self.last_round_display.x = self.x
+    self.last_round_display.y = self.y - self.h/2 + 20
+  end
 end
