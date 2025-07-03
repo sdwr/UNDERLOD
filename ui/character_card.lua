@@ -139,28 +139,26 @@ function CharacterCard:create_last_round_display()
   
   -- Create text lines for last round stats
   local text_lines = {}
-  if self.unit.last_round_damage then
-    table.insert(text_lines, {text = '[bg10]Last Round', font = pixul_font, alignment = 'left'})
+  table.insert(text_lines, {text = '[bg10]Last Round', font = pixul_font, alignment = 'left'})
+  
+  if self.unit.last_round_dps and self.unit.last_round_damage then
+    local damage_text = math.floor(self.unit.last_round_damage)
+    local dps_text = string.format("%.1f", self.unit.last_round_dps)
     
-    if self.unit.last_round_dps and self.unit.last_round_damage then
-      local damage_text = math.floor(self.unit.last_round_damage)
-      local dps_text = string.format("%.1f", self.unit.last_round_dps)
-      
-      local damage_star = (self.unit.last_round_damage == best_damage and best_damage > 0) and ' *' or ''
-      table.insert(text_lines, {text = '[red]DMG: [red]' .. damage_text .. damage_star, font = pixul_font, alignment = 'left'})
-      
-      local dps_star = (self.unit.last_round_dps == best_dps and best_dps > 0) and ' *' or ''
-      table.insert(text_lines, {text = '[green]DPS: [green]' .. dps_text .. dps_star, font = pixul_font, alignment = 'left'})
-      
-      if self.unit.last_round_kills and self.unit.last_round_kills > 0 then
-        local kills_star = (self.unit.last_round_kills == best_kills and best_kills > 0) and ' *' or ''
-        table.insert(text_lines, {text = '[blue]Kills: [blue]' .. self.unit.last_round_kills .. kills_star, font = pixul_font, alignment = 'left'})
-      end
-    else
-      table.insert(text_lines, {text = '[bg10]no data', font = pixul_font, alignment = 'left'})
-      table.insert(text_lines, {text = '', font = pixul_font, alignment = 'left'})
-      table.insert(text_lines, {text = '', font = pixul_font, alignment = 'left'})
+    local damage_star = (self.unit.last_round_damage == best_damage and best_damage > 0) and ' *' or ''
+    table.insert(text_lines, {text = '[red]DMG: [red]' .. damage_text .. damage_star, font = pixul_font, alignment = 'left'})
+    
+    local dps_star = (self.unit.last_round_dps == best_dps and best_dps > 0) and ' *' or ''
+    table.insert(text_lines, {text = '[green]DPS: [green]' .. dps_text .. dps_star, font = pixul_font, alignment = 'left'})
+    
+    if self.unit.last_round_kills and self.unit.last_round_kills > 0 then
+      local kills_star = (self.unit.last_round_kills == best_kills and best_kills > 0) and ' *' or ''
+      table.insert(text_lines, {text = '[blue]Kills: [blue]' .. self.unit.last_round_kills .. kills_star, font = pixul_font, alignment = 'left'})
     end
+  else
+    table.insert(text_lines, {text = '[bg10]no data', font = pixul_font, alignment = 'left'})
+    table.insert(text_lines, {text = '', font = pixul_font, alignment = 'left'})
+    table.insert(text_lines, {text = '', font = pixul_font, alignment = 'left'})
   end
   
   -- Create the Text2 for last round stats
@@ -400,18 +398,35 @@ function ItemPart:draw(y)
   if not self.parent.grabbed then
     graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
     local item = self.parent.unit.items[self.i]
+    local tier_color = item_to_color(item)
+    graphics.rectangle(self.x, self.y, self.w+4, self.h+4, 3, 3, tier_color)
+    graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, bg[5])
 
     if item then
-      if not self.itemGrabbed then
-        draw_item_with_color_masks(item, self.x, self.y, 0.4, 0.4, true)
-      else
-        graphics.rectangle(self.x, self.y, self.w+4, self.h+4, 3, 3, grey[0])
-        graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, bg[5])
+      -- draw item background colors (duplicated from itemCard code)
+      if item.colors then
+        local num_colors = #item.colors
+        local color_h = self.h / num_colors
+        for i, color_name in ipairs(item.colors) do
+          --make a copy of the color so we can change the alpha
+          local color = _G[color_name]
+          color = color[0]:clone()
+          color.a = 0.6
+          --find the y midpoint of the rectangle
+          local y = (self.y - self.h/2) + ((i-1) * color_h) + (color_h/2)
+  
+          graphics.rectangle(self.x, y, self.w, color_h, 2, 2, color)
+        end
       end
-    else
-      -- Draw background for empty slot
-      graphics.rectangle(self.x, self.y, self.w+4, self.h+4, 3, 3, grey[0])
-      graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, bg[5])
+
+      local image = find_item_image(item)
+      if not self.itemGrabbed then
+        image:draw(self.x, self.y, 0, 0.4, 0.4)
+      else
+        --draw loose item instead
+        -- local mouseX, mouseY = camera:get_mouse_position()
+        -- image:draw(mouseX, mouseY, 0, 0.4, 0.4)
+      end
     end
     
     if self.colliding_with_mouse and buyScreen and not buyScreen.loose_inventory_item then
