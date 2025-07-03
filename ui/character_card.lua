@@ -37,6 +37,7 @@ end
 CharacterCard = Object:extend()
 CharacterCard:implement(GameObject)
 function CharacterCard:init(args)
+    Refresh_All_Cards_Text()
     self:init_game_object(args)
     self.background_color = args.background_color or bg[0]
     self.character = args.unit.character or 'none'
@@ -151,7 +152,7 @@ function CharacterCard:create_last_round_display()
     local dps_star = (self.unit.last_round_dps == best_dps and best_dps > 0) and ' *' or ''
     table.insert(text_lines, {text = '[green]DPS: [green]' .. dps_text .. dps_star, font = pixul_font, alignment = 'left'})
     
-    if self.unit.last_round_kills and self.unit.last_round_kills > 0 then
+    if self.unit.last_round_kills then
       local kills_star = (self.unit.last_round_kills == best_kills and best_kills > 0) and ' *' or ''
       table.insert(text_lines, {text = '[blue]Kills: [blue]' .. self.unit.last_round_kills .. kills_star, font = pixul_font, alignment = 'left'})
     end
