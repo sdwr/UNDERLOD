@@ -157,7 +157,7 @@ function CharacterCard:create_last_round_display()
       table.insert(text_lines, {text = '[blue]Kills: [blue]' .. self.unit.last_round_kills .. kills_star, font = pixul_font, alignment = 'left'})
     end
   else
-    table.insert(text_lines, {text = '[bg10]no data', font = pixul_font, alignment = 'left'})
+    table.insert(text_lines, {text = '', font = pixul_font, alignment = 'left'})
     table.insert(text_lines, {text = '', font = pixul_font, alignment = 'left'})
     table.insert(text_lines, {text = '', font = pixul_font, alignment = 'left'})
   end
