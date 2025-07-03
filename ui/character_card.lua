@@ -212,11 +212,12 @@ function CharacterCard:refreshText()
   
   -- Remove old last round display if it exists
   if self.last_round_display then
+    self.last_round_display.dead = true
     self.last_round_display:deactivate()
     self.last_round_display = nil
   end
   
-  self:createButtons()
+  self:createUIElements()
   self:create_last_round_display()
 end
 
@@ -259,6 +260,7 @@ function CharacterCard:die()
   
   -- Clean up last round display
   if self.last_round_display then
+    self.last_round_display.dead = true
     self.last_round_display:deactivate()
     self.last_round_display = nil
   end
