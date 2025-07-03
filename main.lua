@@ -965,6 +965,12 @@ function init()
     ['gold'] = 'gold per round',
     ['heal'] = 'healing per second',
     ['explode'] = 'explode on kill',
+    ['fire_damage'] = 'fire damage',
+    ['lightning_damage'] = 'lightning damage',
+    ['cold_damage'] = 'cold damage',
+    ['fire_damage_m'] = 'fire damage mult',
+    ['lightning_damage_m'] = 'lightning damage mult',
+    ['cold_damage_m'] = 'cold damage mult',
 
     ['proc'] = 'Extra effect on attack',
   }
