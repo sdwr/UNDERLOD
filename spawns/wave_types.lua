@@ -195,6 +195,18 @@ function Wave_Types:Add_Group(wave, group)
   table.insert(wave, group)
 end
 
+function Wave_Types:Add_Random_Kicker(wave, tier)
+  local normal = random:table(normal_enemy_by_tier[tier])
+  table.insert(wave, {normal, NORMAL_ENEMIES_PER_GROUP, 'kicker'})
+  local special = random:table(special_enemy_by_tier[tier])
+  table.insert(wave, {special, 1, 'random'})
+  if math.random() < 0.5 then
+    special = random:table(special_enemy_by_tier[tier])
+    table.insert(wave, {special, 1, 'random'})
+  end
+  return wave
+end
+
 function Wave_Types:Get_Waves(level)
   local waves = {}
   local wave = nil
@@ -224,6 +236,7 @@ function Wave_Types:Get_Waves(level)
     wave = self:Basic_Plus_Two_Boomerang(1)
     table.insert(waves, wave)
     wave = self:Basic_Plus_Two_Special(1)
+    self:Add_Group(wave, {'seeker', NORMAL_ENEMIES_PER_GROUP, 'kicker'})
     table.insert(waves, wave)
   elseif level == 7 then
     wave = self:Mortar_And_Arc()
@@ -249,6 +262,9 @@ function Wave_Types:Get_Waves(level)
     wave = self:Generic(1, 2, 4)
     table.insert(waves, wave)
     wave = self:Generic(1, 2, 4)
+    if math.random() < 0.5 then
+      wave = self:Add_Random_Kicker(wave, 1)
+    end
     table.insert(waves, wave)
   end
   return waves

@@ -182,25 +182,22 @@ function Spawn_Teams(arena)
       
       -- ====================================================================
       -- MODIFIED SPAWN LOGIC
-      -- Spawns 5 troops in a cluster with random jitter.
+      -- Spawns 5 troops in a cluster with fixed, non-overlapping positions.
       -- ====================================================================
       
-      -- Define the 5 base positions for the cluster (like the '5' on a die)
+      -- Define 5 fixed positions that look random but are carefully spaced to avoid collisions
+      -- Each position is at least 12 pixels apart from others to prevent overlapping
       local offsets = {
           {x = 0, y = 0},       -- Center
-          {x = -8, y = -6},   -- Top-left
-          {x = 8, y = -6},    -- Top-right
-          {x = -8, y = 6},    -- Bottom-left
-          {x = 8, y = 6}      -- Bottom-right
+          {x = -12, y = -10},   -- Top-left
+          {x = 12, y = -10},    -- Top-right  
+          {x = -10, y = 12},    -- Bottom-left
+          {x = 10, y = 12}      -- Bottom-right
       }
 
       for _, offset in ipairs(offsets) do
-          -- Add a small random jitter to make the cluster look more natural
-          local jitter_x = math.random(-4, 4)
-          local jitter_y = math.random(-4, 4)
-          
-          local x = spawn_x + offset.x + jitter_x
-          local y = spawn_y + offset.y + jitter_y
+          local x = spawn_x + offset.x
+          local y = spawn_y + offset.y
           
           team:add_troop(x, y)
       end
