@@ -1324,30 +1324,8 @@ end
 --duplicated from ItemPart (should be combined!!)
 function LooseItem:draw()
   if self.item then
-    local tier_color = item_to_color(self.item)
-    graphics.rectangle(self.x, self.y, self.w+4, self.h+4, 3, 3, tier_color)
-    graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, bg[5])
-    if self.item.colors then
-      local num_colors = #self.item.colors
-      local color_h = self.h / num_colors
-      for i, color_name in ipairs(self.item.colors) do
-        --make a copy of the color so we can change the alpha
-        local color = _G[color_name]
-        color = color[0]:clone()
-        color.a = 0.6
-        --find the y midpoint of the rectangle
-        local y = (self.y - self.h/2) + ((i-1) * color_h) + (color_h/2)
-
-        graphics.rectangle(self.x, y, self.w, color_h, 2, 2, color)
-      end
-    end
+    draw_item_with_color_masks(self.item, self.x, self.y, 0.4, 0.4, true)
   end
-
-  local image = find_item_image(self.item)
-  if image then
-    image:draw(self.x, self.y, 0, 0.4, 0.4)
-  end
-
 end
 
 function LooseItem:die()
@@ -1583,20 +1561,7 @@ function ItemCard:draw()
     graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
 
     graphics.rectangle(self.x, self.y, width, height, 6,6, bg[5])
-    if self.colors then
-      local num_colors = #self.colors
-      local color_h = height / num_colors
-      for i, color_name in ipairs(self.colors) do
-        --make a copy of the color so we can change the alpha
-        local color = _G[color_name]
-        color = color[0]:clone()
-        color.a = 0.6
-        --find the y midpoint of the rectangle
-        local y = (self.y - height/2) + ((i-1) * color_h) + (color_h/2)
-
-        graphics.rectangle(self.x, y, width, color_h, 6, 6, color)
-      end
-    end
+    
     --draw the locked color under the border
     if locked_state then
       local color = grey[0]:clone()
@@ -1606,11 +1571,11 @@ function ItemCard:draw()
     graphics.rectangle(self.x, self.y, width, height, 6, 6, self.tier_color, 2)
 
     self.cost_text:draw(self.x + width/2, self.y - height/2)
+    
+    -- Draw item with color masks using the shared function (no background for ItemCard)
     if self.image then
-      self.image:draw(self.x, self.y, 0, item_sx, item_sy)
+      draw_item_with_color_masks(self.item, self.x, self.y, item_sx, item_sy, false)
     end
-
-
 
     graphics.pop()
   end
