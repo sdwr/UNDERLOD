@@ -36,131 +36,132 @@ end
 CharacterCard = Object:extend()
 CharacterCard:implement(GameObject)
 function CharacterCard:init(args)
-  self:init_game_object(args)
-  self.background_color = args.background_color or bg[0]
-  self.character = args.unit.character or 'none'
-  self.character_color = character_colors[self.character]
-  self.character_color_string = character_color_strings[self.character]
-  
-  self.w = CHARACTER_CARD_WIDTH
-  self.h = CHARACTER_CARD_HEIGHT
-  self.shape = Rectangle(self.x, self.y, self.w, self.h)
-  
-  self.interact_with_mouse = true
+    self:init_game_object(args)
+    self.background_color = args.background_color or bg[0]
+    self.character = args.unit.character or 'none'
+    self.character_color = character_colors[self.character]
+    self.character_color_string = character_color_strings[self.character]
+    
+    self.w = CHARACTER_CARD_WIDTH
+    self.h = CHARACTER_CARD_HEIGHT
+    self.shape = Rectangle(self.x, self.y, self.w, self.h)
+    
+    self.interact_with_mouse = true
 
-  self.parts = {}
-  self.items = {}
-  
-  --items
-  self:createItemParts()
+    self.parts = {}
+    self.items = {}
+    
+    --items
+    self:createItemParts()
 
-  --texts
-  self:initText()
+    --texts
+    self:initText()
 
-
-  --otherwise have duplicate text somehow?? 
-  Refresh_All_Cards_Text()
-  
-  if self.spawn_effect then SpawnEffect{group = main.current.effects, x = self.x, y = self.y, color = self.character_color} end
+    -- FIX: The call to Refresh_All_Cards_Text() has been removed from here.
+    -- It should be called once, AFTER all cards have been created.
+    
+    if self.spawn_effect then SpawnEffect{group = main.current.effects, x = self.x, y = self.y, color = self.character_color} end
 end
 
 function CharacterCard:createItemParts()
-  local item_x = self.x + CHARACTER_CARD_ITEM_X
-  local item_y = self.y + CHARACTER_CARD_ITEM_Y
+    local item_x = self.x + CHARACTER_CARD_ITEM_X
+    local item_y = self.y + CHARACTER_CARD_ITEM_Y
 
-  --draw in 2 rows
-
-  for i = 1, self.unit.numItems do
-
-    table.insert(self.items, ItemPart{group = main.current.main,
-       x = item_x + (CHARACTER_CARD_ITEM_X_SPACING*((i-1) % 3)), 
-       y = item_y + (i > 3 and 25 or 0),
-       i = i, parent = self})
-  end
-end
-
-function CharacterCard:initText()
-  self.name_text = Text({{text = '[' .. self.character_color_string .. '[3]]' .. self.character, font = pixul_font, alignment = 'center'}}, global_text_tags)
-  self:createButtons()
-  
-  self.proc_text = nil
-end
-
-function CharacterCard:createButtons()
-  -- Create "Last Round" button
-  self.last_round_button = Button{
-    group = main.current.ui,
-    x = self.x,
-    y = self.y - self.h/2 + 30,
-    w = 60,
-    h = 18,
-    bg_color = 'bg',
-    fg_color = 'bg10',
-    button_text = 'Last Round',
-    action = function() end -- No action on click, just hover
-  }
-  
-  -- Create "Unit Stats" button
-  self.unit_stats_button = Button{
-    group = main.current.ui,
-    x = self.x,
-    y = self.y - self.h/2 + 55,
-    w = 60,
-    h = 18,
-    bg_color = 'bg',
-    fg_color = 'bg10',
-    button_text = 'Unit Stats',
-    action = function() end -- No action on click, just hover
-  }
-  
-  -- Store references for hover detection
-  self.last_round_button.parent = self
-  self.unit_stats_button.parent = self
-end
-
-function CharacterCard:show_round_stats_popup()
-  local text_lines = {}
-  
-  if self.unit.last_round_dps and self.unit.last_round_damage then
-    -- Format damage and DPS
-    local damage_text = math.floor(self.unit.last_round_damage)
-    local dps_text = string.format("%.1f", self.unit.last_round_dps)
-    
-    -- Add damage line
-    table.insert(text_lines, { 
-      text = '[red]DMG: [red]' .. damage_text, 
-      font = pixul_font, 
-      alignment = 'center' 
-    })
-    
-    -- Add DPS line
-    table.insert(text_lines, { 
-      text = '[green]DPS: [green]' .. dps_text, 
-      font = pixul_font, 
-      alignment = 'center' 
-    })
-    
-    -- Add kills if available
-    if self.unit.last_round_kills and self.unit.last_round_kills > 0 then
-      table.insert(text_lines, { 
-        text = '[yellow]Kills: [yellow]' .. self.unit.last_round_kills, 
-        font = pixul_font, 
-        alignment = 'center' 
-      })
+    for i = 1, self.unit.numItems do
+        table.insert(self.items, ItemPart{group = main.current.main,
+            x = item_x + (CHARACTER_CARD_ITEM_X_SPACING*((i-1) % 3)), 
+            y = item_y + (i > 3 and 25 or 0),
+            i = i, parent = self})
     end
-  else
-    -- No last round data available
-    table.insert(text_lines, { 
-      text = '[fg]No last round data', 
-      font = pixul_font, 
-      alignment = 'center' 
-    })
-  end
-  
-  self.popup = InfoText{group = main.current.ui, force_update = false}
-  self.popup:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
-  self.popup.x = self.x
-  self.popup.y = self.y - self.h/2 + 60
+end
+
+-- This now only creates the static name text.
+function CharacterCard:initText()
+    local class_text = '[' .. self.character_color_string .. '[3]]' .. self.character
+    self.name_text = Text({{text = class_text, font = pixul_font, alignment = 'center'}}, global_text_tags)
+    
+    -- Create the refreshable UI elements
+    self:createUIElements()
+    
+    self.proc_text = nil
+end
+
+-- NEW FUNCTION: Handles creation of elements that need to be refreshed.
+function CharacterCard:createUIElements()
+    -- Ensure old elements are removed before creating new ones to prevent duplicates.
+    if self.unit_stats_icon then self.unit_stats_icon.dead = true end
+    if self.last_round_display then self.last_round_display:deactivate() end
+
+    -- Create unit stats icon (small button next to class name)
+    self.unit_stats_icon = Button{
+        group = main.current.ui,
+        x = self.x + 35, -- Position to the right of the class name
+        y = self.y - self.h/2 + 10, -- Same y as class name
+        w = 12,
+        h = 12,
+        bg_color = 'bg',
+        fg_color = 'bg10',
+        button_text = 'U',
+        action = function() end -- No action on click, just hover
+    }
+    self.unit_stats_icon.parent = self
+    
+    self:create_last_round_display()
+end
+
+
+function CharacterCard:create_last_round_display()
+    -- Get all units to compare stats
+    local all_units = {}
+    for _, card in ipairs(Character_Cards) do
+        if card.unit and card.unit.last_round_damage then
+            table.insert(all_units, card.unit)
+        end
+    end
+    
+    -- Find the best stats
+    local best_damage, best_dps, best_kills = 0, 0, 0
+    for _, unit in ipairs(all_units) do
+        if unit.last_round_damage and unit.last_round_damage > best_damage then best_damage = unit.last_round_damage end
+        if unit.last_round_dps and unit.last_round_dps > best_dps then best_dps = unit.last_round_dps end
+        if unit.last_round_kills and unit.last_round_kills > best_kills then best_kills = unit.last_round_kills end
+    end
+    
+    -- Create text lines for last round stats
+    local text_lines = {}
+    table.insert(text_lines, {text = '[bg10]Last Round', font = pixul_font, alignment = 'left'})
+    
+    if self.unit.last_round_dps and self.unit.last_round_damage then
+        local damage_text = math.floor(self.unit.last_round_damage)
+        local dps_text = string.format("%.1f", self.unit.last_round_dps)
+        
+        local damage_star = (self.unit.last_round_damage == best_damage and best_damage > 0) and ' *' or ''
+        table.insert(text_lines, {text = '[red]DMG: [red]' .. damage_text .. damage_star, font = pixul_font, alignment = 'left'})
+        
+        local dps_star = (self.unit.last_round_dps == best_dps and best_dps > 0) and ' *' or ''
+        table.insert(text_lines, {text = '[green]DPS: [green]' .. dps_text .. dps_star, font = pixul_font, alignment = 'left'})
+        
+        if self.unit.last_round_kills then
+            local kills_star = (self.unit.last_round_kills == best_kills and best_kills > 0) and ' *' or ''
+            table.insert(text_lines, {text = '[yellow]Kills: [yellow]' .. self.unit.last_round_kills .. kills_star, font = pixul_font, alignment = 'left'})
+        end
+    else
+        table.insert(text_lines, {text = '[bg10]No data', font = pixul_font, alignment = 'left'})
+        table.insert(text_lines, {text = '', font = pixul_font, alignment = 'left'})
+        table.insert(text_lines, {text = '', font = pixul_font, alignment = 'left'})
+    end
+    
+    self.last_round_display = InfoText{group = main.current.ui, force_update = false, bg_color = bg[0]}
+    self.last_round_display:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
+    self.last_round_display.x = self.x
+    self.last_round_display.y = self.y - self.h/2 + 50
+    -- Set alignment to top-left so all cards start at the same height
+    self.last_round_display.text.alignment = 'left'
+end
+
+-- FIX: This function now correctly calls the refactored UI creation function.
+function CharacterCard:refreshText()
+    self:createUIElements()
 end
 
 function CharacterCard:show_unit_stats_popup()
@@ -205,14 +206,18 @@ end
 
 function CharacterCard:refreshText()
   -- Remove old buttons if they exist
-  if self.last_round_button then
-    self.last_round_button.dead = true
+  if self.unit_stats_icon then
+    self.unit_stats_icon.dead = true
   end
-  if self.unit_stats_button then
-    self.unit_stats_button.dead = true
+  
+  -- Remove old last round display if it exists
+  if self.last_round_display then
+    self.last_round_display:deactivate()
+    self.last_round_display = nil
   end
   
   self:createButtons()
+  self:create_last_round_display()
 end
 
 function CharacterCard:draw()
@@ -228,19 +233,11 @@ end
 function CharacterCard:update(dt)
   self:update_game_object(dt)
   
-  -- Check button hover states and show/hide popups
-  if self.last_round_button and self.last_round_button.selected and not self.last_round_hovered then
-    self.last_round_hovered = true
-    self:show_round_stats_popup()
-  elseif self.last_round_button and not self.last_round_button.selected and self.last_round_hovered then
-    self.last_round_hovered = false
-    self:hide_popup()
-  end
-  
-  if self.unit_stats_button and self.unit_stats_button.selected and not self.unit_stats_hovered then
+  -- Check unit stats icon hover state
+  if self.unit_stats_icon and self.unit_stats_icon.selected and not self.unit_stats_hovered then
     self.unit_stats_hovered = true
     self:show_unit_stats_popup()
-  elseif self.unit_stats_button and not self.unit_stats_button.selected and self.unit_stats_hovered then
+  elseif self.unit_stats_icon and not self.unit_stats_icon.selected and self.unit_stats_hovered then
     self.unit_stats_hovered = false
     self:hide_popup()
   end
@@ -256,11 +253,14 @@ function CharacterCard:die()
   self.name_text.dead = true
   
   -- Clean up buttons
-  if self.last_round_button then
-    self.last_round_button.dead = true
+  if self.unit_stats_icon then
+    self.unit_stats_icon.dead = true
   end
-  if self.unit_stats_button then
-    self.unit_stats_button.dead = true
+  
+  -- Clean up last round display
+  if self.last_round_display then
+    self.last_round_display:deactivate()
+    self.last_round_display = nil
   end
   
   -- Clean up popup

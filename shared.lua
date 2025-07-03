@@ -653,6 +653,7 @@ function InfoText:init(args)
   self.ow, self.oh = 0, 0
   self.tox, self.toy = 0, 0
   self.text = Text({}, global_text_tags)
+  self.bg_color = args.bg_color or bg[-2]
   return self
 end
 
@@ -664,7 +665,7 @@ end
 
 function InfoText:draw()
   graphics.push(self.x + self.ox, self.y + self.oy, 0, self.sx*self.spring.x, self.sy*self.spring.x)
-  graphics.rectangle(self.x + self.ox, self.y + self.oy, self.text.w + self.ow, self.text.h + self.oh, self.text.h/12, self.text.h/12, bg[-2])
+  graphics.rectangle(self.x + self.ox, self.y + self.oy, self.text.w + self.ow, self.text.h + self.oh, self.text.h/12, self.text.h/12, self.bg_color or bg[-2])
   self.text:draw(self.x + self.ox + self.tox, self.y + self.oy + self.toy)
   graphics.pop()
 end
