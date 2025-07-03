@@ -931,6 +931,66 @@ function Vanish:draw()
   end
 end
 
+TroopDeathAnimation = Object:extend()
+TroopDeathAnimation:implement(GameObject)
+
+function TroopDeathAnimation:init(args)
+  self:init_game_object(args)
+  
+  -- Animation properties
+  self.duration = 0.5
+  self.elapsed = 0
+  
+  -- Beam properties
+  self.max_width = 20  -- Maximum width of the wider beam
+  self.inner_width_ratio = 0.4  -- Inner beam is 40% of outer beam width
+  self.height = 120  -- Height of the beam
+  
+  -- Colors (white semi-transparent)
+  self.outer_color = white[0]:clone()
+  self.outer_color.a = 0.3
+  self.inner_color = white[0]:clone()
+  self.inner_color.a = 0.6
+  
+  -- Position (centered on the troop's death location)
+  self.x = args.x or 0
+  self.y = args.y or 0
+end
+
+function TroopDeathAnimation:update(dt)
+  self:update_game_object(dt)
+  
+  self.elapsed = self.elapsed + dt
+  
+  -- Die when animation is complete
+  if self.elapsed >= self.duration then
+    self.dead = true
+  end
+end
+
+function TroopDeathAnimation:draw()
+  -- Calculate current width based on elapsed time
+  local progress = self.elapsed / self.duration
+  local current_width = self.max_width * progress
+  local current_inner_width = current_width * self.inner_width_ratio
+  
+  -- Calculate alpha fade out in the last 0.2 seconds
+  local alpha_multiplier = 1.0
+  if progress > 0.8 then
+    alpha_multiplier = 1.0 - ((progress - 0.8) / 0.2)
+  end
+
+  local outer_color = self.outer_color:clone()
+  outer_color.a = outer_color.a * alpha_multiplier
+  local inner_color = self.inner_color:clone()
+  inner_color.a = inner_color.a * alpha_multiplier
+  
+  -- Draw outer beam (wider, more transparent)
+  graphics.rectangle(self.x, self.y - self.height/2, current_width, self.height, nil, nil, outer_color)
+  graphics.rectangle(self.x, self.y - self.height/2, current_inner_width, self.height, nil, nil, inner_color)
+end
+
+
 RallyCircle = Object:extend()
 RallyCircle:implement(GameObject)
 function RallyCircle:init(args)

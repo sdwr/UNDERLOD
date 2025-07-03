@@ -327,6 +327,9 @@ end
 
 
 function Troop:onDeath()
+  slow(0.25, 1.5)
+  shoot1:play{pitch = random:float(0.95, 1.05), volume = 1}
+  TroopDeathAnimation{group = main.current.effects, x = self.x, y = self.y}
   self.state_change_functions['death'](self)
   self.death_function()
 end
@@ -475,6 +478,9 @@ function Troop:hit(damage, from, damageType, makesSound, cannotProcOnHit)
     end
     for i = 1, random:int(4, 6) do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color} end
     HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 12}:scale_down(0.3):change_color(0.5, self.color)
+
+    -- Create death animation
+    TroopDeathAnimation{group = main.current.effects, x = self.x, y = self.y}
 
     --on death callbacks
     if from and from.onKillCallbacks then
