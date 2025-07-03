@@ -89,4 +89,68 @@ function DrawAnimations.draw_enemy_animation(enemy, state, x, y, r)
   end)
 
   return true
+end
+
+-- Draw death animation with spritesheet, rotation, and scaling effects
+function DrawAnimations.draw_death_animation(enemy_data, x, y, rotation, scale, alpha)
+  -- Safety checks
+  if not enemy_data.spritesheet then
+    return false
+  end
+  if not enemy_data.icon then
+    print('no icon for death animation of unit ' .. enemy_data.type)
+    return false
+  end
+
+  local sprite_size = enemy_sprite_sizes[enemy_data.icon]
+  if not sprite_size then
+    print('no sprite size for unit ' .. enemy_data.type)
+    return false
+  end
+
+  local animation = nil
+  local image = nil
+  local anim_set = enemy_data.spritesheet['death'] or enemy_data.spritesheet['normal']
+  if anim_set then
+    animation = anim_set[1]
+    image = anim_set[2]
+  end
+
+  if not animation or not image then
+    print('no animation or image for death animation of unit ' .. enemy_data.type)
+    return false
+  end
+
+  local sprite_scale = enemy_sprite_scales[enemy_data.icon]
+  if not sprite_scale then
+    print('no sprite scale for unit ' .. enemy_data.type)
+    return false
+  end
+  
+  -- Calculate base scale using global constants
+  local base_scale_x = (enemy_data.shape.w / sprite_size[1]) * sprite_scale
+  local base_scale_y = (enemy_data.shape.h / sprite_size[2]) * sprite_scale
+  
+  -- Apply additional scaling and rotation
+  local final_scale_x = base_scale_x * scale
+  local final_scale_y = base_scale_y * scale
+  
+  local frame_width, frame_height = animation:getDimensions()
+  local frame_center_x = frame_width / 2
+  local frame_center_y = frame_height / 2
+
+  -- Convert world coordinates to screen coordinates for full resolution canvas
+  local screen_x, screen_y = world_to_screen(x, y)
+  local screen_scale = math.floor(wh/gh)
+
+  -- Add drawing functions to full_res_character_canvas
+  table.insert(full_res_character_draws, function()
+    love.graphics.setColor(1, 1, 1, alpha or 1)
+    graphics.push(screen_x, screen_y, rotation or 0, 1, 1)
+      animation:draw(image.image, screen_x, screen_y, 0, final_scale_x * screen_scale, final_scale_y * screen_scale, frame_center_x, frame_center_y)
+    graphics.pop()
+    love.graphics.setColor(1, 1, 1, 1)
+  end)
+
+  return true
 end 

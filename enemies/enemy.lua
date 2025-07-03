@@ -370,7 +370,15 @@ function Enemy:onDeath()
   if self.parent and self.parent.summons then
     self.parent.summons = self.parent.summons - 1
   end
-
+  
+  -- Create death animation with reference to the enemy unit
+  EnemyDeathAnimation{
+    group = main.current.effects, 
+    x = self.x, 
+    y = self.y,
+    enemy = self
+  }
+  
   self.state_change_functions['death'](self)
   self.death_function()
 end

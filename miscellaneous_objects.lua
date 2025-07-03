@@ -990,6 +990,105 @@ function TroopDeathAnimation:draw()
   graphics.rectangle(self.x, self.y - self.height/2, current_inner_width, self.height, nil, nil, inner_color)
 end
 
+EnemyDeathAnimation = Object:extend()
+EnemyDeathAnimation:implement(GameObject)
+
+function EnemyDeathAnimation:init(args)
+  self:init_game_object(args)
+  
+  -- Animation properties
+  self.duration = 1.5
+  self.elapsed = 0
+  
+  -- Store reference to the enemy unit
+  self.enemy = args.enemy
+  
+  -- Position where the enemy died
+  self.x = args.x or 0
+  self.y = args.y or 0
+  
+  -- Death animation specific properties
+  self.fade_start_time = 0.8  -- Start fading at 80% of duration
+  
+  -- Particle effects
+  self.particle_timer = 0
+  self.particle_interval = 0.1
+end
+
+function EnemyDeathAnimation:update(dt)
+  self:update_game_object(dt)
+  
+  self.elapsed = self.elapsed + dt
+  
+  -- Update the enemy's animation if it has a spritesheet
+  if self.enemy.spritesheet then
+    -- Try to update death animation first, fall back to normal
+    if self.enemy.spritesheet['death'] then
+      local animation = self.enemy.spritesheet['death'][1]
+      if animation then
+        animation:update(dt)
+      end
+    elseif self.enemy.spritesheet['normal'] then
+      local animation = self.enemy.spritesheet['normal'][1]
+      if animation then
+        animation:update(dt)
+      end
+    end
+  end
+  
+  -- Update rotation
+  
+  -- Spawn particles in the first 30% of the animation
+  if self.elapsed <= self.duration * 0.3 then
+    self.particle_timer = self.particle_timer + dt
+    if self.particle_timer >= self.particle_interval then
+      self.particle_timer = 0
+      -- Spawn small particles around the animation
+      for i = 1, random:int(1, 3) do
+        local angle = random:float(0, math.pi * 2)
+        local distance = random:float(5, 15)
+        local px = self.x + math.cos(angle) * distance
+        local py = self.y + math.sin(angle) * distance
+        HitParticle{group = main.current.effects, x = px, y = py, color = self.enemy.color or fg[0]}
+      end
+    end
+  end
+  
+  -- Die when animation is complete
+  if self.elapsed >= self.duration then
+    self.dead = true
+  end
+end
+
+function EnemyDeathAnimation:draw()
+  -- Calculate alpha fade out
+  local alpha = 1.0
+  if self.elapsed >= self.fade_start_time then
+    local fade_progress = (self.elapsed - self.fade_start_time) / (self.duration - self.fade_start_time)
+    alpha = 1.0 - fade_progress
+  end
+  
+  -- Try to draw the death animation using the helper function
+  local animation_success = DrawAnimations.draw_death_animation(
+    self.enemy, 
+    self.x, 
+    self.y, 
+    0,
+    1, 
+    alpha
+  )
+  
+  -- Fallback to simple colored circle if no spritesheet available
+  if not animation_success then
+    local color = self.enemy.color or fg[0]
+    local fallback_color = color:clone()
+    fallback_color.a = alpha
+    
+    graphics.push(self.x, self.y, self.current_rotation, self.current_scale, self.current_scale)
+      graphics.circle(self.x, self.y, self.enemy.shape.w / 2, fallback_color)
+    graphics.pop()
+  end
+end
 
 RallyCircle = Object:extend()
 RallyCircle:implement(GameObject)
