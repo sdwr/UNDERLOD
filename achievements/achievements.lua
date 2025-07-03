@@ -16,12 +16,9 @@ ACHIEVEMENTS_INDEX = {
   'survivor',
   'passivewin',
   'healer',
-  'shieldstacker',
   'stackecon',
   'reroll100',
   'sell100items',
-  'consume100potions',
-  '4potioneffects',
   'lightningkiller',
   'aspdcap',
   'glasscannon',
@@ -29,7 +26,8 @@ ACHIEVEMENTS_INDEX = {
   'expensiveequip',
   'wowequip',
   'finalbosssameunit',
-  'finalbossmelee',
+  'finalbossdifferentunits',
+  'finalbossonlyoneunit',
   'finalboss50mods',
   'finalbossallmods',
   'finalbosstime',
@@ -152,7 +150,7 @@ ACHIEVEMENTS_TABLE = {
   --perfect run achievements
   ['crushed'] = {
     name = 'Crushed',
-    desc = 'Defeat Stompy without taking damage',
+    desc = 'Defeat Stompy without taking damage from falling rocks',
     icon = 'crushed',
     category = ACH_CATEGORY_COMBAT,
     check = function() return USER_STATS.stompy_perfect > 0 end,
@@ -189,31 +187,25 @@ ACHIEVEMENTS_TABLE = {
   },
   ['passivewin'] = {
     name = 'Pacifist',
-    desc = 'Beat a level without attacking',
+    desc = 'Beat a level without moving',
     icon = 'passivewin',
     category = ACH_CATEGORY_COMBAT,
-    check = function() return USER_STATS.current_run_level_times_attacked == 0 end,
+    check = function() return USER_STATS.current_run_least_times_moved == 0 end,
   },
   ['healer'] = {
     name = 'Healer',
-    desc = 'Heal a unit to full hp from 1 hp',
+    desc = 'Have a troop survive after being at 1 hp',
     icon = 'healer',
-    category = ACH_CATEGORY_COMBAT,
-  },
-  ['shieldstacker'] = {
-    name = 'Shield Stacker',
-    desc = 'Stack 200 shield on a single unit',
-    icon = 'shieldstacker',
     category = ACH_CATEGORY_COMBAT,
   },
 
   --econ achivements
   ['stackecon'] = {
     name = 'Economic Powerhouse',
-    desc = 'Have over 100 gold during a run',
+    desc = 'Have over 50 gold during a run',
     icon = 'stackecon', 
     category = ACH_CATEGORY_ITEM,
-    check = function() return USER_STATS.max_gold >= 100 end,
+    check = function() return USER_STATS.max_gold >= 50 end,
   },
   ['reroll100'] = {
     name = 'Reroll Enthusiast',
@@ -224,25 +216,11 @@ ACHIEVEMENTS_TABLE = {
   },
   ['sell100items'] = {
     name = 'Merchant',
-    desc = 'Sell 100 items',
+    desc = 'Sell 50 items',
     icon = 'sell100items',
     category = ACH_CATEGORY_ITEM,
-    check = function() return USER_STATS.total_items_sold >= 100 end,
+    check = function() return USER_STATS.total_items_sold >= 50 end,
 
-  },
-  ['consume100potions'] = {
-    name = 'Potion Master',
-    desc = 'Consume 100 potions',
-    icon = 'consume100potions',
-    category = ACH_CATEGORY_ITEM,
-    check = function() return USER_STATS.total_items_consumed >= 100 end,
-  },
-  ['4potioneffects'] = {
-    name = 'Alchemist',
-    desc = 'Have 4 potion effects on a single unit',
-    icon = '4potioneffects',
-    category = ACH_CATEGORY_ITEM,
-    check = function() return USER_STATS.max_potion_effects >= 4 end,
   },
 
   --item achievements
@@ -261,7 +239,7 @@ ACHIEVEMENTS_TABLE = {
   },
   ['glasscannon'] = {
     name = 'Glass Cannon',
-    desc = 'Reach 300% damage on a unit without any +hp',
+    desc = 'Reach +200% damage on a unit',
     icon = 'glasscannon',
     category = ACH_CATEGORY_COMBAT,
     check = function() return USER_STATS.max_dmg_without_hp >= 3 end,
@@ -274,7 +252,7 @@ ACHIEVEMENTS_TABLE = {
   },
   ['expensiveequip'] = {
     name = 'Big Spender',
-    desc = 'Fully equip a unit with items costing >20',
+    desc = 'Fully equip a unit with items costing 15 or more',
     icon = 'expensiveequip',
     category = ACH_CATEGORY_ITEM,
   },
@@ -292,10 +270,16 @@ ACHIEVEMENTS_TABLE = {
     icon = 'finalbosssameunit',
     category = ACH_CATEGORY_COMBAT,
   },
-  ['finalbossmelee'] = {
+  ['finalbossdifferentunits'] = {
+    name = 'Different Units',
+    desc = 'Beat the final boss with 3 different units',
+    icon = 'finalbossdifferentunits',
+    category = ACH_CATEGORY_COMBAT,
+  },
+  ['finalbossonlyoneunit'] = {
     name = 'Melee Mastery',
-    desc = 'Beat the final boss with all melee units',
-    icon = 'finalbossmelee',
+    desc = 'Beat the final boss with only 1 unit',
+    icon = 'finalbossonlyoneunit',
     category = ACH_CATEGORY_COMBAT,
   },
   ['finalboss50mods'] = {
