@@ -394,7 +394,7 @@ function Enemy:die()
     progress_amount = enemy_to_round_power[self.type] or 0
 
     -- Defer particle creation to avoid physics world lock issues
-    self.t:after(0, function()
+    main.current.t:after(0, function()
       if main.current.progress_bar then
         main.current.progress_bar:increase_with_particles(progress_amount, self.x, self.y)
       end

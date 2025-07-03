@@ -996,12 +996,32 @@ EnemyDeathAnimation:implement(GameObject)
 function EnemyDeathAnimation:init(args)
   self:init_game_object(args)
   
-  -- Animation properties
-  self.duration = 1.5
-  self.elapsed = 0
-  
   -- Store reference to the enemy unit
   self.enemy = args.enemy
+
+  -- Animation propertie
+  self.duration = 1.5
+  if self.enemy.class == 'boss' then
+    self.duration = 2.5
+  elseif self.enemy.class == 'miniboss' then
+    self.duration = 2.0
+  elseif self.enemy.class == 'special_enemy' then
+    self.duration = 1.5
+  elseif self.enemy.class == 'normal_enemy' then
+    self.duration = 1.0
+  else
+    self.duration = 1.0
+  end
+
+  self.elapsed = 0
+  
+  
+  -- Create a specific death animation instance
+  self.death_animation = DrawAnimations.create_normalized_animation(self.enemy, 'death', self.duration)
+  self.death_anim_set = self.enemy.spritesheet and self.enemy.spritesheet['death']
+  
+  -- Calculate and store the base scale (works even if enemy is GCed)
+  self.base_scale_x, self.base_scale_y = DrawAnimations.calculate_enemy_scale(self.enemy)
   
   -- Position where the enemy died
   self.x = args.x or 0
@@ -1020,23 +1040,10 @@ function EnemyDeathAnimation:update(dt)
   
   self.elapsed = self.elapsed + dt
   
-  -- Update the enemy's animation if it has a spritesheet
-  if self.enemy.spritesheet then
-    -- Try to update death animation first, fall back to normal
-    if self.enemy.spritesheet['death'] then
-      local animation = self.enemy.spritesheet['death'][1]
-      if animation then
-        animation:update(dt)
-      end
-    elseif self.enemy.spritesheet['normal'] then
-      local animation = self.enemy.spritesheet['normal'][1]
-      if animation then
-        animation:update(dt)
-      end
-    end
+  -- Update the death animation if it exists
+  if self.death_animation then
+    self.death_animation:update(dt)
   end
-  
-  -- Update rotation
   
   -- Spawn particles in the first 30% of the animation
   if self.elapsed <= self.duration * 0.3 then
@@ -1066,25 +1073,34 @@ function EnemyDeathAnimation:draw()
   local alpha = 1.0 - (fade_progress * 0.7)  -- Goes from 1.0 to 0.3
   
   -- Try to draw the death animation using the helper function
-  local animation_success = DrawAnimations.draw_death_animation(
-    self.enemy, 
-    self.x, 
-    self.y, 
-    0,
-    1, 
-    alpha
-  )
+  if self.death_animation and self.death_anim_set then
+    -- Create a temporary anim_set with the normalized animation
+    local temp_anim_set = {self.death_animation, self.death_anim_set[2]}
+    
+    local animation_success = DrawAnimations.draw_specific_animation(
+      temp_anim_set, 
+      self.x, 
+      self.y, 
+      0, 
+      self.base_scale_x, 
+      self.base_scale_y, 
+      alpha,
+      self.enemy.color
+    )
+    
+    if animation_success then
+      return
+    end
+  end
   
   -- Fallback to simple colored circle if no spritesheet available
-  if not animation_success then
-    local color = self.enemy.color or fg[0]
-    local fallback_color = color:clone()
-    fallback_color.a = alpha
-    
-    graphics.push(self.x, self.y, 0, 1, 1)
-      graphics.circle(self.x, self.y, self.enemy.shape.w / 2, fallback_color)
-    graphics.pop()
-  end
+  local color = self.enemy.color or fg[0]
+  local fallback_color = color:clone()
+  fallback_color.a = alpha
+  
+  graphics.push(self.x, self.y, 0, 1, 1)
+    graphics.circle(self.x, self.y, self.enemy.shape.w / 2, fallback_color)
+  graphics.pop()
 end
 
 RallyCircle = Object:extend()
