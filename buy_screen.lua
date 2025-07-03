@@ -1494,7 +1494,7 @@ function ItemCard:update(dt)
 
   if self.parent:is(Arena) then return end
 
-  if input.m1.pressed and self.colliding_with_mouse and not self.grabbed and not locked_state then
+  if input.m1.pressed and self.colliding_with_mouse and not self.grabbed then
 
     -- Now, check if the purchase is possible.
     local firstEmptySlot = self.parent:get_first_available_inventory_slot()
