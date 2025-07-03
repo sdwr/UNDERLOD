@@ -53,7 +53,7 @@ function Laser_Spell:init(args)
 
   self.rotation_offset = self.rotation_offset or 0
   self.r = self.r or 0
-  self.length = self.length or 300
+  self.length = self.length or 500
   self.damage_troops = self.damage_troops
 
   self.laser_aim_width = self.laser_aim_width or 2
