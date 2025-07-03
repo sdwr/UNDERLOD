@@ -15,6 +15,11 @@ fns['init_enemy'] = function(self)
   --set sensors
   self.attack_sensor = Circle(self.x, self.y, 80)
 
+  self.movementStyle = MOVEMENT_TYPE_RANDOM
+
+  self.baseCast = attack_speeds['medium-slow']
+  self.castcooldown = self.baseCast
+
   --set attacks
   self.attack_options = {}
   
@@ -48,7 +53,7 @@ fns['init_enemy'] = function(self)
   local laser_ball = {
     name = 'laser_ball',
     viable = function () return true end,
-    castcooldown = 1,
+    castcooldown = self.baseCast,
     oncast = function() end,
     cast_length = BEHOLDER_CAST_TIME,
     cast_sound = earth1,
@@ -70,7 +75,7 @@ fns['init_enemy'] = function(self)
   local plasma_barrage_spiral = {
     name = 'plasma_barrage',
     viable = function () return true end,
-    castcooldown = 1,
+    castcooldown = self.baseCast,
     oncast = function() end,
     cast_length = BEHOLDER_CAST_TIME,
     cast_sound = earth1,
@@ -94,7 +99,7 @@ fns['init_enemy'] = function(self)
   local plasma_barrage_straight = {
     name = 'plasma_barrage_straight',
     viable = function () return true end,
-    castcooldown = 1,
+    castcooldown = self.baseCast,
     oncast = function() end,
     cast_length = BEHOLDER_CAST_TIME,
     cast_sound = earth1,
@@ -116,7 +121,7 @@ fns['init_enemy'] = function(self)
   local plasma_ball = {
     name = 'plasma_ball',
     viable = function () return true end,
-    castcooldown = 1,
+    castcooldown = self.baseCast,
     instantspell = true,
     oncast = function() end,
     cast_length = BEHOLDER_CAST_TIME,
@@ -138,7 +143,7 @@ fns['init_enemy'] = function(self)
   local quick_stomp = {
     name = 'quick_stomp',
     viable = function() return self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies) end,
-    castcooldown = 1,
+    castcooldown = self.baseCast,
     oncast = function() end,
     cast_length = BEHOLDER_CAST_TIME, 
     cast_sound = earth1,
@@ -160,7 +165,7 @@ fns['init_enemy'] = function(self)
   table.insert(self.attack_options, plasma_barrage_straight)
   table.insert(self.attack_options, safety_dance)
   table.insert(self.attack_options, laser_ball)
-  table.insert(self.attack_options, plasma_ball)
+  -- table.insert(self.attack_options, plasma_ball)
   -- table.insert(self.attack_options, quick_stomp)
 end
 
