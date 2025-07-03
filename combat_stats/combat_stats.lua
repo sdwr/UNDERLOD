@@ -189,6 +189,13 @@ buff_types = {
     ['elevamp'] = 'elevamp',
     ['vamp'] = 'vamp',
 
+    ['fire_damage'] = 'fire_damage',
+    ['lightning_damage'] = 'lightning_damage',
+    ['cold_damage'] = 'cold_damage',
+    ['fire_damage_m'] = 'fire_damage_m',
+    ['lightning_damage_m'] = 'lightning_damage_m',
+    ['cold_damage_m'] = 'cold_damage_m', 
+
     ['ghost'] = 'ghost',
     ['slow'] = 'slow',
     ['bash'] = 'bash',

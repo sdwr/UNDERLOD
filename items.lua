@@ -309,9 +309,9 @@ item_to_item_data = {
     colors = {'red'},
     cost = 5,
     icon = 'fire',
-    desc = 'Deal a % of your damage as extra [red]fire[fg] damage. [red]Burning[fg] enemies [red]explode[fg]',
-    stats = {},
-    procs = {'fire'},
+    desc = '[red]Burning[fg] enemies take damage over time and [red]explode[fg]',
+    stats = {fire_damage = 0.3},
+    procs = {},
     tags = {'fire'}
   },
 
@@ -320,9 +320,9 @@ item_to_item_data = {
     colors = {'yellow'},
     cost = 5,
     icon = 'fire',
-    desc = 'Deal a % of your damage as extra [yellow]lightning[fg] damage. [yellow]Shocked[fg] enemies take more damage',
-    stats = {},
-    procs = {'lightning'},
+    desc = '[yellow]Shocked[fg] enemies take more damage',
+    stats = {lightning_damage = 0.3},
+    procs = {},
     tags = {'lightning'}
   },
 
@@ -331,9 +331,9 @@ item_to_item_data = {
     colors = {'blue'},
     cost = 5,
     icon = 'orb',
-    desc = 'Deal a % of your damage as extra [blue]cold[fg] damage. [blue]Chilled[fg] enemies [blue]freeze[fg]',
-    stats = {},
-    procs = {'cold'},
+    desc = '[blue]Chilled[fg] enemies are slower and [blue]freeze[fg]',
+    stats = {cold_damage = 0.3},
+    procs = {},
     tags = {'cold'}
   },
 

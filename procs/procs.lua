@@ -707,28 +707,6 @@ function Proc_Shieldslam:onAttack(target, unit)
     target:push(self.knockback_force, r, false, self.knockback_duration)
   end
 end
---proc lightning
---needs 2 procs, so that the attack counter only counts down on 1 hit per attack
-Proc_Lightning = Proc:extend()
-function Proc_Lightning:init(args)
-  self.triggers = {PROC_ON_HIT}
-  self.scope = 'troop'
-
-  Proc_Lightning.super.init(self, args)
-  
-  
-
-  --define the proc's vars
-  self.damageType = DAMAGE_TYPE_LIGHTNING
-  self.percent_damage_as_lightning = self.data.percent_damage_as_lightning or 0.3
-end
-
-function Proc_Lightning:onHit(target, damage)
-  Proc_Lightning.super.onHit(self, target, damage)
-  
-  local lightning_damage = damage * self.percent_damage_as_lightning
-  target:hit(lightning_damage, nil, self.damageType, false, true)
-end
 
 Proc_Overcharge = Proc:extend()
 function Proc_Overcharge:init(args)
@@ -1310,27 +1288,6 @@ function Proc_SympatheticVoltage:create_lightning_ball(target)
   }
 end
 
-
-Proc_Fire = Proc:extend()
-function Proc_Fire:init(args)
-  self.triggers = {PROC_ON_HIT}
-  self.scope = 'troop'
-
-  Proc_Fire.super.init(self, args)
-  
-  
-  --define the proc's vars
-  self.damageType = DAMAGE_TYPE_FIRE
-  self.percent_damage_as_burn = self.data.percent_damage_as_burn or 0.3
-end
-
-function Proc_Fire:onHit(target, damage)
-  Proc_Fire.super.onHit(self, target, damage)
-  --need to add a burn debuff to the Target
-  local burn_damage = damage * self.percent_damage_as_burn
-  target:hit(burn_damage, self.unit, DAMAGE_TYPE_FIRE, false, true)
-end
-
 Proc_Volcano = Proc:extend()
 function Proc_Volcano:init(args)
   self.triggers = {PROC_ON_ATTACK}
@@ -1585,25 +1542,6 @@ function Proc_Phoenix:onDeath()
     end
   end)
   
-end
-
-Proc_Frost = Proc:extend()
-function Proc_Frost:init(args)
-  self.triggers = {PROC_ON_HIT}
-  self.scope = 'troop'
-
-  Proc_Frost.super.init(self, args)
-
-  --define the proc's vars
-  self.damage_type = DAMAGE_TYPE_COLD
-  self.percent_damage_as_chill = self.data.percent_damage_as_chill or 0.3
-end
-
-function Proc_Frost:onHit(target, damage)
-  Proc_Frost.super.onHit(self, target, damage)
-
-  local chill_damage = damage * self.percent_damage_as_chill
-  target:hit(chill_damage, self.unit, DAMAGE_TYPE_COLD, false, true)
 end
 
 Proc_Frostfield = Proc:extend()
@@ -2062,12 +2000,10 @@ proc_name_to_class = {
   ['shieldslam'] = Proc_Shieldslam,
 
   --yellow procs
-  ['lightning'] = Proc_Lightning,
   ['radiance'] = Proc_Radiance,
   ['shield'] = Proc_Shield,
   ['sympatheticvoltage'] = Proc_SympatheticVoltage,
   --red procs
-  ['fire'] = Proc_Fire,
   ['volcano'] = Proc_Volcano,
   ['firenova'] = Proc_Firenova,
   ['lavaman'] = Proc_Lavaman,
@@ -2075,7 +2011,6 @@ proc_name_to_class = {
   ['blazin'] = Proc_Blazin,
   ['phoenix'] = Proc_Phoenix,
   --blue procs
-  ['cold'] = Proc_Frost,
   ['frostfield'] = Proc_Frostfield,
   ['holduground'] = Proc_Holduground,
   ['frostnova'] = Proc_Frostnova,

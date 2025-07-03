@@ -689,6 +689,18 @@ function Unit:get_item_stats()
           stats.hp = (stats.hp or 0) + amt
         elseif stat == buff_types['repeat_attack_chance'] then
           stats.repeat_attack_chance = (stats.repeat_attack_chance or 0) + amt
+        elseif stat == buff_types['fire_damage'] then
+          stats.fire_damage = (stats.fire_damage or 0) + amt
+        elseif stat == buff_types['lightning_damage'] then
+          stats.lightning_damage = (stats.lightning_damage or 0) + amt
+        elseif stat == buff_types['cold_damage'] then
+          stats.cold_damage = (stats.cold_damage or 0) + amt
+        elseif stat == buff_types['fire_damage_m'] then
+          stats.fire_damage_m = (stats.fire_damage_m or 0) + amt
+        elseif stat == buff_types['lightning_damage_m'] then
+          stats.lightning_damage_m = (stats.lightning_damage_m or 0) + amt
+        elseif stat == buff_types['cold_damage_m'] then
+          stats.cold_damage_m = (stats.cold_damage_m or 0) + amt
         end
       end
     end
@@ -760,6 +772,13 @@ function Unit:calculate_stats(first_run)
   self.buff_repeat_attack_chance = 0
 
   self.eledmg_m = 1
+
+  self.buff_fire_damage_a = 0
+  self.buff_lightning_damage_a = 0
+  self.buff_cold_damage_a = 0
+  self.buff_fire_damage_m = 1
+  self.buff_lightning_damage_m = 1
+  self.buff_cold_damage_m = 1
 
   self.vamp = 0
   self.elevamp = 0
@@ -833,6 +852,18 @@ function Unit:calculate_stats(first_run)
             self.elevamp = self.elevamp + amtWithStacks
           elseif stat == buff_types['vamp'] then
             self.vamp = self.vamp + amtWithStacks
+          elseif stat == buff_types['fire_damage'] then
+            self.buff_fire_damage_a = self.buff_fire_damage_a + amtWithStacks
+          elseif stat == buff_types['lightning_damage'] then
+            self.buff_lightning_damage_a = self.buff_lightning_damage_a + amtWithStacks
+          elseif stat == buff_types['cold_damage'] then
+            self.buff_cold_damage_a = self.buff_cold_damage_a + amtWithStacks
+          elseif stat == buff_types['fire_damage_m'] then
+            self.buff_fire_damage_m = self.buff_fire_damage_m + amtWithStacks
+          elseif stat == buff_types['lightning_damage_m'] then
+            self.buff_lightning_damage_m = self.buff_lightning_damage_m + amtWithStacks
+          elseif stat == buff_types['cold_damage_m'] then
+            self.buff_cold_damage_m = self.buff_cold_damage_m + amtWithStacks
 
           elseif stat == buff_types['repeat_attack_chance'] then
             self.buff_repeat_attack_chance = self.buff_repeat_attack_chance + amtWithStacks
@@ -880,6 +911,18 @@ function Unit:calculate_stats(first_run)
             self.canExplode = true
           elseif stat == buff_types['repeat_attack_chance'] then
             self.buff_repeat_attack_chance = self.buff_repeat_attack_chance + amt
+          elseif stat == buff_types['fire_damage'] then
+            self.buff_fire_damage_a = self.buff_fire_damage_a + amt
+          elseif stat == buff_types['lightning_damage'] then
+            self.buff_lightning_damage_a = self.buff_lightning_damage_a + amt
+          elseif stat == buff_types['cold_damage'] then
+            self.buff_cold_damage_a = self.buff_cold_damage_a + amt
+          elseif stat == buff_types['fire_damage_m'] then
+            self.buff_fire_damage_m = self.buff_fire_damage_m + amt
+          elseif stat == buff_types['lightning_damage_m'] then
+            self.buff_lightning_damage_m = self.buff_lightning_damage_m + amt
+          elseif stat == buff_types['cold_damage_m'] then
+            self.buff_cold_damage_m = self.buff_cold_damage_m + amt
           end
         end
       end
@@ -921,6 +964,11 @@ function Unit:calculate_stats(first_run)
   self.class_mvspd_m = self.class_mvspd_m*unit_stat_mult.mvspd
   self.max_move_v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m
   self.max_v = self.max_move_v * 50
+
+  -- Calculate final elemental damage stats
+  self.fire_damage = self.buff_fire_damage_a * self.buff_fire_damage_m
+  self.lightning_damage = self.buff_lightning_damage_a * self.buff_lightning_damage_m
+  self.cold_damage = self.buff_cold_damage_a * self.buff_cold_damage_m
 end
 
 function Unit:onTickCallbacks(dt)
@@ -944,6 +992,32 @@ function Unit:onAttackCallbacks(target)
 
   for k, proc in ipairs(self.onAttackProcs) do
     proc:onAttack(target, self)
+  end
+
+  -- Handle elemental damage on attack
+  self:handle_elemental_damage_on_attack(target)
+end
+
+function Unit:handle_elemental_damage_on_attack(target)
+  -- Only apply elemental damage if target is a valid unit
+  if not target or not target.hit then return end
+  
+  -- Fire damage
+  if self.fire_damage and self.fire_damage > 0 then
+    local fire_damage = self.dmg * self.fire_damage
+    target:hit(fire_damage, self, DAMAGE_TYPE_FIRE, false, true)
+  end
+  
+  -- Lightning damage
+  if self.lightning_damage and self.lightning_damage > 0 then
+    local lightning_damage = self.dmg * self.lightning_damage
+    target:hit(lightning_damage, nil, DAMAGE_TYPE_LIGHTNING, false, true)
+  end
+  
+  -- Cold damage
+  if self.cold_damage and self.cold_damage > 0 then
+    local cold_damage = self.dmg * self.cold_damage
+    target:hit(cold_damage, self, DAMAGE_TYPE_COLD, false, true)
   end
 end
 
