@@ -180,6 +180,16 @@ function Wave_Types:Basic_Plus_Two_Boomerang(tier)
   return wave
 end
 
+function Wave_Types:One_Cleaver_One_Special_One_Basic(tier)
+  local wave = {}
+  table.insert(wave, {normal, NORMAL_ENEMIES_PER_GROUP, nil})
+  table.insert(wave, {'cleaver', 1, nil})
+  local special = random:table(special_enemy_by_tier[tier])
+  table.insert(wave, {special, 1, 'random'})
+
+  return wave
+end
+
 function Wave_Types:Add_Group(wave, group)
   table.insert(wave, group)
 end
@@ -201,7 +211,8 @@ function Wave_Types:Get_Waves(level)
     wave = self:Basic_Plus_One_Special(1)
     self:Add_Group(wave, {'burst', 1, 'kicker'})
     table.insert(waves, wave)
-    wave = self:Two_Cleavers_Plus_One_Special(1)
+    wave = self:One_Cleaver_One_Special_One_Basic(1)
+    self:Add_Group(wave, {'burst', 1, 'kicker'})
     table.insert(waves, wave)
   elseif level == 4 then
     wave = self:Basic_Plus_Two_Burst(1)
