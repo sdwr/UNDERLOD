@@ -1061,12 +1061,9 @@ function EnemyDeathAnimation:update(dt)
 end
 
 function EnemyDeathAnimation:draw()
-  -- Calculate alpha fade out
-  local alpha = 1.0
-  if self.elapsed >= self.fade_start_time then
-    local fade_progress = (self.elapsed - self.fade_start_time) / (self.duration - self.fade_start_time)
-    alpha = 1.0 - fade_progress
-  end
+  -- Calculate alpha fade from 1.0 to 0.3 over the entire duration
+  local fade_progress = self.elapsed / self.duration
+  local alpha = 1.0 - (fade_progress * 0.7)  -- Goes from 1.0 to 0.3
   
   -- Try to draw the death animation using the helper function
   local animation_success = DrawAnimations.draw_death_animation(
@@ -1084,7 +1081,7 @@ function EnemyDeathAnimation:draw()
     local fallback_color = color:clone()
     fallback_color.a = alpha
     
-    graphics.push(self.x, self.y, self.current_rotation, self.current_scale, self.current_scale)
+    graphics.push(self.x, self.y, 0, 1, 1)
       graphics.circle(self.x, self.y, self.enemy.shape.w / 2, fallback_color)
     graphics.pop()
   end
