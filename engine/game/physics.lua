@@ -512,6 +512,10 @@ function Physics:set_mass(mass)
   return self
 end
 
+function Physics:get_mass()
+  if self.body then return self.body:getMass() end
+end
+
 
 -- Sets the object's gravity scale
 -- This is a simple multiplier on the world's gravity, but applied only to this object

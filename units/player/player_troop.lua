@@ -239,47 +239,16 @@ function Troop:set_rally_position(i)
 
 end
 
+-- ===================================================================
+-- REFACTORED Troop:push
+-- Now calls the standardized helper function.
+-- ===================================================================
 function Troop:push(f, r, push_invulnerable, duration)
-  --only push if not already pushing
-  if self.state == unit_states['knockback'] then
-    return
-  end
-
-  local mass
-  if self.body then
-    mass = self.body:getMass()
-  else
-    mass = 1
-  end
-
-  local n = 1 -- Push force multiplier
-  self.push_invulnerable = push_invulnerable
-  self.push_force = n * f * mass
-
-  Helper.Unit:set_state(self, unit_states['knockback'])
-  self.mass = TROOP_KNOCKBACK_MASS
-  self:set_damping(LAUNCH_DAMPING)
-
+  -- Set a default duration if one isn't provided
   duration = duration or KNOCKBACK_DURATION_ENEMY
-
-  -- Apply an immediate impulse
-  self:set_velocity(0,0)
-  self:apply_impulse(self.push_force * math.cos(r), self.push_force * math.sin(r))
-  self:apply_angular_impulse(random:table{random:float(-12*math.pi, -4*math.pi), random:float(4*math.pi, 12*math.pi)})
   
-  -- Cancel any existing during trigger for push
-  if self.cancel_trigger_tag then
-    self.t:cancel(self.cancel_trigger_tag)
-  end
-
-  -- Reset state after the duration
-  self.cancel_trigger_tag = self.t:after(duration, function()
-    if self.state == unit_states['knockback'] then
-      Helper.Unit:set_state(self, unit_states['normal'])
-    end
-      self.mass = TROOP_MASS
-      self:set_damping(TROOP_DAMPING)
-  end)
+  -- Call the universal knockback function
+  Helper.Unit:apply_knockback(self, f, r, duration, push_invulnerable)
 end
 
 

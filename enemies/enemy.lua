@@ -233,16 +233,23 @@ function Enemy:on_collision_enter(other, contact)
         self:bounce(contact:getNormal())
 
     elseif table.any(main.current.friendlies, function(v) return other:is(v) end) then
-      if self.haltOnPlayerContact then
-        self:set_velocity(0,0)
-        Helper.Unit:set_state(self, unit_states['frozen'])
-        self.t:after(0.8, function()
-          if self.state == unit_states['frozen'] then
-            Helper.Unit:set_state(self, unit_states['normal'])
-          end
-        end)
+      if self.class == 'regular_enemy' then
+        local duration = KNOCKBACK_DURATION_ENEMY
+        local push_force = LAUNCH_PUSH_FORCE_ENEMY
+        local dmg = REGULAR_PUSH_DAMAGE
+        self:push(push_force, self:angle_to_object(other) + math.pi, nil, duration)
+        self:hit(dmg, other, nil, false, true)
+      else
+        if self.haltOnPlayerContact then
+          self:set_velocity(0,0)
+          Helper.Unit:set_state(self, unit_states['frozen'])
+          self.t:after(0.8, function()
+            if self.state == unit_states['frozen'] then
+              Helper.Unit:set_state(self, unit_states['normal'])
+            end
+          end)
+        end
       end
-    
     elseif table.any(main.current.enemies, function(v) return other:is(v) end) then
         -- if self.being_pushed and math.length(self:get_velocity()) > 60 then
         --     other:hit(math.floor(self.push_force/4), nil, nil, true)
@@ -378,7 +385,12 @@ function Enemy:die()
     local progress_amount = 0
     progress_amount = enemy_to_round_power[self.type] or 0
 
-    main.current.progress_bar:increase_with_particles(progress_amount, self.x, self.y)
+    -- Defer particle creation to avoid physics world lock issues
+    self.t:after(0, function()
+      if main.current.progress_bar then
+        main.current.progress_bar:increase_with_particles(progress_amount, self.x, self.y)
+      end
+    end)
   end
 
   if self.parent and self.parent.summons and self.parent.summons > 0 then
@@ -386,36 +398,18 @@ function Enemy:die()
   end
 end
 
+-- ===================================================================
+-- REFACTORED Enemy:push
+-- Now also calls the standardized helper function.
+-- ===================================================================
 function Enemy:push(f, r, push_invulnerable, duration)
-    local n = 1
-    if self.boss then n = 0.2 end
+  -- Set a default duration if one isn't provided
+  duration = duration or KNOCKBACK_DURATION_ENEMY
 
-    if self.state == unit_states['knockback'] then
-      return
-    end
+  -- Apply a multiplier to reduce knockback force on bosses
+  local force_multiplier = 1
+  if self.boss then force_multiplier = 0.2 end
 
-    -- self.state = unit_states['knockback']
-
-    Helper.Unit:set_state(self, unit_states['knockback'])
-    self.push_invulnerable = push_invulnerable
-    self.push_force = n*f
-    self.being_pushed = true
-    self.steering_enabled = false
-    self:apply_impulse(n*f*math.cos(r), n*f*math.sin(r))
-    self:apply_angular_impulse(random:table{random:float(-12*math.pi, -4*math.pi), random:float(4*math.pi, 12*math.pi)})
-    self:set_damping(1.5*(1/n))
-    self:set_angular_damping(1.5*(1/n))
-
-      -- Cancel any existing during trigger for push
-  if self.cancel_trigger_tag then
-    self.t:cancel(self.cancel_trigger_tag)
-  end
-
-  -- Reset state after the duration
-  self.cancel_trigger_tag = self.t:after(duration, function()
-    self.steering_enabled = true
-    if self.state == unit_states['knockback'] then
-      Helper.Unit:set_state(self, unit_states['normal'])
-    end
-  end)
+  -- Call the universal knockback function with the modified force
+  Helper.Unit:apply_knockback(self, f * force_multiplier, r, duration, push_invulnerable)
 end

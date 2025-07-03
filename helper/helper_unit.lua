@@ -506,3 +506,56 @@ function Helper.Unit:get_points(troop_points)
     end
     return points
 end
+
+-- ===================================================================
+-- NEW HELPER FUNCTION
+-- This function contains the standardized logic for applying knockback
+-- to ANY unit (Troop or Enemy), ensuring a consistent feel.
+-- ===================================================================
+function Helper.Unit:apply_knockback(unit, force, angle, duration, push_invulnerable)
+    -- Prevent knockback stacking
+    if unit.state == unit_states['knockback'] then
+        return
+    end
+
+    -- Get the unit's mass, default to 1 if it has no physics body
+    local mass = unit.body and unit:get_mass() or 1
+    
+    -- Store original properties to restore them later
+    unit.original_mass = mass
+    unit.original_damping = unit.body and unit:get_damping() or 0
+
+    -- Standardized values for a dramatic knockback effect
+    local knockback_mass = unit.original_mass * 0.5 -- Make unit temporarily lighter
+    local knockback_damping = 1.0 -- A low damping value to allow sliding
+
+    -- Calculate the final impulse force, amplified by mass
+    local impulse = force * mass
+
+    -- Apply the changes
+    Helper.Unit:set_state(unit, unit_states['knockback'])
+    unit.push_invulnerable = push_invulnerable
+    unit.mass = knockback_mass
+    unit:set_damping(knockback_damping)
+    
+    -- Reset velocity for a clean push
+    unit:set_velocity(0, 0)
+    unit:apply_impulse(impulse * math.cos(angle), impulse * math.sin(angle))
+    unit:apply_angular_impulse(random:table{random:float(-12*math.pi, -4*math.pi), random:float(4*math.pi, 12*math.pi)})
+
+    -- Cancel any previous state-resetting timer
+    if unit.cancel_trigger_tag then
+        unit.t:cancel(unit.cancel_trigger_tag)
+    end
+
+    -- After the duration, restore the unit's original physics properties
+    unit.cancel_trigger_tag = unit.t:after(duration, function()
+        if unit.state == unit_states['knockback'] then
+            Helper.Unit:set_state(unit, unit_states['normal'])
+        end
+        unit.mass = unit.original_mass
+        unit:set_damping(unit.original_damping)
+    end)
+end
+
+
