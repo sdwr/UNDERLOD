@@ -72,8 +72,8 @@ function Enemy:update_animation(dt)
   end
 end
 
-function Enemy:draw_animation(state, x, y, r)
-  return DrawAnimations.draw_enemy_animation(self, state, x, y, r)
+function Enemy:draw_animation()
+  return DrawAnimations.draw_enemy_animation(self, self.state, self.x, self.y, 0)
 end
 
 

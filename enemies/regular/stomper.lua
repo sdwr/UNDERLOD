@@ -40,7 +40,7 @@ end
 
 fns['draw_enemy'] = function(self)
   
-  local animation_success = self:draw_animation(self.state, self.x, self.y, 0)
+  local animation_success = self:draw_animation()
   
   if not animation_success then
     graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)

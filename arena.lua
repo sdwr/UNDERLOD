@@ -442,11 +442,6 @@ function Arena:draw()
   self.post_main:draw()
   self.effects:draw()
   
-  -- Move effects drawing to main_effects_draws array so they appear on top of full_res_character_canvas
-  -- table.insert(main_effects_draws, function()
-  --   self.effects:draw()
-  -- end)
-  
   --self:draw_spawn_markers()
   
   graphics.draw_with_mask(function()
