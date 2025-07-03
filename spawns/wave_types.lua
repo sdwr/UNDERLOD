@@ -182,6 +182,7 @@ end
 
 function Wave_Types:One_Cleaver_One_Special_One_Basic(tier)
   local wave = {}
+  local normal = random:table(normal_enemy_by_tier[tier])
   table.insert(wave, {normal, NORMAL_ENEMIES_PER_GROUP, nil})
   table.insert(wave, {'cleaver', 1, nil})
   local special = random:table(special_enemy_by_tier[tier])

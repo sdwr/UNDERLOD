@@ -119,9 +119,9 @@ function CharacterCard:createButtons()
 end
 
 function CharacterCard:show_round_stats_popup()
+  local text_lines = {}
+  
   if self.unit.last_round_dps and self.unit.last_round_damage then
-    local text_lines = {}
-    
     -- Format damage and DPS
     local damage_text = math.floor(self.unit.last_round_damage)
     local dps_text = string.format("%.1f", self.unit.last_round_dps)
@@ -148,12 +148,19 @@ function CharacterCard:show_round_stats_popup()
         alignment = 'center' 
       })
     end
-    
-    self.popup = InfoText{group = main.current.ui, force_update = false}
-    self.popup:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
-    self.popup.x = self.x
-    self.popup.y = self.y - self.h/2 + 60
+  else
+    -- No last round data available
+    table.insert(text_lines, { 
+      text = '[fg]No last round data', 
+      font = pixul_font, 
+      alignment = 'center' 
+    })
   end
+  
+  self.popup = InfoText{group = main.current.ui, force_update = false}
+  self.popup:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
+  self.popup.x = self.x
+  self.popup.y = self.y - self.h/2 + 60
 end
 
 function CharacterCard:show_unit_stats_popup()

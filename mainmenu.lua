@@ -150,6 +150,32 @@ function MainMenu:on_enter(from)
   end}
 
   self.arena_run_button_hard = Button{group = self.main_ui, x = 160, y = gh/2 - 10, force_update = true, button_text = 'hard', fg_color = 'bg10', bg_color = 'bg', action = function(b)
+    -- Check if the final boss has been defeated
+    if not USER_STATS or not USER_STATS.final_boss_defeated or USER_STATS.final_boss_defeated < 1 then
+      -- Show info text that hard mode is locked
+      if not self.hard_mode_locked_info then
+        self.hard_mode_locked_info = InfoText{group = self.ui}
+      end
+      self.hard_mode_locked_info:activate({
+        {text = '[fg]beat normal mode to unlock', font = pixul_font, alignment = 'center'},
+      }, nil, nil, nil, nil, 16, 4, nil, 2)
+      self.hard_mode_locked_info.x, self.hard_mode_locked_info.y = gw/2, gh/2 + 10
+      
+      -- Auto-hide the info text after 2 seconds
+      self.t:after(2, function() 
+        if self.hard_mode_locked_info then 
+          self.hard_mode_locked_info:deactivate()
+          self.hard_mode_locked_info.dead = true
+          self.hard_mode_locked_info = nil 
+        end 
+      end, 'hard_mode_locked_info')
+      
+      -- Play error sound
+      error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+      return
+    end
+    
+    -- If unlocked, proceed with normal hard mode transition
     state.difficulty = 'hard'
     ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
