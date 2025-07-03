@@ -53,9 +53,7 @@ function AchievementsPanel:init(args)
     
     -- Text section for selected achievement
     self.selected_achievement = nil
-    self.achievement_title_text = nil
-    self.achievement_desc_text = nil
-    self.achievement_unlocks_text = nil
+    self.achievement_info_text = nil
 
     -- Section headers
     self.section_headers = {
@@ -178,25 +176,30 @@ function AchievementsPanel:update(dt)
         local title = self.selected_achievement.data.name
         local desc = self.selected_achievement.data.desc
         local unlocks = self.selected_achievement.data.unlocks or 'unlocks xxx'
-        self.achievement_title_text = Text({{text = '[fg]' .. title, font = pixul_font, alignment = 'center'}}, global_text_tags)
-        self.achievement_desc_text = Text({{text = desc, font = pixul_font, alignment = 'center'}}, global_text_tags)
-        self.achievement_unlocks_text = Text({{text = unlocks, font = pixul_font, alignment = 'center'}}, global_text_tags)
+        
+        -- Create InfoText with achievement data
+        local text_lines = {
+            {text = '[fg]' .. title, font = pixul_font, alignment = 'center'},
+            {text = '', font = pixul_font, alignment = 'center'}, -- Empty line for spacing
+            {text = desc, font = pixul_font, alignment = 'center'},
+            {text = '', font = pixul_font, alignment = 'center'}, -- Empty line for spacing
+            {text = unlocks, font = pixul_font, alignment = 'center'}
+        }
+        
+        if not self.achievement_info_text then
+            self.achievement_info_text = InfoText{group = main.current.ui, force_update = false}
+        end
+        self.achievement_info_text:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
+        self.achievement_info_text.x = gw/2
+        self.achievement_info_text.y = gh/2 + 10
+        
     elseif not self.hovered_slot and self.selected_achievement then
         self.selected_achievement = nil
-        self.achievement_title_text = nil
-        self.achievement_desc_text = nil
-        self.achievement_unlocks_text = nil
-    end
-    
-    -- Update text objects
-    if self.achievement_title_text then
-        self.achievement_title_text:update(dt)
-    end
-    if self.achievement_desc_text then
-        self.achievement_desc_text:update(dt)
-    end
-    if self.achievement_unlocks_text then
-        self.achievement_unlocks_text:update(dt)
+        if self.achievement_info_text then
+            self.achievement_info_text:deactivate()
+            self.achievement_info_text.dead = true
+            self.achievement_info_text = nil
+        end
     end
 end
 
@@ -290,17 +293,7 @@ function AchievementsPanel:draw()
         end
     end
 
-    -- Draw achievement text section in center of screen
-    if self.achievement_title_text and self.achievement_desc_text then
-        -- Draw title
-        self.achievement_title_text:draw(gw/2, gh/2 - 20)
-        
-        -- Draw description
-        self.achievement_desc_text:draw(gw/2, gh/2 + 5)
-
-        -- Draw unlocks
-        self.achievement_unlocks_text:draw(gw/2, gh/2 + 35)
-    end
+    -- Achievement text is now handled by InfoText in the update function
     
     love.graphics.setColor(1, 1, 1, 1) -- Reset color
 end
