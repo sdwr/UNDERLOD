@@ -1936,6 +1936,13 @@ function Proc_Glacialprison:onKill(target)
   end
 end
 
+Proc_Rimeheart = Proc:extend()
+function Proc_Rimeheart:init(args)
+  --todo
+  Proc_Rimeheart.super.init(self, args)
+
+end
+
 --need to assign an owner to burn debuff for this to work
 --consider snapshotting the owner's ele multiplier
 -- and keepign it when the buff gets reapplied
@@ -2017,6 +2024,7 @@ proc_name_to_class = {
   ['glaciate'] = Proc_Glaciate,
   ['shatterlance'] = Proc_Shatterlance,
   ['glacialprison'] = Proc_Glacialprison,
+  ['rimeheart'] = Proc_Rimeheart,
   --green procs
   ['heal'] = Proc_Heal,
   ['sacrificialclam'] = Proc_SacrificialClam,

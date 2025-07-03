@@ -460,7 +460,7 @@ item_to_item_data = {
     desc = 'Gain a shield and a [red]fire[fg] damage aura',
     stats = {},
     procs = {'radiance', 'shield'},
-    tags = {'fire'}
+    tags = {}
   },
   ['blazin'] = {
     name = 'blazin',
@@ -468,9 +468,9 @@ item_to_item_data = {
     cost = 10,
     icon = 'simpleboots',
     desc = 'Gain attack speed per [red]burning[fg] enemy',
-    stats = {dmg = 0.25},
+    stats = {fire_damage = 0.3},
     procs = {'blazin'},
-    prereqs = {'fire'}
+    prereqs = {}
   },
   ['volcano'] = {
     name = 'volcano',
@@ -478,9 +478,9 @@ item_to_item_data = {
     cost = 10,
     icon = 'volcano',
     desc = 'Attacking a [red]burning[fg] enemy has a chance to create a [red]lava pool[fg]',
-    stats = {dmg = 0.25},
+    stats = {fire_damage = 0.3},
     procs = {'volcano'},
-    prereqs = {'fire'}
+    prereqs = {}
   },
 
   ['shatterlance'] = {
@@ -489,9 +489,9 @@ item_to_item_data = {
     cost = 10,
     icon = 'icefang',
     desc = 'Attacking a [blue]frozen[fg] enemy creates a [blue]cold[fg] explosion',
-    stats = {dmg = 0.1},
+    stats = {cold_damage = 0.3},
     procs = {'shatterlance'},
-    prereqs = {'cold'}
+    prereqs = {}
   },
   ['waterelemental'] = {
     name = 'waterelemental',
@@ -499,9 +499,9 @@ item_to_item_data = {
     cost = 10,
     icon = 'cold',
     desc = 'Killing a [blue]chilled[fg] enemy has a chance to spawn a water elemental',
-    stats = {dmg = 0.25},
+    stats = {cold_damage = 0.3},
     procs = {'waterelemental'},
-    prereqs = {'cold'}
+    prereqs = {}
   },
 
 
@@ -511,9 +511,9 @@ item_to_item_data = {
     cost = 10,
     icon = 'lightning',
     desc = 'Attacking a [yellow]shocked[fg] enemy has a chance to create a [yellow]lightning ball[fg]',
-    stats = {dmg = 0.25},
+    stats = {lightning_damage = 0.3},
     procs = {'sympatheticvoltage'},
-    prereqs = {'lightning'}
+    prereqs = {}
   },
   ['balllightning'] = {
     name = 'balllightning',
@@ -521,9 +521,9 @@ item_to_item_data = {
     cost = 10,
     icon = 'lightning',
     desc = 'Hitting a [yellow]shocked[fg] enemy has a chance to spawn a [yellow]lightning ball[fg]',
-    stats = {dmg = 0.25},
+    stats = {lightning_damage = 0.3},
     procs = {'balllightning'},
-    prereqs = {'shock'}
+    prereqs = {}
   },
 
   ['curse'] = {
@@ -595,9 +595,9 @@ item_to_item_data = {
     cost = 15,
     icon = 'icefang',
     desc = 'Killing a [blue]frozen[fg] enemy creates a [blue]ice prison[fg] that slows enemies',
-    stats = {dmg = 0.25},
+    stats = {cold_damage = 0.5},
     procs = {'glacialprison'},
-    prereqs = {'cold'}
+    prereqs = {}
   },
   
   
@@ -611,7 +611,7 @@ item_to_item_data = {
     desc = 'All nearby allies gain attack speed',
     stats = {dmg = 0.25},
     procs = {'sacrificialclam'},
-    prereqs = {'heal'},
+    prereqs = {},
     tags = {'sacrifice'}
   },
 
@@ -655,7 +655,7 @@ item_to_item_data = {
     desc = 'Attacking a [blue]frozen[fg] enemy is always a critical hit.',
     stats = {dmg = 0.25},
     procs = {'rimeheart'},
-    prereqs = {'freeze'}
+    prereqs = {}
   },
   --triforce
   ['triforce'] = {
@@ -717,9 +717,9 @@ item_to_item_data = {
     cost = 15,
     icon = 'lightning',
     desc = 'Killing a [yellow]shocked[fg] enemies has to spread [yellow]shock[fg]',
-    stats = {dmg = 0.5},
+    stats = {lightning_damage = 0.5},
     procs = {'shockwave'},
-    prereqs = {'shock'}
+    prereqs = {}
   },
 
   --not yet implemented
@@ -743,9 +743,9 @@ item_to_item_data = {
     cost = 15,
     icon = 'twinflame',
     desc = 'Makes your [red]fire[fg] damage [blue]slow[fg], and your [blue]frost[fg] damage [red]burn[fg]',
-    stats = {dmg = 0.5},
+    stats = {fire_damage = 0.5, cold_damage = 0.5},
     procs = {'fire'},
-    prereqs = {'fire', 'cold'}
+    prereqs = {}
   },
   ['omegastar'] = {
     name = 'omegastar',
@@ -753,8 +753,8 @@ item_to_item_data = {
     cost = 20,
     icon = 'omegastar',
     desc = 'Increases all elemental damage. You [green]heal[fg] for a portion of elemental damage dealt',
-    stats = {dmg = 0.5},
+    stats = {fire_damage_m = 0.5, cold_damage_m = 0.5, lightning_damage_m = 0.5},
     procs = {'eledmg, elevamp'},
-    prereqs = {'fire', 'cold', 'lightning'}
+    prereqs = {}
   },
 }
