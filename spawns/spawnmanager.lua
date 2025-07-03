@@ -234,322 +234,180 @@ SpawnManager = Object:extend()
 function SpawnManager:init(arena)
     self.arena = arena
     self.level_data = arena.level_list[arena.level]
-    self.t = self.arena.t -- Use the arena's timer for convenience
+    self.t = self.arena.t 
 
     -- Spawning State Machine
-    self.state = 'entry_delay'
-    -- (States remain the same)
+    self:change_state('entry_delay')
+    -- Possible States:
+    -- 'entry_delay':           Initial wait before the first wave.
+    -- 'between_waves_delay':   Pause between clearing one wave and starting the next.
+    -- 'processing_wave':       Actively reading and executing instructions for the current wave.
+    -- 'waiting_for_group':     Paused, waiting for a Spawn_Group call to finish.
+    -- 'waiting_for_delay':     Paused, waiting for a DELAY instruction's timer to finish.
+    -- 'waiting_for_clear':     All instructions for the wave are done; waiting for all enemies to be defeated.
+    -- 'finished':              All waves are complete.
+    -- 'boss_fight':            A special state for boss levels.
 
     -- Timers and Trackers
     self.time_between_waves = arena.time_between_waves or 3
-    self.max_enemies_on_screen = arena.max_enemies or 20
-    
-    self.timer = arena.entry_delay or 0.5
+    self.timer = arena.entry_delay or 2
     self.current_wave_index = 1
-    self.current_group_index = 1
+    self.current_instruction_index = 1
     
-    -- New properties for managing wave-level spawning
-    self.persistent_wave_spawn_marker = nil
-    self.current_wave_spawn_marker_index = nil
-    
-    -- *** FIX: Add a flag to prevent re-triggering the spawn chain. ***
-    self.is_group_spawning = false
-    
-    -- New property for handling kicker delays
-    self.delay_timer = 0
-
-    -- Check if this is a boss level
     if table.contains(BOSS_ROUNDS, arena.level) then
-        self.state = 'boss_fight'
+        self:change_state('boss_fight')
     end
 end
 
--- ===================================================================
--- The Core Update Loop (Corrected)
--- ===================================================================
+function SpawnManager:change_state(new_state)
+    if self.state ~= new_state then
+        self.state = new_state
+    end
+end
+
 function SpawnManager:update(dt)
     if self.state == 'finished' then return end
 
-    self.timer = self.timer - dt
-    
-    -- Update delay timer for kicker groups
-    if self.delay_timer > 0 then
-        self.delay_timer = self.delay_timer - dt
+    -- Handle states that are purely time-based
+    if self.state == 'entry_delay' or self.state == 'between_waves_delay' or self.state == 'waiting_for_delay' then
+        self.timer = self.timer - dt
+        if self.timer <= 0 then
+            self:change_state('processing_wave')
+        end
     end
 
-    -- (States 'entry_delay', 'waiting_for_clear', 'between_waves_delay', 'boss_fight' are unchanged)
-
-    -- State: Initial delay before anything happens
-    if self.state == 'entry_delay' then
-      if self.timer <= 0 then
-          self:start_next_wave()
-      end
-    -- State: Countdown before the wave's spawning begins
-    elseif self.state == 'wave_delay' then
-      self.wave_delay_timer = self.wave_delay_timer - dt
-      self:show_wave_start_countdown(get_starting_wave_countdown_value(self.wave_delay_timer))
-      if self.wave_delay_timer <= 0 then
-          -- This state now just means the wave is active. The 'spawn_wave' function handles all logic.
-          self.state = 'spawning_wave' 
-          self:spawn_wave()
-      end
-
-  -- State: Spawning a wave
-    elseif self.state == 'spawning_wave' then
-      --pass
+    -- If we are ready to process the next instruction in a wave, do so.
+    if self.state == 'processing_wave' then
+        self:process_next_instruction()
     
-     -- State: Waiting for all enemies to be defeated
+    -- If all instructions are done, wait for the arena to be clear.
     elseif self.state == 'waiting_for_clear' then
-      local enemy_count = #self.arena.main:get_objects_by_classes(self.arena.enemies)
-      
-      if table.contains(BOSS_ROUNDS, self.arena.level) then
-        if self.arena.finished and enemy_count <= 0 then
-            self.state = 'finished'
-            self.arena:quit()
-        end
-      elseif enemy_count <= 0 then
-        if self.current_wave_index >= #self.level_data.waves then
-            if main.current.progress_bar:is_complete() then
-                self.state = 'finished'
-                self.arena:quit()
-            end
-        else
-            -- Check if the current wave is complete by checking if progress >= required for current wave
-            local current_wave_required = self.arena.progress_bar.wave_cumulative_power[self.current_wave_index]
-            if current_wave_required and self.arena.progress_bar.progress >= current_wave_required then
+        if #self.arena.main:get_objects_by_classes(self.arena.enemies) <= 0 then
+            -- Check if this was the final wave
+            if self.current_wave_index >= #self.level_data.waves then
+                -- For the final wave, we DO check the progress bar to confirm a win.
+                if not main.current.progress_bar or main.current.progress_bar:is_complete() then
+                    self:change_state('finished')
+                    self.arena:quit()
+                end
+            else
+                -- ===================================================================
+                -- FIX: For intermediate waves, the only condition to advance is that
+                -- all enemies are dead. We no longer check the progress bar here.
+                -- ===================================================================
+                self.t:after(0.5, function()
+                  spawn_mark2:play{pitch = 1, volume = 1.2}
+                end)
                 self.current_wave_index = self.current_wave_index + 1
-                self.state = 'between_waves_delay'
+                self.current_instruction_index = 1
+                self:change_state('between_waves_delay')
                 self.timer = self.time_between_waves
-                self:show_wave_complete_text()
+                -- self:show_wave_complete_text()
             end
-        end
-      end
-
-    -- State: Paused between waves
-    elseif self.state == 'between_waves_delay' then
-        if self.timer <= 0 then
-            self:start_next_wave()
         end
     
-    -- State: Boss Fight Logic
     elseif self.state == 'boss_fight' then
         self:handle_boss_fight()
-        self.state = 'waiting_for_clear'
+        self:change_state('waiting_for_clear')
     end
 end
 
--- ===================================================================
--- State Transition and Action Functions
--- ===================================================================
-
-function SpawnManager:start_next_wave()
-    local waves = self.level_data.waves
-    if not waves or not waves[self.current_wave_index] then
-        self.state = 'finished'
-        self.arena:quit() 
+-- This is the new core logic function. It reads and executes one instruction.
+function SpawnManager:process_next_instruction()
+    local wave_instructions = self.level_data.waves[self.current_wave_index]
+    
+    -- Check if we've finished all instructions for this wave
+    if self.current_instruction_index > #wave_instructions then
+        self:change_state('waiting_for_clear')
         return
     end
 
-    self.state = 'wave_delay'
-    self.current_group_index = 1
-    self.timer = 0
-    self.wave_delay_timer = TOTAL_STARTING_WAVE_DELAY
+    local instruction = wave_instructions[self.current_instruction_index]
+    local type = instruction[1]
 
-    -- 1. Determine the single spawn point for the entire wave.
-    self.current_wave_spawn_marker_index = random:int(1, #SpawnGlobals.spawn_markers)
-    SpawnGlobals.last_spawn_point = self.current_wave_spawn_marker_index
-end
+    if type == 'GROUP' then
+        self:change_state('waiting_for_group') -- Pause until this group is done
+        local group_data = {instruction[2], instruction[3], instruction[4]}
+        
+        -- The callback function will un-pause the manager
+        local on_group_finished = function()
+            self:change_state('processing_wave')
+        end
+        
+        Spawn_Group(self.arena, group_data, on_group_finished)
 
--- New function to replace 'spawn_next_group_in_chain'
-function SpawnManager:spawn_wave()
-  local wave_data = self.level_data.waves[self.current_wave_index]
-  if not wave_data then
-      self.state = 'waiting_for_clear'
-      return
-  end
-
-  -- 1. Count how many non-kicker groups need to be tracked for completion.
-  local parallel_group_count = 0
-  for _, group_data in ipairs(wave_data) do
-      if group_data[3] ~= 'kicker' then
-          parallel_group_count = parallel_group_count + 1
-      end
-  end
-
-  local finished_parallel_groups = 0
-  -- This callback will be shared by all non-kicker groups.
-  local on_parallel_group_done = function()
-      finished_parallel_groups = finished_parallel_groups + 1
-      -- Once all parallel groups are done, we can wait for the player to clear them.
-      if finished_parallel_groups >= parallel_group_count then
-          self.state = 'waiting_for_clear'
-      end
-  end
-
-  -- If a wave only contains kickers, transition state immediately.
-  if parallel_group_count == 0 then
-      self.state = 'waiting_for_clear'
-  end
-
-  -- 2. Loop through the wave data and initiate ALL groups.
-  for _, group_data in ipairs(wave_data) do
-      local spawn_type = group_data[3]
-      if spawn_type == 'kicker' then
-          -- Kickers run on their own long timers and don't affect the state transition.
-          -- The 'on_finished' callback is nil because we aren't tracking them here.
-          Spawn_Group(self.arena, self.current_wave_spawn_marker_index, group_data, nil, self)
-      else
-          -- All other groups are spawned immediately and run in parallel.
-          -- Pass the shared callback so we know when they're all done.
-          Spawn_Group(self.arena, self.current_wave_spawn_marker_index, group_data, on_parallel_group_done, self)
-      end
-  end
-end
-
-function SpawnManager:handle_boss_fight()
-  local boss_name = ""
-  boss_name = level_to_boss_enemy[self.arena.level]
-  
-  if boss_name ~= "" then
-      self.t:after(1.5, function() 
-        -- Just call Spawn_Boss. It handles everything now.
-        Spawn_Boss(self.arena, boss_name) 
-      end)
-  end
-end
-
-function SpawnManager:show_wave_complete_text()
-  spawn_mark2:play{pitch = 1, volume = 1.2}
-  local text = Text2{group = self.arena.floor, x = gw/2, y = gh/2 - 48, lines = {{text = '[wavy_mid, cbyc]wave complete', font = fat_font, alignment = 'center'}}}
-  text.t:after(self.timer - 0.2, function() text.t:tween(0.2, text, {sy = 0}, math.linear, function() text.sy = 0 end) end)
-end
-
-function SpawnManager:show_wave_start_countdown(seconds_remaining)
-  if seconds_remaining > 0 and seconds_remaining < 4 then
-    if not self.wave_start_countdown_timer or self.wave_start_countdown_timer ~= seconds_remaining then
-      self.wave_start_countdown_timer = seconds_remaining
-      local text = Text2{group = self.arena.floor, x = gw/2, y = gh/2 - 48, lines = {{text = '[wavy_mid, cbyc]' .. seconds_remaining, font = fat_font, alignment = 'center'}}}
-      text.t:after(STARTING_WAVE_COUNTDOWN_DURATION, function() text.dead = true end)
+    elseif type == 'DELAY' then
+        self:change_state('waiting_for_delay') -- Pause for a set duration
+        self.timer = instruction[2] or 1 -- Get delay time from instruction
     end
-  else
-    self.wave_start_countdown_timer = nil
-  end
+
+    -- Move to the next instruction for the next time we are ready
+    self.current_instruction_index = self.current_instruction_index + 1
 end
 
-function Spawn_Group(arena, group_index, group_data, on_finished, spawn_manager)
-  local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
 
-
-  -- Handle 'kicker' type with its special delay.
-  -- The individual enemy markers are now handled by Spawn_Enemy.
-  if spawn_type == 'kicker' then
-      local total_delay = 5
-
-      -- Set the main delay on the spawn manager. This blocks other groups.
-      if spawn_manager then
-          spawn_manager.delay_timer = total_delay
-      end
-
-      -- Determine the kicker's unique spawn location index ahead of time.
-      local kicker_spawn_marker_index = random:int(1, #SpawnGlobals.spawn_markers)
-      
-      -- After the total delay, start the spawning process for this group.
-      arena.t:after(total_delay, function()
-          -- Unblock the spawn manager's delay check so the next group can be scheduled.
-          if spawn_manager then
-              spawn_manager.delay_timer = 0
-          end
-          
-          -- Call the internal spawner. It will handle spawning enemies
-          -- one-by-one, and each call to Spawn_Enemy will create a marker.
-          -- The original on_finished callback is passed directly.
-          Spawn_Group_Internal(arena, kicker_spawn_marker_index, group_data, on_finished)
-      end)
-      
-      -- Exit so the default logic doesn't run for the kicker.
-      return
-  end
-
-  -- For all non-kicker spawn types, proceed as normal.
-  Spawn_Group_Internal(arena, group_index, group_data, on_finished)
+-- ===================================================================
+-- REFACTORED: Spawn_Group and Spawn_Group_Internal
+-- Spawn_Group now just determines the spawn location index.
+-- Spawn_Group_Internal handles the actual spawning logic.
+-- ===================================================================
+function Spawn_Group(arena, group_data, on_finished)
+    local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
+    
+    -- Determine the spawn marker index based on the spawn type
+    local spawn_marker_index
+    if spawn_type == 'far' then
+        spawn_marker_index = Get_Far_Spawn(SpawnGlobals.last_spawn_point)
+    elseif spawn_type == 'close' then
+        spawn_marker_index = Get_Close_Spawn(SpawnGlobals.last_spawn_point)
+    elseif spawn_type == 'scatter' then
+        -- Scatter doesn't use a single marker, so we pass nil
+        spawn_marker_index = nil
+    else -- 'random' or nil defaults to a random marker
+        spawn_marker_index = random:int(1, #SpawnGlobals.spawn_markers)
+    end
+    
+    SpawnGlobals.last_spawn_point = spawn_marker_index
+    
+    -- Call the internal function that does the real work
+    Spawn_Group_Internal(arena, spawn_marker_index, group_data, on_finished)
 end
 
--- ===================================================================
--- REFACTORED: Spawn_Group_Internal
--- This version dynamically calculates spawn offsets in a grid to prevent
--- units from overlapping, regardless of the group size.
--- ===================================================================
 function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
-  local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
-  local spawn_marker_index = group_index
-  amount = amount or 1
+    local type, amount = group_data[1], group_data[2]
+    local spawn_type = group_data[3]
+    amount = amount or 1
 
-  -- Determine the final spawn marker location based on type
-  if spawn_type == 'far' then
-      spawn_marker_index = Get_Far_Spawn(group_index)
-  elseif spawn_type == 'random' then
-      spawn_marker_index = random:int(1, #SpawnGlobals.spawn_markers)
-  elseif spawn_type == 'close' then
-      spawn_marker_index = Get_Close_Spawn(group_index)
-  end
-  
-  local spawn_marker = SpawnGlobals.get_spawn_marker(spawn_marker_index)
+    local finished_count = 0
+    local on_single_unit_done = function()
+        finished_count = finished_count + 1
+        if finished_count >= amount and on_finished then
+            on_finished()
+        end
+    end
 
-  -- === DYNAMIC OFFSET CALCULATION ===
-  -- Get the size of the enemy to calculate appropriate spacing.
-  -- Assumes the existence of these helper tables.
-  local enemy_size_name = enemy_type_to_size[type] or 'regular'
-  local enemy_dimensions = enemy_size_to_xy[enemy_size_name] or {x = 12, y = 12}
-  
-  -- Use the larger dimension (width or height) as the base for spacing, and add a small buffer.
-  local spacing = math.max(enemy_dimensions.x, enemy_dimensions.y) + 8 
+    -- This loop initiates all spawn processes at roughly the same time.
+    for i = 1, amount do
+        local location
+        if spawn_type == 'scatter' then
+            -- For scatter, get a new random point for every single unit
+            location = Get_Point_In_Arena()
+        else
+            -- For all other types, use offsets from the chosen spawn marker
+            local spawn_marker = SpawnGlobals.get_spawn_marker(group_index)
+            local offset = SpawnGlobals.spawn_offsets[i] or {x=0, y=0}
+            location = {x = spawn_marker.x + offset.x, y = spawn_marker.y + offset.y}
+        end
 
-  -- Dynamically generate offsets in a grid pattern.
-  local offsets = {}
-  -- Arrange units in a rough square grid (e.g., 9 units -> 3x3 grid, 10 units -> 4x3 grid)
-  local num_columns = math.ceil(math.sqrt(amount)) 
-  for i = 1, amount do
-      local row = math.floor((i - 1) / num_columns)
-      local col = (i - 1) % num_columns
-      
-      -- Calculate position relative to the center of the grid to keep it centered on the spawn_marker
-      local base_offset_x = (col - (num_columns - 1) / 2) * spacing
-      local base_offset_y = (row - (math.ceil(amount / num_columns) - 1) / 2) * spacing
-      
-      -- Add random jitter to the base position to break up the perfect grid.
-      -- The jitter amount is a fraction of the spacing to prevent major overlaps.
-      local jitter_x = random:float(-spacing / 3, spacing / 3)
-      local jitter_y = random:float(-spacing / 3, spacing / 3)
-
-      local final_offset_x = base_offset_x + jitter_x
-      local final_offset_y = base_offset_y + jitter_y
-      
-      table.insert(offsets, {x = final_offset_x, y = final_offset_y})
-  end
-  -- === END DYNAMIC OFFSET CALCULATION ===
-
-  local finished_count = 0
-  local on_single_unit_done = function()
-      finished_count = finished_count + 1
-      if finished_count >= amount and on_finished then
-          on_finished()
-      end
-  end
-
-  -- This loop INITIATES all spawn processes at roughly the same time.
-  for i = 1, amount do
-      local offset = offsets[i]
-      local location = {x = spawn_marker.x + offset.x, y = spawn_marker.y + offset.y}
-
-      local create_enemy_action = function()
-          Spawn_Enemy(arena, type, location)
-      end
-      
-      -- Stagger the spawn warnings slightly for a better visual effect.
-      arena.t:after(0.1 * i, function()
-          Create_Unit_With_Warning(arena, location, 2, create_enemy_action, type, on_single_unit_done)
-      end)
-  end
+        local create_enemy_action = function()
+            Spawn_Enemy(arena, type, location)
+        end
+        
+        -- Stagger the spawn warnings slightly for a better visual effect.
+        arena.t:after(0.1 * i, function()
+            Create_Unit_With_Warning(arena, location, 2, create_enemy_action, type, on_single_unit_done)
+        end)
+    end
 end
 
 

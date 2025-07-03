@@ -995,17 +995,19 @@ function init()
     --sum all enemies by type
     local enemies = {}
     for _, enemy in pairs(wave) do
-      local type = enemy[1]
-      if type == 'shooter' or type == 'seeker' then
-        type = 'basic'
-      else
-        type = 'special'
-      end
+      if enemy[1] == 'GROUP' then
+        local type = enemy[2]
+        if type == 'shooter' or type == 'seeker' then
+          type = 'basic'
+        else
+          type = 'special'
+        end
 
-      if not enemies[type] then
-        enemies[type] = enemy[2]
-      else
-        enemies[type] = enemies[type] + enemy[2]
+        if not enemies[type] then
+          enemies[type] = enemy[3]
+        else
+          enemies[type] = enemies[type] + enemy[3]
+        end
       end
     end
     
