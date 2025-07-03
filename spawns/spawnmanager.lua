@@ -417,7 +417,7 @@ function Spawn_Enemy(arena, type, location)
   
   local enemy = Enemy{type = type, group = arena.main,
                       x = location.x, y = location.y,
-                      level = 1, data = data}
+                      level = arena.level, data = data}
 
   Spawn_Enemy_Effect(arena, enemy)
 
