@@ -64,7 +64,8 @@ function DrawAnimations.draw_enemy_animation(enemy, state, x, y, r)
 
   -- Add drawing functions to full_res_character_canvas
   table.insert(full_res_character_draws, function()
-    
+
+    love.graphics.setColor(1, 1, 1, 1)
     graphics.push(screen_x, screen_y, 0, enemy.hfx.hit.x, enemy.hfx.hit.x)
       animation:draw(image.image, screen_x, screen_y, r, scale_x * screen_scale, scale_y * screen_scale, frame_center_x, frame_center_y)
     graphics.pop()
