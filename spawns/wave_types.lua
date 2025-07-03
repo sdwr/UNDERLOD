@@ -130,6 +130,14 @@ function Wave_Types:Two_Cleavers()
   return wave
 end
 
+function Wave_Types:One_Basic_One_Cleaver(tier)
+  local wave = {}
+  local normal = random:table(normal_enemy_by_tier[tier])
+  table.insert(wave, {normal, NORMAL_ENEMIES_PER_GROUP, nil})
+  table.insert(wave, {'cleaver', 1, 'close'})
+  return wave
+end
+
 function Wave_Types:Two_Cleavers_Plus_One_Special(tier)
   local wave = {}
   table.insert(wave, {'cleaver', 2, 'close'})
@@ -216,7 +224,7 @@ function Wave_Types:Get_Waves(level)
     wave = self:Two_Cleavers()
     table.insert(waves, wave)
   elseif level == 2 then
-    wave = self:Two_Cleavers()
+    wave = self:One_Basic_One_Cleaver(1)
     table.insert(waves, wave)
     wave = self:Basic_Plus_One_Special(1)
     table.insert(waves, wave)
