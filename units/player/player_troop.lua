@@ -19,9 +19,11 @@ function Troop:init(args)
   self:init_unit()
   local level = self.level or 1
 
-  -- Ensure you have separate springs for x and y scaling
-  self.hfx:add('scale_x', 1, 80, 12) -- stiffness=80, damping=20 are good for tuning
-  self.hfx:add('scale_y', 1, 80, 12)
+  self.hfx:add('move_scale_x', 1, 80, 20)
+  self.hfx:add('move_scale_y', 1, 80, 20)
+
+  self.hfx:add('attack_scale_x', 1, 50, 8) 
+  self.hfx:add('attack_scale_y', 1, 50, 8)
 
   -- This new variable will store the speed from the previous frame
   self.last_speed = 0
@@ -36,6 +38,14 @@ function Troop:init(args)
   self:set_character()
 
   Helper.Unit:set_state(self, unit_states['normal'])
+end
+
+
+--called in oncastfinish for all troops
+function Troop:stretch_on_attack()
+  local stretch_factor = 0.4
+  self.hfx:pull('attack_scale_y', stretch_factor)
+  self.hfx:pull('attack_scale_x', - stretch_factor)
 end
 
 function Troop:follow_mouse()
@@ -90,8 +100,8 @@ function Troop:update_movement_effect(dt)
   end
   
   -- Animate the springs toward their new targets
-  self.hfx:animate('scale_x', target_scale_x)
-  self.hfx:animate('scale_y', target_scale_y)
+  self.hfx:animate('move_scale_x', target_scale_x)
+  self.hfx:animate('move_scale_y', target_scale_y)
   
   -- Finally, update last_speed for the next frame's calculation
   self.last_speed = speed
@@ -300,7 +310,11 @@ end
 
 function Troop:draw()
   --graphics.circle(self.x, self.y, self.attack_sensor.rs, orange[0], 1)
-  graphics.push(self.x, self.y, self.r, self.hfx.scale_x.x, self.hfx.scale_y.x)
+
+  local final_scale_x = self.hfx.attack_scale_x.x * self.hfx.move_scale_x.x * self.hfx.hit.x
+  local final_scale_y = self.hfx.attack_scale_y.x * self.hfx.move_scale_y.x * self.hfx.hit.x
+
+  graphics.push(self.x, self.y, self.r, final_scale_x, final_scale_y)
   self:draw_buffs()
 
   -- darken the non-selected units

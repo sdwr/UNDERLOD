@@ -47,6 +47,9 @@ function Laser_Troop:setup_cast()
     name = 'laser',
     viable = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.enemies); return target end,
     oncast = function() end,
+    oncastfinish = function() 
+      self:stretch_on_attack()
+    end,
     castcooldown = self.cooldownTime,
     cast_length = 0,
     backswing = 0.1,

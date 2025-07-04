@@ -48,6 +48,9 @@ function Swordsman_Troop:setup_cast()
     name = 'attack',
     viable = function() return Helper.Spell:target_is_in_range(self, self.attack_sensor.rs, false) end,
     oncast = function() end,
+    oncastfinish = function() 
+      self:stretch_on_attack()
+    end,
     unit = self,
     target = self:my_target(),
     castcooldown = self.cooldownTime,
