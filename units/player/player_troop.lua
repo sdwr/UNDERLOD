@@ -357,14 +357,40 @@ function Troop:draw()
 end
 
 function Troop:draw_cooldown_timer()
-  local pct = self.castcooldown / self.total_castcooldown
-  local bodySize = self.shape.rs or self.shape.w/2 or 5
-  local rs = (pct * bodySize * 1.5) + bodySize * 0.5
-  if time < Helper.Unit.cast_flash_duration then
-    graphics.circle(self.x, self.y, rs, yellow_transparent_weak)
-  elseif pct > 0 then
-    graphics.circle(self.x, self.y, rs, white_transparent_weak)
+  -- Only draw if the cooldown is active
+  if not self.castcooldown or self.castcooldown <= 0 then return end
+
+  -- --- Configuration ---
+  local growth_duration = 0.1 -- The first 0.15 seconds are for growing
+  local bodySize = self.shape.rs or self.shape.w / 2 or 5
+  local min_radius_mod = 0.4 -- The smallest size of the circle (relative to bodySize)
+  local max_radius_mod = 1.7 -- The largest size of the circle (relative to bodySize)
+
+  -- --- Calculations ---
+  local elapsed_time = self.total_castcooldown - self.castcooldown
+  local current_radius = 0
+
+  if elapsed_time < growth_duration then
+      -- PHASE 1: GROWING
+      -- Calculate the progress of the growth phase (from 0 to 1)
+      local growth_pct = elapsed_time / growth_duration
+      -- Interpolate the radius from min to max size
+      current_radius = (min_radius_mod * bodySize) + (max_radius_mod * bodySize - min_radius_mod * bodySize) * growth_pct
+  else
+      -- PHASE 2: SHRINKING
+      -- Calculate the duration and progress of the shrink phase
+      local shrink_duration = self.total_castcooldown - growth_duration
+      local shrink_elapsed = elapsed_time - growth_duration
+      local shrink_pct = shrink_elapsed / shrink_duration
+      -- Interpolate the radius from max back down to min size
+      current_radius = (max_radius_mod * bodySize) - (max_radius_mod * bodySize - min_radius_mod * bodySize) * shrink_pct
   end
+  
+  -- Ensure the radius never becomes negative if timings are off
+  current_radius = math.max(0, current_radius)
+
+  -- Draw the final circle
+  graphics.circle(self.x, self.y, current_radius, white_transparent_weak)
 end
 
 function Troop:attack(area, mods)
