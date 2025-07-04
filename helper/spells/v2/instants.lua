@@ -250,9 +250,12 @@ function DamageArc:init(args)
 
   self.grow = self.grow
 
+  self.flash_duration = self.flash_duration or 0.3
   --memory
   self.elapsed = 0
   self.targets_hit = {}
+
+  self.in_death_flash = false
 
   self.x, self.y = Helper.Geometry:move_point_radians(self.x, self.y, 
   self.angle + math.pi, self.radius / 2)
@@ -261,8 +264,12 @@ function DamageArc:init(args)
 end
 
 function DamageArc:update(dt)
+  self:update_game_object(dt)
   self:move(dt)
-  self:try_damage()
+
+  if not self.in_death_flash then
+    self:try_damage()
+  end
 end
 
 function DamageArc:move(dt)
@@ -297,14 +304,37 @@ function DamageArc:try_damage()
   end
 
   if #self.targets_hit > self.pierce then
-    self:die()
+    self:die_on_hit()
   end
 end
 
 function DamageArc:draw()
   graphics.push(self.x, self.y, 0, self.spring.x, self.spring.x)
-    graphics.arc( 'open', self.x, self.y, self.radius, self.angle, self.angle + self.width, self.color, 1)
+  graphics.arc( 'open', self.x, self.y, self.radius, self.angle, self.angle + self.width, self.color, 1)
   graphics.pop()
+end
+
+function DamageArc:die_on_hit()
+  self.in_death_flash = true
+  
+  -- Store original color and create white flash color
+  self.original_color = self.color:clone()
+  self.flash_color = white[0]:clone()
+  
+  -- Flash to white and back twice
+  self.t:after(self.flash_duration * 0.25, function() 
+    self.color = self.flash_color 
+  end)
+  self.t:after(self.flash_duration * 0.5, function() 
+    self.color = self.original_color 
+  end)
+  self.t:after(self.flash_duration * 0.75, function() 
+    self.color = self.flash_color 
+  end)
+  self.t:after(self.flash_duration, function() 
+    self.color = self.original_color
+    self:die() 
+  end)
 end
 
 function DamageArc:die()
