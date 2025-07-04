@@ -165,6 +165,36 @@ end
 
 --util functions
 
+function Team:get_survivor_damage_boost()
+  local survivors = self:get_alive_troop_count()
+  if survivors == 4 then
+    return 1.1
+  elseif survivors == 3 then
+    return 1.25
+  elseif survivors == 2 then
+    return 1.6
+  elseif survivors == 1 then
+    return 2.5
+  else
+    return 1
+  end
+end
+
+function Team:get_survivor_size_boost()
+  local survivors = self:get_alive_troop_count()
+  if survivors == 4 then
+    return 1.1
+  elseif survivors == 3 then
+    return 1.25
+  elseif survivors == 2 then
+    return 1.4
+  elseif survivors == 1 then
+    return 1.6
+  else
+    return 1
+  end
+end
+
 function Team:get_center()
   local x = 0
   local y = 0

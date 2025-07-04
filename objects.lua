@@ -908,6 +908,7 @@ function Unit:calculate_stats(first_run)
 
   self.class_dmg_m = self.class_dmg_m*unit_stat_mult.dmg
   self.dmg = (self.base_dmg + self.class_dmg_a + self.buff_dmg_a)*self.class_dmg_m*self.buff_dmg_m
+  self.dmg = self.dmg * Helper.Unit:get_survivor_damage_boost(self)
 
   self.class_def_m = self.class_def_m*unit_stat_mult.def
   self.def = (self.base_def + self.class_def_a + self.buff_def_a)*self.class_def_m*self.buff_def_m

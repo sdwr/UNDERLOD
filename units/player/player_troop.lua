@@ -25,6 +25,8 @@ function Troop:init(args)
   self.hfx:add('attack_scale_x', 1, 50, 8) 
   self.hfx:add('attack_scale_y', 1, 50, 8)
 
+  self.hfx:add('survivor_scale', 1, 100, 20)
+
   -- This new variable will store the speed from the previous frame
   self.last_speed = 0
 
@@ -107,6 +109,11 @@ function Troop:update_movement_effect(dt)
   self.last_speed = speed
 end
 
+function Troop:update_survivor_effect(dt)
+  local survivor_boost = Helper.Unit:get_survivor_size_boost(self)
+  self.hfx:animate('survivor_scale', survivor_boost)
+end
+
 function Troop:update(dt)
   -- ===================================================================
   -- 1. ESSENTIAL HOUSEKEEPING (These should always run)
@@ -119,6 +126,7 @@ function Troop:update(dt)
   self:update_targets() -- Updates who the unit is targeting
 
   self:update_movement_effect(dt)
+  self:update_survivor_effect(dt)
 
   -- ===================================================================
   -- 2. THE STATE MACHINE (Hierarchical and Predictable)
@@ -311,8 +319,14 @@ end
 function Troop:draw()
   --graphics.circle(self.x, self.y, self.attack_sensor.rs, orange[0], 1)
 
-  local final_scale_x = self.hfx.attack_scale_x.x * self.hfx.move_scale_x.x * self.hfx.hit.x
-  local final_scale_y = self.hfx.attack_scale_y.x * self.hfx.move_scale_y.x * self.hfx.hit.x
+  local final_scale_x = self.hfx.attack_scale_x.x 
+    * self.hfx.move_scale_x.x 
+    * self.hfx.survivor_scale.x
+    * self.hfx.hit.x 
+  local final_scale_y = self.hfx.attack_scale_y.x 
+    * self.hfx.move_scale_y.x
+    * self.hfx.survivor_scale.x
+    * self.hfx.hit.x 
 
   graphics.push(self.x, self.y, self.r, final_scale_x, final_scale_y)
   self:draw_buffs()

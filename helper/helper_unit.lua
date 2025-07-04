@@ -258,8 +258,25 @@ Helper.Unit.number_of_troop_types = 0
 Helper.Unit.troop_type_button_width = 0
 Helper.Unit.team_button_width = 0
 
+function Helper.Unit:get_survivor_damage_boost(unit)
+    local team = Helper.Unit:get_team_by_index(unit.team)
+    if team then
+        return team:get_survivor_damage_boost()
+    end
+    return 1
+end
+
+function Helper.Unit:get_survivor_size_boost(unit)
+    local team = Helper.Unit:get_team_by_index(unit.team)
+    if team then
+        return team:get_survivor_size_boost()
+    end
+    return 1
+end
+
+
 function Helper.Unit:get_team_by_index(index)
-    if index < 1 or index > #Helper.Unit.teams then
+    if index == nil or index < 1 or index > #Helper.Unit.teams then
         return nil
     end
     return Helper.Unit.teams[index]
