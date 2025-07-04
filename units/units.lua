@@ -185,11 +185,11 @@ function Team:get_survivor_size_boost()
   if survivors == 4 then
     return 1.1
   elseif survivors == 3 then
-    return 1.25
+    return 1.3
   elseif survivors == 2 then
-    return 1.4
+    return 1.5
   elseif survivors == 1 then
-    return 1.6
+    return 1.7
   else
     return 1
   end
