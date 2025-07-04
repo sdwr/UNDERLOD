@@ -1276,23 +1276,27 @@ function init()
     },
     [2] = {
       'shooter',
-      'seeker',
     }
   }
 
   special_enemy_by_tier = {
     [1] = {
       'burst',
-      'charger',
     },
     [1.5] = {
       'mortar',
       'burst',
-      'charger',
     },
     [2] = {
       'mortar',
       'burst',
+      'charger',
+      'boomerang',
+    },
+    [2.5] = {
+      'mortar',
+      'burst',
+      'charger',
       'boomerang',
       'firewall_caster',
     },

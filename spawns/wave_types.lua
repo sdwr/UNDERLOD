@@ -252,10 +252,7 @@ function Wave_Types:Get_Waves(level)
   elseif level == 3 then
     -- Wave 1
     local wave1 ={
-        {'GROUP', 'seeker', 5, 'nil'},
-        {'DELAY', 2},   
-        {'GROUP', 'burst', 1, 'far'},      
-        {'DELAY', 2},
+        {'GROUP', 'seeker', NORMAL_ENEMIES_PER_GROUP, 'nil'},
         {'GROUP', 'burst', 1, 'far'},
     }
     -- Wave 2
@@ -291,9 +288,8 @@ function Wave_Types:Get_Waves(level)
     table.insert(waves, wave2)
   elseif level == 7 then
     wave = self:Mortar_And_Arc()
-    table.insert(wave, {'DELAY', 2.0})
+    table.insert(wave, {'DELAY', 3.0})
     table.insert(wave, {'GROUP', 'seeker', NORMAL_ENEMIES_PER_GROUP, 'far'})
-    table.insert(wave, {'GROUP', 'boomerang', 2, 'random'})
     table.insert(waves, wave)
     wave = self:Basic_Plus_Three_Special(2)
     table.insert(waves, wave)
