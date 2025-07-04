@@ -580,7 +580,7 @@ function Create_Unit_With_Warning(arena, location, warning_time, creation_callba
 
   if enemy_size then
     local enemy_width = enemy_size_to_xy[enemy_size].x
-    spawn_radius = enemy_width / 2
+    spawn_radius = enemy_width / 4
   end
 
   -- 1. Create the visual warning marker immediately.
