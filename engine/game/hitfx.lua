@@ -48,6 +48,11 @@ function HitFX:use(name, x, k, d, flash_duration)
   self.parent.springs[name]:pull(x, k, d)
 end
 
+function HitFX:animate(name, ...)
+  if not self.parent then return end
+  self.parent.springs[name]:animate(...)
+end
+
 
 function HitFX:pull(name, ...)
   self.parent.springs[name]:pull(...)

@@ -244,6 +244,7 @@ function SpawnManager:init(arena)
     -- 'processing_wave':       Actively reading and executing instructions for the current wave.
     -- 'waiting_for_group':     Paused, waiting for a Spawn_Group call to finish.
     -- 'waiting_for_delay':     Paused, waiting for a DELAY instruction's timer to finish.
+    -- 'waiting_for_boss_fight': Paused, waiting for the boss fight to finish.
     -- 'waiting_for_clear':     All instructions for the wave are done; waiting for all enemies to be defeated.
     -- 'finished':              All waves are complete.
     -- 'boss_fight':            A special state for boss levels.
@@ -308,8 +309,25 @@ function SpawnManager:update(dt)
     
     elseif self.state == 'boss_fight' then
         self:handle_boss_fight()
-        self:change_state('waiting_for_clear')
+        self:change_state('waiting_for_boss_fight')
     end
+end
+
+function SpawnManager:handle_boss_fight()
+  local boss_name = ""
+  boss_name = level_to_boss_enemy[self.arena.level]
+
+  local on_finished = function()
+    self:change_state('waiting_for_clear')
+    self.timer = self.time_between_waves
+  end
+  
+  if boss_name ~= "" then
+      self.t:after(1.5, function() 
+        -- Just call Spawn_Boss. It handles everything now.
+        Spawn_Boss(self.arena, boss_name, on_finished) 
+      end)
+  end
 end
 
 -- This is the new core logic function. It reads and executes one instruction.
@@ -443,22 +461,22 @@ function Countdown(arena)
       end)
 end
 
-function Spawn_Boss(arena, name)
-  arena.spawning_enemies = true
-  arena.wave_finished = false
+function Spawn_Boss(arena, name, on_finished)
+  
+  local on_single_unit_done = function()
+    if on_finished then on_finished() end
+  end
   
   -- Define the action of creating the boss.
   local create_boss_action = function()
       LevelManager.activeBoss = Enemy{type = name, isBoss = true, group = arena.main, x = SpawnGlobals.boss_spawn_point.x, y = SpawnGlobals.boss_spawn_point.y, level = arena.level}
       Spawn_Enemy_Effect(arena, LevelManager.activeBoss)
 
-      arena.spawning_enemies = false
-      arena.wave_finished = true
-      arena.finished = true
+
   end
 
   -- Spawn the boss with a longer, more dramatic 2.5-second warning.
-  Create_Unit_With_Warning(arena, SpawnGlobals.boss_spawn_point, 2.5, create_boss_action, name)
+  Create_Unit_With_Warning(arena, SpawnGlobals.boss_spawn_point, 2.5, create_boss_action, name, on_single_unit_done)
 end
 
 function Spawn_Critters(arena, group_index, amount)

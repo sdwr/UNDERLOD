@@ -19,7 +19,14 @@ function Troop:init(args)
   self:init_unit()
   local level = self.level or 1
 
+  self.hfx:add('move_scale_x', 1, 80, 20)
+  self.hfx:add('move_scale_y', 1, 80, 20)
 
+  self.hfx:add('attack_scale_x', 1, 50, 8) 
+  self.hfx:add('attack_scale_y', 1, 50, 8)
+
+  -- This new variable will store the speed from the previous frame
+  self.last_speed = 0
 
   self:calculate_stats(true)
 
@@ -31,6 +38,14 @@ function Troop:init(args)
   self:set_character()
 
   Helper.Unit:set_state(self, unit_states['normal'])
+end
+
+
+--called in oncastfinish for all troops
+function Troop:stretch_on_attack()
+  local stretch_factor = 0.4
+  self.hfx:pull('attack_scale_y', stretch_factor)
+  self.hfx:pull('attack_scale_x', - stretch_factor)
 end
 
 function Troop:follow_mouse()
@@ -53,6 +68,45 @@ function Troop:rally_to_point()
   self:rotate_towards_velocity(1)
 end
 
+function Troop:update_movement_effect(dt)
+  local vx, vy = self:get_velocity()
+  local speed = math.length(vx, vy)
+  
+  -- Calculate acceleration by comparing the current speed to the last frame's
+  -- A large negative value means we are braking hard.
+  local acceleration = (speed - self.last_speed) / dt
+  
+  -- ### TUNING PARAMETERS ###
+  local move_stretch_factor = 1.4  -- How TALL it gets when moving (130%)
+  local brake_stretch_factor = 1.5 -- How WIDE it gets when braking (140%)
+  local brake_sensitivity = -65   -- How hard the unit must decelerate to trigger the brake effect
+  
+  local target_scale_x = 1
+  local target_scale_y = 1
+  
+  -- Check if the unit is braking hard
+  if acceleration < brake_sensitivity then
+      -- BRAKING EFFECT: Stretch horizontally
+      local brake_ratio = math.clamp(acceleration / (brake_sensitivity * 2), 0, 1)
+      target_scale_x = 1 + (brake_stretch_factor - 1) * brake_ratio
+      target_scale_y = 1 / target_scale_x -- Squish vertically to conserve volume
+  
+  -- Otherwise, if the unit is moving normally, apply the vertical stretch
+  elseif speed > 5 then
+      -- MOVEMENT EFFECT: Stretch vertically
+      local speed_ratio = math.min(speed / 150, 1.0) -- 150 is the speed for max deformation
+      target_scale_y = 1 + (move_stretch_factor - 1) * speed_ratio
+      target_scale_x = 1 / target_scale_y -- Squish horizontally to conserve volume
+  end
+  
+  -- Animate the springs toward their new targets
+  self.hfx:animate('move_scale_x', target_scale_x)
+  self.hfx:animate('move_scale_y', target_scale_y)
+  
+  -- Finally, update last_speed for the next frame's calculation
+  self.last_speed = speed
+end
+
 function Troop:update(dt)
   -- ===================================================================
   -- 1. ESSENTIAL HOUSEKEEPING (These should always run)
@@ -63,6 +117,8 @@ function Troop:update(dt)
   self:update_buffs(dt)
   self:calculate_stats()
   self:update_targets() -- Updates who the unit is targeting
+
+  self:update_movement_effect(dt)
 
   -- ===================================================================
   -- 2. THE STATE MACHINE (Hierarchical and Predictable)
@@ -254,7 +310,11 @@ end
 
 function Troop:draw()
   --graphics.circle(self.x, self.y, self.attack_sensor.rs, orange[0], 1)
-  graphics.push(self.x, self.y, self.r, self.hfx.hit.x, self.hfx.hit.x)
+
+  local final_scale_x = self.hfx.attack_scale_x.x * self.hfx.move_scale_x.x * self.hfx.hit.x
+  local final_scale_y = self.hfx.attack_scale_y.x * self.hfx.move_scale_y.x * self.hfx.hit.x
+
+  graphics.push(self.x, self.y, self.r, final_scale_x, final_scale_y)
   self:draw_buffs()
 
   -- darken the non-selected units
@@ -297,14 +357,40 @@ function Troop:draw()
 end
 
 function Troop:draw_cooldown_timer()
-  local pct = self.castcooldown / self.total_castcooldown
-  local bodySize = self.shape.rs or self.shape.w/2 or 5
-  local rs = (pct * bodySize * 1.5) + bodySize * 0.5
-  if time < Helper.Unit.cast_flash_duration then
-    graphics.circle(self.x, self.y, rs, yellow_transparent_weak)
-  elseif pct > 0 then
-    graphics.circle(self.x, self.y, rs, white_transparent_weak)
+  -- Only draw if the cooldown is active
+  if not self.castcooldown or self.castcooldown <= 0 then return end
+
+  -- --- Configuration ---
+  local growth_duration = 0.1 -- The first 0.15 seconds are for growing
+  local bodySize = self.shape.rs or self.shape.w / 2 or 5
+  local min_radius_mod = 0.4 -- The smallest size of the circle (relative to bodySize)
+  local max_radius_mod = 1.7 -- The largest size of the circle (relative to bodySize)
+
+  -- --- Calculations ---
+  local elapsed_time = self.total_castcooldown - self.castcooldown
+  local current_radius = 0
+
+  if elapsed_time < growth_duration then
+      -- PHASE 1: GROWING
+      -- Calculate the progress of the growth phase (from 0 to 1)
+      local growth_pct = elapsed_time / growth_duration
+      -- Interpolate the radius from min to max size
+      current_radius = (min_radius_mod * bodySize) + (max_radius_mod * bodySize - min_radius_mod * bodySize) * growth_pct
+  else
+      -- PHASE 2: SHRINKING
+      -- Calculate the duration and progress of the shrink phase
+      local shrink_duration = self.total_castcooldown - growth_duration
+      local shrink_elapsed = elapsed_time - growth_duration
+      local shrink_pct = shrink_elapsed / shrink_duration
+      -- Interpolate the radius from max back down to min size
+      current_radius = (max_radius_mod * bodySize) - (max_radius_mod * bodySize - min_radius_mod * bodySize) * shrink_pct
   end
+  
+  -- Ensure the radius never becomes negative if timings are off
+  current_radius = math.max(0, current_radius)
+
+  -- Draw the final circle
+  graphics.circle(self.x, self.y, current_radius, white_transparent_weak)
 end
 
 function Troop:attack(area, mods)
