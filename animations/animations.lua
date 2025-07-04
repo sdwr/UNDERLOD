@@ -301,6 +301,35 @@ goblin_run_a = create_animation(goblin_run_g, 1, 8, 64, 64, 0.2)
 goblin_hurt_a = create_animation(goblin_hurt_g, 1, 4, 64, 64, 0.4)
 goblin_death_a = create_animation(goblin_death_g, 1, 6, 64, 64, 0.2)
 
+GOBLIN2_CAST_TIME = 1
+GOBLIN2_ATTACK_FRAMES = 5
+
+GOBLIN2_SPRITE_W = 64
+GOBLIN2_SPRITE_H = 64
+
+GOBLIN2_SPRITE_SCALE = 4.5
+
+goblin2_attack = Image(spriteFolder .. '/goblins/Goblin2/Attack/Attack_full', 'nearest')
+goblin2_idle = Image(spriteFolder .. '/goblins/Goblin2/Idle/Idle_full', 'nearest')
+goblin2_walk = Image(spriteFolder .. '/goblins/Goblin2/Walk/Walk_full', 'nearest')
+goblin2_run = Image(spriteFolder .. '/goblins/Goblin2/Run/Run_full', 'nearest')
+goblin2_hurt = Image(spriteFolder .. '/goblins/Goblin2/Hurt/Hurt_full', 'nearest')
+goblin2_death = Image(spriteFolder .. '/goblins/Goblin2/Death/Death_full', 'nearest')
+
+goblin2_attack_g = create_grid(goblin2_attack, 64, 64)
+goblin2_idle_g = create_grid(goblin2_idle, 64, 64)
+goblin2_walk_g = create_grid(goblin2_walk, 64, 64)
+goblin2_run_g = create_grid(goblin2_run, 64, 64)
+goblin2_hurt_g = create_grid(goblin2_hurt, 64, 64)
+goblin2_death_g = create_grid(goblin2_death, 64, 64)
+
+goblin2_attack_a = create_animation(goblin2_attack_g, 1, 5, 64, 64, GOBLIN2_CAST_TIME / GOBLIN2_ATTACK_FRAMES)
+goblin2_idle_a = create_animation(goblin2_idle_g, 1, 4, 64, 64, 0.4)
+goblin2_walk_a = create_animation(goblin2_walk_g, 1, 6, 64, 64, 0.2)
+goblin2_run_a = create_animation(goblin2_run_g, 1, 8, 64, 64, 0.2)
+goblin2_hurt_a = create_animation(goblin2_hurt_g, 1, 4, 64, 64, 0.4)
+goblin2_death_a = create_animation(goblin2_death_g, 1, 6, 64, 64, 0.2)
+
 
 PLANT_CAST_TIME = 1
 PLANT_ATTACK_FRAMES = 7
@@ -557,6 +586,16 @@ goblin_spritesheets = {
   ['death'] = {goblin_death_a, goblin_death},
 }
 
+goblin2_spritesheets = {
+  ['normal'] = {goblin2_idle_a, goblin2_idle},
+  ['walk'] = {goblin2_walk_a, goblin2_walk},
+  ['run'] = {goblin2_run_a, goblin2_run},
+  ['casting'] = {goblin2_attack_a, goblin2_attack},
+  ['channeling'] = {goblin2_attack_a, goblin2_attack},
+  ['hurt'] = {goblin2_hurt_a, goblin2_hurt},
+  ['death'] = {goblin2_death_a, goblin2_death},
+}
+
 plant1_spritesheets = {
   ['normal'] = {plant1_idle_a, plant1_idle},
   ['walk'] = {plant1_walk_a, plant1_walk},
@@ -650,6 +689,7 @@ enemy_spritesheets = {
   ['lich'] = lich_spritesheets,
   ['plant1'] = plant1_spritesheets,
   ['goblin'] = goblin_spritesheets,
+  ['goblin2'] = goblin2_spritesheets,
   ['slime'] = slime_spritesheets,
   ['iceslime'] = iceslime_spritesheets,
   ['mech1'] = mech1_spritesheets,
@@ -670,6 +710,7 @@ enemy_sprite_sizes = {
   ['lich'] = {LICH_SPRITE_W, LICH_SPRITE_H},
   ['plant1'] = {PLANT_SPRITE_W, PLANT_SPRITE_H},
   ['goblin'] = {GOBLIN_SPRITE_W, GOBLIN_SPRITE_H},
+  ['goblin2'] = {GOBLIN2_SPRITE_W, GOBLIN2_SPRITE_H},
   ['slime'] = {SLIME_SPRITE_W, SLIME_SPRITE_H},
   ['iceslime'] = {ICESLIME_SPRITE_W, ICESLIME_SPRITE_H},
   ['rat1'] = {RAT1_SPRITE_W, RAT1_SPRITE_H},
@@ -691,6 +732,7 @@ enemy_sprite_scales = {
   ['lich'] = LICH_SPRITE_SCALE,
   ['plant1'] = PLANT_SPRITE_SCALE,
   ['goblin'] = GOBLIN_SPRITE_SCALE,
+  ['goblin2'] = GOBLIN2_SPRITE_SCALE,
   ['slime'] = SLIME_SPRITE_SCALE,
   ['iceslime'] = ICESLIME_SPRITE_SCALE,
   ['rat1'] = RAT1_SPRITE_SCALE,
