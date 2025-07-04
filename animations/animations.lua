@@ -301,7 +301,7 @@ goblin_run_a = create_animation(goblin_run_g, 1, 8, 64, 64, 0.2)
 goblin_hurt_a = create_animation(goblin_hurt_g, 1, 4, 64, 64, 0.4)
 goblin_death_a = create_animation(goblin_death_g, 1, 6, 64, 64, 0.2)
 
-GOBLIN2_CAST_TIME = 1
+GOBLIN2_CAST_TIME = 0.6
 GOBLIN2_ATTACK_FRAMES = 5
 
 GOBLIN2_SPRITE_W = 64

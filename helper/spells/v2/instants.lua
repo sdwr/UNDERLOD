@@ -291,6 +291,7 @@ function Boomerang:init(args)
   self.duration = self.distance / self.speed
   self.halfway_duration = self.duration / 2
   self.turned_around = false
+  self.continue_anyway = false
 
   self.already_damaged = {}
 
@@ -320,7 +321,9 @@ function Boomerang:update(dt)
   end
 
 
-  if self.elapsed > self.halfway_duration and not self.turned_around then
+  if self.elapsed > self.halfway_duration 
+    and not self.turned_around 
+    and self.unit and not self.unit.dead then
     self.r = self.r + math.pi
     self.turned_around = true
     self.already_damaged = {}

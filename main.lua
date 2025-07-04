@@ -1261,7 +1261,8 @@ function init()
       'charger',
     },
     [2] = {
-      'laser',
+      'mortar',
+      'burst',
       'boomerang',
       'firewall_caster',
     },
