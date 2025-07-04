@@ -1252,10 +1252,14 @@ function init()
 
   special_enemy_by_tier = {
     [1] = {
-      'mortar',
       'burst',
       'charger',
       
+    },
+    [1.5] = {
+      'mortar',
+      'burst',
+      'charger',
     },
     [2] = {
       'laser',

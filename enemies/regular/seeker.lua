@@ -29,8 +29,6 @@ fns['init_enemy'] = function(self)
 
   self.class = 'regular_enemy'
 
-  self.base_mvspd = 40
-
 end
 
 fns['draw_enemy'] = function(self)
