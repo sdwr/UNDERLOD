@@ -20,7 +20,6 @@ fns['init_enemy'] = function(self)
     self.movementStyle = MOVEMENT_TYPE_RANDOM -- Moves around randomly
 
     -- Set stats and cooldowns
-    self.base_mvspd = 35
     self.baseCast = attack_speeds['medium-slow']
     self:reset_castcooldown(attack_speeds['medium-slow'])
 
@@ -60,9 +59,9 @@ fns['init_enemy'] = function(self)
             spell_duration = 5,
             -- Customize the firewall projectile's properties here
             travel_distance = 400,
-            speed = 55,
-            width = 70,
-            thickness = 18,
+            speed = 40,
+            width = 50,
+            thickness = 10,
         },
     }
 

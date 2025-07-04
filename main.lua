@@ -1254,7 +1254,6 @@ function init()
     [1] = {
       'burst',
       'charger',
-      
     },
     [1.5] = {
       'mortar',
@@ -1265,7 +1264,6 @@ function init()
       'laser',
       'boomerang',
       'firewall_caster',
-
     },
     [3] = {
       'arcspread',
@@ -1288,6 +1286,7 @@ function init()
     ['burst'] = 300,
     ['boomerang'] = 300,
     ['plasma'] = 300,
+    ['goblin_archer'] = 300,
     --special enemies t2
     ['firewall_caster'] = 500,
     ['mortar'] = 500,
