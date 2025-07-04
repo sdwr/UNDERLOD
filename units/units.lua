@@ -177,7 +177,7 @@ function Team:get_center()
     end
   end
   if count == 0 then
-    return {x = 0, y = 0}
+    return {x = 100, y = 100}
   else
     return {x = x / count, y = y / count}
   end
