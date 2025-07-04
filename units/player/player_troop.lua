@@ -9,7 +9,7 @@ function Troop:init(args)
   self.target_rally = nil
   self.castTime = 0.3
   self.backswing = 0.2
-  self.castcooldown = self.baseCast or 1
+  self:reset_castcooldown(self.baseCast or 1)
   --buff examples...
   --self.buffs[1] = {name = buff_types['dmg'], amount = 0.2, color = red_transparent_weak}
   --self.buffs[2] = {name = buff_types['aspd'], amount = 0.2, color = green_transparent_weak}

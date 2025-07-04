@@ -39,7 +39,7 @@ function Laser_Troop:set_character()
   self.castTime = self.baseCast
 
   self:set_state_functions()
-  self.castcooldown = math.random() * (self.base_castcooldown or self.baseCast)
+  self:reset_castcooldown(math.random() * (self.base_castcooldown or self.baseCast))
 end
 
 function Laser_Troop:setup_cast()

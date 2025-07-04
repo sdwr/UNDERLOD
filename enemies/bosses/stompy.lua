@@ -31,7 +31,7 @@ fns['init_enemy'] = function(self)
   self.stopChasingInRange = false
 
   self.baseCast = attack_speeds['medium-slow']
-  self.castcooldown = self.baseCast
+  self:reset_castcooldown(self.baseCast)
 
 --set sensors
   self.attack_sensor = Circle(self.x, self.y, 80)

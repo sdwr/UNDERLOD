@@ -23,14 +23,14 @@ fns['init_enemy'] = function(self)
   -- and is set to a default if baseCast is not set
   self.baseCast = attack_speeds['medium']
 
-  self.castcooldown = attack_speeds['medium-slow']
+  self:reset_castcooldown(attack_speeds['medium-slow'])
 
   self.direction_lock = false
   self.rotation_lock = false
 
   if self.mega then
     self.baseCast = attack_speeds['fast']
-    self.castcooldown = attack_speeds['medium-fast']
+    self:reset_castcooldown(attack_speeds['medium-fast'])
     self.direction_lock = false
     self.rotation_lock = true
   end

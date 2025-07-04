@@ -12,7 +12,7 @@ fns['init_enemy'] = function(self)
   self.icon = 'ent'
 
   self.baseCast = attack_speeds['medium-slow']
-  self.castcooldown = self.baseCast
+  self:reset_castcooldown(self.baseCast)
 
   self.stopChasingInRange = true
 

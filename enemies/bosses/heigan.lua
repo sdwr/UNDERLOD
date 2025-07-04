@@ -18,7 +18,7 @@ fns['init_enemy'] = function(self)
   self.movementStyle = MOVEMENT_TYPE_RANDOM
 
   self.baseCast = attack_speeds['medium-slow']
-  self.castcooldown = self.baseCast
+  self:reset_castcooldown(self.baseCast)
 
   --set attacks
   self.attack_options = {}

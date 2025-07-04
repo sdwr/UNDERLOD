@@ -24,7 +24,7 @@ function Enemy:init(args)
   self.stopChasingInRange = not not self.stopChasingInRange
   self.haltOnPlayerContact = not not self.haltOnPlayerContact
 
-  self.castcooldown = self.castcooldown or 2
+  self:reset_castcooldown(self.castcooldown or 2)
   
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20 + self.shape.w / 2)
   self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 1000)

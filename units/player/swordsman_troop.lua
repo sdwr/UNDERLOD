@@ -8,7 +8,7 @@ function Swordsman_Troop:init(data)
   self.baseCast = attack_speeds['short-cast']
   self.castTime = self.baseCast
   self.backswing = 0.1
-  self.castcooldown = math.random() * (self.base_castcooldown or self.baseCast)
+  self:reset_castcooldown(math.random() * (self.base_castcooldown or self.baseCast))
 
   self.base_attack_area = 20
 
@@ -38,7 +38,7 @@ function Swordsman_Troop:set_character()
   self.baseCast = 0
   self.castTime = self.baseCast
   self.backswing = 0.2
-  self.castcooldown = math.random() * (self.base_castcooldown or self.baseCast)
+  self:reset_castcooldown(math.random() * (self.base_castcooldown or self.baseCast))
 
   self:set_state_functions()
 end

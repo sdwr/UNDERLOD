@@ -515,17 +515,6 @@ item_to_item_data = {
     procs = {'sympatheticvoltage'},
     prereqs = {}
   },
-  ['balllightning'] = {
-    name = 'balllightning',
-    colors = {'yellow'},
-    cost = 10,
-    icon = 'lightning',
-    desc = 'Hitting a [yellow]shocked[fg] enemy has a chance to spawn a [yellow]lightning ball[fg]',
-    stats = {lightning_damage = 0.3},
-    procs = {'balllightning'},
-    prereqs = {}
-  },
-
   ['curse'] = {
     name = 'curse',
     colors = {'purple'},
@@ -744,7 +733,7 @@ item_to_item_data = {
     icon = 'twinflame',
     desc = 'Makes your [red]fire[fg] damage [blue]slow[fg], and your [blue]frost[fg] damage [red]burn[fg]',
     stats = {fire_damage = 0.5, cold_damage = 0.5},
-    procs = {'fire'},
+    procs = {},
     prereqs = {}
   },
   ['omegastar'] = {
@@ -754,7 +743,7 @@ item_to_item_data = {
     icon = 'omegastar',
     desc = 'Increases all elemental damage. You [green]heal[fg] for a portion of elemental damage dealt',
     stats = {fire_damage_m = 0.5, cold_damage_m = 0.5, lightning_damage_m = 0.5},
-    procs = {'eledmg, elevamp'},
+    procs = {},
     prereqs = {}
   },
 }

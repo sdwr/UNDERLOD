@@ -1,6 +1,8 @@
 FINAL BUG TODO:
-- still have rare bug where enemies spawning on top of each other soft-crashes the game
+- units spawning on each other soft-locks the game
+  enemies are coded to wait to spawn, but troops still resurrect on each other
 - laser can't move while shooting with space (but can with m1?)
+- laser cooldown triggers twice, once on end cast and once on end channel (?)
 
 
 PLAYTEST FEEDBACK:

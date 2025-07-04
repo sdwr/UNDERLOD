@@ -22,7 +22,7 @@ fns['init_enemy'] = function(self)
     -- Set stats and cooldowns
     self.base_mvspd = 35
     self.baseCast = attack_speeds['medium-slow']
-    self.castcooldown = attack_speeds['medium-slow']
+    self:reset_castcooldown(attack_speeds['medium-slow'])
 
     -- This enemy will stop to cast and will be locked facing its cast direction.
     self.direction_lock = false

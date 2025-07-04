@@ -159,8 +159,7 @@ function Unit:init_unit()
   self:config_physics_object()
 
   --also set in child classes
-  self.castcooldown = self.castcooldown or 0
-  self.total_castcooldown = self.castcooldown or 0
+  self:reset_castcooldown(self.castcooldown or 0)
 
   self.target = nil
   self.assigned_target = nil
@@ -1542,7 +1541,7 @@ function Unit:update_cast_cooldown(dt)
   end
 
   if self.castcooldown > 0 then
-    self.castcooldown = self.castcooldown - dt
+    self:set_castcooldown(self.castcooldown - dt)
   end
 end
 
@@ -1569,8 +1568,7 @@ end
 
 function Unit:end_cast(cooldown, spell_duration)
   local random_cooldown = self:get_random_cooldown(cooldown)
-  self.castcooldown = random_cooldown
-  self.total_castcooldown = random_cooldown
+  self:reset_castcooldown(random_cooldown)
   self.spelldata = nil
   self.freezerotation = false
 
@@ -1607,8 +1605,7 @@ end
 function Unit:end_channel(cooldown)
   if self.state == unit_states['channeling'] then
     local random_cooldown = self:get_random_cooldown(self.baseCooldown)
-    self.castcooldown = random_cooldown
-    self.total_castcooldown = random_cooldown
+    self:reset_castcooldown(random_cooldown)
     self.spelldata = nil
     self.freezerotation = false
     Helper.Unit:set_state(self, unit_states['normal'])
@@ -1634,7 +1631,7 @@ function Unit:cancel_cast()
 
   if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
     Helper.Unit:set_state(self, unit_states['normal'])
-    self.castcooldown = 0
+    self:reset_castcooldown(0)
     self.spelldata = nil
   end
 
@@ -1643,7 +1640,7 @@ end
 
 function Unit:interrupt_cast()
   if self.castObject then
-    self.castcooldown = self.baseCast or 1
+    self:reset_castcooldown(self.baseCast or 1)
     self.spelldata = nil
     Cancel_Cast(self)
   end
@@ -1651,7 +1648,7 @@ end
 
 function Unit:interrupt_channel()
   if self.state == unit_states['channeling'] then
-    self.castcooldown = 0
+    self:reset_castcooldown(0)
     self.spelldata = nil
     Cancel_Cast(self)
   end
@@ -1738,6 +1735,15 @@ function Unit:die()
   --   v:die()
   -- end
 
+end
+
+function Unit:set_castcooldown(value)
+  self.castcooldown = value
+end
+
+function Unit:reset_castcooldown(value)
+  self.castcooldown = value
+  self.total_castcooldown = value
 end
 
 

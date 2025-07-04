@@ -9,7 +9,7 @@ function Archer_Troop:init(data)
   self.baseCast = 0
   self.castTime = self.baseCast
   self.backswing = data.backswing or 0.1
-  self.castcooldown = math.random() * (self.base_castcooldown or self.baseCast)
+  self:reset_castcooldown(math.random() * (self.base_castcooldown or self.baseCast))
 
 end
 
