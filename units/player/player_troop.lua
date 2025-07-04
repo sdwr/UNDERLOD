@@ -19,7 +19,12 @@ function Troop:init(args)
   self:init_unit()
   local level = self.level or 1
 
+  -- Ensure you have separate springs for x and y scaling
+  self.hfx:add('scale_x', 1, 80, 12) -- stiffness=80, damping=20 are good for tuning
+  self.hfx:add('scale_y', 1, 80, 12)
 
+  -- This new variable will store the speed from the previous frame
+  self.last_speed = 0
 
   self:calculate_stats(true)
 
@@ -53,6 +58,45 @@ function Troop:rally_to_point()
   self:rotate_towards_velocity(1)
 end
 
+function Troop:update_movement_effect(dt)
+  local vx, vy = self:get_velocity()
+  local speed = math.length(vx, vy)
+  
+  -- Calculate acceleration by comparing the current speed to the last frame's
+  -- A large negative value means we are braking hard.
+  local acceleration = (speed - self.last_speed) / dt
+  
+  -- ### TUNING PARAMETERS ###
+  local move_stretch_factor = 1.4  -- How TALL it gets when moving (130%)
+  local brake_stretch_factor = 1.5 -- How WIDE it gets when braking (140%)
+  local brake_sensitivity = -65   -- How hard the unit must decelerate to trigger the brake effect
+  
+  local target_scale_x = 1
+  local target_scale_y = 1
+  
+  -- Check if the unit is braking hard
+  if acceleration < brake_sensitivity then
+      -- BRAKING EFFECT: Stretch horizontally
+      local brake_ratio = math.clamp(acceleration / (brake_sensitivity * 2), 0, 1)
+      target_scale_x = 1 + (brake_stretch_factor - 1) * brake_ratio
+      target_scale_y = 1 / target_scale_x -- Squish vertically to conserve volume
+  
+  -- Otherwise, if the unit is moving normally, apply the vertical stretch
+  elseif speed > 5 then
+      -- MOVEMENT EFFECT: Stretch vertically
+      local speed_ratio = math.min(speed / 150, 1.0) -- 150 is the speed for max deformation
+      target_scale_y = 1 + (move_stretch_factor - 1) * speed_ratio
+      target_scale_x = 1 / target_scale_y -- Squish horizontally to conserve volume
+  end
+  
+  -- Animate the springs toward their new targets
+  self.hfx:animate('scale_x', target_scale_x)
+  self.hfx:animate('scale_y', target_scale_y)
+  
+  -- Finally, update last_speed for the next frame's calculation
+  self.last_speed = speed
+end
+
 function Troop:update(dt)
   -- ===================================================================
   -- 1. ESSENTIAL HOUSEKEEPING (These should always run)
@@ -63,6 +107,8 @@ function Troop:update(dt)
   self:update_buffs(dt)
   self:calculate_stats()
   self:update_targets() -- Updates who the unit is targeting
+
+  self:update_movement_effect(dt)
 
   -- ===================================================================
   -- 2. THE STATE MACHINE (Hierarchical and Predictable)
@@ -254,7 +300,7 @@ end
 
 function Troop:draw()
   --graphics.circle(self.x, self.y, self.attack_sensor.rs, orange[0], 1)
-  graphics.push(self.x, self.y, self.r, self.hfx.hit.x, self.hfx.hit.x)
+  graphics.push(self.x, self.y, self.r, self.hfx.scale_x.x, self.hfx.scale_y.x)
   self:draw_buffs()
 
   -- darken the non-selected units
