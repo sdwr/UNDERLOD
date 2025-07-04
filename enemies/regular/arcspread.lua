@@ -31,7 +31,7 @@ fns['init_enemy'] = function(self)
       target = self.target,
       color = blue2[5],
       damage = function() return self.dmg end,
-      pierce = 1,
+      pierce = 0,
       thickness = 2,
       numArcs = 4,
 

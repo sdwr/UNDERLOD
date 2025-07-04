@@ -78,6 +78,97 @@ function Arrow:die()
   self.dead = true
 end
 
+ArrowProjectile = Object:extend()
+ArrowProjectile:implement(GameObject)
+ArrowProjectile:implement(Physics)
+function ArrowProjectile:init(args)
+  self:init_game_object(args)
+
+  -- Create a rectangular hitbox for the arrow
+  self.width = 6
+  self.height = 3
+  self.shape = Rectangle(self.x, self.y, self.width, self.height)
+  
+  self.damage = get_dmg_value(self.damage)
+  self.speed = self.speed or 140
+  self.color = self.color or blue[0]
+  self.unit = self.unit
+  self.target = self.target
+  self.x = self.unit.x
+  self.y = self.unit.y
+  
+  -- Calculate max distance as 1.2x attack range
+  self.max_distance = (self.unit.attack_sensor and self.unit.attack_sensor.rs or 50) * 1.5
+  self.start_x = self.x
+  self.start_y = self.y
+  
+  -- Calculate direction to target
+  local xdist = self.target.x - self.x
+  local ydist = self.target.y - self.y
+  self.angle = math.atan2(ydist, xdist)
+  
+  -- Set the arrow's rotation to match its direction
+  self.r = self.angle
+  
+  alert1:play{volume=0.9}
+end
+
+function ArrowProjectile:update(dt)
+  self:update_game_object(dt)
+  
+  if self.dead then
+    return
+  end
+
+  -- Move the arrow forward
+  self.x = self.x + math.cos(self.angle) * self.speed * dt
+  self.y = self.y + math.sin(self.angle) * self.speed * dt
+
+  -- Update the hitbox position
+  self.shape:move_to(self.x, self.y)
+
+  -- Check if we've traveled the max distance
+  local distance_traveled = math.distance(self.start_x, self.start_y, self.x, self.y)
+  if distance_traveled >= self.max_distance then
+    self:die()
+    return
+  end
+
+  -- Check for collisions with enemies
+  local target_classes = self.is_troop and main.current.enemies or main.current.friendlies
+  local targets = main.current.main:get_objects_in_shape(self.shape, target_classes)
+  if #targets > 0 then
+    hit2:play{volume=0.5}
+    targets[1]:hit(self.damage, self.unit, nil, true, false)
+    self:die()
+    return
+  end
+end
+
+function ArrowProjectile:draw()
+  -- Draw an arrow shape
+  graphics.push(self.x, self.y, self.r, 1, 1)
+  
+  -- Arrow body (rectangle)
+  graphics.rectangle(self.x, self.y, self.width, self.height, 2, 2, self.color)
+  
+  -- Arrow head (triangle)
+  --arrow head Center
+  -- local head_center_x = self.x + self.width/2
+  -- local head_center_y = self.y + self.height/2
+  -- local head_width = 6
+  -- local head_height = 8
+  -- graphics.triangle(
+  --   head_center_x, head_center_y, head_width, head_height, self.color
+  -- )
+  
+  graphics.pop()
+end
+
+function ArrowProjectile:die()
+  self.dead = true
+end
+
 
 Arcspread = Object:extend()
 Arcspread:implement(GameObject)

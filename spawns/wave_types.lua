@@ -289,7 +289,7 @@ function Wave_Types:Get_Waves(level)
   elseif level == 7 then
     wave = self:Mortar_And_Arc()
     table.insert(wave, {'DELAY', 3.0})
-    table.insert(wave, {'GROUP', 'seeker', NORMAL_ENEMIES_PER_GROUP, 'far'})
+    table.insert(wave, {'GROUP', 'shooter', NORMAL_ENEMIES_PER_GROUP, 'far'})
     table.insert(waves, wave)
     wave = self:Basic_Plus_Three_Special(2)
     table.insert(waves, wave)

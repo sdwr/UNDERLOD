@@ -29,15 +29,15 @@ fns['init_enemy'] = function(self)
     cast_length = GOBLIN_CAST_TIME,
     castcooldown = self.cooldownTime,
     cancel_on_range = true,
-    cancel_range = self.attack_sensor.rs * 1.05,
+    cancel_range = self.attack_sensor.rs * 1.1,
     instantspell = true,
-    spellclass = Arrow,
+    spellclass = ArrowProjectile,
     spelldata = {
       group = main.current.effects,
-      spell_duration = 1,
       color = blue[0],
       damage = function() return self.dmg end,
       bullet_size = 2,
+      is_troop = false,
     },
   }
   table.insert(self.attack_options, shoot)
