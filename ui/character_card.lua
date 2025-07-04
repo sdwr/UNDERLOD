@@ -177,9 +177,9 @@ function CharacterCard:show_unit_stats_popup()
   local item_stats = get_unit_stats(self.unit)
   local text_lines = {}
   
-  for k, v in pairs(item_stats) do
+  for _, stat in pairs(item_stats) do
     table.insert(text_lines, { 
-      text = '[yellow[0]]+' .. (v * 100) .. '% ' .. k:capitalize(), 
+      text = '[yellow[0]]+' .. (stat.value * 100) .. '% ' .. stat.name:capitalize(), 
       font = pixul_font, 
       alignment = 'center' 
     })

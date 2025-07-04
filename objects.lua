@@ -662,65 +662,36 @@ end
 --different from calculate_stats :( 
 --used for the character tooltip in buy screen
 function Unit:get_item_stats()
-  local stats = {}
-
+  -- Step A: Aggregate all stats into a temporary hash table for quick summation.
+  -- This part of the logic remains the same.
+  local aggregated_stats = {}
   for i = 1, 6 do
-    local item = self.items[i]
-    if item and item.stats then
-      for stat, amt in pairs(item.stats) do
-        if stat == buff_types['dmg'] then
-          stats.dmg = (stats.dmg or 0) + amt
-        elseif stat == buff_types['flat_def'] then
-          stats.flat_def = (stats.flat_def or 0) + amt
-        elseif stat == buff_types['percent_def'] then
-          stats.percent_def = (stats.percent_def or 0) + amt
-        elseif stat == buff_types['mvspd'] then
-          stats.mvspd = (stats.mvspd or 0) + amt
-        elseif stat == buff_types['aspd'] then
-          stats.aspd = (stats.aspd or 0) + amt
-        elseif stat == buff_types['range'] then
-          stats.range = (stats.range or 0) + amt
-        elseif stat == buff_types['area_dmg'] then
-          stats.area_dmg = (stats.area_dmg or 0) + amt
-        elseif stat == buff_types['area_size'] then
-          stats.area_size = (stats.area_size or 0) + amt
-        elseif stat == buff_types['hp'] then
-          stats.hp = (stats.hp or 0) + amt
-        elseif stat == buff_types['repeat_attack_chance'] then
-          stats.repeat_attack_chance = (stats.repeat_attack_chance or 0) + amt
-        elseif stat == buff_types['fire_damage'] then
-          stats.fire_damage = (stats.fire_damage or 0) + amt
-        elseif stat == buff_types['lightning_damage'] then
-          stats.lightning_damage = (stats.lightning_damage or 0) + amt
-        elseif stat == buff_types['cold_damage'] then
-          stats.cold_damage = (stats.cold_damage or 0) + amt
-        elseif stat == buff_types['fire_damage_m'] then
-          stats.fire_damage_m = (stats.fire_damage_m or 0) + amt
-        elseif stat == buff_types['lightning_damage_m'] then
-          stats.lightning_damage_m = (stats.lightning_damage_m or 0) + amt
-        elseif stat == buff_types['cold_damage_m'] then
-          stats.cold_damage_m = (stats.cold_damage_m or 0) + amt
-        end
+      local item = self.items[i]
+      if item and item.stats then
+          for stat, amt in pairs(item.stats) do
+              aggregated_stats[stat] = (aggregated_stats[stat] or 0) + amt
+          end
       end
-    end
   end
 
-  local stats_with_names = {}
-  for k, v in pairs(stats) do
-    if item_stat_lookup[k] then
-      stats_with_names[item_stat_lookup[k]] = v
-    else
-      stats_with_names[k] = v
-    end
+  -- Step B: Build the final, ordered list for display.
+  local ordered_stats_list = {}
+  -- Iterate through our master display order list.
+  for _, stat_name in ipairs(item_stat_display_order) do
+      -- Check if the unit has this stat from its items.
+      if aggregated_stats[stat_name] then
+          -- If it does, add a table containing the name and value to our list.
+          -- We use the display name from item_stat_lookup if it exists.
+          local display_name = item_stat_lookup and item_stat_lookup[stat_name] or stat_name
+          table.insert(ordered_stats_list, {
+              name = display_name, 
+              value = aggregated_stats[stat_name]
+          })
+      end
   end
 
-  -- if stats.hp and stats.hp == 0 then
-  --   Stats_Max_Dmg_Without_Hp(stats.dmg or 0)
-  -- end
-
-  -- Stats_Max_Aspd(stats.aspd or 0)
-  return stats_with_names
-
+  -- Return the ordered list.
+  return ordered_stats_list
 end
 
 function Unit:calculate_stats(first_run)

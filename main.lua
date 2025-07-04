@@ -975,6 +975,36 @@ function init()
     ['proc'] = 'Extra effect on attack',
   }
 
+  item_stat_display_order = {
+    --core offensive stats
+    'dmg',
+    'aspd',
+    'repeat_attack_chance',
+    'range',
+
+    --core defensive stats
+    'hp',
+    'flat_def',
+    'percent_def',
+    'mvspd',
+
+    --elemental stats
+    'fire_damage',
+    'lightning_damage',
+    'cold_damage',
+    'fire_damage_m',
+    'lightning_damage_m',
+    'cold_damage_m',
+
+    --other stats
+    'area_dmg',
+    'area_size',
+    'vamp',
+    'ghost',
+    'slow',
+    'thorns',
+  }
+
 
   build_achievement_text = function(achieve)
     local name = achieve.name or 'achievement name'
