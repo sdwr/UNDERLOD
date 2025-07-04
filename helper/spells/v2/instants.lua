@@ -172,7 +172,6 @@ end
 function DamageArc:update(dt)
   self:move(dt)
   self:try_damage()
-  self:delete()
 end
 
 function DamageArc:move(dt)
@@ -207,12 +206,6 @@ function DamageArc:try_damage()
   end
 
   if #self.targets_hit > self.pierce then
-    self:die()
-  end
-end
-
-function DamageArc:delete()
-  if Helper.Geometry:is_off_screen(self.x, self.y, self.angle, self.radius + 20) then
     self:die()
   end
 end

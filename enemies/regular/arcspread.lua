@@ -35,7 +35,7 @@ fns['init_enemy'] = function(self)
       thickness = 2,
       numArcs = 4,
 
-      speed = 75,
+      speed = 40,
     }
   }
 

@@ -38,7 +38,7 @@ fns['init_enemy'] = function(self)
       spelltype = "targeted",
       color = yellow[0],
       damage = function() return self.dmg end,
-      speed = 100,
+      speed = 75,
       distance = 300,
       parent = self
     }
