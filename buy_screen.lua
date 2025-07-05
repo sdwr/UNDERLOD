@@ -318,7 +318,19 @@ function BuyScreen:set_party()
   local y = gh/2
   local x = gw/2
 
-  local number_of_cards = math.max(3, #self.units + 1)
+  local number_of_cards = #self.units
+  local show_buy_card = false
+  if number_of_cards == 0 then
+    show_buy_card = true
+  elseif number_of_cards == 1 then
+    show_buy_card = true
+  elseif number_of_cards == 2 then
+    show_buy_card = true
+  end
+
+  if show_buy_card then
+    number_of_cards = number_of_cards + 1
+  end
 
 
   --center single unit, otherwise start on the left
@@ -335,13 +347,13 @@ function BuyScreen:set_party()
     self.first_shop = false
   end
 
-  if self.first_shop then
+  if #Character_Cards == 0 then
     table.insert(Character_Cards, CharacterCardBuy{group = self.main, x = x + (#Character_Cards)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, i = #Character_Cards+1, parent = self,
       is_unlocked = true, cost = 5})
-  elseif self.level >= PICK_SECOND_CHARACTER and #Character_Cards == 1 then
+  elseif #Character_Cards == 1 then
     table.insert(Character_Cards, CharacterCardBuy{group = self.main, x = x + (#Character_Cards)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, i = #Character_Cards+1, parent = self,
       is_unlocked = true, cost = 10})
-  elseif self.level >= PICK_THIRD_CHARACTER and #Character_Cards == 2 then
+  elseif #Character_Cards == 2 then
     table.insert(Character_Cards, CharacterCardBuy{group = self.main, x = x + (#Character_Cards)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, i = #Character_Cards+1, parent = self,
       is_unlocked = true, cost = 15})
   end
