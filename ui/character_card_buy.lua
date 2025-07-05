@@ -122,6 +122,11 @@ function CharacterCardBuy:update(dt)
   if input.m1.pressed and self.colliding_with_mouse then
     self.parent:try_buy_unit(self.cost)
   end
+
+  if self.last_gold ~= gold then
+    self.last_gold = gold
+    self:refreshText()
+  end
 end
 
 function CharacterCardBuy:die()
