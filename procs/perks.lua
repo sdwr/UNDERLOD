@@ -207,6 +207,13 @@ PERK_DEFINITIONS = {
     stats2 = {cooldown_reduction = 0.3},
     stats3 = {cooldown_reduction = 0.4},
   },
+  chain_attack = {
+    name = "Chain Attack",
+    description = "Your chain attacks chain an additional time",
+    icon = "chain_attack",
+    rarity = "common",
+    stats1 = {extra_chain_attacks = 1},
+  },
 
   --generic enemy perks
   enemy_movespeed = {
@@ -318,6 +325,12 @@ PERK_DEFINITIONS = {
     stats1 = {elemental_damage_m = 0.1},
     stats2 = {elemental_damage_m = 0.2},
     stats3 = {elemental_damage_m = 0.3},
+  },
+  elemental_volatility = {
+    name = "Elemental Volatility",
+    description = "Your elemental afflictions react with each other on contact, triggering immediately",
+    icon = "elemental_volatility",
+    rarity = "rare",
   },
 
   --fire perks
