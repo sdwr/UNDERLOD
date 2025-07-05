@@ -441,6 +441,7 @@ end
 function Arena:draw()
   self.floor:draw()
   self.main:draw_custom()
+  Draw_Auras()
   self.post_main:draw()
   self.effects:draw()
   

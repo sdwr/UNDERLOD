@@ -1203,10 +1203,19 @@ function Proc_Radiance:init(args)
   self.radius = self.data.radius or 60
   self.damage = self.data.damage or 20
   self.damageType = DAMAGE_TYPE_FIRE
+  
+  -- Create the permanent aura display
+  if self.unit then
+    self:create_proc_display_area()
+  end
 end
 
 function Proc_Radiance:onTick(dt)
   Proc_Radiance.super.onTick(self, dt)
+  
+  -- Update the aura position to follow the unit
+  self:update_proc_display()
+  
   local enemies = main.current.main:get_objects_by_classes(enemy_classes)
   for i, enemy in ipairs(enemies) do
     if Helper.Spell:is_in_range(self.unit, enemy, self.radius, false) then
@@ -1219,6 +1228,37 @@ function Proc_Radiance:onTick(dt)
       end
     end
   end
+end
+
+-- ===================================================================
+-- VISUAL EFFECT HELPERS
+-- ===================================================================
+
+function Proc_Radiance:create_proc_display_area()
+  -- If an old one somehow exists, destroy it first.
+  self:destroy_proc_display_area()
+
+  self.proc_display_area = Circle(self.unit.x, self.unit.y, self.radius)
+  Add_Aura('radiance', self.proc_display_area)
+end
+
+function Proc_Radiance:update_proc_display()
+  if self.proc_display_area and not self.proc_display_area.dead then
+    self.proc_display_area.x = self.unit.x
+    self.proc_display_area.y = self.unit.y
+  end
+end
+
+function Proc_Radiance:destroy_proc_display_area()
+  if self.proc_display_area then
+    self.proc_display_area.dead = true
+    self.proc_display_area = nil
+  end
+end
+
+function Proc_Radiance:die()
+  Proc_Radiance.super.die(self)
+  self:destroy_proc_display_area()
 end
 
 --can only have 1 shield at a time, no stack for now
@@ -1667,7 +1707,7 @@ function Proc_Frostnova:init(args)
     -- Cooldown and wind-up values
     self.cooldown = self.data.cooldown or 5
     self.cancel_cooldown = self.data.cancel_cooldown or 0.3
-    self.procDelay = self.data.procDelay or 0.75 -- This is the wind-up duration
+    self.procDelay = self.data.procDelay or 1.25 -- This is the wind-up duration
 
     -- State machine setup
     self.state = 'ready'       -- Possible states: 'ready', 'winding_up', 'on_cooldown'
@@ -1740,15 +1780,8 @@ function Proc_Frostnova:create_proc_display_area()
     -- If an old one somehow exists, destroy it first.
     self:destroy_proc_display_area()
 
-    self.proc_display_area = Area{
-        group = main.current.effects,
-        x = self.unit.x, y = self.unit.y,
-        pick_shape = 'circle',
-        r = 0, -- Start with a radius of 0
-        duration = self.procDelay, -- Give it a lifetime just longer than the wind-up
-        color = self.color,
-        damage = 0,
-    }
+    self.proc_display_area = Circle(self.unit.x, self.unit.y, 0)
+    Add_Aura('frostnova', self.proc_display_area)
 end
 
 function Proc_Frostnova:update_proc_display()
@@ -1756,7 +1789,7 @@ function Proc_Frostnova:update_proc_display()
         local progress = 1 - (self.windup_timer / self.procDelay) -- Progress from 0 to 1
         progress = math.max(0, math.min(1, progress)) -- Clamp progress to prevent errors
         
-        self.proc_display_area.r = (self.radius + self.radius_boost) * progress
+        self.proc_display_area.rs = (self.radius + self.radius_boost) * progress
         self.proc_display_area.x = self.unit.x
         self.proc_display_area.y = self.unit.y
     end

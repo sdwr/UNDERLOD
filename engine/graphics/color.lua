@@ -34,6 +34,11 @@ function Color:clone()
 end
 
 
+function Color:set_alpha(a)
+  self.a = a
+  return self
+end
+
 function Color:lighten(v)
   local h, s, l = self:_to_hsl()
   l = l + v

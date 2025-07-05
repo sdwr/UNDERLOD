@@ -23,6 +23,7 @@ require 'enemies/enemy_includes'
 require 'units/units'
 require 'util/fpscounter'
 require 'util/draw_animations'
+require 'util/draw_auras'
 
 love.profiler = require('util/profiler/profile')
 require 'util/runprofiler'
