@@ -121,10 +121,49 @@ function PerkSlot:draw()
       if image then
         image:draw(self.x, self.y, 0, 0.6, 0.6)
       end
+      
+      -- Draw level ticks at the bottom
+      self:draw_level_ticks()
     end
     
   graphics.pop()
 end
+
+function PerkSlot:draw_level_ticks()
+  if not self.perk then return end
+  
+  local max_level = Get_Perk_Max_Level(self.perk)
+  local current_level = self.perk.level or 1
+  local tick_width = 7
+  local tick_height = 5
+  local tick_spacing = 3
+  
+  -- Calculate the total width of all ticks and the spaces between them
+  local total_width = (max_level * tick_width) + ((max_level - 1) * tick_spacing)
+  
+  -- Calculate the starting x-position for the *block* of ticks, so it's centered on self.x
+  local block_start_x = self.x - total_width / 2
+  
+  local tick_y = self.y + (self.h/2) -- Position ticks vertically at the bottom of the slot
+  
+  -- Draw a single background line behind all the ticks
+  graphics.line(block_start_x, tick_y, block_start_x + total_width, tick_y, bg[1], 1)
+  
+  for i = 1, max_level do
+      -- Calculate the center x-position for each individual tick
+      local tick_x = block_start_x + (i - 1) * (tick_width + tick_spacing) + (tick_width / 2)
+      local is_filled = i <= current_level
+      
+      -- Draw tick background (empty)
+      graphics.rectangle(tick_x, tick_y, tick_width, tick_height, 1, 1, bg[5])
+      
+      -- Draw filled tick if this level is achieved
+      if is_filled then
+          graphics.rectangle(tick_x, tick_y, tick_width, tick_height, 1, 1, fg[0])
+      end
+  end
+end
+
 
 function PerkSlot:set_perk(perk)
   self.perk = perk

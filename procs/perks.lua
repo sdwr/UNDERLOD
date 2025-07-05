@@ -32,20 +32,17 @@ function Get_Perk_Stats(perk)
   return {}
 end
 
+function Get_Perk_Max_Level(perk)
+  if perk.stats3 then
+    return 3
+  elseif perk.stats2 then
+    return 2
+  end
+  return 1
+end
+
 function Can_Perk_Level_Up(perk)
-  if not perk.stats1 then
-    return false
-  end
-  if perk.level == 1 then
-    if perk.stats2 then
-      return true
-    end
-  elseif perk.level == 2 then
-    if perk.stats3 then
-      return true
-    end
-  end
-  return false
+  return perk.level < Get_Perk_Max_Level(perk)
 end
 
 function Perk_Level_Up_Cost(perk)
