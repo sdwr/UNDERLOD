@@ -5,11 +5,11 @@ function Arena:init(name)
   self:init_state(name)
   self:init_game_object()
   LevelManager.init()
-  self.hotbar = HotbarGlobals()
+  --self.hotbar = HotbarGlobals()
 end
 
 function Arena:select_character_by_index(i)
-  self.hotbar:select_by_index(i)
+  --self.hotbar:select_by_index(i)
 end
 
 
@@ -54,6 +54,7 @@ function Arena:on_enter(from)
   self.options_ui = Group()
   self.credits = Group()
   self.main:disable_collision_between('troop', 'projectile')
+  self.main:disable_collision_between('troop', 'troop')
   self.main:disable_collision_between('projectile', 'projectile')
   self.main:disable_collision_between('projectile', 'enemy_projectile')
   self.main:disable_collision_between('projectile', 'enemy')
@@ -115,36 +116,36 @@ function Arena:on_enter(from)
   WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x1, self.y2, self.x2, gh + 40), color = bg[-1]}
   
   --need to group units by character
-  HotbarGlobals:clear_hotbar()
+  -- HotbarGlobals:clear_hotbar()
 
-  Helper.Unit.team_button_width = 47
-  local total_width = (#self.units + 1) * Helper.Unit.team_button_width + #self.units * 5  -- Total width including spacing (+1 for space button)
-  local start_x = gw/2 - total_width/2  -- Center the entire hotbar
+  -- Helper.Unit.team_button_width = 47
+  -- local total_width = (#self.units + 1) * Helper.Unit.team_button_width + #self.units * 5  -- Total width including spacing (+1 for space button)
+  -- local start_x = gw/2 - total_width/2  -- Center the entire hotbar
   
-  -- Add space button at the beginning
-  local space_button = HotbarButton{group = self.ui, x = start_x + Helper.Unit.team_button_width/2, 
-                    y = gh - 15, force_update = true, button_text = 'SPACE', w = Helper.Unit.team_button_width, fg_color = 'white', bg_color = 'bg',
-                    color_marks = {}, character = 'space',
-                    action = function() 
-                      -- Space button action - this will be handled by input system
-                    end
-                  }
-  self.hotbar:add_button(0, space_button)  -- Use index 0 for space button
+  -- -- Add space button at the beginning
+  -- local space_button = HotbarButton{group = self.ui, x = start_x + Helper.Unit.team_button_width/2, 
+  --                   y = gh - 15, force_update = true, button_text = 'SPACE', w = Helper.Unit.team_button_width, fg_color = 'white', bg_color = 'bg',
+  --                   color_marks = {}, character = 'space',
+  --                   action = function() 
+  --                     -- Space button action - this will be handled by input system
+  --                   end
+  --                 }
+  -- -- self.hotbar:add_button(0, space_button)  -- Use index 0 for space button
   
-  for i = 1, #self.units do
-    local character = self.units[i].character
-    local type = character_types[character]
-    local number = i
-    local b = HotbarButton{group = self.ui, x = start_x + Helper.Unit.team_button_width/2 + (Helper.Unit.team_button_width + 5) * i, 
-                          y = gh - 15, force_update = true, button_text = tostring(i), w = Helper.Unit.team_button_width, fg_color = 'white', bg_color = 'bg',
-                          color_marks = {[1] = character_colors[character]}, character = character,
-                          action = function() 
-                            Helper.Unit.selected_team_index = number
-                            Helper.Unit:select_team(number)
-                          end
-                        }
-    self.hotbar:add_button(i, b)
-  end
+  -- for i = 1, #self.units do
+  --   local character = self.units[i].character
+  --   local type = character_types[character]
+  --   local number = i
+  --   local b = HotbarButton{group = self.ui, x = start_x + Helper.Unit.team_button_width/2 + (Helper.Unit.team_button_width + 5) * i, 
+  --                         y = gh - 15, force_update = true, button_text = tostring(i), w = Helper.Unit.team_button_width, fg_color = 'white', bg_color = 'bg',
+  --                         color_marks = {[1] = character_colors[character]}, character = character,
+  --                         action = function() 
+  --                           Helper.Unit.selected_team_index = number
+  --                           Helper.Unit:select_team(number)
+  --                         end
+  --                       }
+  --   -- self.hotbar:add_button(i, b)
+  -- end
 
   --UI elements
 
@@ -200,7 +201,7 @@ function Arena:on_exit()
   self.hfx = nil
 
   Kill_Teams()
-  self.hotbar:clear_hotbar()
+  -- self.hotbar:clear_hotbar()
   Helper:release()
   
   -- Set cursor back to simple mode when leaving arena

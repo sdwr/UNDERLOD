@@ -225,9 +225,10 @@ end
 --buy functions
 
 function BuyScreen:buy_unit(character)
-  table.insert(self.units, {character = character, level = 1, reserve = {0, 0}, items = {nil, nil, nil, nil, nil, nil}, numItems = 6})
+  table.insert(self.units, {character = character, level = 1, reserve = {0, 0}, items = {nil, nil, nil, nil, nil, nil}})
   self:set_party()
-  if #self.items == 0 and gold > 0 then
+  if #self.items == 0 then
+    self.first_shop = false
     self:try_roll_items(false)
   end
   self:save_run()
@@ -236,7 +237,7 @@ end
 --item functions
 
 function BuyScreen:unit_first_available_inventory_slot(unit)
-  for i = 1, 6 do
+  for i = 1, UNIT_LEVEL_TO_NUMBER_OF_ITEMS[unit.level] do
     if not unit.items[i] then
       return i
     end
@@ -318,13 +319,16 @@ function BuyScreen:set_party()
   local x = gw/2
 
   local number_of_cards = #self.units
-  if self.first_shop then
-    number_of_cards = number_of_cards + 1
+  local show_buy_card = false
+  if number_of_cards == 0 then
+    show_buy_card = true
+  elseif number_of_cards == 1 then
+    show_buy_card = true
+  elseif number_of_cards == 2 then
+    show_buy_card = true
   end
-  if self.level >= PICK_SECOND_CHARACTER and number_of_cards < 2 then
-    number_of_cards = number_of_cards + 1
-  end
-  if self.level >= PICK_THIRD_CHARACTER and number_of_cards < 3 then
+
+  if show_buy_card then
     number_of_cards = number_of_cards + 1
   end
 
@@ -343,13 +347,13 @@ function BuyScreen:set_party()
     self.first_shop = false
   end
 
-  if self.first_shop then
+  if #Character_Cards == 0 then
     table.insert(Character_Cards, CharacterCardBuy{group = self.main, x = x + (#Character_Cards)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, i = #Character_Cards+1, parent = self,
       is_unlocked = true, cost = 5})
-  elseif self.level >= PICK_SECOND_CHARACTER and #Character_Cards == 1 then
+  elseif #Character_Cards == 1 then
     table.insert(Character_Cards, CharacterCardBuy{group = self.main, x = x + (#Character_Cards)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, i = #Character_Cards+1, parent = self,
       is_unlocked = true, cost = 10})
-  elseif self.level >= PICK_THIRD_CHARACTER and #Character_Cards == 2 then
+  elseif #Character_Cards == 2 then
     table.insert(Character_Cards, CharacterCardBuy{group = self.main, x = x + (#Character_Cards)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, i = #Character_Cards+1, parent = self,
       is_unlocked = true, cost = 15})
   end
@@ -408,7 +412,7 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   local all_items = {nil, nil, nil}
   local shop_already_rolled = false
 
-  if self.first_shop or self.level == 1 then
+  if self.first_shop then
     return
   end
 
@@ -873,15 +877,6 @@ function LevelMapLevel:update(dt)
 end
 
 function LevelMapLevel:draw()
-  if self.level == PICK_SECOND_CHARACTER or self.level == PICK_THIRD_CHARACTER then
-    self.fill_color = yellow[0]
-    self.text_color = bg[0]
-    if self.level == self.parent.level then
-      
-    else
-
-    end
-  end
 
   graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
     graphics.circle(self.x, self.y, 9, self.fill_color)

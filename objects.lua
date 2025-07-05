@@ -665,7 +665,7 @@ function Unit:get_item_stats()
   -- Step A: Aggregate all stats into a temporary hash table for quick summation.
   -- This part of the logic remains the same.
   local aggregated_stats = {}
-  for i = 1, 6 do
+  for i = 1, UNIT_LEVEL_TO_NUMBER_OF_ITEMS[self.level] do
       local item = self.items[i]
       if item and item.stats then
           for stat, amt in pairs(item.stats) do
@@ -1396,20 +1396,31 @@ function Unit:has_potential_target_in_range()
   return false
 end
 
+
 --need melee units to not move inside the target
 --need ranged units to move close enough to attack
-function Unit:in_range()
+function Unit:in_range(target_type)
   return function()
-    local target = self:my_target()
-    local target_size_offset = 0
-    if self.attack_range and self.attack_range < MELEE_ATTACK_RANGE and target and not target.dead then
-      target_size_offset = target.shape.w/2
+    local target = nil
+    if target_type == 'assigned' then
+      target = self.assigned_target
+    elseif target_type == 'regular' then
+      target = self.target
     end
-    return target and 
-      not target.dead and 
-      table.any(unit_states_can_target, function(v) return self.state == v end) and 
-      self:distance_to_object(target) - target_size_offset < self.attack_sensor.rs
+      
+    return self:in_range_of(target)
   end
+end
+
+function Unit:in_range_of(target)
+  local target_size_offset = 0
+  if self.attack_range and self.attack_range < MELEE_ATTACK_RANGE and target and not target.dead then
+    target_size_offset = target.shape.w/2
+  end
+  return target and 
+    not target.dead and 
+    table.any(unit_states_can_target, function(v) return self.state == v end) and 
+    self:distance_to_object(target) - target_size_offset < self.attack_sensor.rs
 end
 
 function Unit:in_aggro_range()

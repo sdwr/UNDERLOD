@@ -47,10 +47,11 @@ NUMBER_OF_ROUNDS = 25
 BOSS_ROUND_POWER = 1000
 BOSS_ROUNDS = {6, 11, 16, 21, 25}
 
-MAX_UNITS = 3
+MAX_UNITS = 1
 
-PICK_SECOND_CHARACTER = 5
-PICK_THIRD_CHARACTER = 13
+--disable multiple characters
+PICK_SECOND_CHARACTER = 1
+PICK_THIRD_CHARACTER = 1
 
 RALLY_DURATION = 3
 
@@ -111,6 +112,31 @@ LEVEL_TO_TIER = function(level)
   end
 end
 
+UNIT_LEVEL_TO_NUMBER_OF_TROOPS = {
+  [1] = 3,
+  [2] = 4,
+  [3] = 5,
+  [4] = 6,
+  [5] = 7,
+}
+
+MAX_ITEMS = 6
+
+UNIT_LEVEL_TO_NUMBER_OF_ITEMS = {
+  [1] = 2,
+  [2] = 3,
+  [3] = 4,
+  [4] = 5,
+  [5] = 6,
+}
+
+UNIT_LEVEL_TO_LEVELUP_COST = {
+  [1] = 5,
+  [2] = 10,
+  [3] = 15,
+  [4] = 20,
+}
+
 
 -- unit constants
 MELEE_ATTACK_RANGE = 50
@@ -121,7 +147,7 @@ AGGRO_RANGE_BOOST = 100
 -- Steering and Movement constants
 SEEK_DECELERATION = 1.1
 SEEK_WEIGHT = 5.5
-SEPARATION_RADIUS = 6
+SEPARATION_RADIUS = 10
 WANDER_RADIUS = 8
 WANDER_DISTANCE = 50
 WANDER_JITTER = 5

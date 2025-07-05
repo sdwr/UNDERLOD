@@ -48,7 +48,7 @@ end
 
 function CharacterCardBuy:initText()
   local text_color_string = self.text_color_unavailable_string
-  if self.is_unlocked then
+  if self.is_unlocked and gold >= self.cost then
     text_color_string = self.text_color_string
   end
 
@@ -121,6 +121,11 @@ function CharacterCardBuy:update(dt)
 
   if input.m1.pressed and self.colliding_with_mouse then
     self.parent:try_buy_unit(self.cost)
+  end
+
+  if self.last_gold ~= gold then
+    self.last_gold = gold
+    self:refreshText()
   end
 end
 

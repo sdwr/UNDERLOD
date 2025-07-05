@@ -1216,9 +1216,7 @@ function init()
   }
 
   function level_to_shop_tier(lvl)
-    if lvl <= 1 then
-      return 0
-    elseif lvl <= 6 then
+    if lvl <= 6 then
       return 1
     elseif lvl <= 11 then
       return 2

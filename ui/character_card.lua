@@ -69,27 +69,37 @@ function CharacterCard:createItemParts()
     local item_x = self.x + CHARACTER_CARD_ITEM_X
     local item_y = self.y + CHARACTER_CARD_ITEM_Y
 
-    for i = 1, self.unit.numItems do
+    for i = 1, MAX_ITEMS do
+      if i <= UNIT_LEVEL_TO_NUMBER_OF_ITEMS[self.unit.level] then
         table.insert(self.items, ItemPart{group = main.current.main,
             x = item_x + (CHARACTER_CARD_ITEM_X_SPACING*((i-1) % 3)), 
             y = item_y + (i > 3 and 25 or 0),
             i = i, parent = self})
+      end
     end
 end
 
 -- This now only creates the static name text.
 function CharacterCard:initText()
-    local class_text = '[' .. self.character_color_string .. '[3]]' .. self.character
-    self.name_text = Text({{text = class_text, font = pixul_font, alignment = 'center'}}, global_text_tags)
-    
     -- Create the refreshable UI elements
     self:createUIElements()
     
     self.proc_text = nil
 end
 
+function CharacterCard:createNameText()
+  if self.name_text then
+    self.name_text.dead = true
+  end
+  local class_text = '[' .. self.character_color_string .. '[3]]' .. self.unit.character .. ' ' .. self.unit.level
+  self.name_text = Text({{text = class_text, font = pixul_font, alignment = 'center'}}, global_text_tags)
+end
+
 -- NEW FUNCTION: Handles creation of elements that need to be refreshed.
 function CharacterCard:createUIElements()
+  
+    self:createNameText()
+
     -- Ensure old elements are removed before creating new ones to prevent duplicates.
     if self.unit_stats_icon then self.unit_stats_icon.dead = true end
     if self.last_round_display then self.last_round_display.dead = true end
@@ -108,11 +118,37 @@ function CharacterCard:createUIElements()
     }
     self.unit_stats_icon.parent = self
     
-    self:create_last_round_display()
+    -- Create last round stats icon (small button to the left of the class name)
+    self.last_round_stats_icon = Button{
+        group = main.current.ui,
+        x = self.x - 35, -- Position to the left of the class name
+        y = self.y - self.h/2 + 10, -- Same y as class name
+        w = 12,
+        h = 12,
+        bg_color = 'bg',
+        fg_color = 'bg10',
+        button_text = 'S',
+        action = function() end -- No action on click, just hover
+    }
+    self.last_round_stats_icon.parent = self
+    
+    if not self.level_up_button then
+    -- Create level up button in the middle of the card
+      self.level_up_button = LevelUpButton{
+          group = main.current.ui,
+          x = self.x,
+          y = self.y - 10, -- Moved up more
+          parent = self
+      }
+      self.level_up_button.parent = self
+    end
+    
+    -- Create cost text
+    self:update_level_up_cost_display()
 end
 
 
-function CharacterCard:create_last_round_display()
+function CharacterCard:show_last_round_stats_popup()
   -- Get all units to compare stats
   local all_units = {}
   for _, card in ipairs(Character_Cards) do
@@ -140,32 +176,93 @@ function CharacterCard:create_last_round_display()
   
   -- Create text lines for last round stats
   local text_lines = {}
-  table.insert(text_lines, {text = '[bg10]Last Round', font = pixul_font, alignment = 'left'})
+  table.insert(text_lines, {text = '[bg10]Last Round', font = pixul_font, alignment = 'center'})
   
   if self.unit.last_round_dps and self.unit.last_round_damage then
     local damage_text = math.floor(self.unit.last_round_damage)
     local dps_text = string.format("%.1f", self.unit.last_round_dps)
     
     local damage_star = (self.unit.last_round_damage == best_damage and best_damage > 0) and ' *' or ''
-    table.insert(text_lines, {text = '[red]DMG: [red]' .. damage_text .. damage_star, font = pixul_font, alignment = 'left'})
+    table.insert(text_lines, {text = '[red]DMG: [red]' .. damage_text .. damage_star, font = pixul_font, alignment = 'center'})
     
     local dps_star = (self.unit.last_round_dps == best_dps and best_dps > 0) and ' *' or ''
-    table.insert(text_lines, {text = '[green]DPS: [green]' .. dps_text .. dps_star, font = pixul_font, alignment = 'left'})
+    table.insert(text_lines, {text = '[green]DPS: [green]' .. dps_text .. dps_star, font = pixul_font, alignment = 'center'})
     
     if self.unit.last_round_kills then
       local kills_star = (self.unit.last_round_kills == best_kills and best_kills > 0) and ' *' or ''
-      table.insert(text_lines, {text = '[blue]Kills: [blue]' .. self.unit.last_round_kills .. kills_star, font = pixul_font, alignment = 'left'})
+      table.insert(text_lines, {text = '[blue]Kills: [blue]' .. self.unit.last_round_kills .. kills_star, font = pixul_font, alignment = 'center'})
     end
   else
-    table.insert(text_lines, {text = '', font = pixul_font, alignment = 'left'})
-    table.insert(text_lines, {text = '', font = pixul_font, alignment = 'left'})
-    table.insert(text_lines, {text = '', font = pixul_font, alignment = 'left'})
+    table.insert(text_lines, {text = '[fg]No combat data', font = pixul_font, alignment = 'center'})
   end
   
-  -- Create the Text2 for last round stats
-  self.last_round_display = Text2{group = main.current.ui, lines = text_lines}
-  self.last_round_display.x = self.x
-  self.last_round_display.y = self.y - self.h/2 + 50
+  self.last_round_popup = InfoText{group = main.current.ui, force_update = false}
+  self.last_round_popup:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
+  self.last_round_popup.x = self.x
+  self.last_round_popup.y = self.y - self.h/2 + 60
+end
+
+function CharacterCard:hide_last_round_popup()
+  if self.last_round_popup then
+    self.last_round_popup:deactivate()
+    self.last_round_popup = nil
+  end
+end
+
+function CharacterCard:get_level_up_cost()
+  local current_level = self.unit.level or 1
+  return UNIT_LEVEL_TO_LEVELUP_COST[current_level] or 999 -- Default high cost if no data
+end
+
+function CharacterCard:can_afford_level_up()
+  local cost = self:get_level_up_cost()
+  return gold >= cost
+end
+
+function CharacterCard:update_level_up_cost_display()
+  -- Update button appearance based on affordability
+  if self.level_up_button then
+    self.level_up_button:update_appearance()
+  end
+end
+
+function CharacterCard:level_up_unit()
+  local cost = self:get_level_up_cost()
+  
+  if not self:can_afford_level_up() then
+    -- Play error sound or show message
+    error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    return
+  end
+  
+  -- Spend gold and level up
+  main.current:gain_gold(-cost)
+  self.unit.level = (self.unit.level or 1) + 1
+  
+  -- Play success sound
+  gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
+  
+  -- Redraw item parts to show the new item slot
+  self:redraw_item_parts()
+  
+  -- Update the card display
+  Refresh_All_Cards_Text()
+  
+  -- Save the run
+  buyScreen:save_run()
+end
+
+function CharacterCard:redraw_item_parts()
+  -- Remove old item parts
+  for i = 1, #self.items do
+    if self.items[i] then
+      self.items[i]:die()
+    end
+  end
+  self.items = {}
+  
+  -- Create new item parts based on current level
+  self:createItemParts()
 end
 
 -- FIX: This function now correctly calls the refactored UI creation function.
@@ -219,14 +316,14 @@ function CharacterCard:refreshText()
     self.unit_stats_icon.dead = true
   end
   
-  -- Remove old last round display if it exists
-  if self.last_round_display then
-    self.last_round_display.dead = true
-    self.last_round_display = nil
+  -- Remove old last round stats icon if it exists
+  if self.last_round_stats_icon then
+    self.last_round_stats_icon.dead = true
   end
   
+
+  
   self:createUIElements()
-  self:create_last_round_display()
 end
 
 function CharacterCard:draw()
@@ -250,6 +347,21 @@ function CharacterCard:update(dt)
     self.unit_stats_hovered = false
     self:hide_popup()
   end
+  
+  -- Check last round stats icon hover state
+  if self.last_round_stats_icon and self.last_round_stats_icon.selected and not self.last_round_stats_hovered then
+    self.last_round_stats_hovered = true
+    self:show_last_round_stats_popup()
+  elseif self.last_round_stats_icon and not self.last_round_stats_icon.selected and self.last_round_stats_hovered then
+    self.last_round_stats_hovered = false
+    self:hide_last_round_popup()
+  end
+  
+  -- Update level up cost display when gold changes
+  if self.last_gold_check ~= gold then
+    self.last_gold_check = gold
+    self:update_level_up_cost_display()
+  end
 end
 
 function CharacterCard:die()
@@ -266,14 +378,19 @@ function CharacterCard:die()
     self.unit_stats_icon.dead = true
   end
   
-  -- Clean up last round display
-  if self.last_round_display then
-    self.last_round_display.dead = true
-    self.last_round_display = nil
+  if self.last_round_stats_icon then
+    self.last_round_stats_icon.dead = true
   end
   
-  -- Clean up popup
+  if self.level_up_button then
+    self.level_up_button.dead = true
+  end
+  
+
+  
+  -- Clean up popups
   self:hide_popup()
+  self:hide_last_round_popup()
   
   self.dead = true
 end
@@ -515,9 +632,106 @@ function CharacterCard:update_button_positions()
     self.unit_stats_icon.y = self.y - self.h/2 + 10
   end
   
-  -- Update last round display position
-  if self.last_round_display then
-    self.last_round_display.x = self.x
-    self.last_round_display.y = self.y - self.h/2 + 20
+  -- Update last round stats icon position
+  if self.last_round_stats_icon then
+    self.last_round_stats_icon.x = self.x - 35
+    self.last_round_stats_icon.y = self.y - self.h/2 + 10
   end
+  
+  -- Update level up button position
+  if self.level_up_button then
+    self.level_up_button.x = self.x
+    self.level_up_button.y = self.y - 5
+  end
+  
+
+end
+
+-- Custom Level Up Button Class
+LevelUpButton = Object:extend()
+LevelUpButton:implement(GameObject)
+function LevelUpButton:init(args)
+  self:init_game_object(args)
+  self.parent = args.parent
+  self.w = 40
+  self.h = 20
+  self.shape = Rectangle(self.x, self.y, self.w, self.h)
+  self.interact_with_mouse = true
+  self.enabled = true
+  
+  -- Initialize appearance
+  self:update_appearance()
+end
+
+function LevelUpButton:update(dt)
+  self:update_game_object(dt)
+
+  if not self.interact_with_mouse then return end
+  if not self.enabled then return end
+  
+  -- Handle click
+  if self.selected and input.m1.pressed then
+    self.parent:level_up_unit()
+  end
+end
+
+function LevelUpButton:update_appearance()
+  local cost = self.parent:get_level_up_cost()
+  if cost == 999 then
+    self.enabled = false
+  end
+  local can_afford = self.parent:can_afford_level_up()
+  
+  -- Update button appearance based on affordability
+  if can_afford then
+    self.bg_color = bg[10]
+    self.fg_color = yellow[0] -- Yellow outline when affordable
+    self.interact_with_mouse = true -- Enable mouse interaction
+  else
+    self.bg_color = bg[10]
+    self.fg_color = fg[0]
+    self.interact_with_mouse = false -- Disable mouse interaction
+  end
+  
+  -- Update cost text
+  local color_string = can_afford and 'yellow[0]' or 'bg10'
+  self.cost_text = 'Level up: ' .. cost
+  self.text_color = color_string
+end
+
+function LevelUpButton:draw()
+  if not self.enabled then return end
+  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
+  
+  -- Draw button background
+  graphics.rectangle(self.x, self.y, self.w, self.h, 4, 4, self.bg_color)
+  
+  -- Draw button border
+  graphics.rectangle(self.x, self.y, self.w, self.h, 4, 4, self.fg_color, 2)
+  
+  -- Draw plus symbol
+  local plus_text = Text({{text = '[fg]+', font = pixul_font, alignment = 'center'}}, global_text_tags)
+  plus_text:draw(self.x, self.y)
+  
+  -- Draw level up text above the button
+  local level_text = Text({{text = '[' .. self.text_color .. ']' .. self.cost_text, font = pixul_font, alignment = 'center'}}, global_text_tags)
+  level_text:draw(self.x, self.y - 20)
+  
+  graphics.pop()
+end
+
+function LevelUpButton:on_mouse_enter()
+  if self.interact_with_mouse then
+    ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
+    self.selected = true
+    self.spring:pull(0.2, 200, 10)
+  end
+end
+
+function LevelUpButton:on_mouse_exit()
+  self.selected = false
+end
+
+function LevelUpButton:die()
+  self.dead = true
 end

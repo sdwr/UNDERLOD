@@ -43,16 +43,16 @@ function Swordsman_Troop:set_character()
   self:set_state_functions()
 end
 
-function Swordsman_Troop:setup_cast()
+function Swordsman_Troop:setup_cast(cast_target)
   local cast_data = {
     name = 'attack',
-    viable = function() return Helper.Spell:target_is_in_range(self, self.attack_sensor.rs, false) end,
+    viable = function() return Helper.Spell:target_is_in_range(self, self.attack_sensor.rs, cast_target, false) end,
     oncast = function() end,
     oncastfinish = function() 
       self:stretch_on_attack()
     end,
     unit = self,
-    target = self:my_target(),
+    target = cast_target,
     castcooldown = self.cooldownTime,
     cast_length = self.castTime,
     backswing = self.backswing,

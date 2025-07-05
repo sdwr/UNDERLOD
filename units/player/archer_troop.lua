@@ -13,16 +13,16 @@ function Archer_Troop:init(data)
 
 end
 
-function Archer_Troop:setup_cast()
+function Archer_Troop:setup_cast(cast_target)
   local data = {
     name = 'arrow',
-    viable = function() return Helper.Spell:target_is_in_range(self, self.attack_sensor.rs, false) end,
+    viable = function() return Helper.Spell:target_is_in_range(self, self.attack_sensor.rs, cast_target, false) end,
     oncast = function() end,
     oncastfinish = function() 
       self:stretch_on_attack()
     end,
     unit = self,
-    target = self:my_target(),
+    target = cast_target,
     castcooldown = self.cooldownTime,
     cast_length = self.castTime,
     backswing = 0.2,
@@ -76,9 +76,6 @@ function Archer_Troop:set_state_functions()
   end
 
   self.state_always_run_functions['casting'] = function(self)
-    if Helper.Unit:target_out_of_range(self) then
-      self:cancel_cast()
-    end
   end
 
 

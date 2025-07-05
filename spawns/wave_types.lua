@@ -258,8 +258,7 @@ function Wave_Types:Get_Waves(level)
     -- Wave 2
     local wave2 = {
         {'GROUP', 'burst', 2, 'nil'},
-        {'DELAY', 2},
-        {'GROUP', 'seeker', NORMAL_ENEMIES_PER_GROUP, 'random'},
+        {'GROUP', 'seeker', NORMAL_ENEMIES_PER_GROUP, 'far'},
     }
     table.insert(waves, wave1)
     table.insert(waves, wave2)

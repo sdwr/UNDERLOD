@@ -52,9 +52,9 @@ end
 
 function Troop:follow_mouse()
   -- If not, continue moving towards the mouse.
+  self:steering_separate(SEPARATION_RADIUS, troop_classes)
   if self:distance_to_mouse() > 10 then
     self:seek_mouse(SEEK_DECELERATION, SEEK_WEIGHT)
-    self:steering_separate(SEPARATION_RADIUS, troop_classes)
     self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
     self:rotate_towards_velocity(1)
   else
@@ -180,8 +180,7 @@ function Troop:update(dt)
   elseif self.state == unit_states['casting'] then
 
       if self.castObject then
-        if Helper.Unit:target_out_of_range(self) then
-          Helper.Unit:unclaim_target(self)
+        if Helper.Unit:target_out_of_range(self, self.castObject.target) then
           self:cancel_cast()
         end
       end
@@ -219,30 +218,27 @@ function Troop:update(dt)
           Helper.Unit:set_state(self, unit_states['rallying'])
           self:set_rally_position(random:int(1, 10))
       else
-        if self:my_target() then
-          local target = self:my_target()
-          if not self:in_range()() then
-            -- If target is out of range, move towards it. This is the "aggro" behavior.
-            self:seek_point(target.x, target.y, SEEK_DECELERATION, SEEK_WEIGHT)
+        --if in range of any target, don't move
+        if self:in_range('assigned')() then
+          self:steering_separate(SEPARATION_RADIUS, troop_classes)
+          self:rotate_towards_object(self.assigned_target, 1)
+        elseif self:in_range('regular')() then
+          self:steering_separate(SEPARATION_RADIUS, troop_classes)
+          self:rotate_towards_object(self.target, 1)
+        else
+          --move towards the closest enemy (don't bother targeting it)
+          local movement_target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies)
+          if movement_target then
+            self:seek_point(movement_target.x, movement_target.y, SEEK_DECELERATION, SEEK_WEIGHT)
             self:steering_separate(SEPARATION_RADIUS, troop_classes)
             self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
             self:rotate_towards_velocity(1)
-        
-          -- 3c. If we're in range but waiting for cooldown, stand still.
           else
-              --self:set_velocity(0, 0)
-              self:steering_separate(SEPARATION_RADIUS, troop_classes)
-              -- Also, rotate to face the target while waiting.
-              self:rotate_towards_object(target, 1)
+            self:steering_separate(SEPARATION_RADIUS, troop_classes)
           end
-        else
-          -- 4. NO TARGET
-          -- If after all checks we still have no target, do nothing. Stand still.
-          --self:set_velocity(0, 0)
-          self:steering_separate(SEPARATION_RADIUS, troop_classes)
         end
       end
-  end
+    end
 
   -- ===================================================================
   -- 3. FINAL PHYSICS AND POSITIONING (These also always run)
@@ -258,40 +254,48 @@ function Troop:update_ai_logic()
 
   -- 1. VALIDATE CURRENT TARGET
   -- First, check if our current target is dead or invalid. If so, clear it.
-  local target = self:my_target()
-  if target and target.dead then
-    self:clear_my_target()
-    target = nil -- Make sure our local variable is also nil
-  elseif target and not self:in_range()() then
-    self:clear_my_target()
-    target = nil
+  local assigned_target = self.assigned_target
+  local regular_target = self.target
+
+  if assigned_target and assigned_target.dead then
+    self:clear_assigned_target()
+  end
+
+  if regular_target and regular_target.dead then
+    self.clear_my_target()
+  end
+
+  local cast_target = nil
+  if self:in_range('assigned')() then
+    cast_target = assigned_target
+  elseif self:in_range('regular')() then
+    cast_target = regular_target
   end
   
 
   -- 2. ACQUIRE NEW TARGET
   -- If we don't have a target, try to find the closest one within our aggro range.
-  if not target then
+  if not cast_target then
       --find target if not already found
       -- pick random in attack range
       -- or closest in aggro range
       if self:has_potential_target_in_range() then
         self:set_target(self:get_random_object_in_shape(self.attack_sensor, main.current.enemies))
+        cast_target = self.target
       else
         self:set_target(self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies))
       end
-
-      target = self.target
   end
 
   -- 3. ACT BASED ON TARGET STATUS
   -- If we have a valid target (either pre-existing or newly acquired)...
-  if target then
+  if cast_target then
       -- 3a. CHECK IF WE CAN ATTACK.
       -- We must be in range AND our cast must be off cooldown.
-      if Helper.Unit:can_cast(self) then
+      if Helper.Unit:can_cast(self, cast_target) then
           -- If yes, commit to casting.
           -- NOTE: Your can_cast helper might do both checks, which is fine!
-          self:setup_cast()
+          self:setup_cast(cast_target)
       end
   end
 end
@@ -331,16 +335,16 @@ function Troop:draw()
   graphics.push(self.x, self.y, self.r, final_scale_x, final_scale_y)
   self:draw_buffs()
 
-  -- darken the non-selected units
-  local color = self.color:clone()
-  color = color:lighten(SELECTED_PLAYER_LIGHTEN)
+  -- -- darken the non-selected units
+  -- local color = self.color:clone()
+  -- color = color:lighten(SELECTED_PLAYER_LIGHTEN)
 
   --draw unit model (rectangle not circle??)
   graphics.rectangle(self.x, self.y, self.shape.w*.66, self.shape.h*.66, 3, 3, self.hfx.hit.f and fg[0] or self.color)
 
-  if not self.selected then
-    graphics.rectangle(self.x, self.y, 3, 3, 1, 1, color)
-  end
+  -- if not self.selected then
+  --   graphics.rectangle(self.x, self.y, 3, 3, 1, 1, self.color)
+  -- end
 
   if self.state == unit_states['casting'] then
     self:draw_cast_timer()

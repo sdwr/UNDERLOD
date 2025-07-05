@@ -2,7 +2,6 @@ Helper.Unit = {}
 
 Helper.Unit.cast_flash_duration = 0.08
 Helper.Unit.do_draw_points = false
-Helper.Unit.space_held = false
 
 function Helper.Unit:get_list(troop_list)
     if troop_list == nil then
@@ -114,8 +113,7 @@ function Helper.Unit:unclaim_target(unit)
 end
 
 --doesnt check target points, just center
-function Helper.Unit:target_out_of_range(unit)
-    local target = unit:my_target()
+function Helper.Unit:target_out_of_range(unit, target)
     return target and Helper.Geometry:distance(unit.x, unit.y, target.x, target.y) > unit.attack_sensor.rs
 end
 
@@ -123,11 +121,11 @@ function Helper.Unit:cast_off_cooldown(unit)
     return unit.castcooldown <= 0
 end
 
-function Helper.Unit:can_cast(unit, points)
+function Helper.Unit:can_cast(unit, target)
     -- We can only cast if we have a valid target in the first place.
-    if unit and unit:my_target() then
+    if unit and target then
         return table.any(unit_states_can_cast, function(v) return unit.state == v end)
-            and unit:in_range()()  -- The key change: Use the same logic as the movement check.
+            and unit:in_range_of(target)  -- The key change: Use the same logic as the movement check.
             and Helper.Unit:cast_off_cooldown(unit)
     end
     return false
@@ -252,25 +250,26 @@ Helper.Unit.selection = {
 Helper.Unit.do_draw_selection = false
 Helper.Unit.number_of_teams = 0
 Helper.Unit.teams = {}
-Helper.Unit.selected_team_index = 0
+-- Helper.Unit.selected_team_index = 0
+Helper.Unit.selected_team_index = 1
 Helper.Unit.flagged_enemy = -1
 Helper.Unit.number_of_troop_types = 0
 Helper.Unit.troop_type_button_width = 0
 Helper.Unit.team_button_width = 0
 
 function Helper.Unit:get_survivor_damage_boost(unit)
-    local team = Helper.Unit:get_team_by_index(unit.team)
-    if team then
-        return team:get_survivor_damage_boost()
-    end
+    -- local team = Helper.Unit:get_team_by_index(unit.team)
+    -- if team then
+    --     return team:get_survivor_damage_boost()
+    -- end
     return 1
 end
 
 function Helper.Unit:get_survivor_size_boost(unit)
-    local team = Helper.Unit:get_team_by_index(unit.team)
-    if team then
-        return team:get_survivor_size_boost()
-    end
+    -- local team = Helper.Unit:get_team_by_index(unit.team)
+    -- if team then
+    --     return team:get_survivor_size_boost()
+    -- end
     return 1
 end
 
@@ -361,60 +360,26 @@ function Helper.Unit:select()
             --target the flagged enemy with the selected troop
             if flag then
                 local flagged_enemy = Helper.Spell:get_nearest_target_from_point(Helper.mousex, Helper.mousey, false)
-                if Helper.Unit.space_held then
                     --make all units target the flagged enemy
-                    Helper.Unit:all_teams_target_flagged_enemy(flagged_enemy)
-                else
-                    --just the selected team target the flagged enemy
-                    local selected_team = Helper.Unit:get_team_by_index(self.selected_team_index)
-
-                    if selected_team then
-                        selected_team:clear_team_target()
-                        selected_team:clear_rally_point()
-                        selected_team:set_team_target(flagged_enemy)
-                    end
-                end
+                Helper.Unit:all_teams_target_flagged_enemy(flagged_enemy)
 
             else
                 local x, y = Helper.mousex, Helper.mousey
-                if Helper.Unit.space_held then
                     --make all units untarget the flagged enemy
-                    Helper.Unit:all_teams_set_rally_point(x, y)
-                else
-                    --untarget the flagged enemy for the selected troop, if there is one
-                    local selected_team = Helper.Unit:get_team_by_index(self.selected_team_index)
-
-                    if selected_team then
-                        selected_team:clear_team_target()
-                        selected_team:clear_rally_point()
-                        
-                        --draw a rally point for the selected troops
-                        --and rally the selected troops to the point
-                        selected_team:set_rally_point(x, y)
-                    end
-                end
-
+                Helper.Unit:all_teams_set_rally_point(x, y)
             end
         --bug with not moving if you start holding m1 while a unit is casting
         --it will not move until you release m1 and press it again
         --switched to down, but need a longer term solution? same thing will happen with m2 prob
         elseif input['m1'].down then
-            --clear rally point for the selected team
-            local selected_team = Helper.Unit:get_team_by_index(self.selected_team_index)
-            
-            if selected_team then
-                selected_team:clear_rally_point()
-                selected_team:set_troop_state_to_following()
+            --clear rally point for all teams
+            for i, team in ipairs(Helper.Unit.teams) do
+                team:clear_rally_point()
+                team:set_troop_state_to_following()
             end
-        elseif input['space'].pressed then
-            Helper.Unit.space_held = true
-            main.current.hotbar.hotbar_by_index[0]:action_animation()
-            main.current.hotbar:select_by_index(0)
-            --move "move all units" in here?
-            -- still split between troop update and here
-        elseif input['space'].released then
-            Helper.Unit.space_held = false
-            main.current.hotbar:select_by_old_index()
+        elseif input['space'].down then
+            --scatter all units
+
         end
     end
 
@@ -443,16 +408,16 @@ function Helper.Unit:select()
     --     self.do_draw_selection = false
     -- end
 
-    for i = 1, #main.current.units do
-        if input[tostring(i)].pressed and main.current.hotbar.hotbar_by_index[i] then
-            main.current.hotbar.hotbar_by_index[i]:action_animation()
-            main.current.hotbar:select_by_index(i)
-        end
+    -- for i = 1, #main.current.units do
+    --     if input[tostring(i)].pressed and main.current.hotbar.hotbar_by_index[i] then
+    --         main.current.hotbar.hotbar_by_index[i]:action_animation()
+    --         main.current.hotbar:select_by_index(i)
+    --     end
 
-        if input[tostring(i)].released and main.current.hotbar.hotbar_by_index[i] then
-            --unnecessary, leave here for now
-        end
-    end
+    --     if input[tostring(i)].released and main.current.hotbar.hotbar_by_index[i] then
+    --         --unnecessary, leave here for now
+    --     end
+    -- end
 end
 
 function Helper.Unit:draw_selection()
