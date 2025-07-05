@@ -36,6 +36,7 @@ function BuyScreen:on_exit()
   self.tutorial_button = nil
   self.restart_button = nil
   self.level_button = nil
+  self.perks_panel = nil
 end
 
 function BuyScreen:on_enter(from)
@@ -75,6 +76,17 @@ function BuyScreen:on_enter(from)
   self.overlay_ui = Group()
   self.tutorial = Group()
   self.options_ui = Group()
+  
+  -- Initialize perks if not already set
+  if not self.perks then
+    self.perks = {}
+  end
+
+  -- Create perks panel
+  self.perks_panel = PerksPanel{
+    group = self.ui,
+    perks = self.perks
+  }
 
   self:create_tutorial_popup()
   
@@ -288,6 +300,31 @@ function BuyScreen:quit_tutorial()
   self.in_tutorial = false
 end
 
+-- Perk management functions
+function BuyScreen:add_perk(perk)
+  if self.perks_panel:add_perk(perk) then
+    self:save_run()
+    return true
+  end
+  return false
+end
+
+function BuyScreen:remove_perk(index)
+  if self.perks_panel:remove_perk(index) then
+    self:save_run()
+    return true
+  end
+  return false
+end
+
+function BuyScreen:set_perks(perks)
+  self.perks = perks or {}
+  if self.perks_panel then
+    self.perks_panel:set_perks(self.perks)
+  end
+  self:save_run()
+end
+
 
 function BuyScreen:draw()
   self.main:draw()
@@ -315,7 +352,7 @@ function BuyScreen:set_party()
   Kill_All_Cards()
   Character_Cards = {}
 
-  local y = gh/2
+  local y = gh/2 - 10
   local x = gw/2
 
   local number_of_cards = #self.units
@@ -338,7 +375,7 @@ function BuyScreen:set_party()
   if number_of_cards == 2 then
     x = gw/2 - CHARACTER_CARD_WIDTH/2 - CHARACTER_CARD_SPACING
   elseif number_of_cards == 3 then
-    x = gw/2 - CHARACTER_CARD_WIDTH - CHARACTER_CARD_SPACING
+    x = gw/2 - CHARACTER_CARD_WIDTH - CHARACTER_CARD_SPACING - 30
   end
 
   for i, unit in ipairs(self.units) do
@@ -1114,16 +1151,12 @@ function LockButton:update(dt)
   if not self.interact_with_mouse then return end
 
   if self.selected and input.m1.pressed then
-    if self.parent.level == 1 then
-      Create_Info_Text('cannot buy items in the first level', self)
-    else
-      self.parent:set_locked_state(not locked_state)
-      glass_shatter:play{volume = 0.6}
-      self.selected = true
-      self.spring:pull(0.2, 200, 10)
-      if locked_state then self.shape.w = 44
-      else self.shape.w = 32 end
-    end
+    self.parent:set_locked_state(not locked_state)
+    glass_shatter:play{volume = 0.6}
+    self.selected = true
+    self.spring:pull(0.2, 200, 10)
+    if locked_state then self.shape.w = 44
+    else self.shape.w = 32 end
   end
 end
 
@@ -1194,7 +1227,7 @@ function RerollButton:update(dt)
 
   if (self.selected and input.m1.pressed) or input.r.pressed then
     if self.parent.level == 1 then
-      Create_Info_Text('cannot buy items in the first level', self)
+      Create_Info_Text('cannot roll items in the first level', self)
     elseif self.parent:is(BuyScreen) then
       local rerollCost = REROLL_COST(self.parent.times_rerolled)
       if gold < rerollCost then

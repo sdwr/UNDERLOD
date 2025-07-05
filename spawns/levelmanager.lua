@@ -27,13 +27,10 @@ function Build_Level_List(max_level)
       local waves = Wave_Types:Get_Waves(i)
       level_list[i].waves = waves
 
-      --find the first special enemy in the wave
-      -- to use as the level color on the buy screen
-      local first_special = Wave_Types:Find_First_Special(waves)
-      if first_special then
-        level_list[i].color = enemy_to_color[first_special]
+      if LEVEL_TO_PERKS[i] then
+        level_list[i].color = orange[5]
       end
-
+      
       local environmental_hazards = Decide_on_Environmental_Hazards(i)
       level_list[i].environmental_hazards = environmental_hazards
 

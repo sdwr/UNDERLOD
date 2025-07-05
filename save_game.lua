@@ -76,6 +76,7 @@ function Create_Blank_Save_Data()
   data.reroll_shop = true
   data.times_rerolled = 0
   data.difficulty =  'normal'
+  data.perks = {}
   return data
 end
 

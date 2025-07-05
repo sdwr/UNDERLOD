@@ -18,6 +18,7 @@ EXPECTED_SAVE_FIELDS = {
   'reroll_shop',
   'times_rerolled',
   'difficulty',
+  'perks',
 }
 
 USER_STATS = {}
@@ -111,6 +112,14 @@ LEVEL_TO_TIER = function(level)
     return 4
   end
 end
+
+LEVEL_TO_PERKS = {
+  [4] = true,
+  [8] = true,
+  [12] = true,
+  [16] = true,
+  [20] = true,
+}
 
 UNIT_LEVEL_TO_NUMBER_OF_TROOPS = {
   [1] = 3,
