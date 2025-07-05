@@ -712,6 +712,21 @@ function Proc_Shieldslam:onAttack(target, unit)
   end
 end
 
+Proc_Rebuke = Proc:extend()
+function Proc_Rebuke:init(args)
+  self.triggers = {PROC_ON_GOT_HIT}
+  self.scope = 'troop'
+
+  Proc_Rebuke.super.init(self, args)
+end
+
+function Proc_Rebuke:onGotHit(target, damage)
+  Proc_Rebuke.super.onGotHit(self, target, damage)
+  if not target then return end
+  if not unit then return end
+  --pass for now, add knockback area here
+end
+
 Proc_Overcharge = Proc:extend()
 function Proc_Overcharge:init(args)
   self.triggers = {PROC_ON_ATTACK}
@@ -768,64 +783,6 @@ function Proc_Overcharge:addHit()
 end
 
 function Proc_Overcharge:resetStacks()
-  self.buff.stacks = 1
-  self.targets = {}
-end
-
-Proc_Powercharge = Proc:extend()
-function Proc_Powercharge:init(args)
-  self.triggers = {PROC_ON_ATTACK}
-  self.scope = 'team'
-
-  Proc_Powercharge.super.init(self, args)
-
-  --define the proc's vars
-  self.buffname = 'powercharge'
-  self.buffDuration = self.data.buffDuration or 9999
-  self.dmgMulti = self.data.dmgMulti or 0.1
-  self.maxStacks = self.data.maxStacks or 10
-
-  self.buff = {name = self.buffname, color = red[5], duration = self.buffDuration,
-    stats = {dmg = self.dmgMulti}, stacks = 1
-  }
-
-  --memory
-  self.targets = {}
-  self.hitCount = 0
-
-end
-
-function Proc_Powercharge:onAttack(target, unit)
-  Proc_Powercharge.super.onAttack(self, target)
-
-  --only apply the buff when the first unit attacks
-  --but drop the buff when any unit attacks a different target
-  --keep track of each unit's target separately
-  local troopIndex = self.team:get_troop_index(unit)
-  if troopIndex == -1 then return end
-
-  if not self.targets[troopIndex] then
-    self.targets[troopIndex] = target
-  elseif self.targets[troopIndex] ~= target then
-      self.team:remove_buff(self.buffname)
-      self:resetStacks()
-  else
-    --the same target, add a stack
-    self:addHit()
-  end
-
-end
-
-function Proc_Powercharge:addHit()
-  self.hitCount = self.hitCount + 1
-  if self.hitCount >= self.team:get_alive_troop_count() then
-    self.buff.stacks = math.min(self.buff.stacks + 1, self.maxStacks)
-    self.team:add_buff(self.buff)
-    self.hitCount = 0
-  end
-end
-
-function Proc_Powercharge:resetStacks()
   self.buff.stacks = 1
   self.targets = {}
 end
@@ -2009,6 +1966,7 @@ proc_name_to_class = {
   ['bloodlust'] = Proc_Bloodlust,
 
   ['shieldslam'] = Proc_Shieldslam,
+  ['rebuke'] = Proc_Rebuke,
 
   --yellow procs
   ['radiance'] = Proc_Radiance,
@@ -2039,7 +1997,6 @@ proc_name_to_class = {
   
   --stack on attack
   ['overcharge'] = Proc_Overcharge,
-  ['powercharge'] = Proc_Powercharge,
   ['vulncharge'] = Proc_Vulncharge,
 
 

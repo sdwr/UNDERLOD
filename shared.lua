@@ -647,45 +647,94 @@ end
 InfoText = Object:extend()
 InfoText:implement(GameObject)
 function InfoText:init(args)
-  self:init_game_object(args)
-  self.sx, self.sy = 0, 0
-  self.ox, self.oy = 0, 0
-  self.ow, self.oh = 0, 0
-  self.tox, self.toy = 0, 0
-  self.text = Text({}, global_text_tags)
-  self.bg_color = args.bg_color or bg[-2]
-  return self
+    self:init_game_object(args)
+    self.sx, self.sy = 0, 0
+    self.ox, self.oy = 0, 0
+    self.ow, self.oh = 0, 0
+    self.tox, self.toy = 0, 0
+    self.text = Text({}, global_text_tags)
+    self.bg_color = args.bg_color or bg[-2]
+    
+    -- Initialize the new property for the cost text
+    self.cost_text_object = nil
+    
+    return self
 end
-
 
 function InfoText:update(dt)
-  self:update_game_object(dt)
+    self:update_game_object(dt)
+    -- If the cost text exists, update it as well
+    if self.cost_text_object then
+        self.cost_text_object:update(dt)
+    end
 end
-
 
 function InfoText:draw()
-  graphics.push(self.x + self.ox, self.y + self.oy, 0, self.sx*self.spring.x, self.sy*self.spring.x)
-  graphics.rectangle(self.x + self.ox, self.y + self.oy, self.text.w + self.ow, self.text.h + self.oh, self.text.h/12, self.text.h/12, self.bg_color or bg[-2])
-  self.text:draw(self.x + self.ox + self.tox, self.y + self.oy + self.toy)
-  graphics.pop()
+    -- Draw the main background rectangle
+    graphics.push(self.x + self.ox, self.y + self.oy, 0, self.sx*self.spring.x, self.sy*self.spring.x)
+    graphics.rectangle(self.x + self.ox, self.y + self.oy, self.text.w + self.ow, self.text.h + self.oh, self.text.h/12, self.text.h/12, self.bg_color or bg[-2])
+    
+    -- Draw the main body of text
+    self.text:draw(self.x + self.ox + self.tox, self.y + self.oy + self.toy)
+    
+    -- ===================================================================
+    -- NEW: Draw the cost text if it exists
+    -- ===================================================================
+    if self.cost_text_object then
+        -- Calculate the top-right corner of the background box
+        local bg_width = self.text.w + self.ow
+        local bg_height = self.text.h + self.oh
+        local bg_right_edge = self.x + self.ox + bg_width / 2
+        local bg_top_edge = self.y + self.oy - bg_height / 2
+        
+        -- Define padding to keep it from touching the edges
+        local padding = 4
+        
+        -- Calculate the position for the cost text, aligning its top-right to the background's top-right
+        local cost_x = bg_right_edge - self.cost_text_object.w - padding
+        local cost_y = bg_top_edge + padding
+        
+        -- Draw the cost text
+        self.cost_text_object:draw(cost_x, cost_y)
+    end
+    
+    graphics.pop()
 end
 
-function InfoText:activate(text, ox, oy, sx, sy, ow, oh, tox, toy)
-  self.ox, self.oy = ox or 0, oy or 0
-  self.sx, self.sy = sx or 1, sy or 1
-  self.ow, self.oh = ow or 0, oh or 0
-  self.tox, self.toy = tox or 0, toy or 0
-  self.text:set_text(text)
-  self.t:cancel'deactivate'
-  self.t:tween(0.1, self, {sx = sx or 1, sy = sy or 1}, math.cubic_in_out, function() self.sx, self.sy = sx or 1, sy or 1 end, 'activate')
-  self.spring:pull(0.075)
+-- MODIFIED: Added 'cost_text' as a new optional parameter at the end
+function InfoText:activate(text, ox, oy, sx, sy, ow, oh, tox, toy, cost_text)
+    self.ox, self.oy = ox or 0, oy or 0
+    self.sx, self.sy = sx or 1, sy or 1
+    self.ow, self.oh = ow or 0, oh or 0
+    self.tox, self.toy = tox or 0, toy or 0
+    self.text:set_text(text)
+    
+    -- ===================================================================
+    -- NEW: Create the cost text object if cost_text is provided
+    -- ===================================================================
+    if cost_text then
+        local cost_lines = {{text = '[yellow]' .. cost_text, font = pixul_font}}
+        self.cost_text_object = Text(cost_lines, global_text_tags)
+    end
+    
+    self.t:cancel'deactivate'
+    self.t:tween(0.1, self, {sx = sx or 1, sy = sy or 1}, math.cubic_in_out, function() self.sx, self.sy = sx or 1, sy or 1 end, 'activate')
+    self.spring:pull(0.075)
 end
-
 
 function InfoText:deactivate()
-  self.t:cancel'activate'
-  self.t:tween(0.05, self, {sy = 0}, math.linear, function() self.sy = 0; self.dead = true end, 'deactivate')
+    -- ===================================================================
+    -- NEW: Ensure the cost text object is also marked as dead
+    -- ===================================================================
+    if self.cost_text_object then
+        self.cost_text_object.dead = true
+        self.cost_text_object = nil
+    end
+    
+    self.t:cancel'activate'
+    self.t:tween(0.05, self, {sy = 0}, math.linear, function() self.sy = 0; self.dead = true end, 'deactivate')
 end
+
 
 TutorialPopup = Object:extend()
 TutorialPopup:implement(GameObject)

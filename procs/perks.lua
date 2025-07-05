@@ -309,15 +309,18 @@ PERK_DEFINITIONS = {
     stats3 = {inspiration = 0.2},
   },
 
-  --fire perks
-  volcano = {
-    name = "Volcano",
-    description = "Fire explosions linger as an AoE",
-    icon = "volcano",
-    rarity = "common",
-    proc_name = "volcano",
-    prereqs = {"fire"}
+  --generic elemental perks
+  elemental_mastery = {
+    name = "Elemental Mastery",
+    description = "Elemental damage increased by 10%/15%/20%",
+    icon = "elemental_mastery",
+    rarity = "rare",
+    stats1 = {elemental_damage_m = 0.1},
+    stats2 = {elemental_damage_m = 0.15},
+    stats3 = {elemental_damage_m = 0.2},
   },
+
+  --fire perks
   fire_mastery = {
     name = "Fire Mastery",
     description = "Fire damage increased by 25%/40%/60%",
@@ -328,8 +331,26 @@ PERK_DEFINITIONS = {
     stats3 = {fire_damage_m = 0.6},
     prereqs = {"fire"}
   },
+  volcano = {
+    name = "Volcano",
+    description = "Fire explosions linger as an AoE",
+    icon = "volcano",
+    rarity = "common",
+    proc_name = "volcano",
+    prereqs = {"fire"}
+  },
 
   --cold perks
+  cold_mastery = {
+    name = "Cold Mastery",
+    description = "Cold damage increased by 25%/40%/60%",
+    icon = "cold_mastery",
+    rarity = "rare",
+    stats1 = {cold_damage_m = 0.25},
+    stats2 = {cold_damage_m = 0.4},
+    stats3 = {cold_damage_m = 0.6},
+    prereqs = {"cold"}
+  },
   shatterlance = {
     name = "Shatterlance",
     description = "All attacks on frozen enemies are critical strikes",
@@ -340,20 +361,18 @@ PERK_DEFINITIONS = {
   },
   rimeheart = {
     name = "Rimeheart",
-    description = "When a frozen enemy dies, create a cold explosion",
+    desc = "Killing a [blue]frozen[fg] enemy creates a [blue]ice prison[fg]",
     icon = "rimeheart",
     rarity = "rare",
     proc_name = "rimeheart",
     prereqs = {"cold"}
   },
-  cold_mastery = {
-    name = "Cold Mastery",
-    description = "Cold damage increased by 25%/40%/60%",
-    icon = "cold_mastery",
+  waterelemental = {
+    name = "Water Elemental",
+    description = "When a chilled enemy dies, have a chance to spawn a water elemental",
+    icon = "water_elemental",
     rarity = "rare",
-    stats1 = {cold_damage_m = 0.25},
-    stats2 = {cold_damage_m = 0.4},
-    stats3 = {cold_damage_m = 0.6},
+    proc_name = "waterelemental",
     prereqs = {"cold"}
   },
 
@@ -367,5 +386,49 @@ PERK_DEFINITIONS = {
     stats2 = {lightning_damage_m = 0.4},
     stats3 = {lightning_damage_m = 0.6},
     prereqs = {"lightning"}
+  },
+  lightning_ball = {
+    name = "Lightning Ball",
+    description = "Reapplying shock on enemies has a chance to create a lightning ball",
+    icon = "lightning_ball",
+    rarity = "rare",
+    proc_name = "lightning_ball",
+    prereqs = {"lightning"}
+  },
+  sympathetic_voltage = {
+    name = "Sympathetic Voltage",
+    description = "Shocked enemies share a % of damage taken with nearby shocked enemies",
+    icon = "sympathetic_voltage",
+    rarity = "rare",
+    proc_name = "sympathetic_voltage",
+    prereqs = {"lightning"}
+  },
+
+  --curse perks
+  curse_mastery = {
+    name = "Curse Mastery",
+    description = "Curse effect increased by 25%/40%/60%",
+    icon = "curse_mastery",
+    rarity = "rare",
+    stats1 = {curse_damage_m = 0.25},
+    stats2 = {curse_damage_m = 0.4},
+    stats3 = {curse_damage_m = 0.6},
+    prereqs = {"curse"}
+  },
+  curse_of_doom = {
+    name = "Curse of Doom",
+    description = "When curse expires or is reapplied, deal damage based on the damage taken during the curse",
+    icon = "curse_of_doom",
+    rarity = "rare",
+    proc_name = "curse_of_doom",
+    prereqs = {"curse"}
+  },
+  curse_of_the_dead = {
+    name = "Curse of Agony",
+    description = "Enemies that die while cursed spread curse to nearby enemies",
+    icon = "curse_of_agony",
+    rarity = "rare",
+    proc_name = "curse_of_agony",
+    prereqs = {"curse"}
   },
 }
