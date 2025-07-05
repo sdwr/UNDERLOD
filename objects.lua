@@ -813,9 +813,7 @@ function Unit:calculate_stats(first_run)
           elseif stat == buff_types['cdr'] then
             self.buff_cdr_m = self.buff_cdr_m + amtWithStacks
           elseif stat == buff_types['percent_def'] then
-              self.buff_def_m = self.buff_def_m + stat
-
-
+              self.buff_def_m = self.buff_def_m + amtWithStacks
           elseif stat == buff_types['eledmg'] then
             self.eledmg_m = self.eledmg_m + amtWithStacks
           elseif stat == buff_types['elevamp'] then
