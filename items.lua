@@ -425,6 +425,24 @@ item_to_item_data = {
     stats = {repeat_attack_chance = 0.25},
     procs = {}
   },
+  ['crit_chance'] = {
+    name = 'crit_chance',
+    colors = {},
+    cost = 10,
+    icon = 'crit_chance',
+    desc = 'Gain a chance to deal critical damage',
+    stats = {crit_chance = 0.1, dmg = 0.25},
+    procs = {}
+  },
+  ['crit_damage'] = {
+    name = 'crit_damage',
+    colors = {},
+    cost = 10,
+    icon = 'crit_damage',
+    desc = 'Deal more damage with critical strikes',
+    stats = {crit_damage = 0.5, aspd = 0.1},
+    procs = {}
+  },
   ['chainer'] = {
     name = 'chainer',
     colors = {},
@@ -571,49 +589,6 @@ item_to_item_data = {
     desc = 'All your units gain a damage buff',
     stats = {hp = 0.25},
     procs = {'strengthtalisman'}
-  },
-
-  ['agilitytalisman'] = {
-    name = 'agilitytalisman',
-    colors = {'yellow'},
-    cost = 15,
-    icon = 'talisman',
-    desc = 'All your units gain an attack speed and movespeed buff',
-    stats = {hp = 0.25},
-    procs = {'agilitytalisman'}
-  },
-  ['wisdomtalisman'] = {
-    name = 'wisdomtalisman',
-    colors = {'blue'},
-    cost = 15,
-    icon = 'talisman',
-    desc = 'All your units gain a range and item cooldown buff',
-    stats = {hp = 0.25},
-    procs = {'wisdomtalisman'}
-  },
-  ['vitalitytalisman'] = {
-    name = 'vitalitytalisman',
-    colors = {'green'},
-    cost = 15,
-    icon = 'talisman',
-    desc = 'All your units gain a health and defense buff',
-    stats = {hp = 0.25},
-    procs = {'vitalitytalisman'}
-  },
-
-
-  
-  --elemental on death effects
-
-  ['shockwave'] = {
-    name = 'shockwave',
-    colors = {'yellow'},
-    cost = 15,
-    icon = 'lightning',
-    desc = 'Killing a [yellow]shocked[fg] enemies has to spread [yellow]shock[fg]',
-    stats = {lightning_damage = 0.5},
-    procs = {'shockwave'},
-    prereqs = {}
   },
 
   --not yet implemented

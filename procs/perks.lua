@@ -312,12 +312,12 @@ PERK_DEFINITIONS = {
   --generic elemental perks
   elemental_mastery = {
     name = "Elemental Mastery",
-    description = "Elemental damage increased by 10%/15%/20%",
+    description = "All elemental damage increased by 10%/20%/30%",
     icon = "elemental_mastery",
     rarity = "rare",
     stats1 = {elemental_damage_m = 0.1},
-    stats2 = {elemental_damage_m = 0.15},
-    stats3 = {elemental_damage_m = 0.2},
+    stats2 = {elemental_damage_m = 0.2},
+    stats3 = {elemental_damage_m = 0.3},
   },
 
   --fire perks
