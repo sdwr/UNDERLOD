@@ -113,8 +113,7 @@ function Helper.Unit:unclaim_target(unit)
 end
 
 --doesnt check target points, just center
-function Helper.Unit:target_out_of_range(unit)
-    local target = unit:my_target()
+function Helper.Unit:target_out_of_range(unit, target)
     return target and Helper.Geometry:distance(unit.x, unit.y, target.x, target.y) > unit.attack_sensor.rs
 end
 
@@ -122,11 +121,11 @@ function Helper.Unit:cast_off_cooldown(unit)
     return unit.castcooldown <= 0
 end
 
-function Helper.Unit:can_cast(unit, points)
+function Helper.Unit:can_cast(unit, target)
     -- We can only cast if we have a valid target in the first place.
-    if unit and unit:my_target() then
+    if unit and target then
         return table.any(unit_states_can_cast, function(v) return unit.state == v end)
-            and unit:in_range()()  -- The key change: Use the same logic as the movement check.
+            and unit:in_range_of(target)  -- The key change: Use the same logic as the movement check.
             and Helper.Unit:cast_off_cooldown(unit)
     end
     return false

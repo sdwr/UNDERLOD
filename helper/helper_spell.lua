@@ -232,8 +232,7 @@ function Helper.Spell:is_in_range(unit, target, range, points)
     return false
 end
 
-function Helper.Spell:target_is_in_range(unit, range, points)
-    local target = unit:my_target()
+function Helper.Spell:target_is_in_range(unit, range, target,points)
     return Helper.Spell:is_in_range(unit, target, range, points)
 end
 

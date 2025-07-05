@@ -42,7 +42,7 @@ function Laser_Spell:init(args)
   --after its initial facing is set
   self.lasermode = self.lasermode or 'target'
   if self.lasermode == 'target' then
-    self.target = self.target or self.unit:my_target()
+    self.target = self.target
   end
   self.direction_lock = self.direction_lock
   self.rotation_lock = self.rotation_lock
