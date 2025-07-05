@@ -91,7 +91,7 @@ function CharacterCard:createNameText()
   if self.name_text then
     self.name_text.dead = true
   end
-  local class_text = '[' .. self.character_color_string .. '[3]]' .. 'Level ' .. self.unit.level
+  local class_text = '[' .. self.character_color_string .. '[3]]' .. self.unit.character .. ' ' .. self.unit.level
   self.name_text = Text({{text = class_text, font = pixul_font, alignment = 'center'}}, global_text_tags)
 end
 
@@ -99,7 +99,7 @@ end
 function CharacterCard:createUIElements()
   
     self:createNameText()
-    
+
     -- Ensure old elements are removed before creating new ones to prevent duplicates.
     if self.unit_stats_icon then self.unit_stats_icon.dead = true end
     if self.last_round_display then self.last_round_display.dead = true end
@@ -657,6 +657,7 @@ function LevelUpButton:init(args)
   self.h = 20
   self.shape = Rectangle(self.x, self.y, self.w, self.h)
   self.interact_with_mouse = true
+  self.enabled = true
   
   -- Initialize appearance
   self:update_appearance()
@@ -666,6 +667,7 @@ function LevelUpButton:update(dt)
   self:update_game_object(dt)
 
   if not self.interact_with_mouse then return end
+  if not self.enabled then return end
   
   -- Handle click
   if self.selected and input.m1.pressed then
@@ -675,6 +677,9 @@ end
 
 function LevelUpButton:update_appearance()
   local cost = self.parent:get_level_up_cost()
+  if cost == 999 then
+    self.enabled = false
+  end
   local can_afford = self.parent:can_afford_level_up()
   
   -- Update button appearance based on affordability
@@ -695,6 +700,7 @@ function LevelUpButton:update_appearance()
 end
 
 function LevelUpButton:draw()
+  if not self.enabled then return end
   graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
   
   -- Draw button background

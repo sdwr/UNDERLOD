@@ -193,7 +193,8 @@ function Spawn_Teams(arena)
           {x = 12, y = -10},    -- Top-right  
           {x = -10, y = 12},    -- Bottom-left
           {x = 10, y = 12},      -- Bottom-right
-          {x = 0, y = 24}        -- Bottom-center
+          {x = 0, y = 24},       -- Bottom-center
+          {x = 0, y = -20}       -- Top-center
       }
 
       local number_of_troops = UNIT_LEVEL_TO_NUMBER_OF_TROOPS[unit.level]
