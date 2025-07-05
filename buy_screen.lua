@@ -225,7 +225,7 @@ end
 --buy functions
 
 function BuyScreen:buy_unit(character)
-  table.insert(self.units, {character = character, level = 1, reserve = {0, 0}, items = {nil, nil, nil, nil, nil, nil}, numItems = 6})
+  table.insert(self.units, {character = character, level = 1, reserve = {0, 0}, items = {nil, nil, nil, nil, nil, nil}})
   self:set_party()
   if #self.items == 0 and gold > 0 then
     self:try_roll_items(false)
@@ -236,7 +236,7 @@ end
 --item functions
 
 function BuyScreen:unit_first_available_inventory_slot(unit)
-  for i = 1, 6 do
+  for i = 1, UNIT_LEVEL_TO_NUMBER_OF_ITEMS[unit.level] do
     if not unit.items[i] then
       return i
     end

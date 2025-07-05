@@ -665,7 +665,7 @@ function Unit:get_item_stats()
   -- Step A: Aggregate all stats into a temporary hash table for quick summation.
   -- This part of the logic remains the same.
   local aggregated_stats = {}
-  for i = 1, 6 do
+  for i = 1, UNIT_LEVEL_TO_NUMBER_OF_ITEMS[self.level] do
       local item = self.items[i]
       if item and item.stats then
           for stat, amt in pairs(item.stats) do

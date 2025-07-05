@@ -47,10 +47,11 @@ NUMBER_OF_ROUNDS = 25
 BOSS_ROUND_POWER = 1000
 BOSS_ROUNDS = {6, 11, 16, 21, 25}
 
-MAX_UNITS = 3
+MAX_UNITS = 1
 
-PICK_SECOND_CHARACTER = 5
-PICK_THIRD_CHARACTER = 13
+--disable multiple characters
+PICK_SECOND_CHARACTER = 1000
+PICK_THIRD_CHARACTER = 2000
 
 RALLY_DURATION = 3
 
@@ -110,6 +111,31 @@ LEVEL_TO_TIER = function(level)
     return 4
   end
 end
+
+UNIT_LEVEL_TO_NUMBER_OF_TROOPS = {
+  [1] = 3,
+  [2] = 4,
+  [3] = 5,
+  [4] = 6,
+  [5] = 7,
+}
+
+MAX_ITEMS = 6
+
+UNIT_LEVEL_TO_NUMBER_OF_ITEMS = {
+  [1] = 2,
+  [2] = 3,
+  [3] = 4,
+  [4] = 5,
+  [5] = 6,
+}
+
+UNIT_LEVEL_TO_LEVELUP_COST = {
+  [1] = 5,
+  [2] = 10,
+  [3] = 15,
+  [4] = 20,
+}
 
 
 -- unit constants

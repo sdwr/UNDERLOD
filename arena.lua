@@ -5,11 +5,11 @@ function Arena:init(name)
   self:init_state(name)
   self:init_game_object()
   LevelManager.init()
-  self.hotbar = HotbarGlobals()
+  --self.hotbar = HotbarGlobals()
 end
 
 function Arena:select_character_by_index(i)
-  self.hotbar:select_by_index(i)
+  --self.hotbar:select_by_index(i)
 end
 
 
@@ -129,7 +129,7 @@ function Arena:on_enter(from)
                       -- Space button action - this will be handled by input system
                     end
                   }
-  self.hotbar:add_button(0, space_button)  -- Use index 0 for space button
+  -- self.hotbar:add_button(0, space_button)  -- Use index 0 for space button
   
   for i = 1, #self.units do
     local character = self.units[i].character
@@ -143,7 +143,7 @@ function Arena:on_enter(from)
                             Helper.Unit:select_team(number)
                           end
                         }
-    self.hotbar:add_button(i, b)
+    -- self.hotbar:add_button(i, b)
   end
 
   --UI elements
@@ -200,7 +200,7 @@ function Arena:on_exit()
   self.hfx = nil
 
   Kill_Teams()
-  self.hotbar:clear_hotbar()
+  -- self.hotbar:clear_hotbar()
   Helper:release()
   
   -- Set cursor back to simple mode when leaving arena

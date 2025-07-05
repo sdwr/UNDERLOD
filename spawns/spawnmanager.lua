@@ -192,10 +192,14 @@ function Spawn_Teams(arena)
           {x = -12, y = -10},   -- Top-left
           {x = 12, y = -10},    -- Top-right  
           {x = -10, y = 12},    -- Bottom-left
-          {x = 10, y = 12}      -- Bottom-right
+          {x = 10, y = 12},      -- Bottom-right
+          {x = 0, y = 24}        -- Bottom-center
       }
 
-      for _, offset in ipairs(offsets) do
+      local number_of_troops = UNIT_LEVEL_TO_NUMBER_OF_TROOPS[unit.level]
+
+      for i = 1, number_of_troops do
+        local offset = offsets[i]
           local x = spawn_x + offset.x
           local y = spawn_y + offset.y
           

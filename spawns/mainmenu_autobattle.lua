@@ -150,7 +150,6 @@ function MainMenuAutoBattle:spawn_team(index)
             level = team_data.level,
             reserve = {0, 0},
             items = items,
-            numItems = 6,
             team = team -- Store reference to team for cleanup
         }
         table.insert(self.units, unit_data)
