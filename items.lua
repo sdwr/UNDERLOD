@@ -394,7 +394,7 @@ item_to_item_data = {
     colors = {},
     cost = 10,
     icon = 'bomb',
-    desc = 'Enemies you kill explode, triggering [black]on hit[fg] effects',
+    desc = 'Enemies you kill explode, knocking nearby enemies back',
     stats = {dmg = 0.5},
     procs = {'overkill'}
   },

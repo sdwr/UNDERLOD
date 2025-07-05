@@ -121,9 +121,10 @@ function Area:try_damage()
   
   elseif self.knockback_force then
     for _, target in ipairs(targets) do
+      local angle = target:angle_from_object(self.unit or self)
       if self:can_hit_with_knockback(target) then
         target:hit(self.damage, self.unit, self.damage_type, true, true)
-        target:push(self.knockback_force, self.unit:angle_to_object(target), nil, self.knockback_duration)
+        target:push(self.knockback_force, angle, nil, self.knockback_duration)
         self:apply_hit_effect(target)
       end
     end

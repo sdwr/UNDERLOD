@@ -642,6 +642,8 @@ function Proc_Overkill:init(args)
   self.color = self.data.color or black[0]
   self.color_transparent = Color(self.color.r, self.color.g, self.color.b, 0.15)
   self.duration = self.data.duration or 0.15
+  self.knockback_force = self.data.knockback_force or LAUNCH_PUSH_FORCE_ENEMY
+  self.knockback_duration = self.data.knockback_duration or KNOCKBACK_DURATION_ENEMY
 end
 function Proc_Overkill:onKill(target, overkill)
   Proc_Overkill.super.onKill(self, target, overkill)
@@ -657,6 +659,8 @@ function Proc_Overkill:onKill(target, overkill)
     r = radius, duration = self.duration, color = self.color_transparent,
     fill_whole_area = true,
     is_troop = self.is_troop,
+    knockback_force = self.knockback_force,
+    knockback_duration = self.knockback_duration
   }
 end
 
