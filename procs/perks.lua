@@ -21,15 +21,41 @@ function Create_Perk(perk_key, level)
   return perk
 end
 
-function Get_Perk_Stats(perk, level)
-  if level == 1 then
-    return perk.stats1
-  elseif level == 2 then
-    return perk.stats2
-  elseif level == 3 then
-    return perk.stats3
+function Get_Perk_Stats(perk)
+  if perk.level == 1 then
+    return perk.stats1 or {}
+  elseif perk.level == 2 then
+    return perk.stats2 or {}
+  elseif perk.level == 3 then
+    return perk.stats3 or {}
   end
-  return nil
+  return {}
+end
+
+function Can_Perk_Level_Up(perk)
+  if not perk.stats1 then
+    return false
+  end
+  if perk.level == 1 then
+    if perk.stats2 then
+      return true
+    end
+  elseif perk.level == 2 then
+    if perk.stats3 then
+      return true
+    end
+  end
+  return false
+end
+
+function Perk_Level_Up_Cost(perk)
+  if perk.level == 1 then
+    return 10
+  elseif perk.level == 2 then
+    return 15
+  else 
+    return 999
+  end
 end
 
 -- Helper function to get a random perk for selection
@@ -75,45 +101,274 @@ end
 
 
 PERK_DEFINITIONS = {
-  volcano = {
-    name = "Volcano",
-    description = "Fire explosions deal area damage",
-    icon = "volcano",
-    rarity = "common",
-    stats1 = {chance_to_proc = 0.2, damage = 10, radius = 30, duration = 1.5},
-    stats2 = {chance_to_proc = 0.3, damage = 15, radius = 40, duration = 2},
-    stats3 = {chance_to_proc = 0.4, damage = 22, radius = 50, duration = 2.5},
-    proc_name = "volcano"
-  },
-  
-  flat_mvspd = {
-    name = "Swift Movement",
-    description = "+1/+2/+3 movement speed to all troops",
+  --generic unit perks
+  movespeed = {
+    name = "Movespeed",
+    description = "+10%/15%/20% movement speed",
     icon = "swift_movement",
     rarity = "common",
-    stats1 = {mvspd = 1},
-    stats2 = {mvspd = 2},
-    stats3 = {mvspd = 3}
+    stats1 = {mvspd = 0.1},
+    stats2 = {mvspd = 0.15},
+    stats3 = {mvspd = 0.2},
   },
-  
+  health = {
+    name = "Health",
+    description = "+25%/35%/45% health",
+    icon = "health",
+    rarity = "common",
+    stats1 = {health = 0.25},
+    stats2 = {health = 0.35},
+    stats3 = {health = 0.45},
+  },
+  range = {
+    name = "Range",
+    description = "+10%/15%/20% range",
+    icon = "range",
+    rarity = "common",
+    stats1 = {range = 0.1},
+    stats2 = {range = 0.15},
+    stats3 = {range = 0.2},
+  },
+  attack_speed = {
+    name = "Attack Speed",
+    description = "+10%/15%/20% attack speed",
+    icon = "attack_speed",
+    rarity = "common",
+    stats1 = {attack_speed = 0.1},
+    stats2 = {attack_speed = 0.15},
+    stats3 = {attack_speed = 0.2},
+  },
+  double_attack_chance = {
+    name = "Double Attack Chance",
+    description = "+8%/12%/16% chance to attack twice",
+    icon = "double_attack_chance",
+    rarity = "common",
+    stats1 = {double_attack_chance = 0.08},
+    stats2 = {double_attack_chance = 0.12},
+    stats3 = {double_attack_chance = 0.16},
+  },
+  crit_chance = {
+    name = "Crit Chance",
+    description = "+10%/15%/20% crit chance",
+    icon = "crit_chance",
+    rarity = "common",
+    stats1 = {crit_chance = 0.1},
+    stats2 = {crit_chance = 0.15},
+    stats3 = {crit_chance = 0.2},
+  },
+  crit_damage = {
+    name = "Crit Damage",
+    description = "+25%/35%/50% crit damage",
+    icon = "crit_damage",
+    rarity = "common",
+    stats1 = {crit_damage = 0.25},
+    stats2 = {crit_damage = 0.35},
+    stats3 = {crit_damage = 0.5},
+  },
+  stun_chance = {
+    name = "Stun Chance",
+    description = "+8%/12%/16% stun chance on attack",
+    icon = "stun_chance",
+    rarity = "common",
+    stats1 = {stun_chance = 0.08},
+    stats2 = {stun_chance = 0.12},
+    stats3 = {stun_chance = 0.16},
+  },
+  knockback_resistance = {
+    name = "Knockback Resistance",
+    description = "+30%/45%/60% knockback resistance",
+    icon = "knockback_resistance",
+    rarity = "common",
+    stats1 = {knockback_resistance = 0.3},
+    stats2 = {knockback_resistance = 0.45},
+    stats3 = {knockback_resistance = 0.6},
+  },
+  area_size = {
+    name = "Area Size",
+    description = "+20%/30%/40% area size",
+    icon = "area_size",
+    rarity = "common",
+    stats1 = {area_size = 0.2},
+    stats2 = {area_size = 0.3},
+    stats3 = {area_size = 0.4},
+  },
+  area_damage = {
+    name = "Area Damage",
+    description = "+20%/30%/40% area damage",
+    icon = "area_damage",
+    rarity = "common",
+    stats1 = {area_damage = 0.2},
+    stats2 = {area_damage = 0.3},
+    stats3 = {area_damage = 0.4},
+  },
+  cooldown_reduction = {
+    name = "Cooldown Reduction",
+    description = "Your active abilities recharge 20%/30%/40% faster",
+    icon = "cooldown_reduction",
+    rarity = "common",
+    stats1 = {cooldown_reduction = 0.2},
+    stats2 = {cooldown_reduction = 0.3},
+    stats3 = {cooldown_reduction = 0.4},
+  },
+
+  --generic enemy perks
+  enemy_movespeed = {
+    name = "Enemy Movespeed",
+    description = "-10%/15%/20% enemy movespeed",
+    icon = "enemy_movespeed",
+    rarity = "common",
+    stats1 = {enemy_mvspd = -0.1},
+    stats2 = {enemy_mvspd = -0.15},
+    stats3 = {enemy_mvspd = -0.2},
+  },
+  enemy_health = {
+    name = "Enemy Health",
+    description = "-10%/15%/20% enemy health",
+    icon = "enemy_health",
+    rarity = "common",
+    stats1 = {enemy_health = -0.1},
+    stats2 = {enemy_health = -0.15},
+    stats3 = {enemy_health = -0.2},
+  },
+  enemy_health_flat = {
+    name = "Enemy Health",
+    description = "-20% enemy health",
+    icon = "enemy_health",
+    rarity = "common",
+    stats1 = {enemy_health = -0.2},
+  },
+  enemy_damage = {
+    name = "Enemy Damage",
+    description = "Enemies take +10%/15%/20% more damage",
+    icon = "enemy_damage",
+    rarity = "common",
+    stats1 = {enemy_damage = 0.1},
+    stats2 = {enemy_damage = 0.15},
+    stats3 = {enemy_damage = 0.2},
+  },
+  enemy_knockback_damage = {
+    name = "Enemy Knockback Damage",
+    description = "+30%/45%/60% enemy knockback damage",
+    icon = "enemy_knockback_damage",
+    rarity = "common",
+    stats1 = {enemy_knockback_damage = 0.3},
+    stats2 = {enemy_knockback_damage = 0.45},
+    stats3 = {enemy_knockback_damage = 0.6},
+  },
+  enemy_elemental_slow = {
+    name = "Enemy Elemental Slow",
+    description = "Enemies are slowed by 8%/12%/16% for each elemental affliction",
+    icon = "enemy_elemental_slow",
+    rarity = "common",
+    stats1 = {enemy_elemental_slow = 0.08},
+    stats2 = {enemy_elemental_slow = 0.12},
+    stats3 = {enemy_elemental_slow = 0.16},
+  },
+
+  --generic weird perks
+  the_meek = {
+    name = "The Meek",
+    description = "Your lowest level troop deals 30%/40%/50% more damage",
+    icon = "the_meek",
+    rarity = "common",
+    stats1 = {the_meek = 0.3},
+    stats2 = {the_meek = 0.4},
+    stats3 = {the_meek = 0.5},
+  },
+
+  --generic active perks
+  super_saiyan = {
+    name = "Super Saiyan",
+    description = "The longer a troop goes without attacking, the more damage they deal on their next attack",
+    icon = "super_saiyan",
+    rarity = "common",
+    stats1 = {super_saiyan = 3},
+  },
+  selfless = {
+    name = "Selfless",
+    description = "When a unit dies, heal nearby units for 20%/30%/40% of their max health",
+    icon = "selfless",
+    rarity = "common",
+    stats1 = {selfless = 0.2},
+    stats2 = {selfless = 0.3},
+    stats3 = {selfless = 0.4},
+  },
+  kamikaze = {
+    name = "Kamikaze",
+    description = "When a unit dies, knockback and deal 20%/30%/40% of its max health to nearby enemies",
+    icon = "kamikaze",
+    rarity = "common",
+    stats1 = {kamikaze = 0.2},
+    stats2 = {kamikaze = 0.3},
+    stats3 = {kamikaze = 0.4},
+  },
+  inspiration = {
+    name = "Inspiration",
+    description = "When a unit dies, temporarily give nearby units +10%/15%/20% attack speed",
+    icon = "inspiration",
+    rarity = "common",
+    stats1 = {inspiration = 0.1},
+    stats2 = {inspiration = 0.15},
+    stats3 = {inspiration = 0.2},
+  },
+
+  --fire perks
+  volcano = {
+    name = "Volcano",
+    description = "Fire explosions linger as an AoE",
+    icon = "volcano",
+    rarity = "common",
+    proc_name = "volcano",
+    prereqs = {"fire"}
+  },
   fire_mastery = {
     name = "Fire Mastery",
     description = "Fire damage increased by 25%/40%/60%",
     icon = "fire_mastery",
     rarity = "rare",
-    stats1 = {fire = 0.25},
-    stats2 = {fire = 0.4},
-    stats3 = {fire = 0.6}
+    stats1 = {fire_damage_m = 0.25},
+    stats2 = {fire_damage_m = 0.4},
+    stats3 = {fire_damage_m = 0.6},
+    prereqs = {"fire"}
   },
-  
-  lucky_strikes = {
-    name = "Lucky Strikes",
-    description = "5%/10%/15% chance to deal double damage",
-    icon = "lucky_strikes",
+
+  --cold perks
+  shatterlance = {
+    name = "Shatterlance",
+    description = "All attacks on frozen enemies are critical strikes",
+    icon = "shatterlance",
     rarity = "rare",
-    stats1 = {chance_to_proc = 0.05, damage_multiplier = 2.0},
-    stats2 = {chance_to_proc = 0.10, damage_multiplier = 2.0},
-    stats3 = {chance_to_proc = 0.15, damage_multiplier = 2.0},
-    proc_name = "lucky_strikes"
-  }
+    proc_name = "shatterlance",
+    prereqs = {"cold"}
+  },
+  rimeheart = {
+    name = "Rimeheart",
+    description = "When a frozen enemy dies, create a cold explosion",
+    icon = "rimeheart",
+    rarity = "rare",
+    proc_name = "rimeheart",
+    prereqs = {"cold"}
+  },
+  cold_mastery = {
+    name = "Cold Mastery",
+    description = "Cold damage increased by 25%/40%/60%",
+    icon = "cold_mastery",
+    rarity = "rare",
+    stats1 = {cold_damage_m = 0.25},
+    stats2 = {cold_damage_m = 0.4},
+    stats3 = {cold_damage_m = 0.6},
+    prereqs = {"cold"}
+  },
+
+  --lightning perks
+  lightning_mastery = {
+    name = "Lightning Mastery",
+    description = "Lightning damage increased by 25%/40%/60%",
+    icon = "lightning_mastery",
+    rarity = "rare",
+    stats1 = {lightning_damage_m = 0.25},
+    stats2 = {lightning_damage_m = 0.4},
+    stats3 = {lightning_damage_m = 0.6},
+    prereqs = {"lightning"}
+  },
 }
