@@ -318,16 +318,7 @@ function BuyScreen:set_party()
   local y = gh/2
   local x = gw/2
 
-  local number_of_cards = #self.units
-  if self.first_shop then
-    number_of_cards = number_of_cards + 1
-  end
-  if self.level >= PICK_SECOND_CHARACTER and number_of_cards < 2 then
-    number_of_cards = number_of_cards + 1
-  end
-  if self.level >= PICK_THIRD_CHARACTER and number_of_cards < 3 then
-    number_of_cards = number_of_cards + 1
-  end
+  local number_of_cards = math.max(3, #self.units + 1)
 
 
   --center single unit, otherwise start on the left
@@ -874,15 +865,6 @@ function LevelMapLevel:update(dt)
 end
 
 function LevelMapLevel:draw()
-  if self.level == PICK_SECOND_CHARACTER or self.level == PICK_THIRD_CHARACTER then
-    self.fill_color = yellow[0]
-    self.text_color = bg[0]
-    if self.level == self.parent.level then
-      
-    else
-
-    end
-  end
 
   graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
     graphics.circle(self.x, self.y, 9, self.fill_color)

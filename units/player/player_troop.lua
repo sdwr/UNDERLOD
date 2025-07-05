@@ -52,9 +52,9 @@ end
 
 function Troop:follow_mouse()
   -- If not, continue moving towards the mouse.
+  self:steering_separate(SEPARATION_RADIUS, troop_classes)
   if self:distance_to_mouse() > 10 then
     self:seek_mouse(SEEK_DECELERATION, SEEK_WEIGHT)
-    self:steering_separate(SEPARATION_RADIUS, troop_classes)
     self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
     self:rotate_towards_velocity(1)
   else

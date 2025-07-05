@@ -48,7 +48,7 @@ end
 
 function CharacterCardBuy:initText()
   local text_color_string = self.text_color_unavailable_string
-  if self.is_unlocked then
+  if self.is_unlocked and gold >= self.cost then
     text_color_string = self.text_color_string
   end
 
