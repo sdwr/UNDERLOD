@@ -81,17 +81,25 @@ end
 
 -- This now only creates the static name text.
 function CharacterCard:initText()
-    local class_text = '[' .. self.character_color_string .. '[3]]' .. 'Level ' .. self.unit.level
-    self.name_text = Text({{text = class_text, font = pixul_font, alignment = 'center'}}, global_text_tags)
-    
     -- Create the refreshable UI elements
     self:createUIElements()
     
     self.proc_text = nil
 end
 
+function CharacterCard:createNameText()
+  if self.name_text then
+    self.name_text.dead = true
+  end
+  local class_text = '[' .. self.character_color_string .. '[3]]' .. 'Level ' .. self.unit.level
+  self.name_text = Text({{text = class_text, font = pixul_font, alignment = 'center'}}, global_text_tags)
+end
+
 -- NEW FUNCTION: Handles creation of elements that need to be refreshed.
 function CharacterCard:createUIElements()
+  
+    self:createNameText()
+    
     -- Ensure old elements are removed before creating new ones to prevent duplicates.
     if self.unit_stats_icon then self.unit_stats_icon.dead = true end
     if self.last_round_display then self.last_round_display.dead = true end

@@ -227,7 +227,8 @@ end
 function BuyScreen:buy_unit(character)
   table.insert(self.units, {character = character, level = 1, reserve = {0, 0}, items = {nil, nil, nil, nil, nil, nil}})
   self:set_party()
-  if #self.items == 0 and gold > 0 then
+  if #self.items == 0 then
+    self.first_shop = false
     self:try_roll_items(false)
   end
   self:save_run()
@@ -408,7 +409,7 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   local all_items = {nil, nil, nil}
   local shop_already_rolled = false
 
-  if self.first_shop or self.level == 1 then
+  if self.first_shop then
     return
   end
 

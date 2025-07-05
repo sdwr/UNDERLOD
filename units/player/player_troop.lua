@@ -331,16 +331,16 @@ function Troop:draw()
   graphics.push(self.x, self.y, self.r, final_scale_x, final_scale_y)
   self:draw_buffs()
 
-  -- darken the non-selected units
-  local color = self.color:clone()
-  color = color:lighten(SELECTED_PLAYER_LIGHTEN)
+  -- -- darken the non-selected units
+  -- local color = self.color:clone()
+  -- color = color:lighten(SELECTED_PLAYER_LIGHTEN)
 
   --draw unit model (rectangle not circle??)
   graphics.rectangle(self.x, self.y, self.shape.w*.66, self.shape.h*.66, 3, 3, self.hfx.hit.f and fg[0] or self.color)
 
-  if not self.selected then
-    graphics.rectangle(self.x, self.y, 3, 3, 1, 1, color)
-  end
+  -- if not self.selected then
+  --   graphics.rectangle(self.x, self.y, 3, 3, 1, 1, self.color)
+  -- end
 
   if self.state == unit_states['casting'] then
     self:draw_cast_timer()

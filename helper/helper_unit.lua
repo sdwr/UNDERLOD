@@ -252,25 +252,26 @@ Helper.Unit.selection = {
 Helper.Unit.do_draw_selection = false
 Helper.Unit.number_of_teams = 0
 Helper.Unit.teams = {}
-Helper.Unit.selected_team_index = 0
+-- Helper.Unit.selected_team_index = 0
+Helper.Unit.selected_team_index = 1
 Helper.Unit.flagged_enemy = -1
 Helper.Unit.number_of_troop_types = 0
 Helper.Unit.troop_type_button_width = 0
 Helper.Unit.team_button_width = 0
 
 function Helper.Unit:get_survivor_damage_boost(unit)
-    local team = Helper.Unit:get_team_by_index(unit.team)
-    if team then
-        return team:get_survivor_damage_boost()
-    end
+    -- local team = Helper.Unit:get_team_by_index(unit.team)
+    -- if team then
+    --     return team:get_survivor_damage_boost()
+    -- end
     return 1
 end
 
 function Helper.Unit:get_survivor_size_boost(unit)
-    local team = Helper.Unit:get_team_by_index(unit.team)
-    if team then
-        return team:get_survivor_size_boost()
-    end
+    -- local team = Helper.Unit:get_team_by_index(unit.team)
+    -- if team then
+    --     return team:get_survivor_size_boost()
+    -- end
     return 1
 end
 
@@ -408,13 +409,13 @@ function Helper.Unit:select()
             end
         elseif input['space'].pressed then
             Helper.Unit.space_held = true
-            main.current.hotbar.hotbar_by_index[0]:action_animation()
-            main.current.hotbar:select_by_index(0)
+            -- main.current.hotbar.hotbar_by_index[0]:action_animation()
+            -- main.current.hotbar:select_by_index(0)
             --move "move all units" in here?
             -- still split between troop update and here
         elseif input['space'].released then
             Helper.Unit.space_held = false
-            main.current.hotbar:select_by_old_index()
+            -- main.current.hotbar:select_by_old_index()
         end
     end
 
@@ -443,16 +444,16 @@ function Helper.Unit:select()
     --     self.do_draw_selection = false
     -- end
 
-    for i = 1, #main.current.units do
-        if input[tostring(i)].pressed and main.current.hotbar.hotbar_by_index[i] then
-            main.current.hotbar.hotbar_by_index[i]:action_animation()
-            main.current.hotbar:select_by_index(i)
-        end
+    -- for i = 1, #main.current.units do
+    --     if input[tostring(i)].pressed and main.current.hotbar.hotbar_by_index[i] then
+    --         main.current.hotbar.hotbar_by_index[i]:action_animation()
+    --         main.current.hotbar:select_by_index(i)
+    --     end
 
-        if input[tostring(i)].released and main.current.hotbar.hotbar_by_index[i] then
-            --unnecessary, leave here for now
-        end
-    end
+    --     if input[tostring(i)].released and main.current.hotbar.hotbar_by_index[i] then
+    --         --unnecessary, leave here for now
+    --     end
+    -- end
 end
 
 function Helper.Unit:draw_selection()
