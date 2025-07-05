@@ -1440,51 +1440,8 @@ end
 
 
 function Critter:hit(damage, from, damageType, makesSound, cannotProcOnHit)
-  
-  if makesSound == nil then makesSound = true end
-  if cannotProcOnHit == nil then cannotProcOnHit = false end
-
-  if self.dead or self.invulnerable then return end
-
-  if makesSound then
-    self.hfx:use('hit', 0.25, 200, 10)
-  end
-
-  self.hp = self.hp - damage
-
-  self:show_damage_number(damage, damageType)
-  
-  -- Track damage dealt by the attacker (for teams)
-  if from and from.team then
-    local attacker_team = Helper.Unit.teams[from.team]
-    if attacker_team then
-      attacker_team:record_damage(damage)
-    end
-  end
-
-  --on hit callbacks
-  if from and from.onHitCallbacks and not cannotProcOnHit then
-    from:onHitCallbacks(self, damage, damageType)
-  end
-  self:onGotHitCallbacks(from, damage, damageType)
-
-  if self.hp <= 0 then
-    local overkill = - self.hp
-    if from and from.onKillCallbacks then
-      from:onKillCallbacks(self, overkill)
-    end
-    self:onDeathCallbacks(from)
-    
-    -- Track kill for the attacker (for teams)
-    if from and from.team then
-      local attacker_team = Helper.Unit.teams[from.team]
-      if attacker_team then
-        attacker_team:record_kill()
-      end
-    end
-    
-    self:die()
-  end
+  -- Use the unified damage helper
+  Helper.Damage:apply_hit(self, damage, from, damageType, makesSound, cannotProcOnHit)
 end
 
 function Critter:push(f, r, push_invulnerable, duration)

@@ -938,7 +938,7 @@ function Unit:calculate_stats(first_run)
   self.fire_damage = self.buff_fire_damage_a * self.buff_fire_damage_m
   self.lightning_damage = self.buff_lightning_damage_a * self.buff_lightning_damage_m
   self.cold_damage = self.buff_cold_damage_a * self.buff_cold_damage_m
-end
+end  
 
 function Unit:onTickCallbacks(dt)
   if not main.current:is(Arena) then return end

@@ -9,6 +9,7 @@ require 'helper/helper_unit'
 require 'helper/helper_graphics'
 require 'helper/helper_sound'
 require 'helper/helper_damage_numbers'
+require 'helper/helper_damage'
 
 Helper.initialized = false
 Helper.mousex = 0

@@ -520,91 +520,10 @@ function Troop:set_character()
 end
 
 function Troop:hit(damage, from, damageType, makesSound, cannotProcOnHit)
-
-  if self.invulnerable then return end
-
-  if makesSound == nil then makesSound = true end
-  if cannotProcOnHit == nil then cannotProcOnHit = false end
-
-  if self.bubbled then return end
-  if self.dead then return end
-
-  --scale hit effect to damage
-  --no damage won't grow model, up to max effect at 0.5x max hp
-  local hitStrength = (damage * 1.0) / self.max_hp
-  hitStrength = math.min(hitStrength, 0.5)
-  hitStrength = math.remap(hitStrength, 0, 0.5, 0, 1)
-  if makesSound then
-    self.hfx:use('hit', 0.25 * hitStrength, 200, 10)
-  end
-  self:show_hp()
-
-  --this should really be on the base unit class (objects.lua)!
-  if self:isShielded() then
-    if self.shielded > damage then 
-      self.shielded = self.shielded - damage
-      damage = 0
-    else
-      damage = damage - self.shielded
-      self.shielded = 0
-    end
-  end
-
-  local actual_damage = math.max(self:calculate_damage(damage), 0)
-  
-  self.hp = self.hp - actual_damage
-
-  self:show_damage_number(damage, damageType)
-  
-  -- Track damage dealt by the attacker (for teams)
-  if from and from.team then
-    local attacker_team = Helper.Unit.teams[from.team]
-    if attacker_team then
-      attacker_team:record_damage(actual_damage)
-    end
-  end
-  
-  --on hit callbacks
-  if from and from.onHitCallbacks and not cannotProcOnHit then
-    from:onHitCallbacks(self, actual_damage, damageType)
-  end
-  self:onGotHitCallbacks(from, actual_damage, damageType)
-
-  camera:shake(1, 0.5)
-
-  if self.hp > 0 then
-    if makesSound then
-      _G[random:table{'player_hit1', 'player_hit2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.8}
-    end
-  else
-    if makesSound then
-      hit4:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-    end
-    for i = 1, random:int(4, 6) do HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color} end
-    HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 12}:scale_down(0.3):change_color(0.5, self.color)
-
-    -- Create death animation
-    TroopDeathAnimation{group = main.current.effects, x = self.x, y = self.y}
-
-    --on death callbacks
-    if from and from.onKillCallbacks then
-      local overkill = - self.hp
-      from:onKillCallbacks(self, overkill)
-    end
-    self:onDeathCallbacks(from)
-    
-    -- Track kill for the attacker (for teams)
-    if from and from.team then
-      local attacker_team = Helper.Unit.teams[from.team]
-      if attacker_team then
-        attacker_team:record_kill()
-      end
-    end
-
-    self:die()
-
-    if self.dot_area then self.dot_area.dead = true; self.dot_area = nil end
-  end
+  -- Mark this unit as a troop for the damage helper
+  self.is_troop = true
+  -- Use the unified damage helper
+  Helper.Damage:apply_hit(self, damage, from, damageType, makesSound, cannotProcOnHit)
 end
 
 function Troop:die()
