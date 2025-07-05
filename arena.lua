@@ -31,6 +31,9 @@ function Arena:on_enter(from)
 
   self.starting_units = table.copy(self.units)
   self.targetedEnemy = nil
+  
+  -- Initialize player perks from save data
+  self.perks = self.perks or {}
 
   --if not state.mouse_control then
     --input:set_mouse_visible(false)
@@ -474,8 +477,8 @@ function Arena:draw()
   self.options_ui:draw()
 
   if self.shop_text then self.shop_text:draw(gw - 40, gh - 17) end
-  if self.gold_text then self.gold_text:draw(gw / 2, gh / 2 + 10) end
-  if self.plusgold_text then self.plusgold_text:draw(gw / 2 + self.plusgold_text_offset_x, gh / 2 + 10 + self.plusgold_text_offset_y) end
+  if self.gold_text and not self.choosing_perks then self.gold_text:draw(gw / 2, gh / 2 + 10) end
+  if self.plusgold_text and not self.choosing_perks then self.plusgold_text:draw(gw / 2 + self.plusgold_text_offset_x, gh / 2 + 10 + self.plusgold_text_offset_y) end
   if self.timer_text then self.timer_text:draw(gw - 30, 20) end
 
   if self.won then
@@ -793,6 +796,18 @@ end
 function Arena:transition()
   self.transitioning = true
   ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+  
+  -- Check if this level grants a perk
+  if LEVEL_TO_PERKS[self.level] then
+    -- Show perk selection overlay
+    PerkOverlay{
+      group = self.ui,
+      perks = self.perks or {}
+    }
+    return
+  end
+  
+  -- Normal transition to buy screen
   TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or self.color, transition_action = function(t)
 
     -- Update units with combat data before transitioning
@@ -834,6 +849,34 @@ function Arena:demo_end()
     --   CharacterCard{group = self.main, x = x + (i-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, unit = unit, character = unit.character, i = i, parent = self}
     -- end
   end)
+end
+
+-- Called when perk selection is complete
+function Arena:on_perk_selected()
+  -- Continue with normal transition to buy screen
+  TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or self.color, transition_action = function(t)
+
+    -- Update units with combat data before transitioning
+    self:update_units_with_combat_data()
+
+    Reset_Global_Proc_List()
+    slow_amount = 1
+    music_slow_amount = 1
+    main:add(BuyScreen'buy_screen')
+    local save_data = Collect_Save_Data_From_State(self)
+
+    save_data.level = save_data.level + 1
+    save_data.reroll_shop = true
+    save_data.times_rerolled = 0
+
+    Stats_Level_Complete()
+    Stats_Max_Gold()
+
+    system.save_run(save_data)
+
+    main:go_to('buy_screen', save_data)
+
+  end, nil}
 end
 --on game win (beat final boss)
 function Arena:on_win()

@@ -24,12 +24,18 @@ function PerksPanel:init(args)
   -- Create perk slots
   self.slots = {}
   for i = 1, 5 do
-    local slot_y = self.y + 20 + (i-1) * (self.slot_size + self.slot_spacing)
-    self.slots[i] = {
-      x = self.x + (self.width - self.slot_size) / 2,
+    local slot_y = self.y + 25 + (i-1) * (self.slot_size + self.slot_spacing)
+    self.slots[i] = PerkSlot{
+      group = self.group,
+      x = self.x + 15 + (self.width - self.slot_size) / 2,
       y = slot_y,
-      perk = nil
+      w = self.slot_size,
+      h = self.slot_size,
+      parent = self
     }
+    if self.perks[i] then
+      self.slots[i]:set_perk(self.perks[i])
+    end
   end
 end
 
@@ -38,27 +44,8 @@ function PerksPanel:update(dt)
 end
 
 function PerksPanel:draw()
-  -- Draw title (handled by Text2 object)
-  
-  -- Draw perk slots
-  for i, slot in ipairs(self.slots) do
-    -- Draw slot background (empty slot)
-    graphics.rectangle(slot.x + self.slot_size/2, slot.y + self.slot_size/2, 
-                      self.slot_size, self.slot_size, 4, 4, 
-                      bg[0])
-    
-    -- Draw slot border
-    graphics.rectangle(slot.x + self.slot_size/2, slot.y + self.slot_size/2, 
-                      self.slot_size, self.slot_size, 4, 4, 
-                      slot.perk and fg[0] or bg[5], 1)
-    
-    -- Draw perk if it exists
-    if slot.perk then
-      -- TODO: Draw perk icon/name
-      graphics.rectangle(slot.x + self.slot_size/2, slot.y + self.slot_size/2, 
-                        self.slot_size - 4, self.slot_size - 4, 3, 3, 
-                        fg[0])
-    end
+  if self.title then
+    self.title:draw()
   end
 end
 
@@ -67,7 +54,7 @@ function PerksPanel:set_perks(perks)
   
   -- Update slots with perks
   for i, slot in ipairs(self.slots) do
-    slot.perk = self.perks[i]
+    slot:set_perk(self.perks[i])
   end
 end
 
@@ -75,7 +62,7 @@ function PerksPanel:add_perk(perk)
   -- Find first empty slot
   for i, slot in ipairs(self.slots) do
     if not slot.perk then
-      slot.perk = perk
+      slot:set_perk(perk)
       table.insert(self.perks, perk)
       return true
     end
@@ -88,9 +75,134 @@ function PerksPanel:remove_perk(index)
     table.remove(self.perks, index)
     -- Rebuild slots
     for i, slot in ipairs(self.slots) do
-      slot.perk = self.perks[i]
+      slot:set_perk(self.perks[i])
     end
     return true
   end
   return false
+end
+
+function PerksPanel:die()
+  self.dead = true
+end
+
+-- PerkSlot object
+PerkSlot = Object:extend()
+PerkSlot:implement(GameObject)
+
+function PerkSlot:init(args)
+  self:init_game_object(args)
+  self.shape = Rectangle(self.x, self.y, self.w, self.h)
+  self.interact_with_mouse = true
+  self.perk = nil
+  self.parent = args.parent
+  self.spring:pull(0.2, 200, 10)
+end
+
+function PerkSlot:update(dt)
+  self:update_game_object(dt)
+  self.shape:move_to(self.x, self.y)
+end
+
+function PerkSlot:draw()
+  graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
+    
+    -- Draw slot background (empty slot)
+    graphics.rectangle(self.x, self.y, self.w, self.h, 4, 4, bg[0])
+    
+    -- Draw slot border
+    graphics.rectangle(self.x, self.y, self.w, self.h, 4, 4, 
+                      self.perk and fg[0] or bg[5], 1)
+    
+    -- Draw perk if it exists
+    if self.perk then
+      -- Draw perk icon similar to item cards
+      local image = self:find_perk_image(self.perk)
+      if image then
+        image:draw(self.x, self.y, 0, 0.6, 0.6)
+      end
+    end
+    
+  graphics.pop()
+end
+
+function PerkSlot:set_perk(perk)
+  self.perk = perk
+end
+
+function PerkSlot:on_mouse_enter()
+  ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
+  self.selected = true
+  self.spring:pull(0.2, 200, 10)
+  
+  if self.perk then
+    self:show_perk_tooltip()
+  end
+end
+
+function PerkSlot:on_mouse_exit()
+  self.selected = false
+  self.spring:pull(0.1, 200, 10)
+  
+  if self.perk then
+    self:hide_perk_tooltip()
+  end
+end
+
+function PerkSlot:show_perk_tooltip()
+  if not self.perk then return end
+  
+  -- Create infotext popup with wrapped description
+  local name_line = {text = '[fg]' .. self.perk.name, font = pixul_font, alignment = 'center'}
+  local wrapped_lines = self:wrap_text(self.perk.description, 200, pixul_font)
+  local text_lines = {name_line}
+  for _, line in ipairs(wrapped_lines) do
+    table.insert(text_lines, {text = '[fg]' .. line, font = pixul_font, alignment = 'center'})
+  end
+  
+  self.info_text = InfoText{group = main.current.ui}
+  self.info_text:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
+  self.info_text.x, self.info_text.y = gw/2, gh/2 + 10
+end
+
+function PerkSlot:hide_perk_tooltip()
+  if self.info_text then
+    self.info_text:deactivate()
+    self.info_text.dead = true
+    self.info_text = nil
+  end
+end
+
+-- Helper function to wrap text to a certain pixel width
+function PerkSlot:wrap_text(text, max_width, font)
+  local lines = {}
+  local current_line = ''
+  -- Prevent errors if text is nil
+  if not text then return {} end
+  
+  for word in text:gmatch("([^ ]+)") do
+      local test_line = current_line == '' and word or current_line .. ' ' .. word
+      
+      if font:get_text_width(test_line) > max_width then
+          table.insert(lines, current_line)
+          current_line = word
+      else
+          current_line = test_line
+      end
+  end
+  table.insert(lines, current_line)
+  
+  return lines
+end
+
+-- Helper function to find perk image (similar to find_item_image)
+function PerkSlot:find_perk_image(perk)
+  -- For now, use a default image since perk images aren't defined yet
+  -- This can be expanded later when perk images are added
+  return item_images[perk.icon] or item_images['default']
+end
+
+function PerkSlot:die()
+  self:hide_perk_tooltip()
+  self.dead = true
 end 
