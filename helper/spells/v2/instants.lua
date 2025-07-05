@@ -265,9 +265,9 @@ end
 
 function DamageArc:update(dt)
   self:update_game_object(dt)
-  self:move(dt)
-
+  
   if not self.in_death_flash then
+    self:move(dt)
     self:try_damage()
   end
 end

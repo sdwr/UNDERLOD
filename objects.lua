@@ -781,7 +781,7 @@ function Unit:calculate_stats(first_run)
         elseif stat == buff_types['hp'] then
           self.class_hp_m = amt
         elseif stat == buff_types['status_resist'] then
-          self.status_resist = self.status_resist + stat
+          self.status_resist = amt
         end
         
       end

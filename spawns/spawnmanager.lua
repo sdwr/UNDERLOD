@@ -580,7 +580,7 @@ function Create_Unit_With_Warning(arena, location, warning_time, creation_callba
 
   if enemy_size then
     local enemy_width = enemy_size_to_xy[enemy_size].x
-    spawn_radius = enemy_width / 4
+    spawn_radius = enemy_width / 2
   end
 
   -- 1. Create the visual warning marker immediately.
@@ -601,11 +601,11 @@ function Create_Unit_With_Warning(arena, location, warning_time, creation_callba
       attempt_final_spawn = function()
         -- Check if the area is occupied
         local spawn_circle = Circle(location.x, location.y, spawn_radius)
-        local friendly_units = arena.main:get_objects_in_shape(spawn_circle, arena.friendlies)
+        local objects_in_spawn_area = arena.main:get_objects_in_shape(spawn_circle, arena.all_unit_classes)
           
           -- If the area is still blocked, stall and retry this check in a moment.
           -- The visual warning marker remains on-screen during this stall.
-          if #friendly_units > 0 then
+          if #objects_in_spawn_area > 0 then
               arena.t:after(check_again_delay, attempt_final_spawn)
               return
           end
