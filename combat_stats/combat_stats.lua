@@ -321,6 +321,7 @@ _set_unit_item_config = function(unit)
   unit.onTickProcs = {}
   unit.onHitProcs = {}
   unit.onAttackProcs = {}
+  unit.onPrimaryHitProcs = {}
   unit.onGotHitProcs = {}
   unit.onKillProcs = {}
   unit.onDeathProcs = {}

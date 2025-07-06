@@ -236,10 +236,10 @@ PERK_DEFINITIONS = {
   },
   enemy_health_flat = {
     name = "Enemy Health",
-    description = "-20% enemy health",
+    description = "-15% enemy health",
     icon = "enemy_health",
     rarity = "common",
-    stats1 = {enemy_health = -0.2},
+    stats1 = {enemy_health = -0.15},
   },
   enemy_damage = {
     name = "Enemy Damage",
@@ -279,7 +279,15 @@ PERK_DEFINITIONS = {
     stats2 = {the_meek = 0.4},
     stats3 = {the_meek = 0.5},
   },
+  critter_explosion = {
+    name = "Critter Explosion",
+    description = "Friendly critters explode on death",
+    icon = "critter_explosion",
+    rarity = "common",
+    proc_name = "critter_explosion",
+  },
 
+  
   --generic active perks
   super_saiyan = {
     name = "Super Saiyan",
@@ -400,6 +408,7 @@ PERK_DEFINITIONS = {
     stats3 = {lightning_damage_m = 0.6},
     prereqs = {"lightning"}
   },
+  --need to cap the number of these that can spawn
   lightning_ball = {
     name = "Lightning Ball",
     description = "Reapplying shock on enemies has a chance to create a lightning ball",
@@ -442,6 +451,16 @@ PERK_DEFINITIONS = {
     icon = "curse_of_agony",
     rarity = "rare",
     proc_name = "curse_of_agony",
+    prereqs = {"curse"}
+  },
+  curse_chain = {
+    name = "Curse Chain",
+    description = "Curse chains to 1/2/3 additional enemies",
+    icon = "curse_chain",
+    rarity = "rare",
+    stats1 = {curse_chain = 1},
+    stats2 = {curse_chain = 2},
+    stats3 = {curse_chain = 3},
     prereqs = {"curse"}
   },
 }

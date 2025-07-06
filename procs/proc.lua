@@ -16,6 +16,7 @@ PROC_ON_TICK = 'onTickProcs'
 PROC_ON_HIT = 'onHitProcs'
 PROC_ON_GOT_HIT = 'onGotHitProcs'
 PROC_ON_ATTACK = 'onAttackProcs'
+PROC_ON_PRIMARY_HIT = 'onPrimaryHitProcs'
 PROC_ON_MOVE = 'onMoveProcs'
 PROC_ON_DEATH = 'onDeathProcs'
 PROC_ON_KILL = 'onKillProcs'
@@ -29,6 +30,7 @@ LIST_OF_PROC_TYPES = {
   PROC_ON_HIT,
   PROC_ON_GOT_HIT,
   PROC_ON_ATTACK,
+  PROC_ON_PRIMARY_HIT,
   PROC_ON_MOVE,
   PROC_ON_DEATH,
   PROC_ON_KILL,
@@ -42,6 +44,7 @@ CALL_PROC_MAP = {
   [PROC_ON_HIT] = function(proc, target, damage, damageType) return proc:onHit(target, damage, damageType) end,
   [PROC_ON_GOT_HIT] = function(proc, from, damage, damageType) return proc:onGotHit(from, damage, damageType) end,
   [PROC_ON_ATTACK] = function(proc, target) return proc:onAttack(target) end,
+  [PROC_ON_PRIMARY_HIT] = function(proc, target, damage, damageType) return proc:onPrimaryHit(target, damage, damageType) end,
   [PROC_ON_MOVE] = function(proc, distance) return proc:onMove(distance) end,
   [PROC_ON_DEATH] = function(proc) return proc:onDeath() end,
   [PROC_ON_KILL] = function(proc, target) return proc:onKill(target) end,
@@ -53,6 +56,7 @@ PROC_TYPE_TO_DISPLAY = {
   [PROC_ON_HIT] = {text = 'onHit', color = 'red'},
   [PROC_ON_GOT_HIT] = {text = 'onGotHit', color = 'red'},
   [PROC_ON_ATTACK] = {text = 'onAttack', color = 'blue'},
+  [PROC_ON_PRIMARY_HIT] = {text = 'onPrimaryHit', color = 'purple'},
   [PROC_ON_MOVE] = {text = 'onMove', color = 'green'},
   [PROC_ON_DEATH] = {text = 'onDeath', color = 'black'},
   [PROC_ON_KILL] = {text = 'onKill', color = 'black'},
@@ -202,6 +206,12 @@ end
 function Proc:onAttack(target)
   if DEBUG_PROCS then
     print('onAttack ', self.unit, target, self.name)
+  end
+end
+
+function Proc:onPrimaryHit(target, damage, damageType)
+  if DEBUG_PROCS then
+    print('onPrimaryHit', self.unit, target, damage, damageType, self.name)
   end
 end
 

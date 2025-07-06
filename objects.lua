@@ -1003,6 +1003,18 @@ function Unit:onHitCallbacks(target, damage, damageType)
   end
 end
 
+function Unit:onPrimaryHitCallbacks(target, damage, damageType)
+
+  for k, proc in ipairs(GLOBAL_PROC_LIST[PROC_ON_PRIMARY_HIT]) do
+    proc.globalUnit = self
+    proc:onPrimaryHit(target, damage, damageType)
+  end
+
+  for k, proc in ipairs(self.onPrimaryHitProcs) do
+    proc:onPrimaryHit(target, damage, damageType)
+  end
+end
+
 function Unit:onGotHitCallbacks(from, damage)
 
   for k, proc in ipairs(GLOBAL_PROC_LIST[PROC_ON_GOT_HIT]) do

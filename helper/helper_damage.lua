@@ -290,6 +290,11 @@ function Helper.Damage:primary_hit(unit, damage, from, damageType, makesSound)
   -- Default parameters
   makesSound = makesSound or true
   
+  -- Trigger onPrimaryHit callbacks right before processing the hit
+  if from and from.onPrimaryHitCallbacks then
+    from:onPrimaryHitCallbacks(unit, damage, damageType)
+  end
+  
   -- Unit-specific pre-hit processing
   if not Helper.Damage:process_pre_hit(unit, damage, from, damageType, makesSound) then
     return
