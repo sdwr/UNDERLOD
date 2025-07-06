@@ -119,7 +119,13 @@ function Area_Spell:apply_damage()
             
             -- Call the on_hit_callback if provided
             if self.on_hit_callback then
-                self.on_hit_callback(self, target, self.unit)
+                local delay = self.on_hit_delay or 0
+                if delay > 0 and self.on_hit_delay_random then
+                    delay = (math.random()/ 2 + 0.5) * delay
+                end
+                self.t:after(delay, function()
+                    self.on_hit_callback(self, target, self.unit)
+                end)
             end
             
             table.insert(actual_targets_hit, target)
@@ -181,8 +187,10 @@ end
 Knockback_Area_Spell = Area_Spell:extend()
 
 function Knockback_Area_Spell:init(args)
+
     --set default opacity before calling super.init
     args.opacity = args.opacity or 0.3
+
     -- Call the parent init first to set up all the base spell properties
     Knockback_Area_Spell.super.init(self, args)
 

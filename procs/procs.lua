@@ -540,9 +540,8 @@ function Proc_Curse:curse(target, from)
     x = target.x, y = target.y,
     radius = self.radius,
     pick_shape = 'circle',
-    duration = 0.5,
+    duration = 0.6,
     color = purple[-3],
-    opacity = 0.3,
     is_troop = from.is_troop,
     damage = 0, -- No damage, just visual
     unit = nil, -- Explicitly set to nil to avoid affecting unit cooldowns
@@ -558,7 +557,9 @@ function Proc_Curse:curse(target, from)
         color = purple[-3], -- Dark purple
         max_chains = 1 -- Only one line from caster to target
       }
-    end
+    end,
+    on_hit_delay = 0.4,
+    on_hit_delay_random = true,
   }
 end
 
