@@ -693,7 +693,7 @@ end
 
 Proc_Shieldslam = Proc:extend()
 function Proc_Shieldslam:init(args)
-  self.triggers = {PROC_ON_ATTACK}
+  self.triggers = {PROC_ON_PRIMARY_HIT}
   self.scope = 'troop'
 
   Proc_Shieldslam.super.init(self, args)
@@ -703,12 +703,12 @@ function Proc_Shieldslam:init(args)
   self.knockback_duration = KNOCKBACK_DURATION_ENEMY
 end
 
-function Proc_Shieldslam:onAttack(target, unit)
-  Proc_Shieldslam.super.onAttack(self, target)
+function Proc_Shieldslam:onPrimaryHit(target, damage, damageType)
+  Proc_Shieldslam.super.onPrimaryHit(self, target, damage, damageType)
   if not target then return end
-  if not unit then return end
+  if not self.unit then return end
   
-  local r = unit:angle_to_object(target)
+  local r = self.unit:angle_to_object(target)
   -- only knockback once
 
   if  target.state ~= unit_states['knockback'] then
@@ -1218,7 +1218,7 @@ end
 
 Proc_SympatheticVoltage = Proc:extend()
 function Proc_SympatheticVoltage:init(args)
-  self.triggers = {PROC_ON_ATTACK}
+  self.triggers = {PROC_ON_PRIMARY_HIT}
   self.scope = 'troop'
 
   Proc_SympatheticVoltage.super.init(self, args)
@@ -1229,8 +1229,8 @@ function Proc_SympatheticVoltage:init(args)
   self.color = self.data.color or yellow[0]
 end
 
-function Proc_SympatheticVoltage:onAttack(target)
-  Proc_SympatheticVoltage.super.onAttack(self, target)
+function Proc_SympatheticVoltage:onPrimaryHit(target, damage, damageType)
+  Proc_SympatheticVoltage.super.onPrimaryHit(self, target, damage, damageType)
 
   if not self.unit then return end
 
@@ -1828,7 +1828,7 @@ end
 
 Proc_Shatterlance = Proc:extend()
 function Proc_Shatterlance:init(args)
-  self.triggers = {PROC_ON_ATTACK}
+  self.triggers = {PROC_ON_PRIMARY_HIT}
   self.scope = 'troop'
   
   Proc_Shatterlance.super.init(self, args)
@@ -1840,10 +1840,10 @@ function Proc_Shatterlance:init(args)
   self.color = self.data.color or blue[0]
 end
 
-function Proc_Shatterlance:onAttack(target, from)
-  Proc_Shatterlance.super.onAttack(self, target, from)
+function Proc_Shatterlance:onPrimaryHit(target, damage, damageType)
+  Proc_Shatterlance.super.onPrimaryHit(self, target, damage, damageType)
   if target:has_buff('freeze') then
-    local damage = from.dmg or self.fallback_damage
+    local damage = self.unit.dmg or self.fallback_damage
     damage = damage * self.damageMulti
     self:explode(target, damage)
   end
