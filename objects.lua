@@ -1340,6 +1340,35 @@ function Unit:get_closest_hurt_target(shape, classes)
 
 end
 
+function Unit:curse(from)
+  -- Random delay between 0.25 and 0.5 seconds
+  local delay = random:float(0.25, 0.5)
+  
+  -- Create curse data
+  local curseBuff = {name = 'curse', duration = 3, color = purple[0], stats = {percent_def = -0.4}}
+  
+  -- Apply curse debuff and create visual effect after delay
+  self.t:after(delay, function()
+    -- Apply curse debuff to self
+    self:add_buff(curseBuff)
+    
+    -- Only draw the line if from is not nil
+    if from then
+      -- Create ChainCurse with max_chains = 1 for single line effect
+      ChainCurse{
+        group = main.current.main,
+        parent = from,
+        target = self,
+        range = 0, -- No additional chaining
+        is_troop = from.is_troop,
+        curse_data = curseBuff,
+        color = purple[-3], -- Dark purple
+        max_chains = 1 -- Only one line from caster to target
+      }
+    end
+  end)
+end
+
 --unit level state functions
 function Unit:start_backswing()
   --unit should always be 'casting' when this is called

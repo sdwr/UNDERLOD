@@ -488,14 +488,10 @@ function Proc_Curse:init(args)
   
 
   --define the proc's vars
-  self.buffname = 'curse'
-  self.buffDuration = self.data.buffDuration or 3
   self.seek_radius = 100
   self.radius = self.data.radius or 50
   self.color = self.data.color or purple[0]
-  self.buffdata = {name = self.buffname, duration = self.buffDuration, color = self.color,
-    stats = {percent_def = -0.4}
-  }
+
 
   self.tick_interval = self.data.tick_interval or 5 
   self.proc_delay = 0.75 -- Delay before first proc to avoid triggering on first enemy
@@ -534,7 +530,7 @@ function Proc_Curse:curse(target, from)
   self.tick_timer = 0
   self.proc_timer = 0
 
-  -- Use Area_Spell with on_hit_callback to create individual curse lines
+  -- Use Area_Spell to find targets, then curse each one
   Area_Spell{
     group = main.current.effects,
     x = target.x, y = target.y,
@@ -546,20 +542,8 @@ function Proc_Curse:curse(target, from)
     damage = 0, -- No damage, just visual
     unit = nil, -- Explicitly set to nil to avoid affecting unit cooldowns
     on_hit_callback = function(spell, hit_target, unit)
-      -- Create ChainCurse with max_chains = 1 for single line effect
-      ChainCurse{
-        group = main.current.main,
-        parent = from,
-        target = hit_target,
-        range = 0, -- No additional chaining
-        is_troop = from.is_troop,
-        curse_data = self.buffdata,
-        color = purple[-3], -- Dark purple
-        max_chains = 1 -- Only one line from caster to target
-      }
-    end,
-    on_hit_delay = 0.4,
-    on_hit_delay_random = true,
+      hit_target:curse(from)
+    end
   }
 end
 
