@@ -1349,9 +1349,6 @@ function Unit:curse(from)
   
   -- Apply curse debuff and create visual effect after delay
   self.t:after(delay, function()
-    -- Apply curse debuff to self
-    self:add_buff(curseBuff)
-    
     -- Only draw the line if from is not nil
     if from then
       -- Create ChainCurse with max_chains = 1 for single line effect
@@ -1365,6 +1362,9 @@ function Unit:curse(from)
         color = purple[-3], -- Dark purple
         max_chains = 1 -- Only one line from caster to target
       }
+    else
+      --add buff if the line is not drawn
+      self:add_buff(curseBuff)
     end
   end)
 end
