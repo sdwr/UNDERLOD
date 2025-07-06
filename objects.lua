@@ -1938,4 +1938,35 @@ function HPBar_Damage_Chunk:draw()
   graphics.line(self.x1, self.y1, self.x2, self.y2, color, 10)
 end
 
+-- Get perk stats for display in buy screen tooltips
+function Unit:get_perk_stats()
+  -- Get perk stats that would apply to this unit
+  local perk_stats = {}
+  if self.perks then
+    for perk_name, perk in pairs(self.perks) do
+      local perk_stat_data = Get_Perk_Stats(perk)
+      for stat, value in pairs(perk_stat_data) do
+        local actual_stat = Helper.Unit:process_perk_name(stat, self)
+        if actual_stat then
+          perk_stats[actual_stat] = (perk_stats[actual_stat] or 0) + value
+        end
+      end
+    end
+  end
+  
+  -- Convert to the same format as item stats
+  local ordered_perk_stats = {}
+  for _, stat_name in ipairs(item_stat_display_order) do
+    if perk_stats[stat_name] then
+      local display_name = item_stat_lookup and item_stat_lookup[stat_name] or stat_name
+      table.insert(ordered_perk_stats, {
+        name = display_name,
+        value = perk_stats[stat_name]
+      })
+    end
+  end
+  
+  return ordered_perk_stats
+end
+
 

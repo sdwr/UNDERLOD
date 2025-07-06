@@ -291,7 +291,7 @@ function CharacterCard:show_unit_stats_popup()
   
   if not has_stats then
     table.insert(text_lines, { 
-      text = '[fg]No item stats', 
+      text = '[fg]No unit stats', 
       font = pixul_font, 
       alignment = 'center' 
     })

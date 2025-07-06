@@ -770,10 +770,46 @@ function init()
 
   get_unit_stats = function(unit)
     local group = Group():set_as_physics_world(32, 0, 0, { 'troop', 'enemy', 'projectile', 'enemy_projectile' })
-    local troop_data = { group = group, character = unit.character, level = unit.level, items = unit.items }
+    local troop_data = { group = group, character = unit.character, level = unit.level, items = unit.items, perks = main.current.perks or {} }
     local troop = Create_Troop(troop_data)
     troop:update(0)
-    return troop:get_item_stats()
+    
+    -- Get item stats
+    local item_stats = troop:get_item_stats()
+    
+    -- Get perk stats
+    local perk_stats = troop:get_perk_stats()
+    
+    -- Combine item and perk stats
+    local combined_stats = {}
+    
+    -- Start with item stats
+    for _, stat in pairs(item_stats) do
+      combined_stats[stat.name] = stat.value
+    end
+    
+    -- Add perk stats to the combined stats
+    for _, stat in pairs(perk_stats) do
+      if combined_stats[stat.name] then
+        combined_stats[stat.name] = combined_stats[stat.name] + stat.value
+      else
+        combined_stats[stat.name] = stat.value
+      end
+    end
+    
+    -- Convert back to the expected format
+    local final_stats = {}
+    for _, stat_name in ipairs(item_stat_display_order) do
+      local display_name = item_stat_lookup and item_stat_lookup[stat_name] or stat_name
+      if combined_stats[display_name] then
+        table.insert(final_stats, {
+          name = display_name,
+          value = combined_stats[display_name]
+        })
+      end
+    end
+    
+    return final_stats
   end
 
   get_unit_buffs = function(unit)
