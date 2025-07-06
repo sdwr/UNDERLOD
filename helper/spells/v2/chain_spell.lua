@@ -280,7 +280,13 @@ function ChainCurse:init(args)
   self.range = args.range or 50
   self.is_troop = args.is_troop or false
   self.curse_data = args.curse_data or {name = 'curse', duration = 3, color = purple[0], stats = {percent_def = -0.4}}
-  self.color = args.color or purple[-3] -- Dark purple
+  self.primary_color = args.primary_color or purple[-3] -- Dark purple
+  self.secondary_color = args.secondary_color or black[0] -- Black
+
+  self.primary_color.a = 0.8
+  self.secondary_color.a = 0.3
+
+  self.delay = args.delay or 0.5
 
   -- Define the enemy/friendly targeting logic.
   local target_classes
@@ -299,7 +305,7 @@ function ChainCurse:init(args)
     range = self.range,
     target_classes = target_classes,
     skip_first_bounce = false, -- Skip curse line from parent to first target
-
+    delay = self.delay,
     -- ## Define Callbacks ##
 
     -- on_hit: This function is called on each target in the chain.
@@ -316,7 +322,9 @@ function ChainCurse:init(args)
         group = main.current.effects,
         src = from_target,
         dst = to_target,
-        color = self.color
+        primary_color = self.primary_color,
+        secondary_color = self.secondary_color,
+        duration = 0.6
       }
     end
   }
@@ -617,8 +625,8 @@ function CurseLine:init(args)
   self.dst = args.dst
   self.duration = args.duration or 0.4
   self.w = args.w or 3
-  self.color = args.color or purple[-3]
-  self.color.a = 0.8
+  self.primary_color = args.primary_color or purple[-3]
+  self.secondary_color = args.secondary_color or black[0]
   
   -- Curse-specific parameters
   self.segments = args.segments or math.random(6, 10)
@@ -632,8 +640,8 @@ function CurseLine:init(args)
   self.t:tween(self.duration, self, {w = 1}, math.linear, function() self.dead = true end)
   
   -- Create dark circles at both ends
-  CurseCircle{group = main.current.effects, x = self.src.x, y = self.src.y, rs = 6, color = self.color, duration = self.duration}
-  CurseCircle{group = main.current.effects, x = self.dst.x, y = self.dst.y, rs = 6, color = self.color, duration = self.duration}
+  CurseCircle{group = main.current.effects, x = self.src.x, y = self.src.y, rs = 6, color = self.primary_color, duration = self.duration}
+  CurseCircle{group = main.current.effects, x = self.dst.x, y = self.dst.y, rs = 6, color = self.primary_color, duration = self.duration}
   
   
   -- Add dark curse particles along the path
@@ -644,7 +652,7 @@ function CurseLine:init(args)
       group = main.current.effects,
       x = point.x,
       y = point.y,
-      color = self.color,
+      color = self.primary_color,
       v = random:float(15, 35),
       duration = self.duration * 0.9
     }
@@ -656,7 +664,7 @@ function CurseLine:init(args)
       group = main.current.effects,
       x = self.dst.x + random:float(-4, 4),
       y = self.dst.y + random:float(-4, 4),
-      color = self.color,
+      color = self.primary_color,
       v = random:float(10, 25),
       duration = 0.5
     }
@@ -725,18 +733,19 @@ end
 function CurseLine:draw()
   if #self.path_points < 2 then return end
   
-  -- Draw the dark curse line
-  love.graphics.setLineWidth(self.w)
-  love.graphics.setColor(self.color.r, self.color.g, self.color.b, self.color.a)
-  
-  -- Draw the path as a series of connected lines
+  -- Draw secondary color lines first (background)
   for i = 1, #self.path_points - 1 do
     local p1 = self.path_points[i]
     local p2 = self.path_points[i + 1]
-    love.graphics.line(p1.x, p1.y, p2.x, p2.y)
+    graphics.line(p1.x, p1.y, p2.x, p2.y, self.secondary_color, self.w + 1)
   end
   
-  love.graphics.setLineWidth(1)
+  -- Draw primary color lines on top (foreground)
+  for i = 1, #self.path_points - 1 do
+    local p1 = self.path_points[i]
+    local p2 = self.path_points[i + 1]
+    graphics.line(p1.x, p1.y, p2.x, p2.y, self.primary_color, self.w)
+  end
 end
 
 --[[
@@ -761,8 +770,9 @@ function CurseCircle:update(dt)
 end
 
 function CurseCircle:draw()
-  love.graphics.setColor(self.color.r, self.color.g, self.color.b, self.color.a * 0.7)
-  love.graphics.circle('line', self.x, self.y, self.rs)
+  local color = self.color:clone()
+  color.a = color.a * 0.7
+  graphics.circle(self.x, self.y, self.rs, color, 1)
 end
 
 --[[
@@ -799,6 +809,7 @@ end
 function CurseParticle:draw()
   local alpha = 1 - (self.start_time / self.duration)
   alpha = math.max(0, math.min(1, alpha))
-  love.graphics.setColor(self.color.r, self.color.g, self.color.b, self.color.a * alpha)
-  love.graphics.circle('fill', self.x, self.y, 1.5)
+  local color = self.color:clone()
+  color.a = color.a * alpha
+  graphics.circle(self.x, self.y, 1.5, color)
 end

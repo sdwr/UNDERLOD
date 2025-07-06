@@ -498,8 +498,10 @@ function Proc_Curse:init(args)
   }
 
   self.tick_interval = self.data.tick_interval or 5 
+  self.proc_delay = 0.75 -- Delay before first proc to avoid triggering on first enemy
   --proc memory
   self.tick_timer = math.random() * self.tick_interval
+  self.proc_timer = 0 -- Timer for proc delay
 end
 
 function Proc_Curse:onTick(dt, from)
@@ -519,14 +521,22 @@ function Proc_Curse:onTick(dt, from)
   local enemy = Helper.Spell:get_random_target_in_range_from_point(from.x, from.y, self.seek_radius, from.is_troop)
   if not enemy or enemy == -1 then return end
 
-  self.tick_timer = math.random() * self.tick_interval
+  -- Apply proc delay to avoid triggering on first enemy in wave
+  self.proc_timer = self.proc_timer + dt
+  if self.proc_timer < self.proc_delay then return end
+
   self:curse(enemy, from)
 end
 
 function Proc_Curse:curse(target, from)
-  if not target then return end
-  print('cursing', target.name)
+  --check if any target is in range
+  local enemy = Helper.Spell:get_random_target_in_range_from_point(from.x, from.y, self.seek_radius, from.is_troop)
+  if not enemy or enemy == -1 then return end
+
   earth1:play{pitch = random:float(0.8, 1.2), volume = 0.9}
+  
+  self.tick_timer = 0
+  self.proc_timer = 0
 
   -- Use ChainCurse instead of Area spell for proper chaining
   ChainCurse{
