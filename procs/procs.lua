@@ -525,19 +525,19 @@ end
 
 function Proc_Curse:curse(target, from)
   if not target then return end
+  print('cursing', target.name)
   earth1:play{pitch = random:float(0.8, 1.2), volume = 0.9}
 
-  local randomx = random:float(-10, 10)
-  local randomy = random:float(-10, 10)
-
-  Area{
-    group = main.current.effects, 
-    x = target.x + randomx, y = target.y + randomy,
-    pick_shape = 'circle',
-    damage = 0, r = self.radius, duration = 0.2, color = self.color,
+  -- Use ChainCurse instead of Area spell for proper chaining
+  ChainCurse{
+    group = main.current.main,
+    parent = from,
+    target = target,
+    range = self.radius,
     is_troop = from.is_troop,
-    debuff = self.buffdata
-  
+    curse_data = self.buffdata,
+    color = purple[-3], -- Dark purple
+    max_chains = 3 -- Limit curse chains to prevent overwhelming
   }
 
   self.tick_timer = 0

@@ -265,6 +265,67 @@ function ChainHeal:init(args)
   ChainSpell.init(self, spell_args)
 end
 
+--[[
+  ChainCurse
+  An implementation of ChainSpell for a dark curse effect.
+  This object primarily serves to configure and launch the generic ChainSpell.
+--]]
+ChainCurse = ChainSpell:extend()
+
+function ChainCurse:init(args)
+  -- 1. Define curse-specific parameters.
+  self.group = args.group or main.current.main
+  self.target = args.target
+  self.parent = args.parent
+  self.range = args.range or 50
+  self.is_troop = args.is_troop or false
+  self.curse_data = args.curse_data or {name = 'curse', duration = 3, color = purple[0], stats = {percent_def = -0.4}}
+  self.color = args.color or purple[-3] -- Dark purple
+
+  -- Define the enemy/friendly targeting logic.
+  local target_classes
+  if not self.is_troop then
+    target_classes = main.current.friendlies
+  else
+    target_classes = main.current.enemies
+  end
+
+  -- 2. Create the configuration table for the base ChainSpell.
+  local spell_args = {
+    group = self.group,
+    parent = self.parent,
+    target = self.target,
+    max_chains = args.max_chains or 4,
+    range = self.range,
+    target_classes = target_classes,
+    skip_first_bounce = false, -- Skip curse line from parent to first target
+
+    -- ## Define Callbacks ##
+
+    -- on_hit: This function is called on each target in the chain.
+    on_hit = function(spell, target)
+      -- Apply curse debuff to the target
+      target:add_buff(self.curse_data)
+    end,
+
+    -- on_bounce: This function creates the visual and audio effects between targets.
+    on_bounce = function(spell, from_target, to_target)
+      wizard1:play{pitch = random:float(0.9, 1.1), volume = 0.4}
+      -- The CurseLine effect is a separate, temporary object.
+      CurseLine{
+        group = main.current.effects,
+        src = from_target,
+        dst = to_target,
+        color = self.color
+      }
+    end
+  }
+
+  -- 3. Initialize the base ChainSpell with our configuration.
+  -- This will automatically start the chaining logic.
+  ChainSpell.init(self, spell_args)
+end
+
 
 --line effects
 
@@ -540,4 +601,204 @@ function HealingParticle:draw()
   alpha = math.max(0, math.min(1, alpha))
   love.graphics.setColor(self.color.r, self.color.g, self.color.b, self.color.a * alpha)
   love.graphics.circle('fill', self.x, self.y, 2)
+end
+
+--[[
+  CurseLine
+  A visual effect for a dark curse line between two points.
+  Creates a sinister black and purple line with dark particles.
+--]]
+CurseLine = Object:extend()
+CurseLine:implement(GameObject)
+
+function CurseLine:init(args)
+  self:init_game_object(args)
+  self.src = args.src
+  self.dst = args.dst
+  self.duration = args.duration or 0.4
+  self.w = args.w or 3
+  self.color = args.color or purple[-3]
+  self.color.a = 0.8
+  
+  -- Curse-specific parameters
+  self.segments = args.segments or math.random(6, 10)
+  self.max_offset = args.max_offset or 6
+  self.curse_particles = args.curse_particles or 4
+  
+  -- Generate the cursed path
+  self:generate_cursed_path()
+  
+  -- Animate the line width for a "dark pulse" effect
+  self.t:tween(self.duration, self, {w = 1}, math.linear, function() self.dead = true end)
+  
+  -- Create dark circles at both ends
+  CurseCircle{group = main.current.effects, x = self.src.x, y = self.src.y, rs = 6, color = self.color, duration = self.duration}
+  CurseCircle{group = main.current.effects, x = self.dst.x, y = self.dst.y, rs = 6, color = self.color, duration = self.duration}
+  
+  
+  -- Add dark curse particles along the path
+  for i = 1, self.curse_particles do
+    local t = (i - 1) / (self.curse_particles - 1)
+    local point = self:get_point_at_time(t)
+    CurseParticle{
+      group = main.current.effects,
+      x = point.x,
+      y = point.y,
+      color = self.color,
+      v = random:float(15, 35),
+      duration = self.duration * 0.9
+    }
+  end
+  
+  -- Add extra dark particles at the destination
+  for i = 1, 2 do
+    CurseParticle{
+      group = main.current.effects,
+      x = self.dst.x + random:float(-4, 4),
+      y = self.dst.y + random:float(-4, 4),
+      color = self.color,
+      v = random:float(10, 25),
+      duration = 0.5
+    }
+  end
+end
+
+function CurseLine:generate_cursed_path()
+  self.path_points = {}
+  
+  -- Start with the source point
+  table.insert(self.path_points, {x = self.src.x, y = self.src.y})
+  
+  -- Generate cursed intermediate points with dark, jagged motion
+  for i = 1, self.segments do
+    local t = i / (self.segments + 1)
+    local base_x = self.src.x + (self.dst.x - self.src.x) * t
+    local base_y = self.src.y + (self.dst.y - self.src.y) * t
+    
+    -- Add perpendicular offset for dark, jagged effect
+    local dx = self.dst.x - self.src.x
+    local dy = self.dst.y - self.src.y
+    local length = math.sqrt(dx * dx + dy * dy)
+    
+    if length > 0 then
+      local perp_x = -dy / length
+      local perp_y = dx / length
+      
+      -- Use sawtooth wave for jagged, dark motion
+      local offset = math.sin(t * math.pi * 3) * math.cos(t * math.pi * 2) * self.max_offset
+      
+      local x = base_x + perp_x * offset
+      local y = base_y + perp_y * offset
+      
+      table.insert(self.path_points, {x = x, y = y})
+    end
+  end
+  
+  -- End with the destination point
+  table.insert(self.path_points, {x = self.dst.x, y = self.dst.y})
+end
+
+function CurseLine:get_point_at_time(t)
+  if #self.path_points <= 1 then
+    return {x = self.src.x, y = self.src.y}
+  end
+  
+  local segment_count = #self.path_points - 1
+  local segment_index = math.floor(t * segment_count)
+  local segment_t = (t * segment_count) - segment_index
+  
+  segment_index = math.min(segment_index, segment_count - 1)
+  
+  local p1 = self.path_points[segment_index + 1]
+  local p2 = self.path_points[segment_index + 2]
+  
+  return {
+    x = p1.x + (p2.x - p1.x) * segment_t,
+    y = p1.y + (p2.y - p1.y) * segment_t
+  }
+end
+
+function CurseLine:update(dt)
+  self:update_game_object(dt)
+end
+
+function CurseLine:draw()
+  if #self.path_points < 2 then return end
+  
+  -- Draw the dark curse line
+  love.graphics.setLineWidth(self.w)
+  love.graphics.setColor(self.color.r, self.color.g, self.color.b, self.color.a)
+  
+  -- Draw the path as a series of connected lines
+  for i = 1, #self.path_points - 1 do
+    local p1 = self.path_points[i]
+    local p2 = self.path_points[i + 1]
+    love.graphics.line(p1.x, p1.y, p2.x, p2.y)
+  end
+  
+  love.graphics.setLineWidth(1)
+end
+
+--[[
+  CurseCircle
+  A dark circle effect for the endpoints of curse lines.
+--]]
+CurseCircle = Object:extend()
+CurseCircle:implement(GameObject)
+
+function CurseCircle:init(args)
+  self:init_game_object(args)
+  self.rs = args.rs or 6
+  self.color = args.color or purple[-3]
+  self.duration = args.duration or 0.4
+  
+  -- Animate the circle size
+  self.t:tween(self.duration, self, {rs = 1}, math.linear, function() self.dead = true end)
+end
+
+function CurseCircle:update(dt)
+  self:update_game_object(dt)
+end
+
+function CurseCircle:draw()
+  love.graphics.setColor(self.color.r, self.color.g, self.color.b, self.color.a * 0.7)
+  love.graphics.circle('line', self.x, self.y, self.rs)
+end
+
+--[[
+  CurseParticle
+  A dark particle effect for curse spells.
+--]]
+CurseParticle = Object:extend()
+CurseParticle:implement(GameObject)
+
+function CurseParticle:init(args)
+  self:init_game_object(args)
+  self.v = args.v or 25
+  self.color = args.color or purple[-3]
+  self.duration = args.duration or 0.4
+  
+  -- Dark downward motion with some randomness
+  self.vx = random:float(-8, 8)
+  self.vy = self.v + random:float(-8, 8)
+  
+  -- Track the initial time for alpha calculation
+  self.start_time = 0
+  
+  -- Animate the particle fading
+  self.t:tween(self.duration, self, {vx = 0, vy = 0}, math.linear, function() self.dead = true end)
+end
+
+function CurseParticle:update(dt)
+  self:update_game_object(dt)
+  self.x = self.x + self.vx * dt
+  self.y = self.y + self.vy * dt
+  self.start_time = self.start_time + dt
+end
+
+function CurseParticle:draw()
+  local alpha = 1 - (self.start_time / self.duration)
+  alpha = math.max(0, math.min(1, alpha))
+  love.graphics.setColor(self.color.r, self.color.g, self.color.b, self.color.a * alpha)
+  love.graphics.circle('fill', self.x, self.y, 1.5)
 end
