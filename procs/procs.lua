@@ -529,28 +529,37 @@ function Proc_Curse:onTick(dt, from)
 end
 
 function Proc_Curse:curse(target, from)
-  --check if any target is in range
-  local enemy = Helper.Spell:get_random_target_in_range_from_point(from.x, from.y, self.seek_radius, from.is_troop)
-  if not enemy or enemy == -1 then return end
-
   earth1:play{pitch = random:float(0.8, 1.2), volume = 0.9}
   
   self.tick_timer = 0
   self.proc_timer = 0
 
-  -- Use ChainCurse instead of Area spell for proper chaining
-  ChainCurse{
-    group = main.current.main,
-    parent = from,
-    target = target,
-    range = self.radius,
+  -- Use Area_Spell with on_hit_callback to create individual curse lines
+  Area_Spell{
+    group = main.current.effects,
+    x = target.x, y = target.y,
+    radius = self.radius,
+    pick_shape = 'circle',
+    duration = 0.5,
+    color = purple[-3],
+    opacity = 0.3,
     is_troop = from.is_troop,
-    curse_data = self.buffdata,
-    color = purple[-3], -- Dark purple
-    max_chains = 3 -- Limit curse chains to prevent overwhelming
+    damage = 0, -- No damage, just visual
+    unit = nil, -- Explicitly set to nil to avoid affecting unit cooldowns
+    on_hit_callback = function(spell, hit_target, unit)
+      -- Create ChainCurse with max_chains = 1 for single line effect
+      ChainCurse{
+        group = main.current.main,
+        parent = from,
+        target = hit_target,
+        range = 0, -- No additional chaining
+        is_troop = from.is_troop,
+        curse_data = self.buffdata,
+        color = purple[-3], -- Dark purple
+        max_chains = 1 -- Only one line from caster to target
+      }
+    end
   }
-
-  self.tick_timer = 0
 end
 
 Proc_Root = Proc:extend()

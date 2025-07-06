@@ -18,6 +18,9 @@ function Area_Spell:init(args)
     self.tick_rate = self.tick_rate or 0.2
     self.is_troop = self.is_troop or false
 
+    -- Optional callback function for when targets are hit
+    self.on_hit_callback = args.on_hit_callback
+
     if self.area_type == 'target' then
       if self.target then
         self.x, self.y = self.target.x, self.target.y
@@ -109,9 +112,14 @@ function Area_Spell:apply_damage()
                     Helper.Damage:indirect_hit(target, self.damage, self.unit, self.damage_type, true)
                 end
                 self:apply_hit_effect(target)
-              end
-              
-              table.insert(actual_targets_hit, target)
+            end
+            
+            -- Call the on_hit_callback if provided
+            if self.on_hit_callback then
+                self.on_hit_callback(self, target, self.unit)
+            end
+            
+            table.insert(actual_targets_hit, target)
             -- If it's not a DoT, mark as hit so it can't be hit again.
             -- For DoTs, we could clear this list each tick if we wanted to allow multiple hits.
             if not self.damage_ticks then

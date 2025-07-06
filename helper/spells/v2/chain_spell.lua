@@ -335,6 +335,8 @@ function ChainCurse:init(args)
 end
 
 
+
+
 --line effects
 
 LightningLine = Object:extend()
