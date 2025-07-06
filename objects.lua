@@ -898,6 +898,52 @@ function Unit:calculate_stats(first_run)
     end
   end
 
+
+  if self.perks then
+    for perk_name, perk in pairs(self.perks) do
+      local perk_stats = Get_Perk_Stats(perk)
+      for stat, value in pairs(perk_stats) do
+        local actual_stat = Helper.Unit:process_perk_name(stat, self)
+        
+        -- Process the stat if it should be processed
+        if actual_stat then
+          if actual_stat == buff_types['hp'] then
+            self.buff_hp_m = self.buff_hp_m + value
+          elseif actual_stat == buff_types['dmg'] then
+            self.buff_dmg_m = self.buff_dmg_m + value
+          elseif actual_stat == buff_types['aspd'] then
+            self.buff_aspd_m = self.buff_aspd_m + value
+          elseif actual_stat == buff_types['mvspd'] then
+            self.buff_mvspd_m = self.buff_mvspd_m + value
+          elseif actual_stat == buff_types['range'] then
+            self.buff_range_m = self.buff_range_m + value
+          elseif actual_stat == buff_types['area_dmg'] then
+            self.buff_area_dmg_m = self.buff_area_dmg_m + value
+          elseif actual_stat == buff_types['area_size'] then
+            self.buff_area_size_m = self.buff_area_size_m + value
+          elseif actual_stat == buff_types['repeat_attack_chance'] then
+            self.buff_repeat_attack_chance = self.buff_repeat_attack_chance + value
+          elseif actual_stat == buff_types['fire_damage_m'] then
+            self.buff_fire_damage_m = self.buff_fire_damage_m + value
+          elseif actual_stat == buff_types['lightning_damage_m'] then
+            self.buff_lightning_damage_m = self.buff_lightning_damage_m + value
+          elseif actual_stat == buff_types['cold_damage_m'] then
+            self.buff_cold_damage_m = self.buff_cold_damage_m + value
+          elseif actual_stat == 'knockback_dmg' then
+            -- Handle knockback damage separately if needed
+            self.enemy_knockback_dmg = (self.enemy_knockback_dmg or 0) + value
+          elseif actual_stat == 'elemental_slow' then
+            -- Handle elemental slow separately if needed
+            self.enemy_elemental_slow = (self.enemy_elemental_slow or 0) + value
+          else
+            -- Warning for unrecognized stats
+            print("Warning: Unrecognized perk stat '" .. actual_stat .. "' for unit type " .. (self.class or "unknown"))
+          end
+        end
+      end
+    end
+  end
+
   local unit_stat_mult = unit_stat_multipliers[self.character] or unit_stat_multipliers['none']
 
   self.class_hp_m = self.class_hp_m*unit_stat_mult.hp

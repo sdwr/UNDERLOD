@@ -315,6 +315,8 @@ _set_unit_item_config = function(unit)
     unit.items = {}
   end
 
+  unit.perks = main.current.perks or {}
+  
   --add per-attack procs from items here
   unit.procs = {}
 

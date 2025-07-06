@@ -540,4 +540,43 @@ function Helper.Unit:apply_knockback(unit, force, angle, duration, push_invulner
     end)
 end
 
+-- ===================================================================
+-- PERK PROCESSING HELPER FUNCTION
+-- This function processes perk names based on unit type to determine
+-- which stats should be applied to which unit types.
+-- ===================================================================
+function Helper.Unit:process_perk_name(stat, unit)
+    -- Determine which stats to process based on unit type
+    if unit:is(Troop) then
+        -- Troops process stats without any prefix
+        if not (string.sub(stat, 1, 6) == "enemy_" or 
+               string.sub(stat, 1, 8) == "critter_" or 
+               string.sub(stat, 1, 12) == "enemycritter_") then
+            return stat -- Return the stat name unchanged
+        end
+        return false
+    elseif unit:is(Critter) then
+        -- Friendly critters process stats with "critter_" prefix
+        if string.sub(stat, 1, 8) == "critter_" then
+            return string.sub(stat, 9) -- Remove "critter_" prefix
+        end
+        return false
+    elseif unit:is(EnemyCritter) then
+        -- Enemy critters process stats with "enemycritter_" prefix
+        if string.sub(stat, 1, 12) == "enemycritter_" then
+            return string.sub(stat, 13) -- Remove "enemycritter_" prefix
+        end
+        return false
+    elseif unit:is(Enemy) then
+        -- Enemies process stats with "enemy_" prefix
+        if string.sub(stat, 1, 6) == "enemy_" then
+            return string.sub(stat, 7) -- Remove "enemy_" prefix
+        end
+        return false
+    else
+        print('no unit type for perk', stat, unit, unit.type, unit.class)
+        return false
+    end
+end
+
 
