@@ -37,9 +37,12 @@ function Area_Spell:init(args)
     end
 
     self.color = self.color or fg[0]
-    self.opacity = self.opacity or 0.1
+    self.opacity = self.opacity or 0.08
     self.color_transparent = Color(self.color.r, self.color.g, self.color.b, self.opacity)
     self.line_width = self.line_width or 1
+    
+    -- Add flashFactor for shimmery outline effect (like Area class)
+    self.flashFactor = 0.5 -- Fixed value for consistent outline brightness
 
     -- Internal state
     self.targets_hit_map = {} -- Keep track of who we've hit to avoid double-damaging
@@ -143,14 +146,14 @@ function Area_Spell:draw()
     if self.hidden then return end
 
 
-    -- Simplified drawing, can be expanded as needed
+    -- Draw with shimmery outline effect (like Area class)
     graphics.push(self.x, self.y, self.r)
     if self.pick_shape == 'circle' then
       graphics.circle(self.x, self.y, self.radius, self.color_transparent)
-      graphics.circle(self.x, self.y, self.radius, self.color_transparent, self.line_width)
+      graphics.circle(self.x, self.y, self.radius, self.color, 1 * self.flashFactor)
     else
       graphics.rectangle(self.x, self.y, self.radius, self.radius, 0, 0, self.color_transparent)
-      graphics.rectangle(self.x, self.y, self.radius, self.radius, 0, 0, self.color_transparent, self.line_width)
+      graphics.rectangle(self.x, self.y, self.radius, self.radius, 0, 0, self.color, 1 * self.flashFactor)
     end
     graphics.pop()
 end
@@ -178,8 +181,11 @@ end
 Knockback_Area_Spell = Area_Spell:extend()
 
 function Knockback_Area_Spell:init(args)
+    --set default opacity before calling super.init
+    args.opacity = args.opacity or 0.3
     -- Call the parent init first to set up all the base spell properties
     Knockback_Area_Spell.super.init(self, args)
+
 
     -- Override properties for the knockback
     self.damage_ticks = false
