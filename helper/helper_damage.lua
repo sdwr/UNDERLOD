@@ -1,9 +1,10 @@
 Helper.Damage = {}
 
 -- ===================================================================
--- UNIFIED HIT FUNCTION
+-- CORE HIT LOGIC (INTERNAL USE ONLY)
 -- This function handles the core hit logic that's common across all unit types
 -- Unit-specific behavior is extracted into separate functions
+-- Use primary_hit, indirect_hit, or chained_hit instead of this function
 -- ===================================================================
 function Helper.Damage:apply_hit(unit, damage, from, damageType, makesSound, cannotProcOnHit)
   -- Early returns for invalid states
@@ -149,8 +150,8 @@ function Helper.Damage:process_elemental_reactions(unit, actual_damage, damageTy
       group = main.current.main, 
       target = unit, range = 50, 
       dmg = actual_damage, color = yellow[0], 
-      parent = unit,
-      is_troop = not unit.is_troop
+      parent = from,
+      is_troop = from and from.is_troop
     }
   end
 
@@ -269,21 +270,133 @@ function Helper.Damage:apply_death_effects(unit, from)
 end
 
 -- ===================================================================
--- CONVENIENCE FUNCTIONS FOR DIFFERENT HIT TYPES
--- These will be used for the new hit system (primary, indirect, chained)
+-- THREE HIT TYPES FOR THE NEW DAMAGE SYSTEM
+-- ===================================================================
+
+-- ===================================================================
+-- PRIMARY HIT
+-- Direct attacks that can trigger full onHit effects including chains and criticals
 -- ===================================================================
 function Helper.Damage:primary_hit(unit, damage, from, damageType, makesSound)
+  
   -- Primary hits can trigger full onHit effects
-  Helper.Damage:apply_hit(unit, damage, from, damageType, makesSound, false)
+  -- TODO: Add critical hit check here before applying damage
+  -- TODO: Add chain attack potential here
+  
+  -- Early returns for invalid states
+  if unit.invulnerable then return end
+  if unit.dead then return end
+  
+  -- Default parameters
+  makesSound = makesSound or true
+  
+  -- Unit-specific pre-hit processing
+  if not Helper.Damage:process_pre_hit(unit, damage, from, damageType, makesSound) then
+    return
+  end
+  
+  -- Calculate final damage
+  local actual_damage = Helper.Damage:calculate_final_damage(unit, damage, damageType)
+  
+  -- TODO: Apply critical hit multiplier here if critical
+  -- TODO: Apply chain attack effects here
+  
+  -- Apply damage
+  unit.hp = unit.hp - actual_damage
+  
+  -- Unit-specific post-damage processing
+  Helper.Damage:process_post_damage(unit, actual_damage, damageType, from)
+  
+  -- Track damage for teams
+  Helper.Damage:track_team_damage(from, actual_damage)
+  
+  -- Handle callbacks with full onHit effects
+  Helper.Damage:process_callbacks(unit, from, actual_damage, damageType, false)
+  
+  -- Handle death
+  if unit.hp <= 0 then
+    Helper.Damage:handle_death(unit, from, actual_damage)
+  end
 end
 
+-- ===================================================================
+-- INDIRECT HIT
+-- Area effects, explosions, environmental damage that can't chain
+-- ===================================================================
 function Helper.Damage:indirect_hit(unit, damage, from, damageType, makesSound)
+  
   -- Indirect hits have limited onHit effects (no chain effects, no critical hits)
-  -- TODO: Implement limited callback system
-  Helper.Damage:apply_hit(unit, damage, from, damageType, makesSound, false)
+  -- This is the current apply_hit function renamed
+  
+  -- Early returns for invalid states
+  if unit.invulnerable then return end
+  if unit.dead then return end
+  
+  -- Default parameters
+  makesSound = makesSound or true
+  
+  -- Unit-specific pre-hit processing
+  if not Helper.Damage:process_pre_hit(unit, damage, from, damageType, makesSound) then
+    return
+  end
+  
+  -- Calculate final damage
+  local actual_damage = Helper.Damage:calculate_final_damage(unit, damage, damageType)
+  
+  -- Apply damage
+  unit.hp = unit.hp - actual_damage
+  
+  -- Unit-specific post-damage processing
+  Helper.Damage:process_post_damage(unit, actual_damage, damageType, from)
+  
+  -- Track damage for teams
+  Helper.Damage:track_team_damage(from, actual_damage)
+  
+  -- Handle callbacks with limited onHit effects
+  Helper.Damage:process_callbacks(unit, from, actual_damage, damageType, false)
+  
+  -- Handle death
+  if unit.hp <= 0 then
+    Helper.Damage:handle_death(unit, from, actual_damage)
+  end
 end
 
+-- ===================================================================
+-- CHAINED HIT
+-- Elemental damage, chain lightning, or any effect that originates from a primary hit
+-- ===================================================================
 function Helper.Damage:chained_hit(unit, damage, from, damageType, makesSound)
   -- Chained hits cannot trigger onHit effects (prevents infinite loops)
-  Helper.Damage:apply_hit(unit, damage, from, damageType, makesSound, true)
+  
+  -- Early returns for invalid states
+  if unit.invulnerable then return end
+  if unit.dead then return end
+  
+  -- Default parameters
+  makesSound = makesSound or true
+  
+  -- Unit-specific pre-hit processing
+  if not Helper.Damage:process_pre_hit(unit, damage, from, damageType, makesSound) then
+    return
+  end
+  
+  -- Calculate final damage
+  local actual_damage = Helper.Damage:calculate_final_damage(unit, damage, damageType)
+  
+  -- Apply damage
+  unit.hp = unit.hp - actual_damage
+  
+  -- Unit-specific post-damage processing
+  Helper.Damage:process_post_damage(unit, actual_damage, damageType, from)
+  
+  -- Track damage for teams
+  Helper.Damage:track_team_damage(from, actual_damage)
+  
+  -- Handle callbacks with NO onHit effects (prevents infinite loops)
+  Helper.Damage:process_callbacks(unit, from, actual_damage, damageType, true)
+  
+  -- Handle death
+  if unit.hp <= 0 then
+    Helper.Damage:handle_death(unit, from, actual_damage)
+  end
 end 

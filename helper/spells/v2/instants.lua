@@ -65,7 +65,8 @@ function Arrow:update(dt)
 
   if math.distance(self.x, self.y, self.target.x, self.target.y) < 10 then
     hit2:play{volume=0.5}
-    self.target:hit(self.damage, self.unit, nil, true, false)
+    -- Use primary hit for the exact target hit by the arrow
+    Helper.Damage:primary_hit(self.target, self.damage, self.unit, nil, true)
     self:die()
   end
 end
@@ -139,7 +140,8 @@ function ArrowProjectile:update(dt)
   local targets = main.current.main:get_objects_in_shape(self.shape, target_classes)
   if #targets > 0 then
     hit2:play{volume=0.5}
-    targets[1]:hit(self.damage, self.unit, nil, true, false)
+    -- Use primary hit for the exact target hit by the projectile
+    Helper.Damage:primary_hit(targets[1], self.damage, self.unit, nil, true)
     self:die()
     return
   end

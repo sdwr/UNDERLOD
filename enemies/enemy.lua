@@ -265,8 +265,8 @@ end
 function Enemy:hit(damage, from, damageType, makesSound, cannotProcOnHit)
   -- Mark this unit as an enemy for the damage helper
   self.isEnemy = true
-  -- Use the unified damage helper
-  Helper.Damage:apply_hit(self, damage, from, damageType, makesSound, cannotProcOnHit)
+  -- Use the indirect hit function (current behavior)
+  Helper.Damage:indirect_hit(self, damage, from, damageType, makesSound)
 end
 
 function Enemy:onDeath()

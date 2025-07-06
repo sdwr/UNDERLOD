@@ -28,6 +28,7 @@ function ChainSpell:init(args)
   self.delay = args.delay or 0.15                -- The time in seconds between each chain link.
   self.target_classes = args.target_classes or {}-- Table of classes to consider valid targets (e.g., main.current.enemies).
   self.target_condition = args.target_condition or function() return true end
+  self.skip_first_bounce = args.skip_first_bounce or false -- Skip bounce effect from parent to first target
 
   -- Callback functions to be defined by the spell implementation.
   -- on_hit(spell, target): Action to perform on the target (e.g., deal damage).
@@ -39,7 +40,12 @@ function ChainSpell:init(args)
   self.targets = {self.initial_target}  -- A list of targets to be hit. Grows dynamically.
   self.hit_targets = {}                 -- A hash map to track targets that have already been hit.
   self.current_index = 0                -- The index of the current target in the self.targets list.
-  self.last_target = self.parent        -- The source of the current chain link.
+  -- Set last_target based on skip_first_bounce flag
+  if self.skip_first_bounce then
+    self.last_target = nil  -- No initial source for first bounce
+  else
+    self.last_target = self.parent  -- The source of the current chain link
+  end
 
   -- Initiate the chaining process. We use a timer to avoid blocking the main thread
   -- and to handle the delay between bounces.
@@ -161,6 +167,7 @@ function ChainLightning:init(args)
     max_chains = SHOCK_MAX_CHAINS,
     range = self.range, -- Use the radius specified in the original arguments
     target_classes = target_classes,
+    skip_first_bounce = true, -- Skip lightning line from parent to first target
 
     -- ## Define Callbacks ##
 

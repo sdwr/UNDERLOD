@@ -522,8 +522,8 @@ end
 function Troop:hit(damage, from, damageType, makesSound, cannotProcOnHit)
   -- Mark this unit as a troop for the damage helper
   self.is_troop = true
-  -- Use the unified damage helper
-  Helper.Damage:apply_hit(self, damage, from, damageType, makesSound, cannotProcOnHit)
+  -- Use the indirect hit function (current behavior)
+  Helper.Damage:indirect_hit(self, damage, from, damageType, makesSound)
 end
 
 function Troop:die()

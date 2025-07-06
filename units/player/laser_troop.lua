@@ -77,6 +77,10 @@ function Laser_Troop:setup_cast(cast_target)
   self:cast(data)
 end
 
+-- NOTE: Laser hits are currently left as indirect hits for now.
+-- TODO: Implement primary hit for the exact target only, with chained hits for other targets hit by the beam.
+-- This requires modifying the Laser_Spell to distinguish between the intended target and other targets.
+
 function Laser_Troop:set_state_functions()
 
   

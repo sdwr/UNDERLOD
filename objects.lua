@@ -584,7 +584,8 @@ function Unit:update_buffs(dt)
           
           -- 2. Deal the damage
           if damage_this_tick > 0 then
-              self:hit(damage_this_tick, v.from, DAMAGE_TYPE_BURN, false, true)
+              -- Burn damage should not be attributed to anyone (environmental damage)
+              self:hit(damage_this_tick, nil, DAMAGE_TYPE_BURN, false, true)
           end
 
           v.total_damage = v.total_damage - damage_this_tick
@@ -980,7 +981,7 @@ function Unit:handle_elemental_damage_on_attack(target)
   -- Lightning damage
   if self.lightning_damage and self.lightning_damage > 0 then
     local lightning_damage = self.dmg * self.lightning_damage
-    target:hit(lightning_damage, nil, DAMAGE_TYPE_LIGHTNING, false, true)
+    target:hit(lightning_damage, self, DAMAGE_TYPE_LIGHTNING, false, true)
   end
   
   -- Cold damage

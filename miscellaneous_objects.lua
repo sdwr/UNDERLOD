@@ -1440,8 +1440,8 @@ end
 
 
 function Critter:hit(damage, from, damageType, makesSound, cannotProcOnHit)
-  -- Use the unified damage helper
-  Helper.Damage:apply_hit(self, damage, from, damageType, makesSound, cannotProcOnHit)
+  -- Use the indirect hit function (current behavior)
+  Helper.Damage:indirect_hit(self, damage, from, damageType, makesSound)
 end
 
 function Critter:push(f, r, push_invulnerable, duration)

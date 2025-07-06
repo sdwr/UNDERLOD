@@ -86,11 +86,28 @@ function Area_Spell:apply_damage()
     local targets_in_area = main.current.main:get_objects_in_shape(self.shape, target_group)
 
     local actual_targets_hit = {}
+    local primary_target = nil
+    
+    -- Find the primary target (the one the attack was aimed at)
+    if self.target and not self.target.dead then
+        for _, target in ipairs(targets_in_area) do
+            if target.id == self.target.id then
+                primary_target = target
+                break
+            end
+        end
+    end
+    
     for _, target in ipairs(targets_in_area) do
         -- Only damage targets we haven't already hit in this spell's lifetime
         if not self.targets_hit_map[target.id] then
             if self.damage > 0 then
-                target:hit(self.damage, self.unit, self.damage_type, true, true)
+                -- Use primary hit for the intended target, indirect hit for others
+                if target == primary_target then
+                    Helper.Damage:primary_hit(target, self.damage, self.unit, self.damage_type, true)
+                else
+                    Helper.Damage:indirect_hit(target, self.damage, self.unit, self.damage_type, true)
+                end
                 self:apply_hit_effect(target)
               end
               
