@@ -662,7 +662,7 @@ end
 
 --different from calculate_stats :( 
 --used for the character tooltip in buy screen
-function Unit:get_item_stats()
+function Unit:get_item_stats_for_display()
   -- Step A: Aggregate all stats into a temporary hash table for quick summation.
   -- This part of the logic remains the same.
   local aggregated_stats = {}
@@ -1939,7 +1939,7 @@ function HPBar_Damage_Chunk:draw()
 end
 
 -- Get perk stats for display in buy screen tooltips
-function Unit:get_perk_stats()
+function Unit:get_perk_stats_for_display()
   -- Get perk stats that would apply to this unit
   local perk_stats = {}
   if self.perks then

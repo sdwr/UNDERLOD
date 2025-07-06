@@ -775,10 +775,10 @@ function init()
     troop:update(0)
     
     -- Get item stats
-    local item_stats = troop:get_item_stats()
+    local item_stats = troop:get_item_stats_for_display()
     
     -- Get perk stats
-    local perk_stats = troop:get_perk_stats()
+    local perk_stats = troop:get_perk_stats_for_display()
     
     -- Combine item and perk stats
     local combined_stats = {}
