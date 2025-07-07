@@ -50,7 +50,7 @@ BASE_CRIT_MULT = 2
 
 SHOCK_DEF_REDUCTION = -0.2
 
-REPEAT_ATTACK_DELAY = 0.7
+REPEAT_ATTACK_DELAY = 0.15
 
 BOSS_LEVELS = {6, 11, 16, 21}
 ENEMY_SCALING_PER_LEVEL = 0.15
@@ -203,7 +203,7 @@ buff_types = {
     ['bash'] = 'bash',
     ['heal'] = 'heal',
     ['explode'] = 'explode',
-    
+
     ['repeat_attack_chance'] = 'repeat_attack_chance',
     ['crit_chance'] = 'crit_chance',
     ['crit_mult'] = 'crit_mult',

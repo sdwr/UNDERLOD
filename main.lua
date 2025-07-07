@@ -995,7 +995,7 @@ function init()
     ['ghost'] = 'move through units',
     ['slow'] = 'movement slow on attack',
     ['thorns'] = 'thorns',
-    ['range'] = 'range',
+    ['range'] = 'increased range',
     ['bash'] = 'chance to stun',
     ['repeat_attack_chance'] = 'double attack chance',
     ['enrage'] = 'enrage allies on death',

@@ -188,6 +188,7 @@ function Cast:try_repeat_attack(spellclass, spelldata)
 
     main.current.t:after(REPEAT_ATTACK_DELAY, function()
       if unit and not unit.dead and target and not target.dead then
+        spawn_mark1:play{volume = 0.5}
         local spell = spellclass(new_spelldata)
         if spelldata.on_attack_callbacks and self.unit.onAttackCallbacks then
           self.unit:onAttackCallbacks(self.target)
