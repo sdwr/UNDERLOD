@@ -298,6 +298,7 @@ function SpawnManager:update(dt)
         if self.timer <= 0 then
           self.pending_spawns = 0
             self:change_state('processing_wave')
+            spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
         end
     end
 
@@ -601,7 +602,6 @@ function Create_Unit_With_Warning(arena, location, warning_time, creation_callba
       expected_spawn_time = warning_time,
       enemy_type = enemy_type
   }
-  spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
 
   -- 2. After the initial warning time, start checking if the space is clear.
   arena.t:after(warning_time, function()
