@@ -9,7 +9,7 @@ fns['init_enemy'] = function(self)
   Set_Enemy_Shape(self, self.size)
 
   self.class = 'special_enemy'
-  self.icon = 'lich'
+  self.icon = 'rockslime'
   self.movementStyle = MOVEMENT_TYPE_RANDOM
 
   self.baseCast = attack_speeds['medium-slow']
@@ -19,30 +19,36 @@ fns['init_enemy'] = function(self)
 
   self.attack_options = {}
 
-  local burst = {
-    name = 'burst',
+  local selfburst = {
+    name = 'selfburst',
     viable = function () return true end,
     oncast = function() end,
     castcooldown = self.castcooldown,
     instantspell = true,
-    cast_length = LICH_CAST_TIME,
+    cast_length = ROCKSLIME_CAST_TIME,
     spellclass = Burst,
     spelldata = {
       group = main.current.main,
       unit = self,
-      spelltype = "targeted",
+      spelltype = "not_targeted",
       x = self.x,
       y = self.y,
-      color = purple[0],
+      color = brown[0],
       damage = function() return self.dmg end,
-      speed = 70,
-      num_pieces = 8,
-      primary_explosion = true,
+      speed = 0,  -- No movement speed
+      distance = 0,  -- Explode immediately at own location
+      duration = 1,
+      num_pieces = 5,
+      r = math.pi,
+      primary_explosion = false,
+      secondary_damage = function() return self.dmg end,
+      secondary_distance = 120,
+      secondary_speed = 80,
       parent = self
     }
   }
 
-  table.insert(self.attack_options, burst)
+  table.insert(self.attack_options, selfburst)
 
 end
 
@@ -56,4 +62,4 @@ fns['draw_enemy'] = function(self)
   end
 end
  
-enemy_to_class['burst'] = fns
+enemy_to_class['selfburst'] = fns 

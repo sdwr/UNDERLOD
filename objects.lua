@@ -1494,13 +1494,7 @@ function Unit:pick_action()
     table.insert(viable_movements, v)
   end
 
-  --only move is allowed on the first action
-  if self.isFirstAction then
-    self.isFirstAction = false
-    viable_attacks = {}
-  end
-
-  if #viable_attacks > 0 and math.random() > (self.move_option_weight or 0.5) then
+  if #viable_attacks > 0 and math.random() > (self.move_option_weight or 0.3) then
     local attack = random:table(viable_attacks)
     while #viable_attacks > 1 and self.last_cast == attack.name do
       attack = random:table(viable_attacks)

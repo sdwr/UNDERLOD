@@ -447,6 +447,35 @@ iceslime_run_a = create_animation(iceslime_run_g, 1, 8, 64, 64, 0.2)
 iceslime_hurt_a = create_animation(iceslime_hurt_g, 1, 5, 64, 64, 0.4)
 iceslime_death_a = create_animation(iceslime_death_g, 1, 10, 64, 64, 0.2)
 
+ROCKSLIME_CAST_TIME = 1
+ROCKSLIME_ATTACK_FRAMES = 8
+
+ROCKSLIME_SPRITE_W = 128
+ROCKSLIME_SPRITE_H = 128
+
+ROCKSLIME_SPRITE_SCALE = 4.5
+
+rockslime_attack = Image(spriteFolder .. '/Slime_boss2/Attack/Slime_boss2_Attack_full', 'nearest')
+rockslime_idle = Image(spriteFolder .. '/Slime_boss2/Idle/Slime_boss2_Idle_full', 'nearest')
+rockslime_walk = Image(spriteFolder .. '/Slime_boss2/Walk/Slime_boss2_Walk_full', 'nearest')
+rockslime_run = Image(spriteFolder .. '/Slime_boss2/Run/Slime_boss2_Run_full', 'nearest')
+rockslime_hurt = Image(spriteFolder .. '/Slime_boss2/Hurt/Slime_boss2_Hurt_full', 'nearest')
+rockslime_death = Image(spriteFolder .. '/Slime_boss2/Death/Slime_boss2_Death_full', 'nearest')
+
+rockslime_attack_g = create_grid(rockslime_attack, 128, 128)
+rockslime_idle_g = create_grid(rockslime_idle, 128, 128)
+rockslime_walk_g = create_grid(rockslime_walk, 128, 128)
+rockslime_run_g = create_grid(rockslime_run, 128, 128)
+rockslime_hurt_g = create_grid(rockslime_hurt, 128, 128)
+rockslime_death_g = create_grid(rockslime_death, 128, 128)
+
+rockslime_attack_a = create_animation(rockslime_attack_g, 1, 10, 128, 128, ROCKSLIME_CAST_TIME / ROCKSLIME_ATTACK_FRAMES)
+rockslime_idle_a = create_animation(rockslime_idle_g, 1, 6, 128, 128, 0.2)
+rockslime_walk_a = create_animation(rockslime_walk_g, 1, 8, 128, 128, 0.2)
+rockslime_run_a = create_animation(rockslime_run_g, 1, 8, 128, 128, 0.2)
+rockslime_hurt_a = create_animation(rockslime_hurt_g, 1, 4, 128, 128, 0.4)
+rockslime_death_a = create_animation(rockslime_death_g, 1, 10, 128, 128, 0.2)
+
 
 MECH1_SPRITE_W = 80
 MECH1_SPRITE_H = 80
@@ -637,6 +666,16 @@ iceslime_spritesheets = {
   ['death'] = {iceslime_death_a, iceslime_death},
 }
 
+rockslime_spritesheets = {
+  ['normal'] = {rockslime_idle_a, rockslime_idle},
+  ['walk'] = {rockslime_walk_a, rockslime_walk},
+  ['run'] = {rockslime_run_a, rockslime_run},
+  ['casting'] = {rockslime_attack_a, rockslime_attack},
+  ['channeling'] = {rockslime_attack_a, rockslime_attack},
+  ['hurt'] = {rockslime_hurt_a, rockslime_hurt},
+  ['death'] = {rockslime_death_a, rockslime_death},
+}
+
 mech1_spritesheets = {
   ['normal'] = {mech1_idle_a, mech1_idle},
 }
@@ -692,6 +731,7 @@ enemy_spritesheets = {
   ['goblin2'] = goblin2_spritesheets,
   ['slime'] = slime_spritesheets,
   ['iceslime'] = iceslime_spritesheets,
+  ['rockslime'] = rockslime_spritesheets,
   ['mech1'] = mech1_spritesheets,
   ['mech2'] = mech2_spritesheets,
   ['mech3'] = mech3_spritesheets,
@@ -713,6 +753,7 @@ enemy_sprite_sizes = {
   ['goblin2'] = {GOBLIN2_SPRITE_W, GOBLIN2_SPRITE_H},
   ['slime'] = {SLIME_SPRITE_W, SLIME_SPRITE_H},
   ['iceslime'] = {ICESLIME_SPRITE_W, ICESLIME_SPRITE_H},
+  ['rockslime'] = {ROCKSLIME_SPRITE_W, ROCKSLIME_SPRITE_H},
   ['rat1'] = {RAT1_SPRITE_W, RAT1_SPRITE_H},
   ['rat2'] = {RAT2_SPRITE_W, RAT2_SPRITE_H},
   ['rat3'] = {RAT3_SPRITE_W, RAT3_SPRITE_H},
@@ -735,6 +776,7 @@ enemy_sprite_scales = {
   ['goblin2'] = GOBLIN2_SPRITE_SCALE,
   ['slime'] = SLIME_SPRITE_SCALE,
   ['iceslime'] = ICESLIME_SPRITE_SCALE,
+  ['rockslime'] = ROCKSLIME_SPRITE_SCALE,
   ['rat1'] = RAT1_SPRITE_SCALE,
   ['rat2'] = RAT2_SPRITE_SCALE,
   ['rat3'] = RAT3_SPRITE_SCALE,
@@ -771,6 +813,7 @@ enemy_type_to_size = {
   ['bomb'] = 'special',
   ['charger'] = 'special',
   ['burst'] = 'special',
+  ['selfburst'] = 'special',
   ['boomerang'] = 'special',
   ['plasma'] = 'special',
   ['firewall_caster'] = 'special',

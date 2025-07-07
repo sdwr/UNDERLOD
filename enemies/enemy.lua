@@ -20,11 +20,10 @@ function Enemy:init(args)
 
   self:calculate_stats(true)
 
-  self.baseIdleTimer = self.baseIdleTimer or 1.5
+  self.baseIdleTimer = self.baseIdleTimer or 0.75
   self.idleTimer = self.baseIdleTimer
-  self.baseActionTimer = self.baseActionTimer or 2
+  self.baseActionTimer = self.baseActionTimer or 1
   self.actionTimer = 0
-  self.isFirstAction = true
 
   self.movementStyle = self.movementStyle or MOVEMENT_TYPE_SEEK
   self.currentMovementAction = nil

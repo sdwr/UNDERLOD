@@ -522,7 +522,7 @@ function Burst:init(args)
     self.r = self.r or 0
     self.distance = self.distance or math.random(100, 250)
   end  
-  self.secondary_damage = self.secondary_damage or 10
+  self.secondary_damage = get_dmg_value(self.secondary_damage) or 10
   self.secondary_distance = self.secondary_distance or 50
   self.secondary_speed = self.secondary_speed or 100
   
@@ -617,19 +617,21 @@ function Burst:explode()
   if not self.dead then
     explosion_new:play{pitch = random:float(0.95, 1.05), volume = 0.3}
     
-    Area{
-      group = main.current.effects,
-      unit = self.unit,
-      is_troop = false,
-      x = self.x,
-      y = self.y,
-      r = self.radius * 2,
-      pick_shape = 'circle',
-      duration = 0.15,
-      damage = self.damage,
-      color = self.color,
-      parent = self,
-    }
+    if self.primary_explosion then
+      Area{
+        group = main.current.effects,
+        unit = self.unit,
+        is_troop = false,
+        x = self.x,
+        y = self.y,
+        r = self.radius * 2,
+        pick_shape = 'circle',
+        duration = 0.15,
+        damage = self.damage,
+        color = self.color,
+        parent = self,
+      }
+    end
 
     local angle_between = 2*math.pi / self.num_pieces
     local angle = 0
