@@ -112,6 +112,8 @@ function Enemy:update(dt)
     if table.any(unit_states_can_target, function(v) return self.state == v end) then
       if self.movementStyle == MOVEMENT_TYPE_SEEK then
         self:update_target_seek()
+      elseif self.movementStyle == MOVEMENT_TYPE_LOOSE_SEEK then
+        self:update_target_loose_seek()
       elseif self.movementStyle == MOVEMENT_TYPE_RANDOM then
         self:update_target_random()
       else
@@ -130,6 +132,8 @@ function Enemy:update(dt)
     if table.any(unit_states_enemy_can_move, function(v) return self.state == v end) then
       if self.movementStyle == MOVEMENT_TYPE_SEEK then
         self:update_move_seek()
+      elseif self.movementStyle == MOVEMENT_TYPE_LOOSE_SEEK then
+        self:update_move_loose_seek()
       elseif self.movementStyle == MOVEMENT_TYPE_RANDOM then
         self:update_move_random()
       else
@@ -163,6 +167,20 @@ function Enemy:update_target_seek()
   end
 end
 
+function Enemy:update_target_loose_seek()
+  if not self.target_location then
+    self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
+    self.target_location = {x = self.target.x + random:float(-50, 50), y = self.target.y + random:float(-50, 50)}
+  end
+  if not self.target_location or self:distance_to_point(self.target_location.x, self.target_location.y) < 10 then
+    self.target_location = nil
+    Helper.Unit:set_state(self, unit_states['frozen'])
+    self.t:after(0.5, function()
+      Helper.Unit:set_state(self, unit_states['normal'])
+    end)
+  end
+end
+
 function Enemy:update_move_seek()
   if self:in_range()() and self.stopChasingInRange then
     -- dont need to move
@@ -182,6 +200,15 @@ function Enemy:update_move_seek()
     -- self:rotate_towards_velocity(0.5)
   else
     -- dont need to move
+  end
+end
+
+function Enemy:update_move_loose_seek()
+  if self.target_location then
+    self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, SEEK_WEIGHT)
+    self:wander(10, 10, 5)
+    self:rotate_towards_velocity(1)
+    self:steering_separate(12, {Enemy}, 4)
   end
 end
 

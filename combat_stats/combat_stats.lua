@@ -115,7 +115,7 @@ unit_stat_multipliers = {
 
 enemy_type_to_stats = {
 
-    ['seeker'] = { dmg = 0.25, mvspd = 0.8 },
+    ['seeker'] = { dmg = 0.25, mvspd = 1.5 },
     ['shooter'] = {},
 
     ['cleaver'] = { dmg = 1.5 },
