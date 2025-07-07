@@ -99,9 +99,28 @@ function PerkSlot:init(args)
   self.spring:pull(0.2, 200, 10)
 end
 
+function PerkSlot:try_level_perk()
+  if not self.perk then return end
+  if not Can_Perk_Level_Up(self.perk) then return end
+  if gold < Perk_Level_Up_Cost(self.perk) then return end
+  
+  gold = gold - Perk_Level_Up_Cost(self.perk)
+  ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+  self.perk.level = self.perk.level + 1
+
+  main.current:save_run()
+
+  main.current.shop_text:set_text{{text = '[wavy_mid, fg]gold: [yellow]' .. gold, font = pixul_font, alignment = 'right'}}
+
+end
+
 function PerkSlot:update(dt)
   self:update_game_object(dt)
   self.shape:move_to(self.x, self.y)
+
+  if input.m1.pressed and self.colliding_with_mouse and self.perk then
+    self:try_level_perk()
+  end
 end
 
 function PerkSlot:draw()
@@ -170,11 +189,11 @@ function PerkSlot:set_perk(perk)
 end
 
 function PerkSlot:on_mouse_enter()
-  ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
   self.selected = true
-  self.spring:pull(0.2, 200, 10)
   
   if self.perk then
+    ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
+    self.spring:pull(0.2, 200, 10)
     self:show_perk_tooltip()
   end
 end
