@@ -437,6 +437,19 @@ function Unit:get_buff(buffName)
   return self.buffs[buffName]
 end
 
+function Unit:count_elemental_afflictions()
+  if not self.buffs then return 0 end
+  
+  local count = 0
+  for _, affliction_name in ipairs(elemental_affliction_buffs) do
+    if self.buffs[affliction_name] then
+      count = count + 1
+    end
+  end
+  
+  return count
+end
+
 function Unit:add_buff(buff)
   --copy the buff so we don't modify the original (procs are reusing the same buff data object)
   local buffCopy = {}
@@ -751,6 +764,7 @@ function Unit:calculate_stats(first_run)
   self.stun_chance = 0
   self.knockback_resistance = 0
   self.cooldown_reduction = 0
+  self.slow_per_element = 0
 
   self.eledmg_m = 1
 
@@ -844,7 +858,14 @@ function Unit:calculate_stats(first_run)
   self.area_size_m = self.base_area_size_m*self.buff_area_size_m
 
   self.class_mvspd_m = self.class_mvspd_m*unit_stat_mult.mvspd
-  self.max_move_v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m
+
+  local elemental_slow_m = 1
+  local num_elemental_afflictions = self:count_elemental_afflictions()
+  if self.slow_per_element > 0 and num_elemental_afflictions > 0 then
+    elemental_slow_m = 1 - (self.slow_per_element*num_elemental_afflictions)
+  end
+
+  self.max_move_v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m*elemental_slow_m
   self.max_v = self.max_move_v * 50
 
   -- Calculate final elemental damage stats
@@ -1902,6 +1923,8 @@ function Unit:add_stats(stats_list)
       self.stun_chance = self.stun_chance + amount
     elseif stat_name == buff_types['cooldown_reduction'] then
       self.cooldown_reduction = self.cooldown_reduction + amount
+    elseif stat_name == buff_types['slow_per_element'] then
+      self.slow_per_element = (self.slow_per_element or 0) + amount
     else
       -- print("unknown stat: " .. stat_name, amount)
     end

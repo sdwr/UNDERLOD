@@ -259,14 +259,14 @@ PERK_DEFINITIONS = {
     stats2 = {enemy_knockback_resistance = -0.45},
     stats3 = {enemy_knockback_resistance = -0.6},
   },
-  enemy_elemental_slow = {
+  enemy_slow_per_element = {
     name = "Enemy Elemental Slow",
     description = "Enemies are slowed by 8%/12%/16% for each elemental affliction",
-    icon = "enemy_elemental_slow",
+    icon = "enemy_slow_per_element",
     rarity = "common",
-    stats1 = {enemy_elemental_slow = 0.08},
-    stats2 = {enemy_elemental_slow = 0.12},
-    stats3 = {enemy_elemental_slow = 0.16},
+    stats1 = {enemy_slow_per_element = 0.08},
+    stats2 = {enemy_slow_per_element = 0.12},
+    stats3 = {enemy_slow_per_element = 0.16},
   },
 
   --generic weird perks

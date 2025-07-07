@@ -211,8 +211,15 @@ buff_types = {
     ['stun_chance'] = 'stun_chance',
     ['knockback_resistance'] = 'knockback_resistance',
     ['cooldown_reduction'] = 'cooldown_reduction',
+    ['slow_per_element'] = 'slow_per_element',
   }
 
+-- Elemental affliction buff names
+elemental_affliction_buffs = {
+    'burn',    -- Fire affliction
+    'shock',   -- Lightning affliction  
+    'chill',   -- Cold affliction
+}
 
 -- round stats
 

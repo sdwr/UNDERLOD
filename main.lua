@@ -1014,6 +1014,7 @@ function init()
     ['stun_chance'] = 'stun chance',
     ['knockback_resistance'] = 'knockback resistance',
     ['cooldown_reduction'] = 'cooldown reduction',
+    ['slow_per_element'] = 'slow per element',
 
     ['proc'] = 'Extra effect on attack',
   }
@@ -1050,6 +1051,7 @@ function init()
     'vamp',
     'ghost',
     'slow',
+    'slow_per_element',
     'thorns',
   }
 
