@@ -1,3 +1,62 @@
+SnakeArrows = Spell:extend()
+function SnakeArrows:init(args)
+  SnakeArrows.super.init(self, args)
+
+  self.color = self.color or green[0]
+  self.damage = get_dmg_value(self.damage)
+  self.speed = self.speed or 100
+  self.curve_depth = self.curve_depth or 30  -- How far the S-curve deviates from straight line
+  self.curve_frequency = self.curve_frequency or 2  -- How many S-curves per second
+  self.duration = self.duration or 8
+  self.radius = self.radius or 4
+
+  self.num_arrows = self.num_arrows or 3
+  --memory
+  self.next_arrow = 0.2
+  self.arrow_interval = self.arrow_interval or 0.5
+  self.arrows_left = self.num_arrows
+end
+
+function SnakeArrows:update(dt)
+  SnakeArrows.super.update(self, dt)
+  self.next_arrow = self.next_arrow - dt
+  if self.next_arrow <= 0 then
+    self.next_arrow = self.arrow_interval
+    self:fire_arrow()
+  end
+end
+
+function SnakeArrows:fire_arrow()
+  self.arrows_left = self.arrows_left - 1
+  if self.arrows_left <= 0 then self:die() end
+
+  local target = self.target
+  if not target then return end
+
+  SnakeArrow{
+    group = main.current.main,
+    unit = self.unit,
+    team = "enemy",
+    target = target,
+    damage = self.damage,
+    speed = self.speed,
+    curve_depth = self.curve_depth,
+    curve_frequency = self.curve_frequency,
+    duration = self.duration,
+    radius = self.radius,
+    color = self.color,
+  }
+end
+
+function SnakeArrows:draw()
+  SnakeArrows.super.draw(self)
+end
+
+function SnakeArrows:die()
+  SnakeArrows.super.die(self)
+  self.unit:reset_castcooldown(self.unit.baseCast)
+end
+
 SnakeArrow = Object:extend()
 SnakeArrow:implement(GameObject)
 SnakeArrow:implement(Physics)
@@ -13,6 +72,11 @@ function SnakeArrow:init(args)
   self.curve_frequency = self.curve_frequency or 2  -- How many S-curves per second
   self.duration = self.duration or 8
   self.radius = self.radius or 4
+
+  if self.unit then
+    self.x = self.unit.x
+    self.y = self.unit.y
+  end
   
   -- Create collision shape
   self.shape = Circle(self.x, self.y, self.radius)

@@ -524,6 +524,7 @@ function Troop:hit(damage, from, damageType, makesSound, cannotProcOnHit)
   -- Mark this unit as a troop for the damage helper
   self.is_troop = true
   -- Use the indirect hit function (current behavior)
+  player_hit1:play{pitch = random:float(0.95, 1.05), volume = 0.8}
   Helper.Damage:indirect_hit(self, damage, from, damageType, makesSound)
 end
 

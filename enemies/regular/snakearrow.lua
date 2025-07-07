@@ -18,14 +18,13 @@ fns['init_enemy'] = function(self)
   --set attacks
   self.attack_options = {}
 
-  local snakearrow = {
-    name = 'snakearrow',
+  local snakearrows = {
+    name = 'snakearrows',
     viable = function() return self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) end,
     castcooldown = self.castcooldown,
     oncast = function() self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) end,
     cast_length = GHOST_CAST_TIME,
-    instantspell = true,
-    spellclass = SnakeArrow,
+    spellclass = SnakeArrows,
     spelldata = {
       group = main.current.main,
       unit = self,
@@ -34,12 +33,13 @@ fns['init_enemy'] = function(self)
       speed = 70,
       curve_depth = 25,
       curve_frequency = 1,
+      arrow_interval = 0.5,
       color = purple[0],
       parent = self
     }
   }
 
-  table.insert(self.attack_options, snakearrow)
+  table.insert(self.attack_options, snakearrows)
 
 end
 
