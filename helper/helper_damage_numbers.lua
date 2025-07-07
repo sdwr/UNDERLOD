@@ -4,7 +4,7 @@ Helper.DamageNumbers.LIMIT = 30
 Helper.DamageNumbers.Queue = {}       -- The list of active damage number objects, sorted by damage amount.
 Helper.DamageNumbers.TotalDamage = 0  -- A running total of all damage in the queue.
 Helper.DamageNumbers.Average = 0      -- The cached average, updated on add/remove.
-Helper.DamageNumbers.base_scale = 0.7
+Helper.DamageNumbers.base_scale = 0.5
 
 --- Initializes or resets the helper.
 function Helper.DamageNumbers.Init()
@@ -77,13 +77,15 @@ end
 --- Returns a scale multiplier based on how the damage compares to the average.
 -- @param damage The damage amount of the new number.
 function Helper.DamageNumbers.GetRelativeScale(damage)
-    if Helper.DamageNumbers.Average == 0 then return 1 end
+    if Helper.DamageNumbers.Average == 0 then return Helper.DamageNumbers.base_scale end
 
-
-    local scale_bonus = (damage / Helper.DamageNumbers.Average - 1) * 0.5
+    -- Use the square root of the ratio to create a dampened, non-linear curve.
+    -- This prevents normal hits from scaling up too quickly due to a low average.
+    local ratio = damage / Helper.DamageNumbers.Average
+    local scale_bonus = (math.sqrt(ratio) - 1)
     
     -- Clamp the result to prevent extremely tiny or huge numbers.
-    return math.clamp(Helper.DamageNumbers.base_scale *(1 + scale_bonus), 0.7, 2.0)
+    return math.clamp(Helper.DamageNumbers.base_scale * (1 + scale_bonus), 0.7, 2)
 end
 
 
