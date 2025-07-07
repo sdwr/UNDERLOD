@@ -1044,7 +1044,6 @@ function init()
     'cold_damage_m',
 
     --other stats
-    'area_dmg',
     'area_size',
     'vamp',
     'ghost',

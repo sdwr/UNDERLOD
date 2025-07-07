@@ -461,6 +461,15 @@ item_to_item_data = {
     stats = {range = 0.15, dmg = 0.25},
     procs = {}
   },
+  ['area_size'] = {
+    name = 'area_size',
+    colors = {'yellow'},
+    cost = 10,
+    icon = 'area_size',
+    desc = 'Your attacks have a larger area',
+    stats = {area_size = 0.2, aspd = 0.1},
+    procs = {}
+  },
   ['berserker_greaves'] = {
     name = 'berserker_greaves',
     colors = {'yellow'},

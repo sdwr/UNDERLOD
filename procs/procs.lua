@@ -283,41 +283,12 @@ function Proc_SpikedCollar:create_area()
     is_troop = self.unit.is_troop,
     damage_ticks = false,
     stunDuration = self.stunDuration,
-
+    unit = self.unit,
   }
 end
 
 function Proc_SpikedCollar:die()
   Proc_SpikedCollar.super.die(self)
-end
-
---proc bash
-Proc_Bash = Proc:extend()
-function Proc_Bash:init(args)
-  self.triggers = {PROC_ON_HIT}
-  self.scope = 'troop'
-  
-  Proc_Bash.super.init(self, args)
-  
-  
-
-  --define the proc's vars
-  self.canProc = true
-  self.cooldown = self.data.cooldown or 2
-  self.chance = self.data.chance or 0.2
-  self.damage = self.data.damage or 10
-end
-function Proc_Bash:onHit(target, damage)
-  Proc_Bash.super.onHit(self, target, damage)
-  if self.canProc and math.random() < self.chance then
-    self.canProc = false
-    trigger:after(self.cooldown, function() self.canProc = true end)
-
-    arrow_hit_wall2:play{pitch = random:float(0.8, 1.2), volume = 0.9}
-
-    target:stun()
-    target:hit(self.damage, self.unit, DAMAGE_TYPE_PHYSICAL, false, true)
-  end
 end
 
 --works the same way as shield
@@ -540,7 +511,7 @@ function Proc_Curse:curse(target, from)
     color = purple[-3],
     is_troop = from.is_troop,
     damage = 0, -- No damage, just visual
-    unit = nil, -- Explicitly set to nil to avoid affecting unit cooldowns
+    unit = from, -- Pass the caster unit for stat scaling
     on_hit_callback = function(spell, hit_target, unit)
       hit_target:curse(from)
     end
@@ -603,8 +574,8 @@ function Proc_Root:root(target, from)
     pick_shape = 'circle',
     damage = 0, r = self.radius, duration = 0.2, color = self.color,
     is_troop = from.is_troop,
-    rootDuration = self.rootDuration
-  
+    rootDuration = self.rootDuration,
+    unit = from,
   }
 end
 
@@ -664,7 +635,8 @@ function Proc_Overkill:onKill(target, overkill)
     fill_whole_area = true,
     is_troop = self.is_troop,
     knockback_force = self.knockback_force,
-    knockback_duration = self.knockback_duration
+    knockback_duration = self.knockback_duration,
+    unit = self.unit,
   }
 end
 
@@ -1858,6 +1830,7 @@ function Proc_Shatterlance:explode(target, damage)
     r = self.radius, color = self.color,
     is_troop = self.unit.is_troop,
     damage_type = self.damageType,
+    unit = self.unit,
   }
 end
 
@@ -1965,7 +1938,6 @@ proc_name_to_class = {
 
   ['craggy'] = Proc_Craggy,
   ['spikedcollar'] = Proc_SpikedCollar,
-  ['bash'] = Proc_Bash,
   ['overkill'] = Proc_Overkill,
   ['bloodlust'] = Proc_Bloodlust,
 
