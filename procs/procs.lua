@@ -613,6 +613,39 @@ function Proc_Retaliate:onGotHit(target, damage)
   -- making a generic fn for that for troop
 end
 
+Proc_Battlefury = Proc:extend()
+function Proc_Battlefury:init(args)
+  self.triggers = {PROC_ON_ATTACK}
+  self.scope = 'troop'
+
+  Proc_Battlefury.super.init(self, args)
+
+  --define the proc's vars
+  self.radius = self.data.radius or 30
+  self.color = self.data.color or brown[0]
+  self.duration = self.data.duration or 0.15
+  
+end
+
+function Proc_Battlefury:onAttack(target, unit)
+  Proc_Battlefury.super.onAttack(self, target, unit)
+  if not target then return end
+  if not unit then return end
+  
+  Area_Spell{
+    group = main.current.effects,
+    x = unit.x, y = unit.y,
+    pick_shape = 'circle',
+    radius = self.radius,
+    duration = self.duration,
+    damage = unit.dmg or 10,
+    color = self.color,
+    is_troop = unit.is_troop,
+    unit = unit,
+  }
+end
+
+
 
 --proc overkill
 Proc_Overkill = Proc:extend()

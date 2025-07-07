@@ -500,7 +500,9 @@ item_to_item_data = {
     colors = {},
     cost = 10,
     icon = 'battlefury',
-    desc = 'Your attacks cleave in an area around their target',
+    desc = 'Your attacks cleave in an area around you',
+    stats = {dmg = 0.25},
+    procs = {'battlefury'}
   },
   -- ['noblesacrifice'] = {
   --   name = 'noblesacrifice',
