@@ -4,7 +4,11 @@ function Area:init(args)
   self:init_game_object(args)
 
   self.damage = get_dmg_value(self.damage)
-  
+
+  self.unit = args.unit
+  self.r = args.r or 32
+  self.r = Helper.Unit:apply_area_size_multiplier(self.unit, self.r)
+
   if self.areatype == 'target' then
     if self.target then
       self.x, self.y = self.target.x, self.target.y

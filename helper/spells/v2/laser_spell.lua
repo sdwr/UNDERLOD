@@ -87,10 +87,8 @@ function Laser_Spell:init(args)
 
   self:set_initial_coords()
 
-  if self.unit and self.unit.area_size_m then
-    self.laser_aim_width = self.laser_aim_width * self.unit.area_size_m
-    self.laser_width = self.laser_width * self.unit.area_size_m
-  end
+  self.laser_aim_width = Helper.Unit:apply_area_size_multiplier(self.unit, self.laser_aim_width)
+  self.laser_width = Helper.Unit:apply_area_size_multiplier(self.unit, self.laser_width)
 
   self.charge_sound = laser_charging:play{volume = 0.15}
 

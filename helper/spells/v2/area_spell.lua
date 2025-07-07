@@ -9,6 +9,7 @@ function Area_Spell:init(args)
     -- Define default values for the spell's properties
     self.r = math.random() * 2 * math.pi
     self.radius = self.radius or 50
+    self.radius = Helper.Unit:apply_area_size_multiplier(self.unit, self.radius)
     self.fade_duration = self.fade_duration or 0.2
     self.duration_minus_fade = self.duration - self.fade_duration
 

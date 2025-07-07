@@ -418,8 +418,8 @@ function Troop:attack(area, mods)
     self:onAttackCallbacks(self.target)
   end
   mods = mods or {}
-  local t = {group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(area or 64), color = self.color, damage = function() return self.dmg end,
-    character = self.character, level = self.level, parent = self, is_troop = true}
+  local t = {group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = (area or 64), color = self.color, damage = function() return self.dmg end,
+    character = self.character, level = self.level, parent = self, is_troop = true, unit = self}
   Area(table.merge(t, mods))
 
 end

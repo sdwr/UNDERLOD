@@ -545,6 +545,13 @@ function Helper.Unit:apply_knockback(unit, force, angle, duration, push_invulner
     end)
 end
 
+function Helper.Unit:apply_area_size_multiplier(unit, base_size)
+    if unit and unit.area_size_m then
+        return base_size * unit.area_size_m
+    end
+    return base_size
+end
+
 -- ===================================================================
 -- PERK PROCESSING HELPER FUNCTION
 -- This function processes perk names based on unit type to determine

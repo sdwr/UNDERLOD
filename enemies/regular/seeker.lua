@@ -1,8 +1,8 @@
 local fns = {}
 fns['attack'] = function(self, mods, color)
   mods = mods or {}
-  local t = {team = "enemy", group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = self.area_size_m*(20), color = color or self.color, damage = function() return self.dmg end,
-    character = self.character, level = self.level, parent = self}
+  local t = {team = "enemy", group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = 20, color = color or self.color, damage = function() return self.dmg end,
+    character = self.character, level = self.level, parent = self, unit = self}
 
   Helper.Unit:set_state(self, unit_states['frozen'])
 
