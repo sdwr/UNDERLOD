@@ -23,7 +23,7 @@ function DrawAnimations.calculate_enemy_scale(enemy)
 end
 
 -- Draw a specific animation with given parameters
-function DrawAnimations.draw_specific_animation(anim_set, x, y, r, scale_x, scale_y, alpha, color)
+function DrawAnimations.draw_specific_animation(unit, anim_set, x, y, r, scale_x, scale_y, alpha, color)
   if not anim_set or not anim_set[1] or not anim_set[2] then
     return false
   end
@@ -48,7 +48,7 @@ function DrawAnimations.draw_specific_animation(anim_set, x, y, r, scale_x, scal
       love.graphics.setColor(1, 1, 1, alpha or 1)
     end
     
-    graphics.push(screen_x, screen_y, r or 0, 1, 1)
+    graphics.push(screen_x, screen_y, r or 0, unit.hfx.hit.x, unit.hfx.hit.x)
       animation:draw(image.image, screen_x, screen_y, 0, scale_x * screen_scale, scale_y * screen_scale, frame_center_x, frame_center_y)
     graphics.pop()
     love.graphics.setColor(1, 1, 1, 1)
@@ -89,7 +89,7 @@ function DrawAnimations.draw_enemy_animation(enemy, state, x, y, r)
   local scale_y = base_scale_y
 
   -- Draw the animation using the helper function
-  local draw_success = DrawAnimations.draw_specific_animation(anim_set, x, y, r, scale_x, scale_y, 1.0)
+  local draw_success = DrawAnimations.draw_specific_animation(enemy, anim_set, x, y, r, scale_x, scale_y, 1.0)
   
   if draw_success then
     -- Add status effect overlays
@@ -105,7 +105,7 @@ function DrawAnimations.draw_enemy_animation(enemy, state, x, y, r)
     end
 
     if mask_color ~= nil then
-      DrawAnimations.draw_specific_animation(anim_set, x, y, r, scale_x, scale_y, mask_color.a, mask_color)
+      DrawAnimations.draw_specific_animation(enemy, anim_set, x, y, r, scale_x, scale_y, mask_color.a, mask_color)
     end
   end
 

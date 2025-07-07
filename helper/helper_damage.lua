@@ -349,7 +349,13 @@ end
 
 function Helper.Damage:deal_damage(unit, damage)
   --all units, hfx
-  -- unit.hfx:use('hit', 0.25, 200, 10)
+  -- Scale hit effect based on damage taken relative to max HP
+  local damage_ratio = damage / unit.max_hp
+  local hit_strength = math.clamp(damage_ratio * 2, 0.05, 0.5) -- Between 5% and 50% of max HP
+  hit_strength = hit_strength * ENEMY_HIT_SCALE
+
+  unit.hfx:use('hit', hit_strength, 100, 10)
+  HitCircle{group = main.current.effects, x = unit.x, y = unit.y}
   -- Player troop specific: camera shake
   if unit.is_troop then
     camera:shake(1, 0.5)

@@ -1083,6 +1083,7 @@ function EnemyDeathAnimation:draw()
     local temp_anim_set = {self.death_animation, self.death_anim_set[2]}
     
     local animation_success = DrawAnimations.draw_specific_animation(
+      self.enemy,
       temp_anim_set, 
       self.x, 
       self.y, 

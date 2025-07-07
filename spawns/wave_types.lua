@@ -242,8 +242,10 @@ function Wave_Types:Get_Waves(level)
   if level == 1 then
     wave = self:One_Cleaver()
     table.insert(waves, wave)
-    wave = self:Two_Cleavers()
-    table.insert(waves, wave)
+    local wave2 = {}
+    table.insert(wave2, {'GROUP', 'cleaver', 1, 'nil'})
+    table.insert(wave2, {'GROUP', 'cleaver', 1, 'far'})
+    table.insert(waves, wave2)
   elseif level == 2 then
     wave = self:One_Basic_One_Cleaver(1)
     table.insert(waves, wave)
