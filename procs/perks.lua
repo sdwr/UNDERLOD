@@ -153,14 +153,14 @@ PERK_DEFINITIONS = {
     stats2 = {crit_chance = 0.15},
     stats3 = {crit_chance = 0.2},
   },
-  crit_damage = {
+  crit_mult = {
     name = "Crit Damage",
     description = "+25%/35%/50% crit damage",
-    icon = "crit_damage",
+    icon = "crit_mult",
     rarity = "common",
-    stats1 = {crit_damage = 0.25},
-    stats2 = {crit_damage = 0.35},
-    stats3 = {crit_damage = 0.5},
+    stats1 = {crit_mult = 0.25},
+    stats2 = {crit_mult = 0.35},
+    stats3 = {crit_mult = 0.5},
   },
   stun_chance = {
     name = "Stun Chance",

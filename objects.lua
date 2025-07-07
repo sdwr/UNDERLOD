@@ -740,7 +740,10 @@ function Unit:calculate_stats(first_run)
   self.buff_range_a = 0
   self.buff_range_m = 1
   self.buff_cdr_m = 1
+
   self.buff_repeat_attack_chance = 0
+  self.crit_chance = 0
+  self.crit_mult = BASE_CRIT_MULT
 
   self.eledmg_m = 1
 
@@ -837,6 +840,8 @@ function Unit:calculate_stats(first_run)
   self.fire_damage = self.buff_fire_damage_a * self.buff_fire_damage_m
   self.lightning_damage = self.buff_lightning_damage_a * self.buff_lightning_damage_m
   self.cold_damage = self.buff_cold_damage_a * self.buff_cold_damage_m
+
+  self.crit_chance = math.clamp(self.crit_chance, 0, 1)
 end  
 
 function Unit:onTickCallbacks(dt)
@@ -1872,6 +1877,10 @@ function Unit:add_stats(stats_list)
       
     elseif stat_name == buff_types['repeat_attack_chance'] then
       self.buff_repeat_attack_chance = self.buff_repeat_attack_chance + amount
+    elseif stat_name == buff_types['crit_chance'] then
+      self.crit_chance = self.crit_chance + amount
+    elseif stat_name == buff_types['crit_mult'] then
+      self.crit_mult = self.crit_mult + amount
     else
       -- print("unknown stat: " .. stat_name, amount)
     end

@@ -46,6 +46,8 @@ MAX_STACKS_SHOCK = 10
 MAX_STACKS_REDSHIELD = 20
 MAX_STACKS_BLOODLUST = 10
 
+BASE_CRIT_MULT = 2
+
 SHOCK_DEF_REDUCTION = -0.2
 
 REPEAT_ATTACK_DELAY = 0.7
@@ -201,7 +203,10 @@ buff_types = {
     ['bash'] = 'bash',
     ['heal'] = 'heal',
     ['explode'] = 'explode',
+    
     ['repeat_attack_chance'] = 'repeat_attack_chance',
+    ['crit_chance'] = 'crit_chance',
+    ['crit_mult'] = 'crit_mult',
   }
 
 

@@ -434,13 +434,13 @@ item_to_item_data = {
     stats = {crit_chance = 0.1, dmg = 0.25},
     procs = {}
   },
-  ['crit_damage'] = {
-    name = 'crit_damage',
+  ['crit_mult'] = {
+    name = 'crit_mult',
     colors = {},
     cost = 10,
-    icon = 'crit_damage',
+    icon = 'crit_mult',
     desc = 'Deal more damage with critical strikes',
-    stats = {crit_damage = 0.5, aspd = 0.1},
+    stats = {crit_mult = 0.5, aspd = 0.1},
     procs = {}
   },
   ['chainer'] = {

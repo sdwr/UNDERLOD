@@ -1009,6 +1009,9 @@ function init()
     ['lightning_damage_m'] = 'lightning damage mult',
     ['cold_damage_m'] = 'cold damage mult',
 
+    ['crit_chance'] = 'crit chance',
+    ['crit_mult'] = 'crit damage',
+
     ['proc'] = 'Extra effect on attack',
   }
 
@@ -1018,7 +1021,10 @@ function init()
     'aspd',
     'repeat_attack_chance',
     'range',
-
+    
+    'crit_chance',
+    'crit_mult',
+    
     --core defensive stats
     'hp',
     'flat_def',

@@ -91,6 +91,17 @@ function Helper.Damage:apply_hit_effects(unit, damage, makesSound)
   end
 end
 
+function Helper.Damage:roll_crit(from, damage)
+  if not from then return damage end
+  
+  if from.crit_chance then
+    if random:float(0, 1) < from.crit_chance then
+      return damage * (from.crit_mult or BASE_CRIT_MULT)
+    end
+  end
+  return damage
+end
+
 -- ===================================================================
 -- DAMAGE CALCULATION
 -- Handles unit-specific damage calculation logic
@@ -289,6 +300,9 @@ function Helper.Damage:primary_hit(unit, damage, from, damageType, makesSound)
   
   -- Default parameters
   makesSound = makesSound or true
+
+  --only direct attacks can crit
+  damage = Helper.Damage:roll_crit(from, damage)
   
   -- Trigger onPrimaryHit callbacks right before processing the hit
   if from and from.onPrimaryHitCallbacks then
