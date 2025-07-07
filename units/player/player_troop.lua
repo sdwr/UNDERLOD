@@ -39,7 +39,7 @@ function Troop:init(args)
   self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, self.attack_sensor.rs + AGGRO_RANGE_BOOST)
   self:set_character()
 
-  Helper.Unit:set_state(self, unit_states['normal'])
+  Helper.Unit:set_state(self, unit_states['idle'])
 end
 
 
@@ -134,7 +134,8 @@ function Troop:update(dt)
   -- This is one big if/elseif block. Only ONE of these can run per frame,
   -- which prevents state flickering. The order is based on priority.
 
-  if self.state == unit_states['normal'] or self.state == unit_states['following'] then
+  if self.state == unit_states['normal'] or self.state == unit_states['following'] 
+  or self.state == unit_states['idle'] then
     self:update_ai_logic()
   end
 
@@ -155,7 +156,7 @@ function Troop:update(dt)
 
       -- Check if we should STOP following.
       if input['m1'].released or input['space'].released then
-          Helper.Unit:set_state(self, unit_states['normal'])
+          Helper.Unit:set_state(self, unit_states['idle'])
       else
         self:follow_mouse()
 
@@ -170,7 +171,7 @@ function Troop:update(dt)
     -- Check if we have arrived at the rally point.
     local distance_to_target_pos = math.distance(self.x, self.y, self.target_pos.x, self.target_pos.y)
     if distance_to_target_pos < 9 or not self.rallying then -- Also stop if rally is cancelled
-        Helper.Unit:set_state(self, unit_states['normal'])
+        Helper.Unit:set_state(self, unit_states['idle'])
     else
         self:rally_to_point()
     end
@@ -207,7 +208,7 @@ function Troop:update(dt)
 
   -- PRIORITY 4: Autonomous AI State
   -- If the unit is not doing any of the above, it's 'normal' and can think for itself.
-  elseif self.state == unit_states['normal'] then
+  elseif self.state == unit_states['normal'] or self.state == unit_states['idle'] then
       -- First, check if a player command is being issued that would override this state.
       if self:should_follow() then
           Helper.Unit:clear_all_rally_points()

@@ -365,7 +365,7 @@ function Avalanche:init(args)
       parent = self}
   end, self.timesToCast, function() self:die() end, 'avalanche')
 
-  Helper.Unit:set_state(self.unit, unit_states['normal'])
+  Helper.Unit:set_state(self.unit, unit_states['idle'])
 end
 
 function Avalanche:update(dt)
@@ -1009,7 +1009,7 @@ function LaserBall:init(args)
   --boss state
   Helper.Unit:set_state(self.parent, unit_states['frozen'])
   self.t:after(1, function()
-    if self.parent and self.parent.state == 'frozen' then Helper.Unit:set_state(self.parent, unit_states['normal']) end
+    if self.parent and self.parent.state == 'frozen' then Helper.Unit:set_state(self.parent, unit_states['idle']) end
   end)
 
   --set the velocity and rotation speed

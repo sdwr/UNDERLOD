@@ -21,7 +21,7 @@ function PreventCasting_Spell:start_cast()
   -- Set timer to return to normal state
   self.unit.t:after(self.duration, function()
       if self.unit.state == unit_states['casting_blocked'] then
-          Helper.Unit:set_state(self.unit, unit_states['normal'])
+          Helper.Unit:set_state(self.unit, unit_states['idle'])
       end
   end)
 end

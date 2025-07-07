@@ -10,7 +10,7 @@ function Enemy:init(args)
 
   self:setExtraFunctions()
   Helper.Unit:add_custom_variables_to_unit(self)
-  Helper.Unit:set_state(self, unit_states['normal'])
+  Helper.Unit:set_state(self, unit_states['idle'])
   self.size = self.size or enemy_type_to_size[self.type]
   self.init_enemy(self)
   self:init_unit()
@@ -20,7 +20,13 @@ function Enemy:init(args)
 
   self:calculate_stats(true)
 
+  self.baseIdleTimer = self.baseIdleTimer or 1.5
+  self.idleTimer = self.baseIdleTimer
+  self.baseActionTimer = self.baseActionTimer or 2
+  self.actionTimer = 0
+
   self.movementStyle = self.movementStyle or MOVEMENT_TYPE_SEEK
+  self.currentMovementAction = nil
   self.stopChasingInRange = not not self.stopChasingInRange
   self.haltOnPlayerContact = not not self.haltOnPlayerContact
 
@@ -88,58 +94,39 @@ function Enemy:update(dt)
     self:update_animation(dt)
 
     self:calculate_stats()
-
-    if self.type == 'mortar' then
-    end
     
     self.random_dest_timer = self.random_dest_timer - dt
 
     --get target / rotate to target
     if self.target and self.target.dead then self.target = nil end
     
-    if self.state == unit_states['normal'] or (self.can_cast_while_frozen and self.state == unit_states['frozen']) then
-
-      --this needs to work with movement options (some attacks will require target in range, others will not)
-      --some will want to chase target (fire breath)
-      --when a cast concludes, enemy should return to normal movement, set castcooldown in there from
-      --the enemy cooldown
-      if self.attack_options and self.castcooldown ~= nil and self.castcooldown <= 0 then
-        self:pick_cast()
+    if self.state == unit_states['idle'] then
+      self.idleTimer = self.idleTimer - dt
+      if self.idleTimer <= 0 then
+        self:pick_action()
       end
     end
 
-    --do movement and target selection only if not casting
-    if table.any(unit_states_can_target, function(v) return self.state == v end) then
-      if self.movementStyle == MOVEMENT_TYPE_SEEK then
-        self:update_target_seek()
-      elseif self.movementStyle == MOVEMENT_TYPE_LOOSE_SEEK then
-        self:update_target_loose_seek()
-      elseif self.movementStyle == MOVEMENT_TYPE_RANDOM then
-        self:update_target_random()
+    if self.state == unit_states['moving'] then
+      self.actionTimer = self.actionTimer - dt
+      if self.actionTimer <= 0 then
+        self:set_idle()
       else
-        --pass, add flee later
-        --flee has to not just go for the corners (directly running away)
-        --has to look over entire map and pick a random "safe spot" away from troops
+        local movement_success = self:update_movement()
+        if not movement_success then
+          self:set_idle()
+        end
       end
-    elseif self.state == unit_states['stopped'] or self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
+    end
+
+
+    if self.state == unit_states['stopped'] or self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
       if self.target and not self.target.dead and not self:should_freeze_rotation() then
         self:rotate_towards_object(self.target, 1)
       end
     end
 
-
-    --move
-    if table.any(unit_states_enemy_can_move, function(v) return self.state == v end) then
-      if self.movementStyle == MOVEMENT_TYPE_SEEK then
-        self:update_move_seek()
-      elseif self.movementStyle == MOVEMENT_TYPE_LOOSE_SEEK then
-        self:update_move_loose_seek()
-      elseif self.movementStyle == MOVEMENT_TYPE_RANDOM then
-        self:update_move_random()
-      else
-        --pass, add flee later
-      end
-    elseif table.any(unit_states_enemy_no_velocity, function(v) return self.state == v end) then
+    if table.any(unit_states_enemy_no_velocity, function(v) return self.state == v end) then
       self:set_velocity(0,0)
     end
 
@@ -152,91 +139,129 @@ function Enemy:update(dt)
     if self.area_sensor then self.area_sensor:move_to(self.x, self.y) end
 end
 
-function Enemy:update_target_seek()
-  if not self:in_range()() then
-    -- 30% chance to target critters
-    if random:float(0, 1) < ENEMY_CHANCE_TO_TARGET_CRITTER then
-      self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.friendlies)
-    else
-      self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies_without_critters)
-    end
-  end
-  if self.target and self.target.dead then self.target = nil end
-  if self.target then
-    self:rotate_towards_object(self.target, 0.5)
+function Enemy:set_idle()
+  self.idleTimer = self.baseIdleTimer * random:float(0.8, 1.2)
+  Helper.Unit:set_state(self, unit_states['idle'])
+end
+
+function Enemy:set_movement_action(action)
+  self.currentMovementAction = action
+  self.actionTimer = self.baseActionTimer * random:float(0.8, 1.2)
+
+  Helper.Unit:set_state(self, unit_states['moving'])
+  local chose_target_success = self:choose_movement_target()
+  if not chose_target_success then
+    self:set_idle()
   end
 end
 
-function Enemy:update_target_loose_seek()
-  if not self.target_location or Helper.Time.time - self.last_retarget_time > LOOSE_SEEK_RETARGET_TIME then
-    self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
+function Enemy:choose_movement_target()
+  if self.currentMovementAction == MOVEMENT_TYPE_SEEK then
+    return self:acquire_target_seek()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
+    return self:acquire_target_loose_seek()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_RANDOM then
+    return self:acquire_target_random()
+  end
+end
+
+function Enemy:update_movement()
+  if self.currentMovementAction == MOVEMENT_TYPE_SEEK then
+    return self:update_move_seek()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
+    return self:update_move_loose_seek()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_RANDOM then
+    return self:update_move_random()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_WANDER then
+    return self:update_move_wander()
+  end
+  return false
+end
+
+function Enemy:acquire_target_seek()
+  -- 30% chance to target critters
+  if random:float(0, 1) < ENEMY_CHANCE_TO_TARGET_CRITTER then
+    self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.friendlies)
+  else
+    self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies_without_critters)
+  end
+  return self.target ~= nil
+end
+
+function Enemy:acquire_target_loose_seek()
+  self.target_location = nil
+  self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
+  if self.target then
     self.target_location = {x = self.target.x + random:float(-50, 50), y = self.target.y + random:float(-50, 50)}
-    self.last_retarget_time = Helper.Time.time
   end
-  if not self.target_location or self:distance_to_point(self.target_location.x, self.target_location.y) < 10 then
-    self.target_location = nil
-    Helper.Unit:set_state(self, unit_states['frozen'])
-    self.t:after(1.5, function()
-      Helper.Unit:set_state(self, unit_states['normal'])
-    end)
-  end
+  return self.target ~= nil
+end
+
+function Enemy:acquire_target_random()
+  self.target_location = Get_Point_In_Arena()
+  return true
+end
+
+function Enemy:update_move_wander()
+  self:wander(10, 10, 5)
+  return true
 end
 
 function Enemy:update_move_seek()
-  if self:in_range()() and self.stopChasingInRange then
-    -- dont need to move
-    self:wander(10, 10, 5)
-    self:rotate_towards_velocity(1)
-    self:steering_separate(12, {Enemy}, 4)
-  elseif self.target then
-  --can't change speed?
-    local decel = SEEK_DECELERATION
-    if self.stopChasingInRange then
-      decel = 0
-    end
-    self:seek_point(self.target.x, self.target.y, decel, SEEK_WEIGHT)
-    self:wander(10, 10, 5)
-    self:rotate_towards_velocity(1)
-    self:steering_separate(12, {Enemy}, 4)
-    -- self:rotate_towards_velocity(0.5)
-  else
-    -- dont need to move
+  -- 1. Guard clause: If there's no target, this action can't continue.
+  if not self.target then
+      return false -- Indicates the movement action failed/is complete.
   end
+
+  -- 2. Check if we are in range.
+  if self:in_range_of(self.target) and self.stopChasingInRange then
+      -- We are in range and should stop, so just mill about.
+      self:wander(10, 10, 5)
+
+  else
+      -- We are OUT of range, OR we are not supposed to stop.
+      -- In either case, we must seek the target.
+      self:seek_point(self.target.x, self.target.y, SEEK_DECELERATION, SEEK_WEIGHT)
+      self:wander(10, 10, 5) -- Add a little variation to the seek.
+  end
+
+  -- 3. Apply final steering adjustments in all active cases.
+  self:rotate_towards_velocity(1)
+  self:steering_separate(12, {Enemy}, 4)
+
+  -- 4. Return true because the movement action is successfully ongoing.
+  return true
 end
 
 function Enemy:update_move_loose_seek()
+  
   if self.target_location then
-    self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, SEEK_WEIGHT)
-    self:wander(10, 10, 5)
-    self:rotate_towards_velocity(1)
-    self:steering_separate(12, {Enemy}, 4)
-  end
-end
-
-function Enemy:update_target_random()
-  if not self:in_range()() then
-    if random:float(0, 1) < ENEMY_CHANCE_TO_TARGET_CRITTER then
-      self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
+    if self:distance_to_point(self.target_location.x, self.target_location.y) < DISTANCE_TO_TARGET_FOR_IDLE then
+      return false
     else
-      self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies_without_critters)
+      self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, SEEK_WEIGHT)
+      self:wander(10, 10, 5)
+      self:rotate_towards_velocity(1)
+      self:steering_separate(12, {Enemy}, 4)
+      return true
     end
   end
-  if self.target and self.target.dead then self.target = nil end
-  if self.target then
-    self:rotate_towards_object(self.target, 0.5)
-  end
+  return false
 end
 
 function Enemy:update_move_random()
-  if self.random_dest_timer <= 0 then
-    self.random_dest = Get_Point_In_Arena()
-    self.random_dest_timer = 5
+  if self.target_location then
+    if self:distance_to_point(self.target_location.x, self.target_location.y) < DISTANCE_TO_TARGET_FOR_IDLE then
+      return false
+    else
+      self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, SEEK_WEIGHT)
+      self:wander(10, 10, 5)
+      self:rotate_towards_velocity(1)
+      self:steering_separate(12, {Enemy}, 4)
+      return true
+    end
   end
-
-  self:seek_point(self.random_dest.x, self.random_dest.y, SEEK_DECELERATION, SEEK_WEIGHT)
-  self:wander(50, 200, 5)
-  self:rotate_towards_velocity(1)
-  self:steering_separate(16, {Enemy}, 8)
+  return false
 end
 
 function Enemy:draw()
@@ -273,7 +298,7 @@ function Enemy:on_collision_enter(other, contact)
           Helper.Unit:set_state(self, unit_states['frozen'])
           self.t:after(0.8, function()
             if self.state == unit_states['frozen'] then
-              Helper.Unit:set_state(self, unit_states['normal'])
+              Helper.Unit:set_state(self, unit_states['idle'])
             end
           end)
         end

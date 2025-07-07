@@ -456,13 +456,9 @@ function Spawn_Enemy(arena, type, location)
 
   Spawn_Enemy_Effect(arena, enemy)
 
-  -- Set enemy to frozen for 1 second on spawn.
-  Helper.Unit:set_state(enemy, unit_states['frozen'])
-  enemy.t:after(0.3, function()
-      if enemy and not enemy.dead and enemy.state == unit_states['frozen'] then
-          Helper.Unit:set_state(enemy, unit_states['normal'])
-      end
-  end)
+  -- Set enemy to idle for a bit on spawn.
+  Helper.Unit:set_state(enemy, unit_states['idle'])
+  enemy.idleTimer = math.random() / 2
 end
 
 function Countdown(arena)

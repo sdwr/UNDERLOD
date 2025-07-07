@@ -178,7 +178,7 @@ function Unit:init_unit()
   self.kills = 0
   self.time_alive = 0
   
-  Helper.Unit:set_state(self, unit_states['normal'])
+  Helper.Unit:set_state(self, unit_states['idle'])
 end
 
 function Unit:config_physics_object()
@@ -622,16 +622,16 @@ function Unit:update_buffs(dt)
         self.canBash = true
       elseif k == 'stunned' then
         if self.state == unit_states['stunned'] then
-          Helper.Unit:set_state(self, unit_states['normal'])
+          Helper.Unit:set_state(self, unit_states['idle'])
         end
       elseif k == 'rooted' then
         if self.state == unit_states['stopped'] then
-          Helper.Unit:set_state(self, unit_states['normal'])
+          Helper.Unit:set_state(self, unit_states['idle'])
         end
       elseif k == 'freeze' then
         self:on_freeze_expired()
         if self.state == unit_states['stunned'] then
-          Helper.Unit:set_state(self, unit_states['normal'])
+          Helper.Unit:set_state(self, unit_states['idle'])
         end
       elseif k == 'invulnerable' then
         self.invulnerable = false
@@ -1335,7 +1335,7 @@ end
 
 function Unit:end_backswing()
   if self.state == unit_states['stopped'] then
-    Helper.Unit:set_state(self, unit_states['normal'])
+    Helper.Unit:set_state(self, unit_states['idle'])
   end
 end
 
@@ -1475,28 +1475,50 @@ end
 --should be able to interrupt the cast with stuns or something, and have it kill the 
 --existing spell (say for a channeling spell)
 
-function Unit:pick_cast()
-  if not self.attack_options then return end
+function Unit:pick_action()
+  local attack_options = self.attack_options or {}
+  local movement_options = self.movement_options or {}
 
   local viable_attacks = {}
-  for k, v in pairs(self.attack_options) do
-    if v.viable(self) then
-      table.insert(viable_attacks, v)
+  local viable_movements = {}
+
+  if self.castcooldown ~= nil and self.castcooldown <= 0 then
+    for k, v in pairs(attack_options) do
+      if v.viable(self) then
+        table.insert(viable_attacks, v)
+      end
     end
   end
 
-  if #viable_attacks == 0 then return false end
-  
-
-  local attack = random:table(viable_attacks)
-  while #viable_attacks > 1 and self.last_cast == attack.name do
-    attack = random:table(viable_attacks)
+  for k, v in pairs(movement_options) do
+    table.insert(viable_movements, v)
   end
 
-  self:cast(attack)
-  self.last_cast = attack.name
-  return true
+  if #viable_attacks > 0 and math.random() > (self.move_option_weight or 0.5) then
+    local attack = random:table(viable_attacks)
+    while #viable_attacks > 1 and self.last_cast == attack.name do
+      attack = random:table(viable_attacks)
+    end
+    self:cast(attack)
+    self.last_cast = attack.name
+    return true
+  else
+    local chosen_movement
+
+    if #viable_movements > 0 then
+        -- We have dynamic options, pick one.
+        chosen_movement = random:table(viable_movements)
+    else
+        -- No dynamic options, use the enemy's default style.
+        chosen_movement = self.movementStyle or MOVEMENT_TYPE_RANDOM
+    end
+
+    -- Now, commit to the chosen movement action once.
+    self:set_movement_action(chosen_movement)
+    return true
+  end
 end
+
 
 function Unit:update_cast_cooldown(dt)
   if not self.castcooldown then
@@ -1540,7 +1562,7 @@ function Unit:end_cast(cooldown, spell_duration)
     if self:try_backswing() then
       return
     else
-      Helper.Unit:set_state(self, unit_states['normal'])
+      Helper.Unit:set_state(self, unit_states['idle'])
     end
   end
 
@@ -1553,7 +1575,7 @@ function Unit:try_backswing()
       Helper.Unit:set_state(self, unit_states['stopped'])
       self.t:after(self.castObject.backswing, function()
         if self.state == unit_states['stopped'] then
-          Helper.Unit:set_state(self, unit_states['normal'])
+          Helper.Unit:set_state(self, unit_states['idle'])
         end
       end)
       return true
@@ -1572,7 +1594,7 @@ function Unit:end_channel(cooldown)
     self:reset_castcooldown(random_cooldown)
     self.spelldata = nil
     self.freezerotation = false
-    Helper.Unit:set_state(self, unit_states['normal'])
+    Helper.Unit:set_state(self, unit_states['idle'])
   end
 end
 
@@ -1594,7 +1616,7 @@ end
 function Unit:cancel_cast()
 
   if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
-    Helper.Unit:set_state(self, unit_states['normal'])
+    Helper.Unit:set_state(self, unit_states['idle'])
     self:reset_castcooldown(0)
     self.spelldata = nil
   end
@@ -1677,7 +1699,7 @@ function Unit:launch_at_facing(force_magnitude, duration)
     self:set_friction(orig_friction)
     self.is_launching = false
     if self.state == unit_states['knockback'] then
-      Helper.Unit:set_state(self, unit_states['normal'])
+      Helper.Unit:set_state(self, unit_states['idle'])
     end
   end)
 
