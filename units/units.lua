@@ -249,6 +249,15 @@ function Team:is_first_alive_troop(troop)
   return troop == aliveTroop
 end
 
+function Team:get_first_alive_troop()
+  for i, troop in ipairs(self.troops) do
+    if not troop.dead then
+      return troop
+    end
+  end
+  return nil
+end
+
 function Team:get_random_hurt_troop()
   local hurtTroops = {}
   for i, troop in ipairs(self.troops) do

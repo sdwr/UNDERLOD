@@ -172,7 +172,8 @@ function Proc_Craggy:init(args)
 
   --define the proc's vars
   self.canProc = true
-  self.cooldown = self.data.cooldown or 1
+  self.baseCooldown = 1
+  self.adjustedCooldown = Helper.Unit:apply_cooldown_reduction(self, self.baseCooldown)
   self.chance = self.data.chance or 0.1
   self.damage = self.data.damage or 15
 
@@ -181,7 +182,7 @@ function Proc_Craggy:onGotHit(from, damage)
   Proc_Craggy.super.onGotHit(self, from)
   if self.canProc and math.random() < self.chance then
     self.canProc = false
-    trigger:after(self.cooldown, function() self.canProc = true end)
+    trigger:after(self.adjustedCooldown, function() self.canProc = true end)
 
     arrow_hit_wall2:play{pitch = random:float(0.8, 1.2), volume = 0.9}
     
@@ -240,7 +241,8 @@ function Proc_SpikedCollar:init(args)
   self.radius = self.data.radius or 35
   self.color = self.data.color or brown[0]
 
-  self.cooldown = self.data.cooldown or 2
+  self.baseCooldown = 2
+  self.adjustedCooldown = Helper.Unit:apply_cooldown_reduction(self, self.baseCooldown)
   self.proc_chance = self.data.proc_chance or 0.2
   
   --proc internal memory
@@ -268,7 +270,7 @@ function Proc_SpikedCollar:onGotHit(from, damage)
 
     self:create_area()
 
-    self.cooldown_timer = self.cooldown
+    self.cooldown_timer = self.adjustedCooldown
   end
 end
 
@@ -302,14 +304,15 @@ function Proc_Heal:init(args)
   
 
   --define the proc's vars
-  self.time_between = self.data.time_between or 5
+  self.baseTimeBetween = 5
+  self.adjustedTimeBetween = Helper.Unit:apply_cooldown_reduction(self, self.baseTimeBetween)
   self.healAmount = self.data.healAmount or 10
 end
 
 function Proc_Heal:onRoundStart()
   Proc_Heal.super.onRoundStart(self)
   if not self.unit then return end
-  self.manual_trigger = trigger:every(self.time_between, function()
+  self.manual_trigger = trigger:every(self.adjustedTimeBetween, function()
     self:heal()
   end)
 end
@@ -340,7 +343,8 @@ function Proc_SacrificialClam:init(args)
   self.buffname = 'sacrificialclam'
   self.buffDuration = self.data.duration or 4
   self.buffAspd = self.data.buffAspd or 0.4
-  self.tick_interval = self.buffDuration
+  self.baseTickInterval = self.buffDuration
+  self.adjustedTickInterval = Helper.Unit:apply_cooldown_reduction(self, self.baseTickInterval)
 
   self.buffdata = {name = self.buffname, duration = self.buffDuration,
     stats = {aspd = self.buffAspd}, color = green[3]
@@ -366,7 +370,7 @@ function Proc_SacrificialClam:onTick(dt, from)
   if not self.team:is_first_alive_troop(from) then return end
 
   self.tick_timer = self.tick_timer + dt
-  if self.tick_timer < self.tick_interval then return end
+  if self.tick_timer < self.adjustedTickInterval then return end
   self.tick_timer = 0
 
 
@@ -391,7 +395,8 @@ function Proc_HealingWave:init(args)
   
 
   --define the proc's vars
-  self.tick_interval = self.data.tick_interval or 5
+  self.baseTickInterval = 5
+  self.adjustedTickInterval = Helper.Unit:apply_cooldown_reduction(self, self.baseTickInterval)
 
   self.heal_percent = self.data.heal_percent or 0.2
   --overwritten in proc
@@ -418,7 +423,7 @@ function Proc_HealingWave:onTick(dt, from)
 
   --only cast once per tick_interval (to prevent casting at first instance of damage in round)
   self.tick_timer = self.tick_timer + dt
-  if self.tick_timer < self.tick_interval then return end
+  if self.tick_timer < self.adjustedTickInterval then return end
   self.tick_timer = 0
 
   local hurtTroop = self.team:get_random_hurt_troop()
@@ -460,15 +465,15 @@ function Proc_Curse:init(args)
 
   --define the proc's vars
   self.seek_radius = 100
+  self.baseTickInterval = 5
+  self.adjustedTickInterval = Helper.Unit:apply_cooldown_reduction(self, self.baseTickInterval)
   self.radius = self.data.radius or 50
-  self.color = self.data.color or purple[0]
+  self.color = self.data.color or purple[-3]
 
-
-  self.tick_interval = self.data.tick_interval or 5 
-  self.proc_delay = 0.75 -- Delay before first proc to avoid triggering on first enemy
   --proc memory
-  self.tick_timer = math.random() * self.tick_interval
-  self.proc_timer = 0 -- Timer for proc delay
+  self.tick_timer = math.random() * self.baseTickInterval
+  self.proc_timer = 0
+  self.proc_delay = 1 -- Delay before first proc to avoid triggering on first enemy in wave
 end
 
 function Proc_Curse:onTick(dt, from)
@@ -483,7 +488,7 @@ function Proc_Curse:onTick(dt, from)
   if not self.team:is_first_alive_troop(from) then return end
 
   self.tick_timer = self.tick_timer + dt
-  if self.tick_timer < self.tick_interval then return end
+  if self.tick_timer < self.adjustedTickInterval then return end
 
   local enemy = Helper.Spell:get_random_target_in_range_from_point(from.x, from.y, self.seek_radius, from.is_troop)
   if not enemy or enemy == -1 then return end
@@ -534,9 +539,10 @@ function Proc_Root:init(args)
   self.radius = self.data.radius or 50
   self.color = self.data.color or green[0]
 
-  self.tick_interval = self.data.tick_interval or 5 
+  self.baseTickInterval = 5
+  self.adjustedTickInterval = Helper.Unit:apply_cooldown_reduction(self, self.baseTickInterval)
   --proc memory
-  self.tick_timer = math.random() * self.tick_interval
+  self.tick_timer = math.random() * self.baseTickInterval
 end
 
 function Proc_Root:onTick(dt, from)
@@ -551,7 +557,7 @@ function Proc_Root:onTick(dt, from)
   if not self.team:is_first_alive_troop(from) then return end
 
   self.tick_timer = self.tick_timer + dt
-  if self.tick_timer < self.tick_interval then return end
+  if self.tick_timer < self.adjustedTickInterval then return end
 
   local enemy = Helper.Spell:get_random_target_in_range_from_point(from.x, from.y, self.seek_radius, from.is_troop)
   if not enemy or enemy == -1 then return end
@@ -1168,7 +1174,8 @@ function Proc_Shield:init(args)
   --define the proc's vars
   self.buffname = 'shield'
   self.shield_amount = self.data.shield_amount or 25
-  self.time_between = self.data.time_between or 5
+  self.baseTimeBetween = 5
+  self.adjustedTimeBetween = Helper.Unit:apply_cooldown_reduction(self, self.baseTimeBetween)
   self.buff_duration = self.data.buff_duration or 4
 
 end
@@ -1176,7 +1183,7 @@ end
 function Proc_Shield:onRoundStart()
   Proc_Shield.super.onRoundStart(self)
   if not self.unit then return end
-  self.manual_trigger = trigger:every_immediate(self.time_between, function()
+  self.manual_trigger = trigger:every_immediate(self.adjustedTimeBetween, function()
     self.unit:shield(self.shield_amount, self.buff_duration)
   end)
 end
@@ -1283,12 +1290,13 @@ function Proc_Lavaman:init(args)
 
   --define the proc's vars
   self.buffname = 'lavaman'
-  self.tick_interval = 5
+  self.baseTickInterval = 5
+  self.adjustedTickInterval = Helper.Unit:apply_cooldown_reduction(self, self.baseTickInterval)
   self.color = self.data.color or red[0]
 
   --proc memory
   -- randomize timer between 1/2 and 3/4 of the interval
-  self.tick_timer = self.tick_interval - (self.tick_interval / 4 ) - ((math.random() / 4) * self.tick_interval)
+  self.tick_timer = self.baseTickInterval - (self.baseTickInterval / 4 ) - ((math.random() / 4) * self.baseTickInterval)
 end
 
 function Proc_Lavaman:onTick(dt, from)
@@ -1304,7 +1312,7 @@ function Proc_Lavaman:onTick(dt, from)
   --should cancel when all troops in the team are dead
 
   self.tick_timer = self.tick_timer + dt
-  if self.tick_timer < self.tick_interval then return end
+  if self.tick_timer < self.adjustedTickInterval then return end
 
   self:try_spawn(from)
 end
@@ -1598,7 +1606,8 @@ function Proc_Frostnova:init(args)
     self.color = self.data.color or blue[0]
 
     -- Cooldown and wind-up values
-    self.cooldown = self.data.cooldown or 5
+    self.baseCooldown = 5
+    self.adjustedCooldown = Helper.Unit:apply_cooldown_reduction(self, self.baseCooldown)
     self.cancel_cooldown = self.data.cancel_cooldown or 0.3
     self.procDelay = self.data.procDelay or 0.75 -- This is the wind-up duration
 
@@ -1659,7 +1668,7 @@ function Proc_Frostnova:onTick(dt)
         if self.windup_timer <= 0 then
             self:cast()
             self.state = 'on_cooldown'
-            self.cooldown_timer = self.cooldown
+            self.cooldown_timer = self.adjustedCooldown
             self:destroy_proc_display_area() -- Destroy the visual effect
         end
     end
@@ -1777,7 +1786,8 @@ function Proc_Glaciate:init(args)
   self.color = self.data.color or blue[0]
 
   --define the procs memory
-  self.hit_cooldown = self.data.hit_cooldown or 2
+  self.baseHitCooldown = 2
+  self.adjustedHitCooldown = Helper.Unit:apply_cooldown_reduction(self, self.baseHitCooldown)
   self.hit_cooldown_timer = 0
 end
 
@@ -1792,7 +1802,7 @@ function Proc_Glaciate:onAttack(target)
   Proc_Glaciate.super.onAttack(self, target)
   if self.hit_cooldown_timer <= 0 then
     if target:has_buff('slowed') and not target:has_buff('frozen') then
-      self.hit_cooldown_timer = self.hit_cooldown
+      self.hit_cooldown_timer = self.adjustedHitCooldown
       target:freeze(self.duration, self.unit)
     end
   end

@@ -552,6 +552,16 @@ function Helper.Unit:apply_area_size_multiplier(unit, base_size)
     return base_size
 end
 
+function Helper.Unit:apply_cooldown_reduction(proc, base_cooldown)
+    -- For team-based procs, we need to find a troop to get the cooldown reduction from
+    local unit = proc.unit
+    
+    if unit and unit.cooldown_reduction then
+        return base_cooldown * (1 - unit.cooldown_reduction)
+    end
+    return base_cooldown
+end
+
 -- ===================================================================
 -- PERK PROCESSING HELPER FUNCTION
 -- This function processes perk names based on unit type to determine
