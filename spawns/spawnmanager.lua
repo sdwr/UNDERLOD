@@ -431,8 +431,7 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
             location = Get_Point_In_Arena()
         else
             -- For all other types, use offsets from the chosen spawn marker
-            local offset = SpawnGlobals.spawn_offsets[i] or {x=0, y=0}
-            location = {x = spawn_marker.x + offset.x, y = spawn_marker.y + offset.y}
+            location = Get_Point_In_Arena()
         end
 
         local create_enemy_action = function()
@@ -563,9 +562,9 @@ function Spawn_Enemy_Sound(arena, enemy)
     hit3:play{pitch = random:float(0.8, 1.2), volume = 0.4}
   elseif enemy_size == 'regular' then
     hit3:play{pitch = random:float(0.8, 1.2), volume = 0.4}
-  elseif enemy_size == 'regular_big' then
+  elseif enemy_size == 'regular_special' then
     hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}
-  elseif enemy_size == 'big' then
+  elseif enemy_size == 'special' then
     hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}
   elseif enemy_size == 'huge' then
     hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}

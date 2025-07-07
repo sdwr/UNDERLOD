@@ -176,7 +176,7 @@ function Enemy:update_target_loose_seek()
   if not self.target_location or self:distance_to_point(self.target_location.x, self.target_location.y) < 10 then
     self.target_location = nil
     Helper.Unit:set_state(self, unit_states['frozen'])
-    self.t:after(0.5, function()
+    self.t:after(1.5, function()
       Helper.Unit:set_state(self, unit_states['normal'])
     end)
   end
