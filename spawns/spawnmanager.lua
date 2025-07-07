@@ -134,6 +134,14 @@ function Get_Point_In_Arena()
   return {x = x, y = y}
 end
 
+function Get_Point_In_Right_Half()
+  local avoid_edge_distance = 10
+  local mid_x = gw / 2
+  local x = random:int(mid_x + avoid_edge_distance, gw - SpawnGlobals.wall_width - avoid_edge_distance)
+  local y = random:int(SpawnGlobals.wall_height + avoid_edge_distance, gh - SpawnGlobals.wall_height - avoid_edge_distance)
+  return {x = x, y = y}
+end
+
 function Kill_Teams()
   for i, team in ipairs(Helper.Unit.teams) do
     team:die()
@@ -150,25 +158,25 @@ function Spawn_Teams(arena)
       local team = Team(i, unit)
       table.insert(Helper.Unit.teams, i, team)
 
-      -- Triangle formation positions
+      -- Left side formation positions
       local spawn_x, spawn_y
       if i == 1 then
-          -- First team: top of triangle
-          spawn_x = gw/2
+          -- First team: top left
+          spawn_x = gw/2 - 100
           spawn_y = gh/2 - 30
       elseif i == 2 then
-          -- Second team: bottom right of triangle
-          spawn_x = gw/2 + 50
+          -- Second team: middle left
+          spawn_x = gw/2 - 100
           spawn_y = gh/2 + 30
       elseif i == 3 then
-          -- Third team: bottom left of triangle
-          spawn_x = gw/2 - 50
-          spawn_y = gh/2 + 30
+          -- Third team: bottom left
+          spawn_x = gw/2 - 100
+          spawn_y = gh/2 + 90
       else
-          -- Additional teams: spread out in a larger triangle or circle
+          -- Additional teams: spread out in a left-side formation
           local angle = (i - 1) * (2 * math.pi / math.max(#arena.units, 3))
           local radius = 80
-          spawn_x = gw/2 + math.cos(angle) * radius
+          spawn_x = (gw/2 - 100) + math.cos(angle) * radius
           spawn_y = gh/2 + math.sin(angle) * radius
       end
 
@@ -429,10 +437,10 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
         local location
         if spawn_type == 'scatter' then
             -- For scatter, get a new random point for every single unit
-            location = Get_Point_In_Arena()
+            location = Get_Point_In_Right_Half()
         else
             -- For all other types, use offsets from the chosen spawn marker
-            location = Get_Point_In_Arena()
+            location = Get_Point_In_Right_Half()
         end
 
         local create_enemy_action = function()

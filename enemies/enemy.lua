@@ -24,6 +24,7 @@ function Enemy:init(args)
   self.idleTimer = self.baseIdleTimer
   self.baseActionTimer = self.baseActionTimer or 2
   self.actionTimer = 0
+  self.isFirstAction = true
 
   self.movementStyle = self.movementStyle or MOVEMENT_TYPE_SEEK
   self.currentMovementAction = nil
