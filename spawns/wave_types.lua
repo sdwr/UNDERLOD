@@ -257,13 +257,14 @@ function Wave_Types:Get_Waves(level)
     -- Wave 1
     local wave1 ={
         {'GROUP', 'seeker', NORMAL_ENEMIES_PER_GROUP, 'nil'},
-        {'GROUP', 'selfburst', 1, 'far'},
+      {'GROUP', 'selfburst', 1, 'far'},
         {'GROUP', 'charger', 1, 'random'},
     }
     -- Wave 2
     local wave2 = {
         {'GROUP', 'seeker', NORMAL_ENEMIES_PER_GROUP, 'nil'},
         {'GROUP', 'big_goblin_archer', 2, 'random'},
+        {'GROUP', 'singlemortar', 1, 'random'},
     }
     table.insert(waves, wave1)
     table.insert(waves, wave2)

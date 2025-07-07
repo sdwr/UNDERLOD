@@ -609,6 +609,11 @@ function Stomp:init(args)
     self.state = "charging"
     self.visual_phase = "charging" -- charging, impact
 
+    if self.target then
+      self.x = self.target.x + math.random(-self.target_offset or 0, self.target_offset or 0)
+      self.y = self.target.y + math.random(-self.target_offset or 0, self.target_offset or 0)
+    end
+
     orb1:play({volume = 0.5})
 
     -- Main effect colors

@@ -1342,11 +1342,13 @@ function init()
     },
     [1.5] = {
       'mortar',
+      'singlemortar',
       'burst',
       'selfburst',
     },
     [2] = {
       'mortar',
+      'singlemortar',
       'burst',
       'selfburst',
       'charger',
@@ -1354,6 +1356,7 @@ function init()
     },
     [2.5] = {
       'mortar',
+      'singlemortar',
       'burst',
       'selfburst',
       'charger',
@@ -1365,6 +1368,7 @@ function init()
       'arcspread',
       'burst',
       'selfburst',
+      'singlemortar',
       'plasma',
       'big_goblin_archer',
     },
@@ -1389,6 +1393,7 @@ function init()
     --special enemies t2
     ['firewall_caster'] = 500,
     ['mortar'] = 500,
+    ['singlemortar'] = 500,
     ['spread'] = 500,
     ['spawner'] = 500,
     ['arcspread'] = 500,
@@ -1412,6 +1417,7 @@ function init()
     ['charger'] = red[3],
     ['firewall_caster'] = red[3],
     ['mortar'] = orange[3],
+    ['singlemortar'] = green[3],
     ['spawner'] = orange[3],
     ['bomb'] = orange[3],
     ['arcspread'] = blue[3],

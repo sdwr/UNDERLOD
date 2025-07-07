@@ -44,8 +44,7 @@ function Mortar_Spell:fire()
     group = main.current.main,
     unit = self.unit,
     team = "enemy",
-    x = target.x + math.random(-10, 10),
-    y = target.y + math.random(-10, 10),
+    target_offset = 10,
     target = target,
     rs = self.rs,
     chargeTime = 1.5,
@@ -56,3 +55,5 @@ function Mortar_Spell:fire()
   }
 
 end
+
+
