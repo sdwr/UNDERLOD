@@ -1,4 +1,5 @@
 SpawnGlobals = {}
+GLOBAL_TIME = Helper.Time.time
 
 function SpawnGlobals.Init()
 
@@ -241,6 +242,8 @@ function SpawnManager:init(arena)
     self.level_data = arena.level_list[arena.level]
     self.t = self.arena.t 
 
+    self.spawn_reservations = {}
+
     -- Spawning State Machine
     self:change_state('entry_delay')
     -- Possible States:
@@ -265,6 +268,18 @@ function SpawnManager:init(arena)
     if table.contains(BOSS_ROUNDS, arena.level) then
         self:change_state('boss_fight')
     end
+end
+
+function SpawnManager:does_spawn_reservation_exist(x, y)
+  return self.spawn_reservations[x] and self.spawn_reservations[x][y]
+end
+
+function SpawnManager:reserve_spawn(x, y)
+  self.spawn_reservations[x] = self.spawn_reservations[x] or {}
+  self.spawn_reservations[x][y] = true
+  self.t:after(0.1, function()
+    self.spawn_reservations[x][y] = nil
+  end)
 end
 
 function SpawnManager:change_state(new_state)
@@ -405,14 +420,6 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
     local type, amount = group_data[1], group_data[2]
     local spawn_type = group_data[3]
     amount = amount or 1
-
-    local finished_count = 0
-    local on_single_unit_done = function()
-        finished_count = finished_count + 1
-        if finished_count >= amount and on_finished then
-            on_finished()
-        end
-    end
 
     -- This loop initiates all spawn processes at roughly the same time.
     for i = 1, amount do
@@ -579,7 +586,7 @@ end
 -- Shows a warning marker immediately, then stalls until the space is clear to spawn.
 -- ===================================================================
 function Create_Unit_With_Warning(arena, location, warning_time, creation_callback, enemy_type)
-  local check_again_delay = 0.25 
+  local check_again_delay = 0.25
   local spawn_radius = 10
   local enemy_size = enemy_type_to_size[enemy_type]
 
@@ -610,10 +617,12 @@ function Create_Unit_With_Warning(arena, location, warning_time, creation_callba
           
           -- If the area is still blocked, stall and retry this check in a moment.
           -- The visual warning marker remains on-screen during this stall.
-          if #objects_in_spawn_area > 0 then
+          if #objects_in_spawn_area > 0 or arena.spawn_manager:does_spawn_reservation_exist(location.x, location.y) then
               arena.t:after(check_again_delay, attempt_final_spawn)
               return
           end
+
+          arena.spawn_manager:reserve_spawn(location.x, location.y)
           
           -- The area is finally clear! Time to spawn.
           
@@ -632,3 +641,4 @@ function Create_Unit_With_Warning(arena, location, warning_time, creation_callba
       attempt_final_spawn()
   end)
 end
+
