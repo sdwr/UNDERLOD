@@ -1,7 +1,11 @@
 SpawnGlobals = {}
 GLOBAL_TIME = Helper.Time.time
 
+-- Constants for troop spawn positioning
+
+
 function SpawnGlobals.Init()
+
 
   local left_x = gw/2 - 0.6*gw/2
   local right_x = gw/2 + 0.6*gw/2
@@ -12,6 +16,15 @@ function SpawnGlobals.Init()
 
   SpawnGlobals.wall_width = 0.2*gw/2
   SpawnGlobals.wall_height = 0.2*gh/2
+
+  SpawnGlobals.TROOP_SPAWN_BASE_X = SpawnGlobals.wall_width + 30  -- Further left than before
+  SpawnGlobals.TROOP_SPAWN_BASE_Y = gh/2
+  SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING = 60
+  SpawnGlobals.TROOP_SPAWN_CIRCLE_RADIUS = 80
+  SpawnGlobals.TROOP_FORMATION_HORIZONTAL_SPACING = 20
+  SpawnGlobals.TROOP_FORMATION_VERTICAL_SPACING = 10
+  SpawnGlobals.SUCTION_FORCE = 800
+  SpawnGlobals.SUCTION_MIN_DISTANCE = 5
   
   SpawnGlobals.spawn_markers = {
     {x = right_x, y = mid_y},
@@ -142,6 +155,54 @@ function Get_Point_In_Right_Half()
   return {x = x, y = y}
 end
 
+function Suction_Troops_To_Spawn_Locations(arena)
+  -- Get all teams and their spawn locations
+  for i, team in ipairs(Helper.Unit.teams) do
+    if team and not team.dead then
+      -- Calculate spawn location for this team (same as in Spawn_Teams)
+      local spawn_x, spawn_y
+      if i == 1 then
+          spawn_x = SpawnGlobals.TROOP_SPAWN_BASE_X
+          spawn_y = SpawnGlobals.TROOP_SPAWN_BASE_Y - SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING
+      elseif i == 2 then
+          spawn_x = SpawnGlobals.TROOP_SPAWN_BASE_X
+          spawn_y = SpawnGlobals.TROOP_SPAWN_BASE_Y + SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING
+      elseif i == 3 then
+          spawn_x = SpawnGlobals.TROOP_SPAWN_BASE_X
+          spawn_y = SpawnGlobals.TROOP_SPAWN_BASE_Y + SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING * 1.5
+      else
+          local angle = (i - 1) * (2 * math.pi / math.max(#arena.units, 3))
+          spawn_x = SpawnGlobals.TROOP_SPAWN_BASE_X + math.cos(angle) * SpawnGlobals.TROOP_SPAWN_CIRCLE_RADIUS
+          spawn_y = SpawnGlobals.TROOP_SPAWN_BASE_Y + math.sin(angle) * SpawnGlobals.TROOP_SPAWN_CIRCLE_RADIUS
+      end
+      
+      -- Apply suction to each troop in the team
+      for j, troop in ipairs(team.troops) do
+        if troop and not troop.dead then
+          -- Calculate offset for this troop within the team formation
+          local troop_offset_x = (j - 1) * SpawnGlobals.TROOP_FORMATION_HORIZONTAL_SPACING
+          local troop_offset_y = (j - 1) * SpawnGlobals.TROOP_FORMATION_VERTICAL_SPACING
+          
+          local target_x = spawn_x + troop_offset_x
+          local target_y = spawn_y + troop_offset_y
+          
+          -- Apply strong suction force towards spawn location
+          local distance = Helper.Geometry:distance(troop.x, troop.y, target_x, target_y)
+          
+          if distance > SpawnGlobals.SUCTION_MIN_DISTANCE then  -- Only apply if not already at spawn
+            local angle_to_spawn = math.atan2(target_y - troop.y, target_x - troop.x)
+            local force_x = math.cos(angle_to_spawn) * SpawnGlobals.SUCTION_FORCE
+            local force_y = math.sin(angle_to_spawn) * SpawnGlobals.SUCTION_FORCE
+            
+            troop:apply_force(force_x, force_y)
+            
+          end
+        end
+      end
+    end
+  end
+end
+
 function Kill_Teams()
   for i, team in ipairs(Helper.Unit.teams) do
     team:die()
@@ -162,22 +223,21 @@ function Spawn_Teams(arena)
       local spawn_x, spawn_y
       if i == 1 then
           -- First team: top left
-          spawn_x = gw/2 - 100
-          spawn_y = gh/2 - 30
+          spawn_x = SpawnGlobals.TROOP_SPAWN_BASE_X
+          spawn_y = SpawnGlobals.TROOP_SPAWN_BASE_Y - SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING
       elseif i == 2 then
           -- Second team: middle left
-          spawn_x = gw/2 - 100
-          spawn_y = gh/2 + 30
+          spawn_x = SpawnGlobals.TROOP_SPAWN_BASE_X
+          spawn_y = SpawnGlobals.TROOP_SPAWN_BASE_Y + SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING
       elseif i == 3 then
           -- Third team: bottom left
-          spawn_x = gw/2 - 100
-          spawn_y = gh/2 + 90
+          spawn_x = SpawnGlobals.TROOP_SPAWN_BASE_X
+          spawn_y = SpawnGlobals.TROOP_SPAWN_BASE_Y + SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING * 1.5
       else
           -- Additional teams: spread out in a left-side formation
           local angle = (i - 1) * (2 * math.pi / math.max(#arena.units, 3))
-          local radius = 80
-          spawn_x = (gw/2 - 100) + math.cos(angle) * radius
-          spawn_y = gh/2 + math.sin(angle) * radius
+          spawn_x = SpawnGlobals.TROOP_SPAWN_BASE_X + math.cos(angle) * SpawnGlobals.TROOP_SPAWN_CIRCLE_RADIUS
+          spawn_y = SpawnGlobals.TROOP_SPAWN_BASE_Y + math.sin(angle) * SpawnGlobals.TROOP_SPAWN_CIRCLE_RADIUS
       end
 
       team:set_troop_data({
@@ -301,7 +361,16 @@ function SpawnManager:update(dt)
     if self.state == 'finished' then return end
 
     -- Handle states that are purely time-based
-    if self.state == 'entry_delay' or self.state == 'between_waves_delay' or self.state == 'waiting_for_delay' then
+    if self.state == 'entry_delay' or self.state == 'waiting_for_delay' then
+        self.timer = self.timer - dt
+        if self.timer <= 0 then
+          self.pending_spawns = 0
+            self:change_state('processing_wave')
+            spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
+        end
+    elseif self.state == 'between_waves_delay' then
+        -- Apply continuous suction effect during between-waves delay
+        Suction_Troops_To_Spawn_Locations(self.arena)
         self.timer = self.timer - dt
         if self.timer <= 0 then
           self.pending_spawns = 0
@@ -331,6 +400,9 @@ function SpawnManager:update(dt)
               -- FIX: For intermediate waves, the only condition to advance is that
               -- all enemies are dead. We no longer check the progress bar here.
               -- ===================================================================
+              -- Trigger suction effect to pull troops back to spawn locations
+              Suction_Troops_To_Spawn_Locations(self.arena)
+              
               self.t:after(0.5, function()
                 spawn_mark2:play{pitch = 1, volume = 1.2}
               end)
