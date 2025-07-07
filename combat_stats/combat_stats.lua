@@ -181,7 +181,6 @@ buff_types = {
     ['flat_def'] = 'flat_def',
     ['percent_def'] = 'percent_def',
     ['mvspd'] = 'mvspd',
-    ['area_dmg'] = 'area_dmg',
     ['area_size'] = 'area_size',
     ['hp'] = 'hp',
     ['status_resist'] = 'status_resist',

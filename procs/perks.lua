@@ -189,15 +189,6 @@ PERK_DEFINITIONS = {
     stats2 = {area_size = 0.3},
     stats3 = {area_size = 0.4},
   },
-  area_damage = {
-    name = "Area Damage",
-    description = "+20%/30%/40% area damage",
-    icon = "area_damage",
-    rarity = "common",
-    stats1 = {area_dmg = 0.2},
-    stats2 = {area_dmg = 0.3},
-    stats3 = {area_dmg = 0.4},
-  },
   cooldown_reduction = {
     name = "Cooldown Reduction",
     description = "Your active abilities recharge 20%/30%/40% faster",
