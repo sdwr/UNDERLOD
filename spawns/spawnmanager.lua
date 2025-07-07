@@ -17,7 +17,7 @@ function SpawnGlobals.Init()
   SpawnGlobals.wall_width = 0.2*gw/2
   SpawnGlobals.wall_height = 0.2*gh/2
 
-  SpawnGlobals.TROOP_SPAWN_BASE_X = SpawnGlobals.wall_width + 30  -- Further left than before
+  SpawnGlobals.TROOP_SPAWN_BASE_X = SpawnGlobals.wall_width + 50  -- Further left than before
   SpawnGlobals.TROOP_SPAWN_BASE_Y = gh/2
   SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING = 60
   SpawnGlobals.TROOP_SPAWN_CIRCLE_RADIUS = 80
@@ -362,12 +362,12 @@ function SpawnManager:update(dt)
 
     -- Handle states that are purely time-based
     if self.state == 'entry_delay' or self.state == 'waiting_for_delay' then
-        self.timer = self.timer - dt
-        if self.timer <= 0 then
-          self.pending_spawns = 0
-            self:change_state('processing_wave')
-            spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
-        end
+      self.timer = self.timer - dt
+      if self.timer <= 0 then
+        self.pending_spawns = 0
+          self:change_state('processing_wave')
+          spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
+      end
     elseif self.state == 'between_waves_delay' then
         -- Apply continuous suction effect during between-waves delay
         Suction_Troops_To_Spawn_Locations(self.arena)
@@ -382,7 +382,10 @@ function SpawnManager:update(dt)
     -- If we are ready to process the next instruction in a wave, do so.
     if self.state == 'processing_wave' then
         self:process_next_instruction()
-        self:change_state('waiting_for_clear')
+        -- Only change to waiting_for_clear if we're not in a delay state
+        if self.state == 'processing_wave' then
+            self:change_state('waiting_for_clear')
+        end
     
     -- If all instructions are done, wait for the arena to be clear.
     elseif self.state == 'waiting_for_clear' then
@@ -503,7 +506,6 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
     local spawn_type = group_data[3]
     amount = amount or 1
 
-    local spawn_marker = SpawnGlobals.get_spawn_marker(group_index)
     -- This loop initiates all spawn processes at roughly the same time.
     for i = 1, amount do
         local location
