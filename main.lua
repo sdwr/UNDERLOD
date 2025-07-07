@@ -1329,7 +1329,13 @@ function init()
     [1] = {
       'seeker',
     },
+    [1.5] = {
+      'seeker',
+    },
     [2] = {
+      'shooter',
+    },
+    [2.5] = {
       'shooter',
     }
   }
@@ -1338,20 +1344,20 @@ function init()
     [1] = {
       'burst',
       'selfburst',
+      'singlemortar',
+      'snakearrow',
       'big_goblin_archer',
     },
     [1.5] = {
       'mortar',
       'singlemortar',
-      'burst',
-      'selfburst',
+      'charger',
+      'boomerang',
     },
     [2] = {
       'mortar',
       'singlemortar',
       'snakearrow',
-      'burst',
-      'selfburst',
       'charger',
       'boomerang',
     },
@@ -1359,8 +1365,6 @@ function init()
       'mortar',
       'singlemortar',
       'snakearrow',
-      'burst',
-      'selfburst',
       'charger',
       'boomerang',
       'firewall_caster',

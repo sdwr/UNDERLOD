@@ -317,6 +317,8 @@ function Helper.Damage:primary_hit(unit, damage, from, damageType, makesSound)
   if from and from.onPrimaryHitCallbacks then
     from:onPrimaryHitCallbacks(unit, damage, damageType)
   end
+
+  Helper.Damage:apply_knockback(unit, from)
   
   -- Unit-specific pre-hit processing
   if not Helper.Damage:process_pre_hit(unit, damage, from, damageType, makesSound) then
@@ -347,6 +349,14 @@ function Helper.Damage:primary_hit(unit, damage, from, damageType, makesSound)
   end
 end
 
+function Helper.Damage:apply_knockback(unit, from)
+  if unit and from then
+    local duration = KNOCKBACK_DURATION_ENEMY
+    local push_force = LAUNCH_PUSH_FORCE_ENEMY
+    unit:push(push_force, unit:angle_to_object(from) + math.pi, nil, duration)
+  end
+end
+
 function Helper.Damage:deal_damage(unit, damage)
   --all units, hfx
   -- Scale hit effect based on damage taken relative to max HP
@@ -355,7 +365,7 @@ function Helper.Damage:deal_damage(unit, damage)
   hit_strength = hit_strength * ENEMY_HIT_SCALE
 
   unit.hfx:use('hit', hit_strength, 100, 10)
-  HitCircle{group = main.current.effects, x = unit.x, y = unit.y}
+  HitCircle{group = main.current.effects, x = unit.x, y = unit.y}:scale_down(0.3):change_color(0.5, unit.color)
   -- Player troop specific: camera shake
   if unit.is_troop then
     camera:shake(1, 0.5)

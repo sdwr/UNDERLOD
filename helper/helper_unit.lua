@@ -158,6 +158,7 @@ function Helper.Unit:add_default_state_change_functions(unit)
     unit.state_change_functions['idle'] = function(self) 
         self.state_change_functions['regain_control'](self)
         self.idleTimer = self.baseIdleTimer or 1.5
+        self.idleTimer = self.idleTimer * random:float(0.8, 1.2)
     end
     unit.state_change_functions['moving'] = function(self) 
         self.state_change_functions['regain_control'](self)
