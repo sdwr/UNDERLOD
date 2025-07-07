@@ -500,6 +500,11 @@ function Helper.Unit:apply_knockback(unit, force, angle, duration, push_invulner
         return
     end
 
+    -- Apply knockback resistance
+    local resistance = unit.knockback_resistance or 0
+    local final_force = force * (1 - resistance)
+    local final_duration = duration * (1 - resistance)
+
     -- Get the unit's mass, default to 1 if it has no physics body
     local mass = unit.body and unit:get_mass() or 1
     
@@ -512,7 +517,7 @@ function Helper.Unit:apply_knockback(unit, force, angle, duration, push_invulner
     local knockback_damping = 1.0 -- A low damping value to allow sliding
 
     -- Calculate the final impulse force, amplified by mass
-    local impulse = force * mass
+    local impulse = final_force * mass
 
     -- Apply the changes
     Helper.Unit:set_state(unit, unit_states['knockback'])
@@ -531,7 +536,7 @@ function Helper.Unit:apply_knockback(unit, force, angle, duration, push_invulner
     end
 
     -- After the duration, restore the unit's original physics properties
-    unit.cancel_trigger_tag = unit.t:after(duration, function()
+    unit.cancel_trigger_tag = unit.t:after(final_duration, function()
         if unit.state == unit_states['knockback'] then
             Helper.Unit:set_state(unit, unit_states['normal'])
         end

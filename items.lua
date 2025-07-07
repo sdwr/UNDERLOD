@@ -395,7 +395,7 @@ item_to_item_data = {
     cost = 10,
     icon = 'cactus',
     desc = 'Chance to instantly retaliate with an attack when hit',
-    stats = {},
+    stats = {knockback_resistance = 0.4},
     procs = {'retaliate'}
   },
   ['overkill'] = {

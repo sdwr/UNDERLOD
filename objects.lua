@@ -749,6 +749,7 @@ function Unit:calculate_stats(first_run)
   self.crit_chance = 0
   self.crit_mult = BASE_CRIT_MULT
   self.stun_chance = 0
+  self.knockback_resistance = 0
 
   self.eledmg_m = 1
 
@@ -848,6 +849,7 @@ function Unit:calculate_stats(first_run)
 
   self.crit_chance = math.clamp(self.crit_chance, 0, 1)
   self.stun_chance = math.clamp(self.stun_chance, 0, 1)
+  self.knockback_resistance = math.clamp(self.knockback_resistance, 0, 0.8)
 end  
 
 function Unit:onTickCallbacks(dt)
