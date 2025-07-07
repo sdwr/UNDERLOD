@@ -1011,6 +1011,7 @@ function init()
 
     ['crit_chance'] = 'crit chance',
     ['crit_mult'] = 'crit damage',
+    ['stun_chance'] = 'stun chance',
 
     ['proc'] = 'Extra effect on attack',
   }
@@ -1024,6 +1025,7 @@ function init()
     
     'crit_chance',
     'crit_mult',
+    'stun_chance',
     
     --core defensive stats
     'hp',

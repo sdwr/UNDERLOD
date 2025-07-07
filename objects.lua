@@ -323,6 +323,10 @@ function Unit:update(dt)
   if not self.dead then
     self.time_alive = self.time_alive + dt
   end
+
+  if self.stun_cooldown and self.stun_cooldown > 0 then
+    self.stun_cooldown = self.stun_cooldown - dt
+  end
 end
 
 function Unit:bounce(nx, ny)
@@ -744,6 +748,7 @@ function Unit:calculate_stats(first_run)
   self.buff_repeat_attack_chance = 0
   self.crit_chance = 0
   self.crit_mult = BASE_CRIT_MULT
+  self.stun_chance = 0
 
   self.eledmg_m = 1
 
@@ -842,6 +847,7 @@ function Unit:calculate_stats(first_run)
   self.cold_damage = self.buff_cold_damage_a * self.buff_cold_damage_m
 
   self.crit_chance = math.clamp(self.crit_chance, 0, 1)
+  self.stun_chance = math.clamp(self.stun_chance, 0, 1)
 end  
 
 function Unit:onTickCallbacks(dt)
@@ -1157,8 +1163,10 @@ function Unit:redshield(duration)
 end
 
 function Unit:stun()
-  --dont stun bosses
-  if self.class == 'boss' then
+  if self:has_buff('stunned') then
+    return
+  end
+  if self.stun_cooldown and self.stun_cooldown > 0 then
     return
   end
 
@@ -1178,6 +1186,7 @@ function Unit:stun()
 
   player_hit_wall1:play{pitch = random:float(0.8, 1.2), volume = 1.2}
   local stunBuff = {name = 'stunned', duration = duration}
+  self.stun_cooldown = STUN_COOLDOWN
   self:add_buff(stunBuff)
   self:interrupt_cast()
 end
@@ -1881,6 +1890,8 @@ function Unit:add_stats(stats_list)
       self.crit_chance = self.crit_chance + amount
     elseif stat_name == buff_types['crit_mult'] then
       self.crit_mult = self.crit_mult + amount
+    elseif stat_name == buff_types['stun_chance'] then
+      self.stun_chance = self.stun_chance + amount
     else
       -- print("unknown stat: " .. stat_name, amount)
     end

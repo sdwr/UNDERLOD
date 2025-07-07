@@ -1395,7 +1395,7 @@ function Critter:init(args)
 end
 
 function Critter:update(dt)
-  self:update_game_object(dt)
+  Critter.super.update(self, dt)
 
   if self.being_pushed then
     local v = math.length(self:get_velocity())

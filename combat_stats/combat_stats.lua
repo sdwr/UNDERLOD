@@ -35,8 +35,10 @@ BOSS_PUSH_DAMAGE = 30
 STUN_DURATION_CRITTER = 2.5
 STUN_DURATION_REGULAR_ENEMY = 2.5
 STUN_DURATION_SPECIAL_ENEMY = 1.5
-STUN_DURATION_MINIBOSS = 1.5
-STUN_DURATION_BOSS = 1
+STUN_DURATION_MINIBOSS = 1
+STUN_DURATION_BOSS = 0.4
+
+STUN_COOLDOWN = 5
 
 
 --proc constants
@@ -207,6 +209,7 @@ buff_types = {
     ['repeat_attack_chance'] = 'repeat_attack_chance',
     ['crit_chance'] = 'crit_chance',
     ['crit_mult'] = 'crit_mult',
+    ['stun_chance'] = 'stun_chance',
   }
 
 
@@ -311,6 +314,7 @@ _set_unit_base_stats = function(unit)
 
     unit.baseCooldown = unit.baseCooldown or attack_speeds['medium']
     unit.baseCast = unit.baseCast or attack_speeds['medium-cast']
+    unit.stun_cooldown = 0
 end
 
 _set_unit_item_config = function(unit)

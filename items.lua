@@ -289,8 +289,8 @@ item_to_item_data = {
       cost = 5,
       icon = 'mace',
       desc = 'Your attacks have a chance to [black]stun[fg] enemies',
-      stats = {bash = 0.2, dmg = 0.1},
-      procs = {'bash'}
+      stats = {stun_chance = 0.2, dmg = 0.1},
+      procs = {}
     },
 
   -- ['spikedcollar'] = {

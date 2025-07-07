@@ -118,7 +118,7 @@ function Troop:update(dt)
   -- ===================================================================
   -- 1. ESSENTIAL HOUSEKEEPING (These should always run)
   -- ===================================================================
-  self:update_game_object(dt)
+  Troop.super.update(self, dt)
   self:update_cast_cooldown(dt)
   self:onTickCallbacks(dt)
   self:update_buffs(dt)

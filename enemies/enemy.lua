@@ -79,7 +79,7 @@ end
 
 --set castcooldown and in the enemy file (init)
 function Enemy:update(dt)
-    self:update_game_object(dt)
+    Enemy.super.update(self, dt)
     self:update_cast_cooldown(dt)
 
     self:onTickCallbacks(dt)

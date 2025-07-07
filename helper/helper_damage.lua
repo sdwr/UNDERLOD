@@ -102,6 +102,15 @@ function Helper.Damage:roll_crit(from, damage)
   return damage
 end
 
+function Helper.Damage:roll_stun(from)
+  if not from then return false end
+  if from.stun_chance then
+    if random:float(0, 1) < from.stun_chance then
+      return true
+    end
+  end
+end
+
 -- ===================================================================
 -- DAMAGE CALCULATION
 -- Handles unit-specific damage calculation logic
@@ -303,6 +312,11 @@ function Helper.Damage:primary_hit(unit, damage, from, damageType, makesSound)
 
   --only direct attacks can crit
   damage = Helper.Damage:roll_crit(from, damage)
+
+  local stun = Helper.Damage:roll_stun(from)
+  if stun then
+    unit:stun()
+  end
   
   -- Trigger onPrimaryHit callbacks right before processing the hit
   if from and from.onPrimaryHitCallbacks then

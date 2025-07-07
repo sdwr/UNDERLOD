@@ -25,7 +25,7 @@ function EnemyCritter:init(args)
 end
 
 function EnemyCritter:update(dt)
-  self:update_game_object(dt)
+  EnemyCritter.super.update(self, dt)
 
   if self.dead then return end
 
