@@ -587,22 +587,30 @@ end
 
 Proc_Retaliate = Proc:extend()
 function Proc_Retaliate:init(args)
-  self.triggers = {PROC_ON_GOT_HIT}
+  self.triggers = {PROC_ON_GOT_HIT, PROC_ON_TICK}
   self.scope = 'troop'
 
   Proc_Retaliate.super.init(self, args)
   
   --define the proc's vars
-  self.chance = self.data.chance or 0.2
+  self.baseCooldown = self.data.cooldown or 2
+  self.cooldown = self.baseCooldown
 
   --proc memory
 end
 
+function Proc_Retaliate:onTick(dt, from)
+  Proc_Retaliate.super.onTick(self, dt)
+  if self.cooldown < 0 then return end
+  self.cooldown = self.cooldown - dt
+end
+
 function Proc_Retaliate:onGotHit(target, damage)
   Proc_Retaliate.super.onGotHit(self, target, damage)
-  if math.random() < self.chance then
-    -- self.unit:attack(target)
-  end
+  if self.cooldown > 0 then return end
+  self.cooldown = self.baseCooldown
+  -- have to create a new spell object here, which means
+  -- making a generic fn for that for troop
 end
 
 

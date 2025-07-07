@@ -373,7 +373,9 @@ function Enemy:push(f, r, push_invulnerable, duration)
 
   -- Apply a multiplier to reduce knockback force on bosses
   local force_multiplier = 1
-  if self.boss then force_multiplier = 0.2 end
+  if self.class == 'boss' then 
+    return
+  end
 
   -- Call the universal knockback function with the modified force
   Helper.Unit:apply_knockback(self, f * force_multiplier, r, duration, push_invulnerable)
