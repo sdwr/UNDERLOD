@@ -24,7 +24,7 @@ function Helper.Damage:apply_hit(unit, damage, from, damageType, makesSound, can
   local actual_damage = Helper.Damage:calculate_final_damage(unit, damage, damageType)
   
   -- Apply damage
-  unit.hp = unit.hp - actual_damage
+  Helper.Damage:deal_damage(unit, actual_damage)
   
   -- Unit-specific post-damage processing
   Helper.Damage:process_post_damage(unit, actual_damage, damageType, from)
@@ -143,11 +143,6 @@ function Helper.Damage:process_post_damage(unit, actual_damage, damageType, from
   -- Enemy specific: elemental damage reactions
   if unit.isEnemy then
     Helper.Damage:process_elemental_reactions(unit, actual_damage, damageType, from)
-  end
-  
-  -- Player troop specific: camera shake
-  if unit.is_troop then
-    camera:shake(1, 0.5)
   end
   
   -- Update global damage tracking
@@ -335,7 +330,7 @@ function Helper.Damage:primary_hit(unit, damage, from, damageType, makesSound)
   -- TODO: Apply chain attack effects here
   
   -- Apply damage
-  unit.hp = unit.hp - actual_damage
+  Helper.Damage:deal_damage(unit, actual_damage)
   
   -- Unit-specific post-damage processing
   Helper.Damage:process_post_damage(unit, actual_damage, damageType, from)
@@ -350,6 +345,17 @@ function Helper.Damage:primary_hit(unit, damage, from, damageType, makesSound)
   if unit.hp <= 0 then
     Helper.Damage:handle_death(unit, from, actual_damage)
   end
+end
+
+function Helper.Damage:deal_damage(unit, damage)
+  --all units, hfx
+  -- unit.hfx:use('hit', 0.25, 200, 10)
+  -- Player troop specific: camera shake
+  if unit.is_troop then
+    camera:shake(1, 0.5)
+  end
+
+  unit.hp = unit.hp - damage
 end
 
 -- ===================================================================
@@ -377,7 +383,7 @@ function Helper.Damage:indirect_hit(unit, damage, from, damageType, makesSound)
   local actual_damage = Helper.Damage:calculate_final_damage(unit, damage, damageType)
   
   -- Apply damage
-  unit.hp = unit.hp - actual_damage
+  Helper.Damage:deal_damage(unit, actual_damage)
   
   -- Unit-specific post-damage processing
   Helper.Damage:process_post_damage(unit, actual_damage, damageType, from)
@@ -417,7 +423,7 @@ function Helper.Damage:chained_hit(unit, damage, from, damageType, makesSound)
   local actual_damage = Helper.Damage:calculate_final_damage(unit, damage, damageType)
   
   -- Apply damage
-  unit.hp = unit.hp - actual_damage
+  Helper.Damage:deal_damage(unit, actual_damage)
   
   -- Unit-specific post-damage processing
   Helper.Damage:process_post_damage(unit, actual_damage, damageType, from)
