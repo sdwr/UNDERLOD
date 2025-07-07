@@ -243,6 +243,7 @@ function Wave_Types:Get_Waves(level)
   local wave = nil
   if level == 1 then
     wave = self:One_Cleaver()
+    table.insert(wave, {'GROUP', 'seeker', 4, 'random'})
     table.insert(waves, wave)
     local wave2 = {}
     table.insert(wave2, {'GROUP', 'cleaver', 1, 'nil'})
