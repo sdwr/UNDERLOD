@@ -1268,7 +1268,7 @@ end
 
 function Unit:curse(from)
   -- Random delay between 0.25 and 0.5 seconds
-  local delay = random:float(0.25, 0.5)
+  local delay = random:float(0.2, 0.7)
   
   -- Create curse data
   local curseBuff = {name = 'curse', duration = 3, color = purple[0], stats = {percent_def = -0.4}}
