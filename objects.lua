@@ -818,7 +818,11 @@ function Unit:calculate_stats(first_run)
   self.dmg = self.dmg * Helper.Unit:get_survivor_damage_boost(self)
 
   self.class_def_m = self.class_def_m*unit_stat_mult.def
-  self.def = (self.base_def + self.class_def_a + self.buff_def_a)*self.class_def_m*self.buff_def_m
+  self.buff_def_m = math.max(self.buff_def_m, 0.2)
+  local flat_def = self.base_def + self.class_def_a + self.buff_def_a
+  flat_def = math.max(flat_def, 0)
+
+  self.def = flat_def*self.class_def_m*self.buff_def_m
 
   self.aspd_m = 1/(self.base_aspd_m*self.buff_aspd_m)
 
