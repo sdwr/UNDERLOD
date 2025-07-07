@@ -31,6 +31,7 @@ fns['init_enemy'] = function(self)
       group = main.current.main,
       unit = self,
       spelltype = "targeted",
+      target = self.target,
       x = self.x,
       y = self.y,
       color = purple[0],

@@ -193,7 +193,7 @@ function Enemy:acquire_target_loose_seek()
   self.target_location = nil
   self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
   if self.target then
-    self.target_location = {x = self.target.x + random:float(-50, 50), y = self.target.y + random:float(-50, 50)}
+    self.target_location = {x = self.target.x + random:float(-LOOSE_SEEK_OFFSET, LOOSE_SEEK_OFFSET), y = self.target.y + random:float(-LOOSE_SEEK_OFFSET, LOOSE_SEEK_OFFSET)}
   end
   return self.target ~= nil
 end
