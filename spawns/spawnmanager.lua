@@ -179,12 +179,9 @@ function Suction_Troops_To_Spawn_Locations(arena)
       -- Apply suction to each troop in the team
       for j, troop in ipairs(team.troops) do
         if troop and not troop.dead then
-          -- Calculate offset for this troop within the team formation
-          local troop_offset_x = (j - 1) * SpawnGlobals.TROOP_FORMATION_HORIZONTAL_SPACING
-          local troop_offset_y = (j - 1) * SpawnGlobals.TROOP_FORMATION_VERTICAL_SPACING
           
-          local target_x = spawn_x + troop_offset_x
-          local target_y = spawn_y + troop_offset_y
+          local target_x = spawn_x
+          local target_y = spawn_y
           
           -- Apply strong suction force towards spawn location
           local distance = Helper.Geometry:distance(troop.x, troop.y, target_x, target_y)
