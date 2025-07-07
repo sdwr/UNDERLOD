@@ -65,8 +65,8 @@ function shared_init()
   -- for drawing effects over top of animated units
   -- dont need for now, looks ok drawing them under
 
-  -- main_effects_canvas = Canvas(gw, gh, {stencil = true})
-  -- main_effects_draws = {}
+  main_effects_canvas = Canvas(gw, gh, {stencil = true})
+  main_after_characters = {}
   
   full_res_canvas = Canvas(ww, wh)
   full_res_draws = {}
@@ -116,12 +116,15 @@ function shared_draw(draw_action)
     full_res_character_draws = {}
   end)
 
-  -- main_effects_canvas:draw_to(function()
-  --   for i, drawFn in ipairs(main_effects_draws) do
-  --     drawFn()
-  --   end
-  --   main_effects_draws = {}
-  -- end)
+  main_effects_canvas:draw_to(function()
+    for i, drawFn in ipairs(main_after_characters) do
+      drawFn()
+    end
+    -- Clear the table instead of recreating it
+    for i = #main_after_characters, 1, -1 do
+      table.remove(main_after_characters, i)
+    end
+  end)
   
   full_res_canvas:draw_to(function()
     if not IN_TRANSITION then
@@ -144,7 +147,7 @@ function shared_draw(draw_action)
   shadow_canvas:draw(x + 1.5*sx, y + 1.5*sy, 0, sx, sy)
   main_canvas:draw(x, y, 0, sx, sy)
   full_res_character_canvas:draw(x, y)
-  -- main_effects_canvas:draw(x, y, 0, sx, sy)
+  main_effects_canvas:draw(x, y, 0, sx, sy)
   full_res_canvas:draw(x, y)
 end
 

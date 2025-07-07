@@ -63,7 +63,9 @@ function Main:init(name)
   self:init_state(name)
   self.states = {}
   self.transitions = Group():no_camera()
+  self.transitions:set_custom_draw_list(main_after_characters)
   self.cursorGroup = Group()
+  self.cursorGroup:set_custom_draw_list(main_after_characters)
   self.fps = FPSCounter()
 end
 

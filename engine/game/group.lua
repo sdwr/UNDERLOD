@@ -89,7 +89,13 @@ function Group:draw(scroll_factor_x, scroll_factor_y)
   if self.camera then self.camera:attach(scroll_factor_x, scroll_factor_y) end
     for _, object in ipairs(self.objects) do
       if not object.hidden then
-        object:draw()
+        if self.custom_draw_list then
+          table.insert(self.custom_draw_list, function()
+            object:draw()
+          end)
+        else
+          object:draw()
+        end
       end
     end
   if self.camera then self.camera:detach() end
@@ -120,6 +126,10 @@ function Group:draw_custom()
   for i, object in ipairs(ghosts) do
     object:draw()
   end
+end
+
+function Group:set_custom_draw_list(draw_list)
+  self.custom_draw_list = draw_list
 end
 
 
