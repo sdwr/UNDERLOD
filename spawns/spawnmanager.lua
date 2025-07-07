@@ -259,6 +259,8 @@ function SpawnManager:init(arena)
     self.timer = arena.entry_delay or 2
     self.current_wave_index = 1
     self.current_instruction_index = 1
+
+    self.pending_spawns = 0
     
     if table.contains(BOSS_ROUNDS, arena.level) then
         self:change_state('boss_fight')
@@ -278,6 +280,7 @@ function SpawnManager:update(dt)
     if self.state == 'entry_delay' or self.state == 'between_waves_delay' or self.state == 'waiting_for_delay' then
         self.timer = self.timer - dt
         if self.timer <= 0 then
+          self.pending_spawns = 0
             self:change_state('processing_wave')
         end
     end
@@ -285,87 +288,89 @@ function SpawnManager:update(dt)
     -- If we are ready to process the next instruction in a wave, do so.
     if self.state == 'processing_wave' then
         self:process_next_instruction()
+        self:change_state('waiting_for_clear')
     
     -- If all instructions are done, wait for the arena to be clear.
     elseif self.state == 'waiting_for_clear' then
-        if #self.arena.main:get_objects_by_classes(self.arena.enemies) <= 0 then
-            -- Check if this was the final wave
-            if self.current_wave_index >= #self.level_data.waves then
-                -- For the final wave, we DO check the progress bar to confirm a win.
-                if not main.current.progress_bar or main.current.progress_bar:is_complete() then
-                    self:change_state('finished')
-                    self.arena:quit()
-                end
-            else
-                -- ===================================================================
-                -- FIX: For intermediate waves, the only condition to advance is that
-                -- all enemies are dead. We no longer check the progress bar here.
-                -- ===================================================================
-                self.t:after(0.5, function()
-                  spawn_mark2:play{pitch = 1, volume = 1.2}
-                end)
-                self.current_wave_index = self.current_wave_index + 1
-                self.current_instruction_index = 1
-                self:change_state('between_waves_delay')
-                self.timer = self.time_between_waves
-                -- self:show_wave_complete_text()
-            end
-        end
+      local enemies = self.arena.main:get_objects_by_classes(self.arena.enemies)
+      if #enemies <= 0 and self.pending_spawns <= 0 then
+          -- Check if this was the final wave
+          if self.current_wave_index >= #self.level_data.waves then
+              -- For the final wave, we DO check the progress bar to confirm a win.
+              if not main.current.progress_bar or main.current.progress_bar:is_complete() then
+                  self:change_state('finished')
+                  self.arena:quit()
+              end
+          else
+              -- ===================================================================
+              -- FIX: For intermediate waves, the only condition to advance is that
+              -- all enemies are dead. We no longer check the progress bar here.
+              -- ===================================================================
+              self.t:after(0.5, function()
+                spawn_mark2:play{pitch = 1, volume = 1.2}
+              end)
+              self.current_wave_index = self.current_wave_index + 1
+              self.current_instruction_index = 1
+              self:change_state('between_waves_delay')
+              self.timer = self.time_between_waves
+              -- self:show_wave_complete_text()
+          end
+      end
     
     elseif self.state == 'boss_fight' then
-        self:handle_boss_fight()
-        self:change_state('waiting_for_boss_fight')
+        self:handle_boss_fight(self.arena)
+        self:change_state('waiting_for_clear')
     end
 end
 
-function SpawnManager:handle_boss_fight()
+function SpawnManager:handle_boss_fight(arena)
   local boss_name = ""
   boss_name = level_to_boss_enemy[self.arena.level]
 
-  local on_finished = function()
-    self:change_state('waiting_for_clear')
-    self.timer = self.time_between_waves
-  end
+  self.arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns + 1
   
   if boss_name ~= "" then
       self.t:after(1.5, function() 
         -- Just call Spawn_Boss. It handles everything now.
-        Spawn_Boss(self.arena, boss_name, on_finished) 
+        Spawn_Boss(self.arena, boss_name) 
       end)
   end
 end
 
--- This is the new core logic function. It reads and executes one instruction.
+-- This function processes all instructions for a wave segment at once.
 function SpawnManager:process_next_instruction()
-    local wave_instructions = self.level_data.waves[self.current_wave_index]
-    
-    -- Check if we've finished all instructions for this wave
-    if self.current_instruction_index > #wave_instructions then
-        self:change_state('waiting_for_clear')
-        return
-    end
+  -- Loop until we explicitly break out (due to a delay or end of wave).
+  while true do
+      local wave_instructions = self.level_data.waves[self.current_wave_index]
 
-    local instruction = wave_instructions[self.current_instruction_index]
-    local type = instruction[1]
+      -- Check if we've finished all instructions for this wave.
+      if self.current_instruction_index > #wave_instructions then
+          -- All instructions for the wave are queued. Now we just wait for clear.
+          self:change_state('waiting_for_clear')
+          break
+      end
 
-    if type == 'GROUP' then
-        self:change_state('waiting_for_group') -- Pause until this group is done
-        local group_data = {instruction[2], instruction[3], instruction[4]}
-        
-        -- The callback function will un-pause the manager
-        local on_group_finished = function()
-            self:change_state('processing_wave')
-        end
-        
-        Spawn_Group(self.arena, group_data, on_group_finished)
+      local instruction = wave_instructions[self.current_instruction_index]
+      local type = instruction[1]
 
-    elseif type == 'DELAY' then
-        self:change_state('waiting_for_delay') -- Pause for a set duration
-        self.timer = instruction[2] or 1 -- Get delay time from instruction
-    end
+      if type == 'GROUP' then
+          local group_data = {instruction[2], instruction[3], instruction[4]}
+          -- Call Spawn_Group. It will handle incrementing the pending_spawns counter.
+          -- No callback is needed here.
+          Spawn_Group(self.arena, group_data)
 
-    -- Move to the next instruction for the next time we are ready
-    self.current_instruction_index = self.current_instruction_index + 1
+      elseif type == 'DELAY' then
+          -- Pause for the specified duration.
+          self:change_state('waiting_for_delay')
+          self.timer = instruction[2] or 1
+          -- IMPORTANT: Increment the index so we don't re-process the DELAY.
+          self.current_instruction_index = self.current_instruction_index + 1
+          break -- Exit the loop to honor the delay.
+      end
+
+      -- Move to the next instruction.
+      self.current_instruction_index = self.current_instruction_index + 1
+  end
 end
 
 
@@ -425,10 +430,11 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
         local create_enemy_action = function()
             Spawn_Enemy(arena, type, location)
         end
+        arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns + 1
         
         -- Stagger the spawn warnings slightly for a better visual effect.
-        arena.t:after(0.1 * i, function()
-            Create_Unit_With_Warning(arena, location, 2, create_enemy_action, type, on_single_unit_done)
+        arena.t:after(0.1 * i, function() 
+          Create_Unit_With_Warning(arena, location, 2, create_enemy_action, type)
         end)
     end
 end
@@ -466,22 +472,16 @@ function Countdown(arena)
       end)
 end
 
-function Spawn_Boss(arena, name, on_finished)
-  
-  local on_single_unit_done = function()
-    if on_finished then on_finished() end
-  end
+function Spawn_Boss(arena, name)
   
   -- Define the action of creating the boss.
   local create_boss_action = function()
       LevelManager.activeBoss = Enemy{type = name, isBoss = true, group = arena.main, x = SpawnGlobals.boss_spawn_point.x, y = SpawnGlobals.boss_spawn_point.y, level = arena.level}
       Spawn_Enemy_Effect(arena, LevelManager.activeBoss)
-
-
   end
 
   -- Spawn the boss with a longer, more dramatic 2.5-second warning.
-  Create_Unit_With_Warning(arena, SpawnGlobals.boss_spawn_point, 2.5, create_boss_action, name, on_single_unit_done)
+  Create_Unit_With_Warning(arena, SpawnGlobals.boss_spawn_point, 2.5, create_boss_action, name)
 end
 
 function Spawn_Critters(arena, group_index, amount)
@@ -504,7 +504,7 @@ function Spawn_Critters(arena, group_index, amount)
       end
       
       -- Spawn this critter with its own short warning marker.
-      Create_Unit_With_Warning(arena, spawn_pos, 1, create_critter_action, 'critter', group_index)
+      Create_Unit_With_Warning(arena, spawn_pos, 1, create_critter_action, 'critter')
       
       spawned_count = spawned_count + 1
   end, amount, function() SetSpawning(arena, false) end)
@@ -578,7 +578,7 @@ end
 -- REVISED Helper Function
 -- Shows a warning marker immediately, then stalls until the space is clear to spawn.
 -- ===================================================================
-function Create_Unit_With_Warning(arena, location, warning_time, creation_callback, enemy_type, on_spawn_success_callback)
+function Create_Unit_With_Warning(arena, location, warning_time, creation_callback, enemy_type)
   local check_again_delay = 0.25 
   local spawn_radius = 10
   local enemy_size = enemy_type_to_size[enemy_type]
@@ -619,10 +619,13 @@ function Create_Unit_With_Warning(arena, location, warning_time, creation_callba
           
           -- First, remove the warning marker since the unit is now appearing.
           warning_marker.dead = true
-          
+
           -- Then, run the callbacks to create the unit and notify the spawn manager.
           if creation_callback then creation_callback() end
-          if on_spawn_success_callback then on_spawn_success_callback() end
+
+          arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns - 1
+
+          
       end
 
       -- Start the first attempt to spawn.

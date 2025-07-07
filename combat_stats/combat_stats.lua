@@ -4,7 +4,7 @@
 --and also used by procs to know when to start buffs
 TIME_TO_ROUND_START = 2
 SPAWNS_IN_GROUP = 6
-NORMAL_ENEMIES_PER_GROUP = 6
+NORMAL_ENEMIES_PER_GROUP = 10
 SPAWN_CHECKS = 10
 
 --make enemies more difficult after each boss
@@ -137,6 +137,7 @@ enemy_type_to_stats = {
 attack_ranges = {
     ['melee'] = 50,
     ['medium'] = 60,
+    ['medium-plus'] = 70,
     ['medium-long'] = 110,
     ['ranged'] = 130,
     ['long'] = 150,

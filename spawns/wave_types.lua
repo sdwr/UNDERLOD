@@ -256,6 +256,7 @@ function Wave_Types:Get_Waves(level)
     local wave1 ={
         {'GROUP', 'seeker', NORMAL_ENEMIES_PER_GROUP, 'nil'},
         {'GROUP', 'burst', 1, 'far'},
+        {'GROUP', 'charger', 1, 'random'},
     }
     -- Wave 2
     local wave2 = {
