@@ -601,6 +601,36 @@ ent_attack_a = create_animation(ent_attack_g, 1, 7, 128, 128, ENT_CAST_TIME / EN
 ent_hurt_a = create_animation(ent_hurt_g, 1, 4, 128, 128, 0.4)
 ent_death_a = create_animation(ent_death_g, 1, 6, 128, 128, 0.4)
 
+GHOST_SPRITE_W = 64
+GHOST_SPRITE_H = 64
+
+GHOST_CAST_TIME = 1
+GHOST_ATTACK_FRAMES = 6
+
+GHOST_SPRITE_SCALE = 3
+
+ghost_idle = Image(spriteFolder .. '/ghost-mobs/Ghost1/Idle/Ghost1_Idle_full', 'nearest')
+ghost_walk = Image(spriteFolder .. '/ghost-mobs/Ghost1/Walk/Ghost1_Walk_full', 'nearest')
+ghost_run = Image(spriteFolder .. '/ghost-mobs/Ghost1/Run/Ghost1_Run_full', 'nearest')
+ghost_attack = Image(spriteFolder .. '/ghost-mobs/Ghost1/Attack/Ghost1_Attack_full', 'nearest')
+ghost_hurt = Image(spriteFolder .. '/ghost-mobs/Ghost1/Hurt/Ghost1_Hurt_full', 'nearest')
+ghost_death = Image(spriteFolder .. '/ghost-mobs/Ghost1/Death/Ghost1_Death_full', 'nearest')
+
+ghost_idle_g = create_grid(ghost_idle, 64, 64)
+ghost_walk_g = create_grid(ghost_walk, 64, 64)
+ghost_run_g = create_grid(ghost_run, 64, 64)
+ghost_attack_g = create_grid(ghost_attack, 64, 64)
+ghost_hurt_g = create_grid(ghost_hurt, 64, 64)
+ghost_death_g = create_grid(ghost_death, 64, 64)
+
+ghost_idle_a = create_animation(ghost_idle_g, 1, 4, 64, 64, 0.4)
+ghost_walk_a = create_animation(ghost_walk_g, 1, 6, 64, 64, 0.2)
+ghost_run_a = create_animation(ghost_run_g, 1, 6, 64, 64, 0.2)
+ghost_attack_a = create_animation(ghost_attack_g, 1, 6, 64, 64, GHOST_CAST_TIME / GHOST_ATTACK_FRAMES)
+ghost_hurt_a = create_animation(ghost_hurt_g, 1, 4, 64, 64, 0.4)
+ghost_death_a = create_animation(ghost_death_g, 1, 9, 64, 64, 0.2)
+
+
 skeleton_spritesheets = {
   ['normal'] = {skeleton_idle_a, skeleton},
   ['birth'] = {skeleton_birth_a, skeleton},
@@ -760,6 +790,16 @@ golem3_spritesheets = {
   ['death'] = {golem3_death_a, golem3_death},
 }
 
+ghost_spritesheets = {
+  ['normal'] = {ghost_idle_a, ghost_idle},
+  ['walk'] = {ghost_walk_a, ghost_walk},
+  ['run'] = {ghost_run_a, ghost_run},
+  ['casting'] = {ghost_attack_a, ghost_attack},
+  ['channeling'] = {ghost_attack_a, ghost_attack},
+  ['hurt'] = {ghost_hurt_a, ghost_hurt},
+  ['death'] = {ghost_death_a, ghost_death},
+}
+
 --all spritesheets
 enemy_spritesheets = {
   ['golem'] = golem_spritesheets,
@@ -783,6 +823,7 @@ enemy_spritesheets = {
   ['rat3'] = rat3_spritesheets,
   ['ent'] = ent_spritesheets,
   ['golem3'] = golem3_spritesheets,
+  ['ghost'] = ghost_spritesheets,
 }
 enemy_sprite_sizes = {
   ['golem'] = {GOLEM_SPRITE_W, GOLEM_SPRITE_H},
@@ -806,6 +847,7 @@ enemy_sprite_sizes = {
   ['mech3'] = {MECH3_SPRITE_W, MECH3_SPRITE_H},
   ['ent'] = {ENT_SPRITE_W, ENT_SPRITE_H},
   ['golem3'] = {GOLEM3_SPRITE_W, GOLEM3_SPRITE_H},
+  ['ghost'] = {GHOST_SPRITE_W, GHOST_SPRITE_H},
 }
 
 enemy_sprite_scales = {
@@ -830,6 +872,7 @@ enemy_sprite_scales = {
   ['mech3'] = MECH3_SPRITE_SCALE,
   ['ent'] = ENT_SPRITE_SCALE,
   ['golem3'] = GOLEM3_SPRITE_SCALE,
+  ['ghost'] = GHOST_SPRITE_SCALE,
 }
 
 -- ===================================================================
@@ -848,6 +891,7 @@ enemy_type_to_size = {
   ['laser'] = 'special',
   ['mortar'] = 'special',
   ['singlemortar'] = 'special',
+  ['snakearrow'] = 'special',
   ['rager'] = 'special',
   ['seeker'] = 'regular',
   ['shooter'] = 'regular',
