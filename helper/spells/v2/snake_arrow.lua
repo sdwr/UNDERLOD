@@ -102,7 +102,7 @@ function SnakeArrow:init(args)
   self.last_trail_time = 0
   
   -- Sound
-  scout1:play{pitch = random:float(0.9, 1.1), volume = 0.6}
+  arcane2:play{pitch = random:float(0.9, 1.1), volume = 0.4}
   
   -- Set lifetime
   self.t:after(self.duration, function() self:die() end)

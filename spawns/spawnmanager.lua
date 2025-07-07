@@ -436,6 +436,12 @@ end
 
 -- This function processes all instructions for a wave segment at once.
 function SpawnManager:process_next_instruction()
+  
+  --play spawn sound only once for the wave
+  self.arena.t:after(WAVE_SPAWN_WARNING_TIME, function()
+    Spawn_Enemy_Sound(self.arena, false)
+  end)
+  
   -- Loop until we explicitly break out (due to a delay or end of wave).
   while true do
       local wave_instructions = self.level_data.waves[self.current_wave_index]
@@ -520,7 +526,7 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
         arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns + 1
         
         -- Stagger the spawn warnings slightly for a better visual effect.
-        Create_Unit_With_Warning(arena, location, 2, create_enemy_action, type)
+        Create_Unit_With_Warning(arena, location, WAVE_SPAWN_WARNING_TIME, create_enemy_action, type)
     end
 end
 
@@ -559,6 +565,7 @@ function Spawn_Boss(arena, name)
   local create_boss_action = function()
       LevelManager.activeBoss = Enemy{type = name, isBoss = true, group = arena.main, x = SpawnGlobals.boss_spawn_point.x, y = SpawnGlobals.boss_spawn_point.y, level = arena.level}
       Spawn_Enemy_Effect(arena, LevelManager.activeBoss)
+      Spawn_Enemy_Sound(arena, true)
   end
 
   -- Spawn the boss with a longer, more dramatic 2.5-second warning.
@@ -601,8 +608,6 @@ function Spawn_Enemy_Effect(arena, enemy)
   local enemy_width = enemy_size_to_xy[enemy_size].x
 
   local color = enemy.color
-
-  Spawn_Enemy_Sound(arena, enemy)
   
   -- Add spawn wobble/hit effect to the enemy
   enemy.hfx:use('hit', 0.3, 200, 10, 0.2)
@@ -630,28 +635,11 @@ function Spawn_Enemy_Effect(arena, enemy)
   end
 end
 
-function Spawn_Enemy_Sound(arena, enemy)
-  local enemy_type = enemy.type
-  local enemy_size = enemy_type_to_size[enemy_type]
-
-  if enemy_size == 'small' then
+function Spawn_Enemy_Sound(arena, isBoss)
+  if isBoss then
+    hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}
+  else
     hit3:play{pitch = random:float(0.8, 1.2), volume = 0.4}
-  elseif enemy_size == 'regular' then
-    hit3:play{pitch = random:float(0.8, 1.2), volume = 0.4}
-  elseif enemy_size == 'regular_special' then
-    hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}
-  elseif enemy_size == 'special' then
-    hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}
-  elseif enemy_size == 'huge' then
-    hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}
-  elseif enemy_size == 'boss' then
-    hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}
-  elseif enemy_size == 'heigan' then
-    hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}
-  elseif enemy_size == 'stompy' then
-    hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}
-  elseif enemy_size == 'critter' then
-    alert1:play{pitch = 1, volume = 0.3}
   end
 end
 

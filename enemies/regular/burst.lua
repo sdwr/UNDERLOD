@@ -12,7 +12,7 @@ fns['init_enemy'] = function(self)
   self.icon = 'lich'
   self.movementStyle = MOVEMENT_TYPE_RANDOM
 
-  self.baseCast = attack_speeds['medium-slow']
+  self.baseCast = attack_speeds['medium']
   self:reset_castcooldown(self.baseCast)
 
   --set attacks
@@ -22,7 +22,7 @@ fns['init_enemy'] = function(self)
   local burst = {
     name = 'burst',
     viable = function () return true end,
-    oncast = function() end,
+    oncast = function() self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) end,
     castcooldown = self.castcooldown,
     instantspell = true,
     cast_length = LICH_CAST_TIME,
@@ -31,6 +31,8 @@ fns['init_enemy'] = function(self)
       group = main.current.main,
       unit = self,
       spelltype = "targeted",
+      accuracy = math.pi/4,
+      target = self.target,
       x = self.x,
       y = self.y,
       color = purple[0],

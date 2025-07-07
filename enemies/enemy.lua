@@ -343,6 +343,7 @@ function Enemy:die()
   if self.dead then return end
   self.super.die(self)
   self.dead = true
+  _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.9}
   -- update progress bar in arena, based on enemy value
   --progress bar is hidden for bosses
   if main.current.progress_bar then

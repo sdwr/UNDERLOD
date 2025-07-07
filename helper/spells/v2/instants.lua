@@ -514,6 +514,9 @@ function Burst:init(args)
 
   if self.spelltype == "targeted" then
     self.r = Get_Angle_For_Target(self)
+    if self.accuracy then
+      self.r = self.r + random:float(-self.accuracy/2, self.accuracy/2)
+    end
     self.distance = Get_Distance_To_Target(self)
     self.distance = math.random(self.distance - 100, self.distance + 100)
     self.distance = math.max(self.distance, 100)
@@ -522,7 +525,7 @@ function Burst:init(args)
     self.r = self.r or 0
     self.distance = self.distance or math.random(100, 250)
   end  
-  self.secondary_damage = get_dmg_value(self.secondary_damage) or 10
+  self.secondary_damage = get_dmg_value(self.secondary_damage) or self.damage
   self.secondary_distance = self.secondary_distance or 50
   self.secondary_speed = self.secondary_speed or 100
   
