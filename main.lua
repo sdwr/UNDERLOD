@@ -1013,6 +1013,7 @@ function init()
     ['crit_mult'] = 'crit damage',
     ['stun_chance'] = 'stun chance',
     ['knockback_resistance'] = 'knockback resistance',
+    ['cooldown_reduction'] = 'cooldown reduction',
 
     ['proc'] = 'Extra effect on attack',
   }
@@ -1027,6 +1028,7 @@ function init()
     'crit_chance',
     'crit_mult',
     'stun_chance',
+    'cooldown_reduction',
 
     --core defensive stats
     'hp',

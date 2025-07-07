@@ -470,6 +470,15 @@ item_to_item_data = {
     stats = {area_size = 0.2, aspd = 0.1},
     procs = {}
   },
+  ['cooldown_reduction'] = {
+    name = 'cooldown_reduction',
+    colors = {},
+    cost = 10,
+    icon = 'cooldown_reduction',
+    desc = 'Reduce the cooldown of your active abilities',
+    stats = {cooldown_reduction = 0.2, hp = 0.2},
+    procs = {}
+  },
   ['berserker_greaves'] = {
     name = 'berserker_greaves',
     colors = {'yellow'},

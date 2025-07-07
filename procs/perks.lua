@@ -135,10 +135,10 @@ PERK_DEFINITIONS = {
     stats2 = {aspd = 0.15},
     stats3 = {aspd = 0.2},
   },
-  double_attack_chance = {
+  repeat_attack_chance = {
     name = "Double Attack Chance",
     description = "+8%/12%/16% chance to attack twice",
-    icon = "double_attack_chance",
+    icon = "repeat_attack_chance",
     rarity = "common",
     stats1 = {repeat_attack_chance = 0.08},
     stats2 = {repeat_attack_chance = 0.12},

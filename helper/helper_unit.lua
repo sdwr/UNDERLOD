@@ -555,6 +555,11 @@ end
 function Helper.Unit:apply_cooldown_reduction(proc, base_cooldown)
     -- For team-based procs, we need to find a troop to get the cooldown reduction from
     local unit = proc.unit
+    if not unit then
+        if proc.team then
+            unit = proc.team:get_first_alive_troop()
+        end
+    end
     
     if unit and unit.cooldown_reduction then
         return base_cooldown * (1 - unit.cooldown_reduction)

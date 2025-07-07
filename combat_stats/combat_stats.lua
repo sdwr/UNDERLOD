@@ -210,6 +210,7 @@ buff_types = {
     ['crit_mult'] = 'crit_mult',
     ['stun_chance'] = 'stun_chance',
     ['knockback_resistance'] = 'knockback_resistance',
+    ['cooldown_reduction'] = 'cooldown_reduction',
   }
 
 

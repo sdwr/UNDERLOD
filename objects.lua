@@ -750,6 +750,7 @@ function Unit:calculate_stats(first_run)
   self.crit_mult = BASE_CRIT_MULT
   self.stun_chance = 0
   self.knockback_resistance = 0
+  self.cooldown_reduction = 0
 
   self.eledmg_m = 1
 
@@ -850,6 +851,7 @@ function Unit:calculate_stats(first_run)
   self.crit_chance = math.clamp(self.crit_chance, 0, 1)
   self.stun_chance = math.clamp(self.stun_chance, 0, 1)
   self.knockback_resistance = math.clamp(self.knockback_resistance, 0, 0.8)
+  self.cooldown_reduction = math.clamp(self.cooldown_reduction, 0, 0.8)
 end  
 
 function Unit:onTickCallbacks(dt)
@@ -1894,6 +1896,8 @@ function Unit:add_stats(stats_list)
       self.crit_mult = self.crit_mult + amount
     elseif stat_name == buff_types['stun_chance'] then
       self.stun_chance = self.stun_chance + amount
+    elseif stat_name == buff_types['cooldown_reduction'] then
+      self.cooldown_reduction = self.cooldown_reduction + amount
     else
       -- print("unknown stat: " .. stat_name, amount)
     end
