@@ -171,16 +171,16 @@ function init()
 
 
 
-  song1 = Sound('gunnar - 26 hours and I feel Fine.mp3', { tags = { music } })
-  song2 = Sound('gunnar - Back On Track.mp3', { tags = { music } })
-  song3 = Sound('gunnar - Chrysalis.mp3', { tags = { music } })
-  song4 = Sound('gunnar - Fingers.mp3', { tags = { music } })
-  song5 = Sound('gunnar - Jam 32 Melancholy.mp3', { tags = { music } })
-  song6 = Sound('gunnar - Make It Rain.mp3', { tags = { music } })
-  song7 = Sound('gunnar - Mammon.mp3', { tags = { music } })
-  song8 = Sound('gunnar - Up To The Brink.mp3', { tags = { music } })
+  -- song1 = Sound('gunnar - 26 hours and I feel Fine.mp3', { tags = { music } })
+  -- song2 = Sound('gunnar - Back On Track.mp3', { tags = { music } })
+  -- song3 = Sound('gunnar - Chrysalis.mp3', { tags = { music } })
+  -- song4 = Sound('gunnar - Fingers.mp3', { tags = { music } })
+  -- song5 = Sound('gunnar - Jam 32 Melancholy.mp3', { tags = { music } })
+  -- song6 = Sound('gunnar - Make It Rain.mp3', { tags = { music } })
+  -- song7 = Sound('gunnar - Mammon.mp3', { tags = { music } })
+  -- song8 = Sound('gunnar - Up To The Brink.mp3', { tags = { music } })
 
-  derp1 = Sound('derp - Negative Space.mp3')
+  -- derp1 = Sound('derp - Negative Space.mp3')
   death_song = nil
 
 

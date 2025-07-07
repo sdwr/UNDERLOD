@@ -789,160 +789,12 @@ function Unit:calculate_stats(first_run)
     end
   end
 
-  if self.buffs then
-    for k, buff in pairs(self.buffs) do
-      if buff.stats then
-        for stat, amt in pairs(buff.stats) do
-          local amtWithStacks = amt * (buff.stacks or 1)
-
-          if stat == buff_types['dmg'] then
-            self.buff_dmg_m = self.buff_dmg_m + amtWithStacks
-          elseif stat == buff_types['mvspd'] then
-            self.buff_mvspd_m = self.buff_mvspd_m + amtWithStacks
-          elseif stat == buff_types['aspd'] then
-            self.buff_aspd_m = self.buff_aspd_m + amtWithStacks
-          elseif stat == buff_types['area_dmg'] then
-            self.buff_area_dmg_m = self.buff_area_dmg_m + amtWithStacks
-          elseif stat == buff_types['area_size'] then
-            self.buff_area_size_m = self.buff_area_size_m + amtWithStacks
-          elseif stat == buff_types['hp'] then
-            self.buff_hp_m = self.buff_hp_m + amtWithStacks
-          elseif stat == buff_types['status_resist'] then
-            self.status_resist = self.status_resist + amtWithStacks
-          elseif stat == buff_types['range'] then
-            self.buff_range_m = self.buff_range_m + amtWithStacks
-          elseif stat == buff_types['cdr'] then
-            self.buff_cdr_m = self.buff_cdr_m + amtWithStacks
-          elseif stat == buff_types['percent_def'] then
-              self.buff_def_m = self.buff_def_m + amtWithStacks
-          elseif stat == buff_types['eledmg'] then
-            self.eledmg_m = self.eledmg_m + amtWithStacks
-          elseif stat == buff_types['elevamp'] then
-            self.elevamp = self.elevamp + amtWithStacks
-          elseif stat == buff_types['vamp'] then
-            self.vamp = self.vamp + amtWithStacks
-          elseif stat == buff_types['fire_damage'] then
-            self.buff_fire_damage_a = self.buff_fire_damage_a + amtWithStacks
-          elseif stat == buff_types['lightning_damage'] then
-            self.buff_lightning_damage_a = self.buff_lightning_damage_a + amtWithStacks
-          elseif stat == buff_types['cold_damage'] then
-            self.buff_cold_damage_a = self.buff_cold_damage_a + amtWithStacks
-          elseif stat == buff_types['fire_damage_m'] then
-            self.buff_fire_damage_m = self.buff_fire_damage_m + amtWithStacks
-          elseif stat == buff_types['lightning_damage_m'] then
-            self.buff_lightning_damage_m = self.buff_lightning_damage_m + amtWithStacks
-          elseif stat == buff_types['cold_damage_m'] then
-            self.buff_cold_damage_m = self.buff_cold_damage_m + amtWithStacks
-
-          elseif stat == buff_types['repeat_attack_chance'] then
-            self.buff_repeat_attack_chance = self.buff_repeat_attack_chance + amtWithStacks
-
-          --flat stats
-          elseif stat == buff_types['flat_def'] then
-            self.buff_def_a = self.buff_def_a + amtWithStacks
-          end
-          
-        end
-      end
-    end
-  end
-
-  if self.items and #self.items > 0 then
-    for k,v in ipairs(self.items) do
-      local item = v
-      if item.stats then
-        for stat, amt in pairs(item.stats) do
-          if stat == buff_types['dmg'] then
-            self.buff_dmg_m = self.buff_dmg_m + amt
-          elseif stat == buff_types['flat_def'] then
-            self.buff_def_a = self.buff_def_a + amt
-          elseif stat == buff_types['percent_def'] then
-            self.buff_def_m = self.buff_dmg_m + amt
-          elseif stat == buff_types['mvspd'] then
-            self.buff_mvspd_m = self.buff_mvspd_m + amt
-          elseif stat == buff_types['aspd'] then
-            self.buff_aspd_m = self.buff_aspd_m + amt
-          elseif stat == buff_types['range'] then
-            self.buff_range_m = self.buff_range_m + amt
-          elseif stat == buff_types['area_dmg'] then
-            self.buff_area_dmg_m = self.buff_area_dmg_m + amt
-          elseif stat == buff_types['area_size'] then
-            self.buff_area_size_m = self.buff_area_size_m + amt
-          elseif stat == buff_types['hp'] then
-            self.buff_hp_m = self.buff_hp_m + amt
-          elseif stat == buff_types['status_resist'] then
-            self.status_resist = self.status_resist + amt
-          elseif stat == buff_types['ghost'] then
-            self.ghost = true
-          elseif stat == buff_types['enrage'] then
-            self.enrage_on_death = true
-          elseif stat == buff_types['explode'] then
-            self.canExplode = true
-          elseif stat == buff_types['repeat_attack_chance'] then
-            self.buff_repeat_attack_chance = self.buff_repeat_attack_chance + amt
-          elseif stat == buff_types['fire_damage'] then
-            self.buff_fire_damage_a = self.buff_fire_damage_a + amt
-          elseif stat == buff_types['lightning_damage'] then
-            self.buff_lightning_damage_a = self.buff_lightning_damage_a + amt
-          elseif stat == buff_types['cold_damage'] then
-            self.buff_cold_damage_a = self.buff_cold_damage_a + amt
-          elseif stat == buff_types['fire_damage_m'] then
-            self.buff_fire_damage_m = self.buff_fire_damage_m + amt
-          elseif stat == buff_types['lightning_damage_m'] then
-            self.buff_lightning_damage_m = self.buff_lightning_damage_m + amt
-          elseif stat == buff_types['cold_damage_m'] then
-            self.buff_cold_damage_m = self.buff_cold_damage_m + amt
-          end
-        end
-      end
-    end
-  end
+  -- Process buffs, items, and perks using unified stat addition
+  self:add_stats(self:process_buffs_to_stats())
+  self:add_stats(self:process_items_to_stats())
+  self:add_stats(self:preprocess_perks_to_stats())
 
 
-  if self.perks then
-    for perk_name, perk in pairs(self.perks) do
-      local perk_stats = Get_Perk_Stats(perk)
-      for stat, value in pairs(perk_stats) do
-        local actual_stat = Helper.Unit:process_perk_name(stat, self)
-        
-        -- Process the stat if it should be processed
-        if actual_stat then
-          if actual_stat == buff_types['hp'] then
-            self.buff_hp_m = self.buff_hp_m + value
-          elseif actual_stat == buff_types['dmg'] then
-            self.buff_dmg_m = self.buff_dmg_m + value
-          elseif actual_stat == buff_types['aspd'] then
-            self.buff_aspd_m = self.buff_aspd_m + value
-          elseif actual_stat == buff_types['mvspd'] then
-            self.buff_mvspd_m = self.buff_mvspd_m + value
-          elseif actual_stat == buff_types['range'] then
-            self.buff_range_m = self.buff_range_m + value
-          elseif actual_stat == buff_types['area_dmg'] then
-            self.buff_area_dmg_m = self.buff_area_dmg_m + value
-          elseif actual_stat == buff_types['area_size'] then
-            self.buff_area_size_m = self.buff_area_size_m + value
-          elseif actual_stat == buff_types['repeat_attack_chance'] then
-            self.buff_repeat_attack_chance = self.buff_repeat_attack_chance + value
-          elseif actual_stat == buff_types['fire_damage_m'] then
-            self.buff_fire_damage_m = self.buff_fire_damage_m + value
-          elseif actual_stat == buff_types['lightning_damage_m'] then
-            self.buff_lightning_damage_m = self.buff_lightning_damage_m + value
-          elseif actual_stat == buff_types['cold_damage_m'] then
-            self.buff_cold_damage_m = self.buff_cold_damage_m + value
-          elseif actual_stat == 'knockback_dmg' then
-            -- Handle knockback damage separately if needed
-            self.enemy_knockback_dmg = (self.enemy_knockback_dmg or 0) + value
-          elseif actual_stat == 'elemental_slow' then
-            -- Handle elemental slow separately if needed
-            self.enemy_elemental_slow = (self.enemy_elemental_slow or 0) + value
-          else
-            -- Warning for unrecognized stats
-            print("Warning: Unrecognized perk stat '" .. actual_stat .. "' for unit type " .. (self.class or "unknown"))
-          end
-        end
-      end
-    end
-  end
 
   local unit_stat_mult = unit_stat_multipliers[self.character] or unit_stat_multipliers['none']
 
@@ -1967,6 +1819,117 @@ function Unit:get_perk_stats_for_display()
   end
   
   return ordered_perk_stats
+end
+
+-- Unified stat addition function
+function Unit:add_stats(stats_list)
+  for stat_name, amount in pairs(stats_list) do
+    if stat_name == buff_types['dmg'] then
+      self.buff_dmg_m = self.buff_dmg_m + amount
+    elseif stat_name == buff_types['hp'] then
+      self.buff_hp_m = self.buff_hp_m + amount
+    elseif stat_name == buff_types['mvspd'] then
+      self.buff_mvspd_m = self.buff_mvspd_m + amount
+    elseif stat_name == buff_types['aspd'] then
+      self.buff_aspd_m = self.buff_aspd_m + amount
+
+    elseif stat_name == buff_types['area_dmg'] then
+      self.buff_area_dmg_m = self.buff_area_dmg_m + amount
+    elseif stat_name == buff_types['area_size'] then
+      self.buff_area_size_m = self.buff_area_size_m + amount
+      
+    elseif stat_name == buff_types['status_resist'] then
+      self.status_resist = self.status_resist + amount
+    elseif stat_name == buff_types['range'] then
+      self.buff_range_m = self.buff_range_m + amount
+    elseif stat_name == buff_types['cdr'] then
+      self.buff_cdr_m = self.buff_cdr_m + amount
+
+    elseif stat_name == buff_types['flat_def'] then
+      self.buff_def_a = self.buff_def_a + amount
+    elseif stat_name == buff_types['percent_def'] then
+      self.buff_def_m = self.buff_def_m + amount
+      
+    elseif stat_name == buff_types['eledmg'] then
+      self.eledmg_m = self.eledmg_m + amount
+    elseif stat_name == buff_types['elevamp'] then
+      self.elevamp = self.elevamp + amount
+    elseif stat_name == buff_types['vamp'] then
+      self.vamp = self.vamp + amount
+
+    elseif stat_name == buff_types['fire_damage'] then
+      self.buff_fire_damage_a = self.buff_fire_damage_a + amount
+    elseif stat_name == buff_types['lightning_damage'] then
+      self.buff_lightning_damage_a = self.buff_lightning_damage_a + amount
+    elseif stat_name == buff_types['cold_damage'] then
+      self.buff_cold_damage_a = self.buff_cold_damage_a + amount
+    elseif stat_name == buff_types['fire_damage_m'] then
+      self.buff_fire_damage_m = self.buff_fire_damage_m + amount
+    elseif stat_name == buff_types['lightning_damage_m'] then
+      self.buff_lightning_damage_m = self.buff_lightning_damage_m + amount
+    elseif stat_name == buff_types['cold_damage_m'] then
+      self.buff_cold_damage_m = self.buff_cold_damage_m + amount
+      
+    elseif stat_name == buff_types['repeat_attack_chance'] then
+      self.buff_repeat_attack_chance = self.buff_repeat_attack_chance + amount
+    else
+      -- print("unknown stat: " .. stat_name, amount)
+    end
+  end
+end
+
+-- Preprocess perks into actual stats
+function Unit:preprocess_perks_to_stats()
+  local processed_stats = {}
+  
+  if not self.perks then return processed_stats end
+  
+  for perk_name, perk in pairs(self.perks) do
+    local perk_stats = Get_Perk_Stats(perk)
+    for stat, value in pairs(perk_stats) do
+      local actual_stat = Helper.Unit:process_perk_name(stat, self)
+      if actual_stat then
+        processed_stats[actual_stat] = (processed_stats[actual_stat] or 0) + value
+      end
+    end
+  end
+  
+  return processed_stats
+end
+
+-- Process buffs with stack multiplication
+function Unit:process_buffs_to_stats()
+  local processed_stats = {}
+  
+  if not self.buffs then return processed_stats end
+  
+  for _, buff in pairs(self.buffs) do
+    if buff.stats then
+      for stat, amt in pairs(buff.stats) do
+        local amtWithStacks = amt * (buff.stacks or 1)
+        processed_stats[stat] = (processed_stats[stat] or 0) + amtWithStacks
+      end
+    end
+  end
+  
+  return processed_stats
+end
+
+-- Process items to stats
+function Unit:process_items_to_stats()
+  local processed_stats = {}
+  
+  if not self.items or #self.items == 0 then return processed_stats end
+  
+  for _, item in ipairs(self.items) do
+    if item.stats then
+      for stat, amt in pairs(item.stats) do
+        processed_stats[stat] = (processed_stats[stat] or 0) + amt
+      end
+    end
+  end
+  
+  return processed_stats
 end
 
 
