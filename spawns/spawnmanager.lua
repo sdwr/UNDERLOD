@@ -128,8 +128,9 @@ function Outside_Arena(location)
 end
 
 function Get_Point_In_Arena()
-  local x = random:int(SpawnGlobals.wall_width, gw - SpawnGlobals.wall_width)
-  local y = random:int(SpawnGlobals.wall_height, gh - SpawnGlobals.wall_height)
+  local avoid_edge_distance = 10
+  local x = random:int(SpawnGlobals.wall_width + avoid_edge_distance, gw - SpawnGlobals.wall_width - avoid_edge_distance)
+  local y = random:int(SpawnGlobals.wall_height + avoid_edge_distance, gh - SpawnGlobals.wall_height - avoid_edge_distance)
   return {x = x, y = y}
 end
 
@@ -421,6 +422,7 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
     local spawn_type = group_data[3]
     amount = amount or 1
 
+    local spawn_marker = SpawnGlobals.get_spawn_marker(group_index)
     -- This loop initiates all spawn processes at roughly the same time.
     for i = 1, amount do
         local location
@@ -429,7 +431,6 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
             location = Get_Point_In_Arena()
         else
             -- For all other types, use offsets from the chosen spawn marker
-            local spawn_marker = SpawnGlobals.get_spawn_marker(group_index)
             local offset = SpawnGlobals.spawn_offsets[i] or {x=0, y=0}
             location = {x = spawn_marker.x + offset.x, y = spawn_marker.y + offset.y}
         end
@@ -440,9 +441,7 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
         arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns + 1
         
         -- Stagger the spawn warnings slightly for a better visual effect.
-        arena.t:after(0.1 * i, function() 
-          Create_Unit_With_Warning(arena, location, 2, create_enemy_action, type)
-        end)
+        Create_Unit_With_Warning(arena, location, 2, create_enemy_action, type)
     end
 end
 
@@ -592,7 +591,7 @@ function Create_Unit_With_Warning(arena, location, warning_time, creation_callba
 
   if enemy_size then
     local enemy_width = enemy_size_to_xy[enemy_size].x
-    spawn_radius = enemy_width / 2
+    spawn_radius = enemy_width / 4
   end
 
   -- 1. Create the visual warning marker immediately.

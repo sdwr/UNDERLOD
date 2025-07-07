@@ -1330,6 +1330,7 @@ function init()
   special_enemy_by_tier = {
     [1] = {
       'burst',
+      'big_goblin_archer',
     },
     [1.5] = {
       'mortar',
@@ -1347,11 +1348,13 @@ function init()
       'charger',
       'boomerang',
       'firewall_caster',
+      'big_goblin_archer',
     },
     [3] = {
       'arcspread',
       'burst',
       'plasma',
+      'big_goblin_archer',
     },
   }
 
@@ -1369,7 +1372,7 @@ function init()
     ['burst'] = 300,
     ['boomerang'] = 300,
     ['plasma'] = 300,
-    ['goblin_archer'] = 300,
+    ['big_goblin_archer'] = 300,
     --special enemies t2
     ['firewall_caster'] = 500,
     ['mortar'] = 500,
@@ -1401,6 +1404,7 @@ function init()
     ['arcspread'] = blue[3],
     ['summoner'] = purple[3],
     ['assassin'] = purple[3],
+    ['big_goblin_archer'] = green[3],
   }
 
   DAMAGE_TYPE_TO_COLOR = {

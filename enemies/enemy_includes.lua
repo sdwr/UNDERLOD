@@ -23,6 +23,7 @@ require 'enemies/regular/plasma'
 require 'enemies/regular/firewall_caster'
 require 'enemies/regular/cleaver'
 require 'enemies/regular/goblin_archer'
+require 'enemies/regular/big_goblin_archer'
 
 require 'enemies/miniboss/bigstomper'
 

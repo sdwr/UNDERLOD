@@ -775,6 +775,7 @@ enemy_type_to_size = {
   ['plasma'] = 'big',
   ['firewall_caster'] = 'big',
   ['cleaver'] = 'big',
+  ['big_goblin_archer'] = 'big',
   
   -- Minibosses
   ['bigstomper'] = 'huge',

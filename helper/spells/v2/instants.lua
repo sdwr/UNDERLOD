@@ -86,8 +86,8 @@ function ArrowProjectile:init(args)
   self:init_game_object(args)
 
   -- Create a rectangular hitbox for the arrow
-  self.width = 6
-  self.height = 3
+  self.height = self.bullet_size or 3
+  self.width = self.height * 2
   self.shape = Rectangle(self.x, self.y, self.width, self.height)
   
   self.damage = get_dmg_value(self.damage)
