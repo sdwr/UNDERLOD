@@ -168,9 +168,10 @@ function Enemy:update_target_seek()
 end
 
 function Enemy:update_target_loose_seek()
-  if not self.target_location then
+  if not self.target_location or Helper.Time.time - self.last_retarget_time > LOOSE_SEEK_RETARGET_TIME then
     self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
     self.target_location = {x = self.target.x + random:float(-50, 50), y = self.target.y + random:float(-50, 50)}
+    self.last_retarget_time = Helper.Time.time
   end
   if not self.target_location or self:distance_to_point(self.target_location.x, self.target_location.y) < 10 then
     self.target_location = nil
