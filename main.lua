@@ -359,7 +359,9 @@ function init()
 -- normal and stopped are tied together for the purpose of attacking
 -- rallying and following are tied together for the purpose of moving
   unit_states = {
+    ['idle'] = 'idle',
     ['normal'] = 'normal',
+    ['moving'] = 'moving',
     ['frozen'] = 'frozen',
     ['stunned'] = 'stunned',
     ['casting'] = 'casting',
@@ -373,6 +375,7 @@ function init()
   }
 
   unit_states_can_move = {
+    unit_states['idle'],
     unit_states['normal'],
     unit_states['stopped'],
     unit_states['rallying'],
@@ -383,6 +386,7 @@ function init()
   }
 
   unit_states_enemy_can_move = {
+    unit_states['idle'],
     unit_states['normal'],
     unit_states['rallying'],
     unit_states['following'],
@@ -396,6 +400,7 @@ function init()
   }
 
   unit_states_can_target = {
+    unit_states['idle'],
     unit_states['normal'],
     unit_states['casting_blocked'],
     unit_states['following'],
@@ -403,12 +408,14 @@ function init()
   }
 
   unit_states_can_cast = {
+    unit_states['idle'],
     unit_states['normal'],
     unit_states['following'],
     unit_states['stopped'],
   }
 
   unit_states_can_continue_cast = {
+    unit_states['idle'],
     unit_states['normal'],
     unit_states['following'],
     unit_states['stopped'],
@@ -1330,28 +1337,43 @@ function init()
   special_enemy_by_tier = {
     [1] = {
       'burst',
+      'selfburst',
+      'big_goblin_archer',
     },
     [1.5] = {
       'mortar',
+      'singlemortar',
       'burst',
+      'selfburst',
     },
     [2] = {
       'mortar',
+      'singlemortar',
+      'snakearrow',
       'burst',
+      'selfburst',
       'charger',
       'boomerang',
     },
     [2.5] = {
       'mortar',
+      'singlemortar',
+      'snakearrow',
       'burst',
+      'selfburst',
       'charger',
       'boomerang',
       'firewall_caster',
+      'big_goblin_archer',
     },
     [3] = {
       'arcspread',
       'burst',
+      'selfburst',
+      'singlemortar',
+      'snakearrow',
       'plasma',
+      'big_goblin_archer',
     },
   }
 
@@ -1367,12 +1389,15 @@ function init()
     ['charger'] = 300,
     ['bomb'] = 300,
     ['burst'] = 300,
+    ['selfburst'] = 300,
     ['boomerang'] = 300,
     ['plasma'] = 300,
-    ['goblin_archer'] = 300,
+    ['big_goblin_archer'] = 300,
     --special enemies t2
     ['firewall_caster'] = 500,
     ['mortar'] = 500,
+    ['singlemortar'] = 500,
+    ['snakearrow'] = 400,
     ['spread'] = 500,
     ['spawner'] = 500,
     ['arcspread'] = 500,
@@ -1396,11 +1421,15 @@ function init()
     ['charger'] = red[3],
     ['firewall_caster'] = red[3],
     ['mortar'] = orange[3],
+    ['singlemortar'] = green[3],
+    ['snakearrow'] = purple[3],
     ['spawner'] = orange[3],
     ['bomb'] = orange[3],
     ['arcspread'] = blue[3],
     ['summoner'] = purple[3],
     ['assassin'] = purple[3],
+    ['big_goblin_archer'] = green[3],
+    ['selfburst'] = orange[3],
   }
 
   DAMAGE_TYPE_TO_COLOR = {

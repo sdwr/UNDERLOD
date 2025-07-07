@@ -35,7 +35,7 @@ function Helper.Spell.SafetyDance:create_all(unit, color, damage_troops, pattern
     Helper.Unit:set_state(unit, unit_states['frozen'])
     trigger:after(Helper.Spell.SafetyDance.chargeTime, function() 
         if unit and unit.state == unit_states['frozen'] then
-            Helper.Unit:set_state(unit, unit_states['normal'])
+            Helper.Unit:set_state(unit, unit_states['idle'])
         end
     end)
 

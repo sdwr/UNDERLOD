@@ -4,7 +4,7 @@
 --and also used by procs to know when to start buffs
 TIME_TO_ROUND_START = 2
 SPAWNS_IN_GROUP = 6
-NORMAL_ENEMIES_PER_GROUP = 6
+NORMAL_ENEMIES_PER_GROUP = 7
 SPAWN_CHECKS = 10
 
 --make enemies more difficult after each boss
@@ -20,8 +20,8 @@ REGULAR_ENEMY_HP = 30
 REGULAR_ENEMY_DAMAGE = 10
 REGULAR_ENEMY_MS = 30
 
-SPECIAL_ENEMY_HP = 130
-SPECIAL_ENEMY_DAMAGE = 20
+SPECIAL_ENEMY_HP = 75
+SPECIAL_ENEMY_DAMAGE = 40
 SPECIAL_ENEMY_MS = 20
 
 BOSS_HP = 800
@@ -72,22 +72,22 @@ GET_LAST_BOSS_LEVEL = function(level)
   return last_boss_level
 end
 
---stat scaling per level in each zone
-REGULAR_ENEMY_SCALING = function(level)
-  local last_boss_level = GET_LAST_BOSS_LEVEL(level)
-  local boss_level_diff = level - last_boss_level
+-- --stat scaling per level in each zone
+-- REGULAR_ENEMY_SCALING = function(level)
+--   local last_boss_level = GET_LAST_BOSS_LEVEL(level)
+--   local boss_level_diff = level - last_boss_level
   
-  --want enemies up to 75% stronger than the first level of the area
-  return 1 + (boss_level_diff * ENEMY_SCALING_PER_LEVEL)
-end
+--   --want enemies up to 75% stronger than the first level of the area
+--   return 1 + (boss_level_diff * ENEMY_SCALING_PER_LEVEL)
+-- end
 
-SPECIAL_ENEMY_SCALING = function(level)
-  local last_boss_level = GET_LAST_BOSS_LEVEL(level)
-  local boss_level_diff = level - last_boss_level
+-- SPECIAL_ENEMY_SCALING = function(level)
+--   local last_boss_level = GET_LAST_BOSS_LEVEL(level)
+--   local boss_level_diff = level - last_boss_level
   
-  --want enemies up to 75% stronger than the first level of the area
-  return 1 + (boss_level_diff * ENEMY_SCALING_PER_LEVEL)
-end
+--   --want enemies up to 75% stronger than the first level of the area
+--   return 1 + (boss_level_diff * ENEMY_SCALING_PER_LEVEL)
+-- end
 
 --also want stat scaling per zone
 ZONE_SCALING = function(level)
@@ -115,7 +115,7 @@ unit_stat_multipliers = {
 
 enemy_type_to_stats = {
 
-    ['seeker'] = { dmg = 0.25, mvspd = 0.8 },
+    ['seeker'] = { dmg = 0.25, mvspd = 1.4 },
     ['shooter'] = {},
 
     ['cleaver'] = { dmg = 1.5 },
@@ -137,10 +137,12 @@ enemy_type_to_stats = {
 attack_ranges = {
     ['melee'] = 50,
     ['medium'] = 60,
+    ['medium-plus'] = 70,
     ['medium-long'] = 110,
     ['ranged'] = 130,
     ['long'] = 150,
     ['ultra-long'] = 250,
+    ['big-archer'] = 500,
 
     ['whole-map'] = 999,
   }
@@ -293,23 +295,23 @@ _set_unit_base_stats = function(unit)
         --store baseline for burn max hp calculation
         unit.baseline_hp = unit.base_hp
 
-        unit.base_hp = unit.base_hp * REGULAR_ENEMY_SCALING(level) * ZONE_SCALING(level)
-        unit.base_dmg = unit.base_dmg  * REGULAR_ENEMY_SCALING(level) * ZONE_SCALING(level)
+        unit.base_hp = unit.base_hp * ZONE_SCALING(level)
+        unit.base_dmg = unit.base_dmg  * ZONE_SCALING(level)
         unit.base_mvspd = unit.base_mvspd
     elseif unit.class == 'special_enemy' then
 
         unit.base_hp = SPECIAL_ENEMY_HP
         unit.baseline_hp = unit.base_hp
 
-        unit.base_hp = unit.base_hp * SPECIAL_ENEMY_SCALING(level) * ZONE_SCALING(level)
-        unit.base_dmg = SPECIAL_ENEMY_DAMAGE  * SPECIAL_ENEMY_SCALING(level) * ZONE_SCALING(level)
+        unit.base_hp = unit.base_hp * ZONE_SCALING(level)
+        unit.base_dmg = SPECIAL_ENEMY_DAMAGE * ZONE_SCALING(level)
         unit.base_mvspd = SPECIAL_ENEMY_MS
     elseif unit.class == 'miniboss' then
         unit.base_hp = 1000
         unit.baseline_hp = unit.base_hp
 
-        unit.base_hp = unit.base_hp * SPECIAL_ENEMY_SCALING(level) * ZONE_SCALING(level)
-        unit.base_dmg = unit.base_dmg  * SPECIAL_ENEMY_SCALING(level) * ZONE_SCALING(level)
+        unit.base_hp = unit.base_hp * ZONE_SCALING(level)
+        unit.base_dmg = unit.base_dmg  * ZONE_SCALING(level)
         unit.base_mvspd = 55
     elseif unit.class == 'boss' then
         unit.base_hp = BOSS_HP

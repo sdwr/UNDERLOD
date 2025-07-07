@@ -1,0 +1,166 @@
+SnakeArrow = Object:extend()
+SnakeArrow:implement(GameObject)
+SnakeArrow:implement(Physics)
+
+function SnakeArrow:init(args)
+  self:init_game_object(args)
+  
+  -- Basic properties
+  self.color = self.color or green[0]
+  self.damage = get_dmg_value(self.damage)
+  self.speed = self.speed or 100
+  self.curve_depth = self.curve_depth or 30  -- How far the S-curve deviates from straight line
+  self.curve_frequency = self.curve_frequency or 2  -- How many S-curves per second
+  self.duration = self.duration or 8
+  self.radius = self.radius or 4
+  
+  -- Create collision shape
+  self.shape = Circle(self.x, self.y, self.radius)
+  
+  -- Movement properties
+  self.base_angle = self.r or 0  -- The base direction the arrow travels
+  if self.target then
+    self.base_angle = math.atan2(self.target.y - self.y, self.target.x - self.x)
+  end
+  self.distance_traveled = 0
+  self.start_x = self.x
+  self.start_y = self.y
+  
+  -- S-curve properties
+  self.curve_time = 0
+  self.curve_amplitude = self.curve_depth
+  self.curve_period = 1 / self.curve_frequency  -- Time for one complete S-curve
+  
+  -- Visual properties
+  self.trail_particles = {}
+  self.max_trail_length = 16
+  self.trail_interval = 0.05
+  self.last_trail_time = 0
+  
+  -- Sound
+  scout1:play{pitch = random:float(0.9, 1.1), volume = 0.6}
+  
+  -- Set lifetime
+  self.t:after(self.duration, function() self:die() end)
+end
+
+function SnakeArrow:update(dt)
+  self:update_game_object(dt)
+  self:update_physics(dt)
+  
+  -- Update curve time
+  self.curve_time = self.curve_time + dt
+  
+  -- Calculate base movement
+  local base_distance = self.speed * dt
+  self.distance_traveled = self.distance_traveled + base_distance
+  
+  -- Calculate S-curve offset
+  local curve_offset = self:calculate_curve_offset()
+  
+  -- Calculate new position
+  local base_x = self.start_x + math.cos(self.base_angle) * self.distance_traveled
+  local base_y = self.start_y + math.sin(self.base_angle) * self.distance_traveled
+  
+  -- Apply S-curve perpendicular to base direction
+  local perpendicular_angle = self.base_angle + math.pi / 2
+  local curve_x = base_x + math.cos(perpendicular_angle) * curve_offset
+  local curve_y = base_y + math.sin(perpendicular_angle) * curve_offset
+  
+  -- Update position
+  self.x = curve_x
+  self.y = curve_y
+  
+  -- Update collision shape
+  self.shape:move_to(self.x, self.y)
+  
+  -- Add trail particle
+  if self.last_trail_time + self.trail_interval < Helper.Time.time then
+    self:add_trail_particle()
+    self.last_trail_time = Helper.Time.time
+  end
+  
+  -- Check for collisions
+  self:check_collisions()
+  
+  -- Check if out of bounds
+  if Outside_Arena(self) then
+    self:die()
+  end
+end
+
+function SnakeArrow:calculate_curve_offset()
+  -- Create an S-curve using sine wave with frequency doubling
+  local t = self.curve_time * self.curve_frequency * 2 * math.pi
+  local s_curve = math.sin(t) * math.sin(t / 2)  -- This creates an S-shape
+  return s_curve * self.curve_amplitude
+end
+
+function SnakeArrow:add_trail_particle()
+  -- Add current position to trail
+  table.insert(self.trail_particles, {x = self.x, y = self.y, alpha = 1.0})
+  
+  -- Limit trail length
+  if #self.trail_particles > self.max_trail_length then
+    table.remove(self.trail_particles, 1)
+  end
+  
+  -- Fade trail particles
+  for i, particle in ipairs(self.trail_particles) do
+    particle.alpha = particle.alpha - 0.1
+  end
+end
+
+function SnakeArrow:check_collisions()
+  local targets = {}
+  if self.team == 'enemy' then
+    targets = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
+  else
+    targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
+  end
+  
+  if #targets > 0 then
+    for _, target in ipairs(targets) do
+      if not target.dead then
+        -- Deal damage
+        target:hit(self.damage, self.unit, self.damage_type, true, false)
+        
+        -- Die on collision
+        self:die()
+        return
+      end
+    end
+  end
+end
+
+function SnakeArrow:draw()
+  if self.hidden then return end
+  
+  graphics.push(self.x, self.y, self.r, self.spring.x, self.spring.x)
+  
+  -- Draw trail
+  for i, particle in ipairs(self.trail_particles) do
+    if particle.alpha > 0 then
+      local trail_color = self.color:clone()
+      trail_color.a = particle.alpha * 0.6
+      graphics.circle(particle.x, particle.y, self.radius * 0.7, trail_color)
+    end
+  end
+  
+  -- Draw main arrow
+  graphics.circle(self.x, self.y, self.radius, self.color)
+  
+  graphics.pop()
+end
+
+function SnakeArrow:die()
+  if not self.dead then
+    self.dead = true
+    
+    -- Death effects
+    for i = 1, 5 do
+      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color}
+    end
+  
+  end
+end 

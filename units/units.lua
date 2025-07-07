@@ -84,7 +84,7 @@ function Team:set_team_target(target)
     troop:set_assigned_target(target)
     troop:cancel_cast()
     if troop.state ~= unit_states['knockback'] then
-      Helper.Unit:set_state(troop, unit_states['normal'])
+      Helper.Unit:set_state(troop, unit_states['idle'])
     end
   end
   Helper.Unit:set_target_ring(target)
@@ -129,7 +129,7 @@ function Team:clear_rally_point()
     troop.target_pos = nil
     --only clear state if rallying (might be attacking somehow)
     if troop.state == unit_states['rallying'] or troop.state == unit_states['stopped'] then
-      Helper.Unit:set_state(troop, unit_states['normal'])
+      Helper.Unit:set_state(troop, unit_states['idle'])
     end
     troop.rallying = false
   end

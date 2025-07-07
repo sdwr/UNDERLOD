@@ -37,6 +37,7 @@ fns['init_enemy'] = function(self)
       damage = function() return self.dmg end,
       speed = 70,
       num_pieces = 8,
+      primary_explosion = true,
       parent = self
     }
   }

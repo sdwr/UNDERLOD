@@ -509,7 +509,7 @@ function BreatheFire:update(dt)
 end
 
 function BreatheFire:recover()
-  Helper.Unit:set_state(self.parent, unit_states['normal'])
+  Helper.Unit:set_state(self.parent, unit_states['idle'])
   self.dead = true
 end
 
@@ -608,6 +608,11 @@ function Stomp:init(args)
     self.damage = get_dmg_value(self.damage)
     self.state = "charging"
     self.visual_phase = "charging" -- charging, impact
+
+    if self.target then
+      self.x = self.target.x + math.random(-self.target_offset or 0, self.target_offset or 0)
+      self.y = self.target.y + math.random(-self.target_offset or 0, self.target_offset or 0)
+    end
 
     orb1:play({volume = 0.5})
 
@@ -916,7 +921,7 @@ end
 function Vanish:teleport()
   illusion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
   self.state = "over"
-  Helper.Unit:set_state(self.parent, unit_states['normal'])
+  Helper.Unit:set_state(self.parent, unit_states['idle'])
   self.parent.invulnerable = false
   self.parent.alpha = 1
   self.parent:set_position(self.target.x - 5, self.target.y)
@@ -1469,7 +1474,7 @@ function Critter:push(f, r, push_invulnerable, duration)
   --reset state after duration
   self.cancel_trigger_tag = self.t:after(duration, function()
     if self.state == unit_states['knockback'] then
-      Helper.Unit:set_state(self, unit_states['normal'])
+      Helper.Unit:set_state(self, unit_states['idle'])
     end
   end)
 

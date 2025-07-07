@@ -24,6 +24,7 @@ require 'helper/spells/v2/area_spell'
 require 'helper/spells/v2/cleave'
 require 'helper/spells/v2/chain_spell'
 require 'helper/spells/v2/safety_dancev2'
+require 'helper/spells/v2/snake_arrow'
 
 require 'helper/spells/v2/instants'
 

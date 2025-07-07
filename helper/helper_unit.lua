@@ -146,13 +146,20 @@ function Helper.Unit:finish_casting(unit)
         end
         unit.last_attack_finished = Helper.Time.time
         if unit.state == unit_states['casting'] then
-            Helper.Unit:set_state(unit, unit_states['normal'])
+            Helper.Unit:set_state(unit, unit_states['idle'])
         end
     end
 end
 
 function Helper.Unit:add_default_state_change_functions(unit)
     unit.state_change_functions['normal'] = function(self) 
+        self.state_change_functions['regain_control'](self)
+    end
+    unit.state_change_functions['idle'] = function(self) 
+        self.state_change_functions['regain_control'](self)
+        self.idleTimer = self.baseIdleTimer or 1.5
+    end
+    unit.state_change_functions['moving'] = function(self) 
         self.state_change_functions['regain_control'](self)
     end
     unit.state_change_functions['frozen'] = function() end
@@ -187,6 +194,8 @@ function Helper.Unit:add_default_state_always_run_functions(unit)
     unit.state_always_run_functions['normal'] = function(self) 
         self.state_always_run_functions['normal_or_stopped'](self)
     end
+    unit.state_always_run_functions['idle'] = function(self) end 
+    unit.state_always_run_functions['moving'] = function(self) end
     unit.state_always_run_functions['frozen'] = function() end
     unit.state_always_run_functions['stunned'] = function() end
     unit.state_always_run_functions['casting'] = function() end
@@ -538,7 +547,7 @@ function Helper.Unit:apply_knockback(unit, force, angle, duration, push_invulner
     -- After the duration, restore the unit's original physics properties
     unit.cancel_trigger_tag = unit.t:after(final_duration, function()
         if unit.state == unit_states['knockback'] then
-            Helper.Unit:set_state(unit, unit_states['normal'])
+            Helper.Unit:set_state(unit, unit_states['idle'])
         end
         unit.mass = unit.original_mass
         unit:set_damping(unit.original_damping)

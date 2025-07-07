@@ -12,7 +12,7 @@ fns['attack'] = function(self, area, mods, color)
     Area(table.merge(t, mods))
     _G[random:table{'swordsman1', 'swordsman2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.75}
   end, 'stopped')
-  self.t:after(0.4 + .4, function() Helper.Unit:set_state(self, unit_states['normal']) end, 'normal')
+  self.t:after(0.4 + .4, function() Helper.Unit:set_state(self, unit_states['idle']) end, 'normal')
 end
 
 fns['init_enemy'] = function(self)
@@ -126,6 +126,8 @@ fns['init_enemy'] = function(self)
       cancel_on_death = true,
       keep_original_angle = true,
       draw_under_units = true,
+      show_charge_line = true,
+      play_charge_sound = true,
       x = self.x,
       y = self.y,
       color = red[0],

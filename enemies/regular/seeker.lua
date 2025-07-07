@@ -11,7 +11,7 @@ fns['attack'] = function(self, mods, color)
     Area(table.merge(t, mods))
     _G[random:table{'swordsman1', 'swordsman2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.75}
   end, 'stopped')
-  self.t:after(0.4 + .4, function() Helper.Unit:set_state(self, unit_states['normal']) end, 'normal')
+  self.t:after(0.4 + .4, function() Helper.Unit:set_state(self, unit_states['idle']) end, 'normal')
 end
 
 fns['init_enemy'] = function(self)
@@ -24,10 +24,53 @@ fns['init_enemy'] = function(self)
   self.color = grey[0]:clone()
   Set_Enemy_Shape(self, self.size)
 
+  self.movementStyle = MOVEMENT_TYPE_LOOSE_SEEK
+
   self.stopChasingInRange = false
   self.haltOnPlayerContact = true
 
   self.class = 'regular_enemy'
+
+  --set sensors
+  self.attack_sensor = Circle(self.x, self.y, 100)
+
+  self.move_option_weight = 0.4
+
+  self.movement_options = {
+    MOVEMENT_TYPE_LOOSE_SEEK,
+  }
+
+  --set attacks
+  self.attack_options = {}
+
+  local charge = {
+    name = 'charge',
+    viable = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end,
+    castcooldown = 2, -- Shorter cooldown than charger (3)
+    cast_length = 0.1,
+    oncast = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); self.target = target end,
+    spellclass = Launch_Spell,
+    spelldata = {
+      group = main.current.main,
+      team = "enemy",
+      charge_duration = 0.5, -- Shorter charge time than charger (1.75)
+      spell_duration = 0.8, -- Shorter duration than charger (2.5)
+      aim_width = 4, -- Thinner aim line than charger (8)
+      cancel_on_death = true,
+      keep_original_angle = true,
+      draw_under_units = true,
+      target = self.target,
+      show_charge_line = false,
+      play_charge_sound = false,
+      x = self.x,
+      y = self.y,
+      color = grey[0], -- Use seeker's color instead of red
+      impulse_magnitude = 100, -- Less force than charger (500)
+      damage = function() return self.dmg end,
+      parent = self
+    }
+  }
+  table.insert(self.attack_options, charge)
 
 end
 

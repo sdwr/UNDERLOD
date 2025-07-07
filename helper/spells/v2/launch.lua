@@ -26,7 +26,9 @@ function Launch_Spell:init(args)
 
     self.aim_width = self.aim_width or 16
 
-    self.charge_sound = laser_charging:play{volume = 0.3}
+    if self.play_charge_sound then
+      self.charge_sound = laser_charging:play{volume = 0.3}
+    end
 
   --memory 
     self.charge_time = 0
@@ -80,7 +82,9 @@ function Launch_Spell:fire()
     self.unit:set_angle(self.r)
     self.unit:launch_at_facing(self.impulse_magnitude)
 
-    self.charge_sound:stop()
+    if self.charge_sound then
+      self.charge_sound:stop()
+    end
     hit4:play{volume = 0.6}
 
     self:die()
@@ -89,17 +93,23 @@ end
 function Launch_Spell:draw()
     Launch_Spell.super.draw(self)
 
+    if self.show_charge_line then
     graphics.push(self.x, self.y, 0)
         graphics.line(self.lineCoords[1], self.lineCoords[2], self.lineCoords[3], self.lineCoords[4], self.color_transparent, self.aim_width)
-    graphics.pop()
+        graphics.pop()
+    end
 end
 
 function Launch_Spell:die()
-    self.charge_sound:stop()
+    if self.charge_sound then
+      self.charge_sound:stop()
+    end
     Launch_Spell.super.die(self)
 end
 
 function Launch_Spell:cancel()
-    self.charge_sound:stop()
+    if self.charge_sound then
+      self.charge_sound:stop()
+    end
     Launch_Spell.super.cancel(self)
 end
