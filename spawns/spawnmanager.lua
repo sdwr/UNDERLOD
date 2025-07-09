@@ -406,7 +406,7 @@ function SpawnManager:update(dt)
               -- For the final wave, we DO check the progress bar to confirm a win.
               if not main.current.progress_bar or main.current.progress_bar:is_complete() then
                   self:change_state('finished')
-                  self.arena:open_door()
+                  self.arena:level_clear()
               end
           else
               -- ===================================================================

@@ -277,7 +277,51 @@ end
 
 function Arena:level_clear()
   self.door:open()
+  
+  -- Create 3 floor items for selection
+  self:create_floor_items()
+end
 
+function Arena:create_floor_items()
+  self.floor_items = {}
+  
+  -- Generate 3 random items
+  local items = {}
+  for i = 1, 3 do
+    local item = Get_Random_Item(self.level or 1, self.units, items)
+    if item then
+      table.insert(items, item)
+    end
+  end
+  
+  -- Position items on the floor
+  local positions = {
+    {x = gw/2 - 100, y = gh/2},
+    {x = gw/2, y = gh/2},
+    {x = gw/2 + 100, y = gh/2}
+  }
+  
+  for i, item in ipairs(items) do
+    if positions[i] then
+      local floor_item = FloorItem{
+        group = self.floor,
+        x = positions[i].x + self.offset_x,
+        y = positions[i].y + self.offset_y,
+        item = item,
+        parent = self
+      }
+      table.insert(self.floor_items, floor_item)
+    end
+  end
+end
+
+function Arena:remove_all_floor_items()
+  if self.floor_items then
+    for _, item in ipairs(self.floor_items) do
+      item:die()
+    end
+    self.floor_items = {}
+  end
 end
 
 function Arena:quit()
@@ -939,4 +983,198 @@ function Arena:spawn_n_critters(p, j, n, pass, parent)
 
     end}
   end, n, function() self.spawning_enemies = false end, 'spawn_enemies_' .. j)
+end
+
+function Arena:get_first_available_inventory_slot()
+  for i, unit in ipairs(self.units) do
+    for j, item in ipairs(unit.items) do
+      if not item then
+        return {unit = unit, index = j}
+      end
+    end
+  end
+  return nil
+end
+
+function Arena:unit_first_available_inventory_slot(unit)
+  for i, item in ipairs(unit.items) do
+    if not item then
+      return i
+    end
+  end
+  return nil
+end
+
+function Arena:remove_all_floor_items()
+  if self.floor_items then
+    for _, item in ipairs(self.floor_items) do
+      item:die()
+    end
+    self.floor_items = {}
+  end
+end
+
+FloorItem = Object:extend()
+FloorItem:implement(GameObject)
+function FloorItem:init(args)
+  self:init_game_object(args)
+  
+  self.item = args.item
+  self.cost = 0
+  self.image = find_item_image(self.item)
+  self.colors = self.item.colors
+  self.tier_color = item_to_color(self.item)
+  self.stats = self.item.stats
+  
+  -- Collision detection radius
+  self.interaction_radius = 40
+  self.aggro_sensor = Circle(self.x, self.y, self.interaction_radius)
+  
+  -- Visual effects
+  self.hover_timer = 0
+  self.hover_duration = 2
+  self.shake_timer = 0
+  self.shake_duration = 2
+  self.shake_intensity = 0
+  self.is_hovered = false
+  self.is_purchased = false
+  
+  -- Cost text
+  self.cost_text = Text({{text = '[yellow]' .. self.cost, font = pixul_font, alignment = 'center'}}, global_text_tags)
+  
+  -- Creation effect
+  self:creation_effect()
+end
+
+function FloorItem:creation_effect()
+  pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+  self.spring:pull(0.2, 200, 10)
+  for i = 1, 15 do
+    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+  end
+end
+
+function FloorItem:update(dt)
+  self:update_game_object(dt)
+  
+    -- Check for nearby troops
+  self.is_hovered = false
+  if self.parent and self.parent.main then
+    local objects = self.parent.main:get_objects_in_shape(self.aggro_sensor, troop_classes)
+    if #objects > 0 then
+      self.is_hovered = true
+    end
+  end
+  
+  -- Update hover timer and shake
+  if self.is_hovered then
+    self.hover_timer = self.hover_timer + dt
+    -- Start shaking immediately when unit is on it
+    if self.shake_timer <= 0 then
+      self:start_shake()
+    end
+  else
+    -- Reset when unit leaves
+    self.hover_timer = 0
+    self.shake_timer = 0
+    self.shake_intensity = 0
+  end
+  
+  -- Update shake
+  if self.shake_timer > 0 then
+    self.shake_timer = self.shake_timer - dt
+    self.shake_intensity = math.max(0, self.shake_timer / self.shake_duration)
+    
+    -- Purchase after 2 seconds of shaking
+    if self.shake_timer <= 0 then
+      self:purchase()
+    end
+  end
+  
+end
+
+function FloorItem:start_shake()
+  if self.shake_timer <= 0 then
+    self.shake_timer = 2 -- 2 seconds of shaking
+    self.shake_intensity = 1
+  end
+end
+
+function FloorItem:purchase()
+  if self.is_purchased then return end
+  
+  self.is_purchased = true
+  gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
+  
+  -- Deduct gold
+  gold = gold - self.cost
+  
+  -- Add item to first available slot
+  local slot_info = self.parent:get_first_available_inventory_slot()
+  if slot_info then
+    slot_info.unit.items[slot_info.index] = self.item
+  end
+  
+  -- Purchase effect
+  for i = 1, 20 do
+    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+  end
+  
+  -- Remove all floor items
+  self.parent:remove_all_floor_items()
+end
+
+function FloorItem:draw()
+  -- Calculate shake offset
+  local shake_x = 0
+  local shake_y = 0
+  if self.shake_intensity > 0 then
+    shake_x = random:float(-3, 3) * self.shake_intensity
+    shake_y = random:float(-3, 3) * self.shake_intensity
+  end
+  
+  graphics.push(self.x + shake_x, self.y + shake_y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
+  
+  -- Draw item background
+  local width = 60
+  local height = 80
+  graphics.rectangle(self.x, self.y, width, height, 6, 6, bg[5])
+  
+  -- Draw item colors
+  if self.colors then
+    local num_colors = #self.colors
+    local color_h = height / num_colors
+    for i, color_name in ipairs(self.colors) do
+      local color = _G[color_name]
+      color = color[0]:clone()
+      color.a = 0.6
+      local y = (self.y - height/2) + ((i-1) * color_h) + (color_h/2)
+      graphics.rectangle(self.x, y, width, color_h, 6, 6, color)
+    end
+  end
+  
+  -- Draw border
+  graphics.rectangle(self.x, self.y, width, height, 6, 6, self.tier_color, 2)
+  
+  -- Draw cost text
+  self.cost_text:draw(self.x + width/2, self.y - height/2)
+  
+  -- Draw item image
+  if self.image then
+    self.image:draw(self.x, self.y, 0, 0.8, 0.8)
+  end
+  
+  -- Draw hover effect
+  if self.is_hovered then
+    local alpha = math.min(self.hover_timer / self.hover_duration, 1)
+    local color = white[0]
+    color.a = alpha * 0.3
+    graphics.circle(self.x, self.y, 30, color)
+  end
+  
+  graphics.pop()
+end
+
+function FloorItem:die()
+  self.dead = true
 end
