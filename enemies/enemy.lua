@@ -13,6 +13,11 @@ function Enemy:init(args)
   Helper.Unit:set_state(self, unit_states['idle'])
   self.size = self.size or enemy_type_to_size[self.type]
   self.init_enemy(self)
+  --cast_cooldown and basecast are set custom in init_enemy
+  --overwrite again for The longer a troop goes without attacking, the more damage they deal on their next attack
+  self.baseCast = 1
+  self.castcooldown = 1
+
   self:init_unit()
   self:init_hitbox_points()
 
@@ -20,7 +25,7 @@ function Enemy:init(args)
 
   self:calculate_stats(true)
 
-  self.baseIdleTimer = self.baseIdleTimer or 0.75
+  self.baseIdleTimer = self.baseIdleTimer or 0.5
   self.idleTimer = self.baseIdleTimer
   self.baseActionTimer = self.baseActionTimer or 1
   self.actionTimer = 0
@@ -30,7 +35,7 @@ function Enemy:init(args)
   self.stopChasingInRange = not not self.stopChasingInRange
   self.haltOnPlayerContact = not not self.haltOnPlayerContact
 
-  self:reset_castcooldown(self.castcooldown or 2)
+  self:reset_castcooldown(self.castcooldown or 1)
   
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20 + self.shape.w / 2)
   self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 1000)
@@ -160,6 +165,8 @@ function Enemy:choose_movement_target()
     return self:acquire_target_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
     return self:acquire_target_loose_seek()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_TO_RANGE then
+    return self:acquire_target_seek_to_range()
   elseif self.currentMovementAction == MOVEMENT_TYPE_RANDOM then
     return self:acquire_target_random()
   end
@@ -170,6 +177,8 @@ function Enemy:update_movement()
     return self:update_move_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
     return self:update_move_loose_seek()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_TO_RANGE then
+    return self:update_move_seek_to_range()
   elseif self.currentMovementAction == MOVEMENT_TYPE_RANDOM then
     return self:update_move_random()
   elseif self.currentMovementAction == MOVEMENT_TYPE_WANDER then
@@ -194,6 +203,24 @@ function Enemy:acquire_target_loose_seek()
   if self.target then
     self.target_location = {x = self.target.x + random:float(-LOOSE_SEEK_OFFSET, LOOSE_SEEK_OFFSET), y = self.target.y + random:float(-LOOSE_SEEK_OFFSET, LOOSE_SEEK_OFFSET)}
   end
+  return self.target ~= nil
+end
+
+function Enemy:acquire_target_seek_to_range()
+  --if we are in range of the target, keep the target
+  if self.target and self:in_range_of(self.target) then
+    self.target_location = Helper.Unit:get_point_at_range_from_unit(self, self.attack_sensor.rs - 10)
+  else
+    --else, target a random enemy
+    self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
+  end
+
+  if self.target then
+    self.target_location = Helper.Unit:get_point_at_range_from_unit(self, self.attack_sensor.rs - 10)
+  else
+    self.target_location = nil
+  end
+
   return self.target ~= nil
 end
 
@@ -235,6 +262,21 @@ end
 
 function Enemy:update_move_loose_seek()
   
+  if self.target_location then
+    if self:distance_to_point(self.target_location.x, self.target_location.y) < DISTANCE_TO_TARGET_FOR_IDLE then
+      return false
+    else
+      self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, SEEK_WEIGHT)
+      self:wander(10, 10, 5)
+      self:rotate_towards_velocity(1)
+      self:steering_separate(12, {Enemy}, 4)
+      return true
+    end
+  end
+  return false
+end
+
+function Enemy:update_move_seek_to_range()
   if self.target_location then
     if self:distance_to_point(self.target_location.x, self.target_location.y) < DISTANCE_TO_TARGET_FOR_IDLE then
       return false

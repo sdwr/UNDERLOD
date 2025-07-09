@@ -117,6 +117,27 @@ function Helper.Unit:target_out_of_range(unit, target)
     return target and Helper.Geometry:distance(unit.x, unit.y, target.x, target.y) > unit.attack_sensor.rs
 end
 
+--find a point on a circle around the unit at a given distance
+--where the point is inside the game bounds
+function Helper.Unit:get_point_at_range_from_unit(unit, distance)
+    max_attempts = max_attempts or 20 -- Use a default of 20 attempts
+
+    for i = 1, max_attempts do
+        local angle = math.random() * 2 * math.pi
+        local x = unit.x + distance * math.cos(angle)
+        local y = unit.y + distance * math.sin(angle)
+
+        -- Check if the generated point is within the game bounds
+        if x >= LEFT_BOUND and x <= RIGHT_BOUND and y >= TOP_BOUND and y <= BOTTOM_BOUND then
+            return {x = x, y = y} -- Success! Return the valid point.
+        end
+    end
+
+    -- Return nil if no valid point is found after all attempts
+    return nil
+end
+    
+
 function Helper.Unit:cast_off_cooldown(unit)
     return unit.castcooldown <= 0
 end

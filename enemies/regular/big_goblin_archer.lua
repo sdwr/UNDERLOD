@@ -10,7 +10,7 @@ fns['init_enemy'] = function(self)
 
   self.class = 'special_enemy'
   self.icon = 'goblin2'
-  self.movementStyle = MOVEMENT_TYPE_RANDOM
+  self.movementStyle = MOVEMENT_TYPE_SEEK_TO_RANGE
 
   --set stats and cooldowns
   self.baseCast = attack_speeds['medium-fast']
@@ -20,7 +20,7 @@ fns['init_enemy'] = function(self)
   self.stopChasingInRange = true
 
   -- Set attack range and sensor
-  self.attack_range = attack_ranges['whole-map']
+  self.attack_range = attack_ranges['medium-long']
   self.attack_sensor = Circle(self.x, self.y, self.attack_range)
   self.aggro_sensor = Circle(self.x, self.y, self.attack_range + AGGRO_RANGE_BOOST)
 
@@ -33,7 +33,7 @@ fns['init_enemy'] = function(self)
     oncast = function() self.target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies) end,
     cast_length = GOBLIN2_CAST_TIME,
     castcooldown = self.cooldownTime,
-    cancel_on_range = true,
+    cancel_on_range = false,
     cancel_range = self.attack_sensor.rs * 1.05,
     instantspell = true,
     cast_sound = scout1,
@@ -53,6 +53,9 @@ fns['init_enemy'] = function(self)
 end
 
 fns['draw_enemy'] = function(self)
+  graphics.push(self.x, self.y, 0, 0, 0)
+  graphics.circle(self.x, self.y, self.attack_sensor.rs, self.color, 2)
+  graphics.pop()
   local animation_success = self:draw_animation()
   
   if not animation_success then

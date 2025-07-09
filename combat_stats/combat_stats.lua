@@ -117,8 +117,9 @@ enemy_type_to_stats = {
 
     ['seeker'] = { dmg = 0.25, mvspd = 1.4 },
     ['shooter'] = {},
-
+    
     ['cleaver'] = { dmg = 1.5 },
+    ['big_goblin_archer'] = { dmg = 1.5, mvspd = 3 },
 
     ['arcspread'] = { dmg = 0.5 },
     ['assassin'] = {},

@@ -24,7 +24,7 @@ fns['init_enemy'] = function(self)
   self.color = grey[0]:clone()
   Set_Enemy_Shape(self, self.size)
 
-  self.movementStyle = MOVEMENT_TYPE_LOOSE_SEEK
+  self.movementStyle = MOVEMENT_TYPE_RANDOM
 
   self.stopChasingInRange = false
   self.haltOnPlayerContact = true
@@ -37,7 +37,7 @@ fns['init_enemy'] = function(self)
   self.move_option_weight = 0.4
 
   self.movement_options = {
-    MOVEMENT_TYPE_LOOSE_SEEK,
+    MOVEMENT_TYPE_RANDOM,
   }
 
   --set attacks
@@ -45,7 +45,7 @@ fns['init_enemy'] = function(self)
 
   local charge = {
     name = 'charge',
-    viable = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end,
+    viable = function() return true end,
     castcooldown = 2, -- Shorter cooldown than charger (3)
     cast_length = 0.1,
     oncast = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); self.target = target end,

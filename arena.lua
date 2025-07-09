@@ -108,8 +108,8 @@ function Arena:on_enter(from)
   self.color = self.color or fg[0]
 
   -- Spawn solids
-  self.x1, self.y1 = gw/2 - 0.8*gw/2, gh/2 - 0.8*gh/2
-  self.x2, self.y2 = gw/2 + 0.8*gw/2, gh/2 + 0.8*gh/2
+  self.x1, self.y1 = LEFT_BOUND, TOP_BOUND
+  self.x2, self.y2 = RIGHT_BOUND, BOTTOM_BOUND
   self.w, self.h = self.x2 - self.x1, self.y2 - self.y1
 
   self.last_spawn_enemy_time = love.timer.getTime()
