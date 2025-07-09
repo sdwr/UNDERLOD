@@ -191,6 +191,10 @@ function WorldManager:update(dt)
   self.credits:update(dt)
 end
 
+function WorldManager:advance_to_next_level()
+  print('advance to next level')
+end
+
 function WorldManager:update_transition(dt)
   self.transition_progress = self.transition_progress + dt / self.transition_duration
   

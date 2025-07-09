@@ -3,6 +3,8 @@ Door:implement(GameObject)
 Door:implement(Physics)
 function Door:init(args)
   self:init_game_object(args)
+
+  self:set_as_rectangle(self.width, self.height, 'static', 'door')
   
   -- Door properties
   self.x = args.x or gw - 50
@@ -34,6 +36,7 @@ function Door:update(dt)
 end
 
 function Door:open()
+  print('open door')
   self.is_open = true
   
   -- Play open sound
@@ -55,7 +58,7 @@ end
 function Door:draw()
   if self.is_open then
     -- Draw open door (transparent)
-    local alpha = 1 - self.animation_progress
+    local alpha = self.animation_progress
     local door_color = self.door_color:clone()
     door_color.a = alpha
     
@@ -70,13 +73,13 @@ function Door:draw()
     graphics.rectangle(self.x, self.y, self.width + 10, self.height + 10, 3, 3, glow_color)
     graphics.pop()
   else
-    -- Draw closed door
-    graphics.push(self.x, self.y, 0, 1, 1)
-    -- Draw door frame
-    graphics.rectangle(self.x, self.y, self.width + 4, self.height + 4, 3, 3, bg[-1])
-    graphics.rectangle(self.x, self.y, self.width, self.height, 3, 3, self.door_color)
+    -- -- Draw closed door
+    -- graphics.push(self.x, self.y, 0, 1, 1)
+    -- -- Draw door frame
+    -- graphics.rectangle(self.x, self.y, self.width + 4, self.height + 4, 3, 3, bg[-1])
+    -- graphics.rectangle(self.x, self.y, self.width, self.height, 3, 3, self.door_color)
     
-    graphics.pop()
+    -- graphics.pop()
   end
 end
 

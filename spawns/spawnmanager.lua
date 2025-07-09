@@ -382,7 +382,6 @@ function SpawnManager:update(dt)
         -- Only change to waiting_for_clear if we're not in a delay state
         if self.state == 'processing_wave' then
             self:change_state('waiting_for_clear')
-            self.arena:open_door()
         end
     
     -- If all instructions are done, wait for the arena to be clear.
@@ -394,7 +393,7 @@ function SpawnManager:update(dt)
               -- For the final wave, we DO check the progress bar to confirm a win.
               if not main.current.progress_bar or main.current.progress_bar:is_complete() then
                   self:change_state('finished')
-                  --self.arena:quit()
+                  self.arena:open_door()
               end
           else
               -- ===================================================================
