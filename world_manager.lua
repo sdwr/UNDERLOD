@@ -216,34 +216,23 @@ function WorldManager:complete_transition()
   -- Transfer player units from old arena to new arena
   if self.current_arena and self.next_arena and self.pending_troop_data then
     
-    -- Remove old troops from current arena
-    for _, unit in pairs(self.current_arena.main:get_objects_by_classes({'Troop'})) do
-      self.current_arena.main:remove_object(unit)
-      unit:destroy()
-    end
-    
-    -- Create new troops in the new arena with saved state
-    for _, troop_data in ipairs(self.pending_troop_data) do
-      local troop_class = troop_data.character
-      local TroopClass = _G[troop_class]
-      
-      if TroopClass then
-        local new_troop = TroopClass{
-          group = self.next_arena.main,
-          x = troop_data.x,
-          y = troop_data.y,
-          character = troop_data.character,
-          level = troop_data.level,
-          items = troop_data.items,
-          health = troop_data.health,
-          max_health = troop_data.max_health,
-        }
-        
-        -- Recalculate stats for the new troop
-        new_troop:calculate_stats(true)
+    --should add this onto the existing units
+    for _, team in pairs(Helper.Unit.teams) do
+      local troop_hps = {}
+      for _, troop in pairs(team.troops) do
+        if troop.dead then
+          table.insert(troop_hps, 0)
+        else
+          table.insert(troop_hps, troop.health)
+        end
       end
+      team.unit.troop_hps = troop_hps
     end
-    
+
+    system.save_run()
+    system.save_stats()
+    Check_All_Achievements()
+
     -- Destroy old arena (this will destroy its groups and all non-player objects)
     self.current_arena:destroy()
     
@@ -264,9 +253,6 @@ function WorldManager:complete_transition()
     self.current_arena.enemies_paused = false
   end
   
-  -- Reset camera
-  camera.x = 0
-  camera.y = 0
   self.transitioning = false
   self.transition_progress = 0
 end
@@ -306,30 +292,11 @@ end
 
 function WorldManager:advance_to_next_level()
   if not self.transitioning and self.current_arena then
-    print('advance to next level')
-    
-    -- Save current troop state
-    local troop_data = {}
-    for _, unit in pairs(self.current_arena.main:get_objects_by_classes(troop_classes)) do
-      local unit_data = {
-        character = unit.character,
-        level = unit.level,
-        items = unit.items,
-        health = unit.health,
-        max_health = unit.max_health,
-        x = unit.x,
-        y = unit.y,
-        -- Add any other important troop state
-      }
-      table.insert(troop_data, unit_data)
-    end
-    
+
     -- Create new arena
     local next_level = self.current_arena.level + 1
     self:create_arena(next_level, gw)
     
-    -- Store troop data for transfer
-    self.pending_troop_data = troop_data
     
     -- Start transition
     self.transitioning = true

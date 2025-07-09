@@ -266,12 +266,22 @@ function Spawn_Teams(arena)
 
       local number_of_troops = UNIT_LEVEL_TO_NUMBER_OF_TROOPS[unit.level]
 
-      for i = 1, number_of_troops do
-        local offset = offsets[i]
-          local x = spawn_x + offset.x
-          local y = spawn_y + offset.y
-          
-          team:add_troop(x, y)
+      if unit.troop_hps then
+        for i = 1, number_of_troops do
+          local health = unit.troop_hps[i]
+          if health > 0 then
+            local troop = team:add_troop(spawn_x, spawn_y)
+            troop.health = unit.troop_hps[i]
+          end
+        end
+      else
+        for i = 1, number_of_troops do
+          local offset = offsets[i]
+            local x = spawn_x + offset.x
+            local y = spawn_y + offset.y
+            
+            team:add_troop(x, y)
+        end
       end
       -- ====================================================================
 
@@ -678,10 +688,6 @@ function Create_Unit_With_Warning(arena, location, warning_time, creation_callba
           
           -- If the area is still blocked, stall and retry this check in a moment.
           -- The visual warning marker remains on-screen during this stall.
-          print('objects_in_spawn_area', #objects_in_spawn_area)
-          for _, object in pairs(objects_in_spawn_area) do
-            print(object.type)
-          end
           if #objects_in_spawn_area > 0 or arena.spawn_manager:does_spawn_reservation_exist(location.x, location.y) then
               arena.t:after(check_again_delay, attempt_final_spawn)
               return
