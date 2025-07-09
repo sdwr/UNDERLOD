@@ -206,15 +206,9 @@ function WorldManager:update_transition(dt)
     local progress = self.transition_progress
     local ease_progress = progress * progress * (3 - 2 * progress) -- Smooth easing
     
-    -- Move arenas to simulate camera movement
-    if self.current_arena then
-      self.current_arena.offset_x = -ease_progress * gw
-    end
-    if self.next_arena then
-      self.next_arena.offset_x = (1 - ease_progress) * gw
-    end
-    
-    camera.x = ease_progress * gw
+    -- Move camera to create transition effect
+    camera.x = gw/2 + (ease_progress * gw)
+    camera.y = gh/2
   end
 end
 
@@ -270,13 +264,9 @@ function WorldManager:complete_transition()
     self.current_arena.enemies_paused = false
   end
   
-  -- Reset camera and arena offsets
+  -- Reset camera
   camera.x = 0
   camera.y = 0
-  if self.current_arena then
-    self.current_arena.offset_x = 0
-    self.current_arena.offset_y = 0
-  end
   self.transitioning = false
   self.transition_progress = 0
 end
