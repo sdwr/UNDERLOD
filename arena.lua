@@ -177,6 +177,7 @@ function Arena:on_enter(from)
   self:create_tutorial_popup()
 
   self.start_time = 3
+  print(self.level_list[self.level].waves_power[1])
 end
 
 function Arena:spawn_critters(spawn_point, amount)

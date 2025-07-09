@@ -1994,6 +1994,7 @@ proc_name_to_class = {
 
   ['shieldslam'] = Proc_Shieldslam,
   ['rebuke'] = Proc_Rebuke,
+  ['battlefury'] = Proc_Battlefury,
 
   --yellow procs
   ['radiance'] = Proc_Radiance,
