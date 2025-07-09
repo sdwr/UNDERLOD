@@ -87,7 +87,7 @@ function shared_draw(draw_action)
 
   background_canvas:draw_to(function()
     camera:attach()
-    for i = 1, 32 do
+    for i = 1, 64 do
       for j = 1, 18 do
         if j % 2 == 0 then
           if i % 2 == 1 then
@@ -100,7 +100,7 @@ function shared_draw(draw_action)
         end
       end
     end
-    bg_gradient:draw(gw/2, gh/2, 480, 270)
+    bg_gradient:draw(gw, gh/2, 480*2, 270)
     camera:detach()
   end)
 

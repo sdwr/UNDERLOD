@@ -37,7 +37,6 @@ function Door:update(dt)
 end
 
 function Door:open()
-  print('open door')
   self.is_open = true
   
   -- Play open sound

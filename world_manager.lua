@@ -120,11 +120,14 @@ function WorldManager:create_arena(level, offset_x)
     arena.units = self.units
     self.progress_bar = arena.progress_bar
 
-    
+    arena:create_walls()
     Spawn_Teams(arena)
 
   else
     self.next_arena = arena
+    arena.units = self.units
+    self.progress_bar = arena.progress_bar
+    
     self.camera_target_x = gw -- Scroll to the right
     self.transitioning = true
     self.transition_progress = 0
@@ -191,15 +194,11 @@ function WorldManager:update(dt)
   self.credits:update(dt)
 end
 
-function WorldManager:advance_to_next_level()
-  --create new arena
-  self:create_arena(self.current_arena.level + 1, gw)
-end
-
 function WorldManager:update_transition(dt)
   self.transition_progress = self.transition_progress + dt / self.transition_duration
   
   if self.transition_progress >= 1 then
+    self.transitioning = false
     self:complete_transition()
   else
     -- Smooth camera scroll
@@ -214,7 +213,7 @@ end
 
 function WorldManager:complete_transition()
   -- Transfer player units from old arena to new arena
-  if self.current_arena and self.next_arena and self.pending_troop_data then
+  if self.current_arena and self.next_arena then
     
     --should add this onto the existing units
     for _, team in pairs(Helper.Unit.teams) do
@@ -223,13 +222,17 @@ function WorldManager:complete_transition()
         if troop.dead then
           table.insert(troop_hps, 0)
         else
-          table.insert(troop_hps, troop.health)
+          table.insert(troop_hps, troop.hp)
         end
       end
       team.unit.troop_hps = troop_hps
     end
 
-    system.save_run()
+    local save_data = Collect_Save_Data_From_State(self)
+    save_data.reroll_shop = true
+    save_data.times_rerolled = 0
+
+    system.save_run(save_data)
     system.save_stats()
     Check_All_Achievements()
 
@@ -245,9 +248,11 @@ function WorldManager:complete_transition()
     
     -- Update physics group references for the new arena
     self:assign_physics_groups(self.current_arena)
+    self:adjust_arena_offset_to_zero()
     
     -- Set up teams for the new arena
     Spawn_Teams(self.current_arena)
+    self.current_arena:create_walls()
     
     -- Resume enemy updates
     self.current_arena.enemies_paused = false
@@ -255,6 +260,34 @@ function WorldManager:complete_transition()
   
   self.transitioning = false
   self.transition_progress = 0
+end
+
+function WorldManager:adjust_arena_offset_to_zero()
+  if self.current_arena then
+    if self.current_arena.offset_x > 0 then
+      self:move_objects_in_group(self.current_arena.floor, self.current_arena.offset_x, 0)
+      self:move_objects_in_group(self.current_arena.main, self.current_arena.offset_x, 0)
+      self:move_objects_in_group(self.current_arena.post_main, self.current_arena.offset_x, 0)
+      self:move_objects_in_group(self.current_arena.effects, self.current_arena.offset_x, 0)
+      self:move_objects_in_group(self.current_arena.ui, self.current_arena.offset_x, 0)
+      self:move_objects_in_group(self.current_arena.tutorial, self.current_arena.offset_x, 0)
+      self:move_objects_in_group(self.current_arena.options_ui, self.current_arena.offset_x, 0)
+      self:move_objects_in_group(self.current_arena.credits, self.current_arena.offset_x, 0)
+      self.current_arena.offset_x = 0
+      self.current_arena.offset_y = 0
+    end
+    camera.x = gw/2
+    camera.y = gh/2
+  end
+end
+
+function WorldManager:move_objects_in_group(group, offset_x, offset_y)
+  for _, object in pairs(group.objects) do
+    if object.x and object.y then
+      object.x = object.x - offset_x
+      object.y = object.y - offset_y
+    end
+  end
 end
 
 function WorldManager:on_exit(to)
@@ -294,8 +327,8 @@ function WorldManager:advance_to_next_level()
   if not self.transitioning and self.current_arena then
 
     -- Create new arena
-    local next_level = self.current_arena.level + 1
-    self:create_arena(next_level, gw)
+    self.level = self.level + 1
+    self:create_arena(self.level, gw)
     
     
     -- Start transition

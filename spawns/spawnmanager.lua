@@ -269,9 +269,12 @@ function Spawn_Teams(arena)
       if unit.troop_hps then
         for i = 1, number_of_troops do
           local health = unit.troop_hps[i]
-          if health > 0 then
-            local troop = team:add_troop(spawn_x, spawn_y)
-            troop.health = unit.troop_hps[i]
+          if health and health > 0 then
+            local offset = offsets[i]
+            local x = spawn_x + offset.x
+            local y = spawn_y + offset.y
+            local troop = team:add_troop(x, y)
+            troop.hp = unit.troop_hps[i]
           end
         end
       else

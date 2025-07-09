@@ -19,6 +19,7 @@ function Arena:init(args)
   -- Arena state
   self.enemies = {}
   self.troops = {}
+  self.walls = {}
   self.door = nil
 
   self.color = self.color or fg[0]
@@ -28,12 +29,9 @@ function Arena:init(args)
   -- Initialize arena components
   self:init_physics()
   self:init_spawn_manager()
-
-  self:set_bounds()
-  self:create_walls()
-  self:create_door()
   
   self:create_progress_bar()
+  self:create_walls()
 
   -- self:create_hotbar()
 
@@ -49,24 +47,34 @@ function Arena:init(args)
   -- Start the level
 end
 
-function Arena:set_bounds()
-    -- Spawn solids
-    self.mid_x = gw/2 + self.offset_x
-    self.mid_y = gh/2 + self.offset_y
-    self.x1, self.y1 = LEFT_BOUND + self.offset_x, TOP_BOUND + self.offset_y
-    self.x2, self.y2 = RIGHT_BOUND + self.offset_x, BOTTOM_BOUND + self.offset_y
-    self.w, self.h = self.x2 - self.x1, self.y2 - self.y1
+function Arena:delete_walls() 
+  for i = 1, #self.walls do
+    self.walls[i].dead = true
+  end
+  self.walls = {}
+  if self.door then
+    self.door.dead = true
+    self.door = nil
+  end
 end
 
-function Arena:create_walls()  
-  Wall{group = self.main, vertices = math.to_rectangle_vertices(self.offset_x - 40, self.offset_y - 40, self.x1, self.offset_y + gh + 40), color = bg[-1]}
-  Wall{group = self.main, vertices = math.to_rectangle_vertices(self.x2, self.offset_y - 40, self.offset_x + gw + 40, self.offset_y + gh + 40), color = bg[-1]}
-  Wall{group = self.main, vertices = math.to_rectangle_vertices(self.x1, self.offset_y - 40, self.x2, self.y1), color = bg[-1]}
-  Wall{group = self.main, vertices = math.to_rectangle_vertices(self.x1, self.y2, self.x2, self.offset_y + gh + 40), color = bg[-1]}
-  WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.offset_x - 40, self.offset_y - 40, self.x1, self.offset_y + gh + 40), color = bg[-1]}
-  WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x2, self.offset_y - 40, self.offset_x + gw + 40, self.offset_y + gh + 40), color = bg[-1]}
-  WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x1, self.offset_y - 40, self.x2, self.y1), color = bg[-1]}
-  WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x1, self.y2, self.x2, self.offset_y + gh + 40), color = bg[-1]}
+function Arena:create_walls()
+  self:delete_walls()
+  -- Spawn solids
+  self.mid_x = gw/2 + self.offset_x
+  self.mid_y = gh/2 + self.offset_y
+  self.x1, self.y1 = LEFT_BOUND + self.offset_x, TOP_BOUND + self.offset_y
+  self.x2, self.y2 = RIGHT_BOUND + self.offset_x, BOTTOM_BOUND + self.offset_y
+  self.w, self.h = self.x2 - self.x1, self.y2 - self.y1
+  self.walls[1] = Wall{group = self.main, vertices = math.to_rectangle_vertices(self.offset_x - 40, self.offset_y - 40, self.x1, self.offset_y + gh + 40), color = bg[-1]}
+  self.walls[2] = Wall{group = self.main, vertices = math.to_rectangle_vertices(self.x2, self.offset_y - 40, self.offset_x + gw + 40, self.offset_y + gh + 40), color = bg[-1]}
+  self.walls[3] = Wall{group = self.main, vertices = math.to_rectangle_vertices(self.x1, self.offset_y - 40, self.x2, self.y1), color = bg[-1]}
+  self.walls[4] = Wall{group = self.main, vertices = math.to_rectangle_vertices(self.x1, self.y2, self.x2, self.offset_y + gh + 40), color = bg[-1]}
+  self.walls[5] = WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.offset_x - 40, self.offset_y - 40, self.x1, self.offset_y + gh + 40), color = bg[-1]}
+  self.walls[6] = WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x2, self.offset_y - 40, self.offset_x + gw + 40, self.offset_y + gh + 40), color = bg[-1]}
+  self.walls[7] = WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x1, self.offset_y - 40, self.x2, self.y1), color = bg[-1]}
+  self.walls[8] = WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x1, self.y2, self.x2, self.offset_y + gh + 40), color = bg[-1]}
+  self:create_door()
 end
 
 function Arena:create_progress_bar()
@@ -191,7 +199,8 @@ function Arena:create_door()
     x = gw - 50 + self.offset_x,
     y = gh/2 + self.offset_y,
     width = 40,
-    height = 80
+    height = 80,
+    parent = self
   }
 end
 
