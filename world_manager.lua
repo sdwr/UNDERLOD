@@ -354,25 +354,7 @@ function WorldManager:on_exit(to)
   Helper:release()
   set_cursor_simple()
 
-  -- Save current game state
-  if self.current_arena then
-    -- Collect save data from current arena
-    local save_data = {}
-    
-    -- Copy all expected save fields from the arena
-    for _, field in ipairs(EXPECTED_SAVE_FIELDS) do
-      if self.current_arena[field] then
-        save_data[field] = self.current_arena[field]
-      end
-    end
-    
-    -- Add global state
-    save_data.gold = gold
-    save_data.locked_state = locked_state
-    
-    -- Save to file
-    system.save_run(save_data)
-  end
+  self:save_run()
 
   if self.current_arena then
     self.current_arena:destroy()
@@ -385,8 +367,6 @@ end
 function WorldManager:advance_to_next_level()
   if not self.transitioning and self.current_arena then
 
-    -- Create new arena
-    self.level = self.level + 1
     self:create_arena(self.level, gw)
     
     
@@ -423,4 +403,34 @@ function WorldManager:draw()
       card:draw()
     end
   end
-end 
+end
+
+function WorldManager:increase_level()
+  self.level = self.level + 1
+  self:save_run()
+end
+
+function WorldManager:save_run()
+  local save_data = Collect_Save_Data_From_State(self)
+  system.save_run(save_data)
+end
+
+function WorldManager:unit_first_available_inventory_slot(unit)
+  for i = 1, UNIT_LEVEL_TO_NUMBER_OF_ITEMS[unit.level] do
+    if not unit.items[i] then
+      return i
+    end
+  end
+  return nil
+end
+
+function WorldManager:put_in_first_available_inventory_slot(item)
+  for _, unit in ipairs(self.units) do
+    local index = self:unit_first_available_inventory_slot(unit)
+    if index then
+      unit.items[index] = item
+      return true
+    end
+  end
+  return false
+end

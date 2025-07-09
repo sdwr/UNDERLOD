@@ -277,7 +277,7 @@ end
 
 function Arena:level_clear()
   self.door:open()
-  
+  main.current:increase_level()
   -- Create 3 floor items for selection
   self:create_floor_items()
 end
@@ -985,26 +985,6 @@ function Arena:spawn_n_critters(p, j, n, pass, parent)
   end, n, function() self.spawning_enemies = false end, 'spawn_enemies_' .. j)
 end
 
-function Arena:get_first_available_inventory_slot()
-  for i, unit in ipairs(self.units) do
-    for j, item in ipairs(unit.items) do
-      if not item then
-        return {unit = unit, index = j}
-      end
-    end
-  end
-  return nil
-end
-
-function Arena:unit_first_available_inventory_slot(unit)
-  for i, item in ipairs(unit.items) do
-    if not item then
-      return i
-    end
-  end
-  return nil
-end
-
 function Arena:remove_all_floor_items()
   if self.floor_items then
     for _, item in ipairs(self.floor_items) do
@@ -1038,6 +1018,12 @@ function FloorItem:init(args)
   self.shake_intensity = 0
   self.is_hovered = false
   self.is_purchased = false
+  self.failed_to_purchase = false
+  
+  -- Mouse interaction
+  self.shape = Rectangle(self.x, self.y, 60, 80)
+  self.interact_with_mouse = true
+  self.colliding_with_mouse = false
   
   -- Cost text
   self.cost_text = Text({{text = '[yellow]' .. self.cost, font = pixul_font, alignment = 'center'}}, global_text_tags)
@@ -1057,17 +1043,27 @@ end
 function FloorItem:update(dt)
   self:update_game_object(dt)
   
-    -- Check for nearby troops
-  self.is_hovered = false
+  -- Handle tooltip
+  if self.colliding_with_mouse then
+    if not self.tooltip then
+      self:create_tooltip()
+    end
+  else
+    self:remove_tooltip()
+  end
+
   if self.parent and self.parent.main then
     local objects = self.parent.main:get_objects_in_shape(self.aggro_sensor, troop_classes)
     if #objects > 0 then
       self.is_hovered = true
+    else
+      self.is_hovered = false
+      self.failed_to_purchase = false
     end
   end
   
   -- Update hover timer and shake
-  if self.is_hovered then
+  if self.is_hovered and not self.failed_to_purchase then
     self.hover_timer = self.hover_timer + dt
     -- Start shaking immediately when unit is on it
     if self.shake_timer <= 0 then
@@ -1090,7 +1086,6 @@ function FloorItem:update(dt)
       self:purchase()
     end
   end
-  
 end
 
 function FloorItem:start_shake()
@@ -1100,20 +1095,33 @@ function FloorItem:start_shake()
   end
 end
 
+function FloorItem:stop_shake()
+  self.hover_timer = 0
+  self.shake_timer = 0
+  self.shake_intensity = 0
+end
+
 function FloorItem:purchase()
-  if self.is_purchased then return end
   
+  -- Add item to first available slot
+  local try_purchase = main.current:put_in_first_available_inventory_slot(self.item)
+  if not try_purchase then
+    self:remove_tooltip()
+    self:stop_shake()
+    self.failed_to_purchase = true
+    Create_Info_Text('no empty item slots - right click to sell', self)
+    return
+  end
+
   self.is_purchased = true
   gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
   
   -- Deduct gold
   gold = gold - self.cost
-  
-  -- Add item to first available slot
-  local slot_info = self.parent:get_first_available_inventory_slot()
-  if slot_info then
-    slot_info.unit.items[slot_info.index] = self.item
-  end
+
+  main.current:save_run()
+
+
   
   -- Purchase effect
   for i = 1, 20 do
@@ -1175,6 +1183,31 @@ function FloorItem:draw()
   graphics.pop()
 end
 
+function FloorItem:create_tooltip()
+  if self.tooltip then
+    self.tooltip:die()
+    self.tooltip = nil
+  end
+
+  self.tooltip = ItemTooltip{
+    group = main.current.ui,
+    item = self.item,
+    x = gw/2, 
+    y = gh/2 - 50,
+  }
+end
+
+function FloorItem:remove_tooltip()
+  if self.tooltip then
+    self.tooltip:die()
+    self.tooltip = nil
+  end
+end
+
 function FloorItem:die()
   self.dead = true
+  if self.tooltip then
+    self.tooltip:die()
+    self.tooltip = nil
+  end
 end
