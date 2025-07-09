@@ -134,34 +134,63 @@ function WorldManager:create_arena(level, offset_x)
 end
 
 function WorldManager:assign_physics_groups(arena)
-  self.main = arena.main
   self.floor = arena.floor
+  self.main = arena.main
   self.post_main = arena.post_main
   self.effects = arena.effects
   self.ui = arena.ui
-  self.ui_top = arena.ui_top
-  self.overlay_ui = arena.overlay_ui
   self.tutorial = arena.tutorial
+  self.options_ui = arena.options_ui
+  self.credits = arena.credits
+end
+
+function WorldManager:set_arenas_paused(paused)
+  if self.current_arena then
+    self.current_arena.paused = paused
+  end
+  if self.next_arena then
+    self.next_arena.paused = paused
+  end
 end
 
 
 
 function WorldManager:update(dt)
   self:update_game_object(dt)
+
+  if input.escape.pressed then
+    if not self.paused then
+      self.paused = true
+      open_options(self)
+      self:set_arenas_paused(true)
+    else
+      self.paused = false
+      close_options(self, self.in_tutorial)
+      self:set_arenas_paused(false)
+    end
+  end
   
+  if not self.paused then
   -- Update Helper system for input handling and troop movement
-  Helper:update(dt)
-  
-  if self.current_arena then
-    self.current_arena:update(dt)
+    Helper:update(dt*slow_amount)
+    LevelManager.update(dt)
+
+    
+    if self.current_arena then
+      self.current_arena:update(dt*slow_amount)
+    end
+    if self.next_arena then
+      self.next_arena:update(dt*slow_amount)
+    end
+    
+    if self.transitioning then
+      self:update_transition(dt*slow_amount)
+    end
   end
-  if self.next_arena then
-    self.next_arena:update(dt)
-  end
-  
-  if self.transitioning then
-    self:update_transition(dt)
-  end
+
+  self.tutorial:update(dt)
+  self.options_ui:update(dt)
+  self.credits:update(dt)
 end
 
 function WorldManager:update_transition(dt)
@@ -261,6 +290,10 @@ function WorldManager:draw()
   if self.next_arena then
     self.next_arena:draw()
   end
+  
+  self.tutorial:draw()
+  self.options_ui:draw()
+  self.credits:draw()
 
   -- Draw Helper system (selection UI, etc.)
   Helper:draw()

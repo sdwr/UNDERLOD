@@ -175,7 +175,7 @@ end
 function Arena:create_door()
   -- Create door on the right side of the arena
   self.door = Door{
-    group = self.effects, -- Put door on floor so it's drawn under units
+    group = self.post_main, -- Put door on floor so it's drawn under units
     x = gw - 50 + self.offset_x,
     y = gh/2 + self.offset_y,
     width = 40,
@@ -227,20 +227,19 @@ end
 function Arena:update(dt)
   self:update_game_object(dt)
   
-  -- Update physics world
-  if self.world then
-    self.world:update(dt)
-  end
-  
-  -- Update arena groups
-  self.main:update(dt)
-  self.floor:update(dt)
-  self.effects:update(dt)
-  self.ui:update(dt)
-  
-  -- Update spawn manager
-  if self.spawn_manager then
-    self.spawn_manager:update(dt)
+  if not self.paused then
+    -- Update arena groups
+    star_group:update(dt)
+    self.floor:update(dt)
+    self.main:update(dt)
+    self.post_main:update(dt)
+    self.effects:update(dt)
+    self.ui:update(dt)
+    
+    -- Update spawn manager
+    if self.spawn_manager then
+      self.spawn_manager:update(dt)
+    end
   end
 end
 
@@ -380,6 +379,7 @@ function Arena:draw()
   -- Draw arena groups
   self.floor:draw()
   self.main:draw()
+  self.post_main:draw()
   self.effects:draw()
   self.ui:draw()
   
