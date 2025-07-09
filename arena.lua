@@ -303,14 +303,16 @@ function Arena:create_floor_items()
   
   for i, item in ipairs(items) do
     if positions[i] then
-      local floor_item = FloorItem{
-        group = self.floor,
-        x = positions[i].x + self.offset_x,
-        y = positions[i].y + self.offset_y,
-        item = item,
-        parent = self
-      }
-      table.insert(self.floor_items, floor_item)
+      self.t:after(i*0.3, function()
+        local floor_item = FloorItem{
+          group = self.floor,
+          x = positions[i].x + self.offset_x,
+          y = positions[i].y + self.offset_y,
+          item = item,
+          parent = self
+        }
+        table.insert(self.floor_items, floor_item)
+      end)
     end
   end
 end
@@ -1000,7 +1002,8 @@ function FloorItem:init(args)
   self:init_game_object(args)
   
   self.item = args.item
-  self.cost = 0
+  --cost only used as tier
+  self.cost = self.item.cost
   self.image = find_item_image(self.item)
   self.colors = self.item.colors
   self.tier_color = item_to_color(self.item)
@@ -1020,23 +1023,51 @@ function FloorItem:init(args)
   self.is_purchased = false
   self.failed_to_purchase = false
   
+
+  self.hover_sound= nil
+  self.hover_sound_pitch = 1
+  self.hover_sound_pitch_next = 0.5
+
   -- Mouse interaction
   self.shape = Rectangle(self.x, self.y, 60, 80)
   self.interact_with_mouse = true
   self.colliding_with_mouse = false
+
   
   -- Cost text
-  self.cost_text = Text({{text = '[yellow]' .. self.cost, font = pixul_font, alignment = 'center'}}, global_text_tags)
+  -- self.cost_text = Text({{text = '[yellow]' .. self.cost, font = pixul_font, alignment = 'center'}}, global_text_tags)
   
   -- Creation effect
   self:creation_effect()
 end
 
 function FloorItem:creation_effect()
-  pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-  self.spring:pull(0.2, 200, 10)
-  for i = 1, 15 do
-    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+  if self.cost <= 5 then
+    --no effect
+    pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    self.spring:pull(0.2, 200, 10)
+    for i = 1, 10 do
+      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+    end
+  elseif self.cost <= 10 then
+    pop2:play{pitch = random:float(0.95, 1.05), volume = 0.7}
+    self.spring:pull(0.2, 200, 10)
+    for i = 1, 20 do
+      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+    end
+  elseif self.cost <= 15 then
+    pop1:play{pitch = random:float(0.95, 1.05), volume = 0.8}
+    self.spring:pull(0.4, 200, 10)
+    for i = 1, 30 do
+      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+    end
+  else
+    gold3:play{pitch = random:float(0.95, 1.05), volume = 0.8}
+    self.spring:pull(0.6, 200, 10)
+    for i = 1, 40 do
+      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+    end
+  
   end
 end
 
@@ -1065,6 +1096,10 @@ function FloorItem:update(dt)
   -- Update hover timer and shake
   if self.is_hovered and not self.failed_to_purchase then
     self.hover_timer = self.hover_timer + dt
+    self.hover_sound_pitch_next = self.hover_sound_pitch_next - dt
+    if self.hover_sound_pitch_next <= 0 then
+      self:hover_sound_pitch_up()
+    end
     -- Start shaking immediately when unit is on it
     if self.shake_timer <= 0 then
       self:start_shake()
@@ -1088,10 +1123,23 @@ function FloorItem:update(dt)
   end
 end
 
+function FloorItem:hover_sound_pitch_up()
+  self.hover_sound_pitch_next = 0.5
+  self.hover_sound_pitch = self.hover_sound_pitch + .3
+
+  if self.hover_sound then
+    self.hover_sound:stop()
+  end
+  self.hover_sound = ui_modern_hover:play{pitch = self.hover_sound_pitch, volume = 1}
+end
+
 function FloorItem:start_shake()
   if self.shake_timer <= 0 then
     self.shake_timer = 2 -- 2 seconds of shaking
     self.shake_intensity = 1
+  end
+  if not self.hover_sound then
+    self.hover_sound = ui_modern_hover:play{pitch = self.hover_sound_pitch, volume = 1}
   end
 end
 
@@ -1099,6 +1147,12 @@ function FloorItem:stop_shake()
   self.hover_timer = 0
   self.shake_timer = 0
   self.shake_intensity = 0
+  if self.hover_sound then
+    self.hover_sound:stop()
+    self.hover_sound = nil
+  end
+  self.hover_sound_pitch = 1
+  self.hover_sound_pitch_next = 0.5
 end
 
 function FloorItem:purchase()
@@ -1116,8 +1170,8 @@ function FloorItem:purchase()
   self.is_purchased = true
   gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
   
-  -- Deduct gold
-  gold = gold - self.cost
+  -- -- Deduct gold
+  -- gold = gold - self.cost
 
   main.current:save_run()
 
@@ -1146,7 +1200,7 @@ function FloorItem:draw()
   -- Draw item background
   local width = 60
   local height = 80
-  graphics.rectangle(self.x, self.y, width, height, 6, 6, bg[5])
+  graphics.rectangle(self.x + shake_x, self.y + shake_y, width, height, 6, 6, bg[5])
   
   -- Draw item colors
   if self.colors then
@@ -1157,27 +1211,30 @@ function FloorItem:draw()
       color = color[0]:clone()
       color.a = 0.6
       local y = (self.y - height/2) + ((i-1) * color_h) + (color_h/2)
-      graphics.rectangle(self.x, y, width, color_h, 6, 6, color)
+      graphics.rectangle(self.x + shake_x, y + shake_y, width, color_h, 6, 6, color)
     end
   end
   
   -- Draw border
-  graphics.rectangle(self.x, self.y, width, height, 6, 6, self.tier_color, 2)
+  graphics.rectangle(self.x + shake_x, self.y + shake_y, width, height, 6, 6, self.tier_color, 2)
+  
   
   -- Draw cost text
-  self.cost_text:draw(self.x + width/2, self.y - height/2)
+  -- self.cost_text:draw(self.x + width/2, self.y - height/2)
   
   -- Draw item image
   if self.image then
-    self.image:draw(self.x, self.y, 0, 0.8, 0.8)
+    self.image:draw(self.x + shake_x, self.y + shake_y, 0, 0.8, 0.8)
   end
   
   -- Draw hover effect
   if self.is_hovered then
     local alpha = math.min(self.hover_timer / self.hover_duration, 1)
+    local radius = ((self.hover_timer / self.hover_duration) * 20) + 10
     local color = white[0]
     color.a = alpha * 0.3
-    graphics.circle(self.x, self.y, 30, color)
+    graphics.rectangle(self.x + shake_x, self.y + shake_y, width, height, 6, 6, color)
+    graphics.circle(self.x + shake_x, self.y + shake_y, radius, color)
   end
   
   graphics.pop()
