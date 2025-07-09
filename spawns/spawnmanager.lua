@@ -716,3 +716,90 @@ function Create_Unit_With_Warning(arena, location, warning_time, creation_callba
   end)
 end
 
+-- ===================================================================
+-- NEW METHOD: Spawn all enemies for a level at once
+-- This creates all enemies but keeps them inactive until transition is complete
+-- ===================================================================
+function SpawnManager:spawn_all_enemies_at_once()
+  if self.arena.enemies_spawned then
+    return -- Already spawned
+  end
+  
+  self.arena.enemies_spawned = true
+  
+  -- Check if this is a boss level
+  if table.contains(BOSS_ROUNDS, self.arena.level) then
+    self:spawn_boss_immediately()
+  else
+    -- Get all waves for this level
+    local waves = self.level_data.waves
+    if not waves then
+      return
+    end
+    
+    -- Spawn all enemies from all waves at once
+    for wave_index, wave in ipairs(waves) do
+      for instruction_index, instruction in ipairs(wave) do
+        local type = instruction[1]
+        
+        if type == 'GROUP' then
+          local group_data = {instruction[2], instruction[3], instruction[4]}
+          self:spawn_group_immediately(group_data)
+        end
+      end
+    end
+  end
+  
+  -- Mark as finished since all enemies are spawned
+  self:change_state('waiting_for_clear')
+end
+
+function SpawnManager:spawn_group_immediately(group_data)
+  local type, amount = group_data[1], group_data[2]
+  local spawn_type = group_data[3]
+  amount = amount or 1
+
+  for i = 1, amount do
+    local location = Get_Point_In_Right_Half()
+    
+    -- Spawn enemy immediately without warning
+    local enemy = Enemy{
+      type = type, 
+      group = self.arena.main,
+      x = location.x, 
+      y = location.y,
+      level = self.arena.level, 
+      data = {}
+    }
+    
+    -- Set enemy to idle but inactive
+    Helper.Unit:set_state(enemy, unit_states['idle'])
+    enemy.idleTimer = math.random() * 2 + 1 -- Longer idle time
+    enemy.transition_active = false -- Keep inactive until transition complete
+  end
+end
+
+function SpawnManager:spawn_boss_immediately()
+  local boss_name = level_to_boss_enemy[self.arena.level]
+  
+  if boss_name and boss_name ~= "" then
+    -- Spawn boss immediately without warning
+    local boss = Enemy{
+      type = boss_name, 
+      isBoss = true, 
+      group = self.arena.main, 
+      x = SpawnGlobals.boss_spawn_point.x, 
+      y = SpawnGlobals.boss_spawn_point.y, 
+      level = self.arena.level
+    }
+    
+    -- Set boss to idle but inactive
+    Helper.Unit:set_state(boss, unit_states['idle'])
+    boss.idleTimer = math.random() * 2 + 1 -- Longer idle time
+    boss.transition_active = false -- Keep inactive until transition complete
+    
+    -- Set as active boss for level manager
+    LevelManager.activeBoss = boss
+  end
+end
+

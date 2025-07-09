@@ -1489,6 +1489,11 @@ end
 --existing spell (say for a channeling spell)
 
 function Unit:pick_action()
+  -- Don't pick actions if transition is not complete (for enemies)
+  if self.transition_active == false then
+    return false
+  end
+  
   local attack_options = self.attack_options or {}
   local movement_options = self.movement_options or {}
 

@@ -7,6 +7,7 @@ function Enemy:init(args)
   self:init_game_object(args)
 
   self.faction = 'enemy'
+  self.transition_active = false
 
   self:setExtraFunctions()
   Helper.Unit:add_custom_variables_to_unit(self)
@@ -105,6 +106,11 @@ function Enemy:update(dt)
     
     self.random_dest_timer = self.random_dest_timer - dt
 
+    -- Don't take actions if transition is not complete
+    if not self.transition_active then
+      return
+    end
+
     --get target / rotate to target
     if self.target and self.target.dead then self.target = nil end
     
@@ -177,6 +183,8 @@ end
 
 function Enemy:update_movement()
   if self.being_knocked_back then return end
+  if not self.transition_active then return end
+  
   if self.currentMovementAction == MOVEMENT_TYPE_SEEK then
     return self:update_move_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then

@@ -22,6 +22,8 @@ function Arena:init(args)
   self.walls = {}
   self.door = nil
   self.main_slow_amount = 1
+  self.transition_complete = false
+  self.enemies_spawned = false
 
   self.color = self.color or fg[0]
 
@@ -33,6 +35,11 @@ function Arena:init(args)
   
   self:create_progress_bar()
   self:create_walls()
+
+  -- Spawn all enemies immediately but keep them inactive
+  if self.spawn_manager then
+    self.spawn_manager:spawn_all_enemies_at_once()
+  end
 
   -- self:create_hotbar()
 
@@ -1271,4 +1278,24 @@ function FloorItem:die()
     self.tooltip:die()
     self.tooltip = nil
   end
+end
+
+function Arena:activate_enemies()
+  if self.transition_complete and self.enemies_spawned then
+    -- Activate all enemies in the arena
+    local enemies = self.main:get_objects_by_classes(main.current.enemies)
+    for _, enemy in ipairs(enemies) do
+      if enemy and not enemy.dead then
+        enemy.t:after(0.5, function()
+          enemy.transition_active = true
+          enemy.idleTimer = enemy.baseIdleTimer or 0.5
+        end)
+      end
+    end
+  end
+end
+
+function Arena:set_transition_complete()
+  self.transition_complete = true
+  self:activate_enemies()
 end

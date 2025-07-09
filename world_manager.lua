@@ -38,6 +38,8 @@ function WorldManager:on_enter(from)
     -- Create arena with the current level from save data
     local level = self.level or 1
     self:create_arena(level, 0)
+    -- Activate enemies for the first arena
+    self.current_arena:set_transition_complete()
     
     -- Pass save data to the arena
     if self.current_arena then
@@ -313,8 +315,9 @@ function WorldManager:complete_transition()
     Spawn_Teams(self.current_arena)
     self.current_arena:create_walls()
     
-    -- Resume enemy updates
+    -- Resume enemy updates and activate enemies
     self.current_arena.enemies_paused = false
+    self.current_arena:set_transition_complete()
   end
   
   self.transitioning = false
