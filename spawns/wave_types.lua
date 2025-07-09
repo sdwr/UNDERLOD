@@ -79,7 +79,6 @@ function Wave_Types:Get_Waves(level)
   end
   
   table.insert(waves, wave)
-  print(target_power, current_power)
   return waves
 end
 
