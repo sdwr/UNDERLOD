@@ -674,10 +674,14 @@ function Create_Unit_With_Warning(arena, location, warning_time, creation_callba
       attempt_final_spawn = function()
         -- Check if the area is occupied
         local spawn_circle = Circle(location.x, location.y, spawn_radius)
-        local objects_in_spawn_area = arena.main:get_objects_in_shape(spawn_circle, arena.all_unit_classes)
+        local objects_in_spawn_area = arena.main:get_objects_in_shape(spawn_circle, main.current.all_unit_classes)
           
           -- If the area is still blocked, stall and retry this check in a moment.
           -- The visual warning marker remains on-screen during this stall.
+          print('objects_in_spawn_area', #objects_in_spawn_area)
+          for _, object in pairs(objects_in_spawn_area) do
+            print(object.type)
+          end
           if #objects_in_spawn_area > 0 or arena.spawn_manager:does_spawn_reservation_exist(location.x, location.y) then
               arena.t:after(check_again_delay, attempt_final_spawn)
               return

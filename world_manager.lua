@@ -192,7 +192,8 @@ function WorldManager:update(dt)
 end
 
 function WorldManager:advance_to_next_level()
-  print('advance to next level')
+  --create new arena
+  self:create_arena(self.current_arena.level + 1, gw)
 end
 
 function WorldManager:update_transition(dt)
@@ -204,27 +205,49 @@ function WorldManager:update_transition(dt)
     -- Smooth camera scroll
     local progress = self.transition_progress
     local ease_progress = progress * progress * (3 - 2 * progress) -- Smooth easing
+    
+    -- Move arenas to simulate camera movement
+    if self.current_arena then
+      self.current_arena.offset_x = -ease_progress * gw
+    end
+    if self.next_arena then
+      self.next_arena.offset_x = (1 - ease_progress) * gw
+    end
+    
     camera.x = ease_progress * gw
   end
 end
 
 function WorldManager:complete_transition()
   -- Transfer player units from old arena to new arena
-  if self.current_arena and self.next_arena then
-    local player_units = {}
+  if self.current_arena and self.next_arena and self.pending_troop_data then
     
-    -- Get all player units from current arena's main group
+    -- Remove old troops from current arena
     for _, unit in pairs(self.current_arena.main:get_objects_by_classes({'Troop'})) do
-      table.insert(player_units, unit)
+      self.current_arena.main:remove_object(unit)
+      unit:destroy()
     end
     
-    -- Transfer each player unit to the new arena's main group
-    for _, unit in pairs(player_units) do
-      self.current_arena.main:remove_object(unit)
-      self.next_arena.main:add_object(unit)
+    -- Create new troops in the new arena with saved state
+    for _, troop_data in ipairs(self.pending_troop_data) do
+      local troop_class = troop_data.character
+      local TroopClass = _G[troop_class]
       
-      -- Update unit's group reference
-      unit.group = self.next_arena.main
+      if TroopClass then
+        local new_troop = TroopClass{
+          group = self.next_arena.main,
+          x = troop_data.x,
+          y = troop_data.y,
+          character = troop_data.character,
+          level = troop_data.level,
+          items = troop_data.items,
+          health = troop_data.health,
+          max_health = troop_data.max_health,
+        }
+        
+        -- Recalculate stats for the new troop
+        new_troop:calculate_stats(true)
+      end
     end
     
     -- Destroy old arena (this will destroy its groups and all non-player objects)
@@ -234,13 +257,26 @@ function WorldManager:complete_transition()
     self.current_arena = self.next_arena
     self.next_arena = nil
     
+    -- Clear pending troop data
+    self.pending_troop_data = nil
+    
     -- Update physics group references for the new arena
     self:assign_physics_groups(self.current_arena)
+    
+    -- Set up teams for the new arena
+    Spawn_Teams(self.current_arena)
+    
+    -- Resume enemy updates
+    self.current_arena.enemies_paused = false
   end
   
-  -- Reset camera
+  -- Reset camera and arena offsets
   camera.x = 0
   camera.y = 0
+  if self.current_arena then
+    self.current_arena.offset_x = 0
+    self.current_arena.offset_y = 0
+  end
   self.transitioning = false
   self.transition_progress = 0
 end
@@ -280,8 +316,39 @@ end
 
 function WorldManager:advance_to_next_level()
   if not self.transitioning and self.current_arena then
+    print('advance to next level')
+    
+    -- Save current troop state
+    local troop_data = {}
+    for _, unit in pairs(self.current_arena.main:get_objects_by_classes(troop_classes)) do
+      local unit_data = {
+        character = unit.character,
+        level = unit.level,
+        items = unit.items,
+        health = unit.health,
+        max_health = unit.max_health,
+        x = unit.x,
+        y = unit.y,
+        -- Add any other important troop state
+      }
+      table.insert(troop_data, unit_data)
+    end
+    
+    -- Create new arena
     local next_level = self.current_arena.level + 1
     self:create_arena(next_level, gw)
+    
+    -- Store troop data for transfer
+    self.pending_troop_data = troop_data
+    
+    -- Start transition
+    self.transitioning = true
+    self.transition_progress = 0
+    
+    -- Pause enemy updates in the new arena during transition
+    if self.next_arena then
+      self.next_arena.enemies_paused = true
+    end
   end
 end
 
@@ -301,10 +368,4 @@ function WorldManager:draw()
   Helper:draw()
 
   -- Draw transition overlay if transitioning
-  if self.transitioning then
-    local alpha = math.min(self.transition_progress * 2, 1)
-    graphics.setColor(0, 0, 0, alpha * 0.3)
-    graphics.rectangle(0, 0, gw, gh)
-    graphics.setColor(1, 1, 1, 1)
-  end
 end 

@@ -4,7 +4,6 @@ Door:implement(Physics)
 function Door:init(args)
   self:init_game_object(args)
 
-  self:set_as_rectangle(self.width, self.height, 'static', 'door')
   
   -- Door properties
   self.x = args.x or gw - 50
@@ -12,6 +11,8 @@ function Door:init(args)
   self.width = args.width or 40
   self.height = args.height or 80
   self.color = args.color or green[0]
+  
+  self:set_as_rectangle(self.width, self.height, 'static', 'door', true) -- true makes it a sensor/trigger
   
   -- Door state
   self.is_open = false
@@ -83,9 +84,9 @@ function Door:draw()
   end
 end
 
-function Door:on_collision_enter(other, contact)
+function Door:on_trigger_enter(other, contact)
   -- Check if a player unit is touching the door
-  if self.is_open and Troop:is(other) then
+  if self.is_open and other:is(Troop) then
     -- Advance to next level
     if main.current then
       main.current:advance_to_next_level()

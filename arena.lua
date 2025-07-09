@@ -186,6 +186,7 @@ end
 function Arena:create_door()
   -- Create door on the right side of the arena
   self.door = Door{
+    type = 'door',
     group = self.main, -- Put door on post_main so it's drawn above units but below UI
     x = gw - 50 + self.offset_x,
     y = gh/2 + self.offset_y,
@@ -242,7 +243,19 @@ function Arena:update(dt)
     -- Update arena groups
     star_group:update(dt)
     self.floor:update(dt)
-    self.main:update(dt)
+    
+    -- Update main group (units and enemies)
+    if not self.enemies_paused then
+      self.main:update(dt)
+    else
+      -- Only update troops, not enemies
+      for _, object in pairs(self.main.objects) do
+        if object and object.is and object:is(Troop) then
+          object:update(dt)
+        end
+      end
+    end
+    
     self.post_main:update(dt)
     self.effects:update(dt)
     self.ui:update(dt)
