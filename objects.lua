@@ -789,6 +789,15 @@ function Unit:calculate_stats(first_run)
     self.status_resist = 0.8
   end
 
+  self.knockback_resistance = 0
+  if self.class == 'special_enemy' then
+    self.knockback_resistance = 0.5
+  elseif self.class == 'miniboss' then
+    self.knockback_resistance = 0.8
+  elseif self.class == 'boss' then
+    self.knockback_resistance = 0.9
+  end
+
   if self.class == 'regular_enemy' then
     local enemy_stats = enemy_type_to_stats[self.type]
     if enemy_stats then

@@ -1095,8 +1095,7 @@ function GoButton:update(dt)
       self.transitioning = true
       buyScreen:save_run()
       TransitionEffect{group = main.transitions, x = self.x, y = self.y, color = state.dark_transitions and bg[-2] or character_colors[random:table(self.parent.units).character], transition_action = function()
-        print('starting world manager')
-        print(#self.parent.units)
+
         main:add(WorldManager'world_manager')
 
         local current_run = Collect_Save_Data_From_State(self.parent)

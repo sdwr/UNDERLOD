@@ -109,9 +109,7 @@ function Helper:update(dt)
             is_troop = true
         }
     end
-    if input['c'].pressed then
-        print(Helper.mousex .. ' ' .. Helper.mousey)
-    end
+
     if input['s'].pressed then
         if not s_just_pressed then
             Helper.Spell.Sweep:create(Helper.Color.blue, true, 100, 50, Helper.mousey - 50, Helper.window_width - 50, Helper.mousey + 50)
