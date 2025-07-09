@@ -1,129 +1,101 @@
 Arena = Object:extend()
-Arena:implement(State)
 Arena:implement(GameObject)
-function Arena:init(name)
-  self:init_state(name)
-  self:init_game_object()
-  LevelManager.init()
-  --self.hotbar = HotbarGlobals()
+function Arena:init(args)
+  self:init_game_object(args)
+
+  
+  -- Arena properties
+  self.level = args.level or 1
+  self.offset_x = args.offset_x or 0
+  self.offset_y = args.offset_y or 0
+  self.level_list = args.level_list
+  
+  -- Create arena-specific groups
+  self.main = Group()
+  self.floor = Group()
+  self.effects = Group()
+  self.ui = Group()
+  
+  -- Arena state
+  self.enemies = {}
+  self.troops = {}
+  self.walls = {}
+  self.door = nil
+
+  self.color = self.color or fg[0]
+
+  self.last_spawn_enemy_time = love.timer.getTime()
+  
+  -- Initialize arena components
+  self:init_physics()
+  self:init_spawn_manager()
+  
+  self:create_progress_bar()
+  self:create_walls()
+
+  -- self:create_hotbar()
+
+  self.plusgold_text_offset_x = 0
+  self.plusgold_text_offset_y = 0
+
+
+  --self:create_tutorial_popup()
+
+  self.start_time = 3
+  self.last_spawn_enemy_time = love.timer.getTime()
+  
+  -- Start the level
+end
+
+function Arena:delete_walls() 
+  for i = 1, #self.walls do
+    self.walls[i].dead = true
+  end
+  self.walls = {}
+  if self.door then
+    self.door.dead = true
+    self.door = nil
+  end
+end
+
+function Arena:create_walls()
+  self:delete_walls()
+  -- Spawn solids
+  self.mid_x = gw/2 + self.offset_x
+  self.mid_y = gh/2 + self.offset_y
+  self.x1, self.y1 = LEFT_BOUND + self.offset_x, TOP_BOUND + self.offset_y
+  self.x2, self.y2 = RIGHT_BOUND + self.offset_x, BOTTOM_BOUND + self.offset_y
+  self.w, self.h = self.x2 - self.x1, self.y2 - self.y1
+  self.walls[1] = Wall{group = self.main, vertices = math.to_rectangle_vertices(self.offset_x - 40, self.offset_y - 40, self.x1, self.offset_y + gh + 40), color = bg[-1]}
+  self.walls[2] = Wall{group = self.main, vertices = math.to_rectangle_vertices(self.x2, self.offset_y - 40, self.offset_x + gw + 40, self.offset_y + gh + 40), color = bg[-1]}
+  self.walls[3] = Wall{group = self.main, vertices = math.to_rectangle_vertices(self.x1, self.offset_y - 40, self.x2, self.y1), color = bg[-1]}
+  self.walls[4] = Wall{group = self.main, vertices = math.to_rectangle_vertices(self.x1, self.y2, self.x2, self.offset_y + gh + 40), color = bg[-1]}
+  self.walls[5] = WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.offset_x - 40, self.offset_y - 40, self.x1, self.offset_y + gh + 40), color = bg[-1]}
+  self.walls[6] = WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x2, self.offset_y - 40, self.offset_x + gw + 40, self.offset_y + gh + 40), color = bg[-1]}
+  self.walls[7] = WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x1, self.offset_y - 40, self.x2, self.y1), color = bg[-1]}
+  self.walls[8] = WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x1, self.y2, self.x2, self.offset_y + gh + 40), color = bg[-1]}
+  self:create_door()
+end
+
+function Arena:create_progress_bar()
+  if Is_Boss_Level(self.level) then
+    
+  else
+    if self.level_list and self.level_list[self.level] then
+      self.progress_bar = ProgressBar{group = self.ui, x = gw/2 + self.offset_x, y = 20 + self.offset_y, w = 200, h = 10, color = orange[0], progress = 0}
+      self.progress_bar:set_max_progress(self.level_list[self.level].round_power or 0)
+      self.progress_bar:set_number_of_waves(#self.level_list[self.level].waves)
+      self.progress_bar:set_waves_power(self.level_list[self.level].waves_power)
+    end
+  end
 end
 
 function Arena:select_character_by_index(i)
   --self.hotbar:select_by_index(i)
 end
 
-
-
-function Arena:on_enter(from)
-  
-  self.hfx:add('condition1', 1)
-  self.hfx:add('condition2', 1)
-
-  self.paused = false
-  self.in_tutorial = false
-  self.in_options = false
-
-  self.gold_text = nil
-  self.timer_text = nil
-  self.time_elapsed = 0
-
-  main_song_instance:stop()
-
-  self.starting_units = table.copy(self.units)
-  self.targetedEnemy = nil
-  
-  -- Initialize player perks from save data
-  self.perks = self.perks or {}
-
-  --if not state.mouse_control then
-    --input:set_mouse_visible(false)
-  --end
-  --input:set_mouse_visible(true)  -- Commented out to allow custom cursor
-  
-  -- Set cursor to animated mode for arena
-  set_cursor_animated()
-
-  trigger:tween(2, main_song_instance, {volume = 0.5, pitch = 1}, math.linear)
-
-  --steam.friends.setRichPresence('steam_display', '#StatusFull')
-  --steam.friends.setRichPresence('text', 'Arena - Level ' .. self.level)
-
-  self.floor = Group()
-  self.main = Group():set_as_physics_world(32, 0, 0, {'troop', 'enemy', 'projectile', 'enemy_projectile', 'force_field', 'ghost', 'effect'})
-  self.post_main = Group()
-  self.effects = Group()
-  self.effects:set_custom_draw_list(main_after_characters)
-  self.ui = Group()
-  self.ui:set_custom_draw_list(main_after_characters)
-  self.tutorial = Group()
-  self.tutorial:set_custom_draw_list(full_res_draws)
-  self.options_ui = Group()
-  self.options_ui:set_custom_draw_list(main_after_characters)
-  self.credits = Group()
-  self.credits:set_custom_draw_list(main_after_characters)
-  self.main:disable_collision_between('troop', 'projectile')
-  self.main:disable_collision_between('troop', 'troop')
-  self.main:disable_collision_between('projectile', 'projectile')
-  self.main:disable_collision_between('projectile', 'enemy_projectile')
-  self.main:disable_collision_between('projectile', 'enemy')
-  self.main:disable_collision_between('enemy', 'enemy')
-  self.main:disable_collision_between('enemy_projectile', 'enemy')
-  self.main:disable_collision_between('enemy_projectile', 'enemy_projectile')
-  self.main:disable_collision_between('projectile', 'force_field')
-
-  self.main:disable_collision_between('ghost', 'troop')
-  self.main:disable_collision_between('ghost', 'projectile')
-  self.main:disable_collision_between('ghost', 'enemy')
-
-  self.main:disable_collision_between('effect', 'troop')
-  self.main:disable_collision_between('effect', 'projectile')
-  self.main:disable_collision_between('effect', 'enemy')
-  self.main:disable_collision_between('effect', 'enemy_projectile')
-  self.main:disable_collision_between('effect', 'solid')
-  self.main:disable_collision_between('effect', 'ghost')
-  self.main:disable_collision_between('effect', 'force_field')
-
-  --self.main:disable_collision_between('ghost', 'enemy_projectile')
-  self.main:disable_collision_between('ghost', 'ghost')
-  self.main:disable_collision_between('ghost', 'force_field')
-  self.main:enable_trigger_between('projectile', 'enemy')
-  self.main:enable_trigger_between('troop', 'enemy_projectile')
-  self.main:enable_trigger_between('enemy_projectile', 'enemy')
-  self.main:enable_trigger_between('ghost', 'troop')
-  self.main:enable_trigger_between('enemy', 'troop')
-
-  self.gold_picked_up = 0
-  self.damage_dealt = 0
-  self.damage_taken = 0
-  self.main_slow_amount = .67
-  self.enemies = enemy_classes
-  self.enemies_without_critters = enemy_classes_without_critters
-  self.troops = troop_classes
-  self.friendlies = friendly_classes
-  self.friendlies_without_critters = friendly_classes_without_critters
-  
-  self.all_unit_classes = all_unit_classes
-
-  self.troop_list = {}
-  self.color = self.color or fg[0]
-
-  -- Spawn solids
-  self.x1, self.y1 = LEFT_BOUND, TOP_BOUND
-  self.x2, self.y2 = RIGHT_BOUND, BOTTOM_BOUND
-  self.w, self.h = self.x2 - self.x1, self.y2 - self.y1
-
-  self.last_spawn_enemy_time = love.timer.getTime()
-
-  Wall{group = self.main, vertices = math.to_rectangle_vertices(-40, -40, self.x1, gh + 40), color = bg[-1]}
-  Wall{group = self.main, vertices = math.to_rectangle_vertices(self.x2, -40, gw + 40, gh + 40), color = bg[-1]}
-  Wall{group = self.main, vertices = math.to_rectangle_vertices(self.x1, -40, self.x2, self.y1), color = bg[-1]}
-  Wall{group = self.main, vertices = math.to_rectangle_vertices(self.x1, self.y2, self.x2, gh + 40), color = bg[-1]}
-  WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(-40, -40, self.x1, gh + 40), color = bg[-1]}
-  WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x2, -40, gw + 40, gh + 40), color = bg[-1]}
-  WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x1, -40, self.x2, self.y1), color = bg[-1]}
-  WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x1, self.y2, self.x2, gh + 40), color = bg[-1]}
-  
-  --need to group units by character
+function Arena:create_hotbar()
+    --need to group units by character
   -- HotbarGlobals:clear_hotbar()
 
   -- Helper.Unit.team_button_width = 47
@@ -154,37 +126,98 @@ function Arena:on_enter(from)
   --                       }
   --   -- self.hotbar:add_button(i, b)
   -- end
-
-  --UI elements
-
-  --draw progress bar at the top of the screen
-  if Is_Boss_Level(self.level) then
-    
-  else
-    self.progress_bar = ProgressBar{group = self.ui, x = gw/2, y = 20, w = 200, h = 10, color = orange[0], progress = 0}
-    self.progress_bar:set_max_progress(self.level_list[self.level].round_power or 0)
-    self.progress_bar:set_number_of_waves(#self.level_list[self.level].waves)
-    self.progress_bar:set_waves_power(self.level_list[self.level].waves_power)
-  end
-
-  self.plusgold_text_offset_x = 0
-  self.plusgold_text_offset_y = 0
-
-
-  self.needs_first_update = true
-  self.initial_units_spawned = false
-
-  self:create_tutorial_popup()
-
-  self.start_time = 3
 end
 
 function Arena:spawn_critters(spawn_point, amount)
   Spawn_Critters(self, spawn_point, amount)
 end
 
+function Arena:init_physics()
+  self.floor = Group()
+  self.main = Group():set_as_physics_world(32, 0, 0, {'troop', 'enemy', 'projectile', 'enemy_projectile', 'force_field', 'ghost', 'effect', 'door'})
+  self.post_main = Group()
+  self.effects = Group()
+  self.effects:set_custom_draw_list(main_after_characters)
+  self.ui = Group()
+  self.ui:set_custom_draw_list(main_after_characters)
+  self.tutorial = Group()
+  self.tutorial:set_custom_draw_list(full_res_draws)
+  self.options_ui = Group()
+  self.options_ui:set_custom_draw_list(main_after_characters)
+  self.credits = Group()
+  self.credits:set_custom_draw_list(main_after_characters)
 
-function Arena:on_exit()
+  self.main:disable_collision_between('troop', 'projectile')
+  self.main:disable_collision_between('troop', 'troop')
+  self.main:disable_collision_between('projectile', 'projectile')
+  self.main:disable_collision_between('projectile', 'enemy_projectile')
+  self.main:disable_collision_between('projectile', 'enemy')
+  self.main:disable_collision_between('enemy', 'enemy')
+  self.main:disable_collision_between('enemy_projectile', 'enemy')
+  self.main:disable_collision_between('enemy_projectile', 'enemy_projectile')
+  self.main:disable_collision_between('projectile', 'force_field')
+
+  self.main:disable_collision_between('ghost', 'troop')
+  self.main:disable_collision_between('ghost', 'projectile')
+  self.main:disable_collision_between('ghost', 'enemy')
+
+  self.main:disable_collision_between('effect', 'troop')
+  self.main:disable_collision_between('effect', 'projectile')
+  self.main:disable_collision_between('effect', 'enemy')
+  self.main:disable_collision_between('effect', 'enemy_projectile')
+  self.main:disable_collision_between('effect', 'solid')
+  self.main:disable_collision_between('effect', 'ghost')
+  self.main:disable_collision_between('effect', 'force_field')
+
+  --self.main:disable_collision_between('ghost', 'enemy_projectile')
+  self.main:disable_collision_between('ghost', 'ghost')
+  self.main:disable_collision_between('ghost', 'force_field')
+
+  self.main:disable_collision_between('door', 'troop')
+  self.main:disable_collision_between('door', 'enemy')
+  self.main:disable_collision_between('door', 'enemy_projectile')
+  self.main:disable_collision_between('door', 'projectile')
+  self.main:disable_collision_between('door', 'ghost')
+  self.main:disable_collision_between('door', 'effect')
+  self.main:disable_collision_between('door', 'force_field')
+
+
+  self.main:enable_trigger_between('projectile', 'enemy')
+  self.main:enable_trigger_between('troop', 'enemy_projectile')
+  self.main:enable_trigger_between('enemy_projectile', 'enemy')
+  self.main:enable_trigger_between('ghost', 'troop')
+  self.main:enable_trigger_between('enemy', 'troop')
+  self.main:enable_trigger_between('door', 'troop')
+
+end
+
+function Arena:create_door()
+  -- Create door on the right side of the arena
+  self.door = Door{
+    type = 'door',
+    group = self.main, -- Put door on post_main so it's drawn above units but below UI
+    x = gw - 50 + self.offset_x,
+    y = gh/2 + self.offset_y,
+    width = 40,
+    height = 80,
+    parent = self
+  }
+end
+
+function Arena:open_door()
+  if self.door then
+    self.door:open()
+  end
+end
+
+function Arena:init_spawn_manager()
+  -- Initialize the proper SpawnManager class
+  self.spawn_manager = SpawnManager(self)
+end
+
+function Arena:destroy()
+  -- Clean up arena resources
+  
   self.floor:destroy()
   self.main:destroy()
   self.post_main:destroy()
@@ -207,113 +240,45 @@ function Arena:on_exit()
   self.springs = nil
   self.flashes = nil
   self.hfx = nil
-
-  Kill_Teams()
-  -- self.hotbar:clear_hotbar()
-  Helper:release()
   
-  -- Set cursor back to simple mode when leaving arena
-  set_cursor_simple()
+  -- Mark arena as dead
+  self.dead = true
 end
 
-
 function Arena:update(dt)
-
-  if self.needs_first_update then
-    self.needs_first_update = false
-
-    if state.show_combat_controls then
-      self.tutorial_popup:open()
-      self.in_tutorial = true
-      self.paused = true
-    end
-  end
-
-  if not self.paused then
+  self:update_game_object(dt)
   
-    if main_song_instance:isStopped() then
-      main_song_instance = title_music:play{volume = state.music_volume or 1}
+  if not self.paused then
+    -- Update arena groups
+    star_group:update(dt)
+    self.floor:update(dt)
+    
+    -- Update main group (units and enemies)
+    if not self.enemies_paused then
+      self.main:update(dt)
+    else
+      -- Only update troops, not enemies
+      for _, object in pairs(self.main.objects) do
+        if object and object.is and object:is(Troop) then
+          object:update(dt)
+        end
+      end
     end
-
-    if not self.initial_units_spawned then
-      self.initial_units_spawned = true
-      Reset_Global_Proc_List()
-
-      Spawn_Teams(self)
-
-      --select first character by default
-      self:select_character_by_index(1)
-
-      self.spawn_manager = SpawnManager(self)
-    end
-
+    
+    self.post_main:update(dt)
+    self.effects:update(dt)
+    self.ui:update(dt)
+    
+    -- Update spawn manager
     if self.spawn_manager then
       self.spawn_manager:update(dt)
     end
-
-    --select character from hotbar
-    self.troop_list = self.main:get_objects_by_classes(self.troops)
-    for i = 1, 9 do
-      if input[tostring(i)].pressed then
-        self:select_character_by_index(i)
-      end
-    end
-    --target enemy with rightclick
-    -- if input["m2"].pressed then
-    --   local mx, my = self.main.camera:get_mouse_position()
-    --   local mouseCircle = Circle(mx, my, 5)
-    --   local targets = self.main:get_objects_in_shape(mouseCircle, self.enemies)
-    --   if targets and #targets > 0 then
-    --     self:target_enemy(targets[1])
-    --   end
-    -- end
-    if all_troops_dead(self) then
-      self:die()
-    end
   end
+end
 
-  if self.shop_text then self.shop_text:update(dt) end
+function Arena:level_clear()
+  self.door:open()
 
-  if input.escape.pressed and not self.transitioning and not self.in_credits and not self.choosing_passives then
-    if not self.in_options then
-      self.in_options = true
-      open_options(self)
-    else
-      self.in_options = false
-      close_options(self, self.in_tutorial)
-    end
-  end
-
-  if self.paused or self.died or self.won and not self.transitioning then
-
-    if input.escape.pressed then
-      self.in_credits = false
-      if self.credits_button then self.credits_button:on_mouse_exit() end
-      for _, object in ipairs(self.credits.objects) do
-        object.dead = true
-      end
-      self.credits:update(0)
-    end
-  end
-
-  self:update_game_object(dt*slow_amount)
-  main_song_instance.pitch = math.clamp(slow_amount*music_slow_amount, 0.05, 1)
-
-  if not self.paused then
-    star_group:update(dt*slow_amount)
-    self.floor:update(dt*slow_amount)
-    self.main:update(dt*slow_amount)
-    self.post_main:update(dt*slow_amount)
-    self.effects:update(dt*slow_amount)
-    self.ui:update(dt*slow_amount)
-
-    Helper:update(dt*slow_amount)
-    LevelManager.update(dt)
-  end
-  
-  self.tutorial:update(dt*slow_amount)
-  self.options_ui:update(dt*slow_amount)
-  self.credits:update(dt)
 end
 
 function Arena:quit()
@@ -335,7 +300,7 @@ function Arena:quit()
     system.save_stats()
     Check_All_Achievements()
 
-    if not self.arena_clear_text then self.arena_clear_text = Text2{group = self.ui, x = gw/2, y = gh/2 - 48, lines = {{text = '[wavy_mid, cbyc]arena clear!', font = fat_font, alignment = 'center'}}} end
+    if not self.arena_clear_text then self.arena_clear_text = Text2{group = self.ui, x = gw/2 + self.offset_x, y = gh/2 - 48 + self.offset_y, lines = {{text = '[wavy_mid, cbyc]arena clear!', font = fat_font, alignment = 'center'}}} end
     self:gain_gold(ARENA_TRANSITION_TIME)
     self.t:after(ARENA_TRANSITION_TIME, function()
       self.slow_transitioning = true
@@ -347,7 +312,7 @@ function Arena:quit()
         self.arena_clear_text.dead = true
         trigger:tween(1, _G, {slow_amount = 0}, math.linear, function() slow_amount = 0 end, 'slow_amount')
         trigger:tween(1, _G, {music_slow_amount = 0}, math.linear, function() music_slow_amount = 0 end, 'music_slow_amount')
-        trigger:tween(4, camera, {x = gw/2, y = gh/2, r = 0}, math.linear, function() camera.x, camera.y, camera.r = gw/2, gh/2, 0 end)
+        trigger:tween(4, camera, {x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, r = 0}, math.linear, function() camera.x, camera.y, camera.r = gw/2 + self.offset_x, gh/2 + self.offset_y, 0 end)
         self:set_passives()
         RerollButton{group = main.current.ui, x = gw - 40, y = gh - 40, parent = self, force_update = true}
         self.shop_text = Text({{text = '[wavy_mid, fg]gold: [yellow]' .. gold, font = pixul_font, alignment = 'center'}}, global_text_tags)
@@ -447,51 +412,15 @@ end
 
 
 function Arena:draw()
+  self:draw_game_object()
+  
+  -- Draw arena groups
   self.floor:draw()
-  self.main:draw_custom()
+  self.main:draw()
   self.post_main:draw()
   self.effects:draw()
-  
-  --self:draw_spawn_markers()
-  
-  graphics.draw_with_mask(function()
-    star_canvas:draw(0, 0, 0, 1, 1)
-  end, function()
-    camera:attach()
-    graphics.rectangle(gw/2, gh/2, self.w, self.h, nil, nil, fg[0])
-    camera:detach()
-  end, true)
-  
-  
-  camera:attach()
-  --self:display_text()
-  camera:detach()
-  
-  
-  if self.level == 20 and self.trailer then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
-  
-  
-  
-  Helper:draw()
-  
-  
-  
-  if self.choosing_passives or self.won or self.paused or self.died then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
   self.ui:draw()
-  self.tutorial:draw()
-  self.options_ui:draw()
-
-  if self.shop_text then self.shop_text:draw(gw - 40, gh - 17) end
-  if self.gold_text and not self.choosing_perks then self.gold_text:draw(gw / 2, gh / 2 + 10) end
-  if self.plusgold_text and not self.choosing_perks then self.plusgold_text:draw(gw / 2 + self.plusgold_text_offset_x, gh / 2 + 10 + self.plusgold_text_offset_y) end
-  if self.timer_text then self.timer_text:draw(gw - 30, 20) end
-
-  if self.won then
-    if self.win_text then self.win_text:draw(gw/2, gh/2 - 48) end
-    if self.win_text2 then self.win_text2:draw(gw/2, gh/2) end
-  end
-  if self.in_credits then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent_2) end
-  self.credits:draw()
+  
 end
 
 function Arena:die()
@@ -503,35 +432,27 @@ function Arena:die()
     system.save_run()
     self.t:tween(2, self, {main_slow_amount = 0}, math.linear, function() self.main_slow_amount = 0 end)
     self.t:tween(2, _G, {music_slow_amount = 0}, math.linear, function() music_slow_amount = 0 end)
-    self.died_text = Text2{group = self.ui, x = gw/2, y = gh/2 - 32, lines = {
+    self.died_text = Text2{group = self.ui, x = gw/2 + self.offset_x, y = gh/2 - 32 + self.offset_y, lines = {
       {text = '[wavy_mid, cbyc]you died...', font = fat_font, alignment = 'center', height_multiplier = 1.25},
     }}
-    trigger:tween(2, camera, {x = gw/2, y = gh/2, r = 0}, math.linear, function() camera.x, camera.y, camera.r = gw/2, gh/2, 0 end)
+    trigger:tween(2, camera, {x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, r = 0}, math.linear, function() camera.x, camera.y, camera.r = gw/2 + self.offset_x, gh/2 + self.offset_y, 0 end)
     self.t:after(2, function()
-      self.death_info_text = Text2{group = self.ui, x = gw/2, y = gh/2, sx = 0.7, sy = 0.7, lines = {
+      self.death_info_text = Text2{group = self.ui, x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, sx = 0.7, sy = 0.7, lines = {
         {text = '[wavy_mid, fg]level reached: [wavy_mid, yellow]' .. self.level, font = fat_font, alignment = 'center'},
       }}
-      self.restart_button = Button{group = self.ui, x = gw/2, y = gh/2 + 24, force_update = true, button_text = 'restart run', fg_color = 'bg10', bg_color = 'bg', action = function(b)
+      self.restart_button = Button{group = self.ui, x = gw/2 + self.offset_x, y = gh/2 + 24 + self.offset_y, force_update = true, button_text = 'restart run', fg_color = 'bg10', bg_color = 'bg', action = function(b)
         self.transitioning = true
         ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
         ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
         ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-        TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
+        TransitionEffect{group = main.transitions, x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
           slow_amount = 1
           music_slow_amount = 1
           run_time = 0
           gold = STARTING_GOLD
           passives = {}
           main_song_instance:stop()
-          run_passive_pool = {
-            'centipede', 'ouroboros_technique_r', 'ouroboros_technique_l', 'amplify', 'resonance', 'ballista', 'call_of_the_void', 'crucio', 'speed_3', 'damage_4', 'shoot_5', 'death_6', 'lasting_7',
-            'defensive_stance', 'offensive_stance', 'kinetic_bomb', 'porcupine_technique', 'last_stand', 'seeping', 'deceleration', 'annihilation', 'malediction', 'hextouch', 'whispers_of_doom',
-            'tremor', 'heavy_impact', 'fracture', 'meat_shield', 'hive', 'baneling_burst', 'blunt_arrow', 'explosive_arrow', 'divine_machine_arrow', 'chronomancy', 'awakening', 'divine_punishment',
-            'assassination', 'flying_daggers', 'ultimatum', 'magnify', 'echo_barrage', 'unleash', 'reinforce', 'payback', 'enchanted', 'freezing_field', 'burning_field', 'gravity_field', 'magnetism',
-            'insurance', 'dividends', 'berserking', 'unwavering_stance', 'unrelenting_stance', 'blessing', 'haste', 'divine_barrage', 'orbitism', 'psyker_orbs', 'psychosink', 'rearm', 'taunt', 'construct_instability',
-            'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
-            'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
-          }
+          run_passive_pool = {}
           max_units = MAX_UNITS
           main:add(BuyScreen'buy_screen')
           system.save_run()
@@ -813,7 +734,7 @@ function Arena:transition()
   end
   
   -- Normal transition to buy screen
-  TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or self.color, transition_action = function(t)
+  TransitionEffect{group = main.transitions, x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, color = state.dark_transitions and bg[-2] or self.color, transition_action = function(t)
 
     -- Update units with combat data before transitioning
     self:update_units_with_combat_data()
@@ -842,8 +763,8 @@ function Arena:demo_end()
   self.won = true
 
   trigger:after(2.5, function()
-    self.win_text = Text2{group = self.ui, x = gw/2 + 40, y = gh/2 - 69, force_update = true, lines = {{text = '[wavy_mid, cbyc2]congratulations!', font = fat_font, alignment = 'center'}}}
-    self.win_text2 = Text2{group = self.ui, x = gw/2 + 40, y = gh/2 + 20, force_update = true, lines = {
+    self.win_text = Text2{group = self.ui, x = gw/2 + 40 + self.offset_x, y = gh/2 - 69 + self.offset_y, force_update = true, lines = {{text = '[wavy_mid, cbyc2]congratulations!', font = fat_font, alignment = 'center'}}}
+    self.win_text2 = Text2{group = self.ui, x = gw/2 + 40 + self.offset_x, y = gh/2 + 20 + self.offset_y, force_update = true, lines = {
       {text = "[fg]end of the demo", font = pixul_font, alignment = 'center', height_multiplier = 1.24},
       {text = "[fg]thanks for playing!", font = pixul_font, alignment = 'center', height_multiplier = 1.24},
     }}
@@ -859,7 +780,7 @@ end
 -- Called when perk selection is complete
 function Arena:on_perk_selected()
   -- Continue with normal transition to buy screen
-  TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or self.color, transition_action = function(t)
+  TransitionEffect{group = main.transitions, x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, color = state.dark_transitions and bg[-2] or self.color, transition_action = function(t)
 
     -- Update units with combat data before transitioning
     self:update_units_with_combat_data()
@@ -903,8 +824,8 @@ function Arena:on_win()
     system.save_run()
     trigger:tween(1, _G, {slow_amount = 0}, math.linear, function() slow_amount = 0 end, 'slow_amount')
     trigger:tween(1, _G, {music_slow_amount = 0}, math.linear, function() music_slow_amount = 0 end, 'music_slow_amount')
-    trigger:tween(4, camera, {x = gw/2, y = gh/2, r = 0}, math.linear, function() camera.x, camera.y, camera.r = gw/2, gh/2, 0 end)
-    self.win_text = Text2{group = self.ui, x = gw/2 + 40, y = gh/2 - 69, force_update = true, lines = {{text = '[wavy_mid, cbyc2]congratulations!', font = fat_font, alignment = 'center'}}}
+    trigger:tween(4, camera, {x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, r = 0}, math.linear, function() camera.x, camera.y, camera.r = gw/2 + self.offset_x, gh/2 + self.offset_y, 0 end)
+    self.win_text = Text2{group = self.ui, x = gw/2 + 40 + self.offset_x, y = gh/2 - 69 + self.offset_y, force_update = true, lines = {{text = '[wavy_mid, cbyc2]congratulations!', font = fat_font, alignment = 'center'}}}
     trigger:after(2.5, function()
       local open_url = function(b, url)
         ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
@@ -934,14 +855,14 @@ function Arena:on_win()
         state.current_new_game_plus = current_new_game_plus
         max_units = MAX_UNITS
 
-        self.win_text2 = Text2{group = self.ui, x = gw/2 + 40, y = gh/2 + 20, force_update = true, lines = {
+        self.win_text2 = Text2{group = self.ui, x = gw/2 + 40 + self.offset_x, y = gh/2 + 20 + self.offset_y, force_update = true, lines = {
           {text = "[fg]now you've really beaten the game!", font = pixul_font, alignment = 'center', height_multiplier = 1.24},
           {text = "[fg]thanks a lot for playing it and completing it entirely!", font = pixul_font, alignment = 'center', height_multiplier = 1.24},
           {text = "[fg]this game was inspired by:", font = pixul_font, alignment = 'center', height_multiplier = 3.5},
           {text = "[fg]so check them out! and to get more games like this:", font = pixul_font, alignment = 'center', height_multiplier = 3.5},
           {text = "[wavy_mid, yellow]thanks for playing!", font = pixul_font, alignment = 'center'},
         }}
-        SteamFollowButton{group = self.ui, x = gw/2 + 40, y = gh/2 + 58, force_update = true}
+        SteamFollowButton{group = self.ui, x = gw/2 + 40 + self.offset_x, y = gh/2 + 58 + self.offset_y, force_update = true}
         Button{group = self.ui, x = gw - 40, y = gh - 44, force_update = true, button_text = 'credits', fg_color = 'bg10', bg_color = 'bg', action = function() self:create_credits() end}
         Button{group = self.ui, x = gw - 39, y = gh - 20, force_update = true, button_text = '  loop  ', fg_color = 'bg10', bg_color = 'bg', action = function() self:endless() end}
         self.try_loop_text = Text2{group = self.ui, x = gw - 144, y = gh - 20, force_update = true, lines = {
@@ -951,7 +872,7 @@ function Arena:on_win()
         Button{group = self.ui, x = gw/2 + 50 + 40, y = gh/2 + 12, force_update = true, button_text = 'dota underlords', fg_color = 'bluem5', bg_color = 'blue', action = function(b) open_url(b, 'https://store.steampowered.com/app/1046930/Dota_Underlords/') end}
 
       else
-        self.win_text2 = Text2{group = self.ui, x = gw/2 + 40, y = gh/2 + 5, force_update = true, lines = {
+        self.win_text2 = Text2{group = self.ui, x = gw/2 + 40 + self.offset_x, y = gh/2 + 5 + self.offset_y, force_update = true, lines = {
           {text = "[fg]you've beaten the game!", font = pixul_font, alignment = 'center', height_multiplier = 1.24},
           {text = "[fg]if you liked it:", font = pixul_font, alignment = 'center', height_multiplier = 3.5},
           {text = "[fg]and if you liked the music:", font = pixul_font, alignment = 'center', height_multiplier = 3.5},
@@ -967,8 +888,8 @@ function Arena:on_win()
           {text = "[wavy_mid, yellow]thanks for playing!", font = pixul_font, alignment = 'center'},
         }}
         ]]--
-        SteamFollowButton{group = self.ui, x = gw/2 + 40, y = gh/2 - 10, force_update = true}
-        Button{group = self.ui, x = gw/2 + 40, y = gh/2 + 33, force_update = true, button_text = 'buy the soundtrack!', fg_color = 'greenm5', bg_color = 'green', action = function(b) open_url(b, 'https://kubbimusic.com/album/ember') end}
+        SteamFollowButton{group = self.ui, x = gw/2 + 40 + self.offset_x, y = gh/2 - 10 + self.offset_y, force_update = true}
+        Button{group = self.ui, x = gw/2 + 40 + self.offset_x, y = gh/2 + 33 + self.offset_y, force_update = true, button_text = 'buy the soundtrack!', fg_color = 'greenm5', bg_color = 'green', action = function(b) open_url(b, 'https://kubbimusic.com/album/ember') end}
         Button{group = self.ui, x = gw - 40, y = gh - 44, force_update = true, button_text = '  loop  ', fg_color = 'bg10', bg_color = 'bg', action = function() self:endless() end}
         RestartButton{group = self.ui, x = gw - 40, y = gh - 20, force_update = true}
         self.try_loop_text = Text2{group = self.ui, x = gw - 200, y = gh - 44, force_update = true, lines = {

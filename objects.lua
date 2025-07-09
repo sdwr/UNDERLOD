@@ -318,6 +318,11 @@ end
 
 function Unit:update(dt)
   self:update_game_object(dt)
+  if self.hp < self.max_hp then
+    self:show_hp()
+  else
+    self:hide_hp()
+  end
   
   -- Track time alive
   if not self.dead then
@@ -352,9 +357,10 @@ end
 
 
 function Unit:show_hp(n)
-  self.hp_bar.hidden = false
-  self.hp_bar.color = red[0]
-  --self.t:after(n or 2, function() self.hp_bar.hidden = true end, 'hp_bar')
+  if self.hp_bar then
+    self.hp_bar.hidden = false
+    self.hp_bar.color = red[0]
+  end
 end
 
 function Unit:hide_hp()

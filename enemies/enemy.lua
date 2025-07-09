@@ -53,6 +53,9 @@ end
 -- or they will be overwritten (so init_enemy instead of init)
 function Enemy:setExtraFunctions()
   local t = enemy_to_class[self.type]
+  if not t then
+    print('no extra functions for', self.type)
+  end
   for k, v in pairs(t) do
     self[k] = v
   end

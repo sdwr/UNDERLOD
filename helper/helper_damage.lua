@@ -74,7 +74,6 @@ end
 -- Handles visual and audio effects when a unit is hit
 -- ===================================================================
 function Helper.Damage:apply_hit_effects(unit, damage, makesSound)
-  unit:show_hp()
   
   -- Calculate hit strength for visual effects
   local hitStrength = (damage * 1.0) / unit.max_hp

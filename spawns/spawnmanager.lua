@@ -266,12 +266,25 @@ function Spawn_Teams(arena)
 
       local number_of_troops = UNIT_LEVEL_TO_NUMBER_OF_TROOPS[unit.level]
 
-      for i = 1, number_of_troops do
-        local offset = offsets[i]
-          local x = spawn_x + offset.x
-          local y = spawn_y + offset.y
-          
-          team:add_troop(x, y)
+      if unit.troop_hps then
+        for i = 1, number_of_troops do
+          local health = unit.troop_hps[i]
+          if health and health > 0 then
+            local offset = offsets[i]
+            local x = spawn_x + offset.x
+            local y = spawn_y + offset.y
+            local troop = team:add_troop(x, y)
+            troop.hp = unit.troop_hps[i]
+          end
+        end
+      else
+        for i = 1, number_of_troops do
+          local offset = offsets[i]
+            local x = spawn_x + offset.x
+            local y = spawn_y + offset.y
+            
+            team:add_troop(x, y)
+        end
       end
       -- ====================================================================
 
@@ -393,7 +406,7 @@ function SpawnManager:update(dt)
               -- For the final wave, we DO check the progress bar to confirm a win.
               if not main.current.progress_bar or main.current.progress_bar:is_complete() then
                   self:change_state('finished')
-                  self.arena:quit()
+                  self.arena:open_door()
               end
           else
               -- ===================================================================
@@ -674,7 +687,7 @@ function Create_Unit_With_Warning(arena, location, warning_time, creation_callba
       attempt_final_spawn = function()
         -- Check if the area is occupied
         local spawn_circle = Circle(location.x, location.y, spawn_radius)
-        local objects_in_spawn_area = arena.main:get_objects_in_shape(spawn_circle, arena.all_unit_classes)
+        local objects_in_spawn_area = arena.main:get_objects_in_shape(spawn_circle, main.current.all_unit_classes)
           
           -- If the area is still blocked, stall and retry this check in a moment.
           -- The visual warning marker remains on-screen during this stall.

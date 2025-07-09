@@ -26,6 +26,10 @@ function Wave_Types:Get_Waves(level)
   else
     tier = 2.5
   end
+
+  if level == 1 then
+    return {{{'GROUP', 'seeker', 5, 'random'}}}
+  end
   
   -- Step 1: Add a special enemy from the correct tier
   local special_enemy = random:table(special_enemy_by_tier[tier])
