@@ -1329,15 +1329,19 @@ function init()
   normal_enemy_by_tier = {
     [1] = {
       'seeker',
+      'goblin_archer',
     },
     [1.5] = {
       'seeker',
+      'goblin_archer',
     },
     [2] = {
       'shooter',
+      'goblin_archer',
     },
     [2.5] = {
       'shooter',
+      'goblin_archer',
     }
   }
 
@@ -1348,6 +1352,7 @@ function init()
       'singlemortar',
       'snakearrow',
       'big_goblin_archer',
+      'slowcharger',
     },
     [1.5] = {
       'mortar',
@@ -1385,6 +1390,7 @@ function init()
   enemy_to_round_power = {
     ['shooter'] = 100,
     ['seeker'] = 100,
+    ['goblin_archer'] = 100,
     --special enemies t1
     ['cleaver'] = 300,
 
@@ -1394,10 +1400,11 @@ function init()
     ['charger'] = 300,
     ['bomb'] = 300,
     ['burst'] = 300,
-    ['selfburst'] = 300,
     ['boomerang'] = 300,
     ['plasma'] = 300,
     ['big_goblin_archer'] = 300,
+    ['selfburst'] = 300,
+    ['slowcharger'] = 300,
     --special enemies t2
     ['firewall_caster'] = 500,
     ['mortar'] = 500,
@@ -1435,6 +1442,7 @@ function init()
     ['assassin'] = purple[3],
     ['big_goblin_archer'] = green[3],
     ['selfburst'] = orange[3],
+    ['slowcharger'] = orange[3],
   }
 
   DAMAGE_TYPE_TO_COLOR = {

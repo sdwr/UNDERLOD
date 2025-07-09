@@ -22,7 +22,6 @@ fns['init_enemy'] = function(self)
   -- Set attack range and sensor
   self.attack_range = attack_ranges['medium-long']
   self.attack_sensor = Circle(self.x, self.y, self.attack_range)
-  self.aggro_sensor = Circle(self.x, self.y, self.attack_range + AGGRO_RANGE_BOOST)
 
   --set attacks
   self.attack_options = {}
@@ -34,7 +33,6 @@ fns['init_enemy'] = function(self)
     cast_length = GOBLIN2_CAST_TIME,
     castcooldown = self.cooldownTime,
     cancel_on_range = false,
-    cancel_range = self.attack_sensor.rs * 1.05,
     instantspell = true,
     cast_sound = scout1,
     spellclass = ArrowProjectile,

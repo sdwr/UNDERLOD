@@ -895,6 +895,7 @@ enemy_type_to_size = {
   ['rager'] = 'special',
   ['seeker'] = 'regular',
   ['shooter'] = 'regular',
+  ['goblin_archer'] = 'regular',
   ['spawner'] = 'special',
   ['spread'] = 'special',
   ['stomper'] = 'special',
@@ -908,6 +909,7 @@ enemy_type_to_size = {
   ['firewall_caster'] = 'special',
   ['cleaver'] = 'special',
   ['big_goblin_archer'] = 'special',
+  ['slowcharger'] = 'special',
   
   -- Minibosses
   ['bigstomper'] = 'huge',

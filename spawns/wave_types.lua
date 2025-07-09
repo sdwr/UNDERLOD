@@ -6,333 +6,79 @@
 
 Wave_Types = {}
 
-function Wave_Types:Generic(tier, basic, special)
-  local wave = {}
-  local basics_in_a_row = 0
-  local first_group = true
-  
-  while basic > 0 or special > 0 do
-    if basic >= special then
-      local enemy = random:table(normal_enemy_by_tier[tier])
-      local spawn_location = first_group and 'nil' or 'random'
-      table.insert(wave, {'GROUP', enemy, NORMAL_ENEMIES_PER_GROUP, spawn_location})
-      basic = basic - 1
-      basics_in_a_row = basics_in_a_row + 1
-      first_group = false
-    elseif basics_in_a_row >= 2 and special > 0 then
-      local enemy = random:table(special_enemy_by_tier[tier])
-      local spawn_location = first_group and 'nil' or 'random'
-      table.insert(wave, {'GROUP', enemy, 1, spawn_location})
-      special = special - 1
-      basics_in_a_row = 0
-      first_group = false
-    else
-      local enemy = random:table(special_enemy_by_tier[tier])
-      local spawn_location = first_group and 'nil' or 'random'
-      table.insert(wave, {'GROUP', enemy, 1, spawn_location})
-      special = special - 1
-      basics_in_a_row = 0
-      first_group = false
-    end
-  end
-  return wave
-end
-
-function Wave_Types:Basic(tier)
-  local wave = {}
-  local enemy = random:table(normal_enemy_by_tier[tier])
-  table.insert(wave, {'GROUP', enemy, NORMAL_ENEMIES_PER_GROUP, 'nil'})
-  return wave
-end
-
-function Wave_Types:Two_Basic(tier)
-  local wave = {}
-  local enemy = random:table(normal_enemy_by_tier[tier])
-  table.insert(wave, {'GROUP', enemy, NORMAL_ENEMIES_PER_GROUP, 'nil'})
-  enemy = random:table(normal_enemy_by_tier[tier])
-  table.insert(wave, {'GROUP', enemy, NORMAL_ENEMIES_PER_GROUP, 'random'})
-  return wave
-end
-
-function Wave_Types:Basic_Plus_One_Special(tier)
-  local wave = {}
-  local special = random:table(special_enemy_by_tier[tier])
-  local normal = random:table(normal_enemy_by_tier[tier])
-  table.insert(wave, {'GROUP', normal, NORMAL_ENEMIES_PER_GROUP, 'nil'})
-  table.insert(wave, {'GROUP', special, 1, 'random'})
-  return wave
-end
-
-function Wave_Types:Basic_Plus_Two_Special(tier)
-  local wave = {}
-  local special = random:table(special_enemy_by_tier[tier])
-  local special2 = random:table(special_enemy_by_tier[tier])
-  --1.5 is for mortars
-  if tier == 1.5 then
-    tier = 1
-  end
-  local normal = random:table(normal_enemy_by_tier[tier])
-  table.insert(wave, {'GROUP', normal, NORMAL_ENEMIES_PER_GROUP, 'nil'})
-  table.insert(wave, {'GROUP', special, 1, 'close'})
-  table.insert(wave, {'GROUP', special2, 1, 'close'})
-  return wave
-end
-
-function Wave_Types:Basic_Special_Basic(tier)
-  local wave = {}
-  local special = random:table(special_enemy_by_tier[tier])
-  local normal = random:table(normal_enemy_by_tier[tier])
-  table.insert(wave, {'GROUP', normal, NORMAL_ENEMIES_PER_GROUP, 'nil'})
-  table.insert(wave, {'GROUP', special, 1, 'random'})
-  table.insert(wave, {'GROUP', normal, 5, 'random'})
-  return wave
-end
-
-function Wave_Types:Two_Basic_Three_Special(tier)
-  local wave = {}
-  local special = random:table(special_enemy_by_tier[tier])
-  local normal = random:table(normal_enemy_by_tier[tier])
-  table.insert(wave, {'GROUP', special, 1, 'nil'})
-  table.insert(wave, {'GROUP', normal, 5, 'random'})
-  table.insert(wave, {'GROUP', special, 1, 'random'})
-  table.insert(wave, {'GROUP', normal, 5, 'random'})
-  table.insert(wave, {'GROUP', special, 1, 'random'})
-  return wave
-end
-
-function Wave_Types:Basic_Plus_Three_Special(tier)
-  local wave = {}
-  local special = random:table(special_enemy_by_tier[tier])
-  local normal = random:table(normal_enemy_by_tier[tier])
-  table.insert(wave, {'GROUP', normal, NORMAL_ENEMIES_PER_GROUP, 'nil'})
-  table.insert(wave, {'GROUP', special, 1, 'random'})
-  special = random:table(special_enemy_by_tier[tier])
-  table.insert(wave, {'GROUP', special, 1, 'random'})
-  special = random:table(special_enemy_by_tier[tier])
-  table.insert(wave, {'GROUP', special, 1, 'random'})
-  return wave
-end
-
-function Wave_Types:Amount_Special(amount, tier)
-  local wave = {}
-  
-  for i = 1, amount-1 do
-    local special = random:table(special_enemy_by_tier[tier])
-    local spawn_location = (i == 1) and 'nil' or 'random'
-    table.insert(wave, {'GROUP', special, 1, spawn_location})
-    local normal = random:table(normal_enemy_by_tier[tier])
-    table.insert(wave, {'GROUP', normal, 1, 'random'})
-  end
-
-  local special = random:table(special_enemy_by_tier[tier])
-  table.insert(wave, {'GROUP', special, 1, 'random'})
-
-  return wave
-end
-
-function Wave_Types:One_Cleaver()
-  local wave = {}
-  table.insert(wave, {'GROUP', 'cleaver', 1, 'nil'})
-  return wave
-end
-
-function Wave_Types:Two_Cleavers()
-  local wave = {}
-  table.insert(wave, {'GROUP', 'cleaver', 2, 'nil'})
-  return wave
-end
-
-function Wave_Types:One_Basic_One_Cleaver(tier)
-  local wave = {}
-  local normal = random:table(normal_enemy_by_tier[tier])
-  table.insert(wave, {'GROUP', normal, NORMAL_ENEMIES_PER_GROUP, 'nil'})
-  table.insert(wave, {'GROUP', 'cleaver', 1, 'close'})
-  return wave
-end
-
-function Wave_Types:One_Basic_Cleaver_One_Special(tier)
-  local wave = {}
-  local normal = random:table(normal_enemy_by_tier[tier])
-  local special = random:table(special_enemy_by_tier[tier])
-  table.insert(wave, {'GROUP', normal, NORMAL_ENEMIES_PER_GROUP, 'nil'})
-  table.insert(wave, {'GROUP', special, 1, 'close'})
-  table.insert(wave, {'GROUP', 'cleaver', 1, 'far'})
-  return wave
-end
-
-function Wave_Types:Two_Cleavers_Plus_One_Special(tier)
-  local wave = {}
-  table.insert(wave, {'GROUP', 'cleaver', 2, 'close'})
-  local special = random:table(special_enemy_by_tier[tier])
-  table.insert(wave, {'GROUP', special, 1, 'close'})
-  return wave
-end
-
-function Wave_Types:Three_Lasers()
-  local wave = {}
-  table.insert(wave, {'GROUP', 'laser', 1, 'nil'})
-  table.insert(wave, {'GROUP', 'laser', 1, 'far'})
-  table.insert(wave, {'GROUP', 'laser', 1, 'random'})
-  return wave
-end
-
-function Wave_Types:Mortar_And_Arc()
-  local wave = {}
-  table.insert(wave, {'GROUP', 'mortar', 1, 'nil'})
-  table.insert(wave, {'GROUP', 'arcspread', 1, 'random'})
-  return wave
-end
-
-function Wave_Types:Two_Basic_Two_Firewall(tier)
-  local wave = {}
-  local normal = random:table(normal_enemy_by_tier[tier])
-  table.insert(wave, {'GROUP', normal, NORMAL_ENEMIES_PER_GROUP, 'nil'})
-  table.insert(wave, {'GROUP', 'firewall_caster', 1, 'random'})
-  table.insert(wave, {'GROUP', 'firewall_caster', 1, 'random'})
-  return wave
-end
-
-function Wave_Types:Basic_Plus_Two_Burst(tier)
-  local wave = {}
-  local normal = random:table(normal_enemy_by_tier[tier])
-  table.insert(wave, {'GROUP', normal, NORMAL_ENEMIES_PER_GROUP, 'nil'})
-  table.insert(wave, {'GROUP', 'burst', 1, 'random'})
-  table.insert(wave, {'GROUP', 'burst', 1, 'random'})
-  return wave
-end
-
-function Wave_Types:Basic_Plus_Two_Boomerang(tier)
-  local wave = {}
-  local normal = random:table(normal_enemy_by_tier[tier])
-  table.insert(wave, {'GROUP', normal, NORMAL_ENEMIES_PER_GROUP, 'nil'})
-  table.insert(wave, {'GROUP', 'boomerang', 1, 'random'})
-  table.insert(wave, {'GROUP', 'boomerang', 1, 'random'})
-  return wave
-end
-
-function Wave_Types:One_Cleaver_One_Special_One_Basic(tier)
-  local wave = {}
-  local normal = random:table(normal_enemy_by_tier[tier])
-  table.insert(wave, {'GROUP', normal, NORMAL_ENEMIES_PER_GROUP, 'nil'})
-  table.insert(wave, {'GROUP', 'cleaver', 1, 'nil'})
-  local special = random:table(special_enemy_by_tier[tier])
-  table.insert(wave, {'GROUP', special, 1, 'random'})
-
-  return wave
-end
-
-function Wave_Types:Add_Group(wave, group)
-  table.insert(wave, group)
-end
-
-function Wave_Types:Add_Random_Kicker(wave, tier)
-  local normal = random:table(normal_enemy_by_tier[tier])
-  table.insert(wave, {'DELAY', 5.0})
-  table.insert(wave, {'GROUP', normal, NORMAL_ENEMIES_PER_GROUP, 'random'})
-  local special = random:table(special_enemy_by_tier[tier])
-  table.insert(wave, {'GROUP', special, 1, 'random'})
-  if math.random() < 0.5 then
-    special = random:table(special_enemy_by_tier[tier])
-    table.insert(wave, {'GROUP', special, 1, 'random'})
-  end
-  return wave
-end
 
 function Wave_Types:Get_Waves(level)
   local waves = {}
-  local wave = nil
-  if level == 1 then
-    wave = self:One_Cleaver()
-    table.insert(wave, {'GROUP', 'snakearrow', 2, 'nil'})
-    table.insert(wave, {'GROUP', 'seeker', 4, 'random'})
-    table.insert(wave, {'GROUP', 'shooter', 3, 'random'})
-    table.insert(waves, wave)
-    local wave2 = {}
-    table.insert(wave2, {'GROUP', 'cleaver', 1, 'nil'})
-    local special = random:table(special_enemy_by_tier[1])
-    table.insert(wave2, {'GROUP', special, 1, 'random'})
-    local special2 = random:table(special_enemy_by_tier[1])
-    table.insert(wave2, {'GROUP', special2, 1, 'random'})
-    local special3 = random:table(special_enemy_by_tier[1.5])
-    table.insert(wave2, {'GROUP', special3, 1, 'random'})
-    table.insert(wave2, {'GROUP', 'seeker', 4, 'random'})
-    table.insert(wave2, {'GROUP', 'shooter', 3, 'random'})
-    table.insert(waves, wave2)
-  elseif level == 2 then
-    wave = self:Basic_Plus_Two_Special(1)
-    table.insert(waves, wave)
-    wave = self:Basic_Plus_Two_Special(1)
-    table.insert(waves, wave)
-  elseif level == 3 then
-    -- Wave 1
-    wave = self:Basic_Plus_Two_Special(1)
-    table.insert(waves, wave)
-    -- Wave 2
-    local wave2 = {}
-    table.insert(wave2, {'GROUP', 'seeker', NORMAL_ENEMIES_PER_GROUP, 'nil'})
-    local special = random:table(special_enemy_by_tier[1])
-    table.insert(wave2, {'GROUP', special, 2, 'random'})
-    local special2 = random:table(special_enemy_by_tier[1.5])
-    table.insert(wave2, {'GROUP', special2, 1, 'random'})
-
-    table.insert(waves, wave2)
-  elseif level == 4 then
-    local wave1 = self:Basic_Plus_Three_Special(1.5)
-    table.insert(waves, wave1)
-
-    local wave2 = {}
-    table.insert(wave2, {'GROUP', 'seeker', NORMAL_ENEMIES_PER_GROUP, 'nil'})
-    table.insert(wave2, {'GROUP', 'mortar', 1, 'random'})
-    table.insert(wave2, {'GROUP', 'seeker', NORMAL_ENEMIES_PER_GROUP, 'random'})
-    local special = random:table(special_enemy_by_tier[1.5])
-    table.insert(wave2, {'GROUP', special, 1, 'random'})
-    local special2 = random:table(special_enemy_by_tier[1])
-    table.insert(wave2, {'GROUP', special2, 2, 'random'})
-    table.insert(waves, wave2)
-  elseif level == 5 then
-    wave = self:Basic_Plus_Two_Special(1)
-    table.insert(waves, wave)
-    local special = random:table(special_enemy_by_tier[1.5])
-
-    local wave2 = {}
-    table.insert(wave2, {'GROUP', 'seeker', NORMAL_ENEMIES_PER_GROUP, 'nil'})
-    table.insert(wave2, {'GROUP', 'mortar', 1, 'random'})
-    table.insert(wave2, {'GROUP', 'seeker', NORMAL_ENEMIES_PER_GROUP, 'random'})
-    local special = random:table(special_enemy_by_tier[1.5])
-    table.insert(wave2, {'GROUP', special, 2, 'random'})
-    table.insert(waves, wave2)
-  elseif level == 7 then
-    wave = self:Mortar_And_Arc()
-    table.insert(wave, {'GROUP', 'shooter', NORMAL_ENEMIES_PER_GROUP, 'far'})
-    table.insert(waves, wave)
-    wave = self:Basic_Plus_Three_Special(2)
-    table.insert(waves, wave)
-  elseif level == 8 then
-    wave = self:Basic_Plus_Three_Special(2)
-    table.insert(waves, wave)
-    wave = self:Basic_Plus_Two_Special(2)
-    table.insert(wave, {'GROUP', 'seeker', NORMAL_ENEMIES_PER_GROUP, 'random'})
-    table.insert(waves, wave)
-  elseif level == 9 then
-    wave = self:Two_Basic_Two_Firewall(2)
-    table.insert(wave, {'DELAY', 2.0})
-    table.insert(wave, {'GROUP', 'seeker', NORMAL_ENEMIES_PER_GROUP, 'random'})
-    table.insert(waves, wave)
-    wave = self:Two_Basic_Two_Firewall(2)
-    table.insert(wave, {'DELAY', 5.0})
-    table.insert(wave, {'GROUP', 'shooter', NORMAL_ENEMIES_PER_GROUP, 'random'})
-    special = random:table(special_enemy_by_tier[2])
-    table.insert(wave, {'GROUP', special, 1, 'random'})
-    table.insert(waves, wave)
+  local wave = {}
+  
+  -- Calculate target power for this level
+  local target_power = 500 + (level - 1) * 200
+  local current_power = 0
+  
+  -- Determine tier for this level
+  local tier = 1
+  if level <= 5 then
+    tier = 1
+  elseif level <= 10 then
+    tier = 1.5
+  elseif level <= 15 then
+    tier = 2
   else
-    wave = self:Generic(1, 2, 4)
-    table.insert(waves, wave)
-    wave = self:Generic(1, 2, 4)
-    if math.random() < 0.5 then
-      wave = self:Add_Random_Kicker(wave, 1)
-    end
-    table.insert(waves, wave)
+    tier = 2.5
   end
+  
+  -- Step 1: Add a special enemy from the correct tier
+  local special_enemy = random:table(special_enemy_by_tier[tier])
+  table.insert(wave, {'GROUP', special_enemy, 1, 'nil'})
+  current_power = current_power + (enemy_to_round_power[special_enemy] or 300)
+  
+  -- Step 2: If we have room, add a second special enemy (different type)
+  if current_power + 500 <= target_power then
+    local special_enemy2 = random:table(special_enemy_by_tier[tier])
+    -- Make sure it's a different type
+    while special_enemy2 == special_enemy do
+      special_enemy2 = random:table(special_enemy_by_tier[tier])
+    end
+    table.insert(wave, {'GROUP', special_enemy2, 1, 'random'})
+    current_power = current_power + (enemy_to_round_power[special_enemy2] or 300)
+  end
+  
+  -- Step 3: Fill remaining power with normal enemies
+  local remaining_power = target_power - current_power
+  local normal_enemy_power = 100 -- Normal enemies are 100 power each
+  
+  if remaining_power >= normal_enemy_power then
+    -- Add normal enemies to fill the remaining power
+    local num_normal_enemies = math.floor(remaining_power / normal_enemy_power)
+    
+    if num_normal_enemies >= 2 then
+      -- Decide on distribution: 2 of same type, or 2 of same + 1 different
+      local distribution = random:table{1, 2} -- 1 = 2 same type, 2 = 2 same + 1 different
+      
+      if distribution == 1 then
+        -- 2 of the same type
+        local normal_enemy = random:table(normal_enemy_by_tier[tier])
+        table.insert(wave, {'GROUP', normal_enemy, 2, 'random'})
+      else
+        -- 2 of same type + 1 different type
+        local normal_enemy1 = random:table(normal_enemy_by_tier[tier])
+        local normal_enemy2 = random:table(normal_enemy_by_tier[tier])
+        -- Make sure they're different
+        while normal_enemy2 == normal_enemy1 do
+          normal_enemy2 = random:table(normal_enemy_by_tier[tier])
+        end
+        
+        table.insert(wave, {'GROUP', normal_enemy1, 2, 'random'})
+        table.insert(wave, {'GROUP', normal_enemy2, 1, 'random'})
+      end
+    else
+      -- Just 1 normal enemy
+      local normal_enemy = random:table(normal_enemy_by_tier[tier])
+      table.insert(wave, {'GROUP', normal_enemy, 1, 'random'})
+    end
+  end
+  
+  table.insert(waves, wave)
   return waves
 end
 
