@@ -301,6 +301,10 @@ function Arena:create_floor_items()
     {x = gw/2 + 100, y = gh/2}
   }
   
+  if not self.floor_item_text then
+    self.floor_item_text = Text2{group = self.ui, x = gw/2 + self.offset_x, y = gh/2 - 70 + self.offset_y, lines = {{text = '[wavy_mid, cbyc3]Choose an item', font = fat_font, alignment = 'center'}}}
+  end
+
   for i, item in ipairs(items) do
     if positions[i] then
       self.t:after(i*0.3, function()
@@ -318,6 +322,10 @@ function Arena:create_floor_items()
 end
 
 function Arena:remove_all_floor_items()
+  if self.floor_item_text then
+    self.floor_item_text:die()
+    self.floor_item_text = nil
+  end
   if self.floor_items then
     for _, item in ipairs(self.floor_items) do
       item:die()
