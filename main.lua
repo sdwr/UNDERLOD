@@ -420,7 +420,6 @@ function init()
   unit_states_can_continue_cast = {
     unit_states['idle'],
     unit_states['normal'],
-    unit_states['knockback'],
     unit_states['following'],
     unit_states['stopped'],
     unit_states['casting'],

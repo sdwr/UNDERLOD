@@ -52,6 +52,7 @@ end
 
 function Troop:follow_mouse()
   -- If not, continue moving towards the mouse.
+  if self.being_knocked_back then return end
   self:steering_separate(SEPARATION_RADIUS, troop_classes)
   if self:distance_to_mouse() > 10 then
     self:seek_mouse(SEEK_DECELERATION, SEEK_WEIGHT)
@@ -64,6 +65,7 @@ end
 
 function Troop:rally_to_point()
   -- If not, continue moving towards the rally point.
+  if self.being_knocked_back then return end
   self:seek_point(self.target_pos.x, self.target_pos.y, SEEK_DECELERATION, SEEK_WEIGHT)
   self:steering_separate(SEPARATION_RADIUS, troop_classes)
   self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
@@ -140,10 +142,10 @@ function Troop:update(dt)
   end
 
   -- PRIORITY 1: Uninterruptible States
-  -- If a unit is knocked back or frozen, it can't do anything else.
-  if self.state == unit_states['knockback'] or self.state == unit_states['frozen'] then
+  -- If a unit is frozen, it can't do anything else.
+  if self.state == unit_states['frozen'] then
       -- The logic that takes the unit *out* of these states (like a timer)
-      -- is handled elsewhere (e.g., in the Troop:push function).
+      -- is handled elsewhere.
       -- We do nothing else here.
 
   -- PRIORITY 2: Player-Commanded States
@@ -353,9 +355,7 @@ function Troop:draw()
   if self.state == unit_states['channeling'] then
     self:draw_channeling()
   end
-  if self.state == unit_states['knockback'] then
-    self:draw_knockback()
-  end
+
   if not Helper.Unit:cast_off_cooldown(self) then
     self:draw_cooldown_timer()
   end
@@ -571,11 +571,10 @@ function Troop:on_collision_enter(other, contact)
     self:push(push_force, self:angle_to_object(other) + math.pi, nil, duration)
     self:hit(dmg, other, nil, false, true)
   elseif table.any(main.current.friendlies, function(v) return other:is(v) end) then
-      -- Handle knockback propagation
-      if self.state == unit_states['knockback'] and other.state ~= unit_states['knockback'] then
-          -- Transfer momentum to the other troop
-          local vx, vy = self:get_velocity()
-          local speed = math.sqrt(vx * vx + vy * vy)
+      -- Handle damage impulse propagation
+      local vx, vy = self:get_velocity()
+      local speed = math.sqrt(vx * vx + vy * vy)
+      if speed > 50 then -- Only propagate if moving fast enough
           local angle = math.atan2(vy, vx)
           other:push(LAUNCH_PUSH_FORCE_ENEMY, angle, nil)
       end

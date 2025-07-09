@@ -52,6 +52,15 @@ function Helper.Unit:get_all_units()
     return unit_list
 end
 
+function Helper.Unit:all_troops_are_dead()
+    for i, unit in ipairs(Helper.Unit:get_list(true)) do
+        if unit.is and unit:is(Troop) and not unit.dead then
+            return false
+        end
+    end
+    return true
+end
+
 function Helper.Unit:add_custom_variables_to_unit(unit)
 
     unit.state_change_functions = {}
@@ -521,13 +530,13 @@ function Helper.Unit:get_points(troop_points)
 end
 
 -- ===================================================================
--- NEW HELPER FUNCTION
--- This function contains the standardized logic for applying knockback
--- to ANY unit (Troop or Enemy), ensuring a consistent feel.
+-- UPDATED HELPER FUNCTION
+-- This function now applies damage impulses instead of changing state
+-- to prevent knockback from affecting casting
 -- ===================================================================
 function Helper.Unit:apply_knockback(unit, force, angle, duration, push_invulnerable)
     -- Prevent knockback stacking
-    if unit.state == unit_states['knockback'] then
+    if unit.being_knocked_back then
         return
     end
 
@@ -550,11 +559,16 @@ function Helper.Unit:apply_knockback(unit, force, angle, duration, push_invulner
     -- Calculate the final impulse force, amplified by mass
     local impulse = final_force * mass
 
-    -- Apply the changes
-    Helper.Unit:set_state(unit, unit_states['knockback'])
+    -- Apply the changes without changing state
     unit.push_invulnerable = push_invulnerable
     unit.mass = knockback_mass
     unit:set_damping(knockback_damping)
+    
+    -- Set knockback flag and disable steering
+    unit.being_knocked_back = true
+    if unit.steering_enabled ~= nil then
+        unit.steering_enabled = false
+    end
     
     -- Reset velocity for a clean push
     unit:set_velocity(0, 0)
@@ -568,11 +582,12 @@ function Helper.Unit:apply_knockback(unit, force, angle, duration, push_invulner
 
     -- After the duration, restore the unit's original physics properties
     unit.cancel_trigger_tag = unit.t:after(final_duration, function()
-        if unit.state == unit_states['knockback'] then
-            Helper.Unit:set_state(unit, unit_states['idle'])
-        end
         unit.mass = unit.original_mass
         unit:set_damping(unit.original_damping)
+        unit.being_knocked_back = false
+        if unit.steering_enabled ~= nil then
+            unit.steering_enabled = true
+        end
     end)
 end
 

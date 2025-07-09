@@ -542,9 +542,7 @@ function Unit:draw_status_effects()
 end
 
 function Unit:draw_knockback()
-  if self.state == unit_states['knockback'] then
-    graphics.circle(self.x, self.y, self.shape.w/2, red_transparent)
-  end
+  -- Knockback is now handled as damage impulse, no visual needed
 end
 
 function Unit:draw_cast_timer()

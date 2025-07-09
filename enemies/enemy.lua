@@ -71,7 +71,7 @@ function Enemy:has_animation(state)
 end
 
 function Enemy:update_animation(dt)
-  if self.state == unit_states['stunned'] or self.state == unit_states['knockback'] then
+  if self.state == unit_states['stunned'] then
     return
   end
 
@@ -176,6 +176,7 @@ function Enemy:choose_movement_target()
 end
 
 function Enemy:update_movement()
+  if self.being_knocked_back then return end
   if self.currentMovementAction == MOVEMENT_TYPE_SEEK then
     return self:update_move_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then

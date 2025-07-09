@@ -164,15 +164,8 @@ function Area:can_hit_with_effect(target, effectName)
 end
 
 function Area:can_hit_with_knockback(target)
-  if self.only_multi_hit_after_effect_ends then
-    if not target.state == unit_states['knockback'] then
-      return true
-    else
-      return false
-    end
-  else
-    return true
-  end
+  -- Knockback is now handled as damage impulse, so always allow
+  return true
 end
 
 function Area:update(dt)
@@ -1456,35 +1449,11 @@ function Critter:hit(damage, from, damageType, makesSound, cannotProcOnHit)
 end
 
 function Critter:push(f, r, push_invulnerable, duration)
-  --only push if not already pushing
-  if self.state == unit_states['knockback'] then
-    return
-  end
-
-  self.push_invulnerable = push_invulnerable or false
-  duration = duration or KNOCKBACK_DURATION_ENEMY
-
-  Helper.Unit:set_state(self, unit_states['knockback'])
-
-  -- Cancel any existing during trigger for push
-  if self.cancel_trigger_tag then
-    self.t:cancel(self.cancel_trigger_tag)
-  end
-
-  --reset state after duration
-  self.cancel_trigger_tag = self.t:after(duration, function()
-    if self.state == unit_states['knockback'] then
-      Helper.Unit:set_state(self, unit_states['idle'])
-    end
-  end)
-
+  -- Apply damage impulse instead of state change
+  Helper.Unit:apply_knockback(self, f, r, duration or KNOCKBACK_DURATION_ENEMY, push_invulnerable)
+  
   self.push_force = f
   self.being_pushed = true
-  self.steering_enabled = false
-  self:apply_impulse(f*math.cos(r), f*math.sin(r))
-  self:apply_angular_impulse(random:table{random:float(-12*math.pi, -4*math.pi), random:float(4*math.pi, 12*math.pi)})
-  self:set_damping(1.5)
-  self:set_angular_damping(1.5)
 end
 
 

@@ -21,6 +21,7 @@ function Arena:init(args)
   self.troops = {}
   self.walls = {}
   self.door = nil
+  self.main_slow_amount = 1
 
   self.color = self.color or fg[0]
 
@@ -247,23 +248,17 @@ end
 
 function Arena:update(dt)
   self:update_game_object(dt)
+
+  if Helper.Unit:all_troops_are_dead() then
+    self:die()
+  end
   
   if not self.paused then
     -- Update arena groups
     star_group:update(dt)
     self.floor:update(dt)
     
-    -- Update main group (units and enemies)
-    if not self.enemies_paused then
-      self.main:update(dt)
-    else
-      -- Only update troops, not enemies
-      for _, object in pairs(self.main.objects) do
-        if object and object.is and object:is(Troop) then
-          object:update(dt)
-        end
-      end
-    end
+    self.main:update(dt)
     
     self.post_main:update(dt)
     self.effects:update(dt)
@@ -288,7 +283,8 @@ function Arena:create_floor_items()
   -- Generate 3 random items
   local items = {}
   for i = 1, 3 do
-    local item = Get_Random_Item(self.level or 1, self.units, items)
+    local tier = LEVEL_TO_TIER(self.level or 1)
+    local item = Get_Random_Item(tier, self.units, items)
     if item then
       table.insert(items, item)
     end

@@ -728,11 +728,8 @@ function Proc_Shieldslam:onPrimaryHit(target, damage, damageType)
   if not self.unit then return end
   
   local r = self.unit:angle_to_object(target)
-  -- only knockback once
-
-  if  target.state ~= unit_states['knockback'] then
-    target:push(self.knockback_force, r, false, self.knockback_duration)
-  end
+  -- Apply damage impulse
+  target:push(self.knockback_force, r, false, self.knockback_duration)
 end
 
 Proc_Rebuke = Proc:extend()

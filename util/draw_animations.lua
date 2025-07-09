@@ -98,8 +98,7 @@ function DrawAnimations.draw_enemy_animation(enemy, state, x, y, r)
       mask_color = FREEZE_MASK_COLOR
     elseif enemy.buffs['stunned'] then
       mask_color = STUN_MASK_COLOR
-    elseif enemy.state == unit_states['knockback'] then
-      mask_color = KNOCKBACK_MASK_COLOR
+
     elseif enemy.buffs['burn'] then
       mask_color = BURN_MASK_COLOR
     end

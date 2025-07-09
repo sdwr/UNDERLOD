@@ -66,9 +66,7 @@ end
 
 function Team:set_troop_state_to_following()
   for i, troop in ipairs(self.troops) do
-    if troop.state ~= unit_states['knockback'] then
-      Helper.Unit:set_state(troop, unit_states['following'])
-    end
+    Helper.Unit:set_state(troop, unit_states['following'])
   end
 end
 function Team:set_troop_state(state)
@@ -83,9 +81,7 @@ function Team:set_team_target(target)
   for i, troop in ipairs(self.troops) do
     troop:set_assigned_target(target)
     troop:cancel_cast()
-    if troop.state ~= unit_states['knockback'] then
-      Helper.Unit:set_state(troop, unit_states['idle'])
-    end
+    Helper.Unit:set_state(troop, unit_states['idle'])
   end
   Helper.Unit:set_target_ring(target)
 end
@@ -111,9 +107,7 @@ function Team:set_rally_point(x, y)
   for i, troop in ipairs(self.troops) do
     troop.rallying = true
 
-    if troop.state ~= unit_states['knockback'] then
-      Helper.Unit:set_state(troop, unit_states['rallying'])
-    end
+    Helper.Unit:set_state(troop, unit_states['rallying'])
 
     troop:set_rally_position(i)
 
