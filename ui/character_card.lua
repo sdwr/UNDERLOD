@@ -71,7 +71,7 @@ function CharacterCard:createItemParts()
 
     for i = 1, MAX_ITEMS do
       if i <= UNIT_LEVEL_TO_NUMBER_OF_ITEMS[self.unit.level] then
-        table.insert(self.items, ItemPart{group = main.current.main,
+        table.insert(self.items, ItemPart{group = self.group,
             x = item_x + (CHARACTER_CARD_ITEM_X_SPACING*((i-1) % 3)), 
             y = item_y + (i > 3 and 25 or 0),
             i = i, parent = self})
@@ -106,7 +106,7 @@ function CharacterCard:createUIElements()
 
     -- Create unit stats icon (small button next to class name)
     self.unit_stats_icon = Button{
-        group = main.current.ui,
+        group = self.group,
         x = self.x + 35, -- Position to the right of the class name
         y = self.y - self.h/2 + 10, -- Same y as class name
         w = 12,
@@ -120,7 +120,7 @@ function CharacterCard:createUIElements()
     
     -- Create last round stats icon (small button to the left of the class name)
     self.last_round_stats_icon = Button{
-        group = main.current.ui,
+        group = self.group,
         x = self.x - 35, -- Position to the left of the class name
         y = self.y - self.h/2 + 10, -- Same y as class name
         w = 12,
@@ -135,7 +135,7 @@ function CharacterCard:createUIElements()
     if not self.level_up_button then
     -- Create level up button in the middle of the card
       self.level_up_button = LevelUpButton{
-          group = main.current.ui,
+          group = self.group,
           x = self.x,
           y = self.y - 10, -- Moved up more
           parent = self

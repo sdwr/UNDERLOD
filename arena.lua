@@ -267,7 +267,6 @@ function Arena:update(dt)
     
     self.post_main:update(dt)
     self.effects:update(dt)
-    self.ui:update(dt)
     
     -- Update spawn manager
     if self.spawn_manager then
@@ -418,9 +417,7 @@ function Arena:draw()
   self.floor:draw()
   self.main:draw()
   self.post_main:draw()
-  self.effects:draw()
-  self.ui:draw()
-  
+  self.effects:draw()  
 end
 
 function Arena:die()

@@ -154,7 +154,45 @@ function WorldManager:set_arenas_paused(paused)
   end
 end
 
+function WorldManager:try_buy_unit(cost)
+  if gold >= cost then
+    self:gain_gold(-cost)
+    gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
+    self.select_character_overlay = CharacterSelectOverlay{
+      group = self.ui
+    }
+  end
+end
 
+function WorldManager:gain_gold(amount)
+  gold = gold + amount
+end
+
+function WorldManager:create_character_cards()
+  Kill_All_Cards()
+  Character_Cards = {}
+
+  local y = gh/2 - 10
+  local x = gw/2
+
+  local number_of_cards = #self.units
+
+  --center single unit, otherwise start on the left
+  if number_of_cards == 2 then
+    x = gw/2 - CHARACTER_CARD_WIDTH/2 - CHARACTER_CARD_SPACING
+  elseif number_of_cards == 3 then
+    x = gw/2 - CHARACTER_CARD_WIDTH - CHARACTER_CARD_SPACING - 30
+  end
+
+  for i, unit in ipairs(self.units) do
+    table.insert(Character_Cards, CharacterCard{group = self.ui, x = x + (i-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, unit = unit, character = unit.character, i = i, parent = self})
+    unit.spawn_effect = true
+  end
+
+  for i, card in ipairs(Character_Cards) do
+    card.x = x + (i-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING)
+  end
+end
 
 function WorldManager:update(dt)
   self:update_game_object(dt)
@@ -170,8 +208,21 @@ function WorldManager:update(dt)
       self:set_arenas_paused(false)
     end
   end
+
+  -- Handle 'c' key for character cards
+  if input.c.pressed then
+    if not self.character_cards_open then
+      self.character_cards_open = true
+      self:create_character_cards()
+      self:set_arenas_paused(true)
+    else
+      self.character_cards_open = false
+      Kill_All_Cards()
+      self:set_arenas_paused(false)
+    end
+  end
   
-  if not self.paused then
+  if not self.paused and not self.character_cards_open then
   -- Update Helper system for input handling and troop movement
     Helper:update(dt*slow_amount)
     LevelManager.update(dt)
@@ -189,9 +240,17 @@ function WorldManager:update(dt)
     end
   end
 
+  self.ui:update(dt)
   self.tutorial:update(dt)
   self.options_ui:update(dt)
   self.credits:update(dt)
+  
+  -- Update character cards if open
+  if self.character_cards_open then
+    for _, card in ipairs(Character_Cards) do
+      card:update(dt)
+    end
+  end
 end
 
 function WorldManager:update_transition(dt)
@@ -350,6 +409,7 @@ function WorldManager:draw()
     self.next_arena:draw()
   end
 
+  self.ui:draw()
   self.tutorial:draw()
   self.options_ui:draw()
   self.credits:draw()
@@ -357,5 +417,10 @@ function WorldManager:draw()
   -- Draw Helper system (selection UI, etc.)
   Helper:draw()
 
-  -- Draw transition overlay if transitioning
+  -- Draw character cards if open
+  if self.character_cards_open then
+    for _, card in ipairs(Character_Cards) do
+      card:draw()
+    end
+  end
 end 
