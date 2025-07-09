@@ -36,11 +36,6 @@ function Arena:init(args)
   self:create_progress_bar()
   self:create_walls()
 
-  -- Spawn all enemies immediately but keep them inactive
-  if self.spawn_manager then
-    self.spawn_manager:spawn_all_enemies_at_once()
-  end
-
   -- self:create_hotbar()
 
   self.plusgold_text_offset_x = 0
@@ -489,7 +484,7 @@ function Arena:die()
     self.died_text = Text2{group = self.ui, x = gw/2 + self.offset_x, y = gh/2 - 32 + self.offset_y, lines = {
       {text = '[wavy_mid, cbyc]you died...', font = fat_font, alignment = 'center', height_multiplier = 1.25},
     }}
-    trigger:tween(2, camera, {x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, r = 0}, math.linear, function() camera.x, camera.y, camera.r = gw/2 + self.offset_x, gh/2 + self.offset_y, 0 end)
+    -- trigger:tween(2, camera, {x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, r = 0}, math.linear, function() camera.x, camera.y, camera.r = gw/2 + self.offset_x, gh/2 + self.offset_y, 0 end)
     self.t:after(2, function()
       self.death_info_text = Text2{group = self.ui, x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, sx = 0.7, sy = 0.7, lines = {
         {text = '[wavy_mid, fg]level reached: [wavy_mid, yellow]' .. self.level, font = fat_font, alignment = 'center'},
@@ -878,7 +873,7 @@ function Arena:on_win()
     system.save_run()
     trigger:tween(1, _G, {slow_amount = 0}, math.linear, function() slow_amount = 0 end, 'slow_amount')
     trigger:tween(1, _G, {music_slow_amount = 0}, math.linear, function() music_slow_amount = 0 end, 'music_slow_amount')
-    trigger:tween(4, camera, {x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, r = 0}, math.linear, function() camera.x, camera.y, camera.r = gw/2 + self.offset_x, gh/2 + self.offset_y, 0 end)
+    -- trigger:tween(4, camera, {x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, r = 0}, math.linear, function() camera.x, camera.y, camera.r = gw/2 + self.offset_x, gh/2 + self.offset_y, 0 end)
     self.win_text = Text2{group = self.ui, x = gw/2 + 40 + self.offset_x, y = gh/2 - 69 + self.offset_y, force_update = true, lines = {{text = '[wavy_mid, cbyc2]congratulations!', font = fat_font, alignment = 'center'}}}
     trigger:after(2.5, function()
       local open_url = function(b, url)

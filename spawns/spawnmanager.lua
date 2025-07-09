@@ -147,11 +147,13 @@ function Get_Point_In_Arena()
   return {x = x, y = y}
 end
 
-function Get_Point_In_Right_Half()
+function Get_Point_In_Right_Half(arena)
   local avoid_edge_distance = 10
   local mid_x = gw / 2
   local x = random:int(mid_x + avoid_edge_distance, gw - SpawnGlobals.wall_width - avoid_edge_distance)
   local y = random:int(SpawnGlobals.wall_height + avoid_edge_distance, gh - SpawnGlobals.wall_height - avoid_edge_distance)
+  x = x + arena.offset_x
+  y = y + arena.offset_y
   return {x = x, y = y}
 end
 
@@ -368,37 +370,37 @@ function SpawnManager:change_state(new_state)
 end
 
 function SpawnManager:update(dt)
-    if self.state == 'finished' then return end
+    -- if self.state == 'finished' then return end
 
-    -- Handle states that are purely time-based
-    if self.state == 'entry_delay' or self.state == 'waiting_for_delay' then
-      self.timer = self.timer - dt
-      if self.timer <= 0 then
-        self.pending_spawns = 0
-          self:change_state('processing_wave')
-          spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
-      end
-    elseif self.state == 'between_waves_delay' then
-        -- Apply continuous suction effect during between-waves delay
-        Suction_Troops_To_Spawn_Locations(self.arena)
-        self.timer = self.timer - dt
-        if self.timer <= 0 then
-          self.pending_spawns = 0
-            self:change_state('processing_wave')
-            spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
-        end
-    end
+    -- -- Handle states that are purely time-based
+    -- if self.state == 'entry_delay' or self.state == 'waiting_for_delay' then
+    --   self.timer = self.timer - dt
+    --   if self.timer <= 0 then
+    --     self.pending_spawns = 0
+    --       self:change_state('processing_wave')
+    --       spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
+    --   end
+    -- elseif self.state == 'between_waves_delay' then
+    --     -- Apply continuous suction effect during between-waves delay
+    --     Suction_Troops_To_Spawn_Locations(self.arena)
+    --     self.timer = self.timer - dt
+    --     if self.timer <= 0 then
+    --       self.pending_spawns = 0
+    --         self:change_state('processing_wave')
+    --         spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
+    --     end
+    -- end
 
-    -- If we are ready to process the next instruction in a wave, do so.
-    if self.state == 'processing_wave' then
-        self:process_next_instruction()
-        -- Only change to waiting_for_clear if we're not in a delay state
-        if self.state == 'processing_wave' then
-            self:change_state('waiting_for_clear')
-        end
+    -- -- If we are ready to process the next instruction in a wave, do so.
+    -- if self.state == 'processing_wave' then
+    --     self:process_next_instruction()
+    --     -- Only change to waiting_for_clear if we're not in a delay state
+    --     if self.state == 'processing_wave' then
+    --         self:change_state('waiting_for_clear')
+    --     end
     
     -- If all instructions are done, wait for the arena to be clear.
-    elseif self.state == 'waiting_for_clear' then
+    if self.state == 'waiting_for_clear' then
       local enemies = self.arena.main:get_objects_by_classes(self.arena.enemies)
       if #enemies <= 0 and self.pending_spawns <= 0 then
           -- Check if this was the final wave
@@ -425,12 +427,13 @@ function SpawnManager:update(dt)
               self.timer = self.time_between_waves
               -- self:show_wave_complete_text()
           end
-      end
-    
-    elseif self.state == 'boss_fight' then
-        self:handle_boss_fight(self.arena)
-        self:change_state('waiting_for_clear')
+        end
     end
+    
+    -- elseif self.state == 'boss_fight' then
+    --     self:handle_boss_fight(self.arena)
+    --     self:change_state('waiting_for_clear')
+    -- end
 end
 
 function SpawnManager:handle_boss_fight(arena)
@@ -527,10 +530,10 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
         local location
         if spawn_type == 'scatter' then
             -- For scatter, get a new random point for every single unit
-            location = Get_Point_In_Right_Half()
+            location = Get_Point_In_Right_Half(arena)
         else
             -- For all other types, use offsets from the chosen spawn marker
-            location = Get_Point_In_Right_Half()
+            location = Get_Point_In_Right_Half(arena)
         end
 
         local create_enemy_action = function()
@@ -744,7 +747,7 @@ function SpawnManager:spawn_all_enemies_at_once()
         
         if type == 'GROUP' then
           local group_data = {instruction[2], instruction[3], instruction[4]}
-          self:spawn_group_immediately(group_data)
+          self:spawn_group_immediately(self.arena, group_data)
         end
       end
     end
@@ -754,13 +757,13 @@ function SpawnManager:spawn_all_enemies_at_once()
   self:change_state('waiting_for_clear')
 end
 
-function SpawnManager:spawn_group_immediately(group_data)
+function SpawnManager:spawn_group_immediately(arena, group_data)
   local type, amount = group_data[1], group_data[2]
   local spawn_type = group_data[3]
   amount = amount or 1
 
   for i = 1, amount do
-    local location = Get_Point_In_Right_Half()
+    local location = Get_Point_In_Right_Half(arena)
     
     -- Spawn enemy immediately without warning
     local enemy = Enemy{

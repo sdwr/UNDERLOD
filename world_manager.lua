@@ -111,6 +111,7 @@ function WorldManager:create_arena(level, offset_x)
   local arena = Arena{
     level = level,
     offset_x = offset_x,
+    offset_y = 0,
     level_list = self.level_list,
   }
   
@@ -124,6 +125,7 @@ function WorldManager:create_arena(level, offset_x)
 
     arena:create_walls()
     Spawn_Teams(arena)
+    arena.spawn_manager:spawn_all_enemies_at_once()
 
   else
     self.next_arena = arena
@@ -223,6 +225,13 @@ function WorldManager:update(dt)
       self:set_arenas_paused(false)
     end
   end
+
+  if input.x.pressed then
+    camera.x = camera.x + 100
+  end
+  if input.z.pressed then
+    camera.x = camera.x - 100
+  end
   
   if not self.paused and not self.character_cards_open then
   -- Update Helper system for input handling and troop movement
@@ -302,18 +311,22 @@ function WorldManager:complete_transition()
     
     -- Set new arena as current
     self.current_arena = self.next_arena
+    self.current_arena.offset_x = 0
+    self.current_arena.offset_y = 0
     self.next_arena = nil
+    camera.x = gw/2
+    camera.y = gh/2
     
     -- Clear pending troop data
     self.pending_troop_data = nil
     
     -- Update physics group references for the new arena
     self:assign_physics_groups(self.current_arena)
-    self:adjust_arena_offset_to_zero()
     
     -- Set up teams for the new arena
     Spawn_Teams(self.current_arena)
     self.current_arena:create_walls()
+    self.current_arena.spawn_manager:spawn_all_enemies_at_once()
     
     -- Resume enemy updates and activate enemies
     self.current_arena.enemies_paused = false
@@ -324,30 +337,17 @@ function WorldManager:complete_transition()
   self.transition_progress = 0
 end
 
-function WorldManager:adjust_arena_offset_to_zero()
-  if self.current_arena then
-    if self.current_arena.offset_x > 0 then
-      self:move_objects_in_group(self.current_arena.floor, self.current_arena.offset_x, 0)
-      self:move_objects_in_group(self.current_arena.main, self.current_arena.offset_x, 0)
-      self:move_objects_in_group(self.current_arena.post_main, self.current_arena.offset_x, 0)
-      self:move_objects_in_group(self.current_arena.effects, self.current_arena.offset_x, 0)
-      self:move_objects_in_group(self.current_arena.ui, self.current_arena.offset_x, 0)
-      self:move_objects_in_group(self.current_arena.tutorial, self.current_arena.offset_x, 0)
-      self:move_objects_in_group(self.current_arena.options_ui, self.current_arena.offset_x, 0)
-      self:move_objects_in_group(self.current_arena.credits, self.current_arena.offset_x, 0)
-      self.current_arena.offset_x = 0
-      self.current_arena.offset_y = 0
-    end
-    camera.x = gw/2
-    camera.y = gh/2
-  end
-end
-
 function WorldManager:move_objects_in_group(group, offset_x, offset_y)
   for _, object in pairs(group.objects) do
+    if object.is and object:is(Enemy) then
+      print('enemy', object.x, object.y, object.type)
+    end
     if object.x and object.y then
       object.x = object.x - offset_x
       object.y = object.y - offset_y
+      if object.is and object:is(Enemy) then
+        print('enemy after', object.x, object.y, object.type)
+      end
     end
   end
 end
