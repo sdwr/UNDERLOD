@@ -34,7 +34,6 @@ function Door:update(dt)
 end
 
 function Door:open()
-  print('door open')
   self.is_open = true
   
   -- Play open sound
@@ -60,7 +59,7 @@ function Door:draw()
     local door_color = self.door_color:clone()
     door_color.a = alpha
     
-    graphics.push(self.x, self.y, 0, 0, 0)
+    graphics.push(self.x, self.y, 0, 1, 1)
     graphics.rectangle(self.x, self.y, self.width, self.height, 3, 3, door_color)
     
     -- Draw glow effect
@@ -72,11 +71,11 @@ function Door:draw()
     graphics.pop()
   else
     -- Draw closed door
-    graphics.push(self.x, self.y, 0, 0, 0)
+    graphics.push(self.x, self.y, 0, 1, 1)
+    -- Draw door frame
+    graphics.rectangle(self.x, self.y, self.width + 4, self.height + 4, 3, 3, bg[-1])
     graphics.rectangle(self.x, self.y, self.width, self.height, 3, 3, self.door_color)
     
-    -- Draw door frame
-    graphics.rectangle(self.x, self.y, self.width + 4, self.height + 4, 3, 3, fg[0])
     graphics.pop()
   end
 end

@@ -105,6 +105,7 @@ function WorldManager:create_class_lists()
 end
 
 function WorldManager:create_arena(level, offset_x)
+
   local arena = Arena{
     level = level,
     offset_x = offset_x,
