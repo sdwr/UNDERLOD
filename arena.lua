@@ -175,7 +175,7 @@ end
 function Arena:create_door()
   -- Create door on the right side of the arena
   self.door = Door{
-    group = self.post_main, -- Put door on floor so it's drawn under units
+    group = self.post_main, -- Put door on post_main so it's drawn above units but below UI
     x = gw - 50 + self.offset_x,
     y = gh/2 + self.offset_y,
     width = 40,

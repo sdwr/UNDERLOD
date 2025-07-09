@@ -22,9 +22,6 @@ function WorldManager:init(name)
 end
 
 function WorldManager:on_enter(from)
-
-  print(self.level, from.level, self.units, from.units)
-
   Helper.init()
 
   Reset_Global_Proc_List()
@@ -290,7 +287,7 @@ function WorldManager:draw()
   if self.next_arena then
     self.next_arena:draw()
   end
-  
+
   self.tutorial:draw()
   self.options_ui:draw()
   self.credits:draw()

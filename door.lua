@@ -1,7 +1,6 @@
 Door = Object:extend()
 Door:implement(GameObject)
 Door:implement(Physics)
-
 function Door:init(args)
   self:init_game_object(args)
   
@@ -80,9 +79,6 @@ function Door:draw()
     graphics.rectangle(self.x, self.y, self.width + 4, self.height + 4, 3, 3, fg[0])
     graphics.pop()
   end
-  graphics.push(self.x, self.y, 0, 0, 0)
-  graphics.circle(self.x, self.y, 50, yellow[0])
-  graphics.pop()
 end
 
 function Door:on_collision_enter(other, contact)
