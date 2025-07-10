@@ -23,7 +23,7 @@ function DrawAnimations.calculate_enemy_scale(enemy)
 end
 
 -- Draw a specific animation with given parameters
-function DrawAnimations.draw_specific_animation(unit, anim_set, x, y, r, scale_x, scale_y, alpha, color)
+function DrawAnimations.draw_specific_animation(unit, anim_set, x, y, r, scale_x, scale_y, alpha, color, use_hfx)
   if not anim_set or not anim_set[1] or not anim_set[2] then
     return false
   end
@@ -48,7 +48,11 @@ function DrawAnimations.draw_specific_animation(unit, anim_set, x, y, r, scale_x
       love.graphics.setColor(1, 1, 1, alpha or 1)
     end
     
-    graphics.push(screen_x, screen_y, r or 0, unit.hfx.hit.x, unit.hfx.hit.x)
+    if use_hfx then
+      graphics.push(screen_x, screen_y, r or 0, unit.hfx.hit.x, unit.hfx.hit.x)
+    else
+      graphics.push(screen_x, screen_y, r or 0, 1, 1)
+    end
       animation:draw(image.image, screen_x, screen_y, 0, scale_x * screen_scale, scale_y * screen_scale, frame_center_x, frame_center_y)
     graphics.pop()
     love.graphics.setColor(1, 1, 1, 1)
@@ -136,7 +140,7 @@ function DrawAnimations.draw_death_animation(enemy_data, x, y, rotation, scale, 
   local final_scale_y = base_scale_y * scale
 
   -- Draw the animation using the helper function
-  return DrawAnimations.draw_specific_animation(anim_set, x, y, rotation, final_scale_x, final_scale_y, alpha)
+  return DrawAnimations.draw_specific_animation(anim_set, x, y, rotation, final_scale_x, final_scale_y, alpha, false)
 end
 
 -- Create a normalized animation for a specific duration
