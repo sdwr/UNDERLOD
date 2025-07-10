@@ -17,11 +17,16 @@ function Door:init(args)
   -- Door state
   self.is_open = false
   self.animation_progress = 0
-  self.animation_duration = 1.0
+  self.animation_duration = 2.0  -- Changed to 2 seconds
     
   -- Door appearance
   self.door_color = green[0]:clone()
   self.glow_color = green[5]:clone()
+  
+  -- Pulse effect properties
+  self.pulse_timer = 0
+  self.pulse_duration = 5.0  -- 1 second per pulse cycle
+  self.pulse_intensity = 0.2  -- Base pulse intensity
   
   -- Sound effect
   self.open_sound_played = false
@@ -33,6 +38,14 @@ function Door:update(dt)
   -- Update animation
   if self.is_open then
     self.animation_progress = math.min(self.animation_progress + dt / self.animation_duration, 1)
+  end
+  
+  -- Update pulse effect
+  if self.is_open then
+    self.pulse_timer = self.pulse_timer + dt
+    if self.pulse_timer >= self.pulse_duration then
+      self.pulse_timer = 0
+    end
   end
 end
 
@@ -57,20 +70,22 @@ end
 
 function Door:draw()
   if self.is_open then
-    -- Draw open door (transparent)
+    -- Calculate fade-in alpha over 2 seconds
     local alpha = self.animation_progress
     local door_color = self.door_color:clone()
     door_color.a = alpha
     
+    -- Calculate rhythmic pulse effect
+    local pulse_progress = self.pulse_timer / self.pulse_duration
+    local pulse_alpha = 0.3 + (self.pulse_intensity * math.sin(pulse_progress * math.pi * 2))
+    local glow_color = self.glow_color:clone()
+    glow_color.a = alpha * pulse_alpha
+    
     graphics.push(self.x, self.y, 0, 1, 1)
     graphics.rectangle(self.x, self.y, self.width, self.height, 3, 3, door_color)
     
-    -- Draw glow effect
-    local glow_alpha = alpha * 0.5
-    local glow_color = self.glow_color:clone()
-    glow_color.a = glow_alpha
-    
-    graphics.rectangle(self.x, self.y, self.width + 10, self.height + 10, 3, 3, glow_color)
+    -- Draw pulsing glow effect
+    graphics.rectangle(self.x, self.y, self.width + 8, self.height + 8, 3, 3, glow_color)
     graphics.pop()
   else
     -- -- Draw closed door

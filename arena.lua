@@ -274,7 +274,7 @@ end
 
 function Arena:level_clear()
   spawn_mark2:play{pitch = 1, volume = 0.8}
-  self.t:after(2.5, function() self.door:open() end)
+  self.t:after(DOOR_OPEN_DELAY, function() self.door:open() end)
   main.current:increase_level()
   -- Create 3 floor items for selection
   self:create_floor_items()
