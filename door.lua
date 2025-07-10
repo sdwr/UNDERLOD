@@ -41,7 +41,7 @@ function Door:open()
   
   -- Play open sound
   if not self.open_sound_played then
-    magic_hit1:play{pitch = random:float(0.9, 1.1), volume = 0.8}
+    door_open:play{pitch = random:float(0.9, 1.1), volume = 3.5}
     self.open_sound_played = true
   end
   

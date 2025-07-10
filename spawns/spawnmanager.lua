@@ -345,10 +345,7 @@ function SpawnManager:init(arena)
     self.current_instruction_index = 1
 
     self.pending_spawns = 0
-    
-    if table.contains(BOSS_ROUNDS, arena.level) then
-        self:change_state('boss_fight')
-    end
+  
 end
 
 function SpawnManager:does_spawn_reservation_exist(x, y)
@@ -401,7 +398,7 @@ function SpawnManager:update(dt)
     
     -- If all instructions are done, wait for the arena to be clear.
     if self.state == 'waiting_for_clear' then
-      local enemies = self.arena.main:get_objects_by_classes(self.arena.enemies)
+      local enemies = self.arena.main:get_objects_by_classes(main.current.enemies)
       if #enemies <= 0 and self.pending_spawns <= 0 then
           -- Check if this was the final wave
           if self.current_wave_index >= #self.level_data.waves then
@@ -428,27 +425,11 @@ function SpawnManager:update(dt)
               -- self:show_wave_complete_text()
           end
         end
-    end
-    
-    -- elseif self.state == 'boss_fight' then
-    --     self:handle_boss_fight(self.arena)
-    --     self:change_state('waiting_for_clear')
-    -- end
+      end
+
 end
 
-function SpawnManager:handle_boss_fight(arena)
-  local boss_name = ""
-  boss_name = level_to_boss_enemy[self.arena.level]
 
-  self.arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns + 1
-  
-  if boss_name ~= "" then
-      self.t:after(1.5, function() 
-        -- Just call Spawn_Boss. It handles everything now.
-        Spawn_Boss(self.arena, boss_name) 
-      end)
-  end
-end
 
 -- This function processes all instructions for a wave segment at once.
 function SpawnManager:process_next_instruction()

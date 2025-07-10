@@ -273,7 +273,8 @@ function Arena:update(dt)
 end
 
 function Arena:level_clear()
-  self.door:open()
+  spawn_mark2:play{pitch = 1, volume = 0.8}
+  self.t:after(2.5, function() self.door:open() end)
   main.current:increase_level()
   -- Create 3 floor items for selection
   self:create_floor_items()
@@ -305,7 +306,7 @@ function Arena:create_floor_items()
 
   for i, item in ipairs(items) do
     if positions[i] then
-      self.t:after(i*0.3, function()
+      self.t:after(ITEM_SPAWN_DELAY_INITAL + i*ITEM_SPAWN_DELAY_OFFSET, function()
         local floor_item = FloorItem{
           group = self.floor,
           x = positions[i].x + self.offset_x,

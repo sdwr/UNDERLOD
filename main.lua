@@ -164,6 +164,7 @@ function init()
   campfire = Sound('campfire.wav', s)
   firebreath = Sound('firebreath.mp3', s)
   ui_modern_hover = Sound('ui-modern-hover.mp3', s)
+  door_open = Sound('door-open.mp3', s)
 
   holylight = Sound('HolyLight.ogg', s)
   sword_swing = Sound('sword swing.wav', s)
