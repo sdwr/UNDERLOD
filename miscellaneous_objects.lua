@@ -599,6 +599,8 @@ function Stomp:init(args)
     self.knockback = self.knockback or false
     self.draw_under_units = true
     self.damage = get_dmg_value(self.damage)
+    self.cancel_on_death = self.cancel_on_death
+
     self.state = "charging"
     self.visual_phase = "charging" -- charging, impact
 
@@ -669,7 +671,7 @@ function Stomp:init(args)
 end
 
 function Stomp:update(dt)
-    if self.unit and self.unit.dead then self.dead = true; return end
+    if self.unit and self.unit.dead and self.cancel_on_death then self.dead = true; return end
     self:update_game_object(dt)
     self.attack_sensor:move_to(self.x, self.y)
     self.currentTime = self.currentTime + dt

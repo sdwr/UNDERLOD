@@ -376,6 +376,9 @@ function WorldManager:advance_to_next_level()
     
     -- Start transition
     self.transitioning = true
+    if self.current_arena then
+      self.current_arena:remove_all_floor_items()
+    end
     self.transition_progress = 0
     
     -- Pause enemy updates in the new arena during transition

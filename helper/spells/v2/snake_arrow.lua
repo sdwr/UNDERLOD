@@ -13,11 +13,12 @@ function SnakeArrows:init(args)
   self.num_arrows = self.num_arrows or 3
   --memory
   self.next_arrow = 0.2
-  self.arrow_interval = self.arrow_interval or 0.5
+  self.arrow_interval = self.arrow_interval or 0.8
   self.arrows_left = self.num_arrows
 end
 
 function SnakeArrows:update(dt)
+  if self.unit.dead then self:die() end
   SnakeArrows.super.update(self, dt)
   self.next_arrow = self.next_arrow - dt
   if self.next_arrow <= 0 then
@@ -54,7 +55,9 @@ end
 
 function SnakeArrows:die()
   SnakeArrows.super.die(self)
-  self.unit:reset_castcooldown(self.unit.baseCast)
+  if self.unit then
+    self.unit:reset_castcooldown(self.unit.baseCast)
+  end
 end
 
 SnakeArrow = Object:extend()

@@ -23,6 +23,8 @@ fns['init_enemy'] = function(self)
     viable = function() return self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) end,
     castcooldown = self.castcooldown,
     oncast = function() self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) end,
+    freeze_rotation = true,
+    rotation_lock = true,
     cast_length = GHOST_CAST_TIME,
     spellclass = SnakeArrows,
     spelldata = {
@@ -31,6 +33,7 @@ fns['init_enemy'] = function(self)
       team = "enemy",
       damage = function() return self.dmg end,
       speed = 70,
+      freeze_rotation = true,
       curve_depth = 25,
       curve_frequency = 1,
       arrow_interval = 0.5,

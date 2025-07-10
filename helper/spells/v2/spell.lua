@@ -275,6 +275,11 @@ function Spell:init(args)
     print('creating spell: ', self.unit, self.name)
   end
 
+  if self.freeze_rotation or self.rotation_lock then
+    if self.unit then
+      self.unit.freezerotation = true
+    end
+  end
   --load the args into the spell object
   self:init_game_object(args)
   self.name = self.name or 'spell'
@@ -386,5 +391,12 @@ function Spell:die()
   if self.unit and self.unit.end_channel then
     self.unit:end_channel()
   end
+  --reset the unit's rotation lock
+  if self.freeze_rotation or self.rotation_lock then
+    if self.unit and self.unit.freezerotation then
+      self.unit.freezerotation = false
+    end
+  end
+
   self.dead = true
 end

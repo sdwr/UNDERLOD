@@ -321,7 +321,7 @@ end
 
 function Arena:remove_all_floor_items()
   if self.floor_item_text then
-    self.floor_item_text:die()
+    self.floor_item_text.dead = true
     self.floor_item_text = nil
   end
   if self.floor_items then
@@ -993,15 +993,6 @@ function Arena:spawn_n_critters(p, j, n, pass, parent)
   end, n, function() self.spawning_enemies = false end, 'spawn_enemies_' .. j)
 end
 
-function Arena:remove_all_floor_items()
-  if self.floor_items then
-    for _, item in ipairs(self.floor_items) do
-      item:die()
-    end
-    self.floor_items = {}
-  end
-end
-
 FloorItem = Object:extend()
 FloorItem:implement(GameObject)
 function FloorItem:init(args)
@@ -1175,6 +1166,7 @@ function FloorItem:purchase()
 
   self.is_purchased = true
   gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
+  self:die()
   
   -- -- Deduct gold
   -- gold = gold - self.cost
@@ -1189,7 +1181,7 @@ function FloorItem:purchase()
   end
   
   -- Remove all floor items
-  self.parent:remove_all_floor_items()
+  -- self.parent:remove_all_floor_items()
 end
 
 function FloorItem:draw()
