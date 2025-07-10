@@ -37,7 +37,7 @@ function DrawAnimations.draw_specific_animation(unit, anim_set, x, y, r, scale_x
 
   -- Convert world coordinates to screen coordinates for full resolution canvas
   local screen_x, screen_y = world_to_screen(x, y)
-  local screen_scale = math.floor(wh/gh)
+  local screen_scale = sx
 
   -- Add drawing functions to full_res_character_canvas
   table.insert(full_res_character_draws, function()

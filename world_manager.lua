@@ -110,6 +110,7 @@ function WorldManager:create_arena(level, offset_x)
 
   local arena = Arena{
     level = level,
+    x = offset_x,
     offset_x = offset_x,
     offset_y = 0,
     level_list = self.level_list,

@@ -59,8 +59,9 @@ function shared_init()
 
   main_canvas = Canvas(gw, gh, {stencil = true})
 
-  full_res_character_canvas = Canvas(ww, wh)
+  create_full_res_canvases()
   full_res_character_draws = {}
+  full_res_draws = {}
 
   -- for drawing effects over top of animated units
   -- dont need for now, looks ok drawing them under
@@ -68,8 +69,6 @@ function shared_init()
   main_effects_canvas = Canvas(gw, gh, {stencil = true})
   main_after_characters = {}
   
-  full_res_canvas = Canvas(ww, wh)
-  full_res_draws = {}
 
   shadow_canvas = Canvas(gw, gh)
   shadow_shader = Shader(nil, 'shadow.frag')
@@ -78,6 +77,12 @@ function shared_init()
   star_positions = {}
   for i = -30, gh + 30, 15 do table.insert(star_positions, {x = -40, y = i}) end
   for i = -30, gw, 15 do table.insert(star_positions, {x = i, y = gh + 40}) end
+end
+
+-- Helper function to recreate full-resolution canvases when window size changes
+function create_full_res_canvases()
+  full_res_character_canvas = Canvas(480 * sx, 270 * sy)
+  full_res_canvas = Canvas(480 * sx, 270 * sy)
 end
 
 function shared_draw(draw_action)

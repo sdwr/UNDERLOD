@@ -176,7 +176,8 @@ function clone_spritesheet(spritesheet)
 end
 
 function world_to_screen(world_x, world_y)
-  local scale = wh/gh
+  -- Use the window scaling factor directly
+  local scale = sx
   return world_x * scale, world_y * scale
 end
 

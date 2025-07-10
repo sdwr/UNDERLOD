@@ -1718,6 +1718,7 @@ function open_options(self)
         love.window.setMode(480 * sx, 270 * sy)
         state.sx, state.sy = sx, sy
         state.fullscreen = false
+        create_full_res_canvases()
       end
     end }
 
@@ -1727,6 +1728,7 @@ function open_options(self)
       love.window.setMode(480 * sx, 270 * sy)
       state.sx, state.sy = sx, sy
       state.fullscreen = false
+      create_full_res_canvases()
     end }
 
     self.video_button_3 = Button { group = self.options_ui, x = gw / 2 + 29, y = gh - 125, force_update = true, button_text = 'fullscreen', fg_color = 'bg10', bg_color = 'bg', action = function()
@@ -1737,6 +1739,7 @@ function open_options(self)
       state.sx, state.sy = sx, sy
       ww, wh = window_width, window_height
       love.window.setMode(window_width, window_height)
+      create_full_res_canvases()
     end }
 
     self.video_button_4 = Button { group = self.options_ui, x = gw / 2 + 129, y = gh - 125, force_update = true, button_text = 'reset video settings', fg_color = 'bg10', bg_color = 'bg', action = function()
@@ -1748,6 +1751,7 @@ function open_options(self)
       state.fullscreen = false
       ww, wh = window_width, window_height
       love.window.setMode(window_width, window_height)
+      create_full_res_canvases()
     end }
 
     self.screen_shake_button = Button { group = self.options_ui, x = gw / 2 - 57, y = gh - 100, w = 110, force_update = true, button_text = '[bg10]screen shake: ' .. tostring(state.no_screen_shake and 'no' or 'yes'),
