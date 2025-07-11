@@ -17,6 +17,9 @@ fns['init_enemy'] = function(self)
   self.cooldownTime = attack_speeds['medium-fast']
   self:reset_castcooldown(self.cooldownTime)
 
+  self.baseActionTimer = 2
+
+
   self.stopChasingInRange = true
 
   self.attack_range = attack_ranges['medium-long']

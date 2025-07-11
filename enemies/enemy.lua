@@ -223,14 +223,26 @@ end
 function Enemy:acquire_target_seek_to_range()
   --if we are in range of the target, keep the target
   if self.target and self:in_range_of(self.target) then
-    self.target_location = Helper.Unit:get_point_at_range_from_unit(self, self.attack_sensor.rs - 10)
+    -- Calculate point at enemy's attack range from the target's position, towards the enemy
+    local angle_to_enemy = self.target:angle_to_object(self)
+    local distance_from_target = self.attack_sensor.rs - 10
+    self.target_location = {
+      x = self.target.x + distance_from_target * math.cos(angle_to_enemy),
+      y = self.target.y + distance_from_target * math.sin(angle_to_enemy)
+    }
   else
     --else, target a random enemy
     self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
   end
 
   if self.target then
-    self.target_location = Helper.Unit:get_point_at_range_from_unit(self, self.attack_sensor.rs - 10)
+    -- Calculate point at enemy's attack range from the target's position, towards the enemy
+    local angle_to_enemy = self.target:angle_to_object(self)
+    local distance_from_target = self.attack_sensor.rs - 10
+    self.target_location = {
+      x = self.target.x + distance_from_target * math.cos(angle_to_enemy),
+      y = self.target.y + distance_from_target * math.sin(angle_to_enemy)
+    }
   else
     self.target_location = nil
   end
@@ -321,6 +333,9 @@ function Enemy:update_move_random()
 end
 
 function Enemy:draw()
+  if DEBUG_ENEMY_MOVEMENT then
+    self:draw_debug_info()
+  end
   self:draw_targeted()
   self:draw_buffs()
   self.draw_enemy(self)

@@ -565,6 +565,21 @@ function Unit:draw_cast_timer()
   end
 end
 
+function Unit:draw_debug_info()
+  if self.target_location then
+    graphics.circle(self.target_location.x, self.target_location.y, 5, green[0])
+  end
+  if self.target and self.target.x and self.target.y then
+    graphics.circle(self.target.x, self.target.y, 10, red[0], 2)
+  end
+  if self.attack_sensor then
+    graphics.circle(self.attack_sensor.x, self.attack_sensor.y, self.attack_sensor.rs, yellow[0] ,1)
+  end
+  if self.aggro_sensor then
+    graphics.circle(self.aggro_sensor.x, self.aggro_sensor.y, self.aggro_sensor.rs, blue[0], 2)
+  end
+end
+
 --should move this somewhere, maybe to the proc class
 -- dont want to have a bunch of if statements in here
 -- with special logic for each buff
