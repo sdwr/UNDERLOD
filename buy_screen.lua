@@ -828,7 +828,7 @@ function LevelMap:build()
       table.insert(self.levels, 
         LevelMapLevel{group = self.group, x = self.x - 60 + (i-1)*30, y = self.y + 10, 
         line_color = (level == self.level) and yellow[2] or fg[0],
-        fill_color = self.parent.level_list[level].color,
+        fill_color = self.parent.level_list[level] and self.parent.level_list[level].color or fg[0],
         level = level,
         parent = self
         })
