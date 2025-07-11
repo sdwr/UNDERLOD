@@ -791,8 +791,9 @@ function SpawnManager:spawn_all_enemies_at_once()
         local type = instruction[1]
         
         if type == 'GROUP' then
+          local group_x = self:calc_group_x(instruction_index, #wave)
           local group_data = {instruction[2], instruction[3], instruction[4]}
-          self:spawn_group_immediately(self.arena, group_data)
+          self:spawn_group_immediately(self.arena, group_data, group_x)
         end
       end
     end
@@ -802,13 +803,31 @@ function SpawnManager:spawn_all_enemies_at_once()
   self:change_state('waiting_for_clear')
 end
 
-function SpawnManager:spawn_group_immediately(arena, group_data)
+function SpawnManager:calc_group_x(index, num_groups)
+  --use the right 60% of the arena, with equal padding between and around the groups
+  local playable_width = (RIGHT_BOUND - LEFT_BOUND) * 0.6
+  local start_x = RIGHT_BOUND - playable_width
+  local spacing = playable_width / (num_groups + 1)
+
+  return start_x + (spacing * index)
+end
+
+function SpawnManager:calc_single_y(index, num_in_group)
+  local playable_height = (BOTTOM_BOUND - TOP_BOUND)
+  local spacing = playable_height / (num_in_group + 1)
+  return TOP_BOUND + (spacing * index)
+end
+
+function SpawnManager:spawn_group_immediately(arena, group_data, group_x)
   local type, amount = group_data[1], group_data[2]
   local spawn_type = group_data[3]
   amount = amount or 1
+  
 
   for i = 1, amount do
-    local location = Get_Point_In_Right_Half(arena)
+    local y = self:calc_single_y(i, amount)
+    local location = {x = group_x, y = y}
+    print(location.x, location.y)
     
     -- Spawn enemy immediately without warning
     local enemy = Enemy{
