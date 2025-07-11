@@ -108,13 +108,13 @@ function MainMenu:on_enter(from)
         current_new_game_plus = run.current_new_game_plus or current_new_game_plus or 0
         Helper.Unit.team_saves = run.team_saves or {{}, {}, {}, {}}
         system.save_state()
-        main:add(BuyScreen'buy_screen')
+        main:add(WorldManager'world_manager')
 
         run_time = run.time or 0
         locked_state = run.locked_state
 
         --need to increment loop for NG+ ?
-        main:go_to('buy_screen', run)
+        main:go_to('world_manager', run)
       end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
     end}
   end

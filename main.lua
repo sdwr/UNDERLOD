@@ -1671,6 +1671,7 @@ function open_options(self)
         ui_switch2:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
         ui_switch1:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
         TransitionEffect { group = main.transitions, x = gw / 2, y = gh / 2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
+          
           local new_run = Start_New_Run()
           system.save_state()
           main:add(WorldManager'world_manager')

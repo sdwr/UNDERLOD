@@ -1120,7 +1120,11 @@ function FloorItem:update(dt)
     
     -- Purchase after 2 seconds of shaking
     if self.shake_timer <= 0 then
-      self:purchase()
+      if self.is_character_selection then
+        self:select_character()
+      else
+        self:purchase()
+      end
     end
   end
 end
@@ -1176,6 +1180,7 @@ function FloorItem:select_character()
   
   -- Save the run
   main.current:save_run()
+  main.current.current_arena:remove_all_floor_items()
   
   -- Purchase effect
   for i = 1, 20 do
