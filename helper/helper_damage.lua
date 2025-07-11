@@ -350,8 +350,8 @@ end
 
 function Helper.Damage:apply_knockback(unit, from)
   if unit and from then
-    local duration = KNOCKBACK_DURATION_ENEMY
-    local push_force = LAUNCH_PUSH_FORCE_ENEMY
+    local duration = KNOCKBACK_DURATION_TROOP_ATTACK
+    local push_force = LAUNCH_PUSH_FORCE_TROOP_ATTACK
     unit:push(push_force, unit:angle_to_object(from) + math.pi, nil, duration)
   end
 end
