@@ -223,28 +223,56 @@ function Spawn_Teams(arena)
   --clear Helper.Unit.teams
   Helper.Unit.teams = {}
   
-  for i, unit in ipairs(arena.units) do
-      --add a new team
-      local team = Team(i, unit)
-      table.insert(Helper.Unit.teams, i, team)
+  if #arena.units == 0 then
 
-      -- Left side formation positions
-      local spawn_location = TEAM_INDEX_TO_SPAWN_LOCATION[i]
-      local spawn_x = spawn_location.x
-      local spawn_y = spawn_location.y
+    local unit = Get_Basic_Unit()
+    local index = 0
+    --add a new team
+    local team = Team(index, unit)
+    table.insert(Helper.Unit.teams, 1, team)
 
-      team:set_troop_data({
-          group = arena.main,
-          x = spawn_x,
-          y = spawn_y,
-          level = unit.level,
-          character = unit.character,
-          items = unit.items,
-          passives = arena.passives
-      })
+    -- Left side formation positions
+    local spawn_location = TEAM_INDEX_TO_SPAWN_LOCATION[index]
+    local spawn_x = spawn_location.x
+    local spawn_y = spawn_location.y
 
-      Spawn_Troops(arena, team, unit, {x = spawn_x, y = spawn_y})
-      team:apply_item_procs()
+    team:set_troop_data({
+        group = arena.main,
+        x = spawn_x,
+        y = spawn_y,
+        level = unit.level,
+        character = unit.character,
+        items = unit.items,
+        passives = arena.passives
+    })
+
+    Spawn_Troops(arena, team, unit, {x = spawn_x, y = spawn_y})
+    team:apply_item_procs()
+
+  else
+    for i, unit in ipairs(arena.units) do
+        --add a new team
+        local team = Team(i, unit)
+        table.insert(Helper.Unit.teams, i, team)
+
+        -- Left side formation positions
+        local spawn_location = TEAM_INDEX_TO_SPAWN_LOCATION[i]
+        local spawn_x = spawn_location.x
+        local spawn_y = spawn_location.y
+
+        team:set_troop_data({
+            group = arena.main,
+            x = spawn_x,
+            y = spawn_y,
+            level = unit.level,
+            character = unit.character,
+            items = unit.items,
+            passives = arena.passives
+        })
+
+        Spawn_Troops(arena, team, unit, {x = spawn_x, y = spawn_y})
+        team:apply_item_procs()
+    end
   end
 end
 
@@ -700,6 +728,11 @@ end
 -- This creates all enemies but keeps them inactive until transition is complete
 -- ===================================================================
 function SpawnManager:spawn_all_enemies_at_once()
+  if self.arena.level == 0 then
+    self:change_state('finished')
+    return
+  end
+  
   if self.arena.enemies_spawned then
     return -- Already spawned
   end

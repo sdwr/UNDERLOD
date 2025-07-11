@@ -128,13 +128,8 @@ function WorldManager:create_arena(level, offset_x)
     arena:create_walls()
     
     -- Only spawn teams and enemies for non-tutorial levels
-    if level ~= 0 then
-      Spawn_Teams(arena)
-      arena.spawn_manager:spawn_all_enemies_at_once()
-    else
-      arena.units = {Get_Basic_Unit()}
-      Spawn_Teams(arena)
-    end
+    Spawn_Teams(arena)
+    arena.spawn_manager:spawn_all_enemies_at_once()
 
   else
     self.next_arena = arena
