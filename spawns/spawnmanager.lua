@@ -827,7 +827,6 @@ function SpawnManager:spawn_group_immediately(arena, group_data, group_x)
   for i = 1, amount do
     local y = self:calc_single_y(i, amount)
     local location = {x = group_x, y = y}
-    print(location.x, location.y)
     
     -- Spawn enemy immediately without warning
     local enemy = Enemy{
