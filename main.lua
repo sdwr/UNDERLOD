@@ -8,6 +8,7 @@ require 'achievements/achievements'
 require 'helper/helper'
 require 'animations/init'
 require 'ui/ui'
+require 'ui/character_tooltip'
 require 'arena'
 require 'procs/procs'
 require 'procs/perks'
@@ -17,6 +18,7 @@ require 'buy_screen_utils'
 require 'buy_screen'
 require 'door'
 require 'world_manager'
+require 'level_0'
 require 'objects'
 require 'miscellaneous_objects'
 require 'media'
@@ -992,6 +994,18 @@ function init()
     ['monster'] = monster,
     ['sackofcash'] = sackofcash,
 
+  }
+
+  character_images = {
+    ['default'] = sword,
+    ['archer'] = bow2,
+    ['laser'] = reticle,
+  }
+
+  character_colors = {
+    ['default'] = grey[0],
+    ['archer'] = green[0],
+    ['laser'] = blue[0],
   }
 
   item_stat_lookup = {

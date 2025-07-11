@@ -140,12 +140,13 @@ function MainMenu:on_enter(from)
       }
       current_new_game_plus = current_new_game_plus or 0
       system.save_state()
-      main:add(BuyScreen'buy_screen')
+      main:add(WorldManager'world_manager')
       run_time = 0
       locked_state = false
       local new_run = Start_New_Run()
       new_run.difficulty = 'normal'
-      main:go_to('buy_screen', new_run)
+      new_run.level = 0
+      main:go_to('world_manager', new_run)
     end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
   end}
 
@@ -194,12 +195,13 @@ function MainMenu:on_enter(from)
       }
       current_new_game_plus = current_new_game_plus or 0
       system.save_state()
-      main:add(BuyScreen'buy_screen')
+      main:add(WorldManager'world_manager')
       run_time = 0
       locked_state = false
       local new_run = Start_New_Run()
       new_run.difficulty = 'hard'
-      main:go_to('buy_screen', new_run)
+      new_run.level = 0
+      main:go_to('world_manager', new_run)
     end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
   end}
 

@@ -107,8 +107,9 @@ function WorldManager:create_class_lists()
 end
 
 function WorldManager:create_arena(level, offset_x)
-
-  local arena = Arena{
+  local arena_class = level == 0 and Level0 or Arena
+  
+  local arena = arena_class{
     level = level,
     x = offset_x,
     offset_x = offset_x,
@@ -125,8 +126,12 @@ function WorldManager:create_arena(level, offset_x)
     self.gold_counter = arena.gold_counter
 
     arena:create_walls()
+    
+    -- Only spawn teams and enemies for non-tutorial levels
     Spawn_Teams(arena)
-    arena.spawn_manager:spawn_all_enemies_at_once()
+    if level ~= 0 then
+      arena.spawn_manager:spawn_all_enemies_at_once()
+    end
 
   else
     self.next_arena = arena
@@ -442,4 +447,20 @@ function WorldManager:put_in_first_available_inventory_slot(item)
     end
   end
   return false
+end
+
+function WorldManager:transition_to_buy_screen()
+  -- Transition to buy screen for level 1
+  Reset_Global_Proc_List()
+  slow_amount = 1
+  music_slow_amount = 1
+  main:add(BuyScreen'buy_screen')
+  
+  local save_data = Collect_Save_Data_From_State(self)
+  save_data.level = 1
+  save_data.reroll_shop = true
+  save_data.times_rerolled = 0
+  
+  system.save_run(save_data)
+  main:go_to('buy_screen', save_data)
 end

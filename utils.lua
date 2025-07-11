@@ -130,6 +130,15 @@ function find_item_image(item)
   return image
 end
 
+function find_character_image(character)
+  local image = character_images[character] or character_images['default']
+  return image
+end
+
+function character_to_color(character)
+  return character_colors[character] or character_colors['default']
+end
+
 function find_enemy_image(enemy)
   local image = enemy_images[enemy.name] or enemy_images[enemy.icon] or enemy_images[enemy]
   return image
