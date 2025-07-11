@@ -22,7 +22,6 @@ function WorldManager:init(name)
 end
 
 function WorldManager:on_enter(from)
-  Helper.init()
 
   Reset_Global_Proc_List()
 
@@ -63,6 +62,9 @@ function WorldManager:arena_on_enter(from)
   self.paused = false
   self.in_tutorial = false
   self.in_options = false
+  
+  slow_amount = 1
+  music_slow_amount = 1
 
   self.gold_text = nil
   self.timer_text = nil
