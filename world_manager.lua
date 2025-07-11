@@ -38,6 +38,7 @@ function WorldManager:on_enter(from)
     -- Create arena with the current level from save data
     local level = self.level or 1
     self:create_arena(level, 0)
+    self:create_level_map()
     -- Activate enemies for the first arena
     self.current_arena:set_transition_complete()
     
@@ -106,6 +107,20 @@ function WorldManager:create_class_lists()
 
 end
 
+function WorldManager:create_level_map()
+  if self.level_map then
+    self.level_map:die()
+  end
+  -- Create level map in the top center of the screen
+  self.level_map = BuildLevelMap(self.ui, gw/2, LEVEL_MAP_Y_POSITION, self, self.level or 1, self.loop or 0, self.level_list)
+end
+
+function WorldManager:update_level_map()
+  if self.level_map then
+    self.level_map:reset()
+  end
+end
+
 function WorldManager:create_arena(level, offset_x)
 
   local arena = Arena{
@@ -144,6 +159,7 @@ function WorldManager:assign_physics_groups(arena)
   self.main = arena.main
   self.post_main = arena.post_main
   self.effects = arena.effects
+  -- Don't override ui group since it contains the level map
   self.ui = arena.ui
   self.tutorial = arena.tutorial
   self.options_ui = arena.options_ui
@@ -317,12 +333,14 @@ function WorldManager:complete_transition()
     self.next_arena = nil
     camera.x = gw/2
     camera.y = gh/2
+
     
     -- Clear pending troop data
     self.pending_troop_data = nil
     
     -- Update physics group references for the new arena
     self:assign_physics_groups(self.current_arena)
+    self:create_level_map()
     
     -- Set up teams for the new arena
     Spawn_Teams(self.current_arena)
@@ -416,6 +434,7 @@ end
 
 function WorldManager:increase_level()
   self.level = self.level + 1
+  self:update_level_map()
   self:save_run()
 end
 
