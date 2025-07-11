@@ -139,6 +139,24 @@ function character_to_color(character)
   return character_colors[character] or character_colors['default']
 end
 
+function find_perk_image(perk)
+  -- For now, use a default image since perk images aren't defined yet
+  -- This can be expanded later when perk images are added
+  return item_images[perk.icon] or item_images['default']
+end
+
+function get_rarity_color(rarity)
+  if rarity == "common" then
+    return fg[0]
+  elseif rarity == "uncommon" then
+    return green[0]
+  elseif rarity == "rare" then
+    return blue[0]
+  else
+    return fg[0]
+  end
+end
+
 function find_enemy_image(enemy)
   local image = enemy_images[enemy.name] or enemy_images[enemy.icon] or enemy_images[enemy]
   return image

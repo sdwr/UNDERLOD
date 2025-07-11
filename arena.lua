@@ -271,7 +271,11 @@ function Arena:level_clear()
   self.t:after(DOOR_OPEN_DELAY, function() self.door:open() end)
   main.current:increase_level()
   -- Create 3 floor items for selection
-  self:create_floor_items()
+  if LEVEL_TO_PERKS[self.level] then
+    self:create_perk_floor_items()
+  else
+    self:create_floor_items()
+  end
 end
 
 function Arena:create_floor_items()
@@ -306,6 +310,40 @@ function Arena:create_floor_items()
           x = positions[i].x + self.offset_x,
           y = positions[i].y + self.offset_y,
           item = item,
+          parent = self
+        }
+        table.insert(self.floor_items, floor_item)
+      end)
+    end
+  end
+end
+
+function Arena:create_perk_floor_items()
+  self.floor_items = {}
+  
+  -- Get perk choices
+  local perk_choices = Get_Random_Perk_Choices(self.perks or {})
+  
+  -- Position perks on the floor (same positions as items)
+  local positions = {
+    {x = gw/2 - 100, y = gh/2},
+    {x = gw/2, y = gh/2},
+    {x = gw/2 + 100, y = gh/2}
+  }
+  
+  if not self.floor_item_text then
+    self.floor_item_text = Text2{group = self.ui, x = gw/2 + self.offset_x, y = gh/2 - 70 + self.offset_y, lines = {{text = '[wavy_mid, cbyc3]Choose a perk:', font = fat_font, alignment = 'center'}}}
+  end
+
+  for i, perk in ipairs(perk_choices) do
+    if positions[i] then
+      self.t:after(ITEM_SPAWN_DELAY_INITAL + i*ITEM_SPAWN_DELAY_OFFSET, function()
+        local floor_item = FloorItem{
+          group = self.floor,
+          x = positions[i].x + self.offset_x,
+          y = positions[i].y + self.offset_y,
+          perk = perk,
+          is_perk_selection = true,
           parent = self
         }
         table.insert(self.floor_items, floor_item)
@@ -751,11 +789,8 @@ function Arena:transition()
   
   -- Check if this level grants a perk
   if LEVEL_TO_PERKS[self.level] then
-    -- Show perk selection overlay
-    PerkOverlay{
-      group = self.ui,
-      perks = self.perks or {}
-    }
+    -- Create perk floor items instead of overlay
+    self:create_perk_floor_items()
     return
   end
   
@@ -803,33 +838,6 @@ function Arena:demo_end()
   end)
 end
 
--- Called when perk selection is complete
-function Arena:on_perk_selected()
-  -- Continue with normal transition to buy screen
-  TransitionEffect{group = main.transitions, x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, color = state.dark_transitions and bg[-2] or self.color, transition_action = function(t)
-
-    -- Update units with combat data before transitioning
-    self:update_units_with_combat_data()
-
-    Reset_Global_Proc_List()
-    slow_amount = 1
-    music_slow_amount = 1
-    main:add(BuyScreen'buy_screen')
-    local save_data = Collect_Save_Data_From_State(self)
-
-    save_data.level = save_data.level + 1
-    save_data.reroll_shop = true
-    save_data.times_rerolled = 0
-
-    Stats_Level_Complete()
-    Stats_Max_Gold()
-
-    system.save_run(save_data)
-
-    main:go_to('buy_screen', save_data)
-
-  end, nil}
-end
 --on game win (beat final boss)
 function Arena:on_win()
   self:gain_gold(ARENA_TRANSITION_TIME)
@@ -978,7 +986,9 @@ function FloorItem:init(args)
   -- Generic properties
   self.item = args.item
   self.character = args.character -- For character selection
+  self.perk = args.perk -- For perk selection
   self.is_character_selection = args.is_character_selection or false
+  self.is_perk_selection = args.is_perk_selection or false
   
   if self.is_character_selection then
     -- Character selection mode
@@ -986,6 +996,13 @@ function FloorItem:init(args)
     self.image = find_character_image(self.character)
     self.colors = character_to_color(self.character)
     self.tier_color = character_to_color(self.character)
+    self.stats = {}
+  elseif self.is_perk_selection then
+    -- Perk selection mode
+    self.cost = 0 -- Perks are free
+    self.image = find_perk_image(self.perk)
+    self.colors = get_rarity_color(self.perk.rarity or 'common')
+    self.tier_color = get_rarity_color(self.perk.rarity or 'common')
     self.stats = {}
   else
     -- Item mode
@@ -1023,7 +1040,7 @@ function FloorItem:init(args)
   self.interact_with_mouse = true
   self.colliding_with_mouse = false
 
-  if not self.is_character_selection then
+  if not self.is_character_selection and self.cost and self.cost > 0 then
     self.cost_text = Text({{text = '[yellow]' .. self.cost, font = pixul_font, alignment = 'center'}}, global_text_tags)
   end
   
@@ -1033,6 +1050,12 @@ end
 
 function FloorItem:creation_effect()
   if self.is_character_selection then
+    pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    self.spring:pull(0.2, 200, 10)
+    for i = 1, 10 do
+      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+    end
+  elseif self.is_perk_selection then
     pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     self.spring:pull(0.2, 200, 10)
     for i = 1, 10 do
@@ -1122,6 +1145,8 @@ function FloorItem:update(dt)
     if self.shake_timer <= 0 then
       if self.is_character_selection then
         self:select_character()
+      elseif self.is_perk_selection then
+        self:select_perk()
       else
         self:purchase()
       end
@@ -1165,6 +1190,9 @@ function FloorItem:purchase()
   if self.is_character_selection then
     -- Character selection mode
     self:select_character()
+  elseif self.is_perk_selection then
+    -- Perk selection mode
+    self:select_perk()
   else
     -- Item purchase mode
     self:purchase_item()
@@ -1179,6 +1207,37 @@ function FloorItem:select_character()
   -- Purchase effect
   for i = 1, 20 do
     HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+  end
+  
+end
+
+function FloorItem:select_perk()
+  self.is_purchased = true
+
+  -- Add the perk to the player's perks
+  local perk_key = nil
+  for key, def in pairs(PERK_DEFINITIONS) do
+    if def.name == self.perk.name then
+      perk_key = key
+      break
+    end
+  end
+  
+  if perk_key then
+    local new_perk = Create_Perk(perk_key, 1) -- Start at level 1
+    table.insert(main.current.perks, new_perk)
+    
+    ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    
+    -- Purchase effect
+    for i = 1, 20 do
+      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+    end
+    
+    -- Remove all perk floor items and continue to buy screen
+    self.parent:remove_all_floor_items()
+    
+    main.current:save_run()
   end
   
 end
@@ -1282,6 +1341,14 @@ function FloorItem:create_tooltip()
     self.tooltip = CharacterTooltip{
       group = main.current.ui,
       character = self.character,
+      x = gw/2, 
+      y = gh/2 - 50,
+    }
+  elseif self.is_perk_selection then
+    -- Create perk tooltip
+    self.tooltip = PerkTooltip{
+      group = main.current.ui,
+      perk = self.perk,
       x = gw/2, 
       y = gh/2 - 50,
     }
