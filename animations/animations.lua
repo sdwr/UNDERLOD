@@ -911,6 +911,7 @@ enemy_type_to_size = {
   ['cleaver'] = 'special',
   ['big_goblin_archer'] = 'special',
   ['slowcharger'] = 'special',
+  ['turret'] = 'special',
   
   -- Minibosses
   ['bigstomper'] = 'huge',

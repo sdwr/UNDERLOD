@@ -146,7 +146,9 @@ function Enemy:update(dt)
       self:set_velocity(0,0)
     end
 
-    self.r = self:get_angle()
+    if not self:should_freeze_rotation() then
+      self.r = self:get_angle()
+    end
   
   
     self.attack_sensor:move_to(self.x, self.y)
@@ -180,6 +182,8 @@ function Enemy:choose_movement_target()
     return self:acquire_target_seek_to_range()
   elseif self.currentMovementAction == MOVEMENT_TYPE_RANDOM then
     return self:acquire_target_random()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_NONE then
+    return false -- Stationary enemies don't need movement targets
   end
 end
 
@@ -197,6 +201,8 @@ function Enemy:update_movement()
     return self:update_move_random()
   elseif self.currentMovementAction == MOVEMENT_TYPE_WANDER then
     return self:update_move_wander()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_NONE then
+    return false -- Stationary enemies don't move
   end
   return false
 end

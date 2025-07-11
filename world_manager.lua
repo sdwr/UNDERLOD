@@ -36,7 +36,7 @@ function WorldManager:on_enter(from)
   -- Set up the current arena if it doesn't exist
   if not self.current_arena then
     -- Create arena with the current level from save data
-    local level = self.level or 1
+    local level = self.level or 0
     self:create_arena(level, 0)
     -- Activate enemies for the first arena
     self.current_arena:set_transition_complete()
@@ -143,7 +143,7 @@ function WorldManager:create_arena(level, offset_x)
     if self.current_arena and self.current_arena.on_transition_start then
       self.current_arena:on_transition_start()
     end
-    
+
   end
 end
 

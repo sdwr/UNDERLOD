@@ -18,7 +18,7 @@ function Level0:init(args)
 end
 
 function Level0:create_tutorial_text()
-  self.tutorial_text = Text2{group = self.floor, x = gw/2 + self.offset_x, y = 50 + self.offset_y, lines = {{text = '[wavy_mid, fg]Choose your character:', font = fat_font, alignment = 'center'}}}
+  self.tutorial_text = Text2{group = self.floor, x = gw/2 + self.offset_x, y = 50 + self.offset_y, lines = {{text = '[wavy_mid, cbyc3]Choose your character:', font = fat_font, alignment = 'center'}}}
 end
 
 function Level0:create_combat_tutorial_text()

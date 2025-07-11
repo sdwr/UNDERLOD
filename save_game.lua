@@ -68,7 +68,7 @@ end
 
 function Create_Blank_Save_Data()
   local data = {}
-  data.level = 1
+  data.level = 0
   data.level_list = {}
   data.loop = 0
   data.gold = STARTING_GOLD

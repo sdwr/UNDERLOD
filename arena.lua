@@ -491,9 +491,9 @@ function Arena:die()
         ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
         TransitionEffect{group = main.transitions, x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
           local new_run = Start_New_Run()
-          main:add(BuyScreen'buy_screen')
+          main:add(WorldManager'world_manager')
           system.save_run()
-          main:go_to('buy_screen', new_run)
+          main:go_to('world_manager', new_run)
         end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
       end}
     end)
@@ -1197,6 +1197,8 @@ function FloorItem:purchase_item()
   self.is_purchased = true
   gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
   self:die()
+  
+  self.parent:remove_all_floor_items()
   
   -- -- Deduct gold
   -- gold = gold - self.cost

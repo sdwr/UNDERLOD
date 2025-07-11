@@ -1330,6 +1330,7 @@ function init()
     'summoner',
     'arcspread',
     'firewall_caster',
+    'turret',
   }
 
   boss_enemies = {
@@ -1373,16 +1374,17 @@ function init()
     [1] = {
       'burst',
       'selfburst',
-      'singlemortar',
       'snakearrow',
       'big_goblin_archer',
       'slowcharger',
+      'turret',
     },
     [1.5] = {
       'mortar',
       'singlemortar',
       'charger',
       'boomerang',
+      'turret',
     },
     [2] = {
       'mortar',
@@ -1390,6 +1392,7 @@ function init()
       'snakearrow',
       'charger',
       'boomerang',
+      'turret',
     },
     [2.5] = {
       'mortar',
@@ -1399,6 +1402,7 @@ function init()
       'boomerang',
       'firewall_caster',
       'big_goblin_archer',
+      'turret',
     },
     [3] = {
       'arcspread',
@@ -1408,6 +1412,7 @@ function init()
       'snakearrow',
       'plasma',
       'big_goblin_archer',
+      'turret',
     },
   }
 
@@ -1430,6 +1435,7 @@ function init()
     ['big_goblin_archer'] = 300,
     ['selfburst'] = 300,
     ['slowcharger'] = 300,
+    ['turret'] = 300,
     --special enemies t2
     ['firewall_caster'] = 500,
     ['mortar'] = 500,
@@ -1469,6 +1475,7 @@ function init()
     ['big_goblin_archer'] = green[3],
     ['selfburst'] = orange[3],
     ['slowcharger'] = orange[3],
+    ['turret'] = red[3],
   }
 
   DAMAGE_TYPE_TO_COLOR = {

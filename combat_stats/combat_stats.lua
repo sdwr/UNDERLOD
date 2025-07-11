@@ -17,17 +17,17 @@ TROOP_MS = 70
 TROOP_BASE_COOLDOWN = 1.1
 TROOP_SWORDSMAN_BASE_COOLDOWN = 0.8
 
-TROOP_RANGE = 90
+TROOP_RANGE = 100
 TROOP_SWORDSMAN_RANGE = 50
 
 
 REGULAR_ENEMY_HP = 70
 REGULAR_ENEMY_DAMAGE = 10
-REGULAR_ENEMY_MS = 45
+REGULAR_ENEMY_MS = 58
 
 SPECIAL_ENEMY_HP = 75
 SPECIAL_ENEMY_DAMAGE = 40
-SPECIAL_ENEMY_MS = 35
+SPECIAL_ENEMY_MS = 50
 
 BOSS_HP = 800
 BOSS_DAMAGE = 10
@@ -127,6 +127,7 @@ enemy_type_to_stats = {
     ['cleaver'] = { dmg = 1.5 },
     ['big_goblin_archer'] = { dmg = 1.5, mvspd = 3 },
     ['goblin_archer'] = { dmg = 1.5, mvspd = 3 },
+    ['turret'] = { dmg = 1.2 },
 
     ['arcspread'] = { dmg = 0.5 },
     ['assassin'] = {},
