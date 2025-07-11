@@ -3,7 +3,7 @@ function Swordsman_Troop:init(data)
   self.base_attack_range = TROOP_SWORDSMAN_RANGE
   Swordsman_Troop.super.init(self, data)
 
-  self.baseCooldown = attack_speeds['ultra-fast']
+  self.baseCooldown = TROOP_SWORDSMAN_BASE_COOLDOWN
   self.cooldownTime = self.baseCooldown
   self.baseCast = attack_speeds['short-cast']
   self.castTime = self.baseCast
@@ -33,7 +33,7 @@ function Swordsman_Troop:set_character()
   self.attack_sensor = Circle(self.x, self.y, self.base_attack_range)
 
   --cooldowns
-  self.baseCooldown = attack_speeds['medium-fast']
+  self.baseCooldown = TROOP_SWORDSMAN_BASE_COOLDOWN
   self.cooldownTime = self.baseCooldown
   self.baseCast = 0
   self.castTime = self.baseCast

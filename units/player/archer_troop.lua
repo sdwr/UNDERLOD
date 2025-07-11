@@ -4,7 +4,7 @@ function Archer_Troop:init(data)
   Archer_Troop.super.init(self, data)
 
 
-  self.baseCooldown = attack_speeds['medium-fast']
+  self.baseCooldown = TROOP_BASE_COOLDOWN
   self.cooldownTime = self.baseCooldown
   self.baseCast = 0
   self.castTime = self.baseCast
@@ -96,7 +96,7 @@ function Archer_Troop:set_character()
   self.attack_sensor = Circle(self.x, self.y, self.base_attack_range)
   self.aggro_sensor = Circle(self.x, self.y, self.base_attack_range + AGGRO_RANGE_BOOST)
   --total cooldown is cooldownTime + castTime
-  self.baseCooldown = attack_speeds['fast']
+  self.baseCooldown = TROOP_BASE_COOLDOWN
   self.cooldownTime = self.baseCooldown
   self.baseCast = attack_speeds['buff']
   self.castTime = self.baseCast
