@@ -1180,7 +1180,7 @@ function FloorItem:select_character()
   
   -- Save the run
   main.current:save_run()
-  main.current.current_arena:remove_all_floor_items()
+  self.parent:remove_all_character_items()
   
   -- Purchase effect
   for i = 1, 20 do

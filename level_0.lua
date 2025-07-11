@@ -18,7 +18,7 @@ function Level0:init(args)
 end
 
 function Level0:create_tutorial_text()
-  self.tutorial_text = Text2{group = self.ui, x = gw/2 + self.offset_x, y = 60 + self.offset_y, lines = {{text = '[wavy_mid, fg]Choose your character:', font = fat_font, alignment = 'center'}}}
+  self.tutorial_text = Text2{group = self.ui, x = gw/2 + self.offset_x, y = 50 + self.offset_y, lines = {{text = '[wavy_mid, fg]Choose your character:', font = fat_font, alignment = 'center'}}}
 end
 
 function Level0:create_character_selection()
@@ -43,6 +43,13 @@ function Level0:create_character_selection()
       table.insert(self.character_items, floor_item)
     end
   end
+end
+
+function Level0:remove_all_character_items()
+  for _, item in ipairs(self.character_items) do
+    item:die()
+  end
+  self.character_items = {}
 end
 
 function Level0:update(dt)
