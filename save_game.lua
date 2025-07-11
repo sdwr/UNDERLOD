@@ -21,7 +21,7 @@ end
 
 function Get_Basic_Unit(character)
   character = character or 'chooseunit'
-  return {character = character, level = 0, reserve = {0, 0}, items = {nil, nil, nil, nil, nil, nil}}
+  return {character = character, level = 1, reserve = {0, 0}, items = {nil, nil, nil, nil, nil, nil}}
 end
 
 function Validate_Save_Data(data)

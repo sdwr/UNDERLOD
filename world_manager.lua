@@ -356,6 +356,20 @@ function WorldManager:move_objects_in_group(group, offset_x, offset_y)
   end
 end
 
+function WorldManager:replace_first_unit(character)
+  -- Add character to units
+  self.units = {Get_Basic_Unit(character)}
+  Replace_Team(self, 1, character)
+
+  self.level = 1
+
+  local save_data = Collect_Save_Data_From_State(self)
+  system.save_run(save_data)
+
+  -- Save the run
+  self:save_run()
+end
+
 function WorldManager:on_exit(to)
   
   Kill_Teams()

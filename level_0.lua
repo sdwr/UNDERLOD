@@ -21,6 +21,17 @@ function Level0:create_tutorial_text()
   self.tutorial_text = Text2{group = self.ui, x = gw/2 + self.offset_x, y = 50 + self.offset_y, lines = {{text = '[wavy_mid, fg]Choose your character:', font = fat_font, alignment = 'center'}}}
 end
 
+function Level0:create_combat_tutorial_text()
+  self.tutorial_text = Text2{group = self.ui, x = gw/2 + self.offset_x, y = 100 + self.offset_y, 
+  lines = {
+    {text = '[wavy_mid, fg]Your units attack automatically', font = pixul_font, alignment = 'center'},
+    {text = '[wavy_mid, fg]LMB to move', font = pixul_font, alignment = 'center'},
+    {text = '[wavy_mid, fg]RMB to target', font = pixul_font, alignment = 'center'},
+    {text = '[wavy_mid, fg]C to open inventory', font = pixul_font, alignment = 'center'},
+    {text = '[wavy_mid, fg]ESC to pause', font = pixul_font, alignment = 'center'},
+  }}
+end
+
 function Level0:create_character_selection()
   self.character_items = {}
   
@@ -45,12 +56,37 @@ function Level0:create_character_selection()
   end
 end
 
+function Level0:on_character_selected(character)
+  gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
+  
+  main.current:replace_first_unit(character)
+
+  self:remove_all_character_items()
+  self:remove_tutorial_text()
+  self:create_combat_tutorial_text()
+  
+  -- Open door after a short delay
+  self.t:after(3, function()
+    self.door:open()
+  end)
+end
+
 function Level0:remove_all_character_items()
   for _, item in ipairs(self.character_items) do
     item:die()
   end
   self.character_items = {}
 end
+
+function Level0:remove_tutorial_text()
+  print('removing tutorial text')
+  if self.tutorial_text then
+    self.tutorial_text.dead = true
+    self.tutorial_text = nil
+  end
+end
+
+
 
 function Level0:update(dt)
   Level0.super.update(self, dt)

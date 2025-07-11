@@ -1173,14 +1173,8 @@ end
 
 function FloorItem:select_character()
   self.is_purchased = true
-  gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
-  
-  -- Add character to units
-  Replace_Team(main.current.current_arena, 1, self.character)
-  
-  -- Save the run
-  main.current:save_run()
-  self.parent:remove_all_character_items()
+
+  self.parent:on_character_selected(self.character)
   
   -- Purchase effect
   for i = 1, 20 do

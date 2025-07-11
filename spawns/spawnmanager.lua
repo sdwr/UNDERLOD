@@ -234,7 +234,7 @@ function Replace_Team(arena, index, character)
   local newTeam = Team(index, unit)
   table.insert(Helper.Unit.teams, index, newTeam)
 
-  team:set_troop_data({
+  newTeam:set_troop_data({
     group = arena.main,
     x = unit_locations[1].x,
     y = unit_locations[1].y,
@@ -244,8 +244,8 @@ function Replace_Team(arena, index, character)
     passives = arena.passives
   })
   
-  Spawn_Troops_At_Locations(arena, team, unit_locations)
-  team:apply_item_procs()
+  Spawn_Troops_At_Locations(arena, newTeam, unit_locations)
+  newTeam:apply_item_procs()
 end
 
 --spawns troops in triangle formation around centre of arena
