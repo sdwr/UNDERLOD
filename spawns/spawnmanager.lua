@@ -29,6 +29,7 @@ function SpawnGlobals.Init()
   SpawnGlobals.SUCTION_FORCE = 800
   SpawnGlobals.SUCTION_MIN_DISTANCE = 5
 
+  TROOP_0_SPAWN_LOCATION = {x = SpawnGlobals.TROOP_0_SPAWN_X, y = SpawnGlobals.TROOP_0_SPAWN_Y}
   TEAM_INDEX_TO_SPAWN_LOCATION = {
     [0] = {x = SpawnGlobals.TROOP_0_SPAWN_X, y = SpawnGlobals.TROOP_0_SPAWN_Y},
     [1] = {x = SpawnGlobals.TROOP_SPAWN_BASE_X, y = SpawnGlobals.TROOP_SPAWN_BASE_Y - SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING},
@@ -218,6 +219,35 @@ function Kill_Teams()
   end
 end
 
+function Replace_Team(arena, index, character)
+  local unit_locations = {}
+  local team = Helper.Unit.teams[index]
+  local troops = team.troops
+  for i, troop in ipairs(troops) do
+    table.insert(unit_locations, {x = troop.x, y = troop.y})
+  end
+
+  team:die()
+  Helper.Unit.teams[index] = nil
+
+  local unit = Get_Basic_Unit(character)
+  local newTeam = Team(index, unit)
+  table.insert(Helper.Unit.teams, index, newTeam)
+
+  team:set_troop_data({
+    group = arena.main,
+    x = unit_locations[1].x,
+    y = unit_locations[1].y,
+    level = 1,
+    character = character,
+    items = {nil, nil, nil, nil, nil, nil},
+    passives = arena.passives
+  })
+  
+  Spawn_Troops_At_Locations(arena, team, unit_locations)
+  team:apply_item_procs()
+end
+
 --spawns troops in triangle formation around centre of arena
 function Spawn_Teams(arena)
   --clear Helper.Unit.teams
@@ -226,13 +256,13 @@ function Spawn_Teams(arena)
   if #arena.units == 0 then
 
     local unit = Get_Basic_Unit()
-    local index = 0
     --add a new team
+    local index = 1
     local team = Team(index, unit)
-    table.insert(Helper.Unit.teams, 1, team)
+    table.insert(Helper.Unit.teams, index, team)
 
     -- Left side formation positions
-    local spawn_location = TEAM_INDEX_TO_SPAWN_LOCATION[index]
+    local spawn_location = TROOP_0_SPAWN_LOCATION
     local spawn_x = spawn_location.x
     local spawn_y = spawn_location.y
 
@@ -273,6 +303,12 @@ function Spawn_Teams(arena)
         Spawn_Troops(arena, team, unit, {x = spawn_x, y = spawn_y})
         team:apply_item_procs()
     end
+  end
+end
+
+function Spawn_Troops_At_Locations(arena, team, locations)
+  for i, location in ipairs(locations) do
+    local troop = team:add_troop(location.x, location.y)
   end
 end
 

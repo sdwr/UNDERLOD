@@ -1176,7 +1176,7 @@ function FloorItem:select_character()
   gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
   
   -- Add character to units
-  table.insert(main.current.units, {character = self.character, level = 1, reserve = {0, 0}, items = {nil, nil, nil, nil, nil, nil}})
+  Replace_Team(main.current.current_arena, 1, self.character)
   
   -- Save the run
   main.current:save_run()
