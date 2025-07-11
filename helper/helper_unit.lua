@@ -631,4 +631,27 @@ function Helper.Unit:process_perk_name(stat, unit)
     end
 end
 
+-- ===================================================================
+-- COMBAT DATA UPDATE FUNCTION
+-- This function updates saved units with combat data from teams
+-- ===================================================================
+function Helper.Unit:update_units_with_combat_data(arena)
+    if not arena then
+        print('error saving combat stats: no arena')
+        return
+    end
+
+  -- Update the saved units with combat data from teams
+  for i, saved_unit in ipairs(arena.units) do
+    -- Find the corresponding team by character and position
+    for j, team in ipairs(Helper.Unit.teams) do
+      if team.unit.character == saved_unit.character and j == i then
+        -- Save combat data from team to saved unit
+        team:save_combat_data_to_unit()
+        break
+      end
+    end
+  end
+end
+
 

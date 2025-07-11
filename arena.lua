@@ -274,6 +274,8 @@ end
 
 function Arena:level_clear()
   spawn_mark2:play{pitch = 1, volume = 0.8}
+  Helper.Unit:update_units_with_combat_data(self)
+
   self.t:after(DOOR_OPEN_DELAY, function() self.door:open() end)
   main.current:increase_level()
   -- Create 3 floor items for selection
@@ -754,17 +756,7 @@ function Arena:set_timer_text()
 end
 
 function Arena:update_units_with_combat_data()
-  -- Update the saved units with combat data from teams
-  for i, saved_unit in ipairs(self.units) do
-    -- Find the corresponding team by character and position
-    for j, team in ipairs(Helper.Unit.teams) do
-      if team.unit.character == saved_unit.character and j == i then
-        -- Save combat data from team to saved unit
-        team:save_combat_data_to_unit()
-        break
-      end
-    end
-  end
+  Helper.Unit:update_units_with_combat_data(self)
 end
 
 

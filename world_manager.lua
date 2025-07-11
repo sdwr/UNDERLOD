@@ -287,6 +287,9 @@ function WorldManager:complete_transition()
   -- Transfer player units from old arena to new arena
   if self.current_arena and self.next_arena then
     
+    -- Update combat data before transitioning
+    Helper.Unit:update_units_with_combat_data(self.current_arena)
+    
     --should add this onto the existing units
     for _, team in pairs(Helper.Unit.teams) do
       local troop_hps = {}
@@ -355,6 +358,7 @@ function WorldManager:move_objects_in_group(group, offset_x, offset_y)
 end
 
 function WorldManager:on_exit(to)
+  
   Kill_Teams()
   Helper:release()
   set_cursor_simple()
