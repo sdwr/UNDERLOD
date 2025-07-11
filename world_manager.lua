@@ -216,14 +216,15 @@ function WorldManager:update(dt)
 
   -- Handle 'c' key for character cards
   if input.c.pressed then
+    if self.paused then return end
+    if self.transitioning then return end
+
     if not self.character_cards_open then
       self.character_cards_open = true
       self:create_character_cards()
-      self:set_arenas_paused(true)
     else
       self.character_cards_open = false
       Kill_All_Cards()
-      self:set_arenas_paused(false)
     end
   end
 
@@ -234,7 +235,7 @@ function WorldManager:update(dt)
     camera.x = camera.x - 100
   end
   
-  if not self.paused and not self.character_cards_open then
+  if not self.paused then
   -- Update Helper system for input handling and troop movement
     Helper:update(dt*slow_amount)
     LevelManager.update(dt)
@@ -372,10 +373,11 @@ function WorldManager:advance_to_next_level()
   if not self.transitioning and self.current_arena then
 
     self:create_arena(self.level, gw)
-    
-    
     -- Start transition
     self.transitioning = true
+    Kill_All_Cards()
+    
+    
     if self.current_arena then
       self.current_arena:remove_all_floor_items()
     end

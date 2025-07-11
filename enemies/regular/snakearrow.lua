@@ -32,11 +32,11 @@ fns['init_enemy'] = function(self)
       unit = self,
       team = "enemy",
       damage = function() return self.dmg end,
-      speed = 70,
+      speed = 40,
       freeze_rotation = true,
       curve_depth = 25,
       curve_frequency = 1,
-      arrow_interval = 0.5,
+      arrow_interval = 1,
       color = purple[0],
       parent = self
     }
