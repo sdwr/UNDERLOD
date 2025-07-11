@@ -253,7 +253,7 @@ function CharacterCard:level_up_unit()
   Refresh_All_Cards_Text()
   
   -- Save the run
-  main.current:save_run()
+  buyScreen:save_run()
 end
 
 function CharacterCard:redraw_item_parts()
@@ -502,14 +502,14 @@ function ItemPart:update(dt)
         active:addItem(self:getItem())
         self:removeItem()
       end
-      buyScreen:save_run()
+      main.current:save_run()
     end
   end
 
   --differentiate between moving the item to another slot, and selling the item w m2
   if input.m2.released and not self.itemGrabbed and self:isActiveInvSlot() and self:hasItem() then
     self:sellItem()
-    buyScreen:save_run()
+    main.current:save_run()
   end
 
   if self.cant_click then return end
@@ -556,7 +556,7 @@ function ItemPart:draw(y)
       end
     end
     
-    if self.colliding_with_mouse and buyScreen and not buyScreen.loose_inventory_item then
+    if self.colliding_with_mouse and main.current and not main.current.loose_inventory_item then
       if not self.tooltip then
         self:create_tooltip()
       end

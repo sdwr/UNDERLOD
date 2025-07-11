@@ -908,7 +908,7 @@ function Unit:calculate_stats(first_run)
 end  
 
 function Unit:onTickCallbacks(dt)
-  if not main.current:is(Arena) then return end
+  if not main.current:is(WorldManager) then return end
 
   for k, proc in ipairs(GLOBAL_PROC_LIST[PROC_ON_TICK]) do
     proc:onTick(dt, self)

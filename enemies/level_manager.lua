@@ -19,8 +19,8 @@ end
 
 function LevelManager.update(dt)
     --only call in arena
-    local arena = main.current
-    if not arena:is(Arena) then
+    local worldManager = main.current
+    if not worldManager:is(WorldManager) then
         return
     end
 
@@ -45,18 +45,20 @@ function LevelManager.bossThresholds()
     LevelManager.threshold1 = LevelManager.threshold1 or activateT1
     LevelManager.threshold2 = LevelManager.threshold2 or activateT2
     LevelManager.threshold3 = LevelManager.threshold3 or activateT3
+
+    local arena = main.current.current_arena
     
     if boss.type == 'stompy' then
 
     elseif boss.type == 'dragon' then
         if activateT1 then
-            Spawn_Enemy(main.current, 'dragonegg', SpawnGlobals.mid_spawns[1])
-            Spawn_Enemy(main.current, 'dragonegg', SpawnGlobals.mid_spawns[2])
+            Spawn_Enemy(arena, 'dragonegg', SpawnGlobals.mid_spawns[1])
+            Spawn_Enemy(arena, 'dragonegg', SpawnGlobals.mid_spawns[2])
         elseif activateT2 then
 
         elseif activateT3 then
-            Spawn_Enemy(main.current, 'dragonegg', SpawnGlobals.mid_spawns[1])
-            Spawn_Enemy(main.current, 'dragonegg', SpawnGlobals.mid_spawns[2])
+            Spawn_Enemy(arena, 'dragonegg', SpawnGlobals.mid_spawns[1])
+            Spawn_Enemy(arena, 'dragonegg', SpawnGlobals.mid_spawns[2])
 
         end
 
