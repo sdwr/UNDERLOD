@@ -18,7 +18,7 @@ function SpawnGlobals.Init()
   SpawnGlobals.wall_height = 0.2*gh/2
 
   SpawnGlobals.TROOP_0_SPAWN_X = gw/2
-  SpawnGlobals.TROOP_0_SPAWN_Y = gh/2 - 100
+  SpawnGlobals.TROOP_0_SPAWN_Y = gh - 50
 
   SpawnGlobals.TROOP_SPAWN_BASE_X = SpawnGlobals.wall_width + 50  -- Further left than before
   SpawnGlobals.TROOP_SPAWN_BASE_Y = gh/2
@@ -30,7 +30,7 @@ function SpawnGlobals.Init()
   SpawnGlobals.SUCTION_MIN_DISTANCE = 5
 
   TEAM_INDEX_TO_SPAWN_LOCATION = {
-    [0] = {x = SpawnGlobals.TROOP_SPAWN_BASE_X, y = SpawnGlobals.TROOP_SPAWN_BASE_Y - SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING},
+    [0] = {x = SpawnGlobals.TROOP_0_SPAWN_X, y = SpawnGlobals.TROOP_0_SPAWN_Y},
     [1] = {x = SpawnGlobals.TROOP_SPAWN_BASE_X, y = SpawnGlobals.TROOP_SPAWN_BASE_Y - SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING},
     [2] = {x = SpawnGlobals.TROOP_SPAWN_BASE_X, y = SpawnGlobals.TROOP_SPAWN_BASE_Y + SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING},
     [3] = {x = SpawnGlobals.TROOP_SPAWN_BASE_X, y = SpawnGlobals.TROOP_SPAWN_BASE_Y + SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING * 1.5},
