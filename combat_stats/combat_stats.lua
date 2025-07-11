@@ -108,10 +108,10 @@ SCALED_ENEMY_MS = function(level, base_ms)
 end
 
 BOSS_SCALE_BY_LEVEL = 
-{0, 0, 0, 0, 0, 3,
- 0, 0, 0, 0, 0, 6,
- 0, 0, 0, 0, 0, 0, 0, 9,
- 0, 0, 0, 0, 0, 0, 12}
+{0, 0, 0, 0, 0, 2,
+ 0, 0, 0, 0, 0, 4,
+ 0, 0, 0, 0, 0, 0, 0, 6,
+ 0, 0, 0, 0, 0, 0, 8}
 
 SCALED_BOSS_HP = function(level, base_hp)
   local scale = BOSS_SCALE_BY_LEVEL[level]

@@ -207,6 +207,17 @@ function WorldManager:create_character_cards()
   for i, card in ipairs(Character_Cards) do
     card.x = x + (i-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING)
   end
+
+  -- Create perks panel
+  if not self.perks_panel then
+    self.perks_panel = PerksPanel{
+      group = self.ui,
+      perks = self.perks or {}
+    }
+  else
+    -- Update existing perks panel
+    self.perks_panel:set_perks(self.perks or {})
+  end
 end
 
 function WorldManager:update(dt)
@@ -235,6 +246,11 @@ function WorldManager:update(dt)
     else
       self.character_cards_open = false
       Kill_All_Cards()
+      -- Hide perks panel when closing character cards
+      if self.perks_panel then
+        self.perks_panel:die()
+        self.perks_panel = nil
+      end
     end
   end
 
@@ -272,6 +288,10 @@ function WorldManager:update(dt)
   if self.character_cards_open then
     for _, card in ipairs(Character_Cards) do
       card:update(dt)
+    end
+    -- Update perks panel if it exists
+    if self.perks_panel then
+      self.perks_panel:update(dt)
     end
   end
 end
@@ -435,6 +455,10 @@ function WorldManager:draw()
     for _, card in ipairs(Character_Cards) do
       card:draw()
     end
+    -- Draw perks panel if it exists
+    if self.perks_panel then
+      self.perks_panel:draw()
+    end
   end
 end
 
@@ -466,6 +490,31 @@ function WorldManager:put_in_first_available_inventory_slot(item)
     end
   end
   return false
+end
+
+-- Perk management functions
+function WorldManager:add_perk(perk)
+  if self.perks_panel and self.perks_panel:add_perk(perk) then
+    self:save_run()
+    return true
+  end
+  return false
+end
+
+function WorldManager:remove_perk(index)
+  if self.perks_panel and self.perks_panel:remove_perk(index) then
+    self:save_run()
+    return true
+  end
+  return false
+end
+
+function WorldManager:set_perks(perks)
+  self.perks = perks or {}
+  if self.perks_panel then
+    self.perks_panel:set_perks(self.perks)
+  end
+  self:save_run()
 end
 
 function WorldManager:transition_to_buy_screen()

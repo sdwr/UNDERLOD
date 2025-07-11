@@ -83,6 +83,12 @@ function PerksPanel:remove_perk(index)
 end
 
 function PerksPanel:die()
+  for _, slot in ipairs(self.slots) do
+    slot:die()
+  end
+  if self.title then
+    self.title.dead = true
+  end
   self.dead = true
 end
 
