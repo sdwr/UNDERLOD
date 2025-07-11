@@ -22,7 +22,7 @@ fns['init_enemy'] = function(self)
 
   self.stopChasingInRange = true
 
-  self.attack_range = attack_ranges['medium-long']
+  self.attack_range = attack_ranges['ranged']
   self.attack_sensor = Circle(self.x, self.y, self.attack_range)
 
   --set attacks
