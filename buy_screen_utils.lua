@@ -18,7 +18,7 @@ function BuildLevelText(level_list, level, x, y)
   -- if level_list[level].environmental_hazards and level_list[level].environmental_hazards.type then
   --   table.insert(info_text_content, {text = '[fg]Hazards ' .. level_list[level].environmental_hazards.type .. 'Lv. ' .. level_list[level].environmental_hazards.level, font = pixul_font, alignment = 'center', height_multiplier = 1.5})
   -- end
-  if level_list[level].boss then
+  if level_list[level] and level_list[level].boss then
     table.insert(info_text_content, {text = '[fg]BOSS: ' .. level_list[level].boss, font = pixul_font, alignment = 'center', height_multiplier = 1.5})
   end
   if LEVEL_TO_PERKS[level] then

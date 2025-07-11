@@ -107,8 +107,9 @@ function WorldManager:create_class_lists()
 end
 
 function WorldManager:create_arena(level, offset_x)
-
-  local arena = Arena{
+  local arena_class = level == 0 and Level0 or Arena
+  
+  local arena = arena_class{
     level = level,
     x = offset_x,
     offset_x = offset_x,
@@ -125,6 +126,8 @@ function WorldManager:create_arena(level, offset_x)
     self.gold_counter = arena.gold_counter
 
     arena:create_walls()
+    
+    -- Only spawn teams and enemies for non-tutorial levels
     Spawn_Teams(arena)
     arena.spawn_manager:spawn_all_enemies_at_once()
 
@@ -136,6 +139,11 @@ function WorldManager:create_arena(level, offset_x)
     self.camera_target_x = gw -- Scroll to the right
     self.transitioning = true
     self.transition_progress = 0
+
+    if self.current_arena and self.current_arena.on_transition_start then
+      self.current_arena:on_transition_start()
+    end
+    
   end
 end
 
@@ -353,6 +361,20 @@ function WorldManager:move_objects_in_group(group, offset_x, offset_y)
   end
 end
 
+function WorldManager:replace_first_unit(character)
+  -- Add character to units
+  self.units = {Get_Basic_Unit(character)}
+  Replace_Team(self, 1, character)
+
+  self.level = 1
+
+  local save_data = Collect_Save_Data_From_State(self)
+  system.save_run(save_data)
+
+  -- Save the run
+  self:save_run()
+end
+
 function WorldManager:on_exit(to)
   
   Kill_Teams()
@@ -442,4 +464,20 @@ function WorldManager:put_in_first_available_inventory_slot(item)
     end
   end
   return false
+end
+
+function WorldManager:transition_to_buy_screen()
+  -- Transition to buy screen for level 1
+  Reset_Global_Proc_List()
+  slow_amount = 1
+  music_slow_amount = 1
+  main:add(BuyScreen'buy_screen')
+  
+  local save_data = Collect_Save_Data_From_State(self)
+  save_data.level = 1
+  save_data.reroll_shop = true
+  save_data.times_rerolled = 0
+  
+  system.save_run(save_data)
+  main:go_to('buy_screen', save_data)
 end

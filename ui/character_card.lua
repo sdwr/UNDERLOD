@@ -26,6 +26,10 @@ end
 function Kill_All_Cards()
   if not Character_Cards then return end
   for i, card in ipairs(Character_Cards) do
+    if card.last_round_display then
+      card.last_round_display:deactivate()
+      card.last_round_display.dead = true
+    end
     card:die()
   end
   Character_Cards = {}
@@ -268,6 +272,7 @@ end
 -- FIX: This function now correctly calls the refactored UI creation function.
 function CharacterCard:refreshText()
     self:createUIElements()
+
 end
 
 function CharacterCard:show_unit_stats_popup()
@@ -375,7 +380,11 @@ function CharacterCard:die()
   
   -- Clean up buttons
   if self.unit_stats_icon then
-    self.unit_stats_icon.dead = true
+    if self.unit_stats_icon.die then
+      self.unit_stats_icon:die()
+    else
+      self.unit_stats_icon.dead = true
+    end
   end
   
   if self.last_round_stats_icon then

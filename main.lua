@@ -8,6 +8,7 @@ require 'achievements/achievements'
 require 'helper/helper'
 require 'animations/init'
 require 'ui/ui'
+require 'ui/character_tooltip'
 require 'arena'
 require 'procs/procs'
 require 'procs/perks'
@@ -17,6 +18,7 @@ require 'buy_screen_utils'
 require 'buy_screen'
 require 'door'
 require 'world_manager'
+require 'level_0'
 require 'objects'
 require 'miscellaneous_objects'
 require 'media'
@@ -994,6 +996,20 @@ function init()
 
   }
 
+  character_images = {
+    ['default'] = sword,
+    ['swordsman'] = sword,
+    ['archer'] = bow2,
+    ['laser'] = reticle,
+  }
+
+  character_colors = {
+    ['default'] = grey[0],
+    ['swordsman'] = white[0],
+    ['archer'] = green[0],
+    ['laser'] = blue[0],
+  }
+
   item_stat_lookup = {
     ['dmg'] = 'damage',
     ['mvspd'] = 'move speed',
@@ -1655,20 +1671,14 @@ function open_options(self)
         ui_switch2:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
         ui_switch1:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
         TransitionEffect { group = main.transitions, x = gw / 2, y = gh / 2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
-          slow_amount = 1
-          music_slow_amount = 1
-          run_time = 0
-          passives = {}
-          main_song_instance:stop()
-          run_passive_pool = {}
-          max_units = MAX_UNITS
-          main:add(BuyScreen 'buy_screen')
-          locked_state = false
-          system.save_run()
           
-
           local new_run = Start_New_Run()
-          main:go_to('buy_screen', new_run)
+          system.save_state()
+          main:add(WorldManager'world_manager')
+          system.save_run()
+
+          new_run.level = 0
+          main:go_to('world_manager', new_run)
         end, text = Text({ { text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center' } }, global_text_tags) }
       end }
     end

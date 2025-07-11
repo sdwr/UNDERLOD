@@ -243,7 +243,7 @@ end
 function Arena:update(dt)
   self:update_game_object(dt)
 
-  if Helper.Unit:all_troops_are_dead() then
+  if Helper.Unit:all_troops_are_dead() and self.level ~= 0 then
     self:die()
   end
   
@@ -490,17 +490,9 @@ function Arena:die()
         ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
         ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
         TransitionEffect{group = main.transitions, x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
-          slow_amount = 1
-          music_slow_amount = 1
-          run_time = 0
-          gold = STARTING_GOLD
-          passives = {}
-          main_song_instance:stop()
-          run_passive_pool = {}
-          max_units = MAX_UNITS
+          local new_run = Start_New_Run()
           main:add(BuyScreen'buy_screen')
           system.save_run()
-          local new_run = Start_New_Run()
           main:go_to('buy_screen', new_run)
         end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
       end}
@@ -983,12 +975,26 @@ FloorItem:implement(GameObject)
 function FloorItem:init(args)
   self:init_game_object(args)
   
+  -- Generic properties
   self.item = args.item
-  self.cost = self.item.cost
-  self.image = find_item_image(self.item)
-  self.colors = self.item.colors
-  self.tier_color = item_to_color(self.item)
-  self.stats = self.item.stats
+  self.character = args.character -- For character selection
+  self.is_character_selection = args.is_character_selection or false
+  
+  if self.is_character_selection then
+    -- Character selection mode
+    self.cost = 0 -- Characters are free
+    self.image = find_character_image(self.character)
+    self.colors = character_to_color(self.character)
+    self.tier_color = character_to_color(self.character)
+    self.stats = {}
+  else
+    -- Item mode
+    self.cost = self.item.cost
+    self.image = find_item_image(self.item)
+    self.colors = self.item.colors
+    self.tier_color = item_to_color(self.item)
+    self.stats = self.item.stats
+  end
   
   -- Collision detection radius
   self.interaction_radius = 35 -- Slightly smaller activation range
@@ -1017,14 +1023,22 @@ function FloorItem:init(args)
   self.interact_with_mouse = true
   self.colliding_with_mouse = false
 
-  self.cost_text = Text({{text = '[yellow]' .. self.cost, font = pixul_font, alignment = 'center'}}, global_text_tags)
+  if not self.is_character_selection then
+    self.cost_text = Text({{text = '[yellow]' .. self.cost, font = pixul_font, alignment = 'center'}}, global_text_tags)
+  end
   
   -- Creation effect
   self:creation_effect()
 end
 
 function FloorItem:creation_effect()
-  if self.cost <= 5 then
+  if self.is_character_selection then
+    pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    self.spring:pull(0.2, 200, 10)
+    for i = 1, 10 do
+      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+    end
+  elseif self.cost <= 5 then
     --no effect
     pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     self.spring:pull(0.2, 200, 10)
@@ -1106,7 +1120,11 @@ function FloorItem:update(dt)
     
     -- Purchase after 2 seconds of shaking
     if self.shake_timer <= 0 then
-      self:purchase()
+      if self.is_character_selection then
+        self:select_character()
+      else
+        self:purchase()
+      end
     end
   end
 end
@@ -1144,7 +1162,28 @@ function FloorItem:stop_shake()
 end
 
 function FloorItem:purchase()
+  if self.is_character_selection then
+    -- Character selection mode
+    self:select_character()
+  else
+    -- Item purchase mode
+    self:purchase_item()
+  end
+end
+
+function FloorItem:select_character()
+  self.is_purchased = true
+
+  self.parent:on_character_selected(self.character)
   
+  -- Purchase effect
+  for i = 1, 20 do
+    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+  end
+  
+end
+
+function FloorItem:purchase_item()
   -- Add item to first available slot
   local try_purchase = main.current:put_in_first_available_inventory_slot(self.item)
   if not try_purchase then
@@ -1208,7 +1247,9 @@ function FloorItem:draw()
   graphics.rectangle(self.x + shake_x, self.y + shake_y, width, height, 6, 6, self.tier_color, 2)
   
   
-  self.cost_text:draw(self.x + width/2, self.y - height/2)
+  if self.cost_text then
+    self.cost_text:draw(self.x + width/2, self.y - height/2)
+  end
   
   -- Draw item image
   if self.image then
@@ -1234,12 +1275,23 @@ function FloorItem:create_tooltip()
     self.tooltip = nil
   end
 
-  self.tooltip = ItemTooltip{
-    group = main.current.ui,
-    item = self.item,
-    x = gw/2, 
-    y = gh/2 - 50,
-  }
+  if self.is_character_selection then
+    -- Create character tooltip
+    self.tooltip = CharacterTooltip{
+      group = main.current.ui,
+      character = self.character,
+      x = gw/2, 
+      y = gh/2 - 50,
+    }
+  else
+    -- Create item tooltip
+    self.tooltip = ItemTooltip{
+      group = main.current.ui,
+      item = self.item,
+      x = gw/2, 
+      y = gh/2 - 50,
+    }
+  end
 end
 
 function FloorItem:remove_tooltip()

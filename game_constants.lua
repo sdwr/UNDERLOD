@@ -134,6 +134,7 @@ LEVEL_TO_PERKS = {
 }
 
 UNIT_LEVEL_TO_NUMBER_OF_TROOPS = {
+  [0] = 3,
   [1] = 3,
   [2] = 4,
   [3] = 5,
