@@ -32,7 +32,7 @@ fns['init_enemy'] = function(self)
   self.class = 'regular_enemy'
 
   --set sensors
-  self.attack_sensor = Circle(self.x, self.y, 100)
+  self.attack_sensor = Circle(self.x, self.y, 500)
 
   self.move_option_weight = 0.4
 
@@ -54,7 +54,7 @@ fns['init_enemy'] = function(self)
       group = main.current.main,
       team = "enemy",
       charge_duration = 0.5, -- Shorter charge time than charger (1.75)
-      spell_duration = 0.8, -- Shorter duration than charger (2.5)
+      spell_duration = 1.8, -- Shorter duration than charger (2.5)
       aim_width = 4, -- Thinner aim line than charger (8)
       cancel_on_death = true,
       keep_original_angle = true,

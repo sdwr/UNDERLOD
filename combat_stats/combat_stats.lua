@@ -16,7 +16,7 @@ TROOP_DAMAGE = 10
 TROOP_MS = 50
 
 
-REGULAR_ENEMY_HP = 30
+REGULAR_ENEMY_HP = 70
 REGULAR_ENEMY_DAMAGE = 10
 REGULAR_ENEMY_MS = 30
 
@@ -115,7 +115,8 @@ unit_stat_multipliers = {
 
 enemy_type_to_stats = {
 
-    ['seeker'] = { dmg = 0.25, mvspd = 1.4 },
+    ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
+    ['chaser'] = { dmg = 1, mvspd = 1 },
     ['shooter'] = {},
     
     ['cleaver'] = { dmg = 1.5 },

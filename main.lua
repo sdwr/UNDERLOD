@@ -1298,6 +1298,7 @@ function init()
   normal_enemies = {
     'shooter',
     'seeker',
+    'chaser',
   }
 
   special_enemies = {
@@ -1332,18 +1333,22 @@ function init()
   normal_enemy_by_tier = {
     [1] = {
       'seeker',
+      'chaser',
       'goblin_archer',
     },
     [1.5] = {
       'seeker',
+      'chaser',
       'goblin_archer',
     },
     [2] = {
       'shooter',
+      'chaser',
       'goblin_archer',
     },
     [2.5] = {
       'shooter',
+      'chaser',
       'goblin_archer',
     }
   }
@@ -1393,6 +1398,7 @@ function init()
   enemy_to_round_power = {
     ['shooter'] = 100,
     ['seeker'] = 100,
+    ['chaser'] = 100,
     ['goblin_archer'] = 100,
     --special enemies t1
     ['cleaver'] = 300,
@@ -1429,6 +1435,7 @@ function init()
   enemy_to_color = {
     ['shooter'] = grey[0],
     ['seeker'] = grey[0],
+    ['chaser'] = grey[0],
     ['cleaver'] = grey[0],
 
     ['rager'] = red[3],
