@@ -19,6 +19,9 @@ end
 
 
 
+function Get_Basic_Unit()
+  return {character = 'swordsman', level = 0, reserve = {0, 0}, items = {nil, nil, nil, nil, nil, nil}}
+end
 
 function Validate_Save_Data(data)
   local valid = true

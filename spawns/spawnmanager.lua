@@ -17,6 +17,9 @@ function SpawnGlobals.Init()
   SpawnGlobals.wall_width = 0.2*gw/2
   SpawnGlobals.wall_height = 0.2*gh/2
 
+  SpawnGlobals.TROOP_0_SPAWN_X = gw/2
+  SpawnGlobals.TROOP_0_SPAWN_Y = gh/2 - 100
+
   SpawnGlobals.TROOP_SPAWN_BASE_X = SpawnGlobals.wall_width + 50  -- Further left than before
   SpawnGlobals.TROOP_SPAWN_BASE_Y = gh/2
   SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING = 60
@@ -25,6 +28,13 @@ function SpawnGlobals.Init()
   SpawnGlobals.TROOP_FORMATION_VERTICAL_SPACING = 10
   SpawnGlobals.SUCTION_FORCE = 800
   SpawnGlobals.SUCTION_MIN_DISTANCE = 5
+
+  TEAM_INDEX_TO_SPAWN_LOCATION = {
+    [0] = {x = SpawnGlobals.TROOP_SPAWN_BASE_X, y = SpawnGlobals.TROOP_SPAWN_BASE_Y - SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING},
+    [1] = {x = SpawnGlobals.TROOP_SPAWN_BASE_X, y = SpawnGlobals.TROOP_SPAWN_BASE_Y - SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING},
+    [2] = {x = SpawnGlobals.TROOP_SPAWN_BASE_X, y = SpawnGlobals.TROOP_SPAWN_BASE_Y + SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING},
+    [3] = {x = SpawnGlobals.TROOP_SPAWN_BASE_X, y = SpawnGlobals.TROOP_SPAWN_BASE_Y + SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING * 1.5},
+  }
   
   SpawnGlobals.spawn_markers = {
     {x = right_x, y = mid_y},
@@ -219,25 +229,9 @@ function Spawn_Teams(arena)
       table.insert(Helper.Unit.teams, i, team)
 
       -- Left side formation positions
-      local spawn_x, spawn_y
-      if i == 1 then
-          -- First team: top left
-          spawn_x = SpawnGlobals.TROOP_SPAWN_BASE_X
-          spawn_y = SpawnGlobals.TROOP_SPAWN_BASE_Y - SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING
-      elseif i == 2 then
-          -- Second team: middle left
-          spawn_x = SpawnGlobals.TROOP_SPAWN_BASE_X
-          spawn_y = SpawnGlobals.TROOP_SPAWN_BASE_Y + SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING
-      elseif i == 3 then
-          -- Third team: bottom left
-          spawn_x = SpawnGlobals.TROOP_SPAWN_BASE_X
-          spawn_y = SpawnGlobals.TROOP_SPAWN_BASE_Y + SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING * 1.5
-      else
-          -- Additional teams: spread out in a left-side formation
-          local angle = (i - 1) * (2 * math.pi / math.max(#arena.units, 3))
-          spawn_x = SpawnGlobals.TROOP_SPAWN_BASE_X + math.cos(angle) * SpawnGlobals.TROOP_SPAWN_CIRCLE_RADIUS
-          spawn_y = SpawnGlobals.TROOP_SPAWN_BASE_Y + math.sin(angle) * SpawnGlobals.TROOP_SPAWN_CIRCLE_RADIUS
-      end
+      local spawn_location = TEAM_INDEX_TO_SPAWN_LOCATION[i]
+      local spawn_x = spawn_location.x
+      local spawn_y = spawn_location.y
 
       team:set_troop_data({
           group = arena.main,
@@ -248,8 +242,14 @@ function Spawn_Teams(arena)
           items = unit.items,
           passives = arena.passives
       })
-      
-      -- ====================================================================
+
+      Spawn_Troops(arena, team, unit, {x = spawn_x, y = spawn_y})
+      team:apply_item_procs()
+  end
+end
+
+function Spawn_Troops(arena, team, unit, spawn_location)
+        -- ====================================================================
       -- MODIFIED SPAWN LOGIC
       -- Spawns 5 troops in a cluster with fixed, non-overlapping positions.
       -- ====================================================================
@@ -257,42 +257,39 @@ function Spawn_Teams(arena)
       -- Define 5 fixed positions that look random but are carefully spaced to avoid collisions
       -- Each position is at least 12 pixels apart from others to prevent overlapping
       local offsets = {
-          {x = 0, y = 0},       -- Center
-          {x = -12, y = -10},   -- Top-left
-          {x = 12, y = -10},    -- Top-right  
-          {x = -10, y = 12},    -- Bottom-left
-          {x = 10, y = 12},      -- Bottom-right
-          {x = 0, y = 24},       -- Bottom-center
-          {x = 0, y = -20}       -- Top-center
-      }
+        {x = 0, y = 0},       -- Center
+        {x = -12, y = -10},   -- Top-left
+        {x = 12, y = -10},    -- Top-right  
+        {x = -10, y = 12},    -- Bottom-left
+        {x = 10, y = 12},      -- Bottom-right
+        {x = 0, y = 24},       -- Bottom-center
+        {x = 0, y = -20}       -- Top-center
+    }
 
-      local number_of_troops = UNIT_LEVEL_TO_NUMBER_OF_TROOPS[unit.level]
+    local number_of_troops = UNIT_LEVEL_TO_NUMBER_OF_TROOPS[unit.level]
 
-      if unit.troop_hps then
-        for i = 1, number_of_troops do
-          local health = unit.troop_hps[i]
-          if health and health > 0 then
-            local offset = offsets[i]
-            local x = spawn_x + offset.x
-            local y = spawn_y + offset.y
-            local troop = team:add_troop(x, y)
-            troop.hp = unit.troop_hps[i]
-          end
-        end
-      else
-        for i = 1, number_of_troops do
+    if unit.troop_hps then
+      for i = 1, number_of_troops do
+        local health = unit.troop_hps[i]
+        if health and health > 0 then
           local offset = offsets[i]
-            local x = spawn_x + offset.x
-            local y = spawn_y + offset.y
-            
-            team:add_troop(x, y)
+          local x = spawn_location.x + offset.x
+          local y = spawn_location.y + offset.y
+          local troop = team:add_troop(x, y)
+          troop.hp = unit.troop_hps[i]
         end
       end
-      -- ====================================================================
-
-      team:apply_item_procs()
+    else
+      for i = 1, number_of_troops do
+        local offset = offsets[i]
+          local x = spawn_location.x + offset.x
+          local y = spawn_location.y + offset.y
+          
+          team:add_troop(x, y)
+      end
+    end
+    -- ====================================================================
   end
-end
 
 -- possible hazards:
 -- 1. laser

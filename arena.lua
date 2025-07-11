@@ -490,17 +490,9 @@ function Arena:die()
         ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
         ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
         TransitionEffect{group = main.transitions, x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
-          slow_amount = 1
-          music_slow_amount = 1
-          run_time = 0
-          gold = STARTING_GOLD
-          passives = {}
-          main_song_instance:stop()
-          run_passive_pool = {}
-          max_units = MAX_UNITS
+          local new_run = Start_New_Run()
           main:add(BuyScreen'buy_screen')
           system.save_run()
-          local new_run = Start_New_Run()
           main:go_to('buy_screen', new_run)
         end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
       end}

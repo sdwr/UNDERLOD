@@ -62,11 +62,8 @@ function CharacterTooltip:get_character_description()
 end
 
 function CharacterTooltip:get_character_stats()
-  local stats = {
-    ['archer'] = {damage = 15, speed = 10},
-    ['laser'] = {damage = 20, speed = 5},
-  }
-  return {}
+  local stats = {}
+  return stats[self.character] or {}
 end
 
 function CharacterTooltip:update(dt)
