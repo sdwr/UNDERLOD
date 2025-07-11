@@ -122,7 +122,7 @@ function WorldManager:create_arena(level, offset_x)
     self.camera_target_y = 0
     self:assign_physics_groups(arena)
     arena.units = self.units
-    self.progress_bar = arena.progress_bar
+    self.gold_counter = arena.gold_counter
 
     arena:create_walls()
     Spawn_Teams(arena)
@@ -131,7 +131,7 @@ function WorldManager:create_arena(level, offset_x)
   else
     self.next_arena = arena
     arena.units = self.units
-    self.progress_bar = arena.progress_bar
+    self.gold_counter = arena.gold_counter
     
     self.camera_target_x = gw -- Scroll to the right
     self.transitioning = true

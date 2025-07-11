@@ -402,11 +402,9 @@ function SpawnManager:update(dt)
       if #enemies <= 0 and self.pending_spawns <= 0 then
           -- Check if this was the final wave
           if self.current_wave_index >= #self.level_data.waves then
-              -- For the final wave, we DO check the progress bar to confirm a win.
-              if not main.current.progress_bar or main.current.progress_bar:is_complete() then
-                  self:change_state('finished')
-                  self.arena:level_clear()
-              end
+              -- For the final wave, we just need all enemies dead
+              self:change_state('finished')
+              self.arena:level_clear()
           else
               -- ===================================================================
               -- FIX: For intermediate waves, the only condition to advance is that

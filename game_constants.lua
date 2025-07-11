@@ -140,11 +140,12 @@ UNIT_LEVEL_TO_NUMBER_OF_TROOPS = {
 
 MAX_ITEMS = 6
 
+--allow 6 items per level for now
 UNIT_LEVEL_TO_NUMBER_OF_ITEMS = {
-  [1] = 2,
-  [2] = 3,
-  [3] = 4,
-  [4] = 5,
+  [1] = 6,
+  [2] = 6,
+  [3] = 6,
+  [4] = 6,
   [5] = 6,
 }
 

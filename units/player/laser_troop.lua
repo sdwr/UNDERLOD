@@ -1,6 +1,6 @@
 Laser_Troop = Troop:extend()
 function Laser_Troop:init(data)
-  self.base_attack_range = attack_ranges['ranged']
+  self.base_attack_range = TROOP_RANGE
   Laser_Troop.super.init(self, data)
 end
 

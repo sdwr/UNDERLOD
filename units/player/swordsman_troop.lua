@@ -1,6 +1,6 @@
 Swordsman_Troop = Troop:extend()
 function Swordsman_Troop:init(data)
-  self.base_attack_range = attack_ranges['melee']
+  self.base_attack_range = TROOP_SWORDSMAN_RANGE
   Swordsman_Troop.super.init(self, data)
 
   self.baseCooldown = attack_speeds['ultra-fast']

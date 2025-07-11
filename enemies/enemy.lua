@@ -415,18 +415,10 @@ function Enemy:die()
   self.super.die(self)
   self.dead = true
   _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.9}
-  -- update progress bar in arena, based on enemy value
-  --progress bar is hidden for bosses
-  if main.current.progress_bar then
-    local progress_amount = 0
-    progress_amount = enemy_to_round_power[self.type] or 0
-
-    -- Defer particle creation to avoid physics world lock issues
-    main.current.t:after(0, function()
-      if main.current.progress_bar then
-        main.current.progress_bar:increase_with_particles(progress_amount, self.x, self.y)
-      end
-    end)
+  
+  -- Drop gold when enemy dies
+  if main.current and main.current.gold_counter then
+    main.current.gold_counter:add_gold(1, self.x, self.y)
   end
 
   if self.parent and self.parent.summons and self.parent.summons > 0 then

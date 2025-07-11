@@ -1,6 +1,6 @@
 Archer_Troop = Troop:extend()
 function Archer_Troop:init(data)
-  self.base_attack_range = attack_ranges['medium-plus']
+  self.base_attack_range = TROOP_RANGE
   Archer_Troop.super.init(self, data)
 
 

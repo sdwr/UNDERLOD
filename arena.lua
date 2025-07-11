@@ -33,7 +33,7 @@ function Arena:init(args)
   self:init_physics()
   self:init_spawn_manager()
   
-  self:create_progress_bar()
+  self:create_gold_counter()
   self:create_walls()
 
   -- self:create_hotbar()
@@ -80,17 +80,9 @@ function Arena:create_walls()
   self:create_door()
 end
 
-function Arena:create_progress_bar()
-  if Is_Boss_Level(self.level) then
-    
-  else
-    if self.level_list and self.level_list[self.level] then
-      self.progress_bar = ProgressBar{group = self.ui, x = gw/2 + self.offset_x, y = 20 + self.offset_y, w = 200, h = 10, color = orange[0], progress = 0}
-      self.progress_bar:set_max_progress(self.level_list[self.level].round_power or 0)
-      self.progress_bar:set_number_of_waves(#self.level_list[self.level].waves)
-      self.progress_bar:set_waves_power(self.level_list[self.level].waves_power)
-    end
-  end
+function Arena:create_gold_counter()
+  -- Create gold counter in top left
+  self.gold_counter = GoldCounter{group = self.ui, x = 60 + self.offset_x, y = 15 + self.offset_y}
 end
 
 function Arena:select_character_by_index(i)
@@ -992,7 +984,6 @@ function FloorItem:init(args)
   self:init_game_object(args)
   
   self.item = args.item
-  --cost only used as tier
   self.cost = self.item.cost
   self.image = find_item_image(self.item)
   self.colors = self.item.colors
@@ -1023,9 +1014,7 @@ function FloorItem:init(args)
   self.interact_with_mouse = true
   self.colliding_with_mouse = false
 
-  
-  -- Cost text
-  -- self.cost_text = Text({{text = '[yellow]' .. self.cost, font = pixul_font, alignment = 'center'}}, global_text_tags)
+  self.cost_text = Text({{text = '[yellow]' .. self.cost, font = pixul_font, alignment = 'center'}}, global_text_tags)
   
   -- Creation effect
   self:creation_effect()
@@ -1210,8 +1199,7 @@ function FloorItem:draw()
   graphics.rectangle(self.x + shake_x, self.y + shake_y, width, height, 6, 6, self.tier_color, 2)
   
   
-  -- Draw cost text
-  -- self.cost_text:draw(self.x + width/2, self.y - height/2)
+  self.cost_text:draw(self.x + width/2, self.y - height/2)
   
   -- Draw item image
   if self.image then
