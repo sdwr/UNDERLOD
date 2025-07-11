@@ -139,6 +139,11 @@ function WorldManager:create_arena(level, offset_x)
     self.camera_target_x = gw -- Scroll to the right
     self.transitioning = true
     self.transition_progress = 0
+
+    if self.current_arena and self.current_arena.on_transition_start then
+      self.current_arena:on_transition_start()
+    end
+    
   end
 end
 

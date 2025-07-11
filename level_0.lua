@@ -18,15 +18,17 @@ function Level0:init(args)
 end
 
 function Level0:create_tutorial_text()
-  self.tutorial_text = Text2{group = self.ui, x = gw/2 + self.offset_x, y = 50 + self.offset_y, lines = {{text = '[wavy_mid, fg]Choose your character:', font = fat_font, alignment = 'center'}}}
+  self.tutorial_text = Text2{group = self.floor, x = gw/2 + self.offset_x, y = 50 + self.offset_y, lines = {{text = '[wavy_mid, fg]Choose your character:', font = fat_font, alignment = 'center'}}}
 end
 
 function Level0:create_combat_tutorial_text()
-  self.tutorial_text = Text2{group = self.ui, x = gw/2 + self.offset_x, y = 100 + self.offset_y, 
+  self.tutorial_text = Text2{group = self.floor, x = gw/2 + self.offset_x, y = 100 + self.offset_y, 
   lines = {
     {text = '[wavy_mid, fg]Your units attack automatically', font = pixul_font, alignment = 'center'},
+    {text = '', font = pixul_font, alignment = 'center'},
     {text = '[wavy_mid, fg]LMB to move', font = pixul_font, alignment = 'center'},
     {text = '[wavy_mid, fg]RMB to target', font = pixul_font, alignment = 'center'},
+    {text = '', font = pixul_font, alignment = 'center'},
     {text = '[wavy_mid, fg]C to open inventory', font = pixul_font, alignment = 'center'},
     {text = '[wavy_mid, fg]ESC to pause', font = pixul_font, alignment = 'center'},
   }}
@@ -79,14 +81,24 @@ function Level0:remove_all_character_items()
 end
 
 function Level0:remove_tutorial_text()
-  print('removing tutorial text')
   if self.tutorial_text then
     self.tutorial_text.dead = true
     self.tutorial_text = nil
   end
 end
 
+function Level0:remove_combat_tutorial_text()
+  if self.combat_tutorial_text then
+    self.combat_tutorial_text.dead = true
+    self.combat_tutorial_text = nil
+  end
+end
 
+function Level0:on_transition_start()
+  self:remove_tutorial_text()
+  self:create_combat_tutorial_text()
+  self:remove_all_character_items()
+end
 
 function Level0:update(dt)
   Level0.super.update(self, dt)
