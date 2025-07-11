@@ -36,7 +36,7 @@ fns['init_enemy'] = function(self)
       freeze_rotation = true,
       curve_depth = 25,
       curve_frequency = 1,
-      arrow_interval = 1,
+      arrow_interval = 1.5,
       color = purple[0],
       parent = self
     }

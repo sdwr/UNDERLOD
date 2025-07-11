@@ -1351,7 +1351,6 @@ function init()
     [1] = {
       'seeker',
       'chaser',
-      'goblin_archer',
     },
     [1.5] = {
       'seeker',
@@ -1372,10 +1371,10 @@ function init()
 
   special_enemy_by_tier = {
     [1] = {
-      'burst',
+      'goblin_archer',
       'selfburst',
+      'burst',
       'snakearrow',
-      'big_goblin_archer',
       'slowcharger',
       'turret',
     },
@@ -1383,6 +1382,7 @@ function init()
       'mortar',
       'singlemortar',
       'charger',
+      'big_goblin_archer',
       'boomerang',
       'turret',
     },

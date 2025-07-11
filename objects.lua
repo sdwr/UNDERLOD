@@ -318,9 +318,9 @@ end
 
 function Unit:update(dt)
   self:update_game_object(dt)
-  if self.hp < self.max_hp then
+  if self.hp < self.max_hp or self.isBoss then
     self:show_hp()
-  else
+  elseif not self.isBoss then
     self:hide_hp()
   end
   
