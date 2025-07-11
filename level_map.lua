@@ -9,6 +9,8 @@ LEVEL_MAP_ICON_RADIUS = 10
 LEVEL_MAP_ICON_INNER_RADIUS = 9
 LEVEL_MAP_ICON_BORDER_WIDTH = 3
 LEVEL_MAP_Y_POSITION = 15
+LEVEL_MAP_EXPANDED_SPACING = 120 -- Spacing when expanded during transition
+LEVEL_MAP_TRANSITION_DURATION = 2 -- Match WorldManager transition duration
 
 LevelMap = Object:extend()
 LevelMap:implement(GameObject)
@@ -20,6 +22,13 @@ function LevelMap:init(args)
   self.level = args.level
   self.parent = args.parent
   self.level_list = args.level_list
+  
+  -- Animation state
+  self.transitioning = false
+  self.transition_progress = 0
+  self.transition_duration = LEVEL_MAP_TRANSITION_DURATION
+  self.expanded_spacing = LEVEL_MAP_EXPANDED_SPACING
+  self.normal_spacing = LEVEL_MAP_ICON_SPACING
 
   self:build()
 end
@@ -27,11 +36,9 @@ end
 function LevelMap:build()
   self.levels = {}
   self.level_connections = {}
-
   self.level = self.parent.level
-  -- Calculate which levels to show (current level in middle of 5)
   local start_level = self.level - 2
-
+  
   for i = 1, 5 do
     local level = start_level + i - 1
     if level <= 0 or level > NUMBER_OF_ROUNDS then
@@ -47,6 +54,10 @@ function LevelMap:build()
     end
   end
 
+  self:build_connections()
+end
+
+function LevelMap:build_connections()
   self.level_connections = {}
   for i = 1, #self.levels - 1 do
     if i == 1 and self.level > 1 then
@@ -59,8 +70,44 @@ function LevelMap:build()
   end
 end
 
+function LevelMap:start_transition()
+  self.transitioning = true
+  self.transition_progress = 0
+end
+
+function LevelMap:end_transition()
+  self.transitioning = false
+  self.transition_progress = 0
+  self:update_level_positions(0) -- Reset to normal spacing
+end
+
+function LevelMap:update_level_positions(progress)
+  local current_spacing = self.normal_spacing + (self.expanded_spacing - self.normal_spacing) * progress
+  
+  for i, level in ipairs(self.levels) do
+    local target_x = self.x - LEVEL_MAP_ICON_OFFSET_X + (i-1) * current_spacing
+    level.x = target_x
+    level.shape.x = target_x
+  end
+  
+  -- Rebuild connections with new positions
+  self:build_connections()
+end
+
 function LevelMap:update(dt)
   self:update_game_object(dt)
+  
+  if self.transitioning then
+    self.transition_progress = self.transition_progress + dt / self.transition_duration
+    
+    if self.transition_progress >= 1 then
+      self.transition_progress = 1
+    end
+    
+    -- Use smooth easing for the animation
+    local ease_progress = self.transition_progress * self.transition_progress * (3 - 2 * self.transition_progress)
+    self:update_level_positions(ease_progress)
+  end
 end
 
 function LevelMap:draw()

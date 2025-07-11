@@ -342,6 +342,11 @@ function WorldManager:complete_transition()
     self:assign_physics_groups(self.current_arena)
     self:create_level_map()
     
+    -- End level map transition animation
+    if self.level_map then
+      self.level_map:end_transition()
+    end
+    
     -- Set up teams for the new arena
     Spawn_Teams(self.current_arena)
     self.current_arena:create_walls()
@@ -395,6 +400,10 @@ function WorldManager:advance_to_next_level()
     self.transitioning = true
     Kill_All_Cards()
     
+    -- Start level map transition animation
+    if self.level_map then
+      self.level_map:start_transition()
+    end
     
     if self.current_arena then
       self.current_arena:remove_all_floor_items()
