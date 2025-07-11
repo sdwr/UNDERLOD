@@ -991,8 +991,11 @@ function FloorItem:init(args)
   self.stats = self.item.stats
   
   -- Collision detection radius
-  self.interaction_radius = 40
+  self.interaction_radius = 35 -- Slightly smaller activation range
   self.aggro_sensor = Circle(self.x, self.y, self.interaction_radius)
+  
+  -- Prevent immediate activation when spawning
+  self.spawn_protection = true
   
   -- Visual effects
   self.hover_timer = 0
@@ -1065,8 +1068,14 @@ function FloorItem:update(dt)
   if self.parent and self.parent.main then
     local objects = self.parent.main:get_objects_in_shape(self.aggro_sensor, troop_classes)
     if #objects > 0 then
-      self.is_hovered = true
+      -- Only activate if spawn protection is off
+      if self.spawn_protection then
+        self.is_hovered = false
+      else
+        self.is_hovered = true
+      end
     else
+      self.spawn_protection = false
       self.is_hovered = false
       self.failed_to_purchase = false
     end
