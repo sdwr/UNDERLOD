@@ -260,6 +260,8 @@ function Helper.Damage:apply_death_effects(unit, from)
     HitCircle{group = main.current.effects, x = unit.x, y = unit.y, rs = 12}:scale_down(0.3):change_color(0.5, unit.color)
     
     -- Create death animation
+    slow(0.25, 1.5)
+    shoot1:play{pitch = random:float(0.95, 1.05), volume = 1}
     TroopDeathAnimation{group = main.current.effects, x = unit.x, y = unit.y}
     
     -- Clean up dot area

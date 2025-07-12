@@ -1726,10 +1726,12 @@ function Unit:launch_at_facing(force_magnitude, duration)
   self:set_friction(0.4)
 
   self.t:after(duration, function()
-    self:set_velocity(0, 0)
+    if self.is_launching then
+      self:set_velocity(0, 0)
+      self.is_launching = false
+    end
     self:set_damping(orig_damping)
     self:set_friction(orig_friction)
-    self.is_launching = false
   end)
 
 

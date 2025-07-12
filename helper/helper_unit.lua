@@ -519,6 +519,10 @@ function Helper.Unit:apply_knockback(unit, force, angle, duration, push_invulner
         return
     end
 
+    if unit.is_launching then
+        return
+    end
+
     -- Apply knockback resistance
     local resistance = unit.knockback_resistance or 0
     local final_force = force * (1 - resistance)
@@ -652,6 +656,34 @@ function Helper.Unit:update_units_with_combat_data(arena)
       end
     end
   end
+end
+
+-- ===================================================================
+-- TROOP RESURRECTION HELPER FUNCTION
+-- This function handles resurrecting a troop at a given location
+-- ===================================================================
+function Helper.Unit:resurrect_troop(team, location, invulnerable_duration, color)
+  if not team then
+    return nil
+  end
+  
+  local troop = team:add_troop(location.x, location.y)
+  troop:set_invulnerable(invulnerable_duration or 0)
+  
+  Area{
+    group = main.current.effects,
+    x = location.x, y = location.y,
+    pick_shape = 'circle',
+    damage = 0,
+    r = 6, duration = 0.4, color = color or white[0],
+    is_troop = troop.is_troop,
+    unit = troop,
+    follow_unit = true,
+  }
+  
+  holylight:play{pitch = random:float(0.8, 1.2), volume = 1.8}
+  
+  return troop
 end
 
 

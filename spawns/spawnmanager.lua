@@ -308,7 +308,7 @@ end
 
 function Spawn_Troops_At_Locations(arena, team, locations)
   for i, location in ipairs(locations) do
-    local troop = team:add_troop(location.x, location.y)
+    Helper.Unit:resurrect_troop(team, location)
   end
 end
 

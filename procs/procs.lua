@@ -1506,22 +1506,9 @@ function Proc_Phoenix:onDeath()
 
 
   trigger:after(1, function()
-    if team and team:get_alive_troop_count() >= 1 then
+    if team then
       local location = team:get_center()
-      local troop = team:add_troop(location.x, location.y)
-      troop:set_invulnerable(self.invulnerable_duration)
-      
-      Area{
-        group = main.current.effects,
-        x = location.x, y = location.y,
-        pick_shape = 'circle',
-        damage = 0,
-        r = 6, duration = 0.4, color = self.color,
-        is_troop = self.unit.is_troop,
-        unit = troop,
-        follow_unit = true,
-      }
-      holylight:play{pitch = random:float(0.8, 1.2), volume = 1.8}
+      Helper.Unit:resurrect_troop(team, location, self.invulnerable_duration, self.color)
     end
   end)
   

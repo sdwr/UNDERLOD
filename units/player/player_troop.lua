@@ -432,9 +432,6 @@ end
 
 
 function Troop:onDeath()
-  slow(0.25, 1.5)
-  shoot1:play{pitch = random:float(0.95, 1.05), volume = 1}
-  TroopDeathAnimation{group = main.current.effects, x = self.x, y = self.y}
   self.state_change_functions['death'](self)
   self.death_function()
 end
