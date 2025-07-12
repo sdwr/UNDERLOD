@@ -523,7 +523,7 @@ MECH2_SPRITE_H = 80
 
 MECH2_SPRITE_SCALE = 1.8
 
-mech2_idle = Image(spriteFolder .. '/Mech Assets Pack/Cyan/Animation/mechani7done', 'nearest')
+mech2_idle = Image(spriteFolder .. '/Mech Assets Pack/Cyan/Animation/Mechani7done', 'nearest')
 
 mech2_idle_g = create_grid(mech2_idle, 80, 80)
 mech2_idle_a = create_animation(mech2_idle_g, 1, 36, 80, 80, 0.1)
