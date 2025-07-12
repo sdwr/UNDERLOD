@@ -306,7 +306,7 @@ function Arena:create_floor_items()
   }
   
   if not self.floor_item_text then
-    self.floor_item_text = Text2{group = self.ui, x = gw/2 + self.offset_x, y = gh/2 - 70 + self.offset_y, lines = {{text = '[wavy_mid, cbyc3]Buy an item:', font = fat_font, alignment = 'center'}}}
+    self.floor_item_text = Text2{group = self.floor, x = gw/2 + self.offset_x, y = gh/2 - 70 + self.offset_y, lines = {{text = '[wavy_mid, cbyc3]Buy an item:', font = fat_font, alignment = 'center'}}}
   end
 
   for i, item in ipairs(items) do

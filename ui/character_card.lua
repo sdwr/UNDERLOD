@@ -100,13 +100,40 @@ function CharacterCard:createNameText()
 end
 
 -- NEW FUNCTION: Handles creation of elements that need to be refreshed.
+function CharacterCard:cleanupUIElements()
+  -- Clean up buttons
+  if self.unit_stats_icon then
+    if self.unit_stats_icon.die then
+      self.unit_stats_icon:die()
+    else
+      self.unit_stats_icon.dead = true
+    end
+  end
+  
+  if self.last_round_stats_icon then
+    self.last_round_stats_icon.dead = true
+  end
+
+  -- Clean up set bonus elements
+  if self.set_bonus_elements then
+    for _, element in ipairs(self.set_bonus_elements) do
+      element.dead = true
+    end
+    self.set_bonus_elements = {}
+  end
+  
+  -- Clean up popups
+  self:hide_popup()
+  self:hide_set_bonus_popup()
+  self:hide_last_round_popup()
+end
+
 function CharacterCard:createUIElements()
   
     self:createNameText()
 
     -- Ensure old elements are removed before creating new ones to prevent duplicates.
-    if self.unit_stats_icon then self.unit_stats_icon.dead = true end
-    if self.last_round_display then self.last_round_display.dead = true end
+    self:cleanupUIElements()
 
     -- Create unit stats icon (small button next to class name)
     self.unit_stats_icon = Button{
@@ -144,7 +171,7 @@ function CharacterCard:create_set_bonus_display()
   -- Remove old set bonus elements
   if self.set_bonus_elements then
     for _, element in ipairs(self.set_bonus_elements) do
-      if element.text then element.text.dead = true end
+      element.dead = true
     end
   end
   
@@ -172,7 +199,7 @@ function CharacterCard:create_set_bonus_display()
     local set_button = Button{
       group = self.group,
       x = self.x,
-      y = self.y - self.h/2 + 25 + y_offset, -- Move up under character name
+      y = self.y - self.h/2 + 30 + y_offset, -- Move up under character name
       w = 80,
       h = 14,
       bg_color = 'bg',
@@ -286,8 +313,8 @@ end
 
 -- FIX: This function now correctly calls the refactored UI creation function.
 function CharacterCard:refreshText()
+    self:cleanupUIElements()
     self:createUIElements()
-    self:create_set_bonus_display()
 end
 
 function CharacterCard:show_unit_stats_popup()
@@ -379,6 +406,13 @@ function CharacterCard:refreshText()
   if self.last_round_stats_icon then
     self.last_round_stats_icon.dead = true
   end
+
+  if self.set_bonus_elements then
+    for _, element in ipairs(self.set_bonus_elements) do
+      element.dead = true
+    end
+    self.set_bonus_elements = {}
+  end
   
 
   
@@ -441,36 +475,8 @@ function CharacterCard:die()
   end
   self.name_text.dead = true
   
-  -- Clean up buttons
-  if self.unit_stats_icon then
-    if self.unit_stats_icon.die then
-      self.unit_stats_icon:die()
-    else
-      self.unit_stats_icon.dead = true
-    end
-  end
-  
-  if self.last_round_stats_icon then
-    self.last_round_stats_icon.dead = true
-  end
-  
-  -- Clean up set bonus elements
-  if self.set_bonus_elements then
-    for _, element in ipairs(self.set_bonus_elements) do
-      if element.die then
-        element:die()
-      else
-        element.dead = true
-      end
-    end
-  end
-  
-
-  
-  -- Clean up popups
-  self:hide_popup()
-  self:hide_set_bonus_popup()
-  self:hide_last_round_popup()
+  -- Clean up UI elements
+  self:cleanupUIElements()
   
   self.dead = true
 end
