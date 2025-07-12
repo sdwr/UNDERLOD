@@ -126,7 +126,13 @@ end
 
 --UI utils
 function find_item_image(item)
-  local image = item_images[item.name] or item_images[item.icon] or item_images['default']
+  -- Handle V2 items that have icon field
+  if item.icon then
+    local image = item_images[item.icon] or item_images['default']
+    return image
+  end
+  -- Handle legacy items that have name field
+  local image = item_images[item.name] or item_images['default']
   return image
 end
 
@@ -152,6 +158,10 @@ function get_rarity_color(rarity)
     return green[0]
   elseif rarity == "rare" then
     return blue[0]
+  elseif rarity == "epic" then
+    return purple[0]
+  elseif rarity == "legendary" then
+    return orange[0]
   else
     return fg[0]
   end

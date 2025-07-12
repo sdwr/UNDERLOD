@@ -1336,7 +1336,8 @@ end
 --duplicated from ItemPart (should be combined!!)
 function LooseItem:draw()
   if self.item then
-    local tier_color = item_to_color(self.item)
+    -- Use V2 item tier_color if available, otherwise fall back to item_to_color
+  local tier_color = self.item.tier_color or item_to_color(self.item)
     graphics.rectangle(self.x, self.y, self.w+4, self.h+4, 3, 3, tier_color)
     graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, bg[5])
     if self.item.colors then
@@ -1439,7 +1440,8 @@ function ItemCard:init(args)
   self.image = find_item_image(self.item)
   self.colors = self.item.colors
 
-  self.tier_color = item_to_color(self.item)
+  -- Use V2 item tier_color if available, otherwise fall back to item_to_color
+  self.tier_color = self.item.tier_color or item_to_color(self.item)
   self.stats = self.item.stats
 
   self.cost_text = Text({{text = '[yellow]' .. self.cost, font = pixul_font, alignment = 'center'}}, global_text_tags)

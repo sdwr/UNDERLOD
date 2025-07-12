@@ -13,6 +13,7 @@ require 'arena'
 require 'procs/procs'
 require 'procs/perks'
 require 'items'
+require 'items_v2'
 require 'mainmenu'
 require 'buy_screen_utils'
 require 'buy_screen'
@@ -1032,7 +1033,6 @@ function init()
     ['enrage'] = 'enrage',
     ['gold'] = 'gold',
     ['heal'] = 'heal',
-    ['explode'] = 'explode',
     ['fire_damage'] = 'fire',
     ['lightning_damage'] = 'shock',
     ['cold_damage'] = 'cold',
@@ -1044,7 +1044,7 @@ function init()
     ['crit_mult'] = 'crit',
     ['stun_chance'] = 'stun',
     ['knockback_resistance'] = 'knockback resistance',
-    ['cooldown_reduction'] = 'cooldown reduction',
+    ['cooldown_reduction'] = 'cdr',
     ['slow_per_element'] = 'slow per element',
 
     ['proc'] = 'Extra effect on attack',
@@ -1136,6 +1136,10 @@ function init()
 
   item_to_color = function(item)
     if not item then return grey[0] end
+
+    if item.rarity then
+      return get_rarity_color(item.rarity)
+    end
 
     local cost = item.cost or 0
     local color = grey[0]

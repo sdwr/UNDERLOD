@@ -10,8 +10,13 @@ local TOOLTIP_WIDTH = 220
 function ItemTooltip:init(args)
   self:init_game_object(args)
   self.item = args.item
-  self.item = Create_Item(self.item.name)
-  if not self.item then self.dead = true; return end
+  
+  -- Handle V2 items (which don't need conversion) vs legacy items
+  if not self.item.name or not self.item.icon then
+    -- Try to create legacy item
+    self.item = Create_Item(self.item.name)
+    if not self.item then self.dead = true; return end
+  end
 
   -- Animation and positioning
   self.spring = Spring(1, 150, 20)
@@ -39,14 +44,18 @@ function ItemTooltip:init(args)
   if self.item.stats then
       for key, val in pairs(self.item.stats) do
           local text = ''
-          if key == 'gold' then
-              text = '[yellow] ' .. val .. ' ' .. (item_stat_lookup[key] or '')
-          elseif key == 'enrage' or key == 'ghost' then
-              text = '[yellow] ' .. (item_stat_lookup[key] or '')
-          elseif key == 'proc' then
-              text = '[yellow]' .. 'custom proc... add later'
+          local display_name = item_stat_lookup and item_stat_lookup[key] or key
+          
+          -- Handle V2 item stats (numeric values)
+          if type(val) == 'number' then
+            if key == 'gold' then
+              text = '[yellow] ' .. val .. ' ' .. display_name
+            else
+              text = '[yellow] ' .. math.floor(val * 100) .. '% ' .. display_name
+            end
           else
-              text = '[yellow] ' .. val * 100 .. '% ' .. (item_stat_lookup[key] or '')
+            -- Handle legacy item stats (boolean values)
+            text = '[yellow] ' .. display_name
           end
           table.insert(stats_text_definitions, { text = text, font = pixul_font, alignment = 'center' })
       end
@@ -159,5 +168,5 @@ end
 
 function ItemTooltip:die()
   self.dead = true
-  if self.item then self.item:die() end
+  if self.item and self.item.die then self.item:die() end
 end

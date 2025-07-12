@@ -288,11 +288,11 @@ end
 function Arena:create_floor_items()
   self.floor_items = {}
   
-  -- Generate 3 random items
+  -- Generate 3 random items using the new V2 system
   local items = {}
   for i = 1, 3 do
     local tier = LEVEL_TO_TIER(self.level or 1)
-    local item = Get_Random_Item(tier, self.units, items)
+    local item = create_random_item(tier)
     if item then
       table.insert(items, item)
     end
@@ -1014,11 +1014,14 @@ function FloorItem:init(args)
     self.stats = {}
   else
     -- Item mode
-    self.cost = self.item.cost
+    -- self.cost = self.item.cost
+    self.cost = 0
     self.image = find_item_image(self.item)
     self.colors = self.item.colors
+    -- Use V2 item tier_color if available, otherwise fall back to item_to_color
     self.tier_color = item_to_color(self.item)
     self.stats = self.item.stats
+    self.name = self.item.name
   end
   
   -- Collision detection radius
@@ -1053,7 +1056,9 @@ function FloorItem:init(args)
   end
   
   -- Create name text with wrapping
-  self:create_name_text()
+  if self.is_character_selection or self.is_perk_selection then
+    self:create_name_text()
+  end
   
   -- Create bottom half text (stats for items, description for perks)
   self:create_bottom_text()
@@ -1063,8 +1068,10 @@ function FloorItem:init(args)
 end
 
 function FloorItem:create_name_text()
+  -- Use item name if available, otherwise fall back to self.name
+  local display_name = self.item and self.item.name or self.name
   -- Wrap the name text to fit within the card width (60px - 4px padding on each side = 52px)
-  local wrapped_lines = self:wrap_text(self.name, 52, pixul_font)
+  local wrapped_lines = self:wrap_text(display_name, 52, pixul_font)
   
   -- Create text definitions for each line
   local text_definitions = {}
@@ -1077,41 +1084,35 @@ end
 
 function FloorItem:create_bottom_text()
   if self.is_character_selection then
-    -- Characters don't need bottom text for now
     self.bottom_text = nil
   elseif self.is_perk_selection then
-    -- Create perk description text
     local desc = self.perk.description or 'No description available.'
     local wrapped_lines = self:wrap_text(desc, 52, pixul_font)
-    
     local text_definitions = {}
     for _, line in ipairs(wrapped_lines) do
       table.insert(text_definitions, {text = '[fgm2]' .. line, font = pixul_font, alignment = 'center'})
     end
-    
     self.bottom_text = Text(text_definitions, global_text_tags)
   else
-    -- Create item stats text
     local stats_lines = {}
     if self.stats then
       for key, val in pairs(self.stats) do
         local text = ''
         local display_name = item_stat_lookup and item_stat_lookup[key] or key
-        
-        -- if key == 'gold' then
-        --   text = '[yellow]' .. val .. ' ' .. display_name
-        -- elseif key == 'enrage' or key == 'ghost' then
-        --   text = '[yellow]' .. display_name
-        -- elseif key == 'proc' then
-        --   text = '[yellow]' .. display_name
-        -- else
-        --   text = '[yellow]+' .. (val * 100) .. '% ' .. display_name
-        -- end
-        text = '[yellow]+' .. display_name
+        if type(val) == 'number' then
+          if key == 'gold' then
+            text = '[yellow]+' .. val .. ' ' .. display_name
+          elseif ITEM_STATS and ITEM_STATS[key] and ITEM_STATS[key].increment then
+            text = '[yellow]+' .. val .. ' ' .. display_name
+          else
+            text = '[yellow]+' .. val .. ' ' .. display_name
+          end
+        else
+          text = '[yellow]+' .. display_name
+        end
         table.insert(stats_lines, {text = text, font = pixul_font, alignment = 'center'})
       end
     end
-    
     if #stats_lines > 0 then
       self.bottom_text = Text(stats_lines, global_text_tags)
     else
@@ -1299,7 +1300,7 @@ function FloorItem:select_character()
   
   -- Purchase effect
   for i = 1, 20 do
-    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color or grey[0]}
   end
   
 end
@@ -1324,7 +1325,7 @@ function FloorItem:select_perk()
     
     -- Purchase effect
     for i = 1, 20 do
-      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color or grey[0]}
     end
     
     -- Remove all perk floor items and continue to buy screen
@@ -1361,7 +1362,7 @@ function FloorItem:purchase_item()
   
   -- Purchase effect
   for i = 1, 20 do
-    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color or grey[0]}
   end
   
   -- Remove all floor items
@@ -1398,8 +1399,9 @@ function FloorItem:draw()
     end
   end
   
-  -- Draw border
-  graphics.rectangle(self.x + shake_x, self.y + shake_y, width, height, 6, 6, self.tier_color, 2)
+  -- Draw border with fallback color
+  local border_color = self.tier_color or grey[0]
+  graphics.rectangle(self.x + shake_x, self.y + shake_y, width, height, 6, 6, border_color, 2)
   
   -- Draw name text at the top of the card
   if self.name_text then

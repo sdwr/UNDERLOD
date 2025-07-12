@@ -525,7 +525,8 @@ function ItemPart:draw(y)
   if not self.parent.grabbed then
     graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
     local item = self.parent.unit.items[self.i]
-    local tier_color = item_to_color(item)
+    -- Use V2 item tier_color if available, otherwise fall back to item_to_color
+    local tier_color = item and (item.tier_color or item_to_color(item)) or grey[0]
     graphics.rectangle(self.x, self.y, self.w+4, self.h+4, 3, 3, tier_color)
     graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, bg[5])
 

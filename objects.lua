@@ -2030,7 +2030,15 @@ function Unit:process_items_to_stats()
   for _, item in ipairs(self.items) do
     if item.stats then
       for stat, amt in pairs(item.stats) do
-        processed_stats[stat] = (processed_stats[stat] or 0) + amt
+        -- Check if this is a V2 item with increment values
+        if ITEM_STATS and ITEM_STATS[stat] and ITEM_STATS[stat].increment then
+          -- Use the increment value to calculate the actual stat bonus
+          local actual_amount = amt * ITEM_STATS[stat].increment
+          processed_stats[stat] = (processed_stats[stat] or 0) + actual_amount
+        else
+          -- Legacy item system - use the amount directly
+          processed_stats[stat] = (processed_stats[stat] or 0) + amt
+        end
       end
     end
   end
