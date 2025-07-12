@@ -46,7 +46,7 @@ function GoldCounter:update_display()
   end
   
   self.text = Text2{
-    group = main.current.ui, 
+    group = main.current.world_ui, 
     x = self.x + offset_x, 
     y = self.y + offset_y, 
     lines = {{text = '[wavy_mid, fg]gold: [yellow]' .. tostring(gold), font = pixul_font, alignment = 'left'}}

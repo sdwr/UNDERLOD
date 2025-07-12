@@ -1347,7 +1347,7 @@ function FloorItem:create_tooltip()
   if self.is_character_selection then
     -- Create character tooltip
     self.tooltip = CharacterTooltip{
-      group = main.current.ui,
+      group = self.parent.ui,
       character = self.character,
       x = gw/2, 
       y = gh/2 - 50,
@@ -1355,7 +1355,7 @@ function FloorItem:create_tooltip()
   elseif self.is_perk_selection then
     -- Create perk tooltip
     self.tooltip = PerkTooltip{
-      group = main.current.ui,
+      group = self.parent.ui,
       perk = self.perk,
       x = gw/2, 
       y = gh/2 - 50,
@@ -1363,7 +1363,7 @@ function FloorItem:create_tooltip()
   else
     -- Create item tooltip
     self.tooltip = ItemTooltip{
-      group = main.current.ui,
+      group = self.parent.ui,
       item = self.item,
       x = gw/2, 
       y = gh/2 - 50,
