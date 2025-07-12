@@ -66,7 +66,7 @@ function CharacterCard:init(args)
     -- FIX: The call to Refresh_All_Cards_Text() has been removed from here.
     -- It should be called once, AFTER all cards have been created.
     
-    if self.spawn_effect then SpawnEffect{group = main.current.effects, x = self.x, y = self.y, color = self.character_color} end
+    if self.spawn_effect then SpawnEffect{group = main.current.world_ui, x = self.x, y = self.y, color = self.character_color} end
 end
 
 function CharacterCard:createItemParts()
@@ -200,7 +200,7 @@ function CharacterCard:show_last_round_stats_popup()
     table.insert(text_lines, {text = '[fg]No combat data', font = pixul_font, alignment = 'center'})
   end
   
-  self.last_round_popup = InfoText{group = main.current.ui, force_update = false}
+  self.last_round_popup = InfoText{group = main.current.world_ui, force_update = false}
   self.last_round_popup:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
   self.last_round_popup.x = self.x
   self.last_round_popup.y = self.y - self.h/2 + 60
@@ -302,7 +302,7 @@ function CharacterCard:show_unit_stats_popup()
     })
   end
   
-  self.popup = InfoText{group = main.current.ui, force_update = false}
+  self.popup = InfoText{group = main.current.world_ui, force_update = false}
   self.popup:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
   self.popup.x = self.x
   self.popup.y = self.y - self.h/2 + 60
@@ -484,7 +484,7 @@ function ItemPart:update(dt)
 
   if input.m1.pressed and self.colliding_with_mouse and self:hasItem() then
     self.itemGrabbed = true
-    self.looseItem = LooseItem{group = main.current.ui, item = self:getItem(), parent = self}
+    self.looseItem = LooseItem{group = main.current.world_ui, item = self:getItem(), parent = self}
     self:remove_tooltip()
   end
 
@@ -607,7 +607,7 @@ function ItemPart:create_tooltip()
   end
 
   self.tooltip = ItemTooltip{
-    group = main.current.ui,
+    group = main.current.world_ui,
     item = self:getItem(),
     x = gw/2, 
     y = gh/2 - 50,

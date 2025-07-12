@@ -126,7 +126,7 @@ LEVEL_TO_TIER = function(level)
 end
 
 LEVEL_TO_PERKS = {
-  [4] = true,
+  [2] = true,
   [8] = true,
   [12] = true,
   [16] = true,
