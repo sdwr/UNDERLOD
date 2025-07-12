@@ -307,20 +307,24 @@ function init()
   
   --new items
   local d               = 'newItems/'
-  skull                 = Image(d .. 'skull-small')
+  simpleshield          = Image(d .. 'simpleshield')
+  sword                 = Image(d .. 'sword')
+  simpleboots           = Image(d .. 'simpleboots')
+  simplearmor           = Image(d .. 'simplearmor')
+  orb                   = Image(d .. 'orb')
   potion2               = Image(d .. 'potion2')
+
+
+
+  skull                 = Image(d .. 'skull-small')
   fancyarmor            = Image(d .. 'fancyarmor')
   turtle                = Image(d .. 'turtle')
   leaf                  = Image(d .. 'leaf')
-  simpleshield          = Image(d .. 'simpleshield')
   linegoesup            = Image(d .. 'linegoesup')
-  orb                   = Image(d .. 'orb')
-  sword                 = Image(d .. 'sword')
   rock                  = Image(d .. 'rock')
   flask                 = Image(d .. 'flask')
   gem                   = Image(d .. 'gem')
   sun                   = Image(d .. 'sun')
-  simpleboots           = Image(d .. 'simpleboots')
   mace                  = Image(d .. 'mace')
   fire                  = Image(d .. 'fire')
   lightning             = Image(d .. 'lightning')
