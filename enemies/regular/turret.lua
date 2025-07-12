@@ -74,7 +74,7 @@ function MultiProjectile:init(args)
   self:init_game_object(args)
 
   self.damage = get_dmg_value(self.damage)
-  self.angle_offset = random:float(-math.pi/4, math.pi/4)
+  self.angle_offset = random:float(-math.pi/8, math.pi/8)
   self.projectile_count = self.projectile_count or 3
   self.spread_angle = self.spread_angle or math.pi/12
   self.delay_between = self.delay_between or 0.1

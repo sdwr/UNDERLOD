@@ -897,6 +897,7 @@ enemy_type_to_size = {
   ['chaser'] = 'regular',
   ['shooter'] = 'regular',
   ['goblin_archer'] = 'regular',
+  ['archer'] = 'special',
   ['spawner'] = 'special',
   ['spread'] = 'special',
   ['stomper'] = 'special',

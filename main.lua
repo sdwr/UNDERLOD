@@ -1372,6 +1372,7 @@ function init()
   special_enemy_by_tier = {
     [1] = {
       'goblin_archer',
+      'archer',
       'selfburst',
       'burst',
       'snakearrow',
@@ -1429,6 +1430,7 @@ function init()
     ['seeker'] = 100,
     ['chaser'] = 100,
     ['goblin_archer'] = 100,
+    ['archer'] = 150,
     --special enemies t1
     ['cleaver'] = 300,
 
@@ -1485,6 +1487,7 @@ function init()
     ['summoner'] = purple[3],
     ['assassin'] = purple[3],
     ['big_goblin_archer'] = green[3],
+    ['archer'] = red[3],
     ['selfburst'] = orange[3],
     ['slowcharger'] = orange[3],
     ['turret'] = red[3],

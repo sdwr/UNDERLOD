@@ -162,6 +162,7 @@ enemy_type_to_stats = {
     ['cleaver'] = { dmg = 1.5 },
     ['big_goblin_archer'] = { dmg = 1.5, mvspd = 3 },
     ['goblin_archer'] = { dmg = 1.5, mvspd = 3 },
+    ['archer'] = { dmg = 1.8, mvspd = 2.5 },
     ['turret'] = { dmg = 1.2 },
 
     ['arcspread'] = { dmg = 0.5 },
