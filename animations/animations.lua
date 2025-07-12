@@ -513,7 +513,7 @@ MECH1_SPRITE_H = 80
 
 MECH1_SPRITE_SCALE = 1.8
 
-mech1_idle = Image(spriteFolder .. '/Mech Assets Pack/Grey/Animation/Mechani4done', 'nearest')
+mech1_idle = Image(spriteFolder .. '/Mech Assets Pack/Grey/Animation/mechani4done', 'nearest')
 
 mech1_idle_g = create_grid(mech1_idle, 80, 80)
 mech1_idle_a = create_animation(mech1_idle_g, 1, 36, 80, 80, 0.1)
@@ -523,7 +523,7 @@ MECH2_SPRITE_H = 80
 
 MECH2_SPRITE_SCALE = 1.8
 
-mech2_idle = Image(spriteFolder .. '/Mech Assets Pack/Cyan/Animation/Mechani7done', 'nearest')
+mech2_idle = Image(spriteFolder .. '/Mech Assets Pack/Cyan/Animation/mechani7done', 'nearest')
 
 mech2_idle_g = create_grid(mech2_idle, 80, 80)
 mech2_idle_a = create_animation(mech2_idle_g, 1, 36, 80, 80, 0.1)
@@ -533,7 +533,7 @@ MECH3_SPRITE_H = 80
 
 MECH3_SPRITE_SCALE = 1.8
 
-mech3_idle = Image(spriteFolder .. '/Mech Assets Pack/Green/Animation/Mechanidone', 'nearest')
+mech3_idle = Image(spriteFolder .. '/Mech Assets Pack/Green/Animation/mechanidone', 'nearest')
 
 mech3_idle_g = create_grid(mech3_idle, 80, 80)
 mech3_idle_a = create_animation(mech3_idle_g, 1, 36, 80, 80, 0.1)
