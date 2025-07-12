@@ -1381,6 +1381,7 @@ function init()
     [1.5] = {
       'mortar',
       'singlemortar',
+      'line_mortar',
       'charger',
       'big_goblin_archer',
       'boomerang',
@@ -1389,6 +1390,7 @@ function init()
     [2] = {
       'mortar',
       'singlemortar',
+      'line_mortar',
       'snakearrow',
       'charger',
       'boomerang',
@@ -1397,6 +1399,7 @@ function init()
     [2.5] = {
       'mortar',
       'singlemortar',
+      'line_mortar',
       'snakearrow',
       'charger',
       'boomerang',
@@ -1409,6 +1412,7 @@ function init()
       'burst',
       'selfburst',
       'singlemortar',
+      'line_mortar',
       'snakearrow',
       'plasma',
       'big_goblin_archer',
@@ -1440,6 +1444,7 @@ function init()
     ['firewall_caster'] = 500,
     ['mortar'] = 500,
     ['singlemortar'] = 500,
+    ['line_mortar'] = 500,
     ['snakearrow'] = 400,
     ['spread'] = 500,
     ['spawner'] = 500,
@@ -1466,6 +1471,7 @@ function init()
     ['firewall_caster'] = red[3],
     ['mortar'] = orange[3],
     ['singlemortar'] = green[3],
+    ['line_mortar'] = red[3],
     ['snakearrow'] = purple[3],
     ['spawner'] = orange[3],
     ['bomb'] = orange[3],

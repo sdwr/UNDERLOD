@@ -609,7 +609,8 @@ function Stomp:init(args)
       self.y = self.target.y + math.random(-self.target_offset or 0, self.target_offset or 0)
     end
 
-    orb1:play({volume = 0.5})
+    self.sound_volume = self.sound_volume or 0.5
+    orb1:play({volume = self.sound_volume})
 
     -- Main effect colors
     self.color = self.color or red[0]
@@ -685,7 +686,7 @@ function Stomp:stomp()
     self.current_color = self.color:clone()
     self.current_color.a = 0.3
 
-    earth2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    earth2:play{pitch = random:float(0.95, 1.05), volume = self.sound_volume}
     
     -- 5. On impact, start the expanding yellow circle animation.
     self.t:tween(0.2, self, {impact_radius = self.attack_sensor.rs}, math.linear)

@@ -912,6 +912,7 @@ enemy_type_to_size = {
   ['big_goblin_archer'] = 'special',
   ['slowcharger'] = 'special',
   ['turret'] = 'special',
+  ['line_mortar'] = 'special',
   
   -- Minibosses
   ['bigstomper'] = 'huge',

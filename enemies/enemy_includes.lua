@@ -30,6 +30,7 @@ require 'enemies/regular/goblin_archer'
 require 'enemies/regular/big_goblin_archer'
 require 'enemies/regular/slowcharger'
 require 'enemies/regular/turret'
+require 'enemies/regular/line_mortar'
 
 require 'enemies/miniboss/bigstomper'
 
