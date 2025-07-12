@@ -19,6 +19,8 @@ fns['init_enemy'] = function(self)
 
   self.baseActionTimer = 2
 
+  self.move_option_weight = 0
+
 
   self.stopChasingInRange = true
 

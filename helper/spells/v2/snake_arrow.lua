@@ -5,8 +5,8 @@ function SnakeArrows:init(args)
   self.color = self.color or green[0]
   self.damage = get_dmg_value(self.damage)
   self.speed = self.speed or 100
-  self.curve_depth = self.curve_depth or 15  -- How far the S-curve deviates from straight line (reduced from 30)
-  self.curve_frequency = self.curve_frequency or 1.5  -- How many S-curves per second (reduced from 2)
+  self.curve_depth = self.curve_depth or 10  -- How far the S-curve deviates from straight line (reduced from 30)
+  self.curve_frequency = self.curve_frequency or 0.4  -- How many S-curves per second (reduced from 2)
   self.duration = self.duration or 8
   self.radius = self.radius or 4
 
@@ -160,10 +160,10 @@ function SnakeArrow:update(dt)
 end
 
 function SnakeArrow:calculate_curve_offset()
-  -- Create an S-curve using sine wave with frequency doubling
+  -- Create a smooth, gentle curve using a simple sine wave
   local t = self.curve_time * self.curve_frequency * 2 * math.pi
-  local s_curve = math.sin(t) * math.sin(t / 2)  -- This creates an S-shape
-  return s_curve * self.curve_amplitude
+  local smooth_curve = math.sin(t)  -- Simple sine wave for smooth curve
+  return smooth_curve * self.curve_amplitude
 end
 
 function SnakeArrow:add_trail_particle()
