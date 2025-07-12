@@ -29,8 +29,11 @@ function Wave_Types:Get_Waves(level)
 
   if level == 1 then
     table.insert(wave, {'GROUP', 'seeker', 3, 'random'})
-    table.insert(wave, {'GROUP', 'chaser', 1, 'random'})
+    table.insert(wave, {'GROUP', 'turret', 1, 'random'})
+    
+    table.insert(wave, {'GROUP', 'goblin_archer', 1, 'random'})
     table.insert(wave, {'GROUP', 'archer', 2, 'random'})
+    table.insert(wave, {'GROUP', 'aim_spread', 1, 'random'})
     table.insert(waves, wave)
     return waves
   end
