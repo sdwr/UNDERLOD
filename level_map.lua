@@ -9,8 +9,6 @@ LEVEL_MAP_ICON_RADIUS = 10
 LEVEL_MAP_ICON_INNER_RADIUS = 9
 LEVEL_MAP_ICON_BORDER_WIDTH = 3
 LEVEL_MAP_Y_POSITION = 13
-LEVEL_MAP_EXPANDED_SPACING = 120 -- Spacing when expanded during transition
-LEVEL_MAP_TRANSITION_DURATION = 2 -- Match WorldManager transition duration
 
 LevelMap = Object:extend()
 LevelMap:implement(GameObject)
@@ -26,8 +24,8 @@ function LevelMap:init(args)
   -- Animation state
   self.transitioning = false
   self.transition_progress = 0
-  self.transition_duration = LEVEL_MAP_TRANSITION_DURATION
-  self.expanded_spacing = LEVEL_MAP_EXPANDED_SPACING
+  self.transition_duration = TRANSITION_DURATION / 1.5
+  self.expanded_spacing = gw
   self.normal_spacing = LEVEL_MAP_ICON_SPACING
 
   self:build()
@@ -85,13 +83,16 @@ function LevelMap:update_level_positions(progress)
   local current_spacing = self.normal_spacing + (self.expanded_spacing - self.normal_spacing) * progress
 
   for i, level in ipairs(self.levels) do
-    local target_x = self.x - LEVEL_MAP_ICON_OFFSET_X + (i-1) * current_spacing
-    level.x = target_x
-    level.shape.x = target_x
+    level.x = self:CALCULATE_LEVEL_MAP_WORLD_X(i, current_spacing)
+    level.shape.x = level.x
   end
 
   -- Rebuild connections with new positions
   self:build_connections()
+end
+
+function LevelMap:CALCULATE_LEVEL_MAP_WORLD_X(index, current_spacing)
+  return self.x - (current_spacing * (index - 3))
 end
 
 function LevelMap:update(dt)
@@ -111,6 +112,7 @@ function LevelMap:update(dt)
 end
 
 function LevelMap:draw()
+  -- graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
   -- Remove text drawing - no longer needed
   -- graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
   --   self.text:draw(self.x, self.y - 15, 0, 1, 1)

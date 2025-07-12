@@ -18,7 +18,7 @@ function WorldManager:init(name)
   
   -- Transition state
   self.transition_progress = 0
-  self.transition_duration = 2 -- seconds
+  self.transition_duration = TRANSITION_DURATION -- seconds
 end
 
 function WorldManager:on_enter(from)
@@ -151,7 +151,7 @@ function WorldManager:create_arena(level, offset_x)
     
     -- Trigger level map transition animation
     if self.level_map then
-      self.level_map:transition_start()
+      self.level_map:start_transition()
     end
 
   end
@@ -386,10 +386,6 @@ function WorldManager:complete_transition()
       self.level_map:end_transition()
     end
     
-    -- Trigger level map end transition animation
-    if self.level_map then
-      self.level_map:transition_end()
-    end
   end
   
   self.transitioning = false
@@ -454,10 +450,6 @@ function WorldManager:advance_to_next_level()
     -- Start transition
     self.transitioning = true
     Kill_All_Cards()
-
-    if self.level_map then
-      self.level_map:start_transition()
-    end
     
     
     if self.current_arena then
@@ -472,7 +464,7 @@ function WorldManager:advance_to_next_level()
     
     -- Trigger level map transition animation
     if self.level_map then
-      self.level_map:transition_start()
+      self.level_map:start_transition()
     end
   end
 end
