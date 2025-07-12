@@ -5,10 +5,17 @@ function SnakeArrows:init(args)
   self.color = self.color or green[0]
   self.damage = get_dmg_value(self.damage)
   self.speed = self.speed or 100
-  self.curve_depth = self.curve_depth or 30  -- How far the S-curve deviates from straight line
-  self.curve_frequency = self.curve_frequency or 2  -- How many S-curves per second
+  self.curve_depth = self.curve_depth or 15  -- How far the S-curve deviates from straight line (reduced from 30)
+  self.curve_frequency = self.curve_frequency or 1.5  -- How many S-curves per second (reduced from 2)
   self.duration = self.duration or 8
   self.radius = self.radius or 4
+
+  --fix rotation at start
+  if self.target then
+    self.r = math.atan2(self.target.y - self.y, self.target.x - self.x)
+  else
+    self.r = random:float(-math.pi, math.pi)
+  end
 
   self.num_arrows = self.num_arrows or 3
   --memory
@@ -31,14 +38,12 @@ function SnakeArrows:fire_arrow()
   self.arrows_left = self.arrows_left - 1
   if self.arrows_left <= 0 then self:die() end
 
-  local target = self.target
-  if not target then return end
 
   SnakeArrow{
     group = main.current.main,
     unit = self.unit,
     team = "enemy",
-    target = target,
+    r = self.r,
     damage = self.damage,
     speed = self.speed,
     curve_depth = self.curve_depth,
@@ -71,8 +76,8 @@ function SnakeArrow:init(args)
   self.color = self.color or green[0]
   self.damage = get_dmg_value(self.damage)
   self.speed = self.speed or 100
-  self.curve_depth = self.curve_depth or 30  -- How far the S-curve deviates from straight line
-  self.curve_frequency = self.curve_frequency or 2  -- How many S-curves per second
+  self.curve_depth = self.curve_depth or 15  -- How far the S-curve deviates from straight line (reduced from 30)
+  self.curve_frequency = self.curve_frequency or 1.5  -- How many S-curves per second (reduced from 2)
   self.duration = self.duration or 8
   self.radius = self.radius or 4
 
@@ -86,9 +91,7 @@ function SnakeArrow:init(args)
   
   -- Movement properties
   self.base_angle = self.r or 0  -- The base direction the arrow travels
-  if self.target then
-    self.base_angle = math.atan2(self.target.y - self.y, self.target.x - self.x)
-  end
+
   self.distance_traveled = 0
   self.start_x = self.x
   self.start_y = self.y
@@ -203,7 +206,7 @@ end
 function SnakeArrow:draw()
   if self.hidden then return end
   
-  graphics.push(self.x, self.y, self.r, self.spring.x, self.spring.x)
+  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.x)
   
   -- Draw trail
   for i, particle in ipairs(self.trail_particles) do

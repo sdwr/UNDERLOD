@@ -82,7 +82,7 @@ GET_LAST_BOSS_LEVEL = function(level)
 end
 
 ENEMY_SCALE_BY_LEVEL = 
-{0, 1, 3, 3, 4, 6, 
+{2, 2, 3, 4, 5, 6, 
  5, 6, 9, 7, 8, 12, 
  10, 11, 15, 12, 13, 18, 16, 
  17, 21, 17, 20, 24, 25}
