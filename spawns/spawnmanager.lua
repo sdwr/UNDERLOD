@@ -308,7 +308,7 @@ end
 
 function Spawn_Troops_At_Locations(arena, team, locations)
   for i, location in ipairs(locations) do
-    Helper.Unit:resurrect_troop(team, location)
+    Helper.Unit:resurrect_troop(team, nil, location)
   end
 end
 

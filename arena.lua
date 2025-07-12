@@ -256,6 +256,8 @@ function Arena:update(dt)
     
     self.post_main:update(dt)
     self.effects:update(dt)
+
+    self.ui:update(dt)
     
     -- Update spawn manager
     if self.spawn_manager then
@@ -267,6 +269,11 @@ end
 function Arena:level_clear()
   spawn_mark2:play{pitch = 1, volume = 0.8}
   Helper.Unit:update_units_with_combat_data(self)
+  
+  self.t:after(1, function()
+    Helper.Unit:resurrect_all_teams()
+    Helper.Unit:heal_all_teams_to_full()
+  end)
 
   self.t:after(DOOR_OPEN_DELAY, function() self.door:open() end)
   main.current:increase_level()
@@ -503,6 +510,7 @@ function Arena:draw()
   self.main:draw()
   self.post_main:draw()
   self.effects:draw()  
+  self.ui:draw()
 end
 
 function Arena:die()

@@ -154,7 +154,8 @@ function WorldManager:assign_physics_groups(arena)
   self.main = arena.main
   self.post_main = arena.post_main
   self.effects = arena.effects
-  self.ui = arena.ui
+  self.arena_ui = arena.ui
+  self.world_ui = Group()
   self.tutorial = arena.tutorial
   self.options_ui = arena.options_ui
   self.credits = arena.credits
@@ -166,16 +167,6 @@ function WorldManager:set_arenas_paused(paused)
   end
   if self.next_arena then
     self.next_arena.paused = paused
-  end
-end
-
-function WorldManager:try_buy_unit(cost)
-  if gold >= cost then
-    self:gain_gold(-cost)
-    gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
-    self.select_character_overlay = CharacterSelectOverlay{
-      group = self.ui
-    }
   end
 end
 
@@ -200,7 +191,7 @@ function WorldManager:create_character_cards()
   end
 
   for i, unit in ipairs(self.units) do
-    table.insert(Character_Cards, CharacterCard{group = self.ui, x = x + (i-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, unit = unit, character = unit.character, i = i, parent = self})
+    table.insert(Character_Cards, CharacterCard{group = self.arena_ui, x = x + (i-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, unit = unit, character = unit.character, i = i, parent = self})
     unit.spawn_effect = true
   end
 
@@ -211,7 +202,7 @@ function WorldManager:create_character_cards()
   -- Create perks panel
   if not self.perks_panel then
     self.perks_panel = PerksPanel{
-      group = self.ui,
+      group = self.arena_ui,
       perks = self.perks or {}
     }
   else
@@ -279,7 +270,7 @@ function WorldManager:update(dt)
     end
   end
 
-  self.ui:update(dt)
+  self.world_ui:update(dt)
   self.tutorial:update(dt)
   self.options_ui:update(dt)
   self.credits:update(dt)
@@ -316,18 +307,10 @@ end
 function WorldManager:complete_transition()
   -- Transfer player units from old arena to new arena
   if self.current_arena and self.next_arena then
-    --should add this onto the existing units
-    for _, team in pairs(Helper.Unit.teams) do
-      local troop_hps = {}
-      for _, troop in pairs(team.troops) do
-        if troop.dead then
-          table.insert(troop_hps, 0)
-        else
-          table.insert(troop_hps, troop.hp)
-        end
-      end
-      team.unit.troop_hps = troop_hps
-    end
+
+    -- restore all units to full at start of level for now
+    -- Helper.Unit:save_all_teams_hps()
+    Helper.Unit:restore_all_teams_hps()
 
     local save_data = Collect_Save_Data_From_State(self)
     save_data.reroll_shop = true
@@ -442,7 +425,6 @@ function WorldManager:draw()
     self.next_arena:draw()
   end
 
-  self.ui:draw()
   self.tutorial:draw()
   self.options_ui:draw()
   self.credits:draw()

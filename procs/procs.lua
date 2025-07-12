@@ -1508,7 +1508,7 @@ function Proc_Phoenix:onDeath()
   trigger:after(1, function()
     if team then
       local location = team:get_center()
-      Helper.Unit:resurrect_troop(team, location, self.invulnerable_duration, self.color)
+      Helper.Unit:resurrect_troop(team, self.unit, location, self.invulnerable_duration, self.color)
     end
   end)
   

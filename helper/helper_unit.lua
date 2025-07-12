@@ -658,13 +658,113 @@ function Helper.Unit:update_units_with_combat_data(arena)
   end
 end
 
+function Helper.Unit:save_all_teams_hps()
+    for _, team in pairs(Helper.Unit.teams) do
+        local troop_hps = {}
+        for _, troop in pairs(team.troops) do
+          if troop.dead then
+            table.insert(troop_hps, 0)
+          else
+            table.insert(troop_hps, troop.hp)
+          end
+        end
+        team.unit.troop_hps = troop_hps
+    end
+end
+
+function Helper.Unit:restore_all_teams_hps()
+    for _, team in pairs(Helper.Unit.teams) do
+        team.unit.troop_hps = nil
+    end
+end
+
+function Helper.Unit:heal_all_teams_to_full()
+  -- Cast a max strength max bounce healing wave to heal all units
+  for _, team in pairs(Helper.Unit.teams) do
+    local first_troop = team:get_first_alive_troop()
+    if first_troop then
+      -- Cast a powerful healing wave with maximum parameters
+      ChainHeal{
+        group = main.current.main,
+        is_troop = first_troop.is_troop,
+        parent = first_troop,
+        target = first_troop,
+        heal_amount = 999, -- Max healing amount
+        max_chains = 20, -- Maximum bounces
+        range = 600, -- Large range to hit all units
+        color = green[0], -- Bright green healing color
+      }
+      break
+    end
+  end
+end
+
+function Helper.Unit:resurrect_all_teams()
+    local tries_remaining = 20
+    
+    local resurrect_trigger = main.current.t:every(0.2, function()
+        -- Check if there are any dead troops left
+        local has_dead_troops = false
+        for _, team in pairs(Helper.Unit.teams) do
+            for _, troop in ipairs(team.troops) do
+                if troop.dead then
+                    has_dead_troops = true
+                    local success = Helper.Unit:try_resurrect_troop(team, troop)
+                    if success then
+                        break
+                    end
+                end
+            end
+            if has_dead_troops then
+                break
+            end
+        end
+        if not has_dead_troops then
+            main.current.t:cancel('resurrect_all_teams')
+        end
+    end, 20, nil, 'resurrect_all_teams')
+end
+
 -- ===================================================================
 -- TROOP RESURRECTION HELPER FUNCTION
 -- This function handles resurrecting a troop at a given location
 -- ===================================================================
-function Helper.Unit:resurrect_troop(team, location, invulnerable_duration, color)
+function Helper.Unit:try_resurrect_troop(team, troop)
+    if not troop.dead then
+        return false
+    end
+    
+    -- Find a valid spawn location
+    local spawn_attempts = 20
+    local location = team:get_center()
+    for i = 1, spawn_attempts do
+        location.x = location.x + random:float(-10, 10)
+        location.y = location.y + random:float(-10, 10)
+        local spawn_circle = Circle(location.x, location.y, 3)
+        local objects_in_spawn_area = main.current.main:get_objects_in_shape(spawn_circle, main.current.all_unit_classes)
+        if #objects_in_spawn_area == 0 then
+            -- Resurrect the troop at the valid location
+            return Helper.Unit:resurrect_troop(team, troop, location, 0)
+        end
+    end
+    print('failed to find spawn location for troop', troop)
+    return false
+end
+
+
+function Helper.Unit:resurrect_troop(team, troop, location, invulnerable_duration, color)
   if not team then
     return nil
+  end
+
+  -- Remove the dead troop from the team if it exists
+  if troop then
+    for i, t in ipairs(team.troops) do
+        if t == troop then
+            table.remove(team.troops, i)
+            removed_troop = true
+        end
+    end
   end
   
   local troop = team:add_troop(location.x, location.y)
