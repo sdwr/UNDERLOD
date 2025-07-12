@@ -37,11 +37,13 @@ function Load_Steam_State()
   end
 end
 
+if steam then
 --this is the callback function for when the stats are loaded
-function steam.userStats.onUserStatsReceived()
-  for k, v in pairs(ACHIEVEMENTS_TABLE) do
-    --local success, achieved = --steam.userStats.getAchievement(k)
-    -- ACHIEVEMENTS_TABLE[k].unlocked = achieved
+  function steam.userStats.onUserStatsReceived()
+    for k, v in pairs(ACHIEVEMENTS_TABLE) do
+      --local success, achieved = --steam.userStats.getAchievement(k)
+      -- ACHIEVEMENTS_TABLE[k].unlocked = achieved
+    end
   end
 end
 
