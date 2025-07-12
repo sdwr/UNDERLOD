@@ -253,7 +253,7 @@ function CharacterCard:level_up_unit()
   Refresh_All_Cards_Text()
   
   -- Save the run
-  buyScreen:save_run()
+  main.current:save_run()
 end
 
 function CharacterCard:redraw_item_parts()
