@@ -368,7 +368,12 @@ function Enemy:on_collision_enter(other, contact)
         local push_force = LAUNCH_PUSH_FORCE_ENEMY
         local dmg = REGULAR_PUSH_DAMAGE
         self:push(push_force, self:angle_to_object(other) + math.pi, nil, duration)
-        self:hit(dmg, other, nil, false, true)
+        --delay the damage to avoid box2d lock
+        self.t:after(0, function()
+          if self and not self.dead then
+            self:hit(dmg, other, nil, false, true)
+          end
+        end)
       else
         if self.haltOnPlayerContact then
           self:set_velocity(0,0)

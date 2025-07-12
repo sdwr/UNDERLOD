@@ -76,7 +76,12 @@ end
 fns['charge_hit'] = function(self, target)
   if target and not target.dead then
     -- Deal damage
-    target:hit(self.dmg * 2, self, nil, true, false)
+    --delay the damage to avoid box2d lockl
+    target.t:after(0, function()
+      if target and not target.dead then
+        target:hit(self.dmg * 2, self, nil, true, false)
+      end
+    end)
     
     -- Play hit sound
     _G[random:table{'swordsman1', 'swordsman2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.75}

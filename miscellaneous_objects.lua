@@ -1495,7 +1495,12 @@ function Critter:on_collision_enter(other, contact)
       dmg = 20
     end
     self:push(push_force, self:angle_to_object(other) + math.pi, nil, duration)
-    self:hit(dmg, other, nil, true, false)
+    --delay the damage to avoid box2d lock
+    self.t:after(0, function()
+      if self and not self.dead then
+        self:hit(dmg, other, nil, true, false)
+      end
+    end)
   end
 end
 
