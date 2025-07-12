@@ -136,19 +136,88 @@ function CharacterCard:createUIElements()
     }
     self.last_round_stats_icon.parent = self
     
-    if not self.level_up_button then
-    -- Create level up button in the middle of the card
-      self.level_up_button = LevelUpButton{
-          group = self.group,
-          x = self.x,
-          y = self.y - 10, -- Moved up more
-          parent = self
-      }
-      self.level_up_button.parent = self
+    -- Create set bonus display
+    self:create_set_bonus_display()
+end
+
+function CharacterCard:create_set_bonus_display()
+  -- Remove old set bonus elements
+  if self.set_bonus_elements then
+    for _, element in ipairs(self.set_bonus_elements) do
+      if element.text then element.text.dead = true end
+    end
+  end
+  
+  self.set_bonus_elements = {}
+  
+  -- Get unit sets
+  local unit_sets = self:get_unit_sets()
+  
+  if #unit_sets == 0 then return end
+  
+  -- Sort sets by name for consistent display
+  table.sort(unit_sets, function(a, b) return a.name < b.name end)
+  
+  -- Create button elements for each set
+  local y_offset = 0
+  for i, set_info in ipairs(unit_sets) do
+    local max_pieces = 0
+    for pieces, _ in pairs(set_info.bonuses) do
+      max_pieces = math.max(max_pieces, pieces)
     end
     
-    -- Create cost text
-    self:update_level_up_cost_display()
+    local set_color = set_info.color or 'fg'
+    local text = set_info.current_pieces .. ' / ' .. max_pieces .. ' ' .. set_info.name:upper()
+    
+    local set_button = Button{
+      group = self.group,
+      x = self.x,
+      y = self.y - self.h/2 + 25 + y_offset, -- Move up under character name
+      w = 80,
+      h = 14,
+      bg_color = 'bg',
+      fg_color = set_color, -- Use set color for text
+      button_text = text,
+      action = function() end, -- No action on click, just hover
+      set_info = set_info, -- Store set info for hover
+      no_spring = true -- Disable spring effect
+    }
+    set_button.parent = self
+    
+    table.insert(self.set_bonus_elements, set_button)
+    y_offset = y_offset + 16
+  end
+end
+
+function CharacterCard:get_unit_sets()
+  local sets = {}
+  local set_counts = {}
+  
+  -- Count items by set
+  if self.unit.items then
+    for _, item in ipairs(self.unit.items) do
+      if item and item.sets then
+        for _, set_name in ipairs(item.sets) do
+          set_counts[set_name] = (set_counts[set_name] or 0) + 1
+        end
+      end
+    end
+  end
+  
+  -- Build set info
+  for set_name, count in pairs(set_counts) do
+    local set_def = ITEM_SETS[set_name]
+    if set_def then
+      table.insert(sets, {
+        name = set_name,
+        current_pieces = count,
+        bonuses = set_def.bonuses,
+        color = set_def.color
+      })
+    end
+  end
+  
+  return sets
 end
 
 
@@ -213,66 +282,12 @@ function CharacterCard:hide_last_round_popup()
   end
 end
 
-function CharacterCard:get_level_up_cost()
-  local current_level = self.unit.level or 1
-  return UNIT_LEVEL_TO_LEVELUP_COST[current_level] or 999 -- Default high cost if no data
-end
 
-function CharacterCard:can_afford_level_up()
-  local cost = self:get_level_up_cost()
-  return gold >= cost
-end
-
-function CharacterCard:update_level_up_cost_display()
-  -- Update button appearance based on affordability
-  if self.level_up_button then
-    self.level_up_button:update_appearance()
-  end
-end
-
-function CharacterCard:level_up_unit()
-  local cost = self:get_level_up_cost()
-  
-  if not self:can_afford_level_up() then
-    -- Play error sound or show message
-    error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-    return
-  end
-  
-  -- Spend gold and level up
-  main.current:gain_gold(-cost)
-  self.unit.level = (self.unit.level or 1) + 1
-  
-  -- Play success sound
-  gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
-  
-  -- Redraw item parts to show the new item slot
-  self:redraw_item_parts()
-  
-  -- Update the card display
-  Refresh_All_Cards_Text()
-  
-  -- Save the run
-  main.current:save_run()
-end
-
-function CharacterCard:redraw_item_parts()
-  -- Remove old item parts
-  for i = 1, #self.items do
-    if self.items[i] then
-      self.items[i]:die()
-    end
-  end
-  self.items = {}
-  
-  -- Create new item parts based on current level
-  self:createItemParts()
-end
 
 -- FIX: This function now correctly calls the refactored UI creation function.
 function CharacterCard:refreshText()
     self:createUIElements()
-
+    self:create_set_bonus_display()
 end
 
 function CharacterCard:show_unit_stats_popup()
@@ -309,10 +324,48 @@ function CharacterCard:show_unit_stats_popup()
   self.popup.y = self.y - self.h/2 + 60
 end
 
+function CharacterCard:show_set_bonus_popup_for_set(set_info)
+  -- Create text lines for this specific set
+  local text_lines = {}
+  
+  -- Set name header
+  local set_color = set_info.color or 'fg'
+  table.insert(text_lines, {
+    text = '[' .. set_color .. ']' .. set_info.name:upper(), 
+    font = pixul_font, 
+    alignment = 'center'
+  })
+  
+  -- Set bonuses
+  for pieces, bonus in pairs(set_info.bonuses) do
+    local is_reached = set_info.current_pieces >= pieces
+    local color = is_reached and set_color or 'fgm2' -- Use set color if reached, gray if not
+    local checkmark = is_reached and 'O ' or '  '
+    
+    table.insert(text_lines, {
+      text = '[' .. color .. ']' .. checkmark .. pieces .. 'pc: ' .. bonus.desc, 
+      font = pixul_font, 
+      alignment = 'left'
+    })
+  end
+  
+  self.set_bonus_popup = InfoText{group = main.current.world_ui, force_update = false}
+  self.set_bonus_popup:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
+  self.set_bonus_popup.x = self.x
+  self.set_bonus_popup.y = self.y - self.h/2 + 60
+end
+
 function CharacterCard:hide_popup()
   if self.popup then
     self.popup:deactivate()
     self.popup = nil
+  end
+end
+
+function CharacterCard:hide_set_bonus_popup()
+  if self.set_bonus_popup then
+    self.set_bonus_popup:deactivate()
+    self.set_bonus_popup = nil
   end
 end
 
@@ -354,6 +407,19 @@ function CharacterCard:update(dt)
     self:hide_popup()
   end
   
+  -- Check set bonus elements hover state
+  if self.set_bonus_elements then
+    for _, element in ipairs(self.set_bonus_elements) do
+      if element.selected and not element.hovered then
+        element.hovered = true
+        self:show_set_bonus_popup_for_set(element.set_info)
+      elseif not element.selected and element.hovered then
+        element.hovered = false
+        self:hide_set_bonus_popup()
+      end
+    end
+  end
+  
   -- Check last round stats icon hover state
   if self.last_round_stats_icon and self.last_round_stats_icon.selected and not self.last_round_stats_hovered then
     self.last_round_stats_hovered = true
@@ -363,11 +429,7 @@ function CharacterCard:update(dt)
     self:hide_last_round_popup()
   end
   
-  -- Update level up cost display when gold changes
-  if self.last_gold_check ~= gold then
-    self.last_gold_check = gold
-    self:update_level_up_cost_display()
-  end
+
 end
 
 function CharacterCard:die()
@@ -392,14 +454,22 @@ function CharacterCard:die()
     self.last_round_stats_icon.dead = true
   end
   
-  if self.level_up_button then
-    self.level_up_button.dead = true
+  -- Clean up set bonus elements
+  if self.set_bonus_elements then
+    for _, element in ipairs(self.set_bonus_elements) do
+      if element.die then
+        element:die()
+      else
+        element.dead = true
+      end
+    end
   end
   
 
   
   -- Clean up popups
   self:hide_popup()
+  self:hide_set_bonus_popup()
   self:hide_last_round_popup()
   
   self.dead = true
