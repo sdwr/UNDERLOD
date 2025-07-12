@@ -13,14 +13,12 @@ function AimProjectile_Spell:init(args)
 
   -- Aim line properties
   self.aim_duration = self.aim_duration or 1.5  -- How long to show the aim line
-  self.line_length = self.line_length or 300  -- Length of the aim line
-  self.dash_length = self.dash_length or 8  -- Length of each dash
-  self.dash_gap = self.dash_gap or 2  -- Gap between dashes
+  self.line_length = self.line_length or 300   -- Length of the aim line
   
   -- Projectile properties
-  self.num_shots = self.num_shots or 1  -- Number of projectiles to fire
-  self.spread = self.spread or 0  -- Spread angle in radians
-  self.delay_after_aim = self.delay_after_aim or 0.2  -- Delay after aim line disappears
+  self.num_shots = self.num_shots or 1      -- Number of projectiles to fire
+  self.spread = self.spread or 0            -- Spread angle in radians
+  self.delay_after_aim = self.delay_after_aim or 0.2 -- Delay after aim line disappears
   self.max_distance = self.max_distance or 500
   
   -- Calculate aim direction
@@ -110,13 +108,13 @@ end
 function AimProjectile_Spell:draw()
   if self.fired then return end
   
-  -- Draw dashed aim line
+  -- Draw aim indicator
   if self.aim_timer <= self.aim_duration then
-    self:draw_aim_line()
+    self:draw_aim_indicator()
   end
 end
 
-function AimProjectile_Spell:draw_aim_line()
+function AimProjectile_Spell:draw_aim_indicator()
   -- Calculate spread angles (same logic as in fire_projectiles)
   local base_angle = self.aim_angle
   local angles = {}
@@ -136,46 +134,45 @@ function AimProjectile_Spell:draw_aim_line()
   
   -- Draw aim line for each projectile
   for i, angle in ipairs(angles) do
-    self:draw_single_aim_line(angle)
+    self:draw_single_aim_line_as_dots(angle)
   end
 end
 
-function AimProjectile_Spell:draw_single_aim_line(angle)
-  local start_x, start_y = self.x, self.y
-  local end_x = start_x + math.cos(angle) * self.line_length
-  local end_y = start_y + math.sin(angle) * self.line_length
-  
-  -- Draw dashed line with more fill, less space
-  local dx = end_x - start_x
-  local dy = end_y - start_y
-  local distance = math.sqrt(dx * dx + dy * dy)
-  local dash_length = self.dash_length * 1.5  -- Longer dashes
-  local dash_gap = self.dash_gap * 0.3  -- Shorter gaps
-  local total_dash_length = dash_length + dash_gap
-  
-  local current_distance = 0
-  local dash_phase = 0  -- 0 = dash, 1 = gap
-  
-  while current_distance < distance do
-    local segment_length = math.min(total_dash_length, distance - current_distance)
-    
-    if dash_phase == 0 then
-      -- Draw dash
-      local dash_end = math.min(dash_length, segment_length)
-      local dash_end_x = start_x + math.cos(angle) * (current_distance + dash_end)
-      local dash_end_y = start_y + math.sin(angle) * (current_distance + dash_end)
-      
-      
-      graphics.line(start_x + math.cos(angle) * current_distance, 
-                   start_y + math.sin(angle) * current_distance,
-                   dash_end_x, dash_end_y, self.aim_color, 2)
+--[[
+  NEW AND IMPROVED ANIMATED DRAW FUNCTION
+  This draws a series of dots that move outwards from the caster,
+  creating a dynamic "flow" effect. This is visually cleaner than
+  a static dashed line at low resolutions and provides better feedback.
+]]
+function AimProjectile_Spell:draw_single_aim_line_as_dots(angle)
+  -- Properties for the animated dots
+  local spacing = 15          -- The distance between each dot
+  local dot_radius = 1          -- A radius of 1 creates a 2x2 pixel dot
+  local animation_speed = 25   -- How fast the dots move outwards, in pixels per second
+
+  -- Calculate the number of dots we need to draw to cover the line length
+  local num_dots = math.floor(self.line_length / spacing) + 1
+
+  -- Use the current time to create a repeating offset.
+  -- The modulo (%) operator makes the animation loop seamlessly from 0 to 'spacing'.
+  local time_offset = (Helper.Time.time * animation_speed) % spacing
+
+  for i = 1, num_dots do
+    -- Each dot's distance is based on its index, the spacing, and the animation offset.
+    -- This creates the effect of dots appearing to flow outwards from the caster.
+    local dist = (i - 1) * spacing + time_offset
+
+    -- Only draw dots that are within the visible line area
+    if dist <= self.line_length then
+        local x = self.x + math.cos(angle) * dist
+        local y = self.y + math.sin(angle) * dist
+        
+        -- Draw a small filled circle
+        graphics.circle(x, y, dot_radius, self.aim_color)
     end
-    
-    current_distance = current_distance + segment_length
-    dash_phase = (dash_phase + 1) % 2
   end
 end
 
 function AimProjectile_Spell:die()
   AimProjectile_Spell.super.die(self)
-end 
+end
