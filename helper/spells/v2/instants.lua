@@ -99,7 +99,7 @@ function ArrowProjectile:init(args)
   self.y = self.unit.y
   
   -- Calculate max distance as 1.2x attack range
-  self.max_distance = (self.unit.attack_sensor and self.unit.attack_sensor.rs or 50) * 1.5
+  self.max_distance = self.max_distance or ((self.unit.attack_sensor and self.unit.attack_sensor.rs or 50) * 1.5)
   self.start_x = self.x
   self.start_y = self.y
   

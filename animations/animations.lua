@@ -913,6 +913,7 @@ enemy_type_to_size = {
   ['slowcharger'] = 'special',
   ['turret'] = 'special',
   ['line_mortar'] = 'special',
+  ['aim_spread'] = 'special',
   
   -- Minibosses
   ['bigstomper'] = 'huge',
