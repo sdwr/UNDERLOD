@@ -280,8 +280,9 @@ function CharacterCard:show_unit_stats_popup()
   local text_lines = {}
   
   for _, stat in pairs(item_stats) do
+    local prefix, value, suffix, display_name = format_stat_display(stat.name, stat.value)
     table.insert(text_lines, { 
-      text = '[yellow[0]]+' .. (stat.value * 100) .. '% ' .. stat.name:capitalize(), 
+      text = '[yellow[0]]' .. prefix .. value .. suffix .. display_name:capitalize(), 
       font = pixul_font, 
       alignment = 'center' 
     })

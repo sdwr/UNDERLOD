@@ -48,11 +48,8 @@ function ItemTooltip:init(args)
           
           -- Handle V2 item stats (numeric values)
           if type(val) == 'number' then
-            if key == 'gold' then
-              text = '[yellow] ' .. val .. ' ' .. display_name
-            else
-              text = '[yellow] ' .. math.floor(val * 100) .. '% ' .. display_name
-            end
+            local prefix, value, suffix, display_name = format_stat_display(key, val)
+            text = '[yellow] ' .. prefix .. value .. suffix .. display_name
           else
             -- Handle legacy item stats (boolean values)
             text = '[yellow] ' .. display_name

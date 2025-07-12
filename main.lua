@@ -855,7 +855,8 @@ function init()
     end
     for k, v in pairs(item_stats) do
       next_line = { text = '', font = pixul_font, alignment = 'left' }
-      next_line.text = '+' .. (v * 100) .. '% ' .. k:capitalize()
+      local prefix, value, suffix, display_name = format_stat_display(k, v)
+      next_line.text = prefix .. value .. suffix .. display_name:capitalize()
       table.insert(text_lines, next_line)
     end
     --add item buffs
@@ -926,7 +927,8 @@ function init()
       local next_line = { text = '', font = pixul_font, alignment = 'center' }
       for k, v in pairs(item_stats) do
         next_line = { text = '', font = pixul_font, alignment = 'center' }
-        next_line.text = '[yellow[0]]+' .. (v * 100) .. '% ' .. k:capitalize()
+        local prefix, value, suffix, display_name = format_stat_display(k, v)
+        next_line.text = '[yellow[0]]' .. prefix .. value .. suffix .. display_name:capitalize()
         table.insert(text_lines, next_line)
       end
 
