@@ -65,7 +65,7 @@ fns['init_enemy'] = function(self)
       x = self.x,
       y = self.y,
       color = grey[0], -- Use seeker's color instead of red
-      impulse_magnitude = 200, -- Less force than charger (500)
+      impulse_magnitude = 150, -- Less force than charger (500)
       damage = function() return self.dmg end,
       parent = self
     }

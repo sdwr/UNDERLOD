@@ -83,6 +83,14 @@ ITEM_STATS_THAT_CAN_ROLL_ON_ITEMS = {
   ['crit_chance'] = { name = 'crit_chance', min = 1, max = 5, increment = 0.1 },
 }
 
+ITEM_STATS_DAMAGE_STATS = {
+  ['dmg'] = { name = 'dmg', min = 1, max = 5, increment = 0.1 },
+  ['aspd'] = { name = 'aspd', min = 1, max = 5, increment = 0.1 },
+  ['range'] = { name = 'range', min = 1, max = 5, increment = 0.05 },
+  ['crit_chance'] = { name = 'crit_chance', min = 1, max = 5, increment = 0.1 },
+  ['repeat_attack_chance'] = { name = 'repeat_attack_chance', min = 1, max = 5, increment = 0.1 },
+}
+
 -- Item type definitions with preferred stats
 ITEM_TYPES = {
   [ITEM_TYPE.HEAD] = {
@@ -185,25 +193,29 @@ ITEM_SETS = {
 ITEM_RARITIES = {
   [ITEM_RARITY.COMMON] = {
     name = 'Common',
-    stat_count = 1,
+    power_budget = 2,
+    max_stat_value = 2,
     set_chance = 0.3, -- 10% chance to have a set
     color = 'grey'
   },
   [ITEM_RARITY.RARE] = {
     name = 'Rare',
-    stat_count = 2,
+    power_budget = 4,
+    max_stat_value = 3,
     set_chance = 0.5, -- 30% chance to have a set
     color = 'blue'
   },
   [ITEM_RARITY.EPIC] = {
     name = 'Epic',
-    stat_count = 3,
+    power_budget = 6,
+    max_stat_value = 4,
     set_chance = 0.7, -- 60% chance to have a set
     color = 'purple'
   },
   [ITEM_RARITY.LEGENDARY] = {
     name = 'Legendary',
-    stat_count = 4,
+    power_budget = 8,
+    max_stat_value = 5,
     set_chance = 1.0, -- 100% chance to have a set
     color = 'orange'
   }
@@ -264,14 +276,6 @@ function roll_stat_for_type(item_type)
   end
 end
 
--- Helper function to generate random stat value
-function generate_stat_value(stat_name)
-  local stat_def = ITEM_STATS[stat_name]
-  if not stat_def then return 0 end
-  
-  return math.random(stat_def.min, stat_def.max)
-end
-
 -- Main function to create a random item
 function create_random_item(tier)
   -- Debug: Check if random is available
@@ -307,7 +311,7 @@ function create_random_item(tier)
     icon = ITEM_TYPES[item_type].icon,
     stats = {},
     sets = {},
-    cost = tier * (rarity_def.stat_count * 2), -- Cost based on tier and stat count
+    cost = tier * (rarity_def.power_budget * 2), -- Cost based on tier and stat count
     procs = {}, -- Empty procs for compatibility with existing system
     tags = {} -- Empty tags for compatibility with existing system
   }
@@ -326,24 +330,30 @@ function create_random_item(tier)
   
   -- Generate stats
   local used_stats = {}
-  for i = 1, rarity_def.stat_count do
+  local min_power_budget = math.max(1, rarity_def.power_budget - 2)
+  local power_budget = math.random(min_power_budget, rarity_def.power_budget)
+  while power_budget > 0 do
     local stat_name
     local attempts = 0
-    local max_attempts = 5
+    local max_attempts = 10
     
     repeat
       stat_name = roll_stat_for_type(item_type)
       attempts = attempts + 1
     until not table.contains(used_stats, stat_name) or attempts >= max_attempts
     
-    -- If we couldn't find a unique stat after max attempts, just use the last one
-    if attempts >= max_attempts then
-      print("Warning: Could not find unique stat after " .. max_attempts .. " attempts")
-    else
-      table.insert(used_stats, stat_name)
-      item.stats[stat_name] = generate_stat_value(stat_name)
-    end
+    table.insert(used_stats, stat_name)
     
+    local stat_value = math.random(1, rarity_def.max_stat_value)
+    item.stats[stat_name] = stat_value + (item.stats[stat_name] or 0)
+    
+    --clamp stat value, still decrement power budget to prevent infinite loops
+    if item.stats[stat_name] > rarity_def.max_stat_value 
+      or item.stats[stat_name] > ITEM_STATS[stat_name].max then
+      item.stats[stat_name] = math.min(rarity_def.max_stat_value, ITEM_STATS[stat_name].max)
+    end
+
+    power_budget = power_budget - stat_value
   end
   
   -- Set colors based on sets only (rarity color is used as tier color)
@@ -376,39 +386,3 @@ function convert_v2_item_to_legacy(v2_item)
   }
   return legacy_item
 end
-
--- Function to create item with specific parameters
-function create_item_v2(item_type, rarity, tier)
-  local item = create_random_item(tier)
-  item.type = item_type
-  item.rarity = rarity
-  item.name = ITEM_TYPES[item_type].name
-  item.icon = ITEM_TYPES[item_type].icon
-  
-  -- Regenerate stats for the specific type and rarity
-  local rarity_def = ITEM_RARITIES[rarity]
-  item.stats = {}
-  local used_stats = {}
-  
-  for i = 1, rarity_def.stat_count do
-    local stat_name
-    local attempts = 0
-    local max_attempts = 5
-    
-    repeat
-      stat_name = roll_stat_for_type(item_type)
-      attempts = attempts + 1
-    until not table.contains(used_stats, stat_name) or attempts >= max_attempts
-    
-    -- If we couldn't find a unique stat after max attempts, just use the last one
-    if attempts >= max_attempts then
-      print("Warning: Could not find unique stat after " .. max_attempts .. " attempts")
-    else
-      table.insert(used_stats, stat_name)
-      item.stats[stat_name] = generate_stat_value(stat_name)
-    end
-    
-  end
-  
-  return item
-end 
