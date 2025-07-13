@@ -364,8 +364,11 @@ function CharacterCard:show_set_bonus_popup_for_set(set_info)
   })
   
   -- Set bonuses
-  for pieces, bonus in pairs(set_info.bonuses) do
-    local is_reached = set_info.current_pieces >= pieces
+  for i = 1, MAX_SET_BONUS_PIECES do
+    local bonus = set_info.bonuses[i]
+    if not bonus then break end
+
+    local is_reached = set_info.current_pieces >= i
     local color = is_reached and set_color or 'fg[2]' -- Use set color if reached, gray if not
     
     local stat_name = ''
@@ -374,7 +377,7 @@ function CharacterCard:show_set_bonus_popup_for_set(set_info)
     end
 
     table.insert(text_lines, {
-      text = '[' .. color .. ']' .. pieces .. 'pc: ' .. stat_name, 
+      text = '[' .. color .. ']' .. i .. 'pc: ' .. stat_name, 
       font = pixul_font, 
       alignment = 'left'
     })

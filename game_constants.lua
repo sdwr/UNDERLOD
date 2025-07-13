@@ -49,6 +49,7 @@ BOSS_ROUND_POWER = 1000
 BOSS_ROUNDS = {6, 11, 16, 21, 25}
 
 MAX_UNITS = 1
+MAX_SET_BONUS_PIECES = 6
 
 --disable multiple characters
 PICK_SECOND_CHARACTER = 1

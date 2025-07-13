@@ -1462,8 +1462,9 @@ function FloorItem:create_tooltip()
       y = gh/2 - 50,
     }
   else
-    -- Create item tooltip
-    self.tooltip = ItemTooltip{
+    -- Create set bonus tooltip instead of item tooltip
+    -- Show set bonuses for this specific item
+    self.tooltip = SetBonusTooltip{
       group = self.parent.ui,
       item = self.item,
       x = gw/2, 
