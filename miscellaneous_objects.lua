@@ -1446,9 +1446,9 @@ function Critter:attack()
 end
 
 
-function Critter:hit(damage, from, damageType, makesSound, cannotProcOnHit)
+function Critter:hit(damage, from, damageType, playHitEffects, cannotProcOnHit)
   -- Use the indirect hit function (current behavior)
-  Helper.Damage:indirect_hit(self, damage, from, damageType, makesSound)
+  Helper.Damage:indirect_hit(self, damage, from, damageType, playHitEffects)
 end
 
 function Critter:push(f, r, push_invulnerable, duration)

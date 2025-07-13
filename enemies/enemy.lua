@@ -397,11 +397,11 @@ function Enemy:on_collision_enter(other, contact)
     end
 end
 
-function Enemy:hit(damage, from, damageType, makesSound, cannotProcOnHit)
+function Enemy:hit(damage, from, damageType, playHitEffects, cannotProcOnHit)
   -- Mark this unit as an enemy for the damage helper
   self.isEnemy = true
   -- Use the indirect hit function (current behavior)
-  Helper.Damage:indirect_hit(self, damage, from, damageType, makesSound)
+  Helper.Damage:indirect_hit(self, damage, from, damageType, playHitEffects)
 end
 
 function Enemy:onDeath()

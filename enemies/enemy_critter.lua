@@ -71,9 +71,9 @@ function EnemyCritter:attack()
   end
 end
 
-function EnemyCritter:hit(damage, from, damageType, makesSound, cannotProcOnHit)
+function EnemyCritter:hit(damage, from, damageType, playHitEffects, cannotProcOnHit)
   -- Use the indirect hit function (current behavior)
-  Helper.Damage:indirect_hit(self, damage, from, damageType, makesSound)
+  Helper.Damage:indirect_hit(self, damage, from, damageType, playHitEffects)
 end
 
 function EnemyCritter:push(f, r)

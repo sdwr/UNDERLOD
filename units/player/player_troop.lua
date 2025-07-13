@@ -530,12 +530,12 @@ function Troop:set_character()
   end
 end
 
-function Troop:hit(damage, from, damageType, makesSound, cannotProcOnHit)
+function Troop:hit(damage, from, damageType, playHitEffects, cannotProcOnHit)
   -- Mark this unit as a troop for the damage helper
   self.is_troop = true
   -- Use the indirect hit function (current behavior)
   hit4:play{pitch = random:float(0.95, 1.05), volume = 0.8}
-  Helper.Damage:indirect_hit(self, damage, from, damageType, makesSound)
+  Helper.Damage:indirect_hit(self, damage, from, damageType, playHitEffects)
 end
 
 function Troop:die()
