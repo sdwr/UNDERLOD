@@ -31,41 +31,41 @@ ITEM_SET = {
 -- Stat definitions
 ITEM_STATS = {
   -- Core stats
-  ['dmg'] = { name = 'dmg', min = 1, max = 5, increment = 0.05 },
-  ['aspd'] = { name = 'aspd', min = 1, max = 5, increment = 0.05 },
-  ['hp'] = { name = 'hp', min = 1, max = 5, increment = 0.05 },
-  ['mvspd'] = { name = 'mvspd', min = 1, max = 5, increment = 0.05 },
+  ['dmg'] = { name = 'dmg', min = 1, max = 5, increment = 0.1 },
+  ['aspd'] = { name = 'aspd', min = 1, max = 5, increment = 0.1 },
+  ['hp'] = { name = 'hp', min = 1, max = 5, increment = 0.15 },
+  ['mvspd'] = { name = 'mvspd', min = 1, max = 5, increment = 0.1 },
   
   -- Defensive stats
-  ['flat_def'] = { name = 'flat_def', min = 1, max = 5, increment = 0.05 },
+  ['flat_def'] = { name = 'flat_def', min = 1, max = 5, increment = 0.1 },
   
   -- Special stats
-  ['area_size'] = { name = 'area_size', min = 1, max = 5, increment = 0.05 },
+  ['area_size'] = { name = 'area_size', min = 1, max = 5, increment = 0.1 },
   ['vamp'] = { name = 'vamp', min = 1, max = 5, increment = 0.05 },
   ['ghost'] = { name = 'ghost', min = 1, max = 5, increment = 0.05 },
-  ['slow'] = { name = 'slow', min = 1, max = 5, increment = 0.05 },
-  ['thorns'] = { name = 'thorns', min = 1, max = 5, increment = 0.05 },
+  ['slow'] = { name = 'slow', min = 1, max = 5, increment = 0.1 },
+  ['thorns'] = { name = 'thorns', min = 1, max = 5, increment = 0.1 },
   ['range'] = { name = 'range', min = 1, max = 5, increment = 0.05 },
-  ['repeat_attack_chance'] = { name = 'repeat_attack_chance', min = 1, max = 5, increment = 0.05 },
+  ['repeat_attack_chance'] = { name = 'repeat_attack_chance', min = 1, max = 5, increment = 0.1 },
   ['gold'] = { name = 'gold', min = 1, max = 5, increment = 1 },
   ['heal'] = { name = 'heal', min = 1, max = 5, increment = 0.05 },
   
   -- Elemental stats
-  ['fire_damage'] = { name = 'fire_damage', min = 1, max = 5, increment = 0.05 },
-  ['lightning_damage'] = { name = 'lightning_damage', min = 1, max = 5, increment = 0.05 },
-  ['cold_damage'] = { name = 'cold_damage', min = 1, max = 5, increment = 0.05 },
+  ['fire_damage'] = { name = 'fire_damage', min = 1, max = 5, increment = 0.1 },
+  ['lightning_damage'] = { name = 'lightning_damage', min = 1, max = 5, increment = 0.1 },
+  ['cold_damage'] = { name = 'cold_damage', min = 1, max = 5, increment = 0.1 },
   
   -- Advanced stats
-  ['crit_chance'] = { name = 'crit_chance', min = 1, max = 5, increment = 0.05 },
-  ['stun_chance'] = { name = 'stun_chance', min = 1, max = 5, increment = 0.05 },
-  ['cooldown_reduction'] = { name = 'cooldown_reduction', min = 1, max = 5, increment = 0.05 },
+  ['crit_chance'] = { name = 'crit_chance', min = 1, max = 5, increment = 0.1 },
+  ['stun_chance'] = { name = 'stun_chance', min = 1, max = 5, increment = 0.1 },
+  ['cooldown_reduction'] = { name = 'cooldown_reduction', min = 1, max = 5, increment = 0.1 },
 }
 
 -- Item type definitions with preferred stats
 ITEM_TYPES = {
   [ITEM_TYPE.HEAD] = {
     name = 'Helmet',
-    icon = 'orb', -- Using orb for head items
+    icon = 'helmet', -- Using orb for head items
     preferred_stats = {'hp', 'flat_def', 'crit_chance', 'stun_chance'},
     preferred_chance = 0.7 -- 70% chance to roll preferred stats
   },

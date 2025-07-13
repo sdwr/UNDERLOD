@@ -310,6 +310,7 @@ function init()
   --new items
   local d               = 'newItems/'
   simpleshield          = Image(d .. 'simpleshield')
+  helmet                = Image(d .. 'helmet')
   sword                 = Image(d .. 'sword')
   simpleboots           = Image(d .. 'simpleboots')
   simplearmor           = Image(d .. 'simplearmor')
@@ -976,6 +977,7 @@ function init()
     ['leaf'] = leaf,
     ['orb'] = orb,
     ['simpleshield'] = simpleshield,
+    ['helmet'] = helmet,
     ['sword'] = sword,
     ['rock'] = rock,
     ['flask'] = flask,
