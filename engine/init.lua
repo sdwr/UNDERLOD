@@ -91,7 +91,9 @@ function engine_run(config)
   combine = Shader("default.vert", "combine.frag")
   replace = Shader("default.vert", "replace.frag")
   full_combine = Shader("default.vert", "full_combine.frag")
-  outline = Shader("default.vert", "outline.frag")
+
+  outline = Shader(nil, "outline.frag")
+  hit_flash = Shader(nil, "hit_flash.frag")
 
   input = Input()
   input:bind_all()
