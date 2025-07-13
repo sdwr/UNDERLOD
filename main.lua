@@ -423,14 +423,12 @@ function init()
   unit_states_can_cast = {
     unit_states['idle'],
     unit_states['normal'],
-    unit_states['following'],
     unit_states['stopped'],
   }
 
   unit_states_can_continue_cast = {
     unit_states['idle'],
     unit_states['normal'],
-    unit_states['following'],
     unit_states['stopped'],
     unit_states['casting'],
     unit_states['channeling'],

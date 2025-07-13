@@ -190,10 +190,18 @@ function Helper.Unit:add_default_state_change_functions(unit)
         self:interrupt_cast()
     end
     unit.state_change_functions['following'] = function(self) 
+        -- Cancel cast when entering following state (only for troops)
+        if self.is_troop then
+            self:cancel_cast()
+        end
         self.state_change_functions['regain_control'](self)
         self.state_change_functions['following_or_rallying'](self)
     end
     unit.state_change_functions['rallying'] = function(self)
+        -- Cancel cast when entering rallying state (only for troops)
+        if self.is_troop then
+            self:cancel_cast()
+        end
         self.state_change_functions['regain_control'](self) 
         self.state_change_functions['following_or_rallying'](self)
     end

@@ -164,9 +164,8 @@ function Troop:update(dt)
   -- If the unit is actively following the mouse.
   elseif self.state == unit_states['following'] then
 
-      -- self:cancel_cast()
-      -- self:clear_my_target()
-      -- self:clear_assigned_target()
+      -- Cancel cast when starting to follow
+      self:cancel_cast()
 
       -- Check if we should STOP following.
       if input['m1'].released or input['space'].released then
@@ -177,8 +176,10 @@ function Troop:update(dt)
       end
 
   -- If the unit is moving to a rally point.
-  elseif self.state == unit_states['rallying'] then
+  elseif self.state == unit_states['rallying'] then 
 
+    -- Cancel cast when starting to rally
+    self:cancel_cast()
     -- clear my target (but not assigned target)
     self:clear_my_target()
 
@@ -219,7 +220,7 @@ function Troop:update(dt)
   elseif self.state == unit_states['stopped'] then
       -- The unit is still and cannot start a new action yet.
       -- A timer set by the Cast object should move it from 'stopped' to 'normal'.
-      self:set_velocity(0, 0)
+      --self:set_velocity(0, 0)
 
   -- PRIORITY 4: Autonomous AI State
   -- If the unit is not doing any of the above, it's 'normal' and can think for itself.
@@ -242,16 +243,19 @@ function Troop:update(dt)
           self:steering_separate(SEPARATION_RADIUS, troop_classes)
           self:rotate_towards_object(self.target, 1)
         else
-          --move towards the closest enemy (don't bother targeting it)
-          local movement_target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies)
-          if movement_target then
-            self:seek_point(movement_target.x, movement_target.y, SEEK_DECELERATION, SEEK_WEIGHT)
-            self:steering_separate(SEPARATION_RADIUS, troop_classes)
-            self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
-            self:rotate_towards_velocity(1)
-          else
-            self:steering_separate(SEPARATION_RADIUS, troop_classes)
-          end
+          -- Disabled: move towards the closest enemy (don't bother targeting it)
+          -- local movement_target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies)
+          -- if movement_target then
+          --   self:seek_point(movement_target.x, movement_target.y, SEEK_DECELERATION, SEEK_WEIGHT)
+          --   self:steering_separate(SEPARATION_RADIUS, troop_classes)
+          --   self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
+          --   self:rotate_towards_velocity(1)
+          -- else
+          --   self:steering_separate(SEPARATION_RADIUS, troop_classes)
+          -- end
+          
+          -- Just do separation when no targets are in range
+          self:steering_separate(SEPARATION_RADIUS, troop_classes)
         end
       end
     end

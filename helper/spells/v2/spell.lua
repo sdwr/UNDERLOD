@@ -82,9 +82,8 @@ function Cast:init(args)
   end
   self.spelldata.unit = self.unit
   
-  if self.unit then
-    self.unit.castcooldown = self.castcooldown
-  end
+  -- Don't set cooldown at start - only set it when cast completes successfully
+  -- This allows interrupted casts to restart immediately
 
   --vars from data
   self.rotation_lock = self.rotation_lock or false
