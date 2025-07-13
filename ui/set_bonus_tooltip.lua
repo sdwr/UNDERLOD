@@ -56,26 +56,27 @@ function SetBonusTooltip:build_text_lines()
     -- Set bonuses
     for i = 1, MAX_SET_BONUS_PIECES do
       local bonus = set_info.bonuses[i]
-      if not bonus then break end
+      if bonus then
 
-      local color = 'fgm2' -- Always show as unreached since we don't know current count
-      
-      -- Build bonus description from stats
-      local bonus_desc = ""
-      if bonus.stats then
-        local stat_parts = {}
-        for stat, value in pairs(bonus.stats) do
-          local display_name = item_stat_lookup and item_stat_lookup[stat] or stat
-          table.insert(stat_parts, "+" .. value .. " " .. display_name)
+        local color = 'fgm2' -- Always show as unreached since we don't know current count
+        
+        -- Build bonus description from stats
+        local bonus_desc = ""
+        if bonus.stats then
+          local stat_parts = {}
+          for stat, value in pairs(bonus.stats) do
+            local display_name = item_stat_lookup and item_stat_lookup[stat] or stat
+            table.insert(stat_parts, "+" .. value .. " " .. display_name)
+          end
+          bonus_desc = table.concat(stat_parts, ", ")
         end
-        bonus_desc = table.concat(stat_parts, ", ")
+        
+        table.insert(self.text_lines, {
+          text = '[' .. color .. ']' .. i .. 'pc: ' .. bonus_desc, 
+          font = pixul_font, 
+          alignment = 'left'
+        })
       end
-      
-      table.insert(self.text_lines, {
-        text = '[' .. color .. ']' .. i .. 'pc: ' .. bonus_desc, 
-        font = pixul_font, 
-        alignment = 'left'
-      })
     end
     
     -- Add spacing between sets

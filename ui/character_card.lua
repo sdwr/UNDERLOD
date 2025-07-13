@@ -366,21 +366,21 @@ function CharacterCard:show_set_bonus_popup_for_set(set_info)
   -- Set bonuses
   for i = 1, MAX_SET_BONUS_PIECES do
     local bonus = set_info.bonuses[i]
-    if not bonus then break end
+    if bonus then
+      local is_reached = set_info.current_pieces >= i
+      local color = is_reached and set_color or 'fg[2]' -- Use set color if reached, gray if not
+      
+      local stat_name = ''
+      for stat, value in pairs(bonus.stats) do
+        stat_name = stat_name .. '+' .. value .. ' ' .. item_stat_lookup[stat] .. ', '
+      end
 
-    local is_reached = set_info.current_pieces >= i
-    local color = is_reached and set_color or 'fg[2]' -- Use set color if reached, gray if not
-    
-    local stat_name = ''
-    for stat, value in pairs(bonus.stats) do
-      stat_name = stat_name .. '+' .. value .. ' ' .. item_stat_lookup[stat] .. ', '
+      table.insert(text_lines, {
+        text = '[' .. color .. ']' .. i .. 'pc: ' .. stat_name, 
+        font = pixul_font, 
+        alignment = 'left'
+      })
     end
-
-    table.insert(text_lines, {
-      text = '[' .. color .. ']' .. i .. 'pc: ' .. stat_name, 
-      font = pixul_font, 
-      alignment = 'left'
-    })
   end
   
   self.set_bonus_popup = InfoText{group = main.current.world_ui, force_update = false}
