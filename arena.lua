@@ -1422,7 +1422,7 @@ function FloorItem:draw()
   -- Draw bottom text just below the top section
   if self.bottom_text then
     local top_section_bottom = self.y -- The center of the card (boundary between top and bottom)
-    local bottom_text_y = top_section_bottom + 8 -- Position just below the top section with small padding
+    local bottom_text_y = top_section_bottom + self.bottom_text.h/2-- Position just below the top section with small padding
     self.bottom_text:draw(self.x + shake_x, bottom_text_y)
   end
   
