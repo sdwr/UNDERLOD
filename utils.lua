@@ -126,7 +126,13 @@ end
 
 --UI utils
 function find_item_image(item)
-  local image = item_images[item.name] or item_images[item.icon] or item_images['default']
+  -- Handle V2 items that have icon field
+  if item.icon then
+    local image = item_images[item.icon] or item_images['default']
+    return image
+  end
+  -- Handle legacy items that have name field
+  local image = item_images[item.name] or item_images['default']
   return image
 end
 
@@ -152,6 +158,10 @@ function get_rarity_color(rarity)
     return green[0]
   elseif rarity == "rare" then
     return blue[0]
+  elseif rarity == "epic" then
+    return purple[0]
+  elseif rarity == "legendary" then
+    return orange[0]
   else
     return fg[0]
   end
@@ -217,4 +227,23 @@ function get_dmg_value(dmg)
     return dmg()
   end
   return dmg or 0
+end
+
+-- Unified stat display function
+function format_stat_display(stat_name, stat_value)
+  local display_name = item_stat_lookup and item_stat_lookup[stat_name] or stat_name
+  
+  -- Handle gold (always flat value)
+  if stat_name == 'gold' then
+    return '+', stat_value, ' ', display_name
+  end
+  
+  -- Check if this is a V2 stat (has increment defined)
+  if ITEM_STATS and ITEM_STATS[stat_name] and ITEM_STATS[stat_name].increment then
+    -- For V2 stats, the value is already the integer amount (e.g., 3 for +3 damage)
+    return '+', stat_value, ' ', display_name
+  else
+    -- For legacy stats, the value is a percentage (e.g., 0.15 for 15%)
+    return '+', math.floor(stat_value * 100), '% ', display_name
+  end
 end

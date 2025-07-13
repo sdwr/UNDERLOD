@@ -125,6 +125,13 @@ end
 function Helper.Unit:target_out_of_range(unit, target)
     return target and Helper.Geometry:distance(unit.x, unit.y, target.x, target.y) > unit.attack_sensor.rs
 end
+
+function Helper.Unit:in_range_of_rally_point(unit)
+    if not unit.target_pos then 
+        return false
+    end
+    return math.distance(unit.x, unit.y, unit.target_pos.x, unit.target_pos.y) < RALLY_CIRCLE_STOP_DISTANCE
+end
     
 function Helper.Unit:cast_off_cooldown(unit)
     return unit.castcooldown <= 0

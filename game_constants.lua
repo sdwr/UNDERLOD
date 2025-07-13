@@ -49,12 +49,15 @@ BOSS_ROUND_POWER = 1000
 BOSS_ROUNDS = {6, 11, 16, 21, 25}
 
 MAX_UNITS = 1
+MAX_SET_BONUS_PIECES = 6
 
 --disable multiple characters
 PICK_SECOND_CHARACTER = 1
 PICK_THIRD_CHARACTER = 1
 
 RALLY_DURATION = 3
+RALLY_CIRCLE_OVERSHOOT_DISTANCE = 10
+RALLY_CIRCLE_STOP_DISTANCE = 5
 
 BOSS_MASS = 10
 SPECIAL_ENEMY_MASS = 2
@@ -124,7 +127,7 @@ LEVEL_TO_TIER = function(level)
 end
 
 LEVEL_TO_PERKS = {
-  [4] = true,
+  [2] = true,
   [8] = true,
   [12] = true,
   [16] = true,

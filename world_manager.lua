@@ -224,7 +224,7 @@ function WorldManager:create_character_cards()
   end
 
   for i, unit in ipairs(self.units) do
-    table.insert(Character_Cards, CharacterCard{group = self.arena_ui, x = x + (i-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, unit = unit, character = unit.character, i = i, parent = self})
+    table.insert(Character_Cards, CharacterCard{group = self.world_ui, x = x + (i-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, unit = unit, character = unit.character, i = i, parent = self})
     unit.spawn_effect = true
   end
 
@@ -235,7 +235,7 @@ function WorldManager:create_character_cards()
   -- Create perks panel
   if not self.perks_panel then
     self.perks_panel = PerksPanel{
-      group = self.arena_ui,
+      group = self.world_ui,
       perks = self.perks or {}
     }
   else
@@ -307,17 +307,6 @@ function WorldManager:update(dt)
   self.tutorial:update(dt)
   self.options_ui:update(dt)
   self.credits:update(dt)
-  
-  -- Update character cards if open
-  if self.character_cards_open then
-    for _, card in ipairs(Character_Cards) do
-      card:update(dt)
-    end
-    -- Update perks panel if it exists
-    if self.perks_panel then
-      self.perks_panel:update(dt)
-    end
-  end
 end
 
 function WorldManager:update_transition(dt)
@@ -485,17 +474,6 @@ function WorldManager:draw()
 
   -- Draw Helper system (selection UI, etc.)
   Helper:draw()
-
-  -- Draw character cards if open
-  if self.character_cards_open then
-    for _, card in ipairs(Character_Cards) do
-      card:draw()
-    end
-    -- Draw perks panel if it exists
-    if self.perks_panel then
-      self.perks_panel:draw()
-    end
-  end
 end
 
 function WorldManager:increase_level()

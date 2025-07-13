@@ -66,7 +66,7 @@ function CharacterCard:init(args)
     -- FIX: The call to Refresh_All_Cards_Text() has been removed from here.
     -- It should be called once, AFTER all cards have been created.
     
-    if self.spawn_effect then SpawnEffect{group = main.current.effects, x = self.x, y = self.y, color = self.character_color} end
+    if self.spawn_effect then SpawnEffect{group = main.current.world_ui, x = self.x, y = self.y, color = self.character_color} end
 end
 
 function CharacterCard:createItemParts()
@@ -100,13 +100,40 @@ function CharacterCard:createNameText()
 end
 
 -- NEW FUNCTION: Handles creation of elements that need to be refreshed.
+function CharacterCard:cleanupUIElements()
+  -- Clean up buttons
+  if self.unit_stats_icon then
+    if self.unit_stats_icon.die then
+      self.unit_stats_icon:die()
+    else
+      self.unit_stats_icon.dead = true
+    end
+  end
+  
+  if self.last_round_stats_icon then
+    self.last_round_stats_icon.dead = true
+  end
+
+  -- Clean up set bonus elements
+  if self.set_bonus_elements then
+    for _, element in ipairs(self.set_bonus_elements) do
+      element.dead = true
+    end
+    self.set_bonus_elements = {}
+  end
+  
+  -- Clean up popups
+  self:hide_popup()
+  self:hide_set_bonus_popup()
+  self:hide_last_round_popup()
+end
+
 function CharacterCard:createUIElements()
   
     self:createNameText()
 
     -- Ensure old elements are removed before creating new ones to prevent duplicates.
-    if self.unit_stats_icon then self.unit_stats_icon.dead = true end
-    if self.last_round_display then self.last_round_display.dead = true end
+    self:cleanupUIElements()
 
     -- Create unit stats icon (small button next to class name)
     self.unit_stats_icon = Button{
@@ -136,19 +163,88 @@ function CharacterCard:createUIElements()
     }
     self.last_round_stats_icon.parent = self
     
-    if not self.level_up_button then
-    -- Create level up button in the middle of the card
-      self.level_up_button = LevelUpButton{
-          group = self.group,
-          x = self.x,
-          y = self.y - 10, -- Moved up more
-          parent = self
-      }
-      self.level_up_button.parent = self
+    -- Create set bonus display
+    self:create_set_bonus_display()
+end
+
+function CharacterCard:create_set_bonus_display()
+  -- Remove old set bonus elements
+  if self.set_bonus_elements then
+    for _, element in ipairs(self.set_bonus_elements) do
+      element.dead = true
+    end
+  end
+  
+  self.set_bonus_elements = {}
+  
+  -- Get unit sets
+  local unit_sets = self:get_unit_sets()
+  
+  if #unit_sets == 0 then return end
+  
+  -- Sort sets by name for consistent display
+  table.sort(unit_sets, function(a, b) return a.name < b.name end)
+  
+  -- Create button elements for each set
+  local y_offset = 0
+  for i, set_info in ipairs(unit_sets) do
+    local max_pieces = 0
+    for pieces, _ in pairs(set_info.bonuses) do
+      max_pieces = math.max(max_pieces, pieces)
     end
     
-    -- Create cost text
-    self:update_level_up_cost_display()
+    local set_color = set_info.color or 'fg'
+    local text = set_info.current_pieces .. ' / ' .. max_pieces .. ' ' .. set_info.name:upper()
+    
+    local set_button = Button{
+      group = self.group,
+      x = self.x,
+      y = self.y - self.h/2 + 30 + y_offset, -- Move up under character name
+      w = 80,
+      h = 14,
+      bg_color = 'bg',
+      fg_color = set_color, -- Use set color for text
+      button_text = text,
+      action = function() end, -- No action on click, just hover
+      set_info = set_info, -- Store set info for hover
+      no_spring = true -- Disable spring effect
+    }
+    set_button.parent = self
+    
+    table.insert(self.set_bonus_elements, set_button)
+    y_offset = y_offset + 16
+  end
+end
+
+function CharacterCard:get_unit_sets()
+  local sets = {}
+  local set_counts = {}
+  
+  -- Count items by set
+  if self.unit.items then
+    for _, item in ipairs(self.unit.items) do
+      if item and item.sets then
+        for _, set_name in ipairs(item.sets) do
+          set_counts[set_name] = (set_counts[set_name] or 0) + 1
+        end
+      end
+    end
+  end
+  
+  -- Build set info
+  for set_name, count in pairs(set_counts) do
+    local set_def = ITEM_SETS[set_name]
+    if set_def then
+      table.insert(sets, {
+        name = set_name,
+        current_pieces = count,
+        bonuses = set_def.bonuses,
+        color = set_def.color
+      })
+    end
+  end
+  
+  return sets
 end
 
 
@@ -200,7 +296,7 @@ function CharacterCard:show_last_round_stats_popup()
     table.insert(text_lines, {text = '[fg]No combat data', font = pixul_font, alignment = 'center'})
   end
   
-  self.last_round_popup = InfoText{group = main.current.ui, force_update = false}
+  self.last_round_popup = InfoText{group = main.current.world_ui, force_update = false}
   self.last_round_popup:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
   self.last_round_popup.x = self.x
   self.last_round_popup.y = self.y - self.h/2 + 60
@@ -213,75 +309,22 @@ function CharacterCard:hide_last_round_popup()
   end
 end
 
-function CharacterCard:get_level_up_cost()
-  local current_level = self.unit.level or 1
-  return UNIT_LEVEL_TO_LEVELUP_COST[current_level] or 999 -- Default high cost if no data
-end
 
-function CharacterCard:can_afford_level_up()
-  local cost = self:get_level_up_cost()
-  return gold >= cost
-end
-
-function CharacterCard:update_level_up_cost_display()
-  -- Update button appearance based on affordability
-  if self.level_up_button then
-    self.level_up_button:update_appearance()
-  end
-end
-
-function CharacterCard:level_up_unit()
-  local cost = self:get_level_up_cost()
-  
-  if not self:can_afford_level_up() then
-    -- Play error sound or show message
-    error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-    return
-  end
-  
-  -- Spend gold and level up
-  main.current:gain_gold(-cost)
-  self.unit.level = (self.unit.level or 1) + 1
-  
-  -- Play success sound
-  gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
-  
-  -- Redraw item parts to show the new item slot
-  self:redraw_item_parts()
-  
-  -- Update the card display
-  Refresh_All_Cards_Text()
-  
-  -- Save the run
-  buyScreen:save_run()
-end
-
-function CharacterCard:redraw_item_parts()
-  -- Remove old item parts
-  for i = 1, #self.items do
-    if self.items[i] then
-      self.items[i]:die()
-    end
-  end
-  self.items = {}
-  
-  -- Create new item parts based on current level
-  self:createItemParts()
-end
 
 -- FIX: This function now correctly calls the refactored UI creation function.
 function CharacterCard:refreshText()
+    self:cleanupUIElements()
     self:createUIElements()
-
 end
 
 function CharacterCard:show_unit_stats_popup()
   local item_stats = get_unit_stats(self.unit)
   local text_lines = {}
   
-  for _, stat in pairs(item_stats) do
+  for stat_name, stat_value in pairs(item_stats) do
+    local prefix, value, suffix, display_name = format_stat_display(stat_name, stat_value)
     table.insert(text_lines, { 
-      text = '[yellow[0]]+' .. (stat.value * 100) .. '% ' .. stat.name:capitalize(), 
+      text = '[yellow[0]]' .. prefix .. value .. suffix .. display_name:capitalize(), 
       font = pixul_font, 
       alignment = 'center' 
     })
@@ -302,16 +345,61 @@ function CharacterCard:show_unit_stats_popup()
     })
   end
   
-  self.popup = InfoText{group = main.current.ui, force_update = false}
+  self.popup = InfoText{group = main.current.world_ui, force_update = false}
   self.popup:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
   self.popup.x = self.x
   self.popup.y = self.y - self.h/2 + 60
+end
+
+function CharacterCard:show_set_bonus_popup_for_set(set_info)
+  -- Create text lines for this specific set
+  local text_lines = {}
+  
+  -- Set name header
+  local set_color = set_info.color or 'fg'
+  table.insert(text_lines, {
+    text = '[' .. set_color .. ']' .. set_info.name:upper(), 
+    font = pixul_font, 
+    alignment = 'center'
+  })
+  
+  -- Set bonuses
+  for i = 1, MAX_SET_BONUS_PIECES do
+    local bonus = set_info.bonuses[i]
+    if bonus then
+      local is_reached = set_info.current_pieces >= i
+      local color = is_reached and set_color or 'fg[2]' -- Use set color if reached, gray if not
+      
+      local stat_name = ''
+      for stat, value in pairs(bonus.stats) do
+        stat_name = stat_name .. '+' .. value .. ' ' .. item_stat_lookup[stat] .. ', '
+      end
+
+      table.insert(text_lines, {
+        text = '[' .. color .. ']' .. i .. 'pc: ' .. stat_name, 
+        font = pixul_font, 
+        alignment = 'left'
+      })
+    end
+  end
+  
+  self.set_bonus_popup = InfoText{group = main.current.world_ui, force_update = false}
+  self.set_bonus_popup:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
+  self.set_bonus_popup.x = self.x
+  self.set_bonus_popup.y = self.y - self.h/2 + 60
 end
 
 function CharacterCard:hide_popup()
   if self.popup then
     self.popup:deactivate()
     self.popup = nil
+  end
+end
+
+function CharacterCard:hide_set_bonus_popup()
+  if self.set_bonus_popup then
+    self.set_bonus_popup:deactivate()
+    self.set_bonus_popup = nil
   end
 end
 
@@ -324,6 +412,13 @@ function CharacterCard:refreshText()
   -- Remove old last round stats icon if it exists
   if self.last_round_stats_icon then
     self.last_round_stats_icon.dead = true
+  end
+
+  if self.set_bonus_elements then
+    for _, element in ipairs(self.set_bonus_elements) do
+      element.dead = true
+    end
+    self.set_bonus_elements = {}
   end
   
 
@@ -353,6 +448,19 @@ function CharacterCard:update(dt)
     self:hide_popup()
   end
   
+  -- Check set bonus elements hover state
+  if self.set_bonus_elements then
+    for _, element in ipairs(self.set_bonus_elements) do
+      if element.selected and not element.hovered then
+        element.hovered = true
+        self:show_set_bonus_popup_for_set(element.set_info)
+      elseif not element.selected and element.hovered then
+        element.hovered = false
+        self:hide_set_bonus_popup()
+      end
+    end
+  end
+  
   -- Check last round stats icon hover state
   if self.last_round_stats_icon and self.last_round_stats_icon.selected and not self.last_round_stats_hovered then
     self.last_round_stats_hovered = true
@@ -362,11 +470,7 @@ function CharacterCard:update(dt)
     self:hide_last_round_popup()
   end
   
-  -- Update level up cost display when gold changes
-  if self.last_gold_check ~= gold then
-    self.last_gold_check = gold
-    self:update_level_up_cost_display()
-  end
+
 end
 
 function CharacterCard:die()
@@ -378,28 +482,8 @@ function CharacterCard:die()
   end
   self.name_text.dead = true
   
-  -- Clean up buttons
-  if self.unit_stats_icon then
-    if self.unit_stats_icon.die then
-      self.unit_stats_icon:die()
-    else
-      self.unit_stats_icon.dead = true
-    end
-  end
-  
-  if self.last_round_stats_icon then
-    self.last_round_stats_icon.dead = true
-  end
-  
-  if self.level_up_button then
-    self.level_up_button.dead = true
-  end
-  
-
-  
-  -- Clean up popups
-  self:hide_popup()
-  self:hide_last_round_popup()
+  -- Clean up UI elements
+  self:cleanupUIElements()
   
   self.dead = true
 end
@@ -484,7 +568,7 @@ function ItemPart:update(dt)
 
   if input.m1.pressed and self.colliding_with_mouse and self:hasItem() then
     self.itemGrabbed = true
-    self.looseItem = LooseItem{group = main.current.ui, item = self:getItem(), parent = self}
+    self.looseItem = LooseItem{group = main.current.world_ui, item = self:getItem(), parent = self}
     self:remove_tooltip()
   end
 
@@ -525,7 +609,8 @@ function ItemPart:draw(y)
   if not self.parent.grabbed then
     graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
     local item = self.parent.unit.items[self.i]
-    local tier_color = item_to_color(item)
+    -- Use V2 item tier_color if available, otherwise fall back to item_to_color
+    local tier_color = item and (item.tier_color or item_to_color(item)) or grey[0]
     graphics.rectangle(self.x, self.y, self.w+4, self.h+4, 3, 3, tier_color)
     graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, bg[5])
 
@@ -607,7 +692,7 @@ function ItemPart:create_tooltip()
   end
 
   self.tooltip = ItemTooltip{
-    group = main.current.ui,
+    group = main.current.world_ui,
     item = self:getItem(),
     x = gw/2, 
     y = gh/2 - 50,

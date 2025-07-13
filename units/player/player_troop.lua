@@ -66,6 +66,18 @@ end
 function Troop:rally_to_point()
   -- If not, continue moving towards the rally point.
   if self.being_knocked_back then return end
+  if not self.target_pos then return end
+  
+  local success, time_to_target, target_pos = self:predict_arrival(
+    self.target_pos.x, self.target_pos.y, 
+    RALLY_CIRCLE_STOP_DISTANCE, 
+    RALLY_CIRCLE_OVERSHOOT_DISTANCE
+  )
+  
+  if success then
+    return
+  end
+
   self:seek_point(self.target_pos.x, self.target_pos.y, SEEK_DECELERATION, SEEK_WEIGHT)
   self:steering_separate(SEPARATION_RADIUS, troop_classes)
   self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
@@ -171,8 +183,7 @@ function Troop:update(dt)
     self:clear_my_target()
 
     -- Check if we have arrived at the rally point.
-    local distance_to_target_pos = math.distance(self.x, self.y, self.target_pos.x, self.target_pos.y)
-    if distance_to_target_pos < 9 or not self.rallying then -- Also stop if rally is cancelled
+    if Helper.Unit:in_range_of_rally_point(self) or not self.rallying then -- Also stop if rally is cancelled
         Helper.Unit:set_state(self, unit_states['idle'])
     else
         self:rally_to_point()
@@ -192,7 +203,9 @@ function Troop:update(dt)
       if self:should_follow() then
         self:follow_mouse()
       elseif self.rallying then
-        self:rally_to_point()
+        if not Helper.Unit:in_range_of_rally_point(self) then
+          self:rally_to_point()
+        end
       elseif self:my_target() then
         -- In range, allow some movement for positioning
         self:steering_separate(SEPARATION_RADIUS, troop_classes)
@@ -218,8 +231,8 @@ function Troop:update(dt)
           self.target = nil
           self.target_pos = nil
       elseif self.rallying then
-          Helper.Unit:set_state(self, unit_states['rallying'])
-          self:set_rally_position(random:int(1, 10))
+          -- Helper.Unit:set_state(self, unit_states['rallying'])
+          -- self:set_rally_position(random:int(1, 10))
       else
         --if in range of any target, don't move
         if self:in_range('assigned')() then
@@ -306,7 +319,7 @@ end
 
 function Troop:set_rally_position(i)
   local team = Helper.Unit.teams[self.team]
-  self.target_pos = sum_vectors({x = team.rallyCircle.x, y = team.rallyCircle.y}, rally_offsets(i))
+  self.target_pos = {x = team.rallyCircle.x + math.random(-i, i), y = team.rallyCircle.y + math.random(-i, i)}
 
 end
 

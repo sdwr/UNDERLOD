@@ -9,10 +9,12 @@ require 'helper/helper'
 require 'animations/init'
 require 'ui/ui'
 require 'ui/character_tooltip'
+require 'ui/set_bonus_tooltip'
 require 'arena'
 require 'procs/procs'
 require 'procs/perks'
 require 'items'
+require 'items_v2'
 require 'mainmenu'
 require 'buy_screen_utils'
 require 'level_map'
@@ -308,20 +310,25 @@ function init()
   
   --new items
   local d               = 'newItems/'
-  skull                 = Image(d .. 'skull-small')
+  simpleshield          = Image(d .. 'simpleshield')
+  helmet                = Image(d .. 'helmet')
+  sword                 = Image(d .. 'sword')
+  simpleboots           = Image(d .. 'simpleboots')
+  simplearmor           = Image(d .. 'simplearmor')
+  orb                   = Image(d .. 'orb')
   potion2               = Image(d .. 'potion2')
+
+
+
+  skull                 = Image(d .. 'skull-small')
   fancyarmor            = Image(d .. 'fancyarmor')
   turtle                = Image(d .. 'turtle')
   leaf                  = Image(d .. 'leaf')
-  simpleshield          = Image(d .. 'simpleshield')
   linegoesup            = Image(d .. 'linegoesup')
-  orb                   = Image(d .. 'orb')
-  sword                 = Image(d .. 'sword')
   rock                  = Image(d .. 'rock')
   flask                 = Image(d .. 'flask')
   gem                   = Image(d .. 'gem')
   sun                   = Image(d .. 'sun')
-  simpleboots           = Image(d .. 'simpleboots')
   mace                  = Image(d .. 'mace')
   fire                  = Image(d .. 'fire')
   lightning             = Image(d .. 'lightning')
@@ -798,28 +805,24 @@ function init()
     local combined_stats = {}
     
     -- Start with item stats
-    for _, stat in pairs(item_stats) do
-      combined_stats[stat.name] = stat.value
+    for stat_name, stat_value in pairs(item_stats) do
+      combined_stats[stat_name] = stat_value
     end
     
     -- Add perk stats to the combined stats
-    for _, stat in pairs(perk_stats) do
-      if combined_stats[stat.name] then
-        combined_stats[stat.name] = combined_stats[stat.name] + stat.value
+    for stat_name, stat_value in pairs(perk_stats) do
+      if combined_stats[stat_name] then
+        combined_stats[stat_name] = combined_stats[stat_name] + stat_value
       else
-        combined_stats[stat.name] = stat.value
+        combined_stats[stat_name] = stat_value
       end
     end
     
-    -- Convert back to the expected format
+    -- Order stats
     local final_stats = {}
     for _, stat_name in ipairs(item_stat_display_order) do
-      local display_name = item_stat_lookup and item_stat_lookup[stat_name] or stat_name
-      if combined_stats[display_name] then
-        table.insert(final_stats, {
-          name = display_name,
-          value = combined_stats[display_name]
-        })
+      if combined_stats[stat_name] then
+        final_stats[stat_name] = combined_stats[stat_name]
       end
     end
     
@@ -851,7 +854,8 @@ function init()
     end
     for k, v in pairs(item_stats) do
       next_line = { text = '', font = pixul_font, alignment = 'left' }
-      next_line.text = '+' .. (v * 100) .. '% ' .. k:capitalize()
+      local prefix, value, suffix, display_name = format_stat_display(k, v)
+      next_line.text = prefix .. value .. suffix .. display_name:capitalize()
       table.insert(text_lines, next_line)
     end
     --add item buffs
@@ -922,7 +926,8 @@ function init()
       local next_line = { text = '', font = pixul_font, alignment = 'center' }
       for k, v in pairs(item_stats) do
         next_line = { text = '', font = pixul_font, alignment = 'center' }
-        next_line.text = '[yellow[0]]+' .. (v * 100) .. '% ' .. k:capitalize()
+        local prefix, value, suffix, display_name = format_stat_display(k, v)
+        next_line.text = '[yellow[0]]' .. prefix .. value .. suffix .. display_name:capitalize()
         table.insert(text_lines, next_line)
       end
 
@@ -973,6 +978,7 @@ function init()
     ['leaf'] = leaf,
     ['orb'] = orb,
     ['simpleshield'] = simpleshield,
+    ['helmet'] = helmet,
     ['sword'] = sword,
     ['rock'] = rock,
     ['flask'] = flask,
@@ -1013,35 +1019,34 @@ function init()
 
   item_stat_lookup = {
     ['dmg'] = 'damage',
-    ['mvspd'] = 'move speed',
-    ['aspd'] = 'attack speed',
+    ['mvspd'] = 'move',
+    ['aspd'] = 'aspeed',
     ['hp'] = 'hp',
-    ['flat_def'] = 'flat defence',
-    ['percent_def'] = 'percent defence',
-    ['area_size'] = 'area size',
-    ['vamp'] = 'vampirism',
-    ['ghost'] = 'move through units',
-    ['slow'] = 'movement slow on attack',
-    ['thorns'] = 'thorns',
-    ['range'] = 'increased range',
-    ['bash'] = 'chance to stun',
-    ['repeat_attack_chance'] = 'double attack chance',
-    ['enrage'] = 'enrage allies on death',
-    ['gold'] = 'gold per round',
-    ['heal'] = 'healing per second',
-    ['explode'] = 'explode on kill',
-    ['fire_damage'] = 'fire damage',
-    ['lightning_damage'] = 'lightning damage',
-    ['cold_damage'] = 'cold damage',
-    ['fire_damage_m'] = 'fire damage mult',
-    ['lightning_damage_m'] = 'lightning damage mult',
-    ['cold_damage_m'] = 'cold damage mult',
+    ['flat_def'] = 'def',
+    ['percent_def'] = 'def',
+    ['area_size'] = 'area',
+    ['vamp'] = 'lifesteal',
+    ['ghost'] = 'ghost',
+    ['slow'] = 'slow',
+    ['thorns'] = 'reflect',
+    ['range'] = 'range',
+    ['bash'] = 'stun',
+    ['repeat_attack_chance'] = 'repeat',
+    ['enrage'] = 'enrage',
+    ['gold'] = 'gold',
+    ['heal'] = 'heal',
+    ['fire_damage'] = 'fire',
+    ['lightning_damage'] = 'shock',
+    ['cold_damage'] = 'cold',
+    ['fire_damage_m'] = 'fire mult',
+    ['lightning_damage_m'] = 'shock mult',
+    ['cold_damage_m'] = 'cold mult',
 
-    ['crit_chance'] = 'crit chance',
-    ['crit_mult'] = 'crit damage',
-    ['stun_chance'] = 'stun chance',
+    ['crit_chance'] = 'crit',
+    ['crit_mult'] = 'crit',
+    ['stun_chance'] = 'stun',
     ['knockback_resistance'] = 'knockback resistance',
-    ['cooldown_reduction'] = 'cooldown reduction',
+    ['cooldown_reduction'] = 'cdr',
     ['slow_per_element'] = 'slow per element',
 
     ['proc'] = 'Extra effect on attack',
@@ -1133,6 +1138,10 @@ function init()
 
   item_to_color = function(item)
     if not item then return grey[0] end
+
+    if item.rarity then
+      return get_rarity_color(item.rarity)
+    end
 
     local cost = item.cost or 0
     local color = grey[0]
@@ -1346,6 +1355,7 @@ function init()
     [11] = 'dragon',
     [16] = 'heigan',
     [21] = 'final_boss',
+    [25] = 'final_boss',
   }
 
   normal_enemy_by_tier = {

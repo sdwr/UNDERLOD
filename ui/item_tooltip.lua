@@ -10,8 +10,13 @@ local TOOLTIP_WIDTH = 220
 function ItemTooltip:init(args)
   self:init_game_object(args)
   self.item = args.item
-  self.item = Create_Item(self.item.name)
-  if not self.item then self.dead = true; return end
+  
+  -- Handle V2 items (which don't need conversion) vs legacy items
+  if not self.item.name or not self.item.icon then
+    -- Try to create legacy item
+    self.item = Create_Item(self.item.name)
+    if not self.item then self.dead = true; return end
+  end
 
   -- Animation and positioning
   self.spring = Spring(1, 150, 20)
@@ -34,39 +39,43 @@ function ItemTooltip:init(args)
   local name = self.item.name or 'UNKNOWN ITEM'
   self.name_text = Text({{text ='[fg]' .. name:upper(), font = pixul_font, alignment = 'center'}}, global_text_tags)
 
-  -- 3. STATS TEXT (New Section)
+  -- 3. ITEM SETS TEXT (New Section)
+  local sets_text_definitions = {}
+  if self.item.sets then
+      for _, set_name in ipairs(self.item.sets) do
+          local set_def = ITEM_SETS[set_name]
+          if set_def then
+              local color = set_def.color or 'fg'
+              local text = '[' .. color .. ']' .. set_name:upper()
+              table.insert(sets_text_definitions, { text = text, font = pixul_font, alignment = 'center' })
+          end
+      end
+  end
+  self.sets_text = Text(sets_text_definitions, global_text_tags)
+
+  -- 4. STATS TEXT
   local stats_text_definitions = {}
   if self.item.stats then
       for key, val in pairs(self.item.stats) do
           local text = ''
-          if key == 'gold' then
-              text = '[yellow] ' .. val .. ' ' .. (item_stat_lookup[key] or '')
-          elseif key == 'enrage' or key == 'ghost' then
-              text = '[yellow] ' .. (item_stat_lookup[key] or '')
-          elseif key == 'proc' then
-              text = '[yellow]' .. 'custom proc... add later'
+          local display_name = item_stat_lookup and item_stat_lookup[key] or key
+          
+          -- Handle V2 item stats (numeric values)
+          if type(val) == 'number' then
+            local prefix, value, suffix, display_name = format_stat_display(key, val)
+            text = '[yellow] ' .. prefix .. value .. suffix .. display_name
           else
-              text = '[yellow] ' .. val * 100 .. '% ' .. (item_stat_lookup[key] or '')
+            -- Handle legacy item stats (boolean values)
+            text = '[yellow] ' .. display_name
           end
           table.insert(stats_text_definitions, { text = text, font = pixul_font, alignment = 'center' })
       end
   end
   self.stats_text = Text(stats_text_definitions, global_text_tags)
 
-  -- 4. DESCRIPTION TEXT
-  local desc = self.item.desc or 'No description available.'
-  local wrapped_lines = self:wrap_text(desc, TOOLTIP_WIDTH - PADDING*2, pixul_font)
-  
-  -- Convert the table of strings into a table of text definitions
-  local desc_text_definitions = {}
-  for _, line in ipairs(wrapped_lines) do
-      table.insert(desc_text_definitions, { text = '[fgm2]' .. line, font = pixul_font, alignment = 'center' })
-  end
-  self.desc_text = Text(desc_text_definitions, global_text_tags)
-
   -- 5. Calculate total dimensions for the background
   self.w = TOOLTIP_WIDTH
-  self.h = self.name_text.h + self.stats_text.h + self.desc_text.h + (PADDING * 4)
+  self.h = self.name_text.h + self.sets_text.h + self.stats_text.h + (PADDING * 4)
 
   -- Start the activation animation
   self:activate()
@@ -100,18 +109,21 @@ function ItemTooltip:draw()
   -- Advance past the Name text.
   current_y = current_y + self.name_text.h + PADDING
 
-  -- 3. Draw Stats
+  -- 3. Draw Item Sets (if any)
+  if self.sets_text.h > 0 then
+      -- Advance to the vertical center of the Sets text.
+      self.sets_text:draw(cx, current_y + self.sets_text.h / 2)
+      -- Advance past the Sets text.
+      current_y = current_y + self.sets_text.h + PADDING
+  end
+
+  -- 4. Draw Stats
   if self.stats_text.h > 0 then
       -- Advance to the vertical center of the Stats text.
       self.stats_text:draw(cx, current_y + self.stats_text.h / 2)
       -- Advance past the Stats text.
       current_y = current_y + self.stats_text.h + PADDING
   end
-  
-  -- Advance to the vertical center of the Description text.
-  self.desc_text:draw(cx, current_y + self.desc_text.h / 2)
-  current_y = current_y + self.desc_text.h + PADDING
-  -- No need to advance current_y further, as this is the last element.
 
   self.h = current_y - top_y
 
@@ -159,5 +171,5 @@ end
 
 function ItemTooltip:die()
   self.dead = true
-  if self.item then self.item:die() end
+  if self.item and self.item.die then self.item:die() end
 end

@@ -40,7 +40,8 @@ function PerkTooltip:init(args)
           elseif key == 'proc' then
               text = '[yellow]' .. 'custom proc... add later'
           else
-              text = '[yellow] ' .. val * 100 .. '% ' .. (item_stat_lookup[key] or key)
+              local prefix, value, suffix, display_name = format_stat_display(key, val)
+              text = '[yellow] ' .. prefix .. value .. suffix .. display_name
           end
           table.insert(stats_text_definitions, { text = text, font = pixul_font, alignment = 'center' })
       end

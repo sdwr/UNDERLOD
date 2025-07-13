@@ -700,35 +700,20 @@ end
 --used for the character tooltip in buy screen
 function Unit:get_item_stats_for_display()
   -- Step A: Aggregate all stats into a temporary hash table for quick summation.
-  -- This part of the logic remains the same.
   local aggregated_stats = {}
   for i = 1, UNIT_LEVEL_TO_NUMBER_OF_ITEMS[self.level] do
       local item = self.items[i]
       if item and item.stats then
           for stat, amt in pairs(item.stats) do
+              -- For V2 items, amt is the incremental value (e.g., 2 for +2 move)
+              -- For V1 items, amt is the raw value (e.g., 0.15 for 15% move)
+              -- The display layer will handle the formatting difference
               aggregated_stats[stat] = (aggregated_stats[stat] or 0) + amt
           end
       end
   end
 
-  -- Step B: Build the final, ordered list for display.
-  local ordered_stats_list = {}
-  -- Iterate through our master display order list.
-  for _, stat_name in ipairs(item_stat_display_order) do
-      -- Check if the unit has this stat from its items.
-      if aggregated_stats[stat_name] then
-          -- If it does, add a table containing the name and value to our list.
-          -- We use the display name from item_stat_lookup if it exists.
-          local display_name = item_stat_lookup and item_stat_lookup[stat_name] or stat_name
-          table.insert(ordered_stats_list, {
-              name = display_name, 
-              value = aggregated_stats[stat_name]
-          })
-      end
-  end
-
-  -- Return the ordered list.
-  return ordered_stats_list
+  return aggregated_stats
 end
 
 function Unit:calculate_stats(first_run)
@@ -836,7 +821,6 @@ function Unit:calculate_stats(first_run)
         elseif stat == buff_types['status_resist'] then
           self.status_resist = amt
         end
-        
       end
     end
   end
@@ -844,6 +828,7 @@ function Unit:calculate_stats(first_run)
   -- Process buffs, items, and perks using unified stat addition
   self:add_stats(self:process_buffs_to_stats())
   self:add_stats(self:process_items_to_stats())
+  self:add_stats(self:process_set_bonuses_to_stats())
   self:add_stats(self:preprocess_perks_to_stats())
 
 
@@ -1902,19 +1887,7 @@ function Unit:get_perk_stats_for_display()
     end
   end
   
-  -- Convert to the same format as item stats
-  local ordered_perk_stats = {}
-  for _, stat_name in ipairs(item_stat_display_order) do
-    if perk_stats[stat_name] then
-      local display_name = item_stat_lookup and item_stat_lookup[stat_name] or stat_name
-      table.insert(ordered_perk_stats, {
-        name = display_name,
-        value = perk_stats[stat_name]
-      })
-    end
-  end
-  
-  return ordered_perk_stats
+  return perk_stats
 end
 
 -- Unified stat addition function
@@ -2030,7 +2003,26 @@ function Unit:process_items_to_stats()
   for _, item in ipairs(self.items) do
     if item.stats then
       for stat, amt in pairs(item.stats) do
-        processed_stats[stat] = (processed_stats[stat] or 0) + amt
+        -- Add sanity check for valid stat values
+        if type(amt) ~= "number" then
+          print("Warning: Invalid stat value for '" .. stat .. "' on item: " .. (item.name or "unknown"))
+          amt = 0
+        end
+        
+        -- Check if this is a V2 item with increment values
+        if ITEM_STATS and ITEM_STATS[stat] and ITEM_STATS[stat].increment then
+          -- Add sanity check for increment value
+          if type(ITEM_STATS[stat].increment) ~= "number" then
+            print("Warning: Invalid increment value for V2 stat '" .. stat .. "'")
+          else
+            -- Use the increment value to calculate the actual stat bonus
+            local actual_amount = amt * ITEM_STATS[stat].increment
+            processed_stats[stat] = (processed_stats[stat] or 0) + actual_amount
+          end
+        else
+          -- Legacy item system - use the amount directly
+          processed_stats[stat] = (processed_stats[stat] or 0) + amt
+        end
       end
     end
   end
@@ -2038,4 +2030,37 @@ function Unit:process_items_to_stats()
   return processed_stats
 end
 
+function Unit:process_set_bonuses_to_stats()
+  local set_bonus_stats = {}
+  local sets = {}
+  
+  if not self.items or #self.items == 0 then return set_bonus_stats end
+  
+  for _, item in ipairs(self.items) do
+    if item.sets and #item.sets > 0 then
+      for _, set in ipairs(item.sets) do
+        sets[set] = (sets[set] or 0) + 1
+      end
+    end
+  end
+  
+  for set, count in pairs(sets) do
+    local set_data = ITEM_SETS[set]
+    if set_data then
+      for number_required, bonus in ipairs(set_data.bonuses) do
+        if count >= number_required then
+          if bonus.stats then
+            for stat, value in pairs(bonus.stats) do
+              set_bonus_stats[stat] = (set_bonus_stats[stat] or 0) + value
+            end
+          end
+        end
+      end
+    else
+      print("Unknown set: " .. set)
+    end
+  end
+  
+  return set_bonus_stats
+end
 

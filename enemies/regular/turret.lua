@@ -136,4 +136,50 @@ end
 
 function MultiProjectile:die()
   self.dead = true
+end
+
+-- SingleProjectile wrapper class for EnemyProjectile
+-- Converts target-based spells to angle-based EnemyProjectile
+SingleProjectile = Object:extend()
+SingleProjectile:implement(GameObject)
+function SingleProjectile:init(args)
+  self:init_game_object(args)
+  
+  -- Calculate angle to target
+  local angle = 0
+  if self.target then
+    local dx = self.target.x - self.x
+    local dy = self.target.y - self.y
+    angle = math.atan2(dy, dx)
+  else
+    angle = random:float(0, 2 * math.pi)
+  end
+  
+  -- Create the actual EnemyProjectile
+  EnemyProjectile{
+    group = self.group,
+    x = self.x,
+    y = self.y,
+    r = angle,
+    v = self.v or 120,
+    damage = self.damage,
+    color = self.color,
+    unit = self.unit,
+    source = self.source or 'single_projectile'
+  }
+  
+  -- This wrapper object is done
+  self:die()
+end
+
+function SingleProjectile:update(dt)
+  -- This object just creates the projectile and dies
+end
+
+function SingleProjectile:draw()
+  -- This object doesn't need to draw anything
+end
+
+function SingleProjectile:die()
+  self.dead = true
 end 

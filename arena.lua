@@ -288,11 +288,11 @@ end
 function Arena:create_floor_items()
   self.floor_items = {}
   
-  -- Generate 3 random items
+  -- Generate 3 random items using the new V2 system
   local items = {}
   for i = 1, 3 do
     local tier = LEVEL_TO_TIER(self.level or 1)
-    local item = Get_Random_Item(tier, self.units, items)
+    local item = create_random_item(tier)
     if item then
       table.insert(items, item)
     end
@@ -306,7 +306,7 @@ function Arena:create_floor_items()
   }
   
   if not self.floor_item_text then
-    self.floor_item_text = Text2{group = self.ui, x = gw/2 + self.offset_x, y = gh/2 - 70 + self.offset_y, lines = {{text = '[wavy_mid, cbyc3]Buy an item:', font = fat_font, alignment = 'center'}}}
+    self.floor_item_text = Text2{group = self.floor, x = gw/2 + self.offset_x, y = gh/2 - 70 + self.offset_y, lines = {{text = '[wavy_mid, cbyc3]Buy an item:', font = fat_font, alignment = 'center'}}}
   end
 
   for i, item in ipairs(items) do
@@ -1014,11 +1014,14 @@ function FloorItem:init(args)
     self.stats = {}
   else
     -- Item mode
-    self.cost = self.item.cost
+    -- self.cost = self.item.cost
+    self.cost = 0
     self.image = find_item_image(self.item)
     self.colors = self.item.colors
+    -- Use V2 item tier_color if available, otherwise fall back to item_to_color
     self.tier_color = item_to_color(self.item)
     self.stats = self.item.stats
+    self.name = self.item.name
   end
   
   -- Collision detection radius
@@ -1052,8 +1055,91 @@ function FloorItem:init(args)
     self.cost_text = Text({{text = '[yellow]' .. self.cost, font = pixul_font, alignment = 'center'}}, global_text_tags)
   end
   
+  -- Create name text with wrapping
+  if self.is_character_selection or self.is_perk_selection then
+    self:create_name_text()
+  end
+  
+  -- Create bottom half text (stats for items, description for perks)
+  self:create_bottom_text()
+  
   -- Creation effect
   self:creation_effect()
+end
+
+function FloorItem:create_name_text()
+  -- Use item name if available, otherwise fall back to self.name
+  local display_name = self.item and self.item.name or self.name
+  -- Wrap the name text to fit within the card width (60px - 4px padding on each side = 52px)
+  local wrapped_lines = self:wrap_text(display_name, 52, pixul_font)
+  
+  -- Create text definitions for each line
+  local text_definitions = {}
+  for _, line in ipairs(wrapped_lines) do
+    table.insert(text_definitions, {text = '[fg]' .. line, font = pixul_font, alignment = 'center'})
+  end
+  
+  self.name_text = Text(text_definitions, global_text_tags)
+end
+
+function FloorItem:create_bottom_text()
+  if self.is_character_selection then
+    self.bottom_text = nil
+  elseif self.is_perk_selection then
+    local desc = self.perk.description or 'No description available.'
+    local wrapped_lines = self:wrap_text(desc, 52, pixul_font)
+    local text_definitions = {}
+    for _, line in ipairs(wrapped_lines) do
+      table.insert(text_definitions, {text = '[fgm2]' .. line, font = pixul_font, alignment = 'center'})
+    end
+    self.bottom_text = Text(text_definitions, global_text_tags)
+  else
+    local stats_lines = {}
+    if self.stats then
+      for key, val in pairs(self.stats) do
+        local text = ''
+        local display_name = item_stat_lookup and item_stat_lookup[key] or key
+        if type(val) == 'number' then
+          if key == 'gold' then
+            text = '[yellow]+' .. val .. ' ' .. display_name
+          elseif ITEM_STATS and ITEM_STATS[key] and ITEM_STATS[key].increment then
+            text = '[yellow]+' .. val .. ' ' .. display_name
+          else
+            text = '[yellow]+' .. val .. ' ' .. display_name
+          end
+        else
+          text = '[yellow]+' .. display_name
+        end
+        table.insert(stats_lines, {text = text, font = pixul_font, alignment = 'center'})
+      end
+    end
+    if #stats_lines > 0 then
+      self.bottom_text = Text(stats_lines, global_text_tags)
+    else
+      self.bottom_text = nil
+    end
+  end
+end
+
+function FloorItem:wrap_text(text, max_width, font)
+  local lines = {}
+  local current_line = ''
+  -- Prevent errors if text is nil
+  if not text then return {} end
+  
+  for word in text:gmatch("([^ ]+)") do
+      local test_line = current_line == '' and word or current_line .. ' ' .. word
+      
+      if font:get_text_width(test_line) > max_width then
+          table.insert(lines, current_line)
+          current_line = word
+      else
+          current_line = test_line
+      end
+  end
+  table.insert(lines, current_line)
+  
+  return lines
 end
 
 function FloorItem:creation_effect()
@@ -1214,7 +1300,7 @@ function FloorItem:select_character()
   
   -- Purchase effect
   for i = 1, 20 do
-    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color or grey[0]}
   end
   
 end
@@ -1239,7 +1325,7 @@ function FloorItem:select_perk()
     
     -- Purchase effect
     for i = 1, 20 do
-      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color or grey[0]}
     end
     
     -- Remove all perk floor items and continue to buy screen
@@ -1276,7 +1362,7 @@ function FloorItem:purchase_item()
   
   -- Purchase effect
   for i = 1, 20 do
-    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color or grey[0]}
   end
   
   -- Remove all floor items
@@ -1299,10 +1385,11 @@ function FloorItem:draw()
   local height = 80
   graphics.rectangle(self.x + shake_x, self.y + shake_y, width, height, 6, 6, bg[5])
   
-  -- Draw item colors
-  if self.colors then
+  -- Draw item colors only on the top half
+  if self.colors and not self.is_character_selection and not self.is_perk_selection then
     local num_colors = #self.colors
-    local color_h = height / num_colors
+    local top_half_height = height / 2 -- Only use top half
+    local color_h = top_half_height / num_colors
     for i, color_name in ipairs(self.colors) do
       local color = _G[color_name]
       color = color[0]:clone()
@@ -1312,17 +1399,31 @@ function FloorItem:draw()
     end
   end
   
-  -- Draw border
-  graphics.rectangle(self.x + shake_x, self.y + shake_y, width, height, 6, 6, self.tier_color, 2)
+  -- Draw border with fallback color
+  local border_color = self.tier_color or grey[0]
+  graphics.rectangle(self.x + shake_x, self.y + shake_y, width, height, 6, 6, border_color, 2)
   
+  -- Draw name text at the top of the card
+  if self.name_text then
+    local name_y = self.y - height/2 + 8 -- Position at top with small padding
+    self.name_text:draw(self.x + shake_x, name_y)
+  end
   
   if self.cost_text then
     self.cost_text:draw(self.x + width/2, self.y - height/2)
   end
   
-  -- Draw item image
+  -- Draw item image in the top half (centered in top 40px)
   if self.image then
-    self.image:draw(self.x + shake_x, self.y + shake_y, 0, 0.8, 0.8)
+    local image_y = self.y - height/2 + 20 -- Center in top half
+    self.image:draw(self.x + shake_x, image_y, 0, 0.8, 0.8)
+  end
+  
+  -- Draw bottom text just below the top section
+  if self.bottom_text then
+    local top_section_bottom = self.y -- The center of the card (boundary between top and bottom)
+    local bottom_text_y = top_section_bottom + 8 -- Position just below the top section with small padding
+    self.bottom_text:draw(self.x + shake_x, bottom_text_y)
   end
   
   -- Draw hover effect
@@ -1361,8 +1462,9 @@ function FloorItem:create_tooltip()
       y = gh/2 - 50,
     }
   else
-    -- Create item tooltip
-    self.tooltip = ItemTooltip{
+    -- Create set bonus tooltip instead of item tooltip
+    -- Show set bonuses for this specific item
+    self.tooltip = SetBonusTooltip{
       group = self.parent.ui,
       item = self.item,
       x = gw/2, 
@@ -1383,6 +1485,14 @@ function FloorItem:die()
   if self.tooltip then
     self.tooltip:die()
     self.tooltip = nil
+  end
+  if self.name_text then
+    self.name_text.dead = true
+    self.name_text = nil
+  end
+  if self.bottom_text then
+    self.bottom_text.dead = true
+    self.bottom_text = nil
   end
 end
 

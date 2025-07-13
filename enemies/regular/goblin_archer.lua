@@ -33,21 +33,22 @@ fns['init_enemy'] = function(self)
   local shoot = {
     name = 'shoot',
     viable = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end,
-    oncast = function() self.target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies) end,
+    oncast = function() 
+      self.target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies)
+    end,
     cast_length = GOBLIN2_CAST_TIME,
     castcooldown = self.cooldownTime,
     cancel_on_range = false,
     instantspell = true,
     cast_sound = scout1,
-    spellclass = ArrowProjectile,
+    spellclass = SingleProjectile,
     spelldata = {
-      group = main.current.effects,
-      spell_duration = 1,
+      group = main.current.main,
       color = blue[0],
       damage = function() return self.dmg end,
-      bullet_size = 4,
-      speed = 120,
-      is_troop = false,
+      v = 120,  -- Speed for physics-based movement
+      unit = self,
+      source = 'goblin_archer',
     },
   }
 
