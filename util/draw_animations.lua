@@ -23,7 +23,7 @@ function DrawAnimations.calculate_enemy_scale(enemy)
 end
 
 -- Draw a specific animation with given parameters
-function DrawAnimations.draw_specific_animation(unit, anim_set, x, y, r, scale_x, scale_y, alpha, color, use_hfx)
+function DrawAnimations.draw_specific_animation(unit, anim_set, x, y, r, scale_x, scale_y, alpha, color, use_hfx, use_flash)
   if not anim_set or not anim_set[1] or not anim_set[2] then
     return false
   end
@@ -48,6 +48,10 @@ function DrawAnimations.draw_specific_animation(unit, anim_set, x, y, r, scale_x
       love.graphics.setColor(1, 1, 1, alpha or 1)
     end
     
+    if use_flash then
+      love.graphics.setBlendMode('add')
+    end
+
     if use_hfx then
       graphics.push(screen_x, screen_y, r or 0, unit.hfx.hit.x, unit.hfx.hit.x)
     else
@@ -55,11 +59,18 @@ function DrawAnimations.draw_specific_animation(unit, anim_set, x, y, r, scale_x
     end
       animation:draw(image.image, screen_x, screen_y, 0, scale_x * screen_scale, scale_y * screen_scale, frame_center_x, frame_center_y)
     graphics.pop()
+
+    if use_flash then
+      love.graphics.setBlendMode('alpha')
+    end
+
     love.graphics.setColor(1, 1, 1, 1)
   end)
 
   return true
 end
+
+FLASH_START_TIME = nil
 
 -- Draw enemy animation with spritesheet, buffs, and status effects
 function DrawAnimations.draw_enemy_animation(enemy, state, x, y, r)
@@ -92,10 +103,15 @@ function DrawAnimations.draw_enemy_animation(enemy, state, x, y, r)
   local scale_x = base_scale_x * direction
   local scale_y = base_scale_y
 
-  -- Draw the animation using the helper function
-  local draw_success = DrawAnimations.draw_specific_animation(enemy, anim_set, x, y, r, scale_x, scale_y, 1.0)
+  -- Draw the base animation using the helper function
+  local draw_success = DrawAnimations.draw_specific_animation(enemy, anim_set, x, y, r, scale_x, scale_y, 1.0, nil, true, false)
   
   if draw_success then
+    -- Add hit flash overlay when hit flash is active
+    if enemy.hfx and enemy.hfx.hit and enemy.hfx.hit.f then
+      DrawAnimations.draw_specific_animation(enemy, anim_set, x, y, r, scale_x, scale_y, 0.4, white[0], true, true)
+    end
+    
     -- Add status effect overlays
     local mask_color = nil
     if enemy.buffs['freeze'] then
@@ -108,7 +124,7 @@ function DrawAnimations.draw_enemy_animation(enemy, state, x, y, r)
     end
 
     if mask_color ~= nil then
-      DrawAnimations.draw_specific_animation(enemy, anim_set, x, y, r, scale_x, scale_y, mask_color.a, mask_color)
+      DrawAnimations.draw_specific_animation(enemy, anim_set, x, y, r, scale_x, scale_y, mask_color.a, mask_color, true, false)
     end
   end
 

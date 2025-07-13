@@ -415,4 +415,5 @@ function Helper.Damage:apply_death_effects(unit, from)
       magic_die1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     end
   end
-end 
+
+end
