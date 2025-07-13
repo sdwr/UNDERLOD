@@ -42,7 +42,7 @@ function Arrow:init(args)
   
   self.r = self.bullet_size or 2
   
-  alert1:play{volume=0.9}
+  table.random({arrow_release1, arrow_release2, arrow_release3}):play{volume=6}
 end
 
 function Arrow:update(dt)
