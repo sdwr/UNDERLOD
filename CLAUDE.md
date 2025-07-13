@@ -8,6 +8,9 @@ UNDERLOD is an arcade RTS roguelite built with LÖVE2D (Love2D game engine) in L
 
 ## Code Conventions
 
+## Comments
+- keep comments minimal
+
 ## Drawing Rules
 - graphics.push(x, y) sets the origin point for rotation and scaling effects only
 - It does not move the coordinate system. You must still provide the object's full x and y coordinates in all subsequent draw calls (e.g., graphics.rectangle(self.x, self.y, ...))

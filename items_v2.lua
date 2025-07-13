@@ -25,7 +25,8 @@ ITEM_SET = {
   FIRE = 'fire', 
   SHOCK = 'shock',
   CURSE = 'curse',
-  REFLECT = 'reflect'
+  REFLECT = 'reflect',
+  STUN = 'stun'
 }
 
 -- Stat definitions
@@ -61,43 +62,64 @@ ITEM_STATS = {
   ['cooldown_reduction'] = { name = 'cooldown_reduction', min = 1, max = 5, increment = 0.1 },
 }
 
+--oof, this is a hack
+ITEM_STATS_THAT_CAN_ROLL_ON_ITEMS = {
+  -- Core stats
+  ['dmg'] = { name = 'dmg', min = 1, max = 5, increment = 0.1 },
+  ['aspd'] = { name = 'aspd', min = 1, max = 5, increment = 0.1 },
+  ['hp'] = { name = 'hp', min = 1, max = 5, increment = 0.15 },
+  ['mvspd'] = { name = 'mvspd', min = 1, max = 5, increment = 0.1 },
+
+  
+  ['flat_def'] = { name = 'flat_def', min = 1, max = 5, increment = 0.1 },
+  
+  -- Special stats
+  ['area_size'] = { name = 'area_size', min = 1, max = 5, increment = 0.1 },
+  ['range'] = { name = 'range', min = 1, max = 5, increment = 0.05 },
+  ['repeat_attack_chance'] = { name = 'repeat_attack_chance', min = 1, max = 5, increment = 0.1 },
+
+  
+  --advanced stats
+  ['crit_chance'] = { name = 'crit_chance', min = 1, max = 5, increment = 0.1 },
+}
+
 -- Item type definitions with preferred stats
 ITEM_TYPES = {
   [ITEM_TYPE.HEAD] = {
     name = 'Helmet',
     icon = 'helmet', -- Using orb for head items
-    preferred_stats = {'hp', 'flat_def', 'crit_chance', 'stun_chance'},
-    preferred_chance = 0.7 -- 70% chance to roll preferred stats
+    preferred_stats = {'hp', 'flat_def', 'crit_chance'},
+    preferred_chance = 0.5 -- 70% chance to roll preferred stats
   },
   [ITEM_TYPE.BODY] = {
     name = 'Armor',
     icon = 'simplearmor',
-    preferred_stats = {'hp', 'flat_def', 'area_size', 'thorns'},
-    preferred_chance = 0.7
+    preferred_stats = {'hp', 'flat_def', 'area_size'},
+    preferred_chance = 0.5
   },
   [ITEM_TYPE.WEAPON] = {
     name = 'Weapon',
     icon = 'sword',
-    preferred_stats = {'dmg', 'aspd', 'range', 'crit_chance', 'bash'},
-    preferred_chance = 0.7
+    preferred_stats = {'dmg', 'aspd', 'range', 'crit_chance'},
+    preferred_chance = 0.5
   },
   [ITEM_TYPE.OFFHAND] = {
     name = 'Offhand',
     icon = 'simpleshield',
-    preferred_stats = {'flat_def', 'thorns'},
-    preferred_chance = 0.7
+    preferred_stats = {'flat_def', 'hp', 'crit_chance'},
+    preferred_chance = 0.5
   },
   [ITEM_TYPE.FEET] = {
     name = 'Boots',
     icon = 'simpleboots',
-    preferred_stats = {'mvspd', 'slow'},
-    preferred_chance = 0.7
+    preferred_stats = {'mvspd', 'aspd'},
+    preferred_chance = 0.5
   },
   [ITEM_TYPE.AMULET] = {
     name = 'Amulet',
     icon = 'potion2', -- Using potion for amulet items
     preferred_stats = {'crit_chance'},
-    preferred_chance = 0.7
+    preferred_chance = 0.5
   }
 }
 
@@ -107,45 +129,54 @@ ITEM_SETS = {
     name = 'Frost Set',
     color = 'blue',
           bonuses = {
-        [2] = { desc = '+2 Cold Damage', stats = {['cold_damage'] = 2} },
-        [4] = { desc = '+4 Cold Damage, +2 Slow', stats = {['cold_damage'] = 4, ['slow'] = 2} },
-        [6] = { desc = '+6 Cold Damage, +3 Slow, Freeze on Hit', stats = {['cold_damage'] = 6, ['slow'] = 3} }
+        [1] = { stats = {['cold_damage'] = 1} },
+        [2] = { stats = {['range'] = 2} },
+        [4] = { stats = {['range'] = 4} }
       }
   },
   [ITEM_SET.FIRE] = {
     name = 'Inferno Set',
     color = 'red',
-          bonuses = {
-        [2] = { desc = '+2 Fire Damage', stats = {['fire_damage'] = 2} },
-        [4] = { desc = '+4 Fire Damage, +2 Burn', stats = {['fire_damage'] = 4, ['burn_chance'] = 2} },
-        [6] = { desc = '+6 Fire Damage, +3 Burn, Explosion on Kill', stats = {['fire_damage'] = 6} }
-      }
+    bonuses = {
+        [1] = { stats = {['fire_damage'] = 1} },
+        [2] = { stats = {['crit_chance'] = 2} },
+        [4] = { stats = {['crit_chance'] = 4} }
+    }
   },
   [ITEM_SET.SHOCK] = {
     name = 'Storm Set',
     color = 'yellow',
           bonuses = {
-        [2] = { desc = '+2 Lightning Damage', stats = {['lightning_damage'] = 2} },
-        [4] = { desc = '+4 Lightning Damage, +2 Chain', stats = {['lightning_damage'] = 4} },
-        [6] = { desc = '+6 Lightning Damage, +3 Chain, Stun on Hit', stats = {['lightning_damage'] = 6} }
+        [1] = { stats = {['lightning_damage'] = 1} },
+        [2] = { stats = {['aspd'] = 2} },
+        [4] = { stats = {['aspd'] = 4} }
       }
   },
   [ITEM_SET.CURSE] = {
     name = 'Shadow Set',
     color = 'purple',
     bonuses = {
-      [2] = { desc = '+15% Curse Damage', stats = {['curse_damage'] = 0.15} },
-      [4] = { desc = '+30% Curse Damage, +10% DoT', stats = {['curse_damage'] = 0.30} },
-      [6] = { desc = '+50% Curse Damage, +20% DoT, Death Mark', stats = {['curse_damage'] = 0.50} }
+      [1] = { stats = {['curse'] = 1} },
+      [2] = { stats = {['area_size'] = 2} },
+      [4] = { stats = {['area_size'] = 4} }
     }
   },
   [ITEM_SET.REFLECT] = {
     name = 'Mirror Set',
     color = 'green',
     bonuses = {
-      [2] = { desc = '+15% Reflect Damage', stats = {['reflect_damage'] = 0.15} },
-      [4] = { desc = '+30% Reflect Damage, +10% Block', stats = {['reflect_damage'] = 0.30} },
-      [6] = { desc = '+50% Reflect Damage, +20% Block, Counter Attack', stats = {['reflect_damage'] = 0.50} }
+      [1] = { stats = {['thorns'] = 1} },
+      [2] = { stats = {['hp'] = 2} },
+      [4] = { stats = {['hp'] = 4} }
+    }
+  },
+  [ITEM_SET.STUN] = {
+    name = 'Stun Set',
+    color = 'black',
+    bonuses = {
+      [1] = { stats = {['stun_chance'] = 1} },
+      [2] = { stats = {['dmg'] = 2} },
+      [4] = { stats = {['dmg'] = 4} }
     }
   }
 }
@@ -211,7 +242,7 @@ end
 
 -- Helper function to get random set
 function get_random_set()
-  local sets = {ITEM_SET.COLD, ITEM_SET.FIRE, ITEM_SET.SHOCK, ITEM_SET.CURSE, ITEM_SET.REFLECT}
+  local sets = {ITEM_SET.COLD, ITEM_SET.FIRE, ITEM_SET.SHOCK, ITEM_SET.CURSE, ITEM_SET.REFLECT, ITEM_SET.STUN}
   return sets[math.random(1, #sets)]
 end
 
@@ -219,7 +250,7 @@ end
 function roll_stat_for_type(item_type)
   local type_def = ITEM_TYPES[item_type]
   local all_stats = {}
-  for stat, _ in pairs(ITEM_STATS) do
+  for stat, _ in pairs(ITEM_STATS_THAT_CAN_ROLL_ON_ITEMS) do
     table.insert(all_stats, stat)
   end
   
@@ -297,12 +328,22 @@ function create_random_item(tier)
   local used_stats = {}
   for i = 1, rarity_def.stat_count do
     local stat_name
+    local attempts = 0
+    local max_attempts = 5
+    
     repeat
       stat_name = roll_stat_for_type(item_type)
-    until not table.contains(used_stats, stat_name)
+      attempts = attempts + 1
+    until not table.contains(used_stats, stat_name) or attempts >= max_attempts
     
-    table.insert(used_stats, stat_name)
-    item.stats[stat_name] = generate_stat_value(stat_name)
+    -- If we couldn't find a unique stat after max attempts, just use the last one
+    if attempts >= max_attempts then
+      print("Warning: Could not find unique stat after " .. max_attempts .. " attempts")
+    else
+      table.insert(used_stats, stat_name)
+      item.stats[stat_name] = generate_stat_value(stat_name)
+    end
+    
   end
   
   -- Set colors based on sets only (rarity color is used as tier color)
@@ -351,12 +392,22 @@ function create_item_v2(item_type, rarity, tier)
   
   for i = 1, rarity_def.stat_count do
     local stat_name
+    local attempts = 0
+    local max_attempts = 5
+    
     repeat
       stat_name = roll_stat_for_type(item_type)
-    until not table.contains(used_stats, stat_name)
+      attempts = attempts + 1
+    until not table.contains(used_stats, stat_name) or attempts >= max_attempts
     
-    table.insert(used_stats, stat_name)
-    item.stats[stat_name] = generate_stat_value(stat_name)
+    -- If we couldn't find a unique stat after max attempts, just use the last one
+    if attempts >= max_attempts then
+      print("Warning: Could not find unique stat after " .. max_attempts .. " attempts")
+    else
+      table.insert(used_stats, stat_name)
+      item.stats[stat_name] = generate_stat_value(stat_name)
+    end
+    
   end
   
   return item

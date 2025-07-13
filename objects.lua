@@ -821,7 +821,6 @@ function Unit:calculate_stats(first_run)
         elseif stat == buff_types['status_resist'] then
           self.status_resist = amt
         end
-        
       end
     end
   end
@@ -829,6 +828,7 @@ function Unit:calculate_stats(first_run)
   -- Process buffs, items, and perks using unified stat addition
   self:add_stats(self:process_buffs_to_stats())
   self:add_stats(self:process_items_to_stats())
+  self:add_stats(self:process_set_bonuses_to_stats())
   self:add_stats(self:preprocess_perks_to_stats())
 
 
@@ -2030,4 +2030,37 @@ function Unit:process_items_to_stats()
   return processed_stats
 end
 
+function Unit:process_set_bonuses_to_stats()
+  local set_bonus_stats = {}
+  local sets = {}
+  
+  if not self.items or #self.items == 0 then return set_bonus_stats end
+  
+  for _, item in ipairs(self.items) do
+    if item.sets and #item.sets > 0 then
+      for _, set in ipairs(item.sets) do
+        sets[set] = (sets[set] or 0) + 1
+      end
+    end
+  end
+  
+  for set, count in pairs(sets) do
+    local set_data = ITEM_SETS[set]
+    if set_data then
+      for number_required, bonus in ipairs(set_data.bonuses) do
+        if count >= number_required then
+          if bonus.stats then
+            for stat, value in pairs(bonus.stats) do
+              set_bonus_stats[stat] = (set_bonus_stats[stat] or 0) + value
+            end
+          end
+        end
+      end
+    else
+      print("Unknown set: " .. set)
+    end
+  end
+  
+  return set_bonus_stats
+end
 

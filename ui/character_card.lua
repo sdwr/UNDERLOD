@@ -366,11 +366,15 @@ function CharacterCard:show_set_bonus_popup_for_set(set_info)
   -- Set bonuses
   for pieces, bonus in pairs(set_info.bonuses) do
     local is_reached = set_info.current_pieces >= pieces
-    local color = is_reached and set_color or 'fgm2' -- Use set color if reached, gray if not
-    local checkmark = is_reached and 'O ' or '  '
+    local color = is_reached and set_color or 'fg[2]' -- Use set color if reached, gray if not
     
+    local stat_name = ''
+    for stat, value in pairs(bonus.stats) do
+      stat_name = stat_name .. '+' .. value .. ' ' .. item_stat_lookup[stat] .. ', '
+    end
+
     table.insert(text_lines, {
-      text = '[' .. color .. ']' .. checkmark .. pieces .. 'pc: ' .. bonus.desc, 
+      text = '[' .. color .. ']' .. pieces .. 'pc: ' .. stat_name, 
       font = pixul_font, 
       alignment = 'left'
     })
