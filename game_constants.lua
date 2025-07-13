@@ -126,12 +126,13 @@ LEVEL_TO_TIER = function(level)
   end
 end
 
+--disable perks for now
 LEVEL_TO_PERKS = {
-  [2] = true,
-  [8] = true,
-  [12] = true,
-  [16] = true,
-  [20] = true,
+  -- [2] = true,
+  -- [8] = true,
+  -- [12] = true,
+  -- [16] = true,
+  -- [20] = true,
 }
 
 UNIT_LEVEL_TO_NUMBER_OF_TROOPS = {
