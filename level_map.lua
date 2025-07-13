@@ -58,12 +58,20 @@ function LevelMap:build()
 end
 
 function LevelMap:build_connections()
+  for _, connection in ipairs(self.level_connections) do
+    connection.dead = true
+  end
   self.level_connections = {}
+
   for i = 1, #self.levels - 1 do
     if i == 1 and self.level > 1 then
       table.insert(self.level_connections, LevelMapConnection{group = self.group, x = self.levels[i].x - LEVEL_MAP_CONNECTION_OFFSET, y = self.levels[i].y, w = LEVEL_MAP_CONNECTION_WIDTH, h = LEVEL_MAP_CONNECTION_HEIGHT, color = fg[1]})
     end
-    table.insert(self.level_connections, LevelMapConnection{group = self.group, x = self.levels[i].x + LEVEL_MAP_CONNECTION_OFFSET, y = self.levels[i].y, w = LEVEL_MAP_CONNECTION_WIDTH, h = LEVEL_MAP_CONNECTION_HEIGHT, color = fg[1]})
+    local connection_width = LEVEL_MAP_CONNECTION_WIDTH
+    if self.levels[i+1] and self.levels[i] then
+      connection_width = self.levels[i+1].x - self.levels[i].x
+    end
+    table.insert(self.level_connections, LevelMapConnection{group = self.group, x = self.levels[i].x + connection_width/2, y = self.levels[i].y, w = connection_width, h = LEVEL_MAP_CONNECTION_HEIGHT, color = fg[1]})
   end
   if self.level < NUMBER_OF_ROUNDS then
     table.insert(self.level_connections, LevelMapConnection{group = self.group, x = self.levels[#self.levels].x + LEVEL_MAP_CONNECTION_OFFSET, y = self.levels[#self.levels].y, w = LEVEL_MAP_CONNECTION_WIDTH, h = LEVEL_MAP_CONNECTION_HEIGHT, color = fg[1]})
@@ -77,8 +85,6 @@ end
 
 function LevelMap:end_transition_out()
   self.transitioning_out = false
-  -- After transition out, the new level is in the correct position
-  -- Now we need to recenter all levels around it
   self:start_transition_in()
 end
 
@@ -134,15 +140,11 @@ function LevelMap:update_level_positions(progress)
 end
 
 function LevelMap:update_level_positions_in(progress)
-  -- For transition-in, we animate from the recentered positions back to normal spacing
-  -- The levels are already positioned around the current level, we just need to adjust spacing
+  local current_spacing = self.expanded_spacing - (self.expanded_spacing - self.normal_spacing) * progress
   
   for i, level in ipairs(self.levels) do
     -- Calculate the target position with normal spacing
-    local target_x = self.x + gw - LEVEL_MAP_ICON_OFFSET_X + (i-1)*LEVEL_MAP_ICON_SPACING
-    
-    -- Interpolate from current position to target position
-    level.x = level.x + (target_x - level.x) * progress
+    level.x = self:CALCULATE_NEXT_LEVEL_MAP_WORLD_X(i, current_spacing)
     level.shape.x = level.x
   end
 
@@ -152,6 +154,10 @@ end
 
 function LevelMap:CALCULATE_LEVEL_MAP_WORLD_X(index, current_spacing)
   return self.x - (current_spacing * (index - 3))
+end
+
+function LevelMap:CALCULATE_NEXT_LEVEL_MAP_WORLD_X(index, current_spacing)
+  return self.x + gw - (current_spacing * (index - 2))
 end
 
 function LevelMap:update(dt)
@@ -166,7 +172,7 @@ function LevelMap:update(dt)
     end
 
     -- Use smooth easing for the animation
-    local ease_progress = self.transition_progress * self.transition_progress * (3 - 2 * self.transition_progress)
+    local ease_progress = 1 - (1 - self.transition_progress) * (1 - self.transition_progress) * (3 - 2 * (1 - self.transition_progress))
     self:update_level_positions(ease_progress)
   elseif self.transitioning_in then
     self.transition_progress = self.transition_progress + dt / self.transition_duration_in
