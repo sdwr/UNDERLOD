@@ -65,31 +65,6 @@ function Helper.Damage:primary_hit(unit, damage, from, damageType, playHitEffect
   end
 end
 
-function Helper.Damage:apply_knockback(unit, from)
-  if unit and from then
-    local duration = KNOCKBACK_DURATION_TROOP_ATTACK
-    local push_force = LAUNCH_PUSH_FORCE_TROOP_ATTACK
-    unit:push(push_force, unit:angle_to_object(from) + math.pi, nil, duration)
-  end
-end
-
-function Helper.Damage:deal_damage(unit, damage)
-  --all units, hfx
-  -- Scale hit effect based on damage taken relative to max HP
-  local damage_ratio = damage / unit.max_hp
-  local hit_strength = math.clamp(damage_ratio * 2, 0.05, 0.5) -- Between 5% and 50% of max HP
-  hit_strength = hit_strength * ENEMY_HIT_SCALE
-
-  unit.hfx:use('hit', hit_strength, 100, 10)
-  HitCircle{group = main.current.effects, x = unit.x, y = unit.y}:scale_down(0.3):change_color(0.5, unit.color)
-  -- Player troop specific: camera shake
-  if unit.is_troop then
-    camera:shake(1, 0.5)
-  end
-
-  unit.hp = unit.hp - damage
-end
-
 -- ===================================================================
 -- INDIRECT HIT
 -- Area effects, explosions, environmental damage that can't chain
@@ -172,6 +147,23 @@ function Helper.Damage:chained_hit(unit, damage, from, damageType, playHitEffect
   end
 end 
 
+function Helper.Damage:apply_knockback(unit, from)
+  if unit and from then
+    --dont knockback special enemies or bosses
+    if unit.class == 'special_enemy' or unit.class == 'boss' then
+      return
+    end
+    
+    local duration = KNOCKBACK_DURATION_TROOP_ATTACK
+    local push_force = LAUNCH_PUSH_FORCE_TROOP_ATTACK
+    unit:push(push_force, unit:angle_to_object(from) + math.pi, nil, duration)
+  end
+end
+
+function Helper.Damage:deal_damage(unit, damage)
+  unit.hp = unit.hp - damage
+end
+
 -- ===================================================================
 -- PRE-HIT PROCESSING
 -- Handles unit-specific logic that happens before damage is applied
@@ -209,15 +201,24 @@ function Helper.Damage:apply_hit_effects(unit, damage, playHitEffects)
   -- Calculate hit strength for visual effects
   local hitStrength = (damage * 1.0) / unit.max_hp
   hitStrength = math.min(hitStrength, 0.5)
-  hitStrength = math.remap(hitStrength, 0, 0.5, 0, 1)
+  hitStrength = math.remap(hitStrength, 0, 0.5, 1, 2)
   
   -- Apply hit flash effect
   if playHitEffects then
     if unit.isBoss then
-      unit.hfx:use('hit', 0.005, 200, 20)
+      unit.hfx:use('hit', 0.01, 200, 20)
     else
-      unit.hfx:use('hit', 0.25 * hitStrength, 200, 10)
+      unit.hfx:use('hit', 0.15 * hitStrength, 200, 10)
     end
+    
+    if not unit.spritesheet then
+      HitCircle{group = main.current.effects, x = unit.x, y = unit.y}:scale_down(0.3):change_color(0.5, unit.color)
+    end
+    
+    if unit.is_troop then
+      camera:shake(1, 0.5)
+    end
+    
   end
 end
 
@@ -414,4 +415,4 @@ function Helper.Damage:apply_death_effects(unit, from)
       magic_die1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     end
   end
-end
+end 
