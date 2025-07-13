@@ -18,7 +18,7 @@ function WorldManager:init(name)
   
   -- Transition state
   self.transition_progress = 0
-  self.transition_duration = 2 -- seconds
+  self.transition_duration = TRANSITION_DURATION -- seconds
 end
 
 function WorldManager:on_enter(from)
@@ -49,6 +49,9 @@ function WorldManager:on_enter(from)
       end
     end
   end
+  
+  -- Create level map
+  self:create_level_map()
   
   -- Set cursor to animated mode for arena
   set_cursor_animated()
@@ -145,6 +148,11 @@ function WorldManager:create_arena(level, offset_x)
     if self.current_arena and self.current_arena.on_transition_start then
       self.current_arena:on_transition_start()
     end
+    
+    -- Trigger level map transition animation
+    if self.level_map then
+      self.level_map:start_transition_out()
+    end
 
   end
 end
@@ -159,6 +167,31 @@ function WorldManager:assign_physics_groups(arena)
   self.tutorial = arena.tutorial
   self.options_ui = arena.options_ui
   self.credits = arena.credits
+end
+
+function WorldManager:create_level_map()
+  if self.level_map then
+    self.level_map:die()
+  end
+  
+  -- Only show level map for non-boss levels and non-tutorial levels
+  if self.level ~= 0 and not Is_Boss_Level(self.level) then
+    self.level_map = LevelMap{
+      group = self.world_ui,
+      x = gw/2,
+      y = LEVEL_MAP_Y_POSITION,
+      parent = self,
+      level = self.level,
+      loop = self.loop,
+      level_list = self.level_list,
+    }
+  end
+end
+
+function WorldManager:update_level_map()
+  if self.level_map then
+    self.level_map:reset()
+  end
 end
 
 function WorldManager:set_arenas_paused(paused)
@@ -334,6 +367,14 @@ function WorldManager:complete_transition()
     -- Resume enemy updates and activate enemies
     self.current_arena.enemies_paused = false
     self.current_arena:set_transition_complete()
+    
+    -- Recreate level map for new level
+    self:create_level_map()
+
+    if self.level_map then
+      self.level_map:end_transition_in()
+    end
+    
   end
   
   self.transitioning = false
@@ -383,6 +424,12 @@ function WorldManager:on_exit(to)
   if self.next_arena then
     self.next_arena:destroy()
   end
+  
+  -- Clean up level map
+  if self.level_map then
+    self.level_map:die()
+    self.level_map = nil
+  end
 end
 
 function WorldManager:advance_to_next_level()
@@ -402,6 +449,11 @@ function WorldManager:advance_to_next_level()
     -- Pause enemy updates in the new arena during transition
     if self.next_arena then
       self.next_arena.enemies_paused = true
+    end
+    
+    -- Trigger level map transition animation
+    if self.level_map then
+      self.level_map:start_transition_out()
     end
   end
 end
