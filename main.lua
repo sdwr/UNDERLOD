@@ -803,28 +803,24 @@ function init()
     local combined_stats = {}
     
     -- Start with item stats
-    for _, stat in pairs(item_stats) do
-      combined_stats[stat.name] = stat.value
+    for stat_name, stat_value in pairs(item_stats) do
+      combined_stats[stat_name] = stat_value
     end
     
     -- Add perk stats to the combined stats
-    for _, stat in pairs(perk_stats) do
-      if combined_stats[stat.name] then
-        combined_stats[stat.name] = combined_stats[stat.name] + stat.value
+    for stat_name, stat_value in pairs(perk_stats) do
+      if combined_stats[stat_name] then
+        combined_stats[stat_name] = combined_stats[stat_name] + stat_value
       else
-        combined_stats[stat.name] = stat.value
+        combined_stats[stat_name] = stat_value
       end
     end
     
-    -- Convert back to the expected format
+    -- Order stats
     local final_stats = {}
     for _, stat_name in ipairs(item_stat_display_order) do
-      local display_name = item_stat_lookup and item_stat_lookup[stat_name] or stat_name
-      if combined_stats[display_name] then
-        table.insert(final_stats, {
-          name = display_name,
-          value = combined_stats[display_name]
-        })
+      if combined_stats[stat_name] then
+        final_stats[stat_name] = combined_stats[stat_name]
       end
     end
     

@@ -321,8 +321,8 @@ function CharacterCard:show_unit_stats_popup()
   local item_stats = get_unit_stats(self.unit)
   local text_lines = {}
   
-  for _, stat in pairs(item_stats) do
-    local prefix, value, suffix, display_name = format_stat_display(stat.name, stat.value)
+  for stat_name, stat_value in pairs(item_stats) do
+    local prefix, value, suffix, display_name = format_stat_display(stat_name, stat_value)
     table.insert(text_lines, { 
       text = '[yellow[0]]' .. prefix .. value .. suffix .. display_name:capitalize(), 
       font = pixul_font, 
