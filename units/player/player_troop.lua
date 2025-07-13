@@ -66,6 +66,18 @@ end
 function Troop:rally_to_point()
   -- If not, continue moving towards the rally point.
   if self.being_knocked_back then return end
+  if not self.target_pos then return end
+  
+  local success, time_to_target, target_pos = self:predict_arrival(
+    self.target_pos.x, self.target_pos.y, 
+    RALLY_CIRCLE_STOP_DISTANCE, 
+    RALLY_CIRCLE_OVERSHOOT_DISTANCE
+  )
+  
+  if success then
+    return
+  end
+
   self:seek_point(self.target_pos.x, self.target_pos.y, SEEK_DECELERATION, SEEK_WEIGHT)
   self:steering_separate(SEPARATION_RADIUS, troop_classes)
   self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)

@@ -729,6 +729,136 @@ function Physics:make_triangle_from_origin(arc, dist)
 end
 
 
+--[[
+  Predicts if the unit will reach a target location with current velocity and friction.
+  This version correctly returns false if the full overshoot_distance is not reached.
+
+  - target_x, target_y: The coordinates of the target destination.
+  - tolerance: How close the simulation needs to get to the target to consider it "reached".
+  - overshoot_distance: How far past the target the unit must travel for the prediction to be successful.
+
+  Returns:
+  - will_reach (boolean): True only if the target is reached AND the full overshoot is completed.
+  - time_to_arrival (number): Time in seconds it took to reach the initial target point.
+  - final_position (table): The {x, y} coordinates where the simulation ended.
+]]
+function Physics:predict_arrival(target_x, target_y, tolerance, overshoot_distance)
+  tolerance = tolerance or 5
+  overshoot_distance = overshoot_distance or 0
+  
+  if not self.body then
+    return false, 0, {x = self.x, y = self.y}
+  end
+  
+  local vx, vy = self:get_velocity()
+  local damping = self:get_damping() or 0
+  
+  -- If the unit is already stopped, check if it's at the destination.
+  if math.abs(vx) < 0.1 and math.abs(vy) < 0.1 then
+    local distance = math.distance(self.x, self.y, target_x, target_y)
+    -- A stopped unit can only succeed if no overshoot is required and it's already at the target.
+    if distance <= tolerance and overshoot_distance <= 0 then
+      return true, 0, {x = self.x, y = self.y}
+    else
+      return false, 0, {x = self.x, y = self.y}
+    end
+  end
+  
+  local dt = 1/60
+  local sim_x, sim_y = self.x, self.y
+  local sim_vx, sim_vy = vx, vy
+  local time_elapsed = 0
+  local max_simulation_time = 10
+  
+  local target_reached = false
+  local overshoot_completed = false -- This flag will track if the overshoot was successful.
+  local time_to_target = 0
+  
+  while time_elapsed < max_simulation_time do
+    sim_x = sim_x + sim_vx * dt
+    sim_y = sim_y + sim_vy * dt
+    
+    sim_vx = sim_vx * (1 - damping * dt)
+    sim_vy = sim_vy * (1 - damping * dt)
+    
+    time_elapsed = time_elapsed + dt
+    
+    -- First, check if we've passed the initial target.
+    if not target_reached then
+      local distance_to_target = math.distance(sim_x, sim_y, target_x, target_y)
+      if distance_to_target <= tolerance then
+        target_reached = true
+        time_to_target = time_elapsed
+        -- If no overshoot is needed, our goal is met.
+        if overshoot_distance <= 0 then
+          overshoot_completed = true
+          break
+        end
+      end
+    end
+    
+    -- If we have passed the target and need to overshoot, check if we've gone far enough.
+    if target_reached then
+      local overshoot_traveled = math.distance(target_x, target_y, sim_x, sim_y)
+      if overshoot_traveled >= overshoot_distance then
+        overshoot_completed = true -- Mark the overshoot as successful.
+        break -- Goal achieved, no need to simulate further.
+      end
+    end
+    
+    -- If the unit stops moving at any point, end the simulation.
+    if math.sqrt(sim_vx^2 + sim_vy^2) < 0.1 then
+      break
+    end
+  end
+  
+  -- The final return logic is now simpler and more correct.
+  -- The prediction is only successful if the overshoot_completed flag is true.
+  return overshoot_completed, time_to_target, {x = sim_x, y = sim_y}
+end
+
+
+-- A robust implementation of the "Arrival" steering behavior.
+function Physics:arrive_at_point(target_x, target_y, max_speed, slowing_radius)
+  if not self.body then return self end
+  
+  max_speed = max_speed or (self.max_v or 100)
+  slowing_radius = slowing_radius or 50
+  
+  local desired_offset = {x = target_x - self.x, y = target_y - self.y}
+  local distance = math.sqrt(desired_offset.x^2 + desired_offset.y^2)
+  
+  if distance > 0 then
+    local ramped_speed = max_speed
+    if distance < slowing_radius then
+      ramped_speed = max_speed * (distance / slowing_radius)
+    end
+    
+    local desired_velocity = {
+      x = (desired_offset.x / distance) * ramped_speed,
+      y = (desired_offset.y / distance) * ramped_speed
+    }
+    
+    local current_vx, current_vy = self:get_velocity()
+    current_vx = current_vx or 0
+    current_vy = current_vy or 0
+    
+    local steering_force = {
+      x = desired_velocity.x - current_vx,
+      y = desired_velocity.y - current_vy
+    }
+    
+    if self.steerable and self.steering_enabled then
+      self.seeking = true
+      self.seek_f:set(steering_force.x, steering_force.y)
+    else
+      self:apply_force(steering_force.x, steering_force.y)
+    end
+  end
+  
+  return self
+end
+
 -- Sets the object as a steerable object.
 -- The implementation of steering behaviors here mostly follows the one from chapter 3 of the book "Programming Game AI by Example"
 -- https://github.com/wangchen/Programming-Game-AI-by-Example-src
