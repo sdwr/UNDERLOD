@@ -151,7 +151,7 @@ function WorldManager:create_arena(level, offset_x)
     
     -- Trigger level map transition animation
     if self.level_map then
-      self.level_map:start_transition()
+      self.level_map:start_transition_out()
     end
 
   end
@@ -383,7 +383,7 @@ function WorldManager:complete_transition()
     self:create_level_map()
 
     if self.level_map then
-      self.level_map:end_transition()
+      self.level_map:end_transition_in()
     end
     
   end
@@ -464,7 +464,7 @@ function WorldManager:advance_to_next_level()
     
     -- Trigger level map transition animation
     if self.level_map then
-      self.level_map:start_transition()
+      self.level_map:start_transition_out()
     end
   end
 end

@@ -22,9 +22,11 @@ function LevelMap:init(args)
   self.level_list = args.level_list
 
   -- Animation state
-  self.transitioning = false
+  self.transitioning_out = false
+  self.transitioning_in = false
   self.transition_progress = 0
-  self.transition_duration = TRANSITION_DURATION / 1.5
+  self.transition_duration_in = TRANSITION_DURATION / 2
+  self.transition_duration_out = TRANSITION_DURATION / 2
   self.expanded_spacing = gw
   self.normal_spacing = LEVEL_MAP_ICON_SPACING
 
@@ -38,7 +40,7 @@ function LevelMap:build()
   local start_level = self.level - 2
 
   for i = 1, 5 do
-    local level = start_level + i - 1
+    local level = start_level + (6 - i) - 1  -- Reverse the order: 6-i instead of i-1
     if level <= 0 or level > NUMBER_OF_ROUNDS then
       --pass
     else
@@ -68,15 +70,55 @@ function LevelMap:build_connections()
   end
 end
 
-function LevelMap:start_transition()
-  self.transitioning = true
+function LevelMap:start_transition_out()
+  self.transitioning_out = true
   self.transition_progress = 0
 end
 
-function LevelMap:end_transition()
-  self.transitioning = false
+function LevelMap:end_transition_out()
+  self.transitioning_out = false
+  -- After transition out, the new level is in the correct position
+  -- Now we need to recenter all levels around it
+  self:start_transition_in()
+end
+
+function LevelMap:start_transition_in()
+  self.transitioning_in = true
+  self.transition_progress = 0
+end
+
+function LevelMap:end_transition_in()
+  self.transitioning_in = false
   self.transition_progress = 0
   self:update_level_positions(0) -- Reset to normal spacing
+end
+
+function LevelMap:recenter_levels_around_current()
+  -- Find the current level index
+  local current_level_index = nil
+  for i, level in ipairs(self.levels) do
+    if level.level == self.level then
+      current_level_index = i
+      break
+    end
+  end
+  
+  if not current_level_index then return end
+  
+  -- Calculate the offset needed to center the current level
+  -- The current level should be at position 3 (center) in normal spacing
+  local current_x = self.levels[current_level_index].x
+  local target_x = self.x - LEVEL_MAP_ICON_OFFSET_X + (3-1)*LEVEL_MAP_ICON_SPACING
+  local offset = target_x - current_x
+  
+  -- Apply the offset to all levels
+  for i, level in ipairs(self.levels) do
+    level.x = level.x + offset
+    level.shape.x = level.x
+  end
+  
+  -- Rebuild connections
+  self:build_connections()
 end
 
 function LevelMap:update_level_positions(progress)
@@ -91,6 +133,23 @@ function LevelMap:update_level_positions(progress)
   self:build_connections()
 end
 
+function LevelMap:update_level_positions_in(progress)
+  -- For transition-in, we animate from the recentered positions back to normal spacing
+  -- The levels are already positioned around the current level, we just need to adjust spacing
+  
+  for i, level in ipairs(self.levels) do
+    -- Calculate the target position with normal spacing
+    local target_x = self.x + gw - LEVEL_MAP_ICON_OFFSET_X + (i-1)*LEVEL_MAP_ICON_SPACING
+    
+    -- Interpolate from current position to target position
+    level.x = level.x + (target_x - level.x) * progress
+    level.shape.x = level.x
+  end
+
+  -- Rebuild connections with new positions
+  self:build_connections()
+end
+
 function LevelMap:CALCULATE_LEVEL_MAP_WORLD_X(index, current_spacing)
   return self.x - (current_spacing * (index - 3))
 end
@@ -98,16 +157,28 @@ end
 function LevelMap:update(dt)
   self:update_game_object(dt)
 
-  if self.transitioning then
-    self.transition_progress = self.transition_progress + dt / self.transition_duration
+  if self.transitioning_out then
+    self.transition_progress = self.transition_progress + dt / self.transition_duration_out
 
     if self.transition_progress >= 1 then
       self.transition_progress = 1
+      self:end_transition_out()
     end
 
     -- Use smooth easing for the animation
     local ease_progress = self.transition_progress * self.transition_progress * (3 - 2 * self.transition_progress)
     self:update_level_positions(ease_progress)
+  elseif self.transitioning_in then
+    self.transition_progress = self.transition_progress + dt / self.transition_duration_in
+
+    if self.transition_progress >= 1 then
+      self.transition_progress = 1
+      self:end_transition_in()
+    end
+
+    -- For transition-in, we animate from the recentered positions back to normal spacing
+    local ease_progress = self.transition_progress * self.transition_progress * (3 - 2 * self.transition_progress)
+    self:update_level_positions_in(ease_progress)
   end
 end
 
