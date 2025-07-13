@@ -94,6 +94,7 @@ function engine_run(config)
 
   outline = Shader(nil, "outline.frag")
   hit_flash = Shader(nil, "hit_flash.frag")
+  hit_effect = Shader(nil, "hit_effect.frag")
 
   input = Input()
   input:bind_all()
