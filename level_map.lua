@@ -30,6 +30,9 @@ function LevelMap:init(args)
   self.expanded_spacing = gw
   self.normal_spacing = LEVEL_MAP_ICON_SPACING
 
+  self.MAX_LEVELS = 5
+  self.MAX_LEVELS_IN_TRANSITION = 6
+
   self:build()
 end
 
@@ -40,11 +43,11 @@ function LevelMap:build()
   local start_level = self.level - 2
 
   for i = 1, 5 do
-    local level = start_level + (6 - i) - 1  -- Reverse the order: 6-i instead of i-1
+    local level = start_level + i - 1
     if level <= 0 or level > NUMBER_OF_ROUNDS then
       --pass
     else
-      table.insert(self.levels, 
+      table.insert(self.levels, i, 
         LevelMapLevel{group = self.group, x = self.x - LEVEL_MAP_ICON_OFFSET_X + (i-1)*LEVEL_MAP_ICON_SPACING, y = self.y + LEVEL_MAP_ICON_OFFSET_Y, 
         line_color = (level == self.level) and yellow[2] or fg[0],
         fill_color = self.parent.level_list[level].color,
@@ -63,18 +66,24 @@ function LevelMap:build_connections()
   end
   self.level_connections = {}
 
-  for i = 1, #self.levels - 1 do
-    if i == 1 and self.level > 1 then
+  for i = 1, self.MAX_LEVELS_IN_TRANSITION - 1 do
+    --the first one is only drawn if the current level is greater than 1
+    if i == 1 and self.level > 1 and self.levels[i] then
       table.insert(self.level_connections, LevelMapConnection{group = self.group, x = self.levels[i].x - LEVEL_MAP_CONNECTION_OFFSET, y = self.levels[i].y, w = LEVEL_MAP_CONNECTION_WIDTH, h = LEVEL_MAP_CONNECTION_HEIGHT, color = fg[1]})
     end
-    local connection_width = LEVEL_MAP_CONNECTION_WIDTH
+    --the middle ones need to extend to the next level
     if self.levels[i+1] and self.levels[i] then
-      connection_width = self.levels[i+1].x - self.levels[i].x
+      local connection_width = LEVEL_MAP_CONNECTION_WIDTH
+      if self.levels[i+1] and self.levels[i] then
+        connection_width = self.levels[i+1].x - self.levels[i].x
+      end
+      table.insert(self.level_connections, LevelMapConnection{group = self.group, x = self.levels[i].x + connection_width/2, y = self.levels[i].y, w = connection_width, h = LEVEL_MAP_CONNECTION_HEIGHT, color = fg[1]})
     end
-    table.insert(self.level_connections, LevelMapConnection{group = self.group, x = self.levels[i].x + connection_width/2, y = self.levels[i].y, w = connection_width, h = LEVEL_MAP_CONNECTION_HEIGHT, color = fg[1]})
-  end
-  if self.level < NUMBER_OF_ROUNDS then
-    table.insert(self.level_connections, LevelMapConnection{group = self.group, x = self.levels[#self.levels].x + LEVEL_MAP_CONNECTION_OFFSET, y = self.levels[#self.levels].y, w = LEVEL_MAP_CONNECTION_WIDTH, h = LEVEL_MAP_CONNECTION_HEIGHT, color = fg[1]})
+
+    --this one overlaps with the last one, its ok because its the smallest possible size
+    if self.levels[i] and self.levels[i].level < NUMBER_OF_ROUNDS then
+      table.insert(self.level_connections, LevelMapConnection{group = self.group, x = self.levels[i].x + LEVEL_MAP_CONNECTION_OFFSET, y = self.levels[i].y, w = LEVEL_MAP_CONNECTION_WIDTH, h = LEVEL_MAP_CONNECTION_HEIGHT, color = fg[1]})
+    end
   end
 end
 
@@ -85,6 +94,7 @@ end
 
 function LevelMap:end_transition_out()
   self.transitioning_out = false
+  self:add_next_level_to_map()
   self:start_transition_in()
 end
 
@@ -99,40 +109,28 @@ function LevelMap:end_transition_in()
   self:update_level_positions(0) -- Reset to normal spacing
 end
 
-function LevelMap:recenter_levels_around_current()
-  -- Find the current level index
-  local current_level_index = nil
-  for i, level in ipairs(self.levels) do
-    if level.level == self.level then
-      current_level_index = i
-      break
-    end
+function LevelMap:add_next_level_to_map()
+
+  if self.levels[5] and self.levels[5].level < NUMBER_OF_ROUNDS then
+    local next_level = self.levels[5].level + 1
+    table.insert(self.levels, 6, LevelMapLevel{group = self.group, x = self.x - LEVEL_MAP_ICON_OFFSET_X + (3-1)*LEVEL_MAP_ICON_SPACING, y = self.y + LEVEL_MAP_ICON_OFFSET_Y, 
+    line_color = (next_level == self.level) and yellow[2] or fg[0],
+    fill_color = self.parent.level_list[next_level].color,
+    level = next_level,
+    parent = self
+    })
   end
-  
-  if not current_level_index then return end
-  
-  -- Calculate the offset needed to center the current level
-  -- The current level should be at position 3 (center) in normal spacing
-  local current_x = self.levels[current_level_index].x
-  local target_x = self.x - LEVEL_MAP_ICON_OFFSET_X + (3-1)*LEVEL_MAP_ICON_SPACING
-  local offset = target_x - current_x
-  
-  -- Apply the offset to all levels
-  for i, level in ipairs(self.levels) do
-    level.x = level.x + offset
-    level.shape.x = level.x
-  end
-  
-  -- Rebuild connections
-  self:build_connections()
 end
 
 function LevelMap:update_level_positions(progress)
   local current_spacing = self.normal_spacing + (self.expanded_spacing - self.normal_spacing) * progress
 
-  for i, level in ipairs(self.levels) do
-    level.x = self:CALCULATE_LEVEL_MAP_WORLD_X(i, current_spacing)
-    level.shape.x = level.x
+  for i = 1, self.MAX_LEVELS_IN_TRANSITION do
+    local level = self.levels[i]
+    if level then
+      level.x = self:CALCULATE_LEVEL_MAP_WORLD_X(i, current_spacing)
+      level.shape.x = level.x
+    end
   end
 
   -- Rebuild connections with new positions
@@ -142,10 +140,12 @@ end
 function LevelMap:update_level_positions_in(progress)
   local current_spacing = self.expanded_spacing - (self.expanded_spacing - self.normal_spacing) * progress
   
-  for i, level in ipairs(self.levels) do
-    -- Calculate the target position with normal spacing
-    level.x = self:CALCULATE_NEXT_LEVEL_MAP_WORLD_X(i, current_spacing)
-    level.shape.x = level.x
+  for i = 1, self.MAX_LEVELS_IN_TRANSITION do
+    local level = self.levels[i]
+    if level then
+      level.x = self:CALCULATE_NEXT_LEVEL_MAP_WORLD_X(i, current_spacing)
+      level.shape.x = level.x
+    end
   end
 
   -- Rebuild connections with new positions
@@ -153,11 +153,11 @@ function LevelMap:update_level_positions_in(progress)
 end
 
 function LevelMap:CALCULATE_LEVEL_MAP_WORLD_X(index, current_spacing)
-  return self.x - (current_spacing * (index - 3))
+  return self.x - (current_spacing * (3 - index))
 end
 
 function LevelMap:CALCULATE_NEXT_LEVEL_MAP_WORLD_X(index, current_spacing)
-  return self.x + gw - (current_spacing * (index - 2))
+  return self.x + gw - (current_spacing * (4 - index))
 end
 
 function LevelMap:update(dt)
@@ -172,7 +172,7 @@ function LevelMap:update(dt)
     end
 
     -- Use smooth easing for the animation
-    local ease_progress = 1 - (1 - self.transition_progress) * (1 - self.transition_progress) * (3 - 2 * (1 - self.transition_progress))
+    local ease_progress = self.transition_progress * self.transition_progress * (3 - 2 * self.transition_progress)
     self:update_level_positions(ease_progress)
   elseif self.transitioning_in then
     self.transition_progress = self.transition_progress + dt / self.transition_duration_in
@@ -183,7 +183,7 @@ function LevelMap:update(dt)
     end
 
     -- For transition-in, we animate from the recentered positions back to normal spacing
-    local ease_progress = self.transition_progress * self.transition_progress * (3 - 2 * self.transition_progress)
+    local ease_progress = 1 - (1 - self.transition_progress) * (1 - self.transition_progress) * (3 - 2 * (1 - self.transition_progress))
     self:update_level_positions_in(ease_progress)
   end
 end
@@ -197,12 +197,15 @@ function LevelMap:draw()
 end
 
 function LevelMap:clear()
-  for _, level in ipairs(self.levels) do
-    level:die()
+  for i = 1, self.MAX_LEVELS_IN_TRANSITION do
+    if self.levels[i] then
+      self.levels[i]:die()
+    end
   end
-  for _, connection in ipairs(self.level_connections) do
-    connection:die()
+  for i, connection in ipairs(self.level_connections) do
+    connection.dead = true
   end
+  self.levels = {}
 end
 
 function LevelMap:reset()
