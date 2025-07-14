@@ -17,7 +17,6 @@ require 'items'
 require 'items_v2'
 require 'mainmenu'
 require 'buy_screen_utils'
-require 'level_map'
 require 'buy_screen'
 require 'door'
 require 'world_manager'
@@ -1391,7 +1390,7 @@ function init()
       'selfburst',
       'burst',
       'snakearrow',
-      'slowcharger',
+      -- 'slowcharger',
       'turret',
     },
     [1.5] = {
