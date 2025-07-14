@@ -66,6 +66,8 @@ function DrawAnimations.draw_specific_animation(unit, anim_set, x, y, r, scale_x
           animation:draw(image.image, screen_x, screen_y, 0, scale_x * screen_scale, scale_y * screen_scale, frame_center_x, frame_center_y)
       graphics.pop()
 
+      love.graphics.setColor(1, 1, 1, 1)
+
       -- 3. UNSET THE SHADER
       hit_effect_shader:unset()
   end)
