@@ -81,6 +81,64 @@ GET_LAST_BOSS_LEVEL = function(level)
   return last_boss_level
 end
 
+LEVEL_TO_TIER = function(level)
+  local tier = 1
+  if level <= 5 then
+    tier = 1
+  elseif level <= 10 then
+    tier = 1.5
+  elseif level <= 15 then
+    tier = 2
+  else
+    tier = 2.5
+  end
+  return tier
+end
+
+CHANCE_OF_SPECIAL_VS_NORMAL_ENEMY = 0.5
+
+ROUND_POWER_BY_LEVEL = {
+  [1] = 500,
+  [2] = 800,
+  [3] = 1200,
+  [4] = 1600,
+  [5] = 2000,
+  [6] = 2500,
+  [7] = 3000,
+  [8] = 3500,
+  [9] = 4000,
+  [10] = 4500,
+  [11] = 5000,
+  [12] = 5500,
+  [13] = 6000,
+  [14] = 6500,
+  [15] = 7000,
+  [16] = 7500,
+  [17] = 8000,
+  [18] = 8500,
+  [19] = 9000,
+  [20] = 9500,
+  [21] = 10000,
+  [22] = 10500,
+  [23] = 11000,
+  [24] = 11500,
+  [25] = 12000,
+}
+
+MAX_NORMAL_ENEMY_GROUP_SIZE_BY_TIER = {
+  [1] = 3,
+  [1.5] = 5,
+  [2] = 8,
+  [2.5] = 10,
+}
+
+MAX_SPECIAL_ENEMY_GROUP_SIZE_BY_TIER = {
+  [1] = 2,
+  [1.5] = 3,
+  [2] = 4,
+  [2.5] = 5,
+}
+
 ENEMY_SCALE_BY_LEVEL = 
 {2, 2, 3, 4, 5, 6, 
  5, 6, 9, 7, 8, 12, 
@@ -88,7 +146,7 @@ ENEMY_SCALE_BY_LEVEL =
  17, 21, 17, 20, 24, 25}
 
 ENEMY_LEVEL_SCALING = function(level)
-  local scale = ENEMY_SCALE_BY_LEVEL[level]
+  local scale = ENEMY_SCALE_BY_LEVEL[level] or 30
   return scale
 end
 

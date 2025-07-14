@@ -6,111 +6,47 @@
 
 Wave_Types = {}
 
+function Wave_Types:Add_Special_Enemy(wave, power_budget, tier)
+  local special_enemy = random:table(special_enemy_by_tier[tier])
+  local max_num_enemies_in_budget = math.floor(power_budget / (enemy_to_round_power[special_enemy] or 300))
+  local max_enemies_in_group = math.min(max_num_enemies_in_budget, MAX_SPECIAL_ENEMY_GROUP_SIZE_BY_TIER[tier])
+  local num_enemies_in_group = math.random(1, max_enemies_in_group)
+  table.insert(wave, {'GROUP', special_enemy, num_enemies_in_group, 'nil'})
+  return (enemy_to_round_power[special_enemy] or 300) * num_enemies_in_group
+end
+
+function Wave_Types:Add_Normal_Enemy(wave, power_budget, tier)
+  local normal_enemy = random:table(normal_enemy_by_tier[tier])
+  local max_num_enemies_in_budget = math.floor(power_budget / (enemy_to_round_power[normal_enemy] or 100))
+  local max_enemies_in_group = math.min(max_num_enemies_in_budget, MAX_NORMAL_ENEMY_GROUP_SIZE_BY_TIER[tier])
+  local num_enemies_in_group = math.random(1, max_enemies_in_group)
+  table.insert(wave, {'GROUP', normal_enemy, num_enemies_in_group, 'nil'})
+  return (enemy_to_round_power[normal_enemy] or 100) * num_enemies_in_group
+end
 
 function Wave_Types:Get_Waves(level)
   local waves = {}
   local wave = {}
   
   -- Calculate target power for this level
-  local target_power = 500 + (level - 1) * 200
+  local target_power = ROUND_POWER_BY_LEVEL[level] or 3000
   local current_power = 0
+  local power_budget = target_power - current_power
   
   -- Determine tier for this level
-  local tier = 1
-  if level <= 5 then
-    tier = 1
-  elseif level <= 10 then
-    tier = 1.5
-  elseif level <= 15 then
-    tier = 2
-  else
-    tier = 2.5
-  end
-
-  if level == 1 then
-    table.insert(wave, {'GROUP', 'seeker', 1, 'random'})
-    table.insert(wave, {'GROUP', 'turret', 1, 'random'})
-    
-    -- table.insert(wave, {'GROUP', 'goblin_archer', 1, 'random'})
-    -- table.insert(wave, {'GROUP', 'archer', 2, 'random'})
-    -- table.insert(wave, {'GROUP', 'aim_spread', 1, 'random'})
-    table.insert(waves, wave)
-    return waves
-  end
-  
-  if level == 2 then
-    -- table.insert(wave, {'GROUP', 'seeker', 2, 'random'})
-    -- table.insert(wave, {'GROUP', 'selfburst', 2, 'random'})
-    table.insert(wave, {'GROUP', 'turret', 1, 'random'})
-    table.insert(waves, wave)
-    return waves
-  end
-
-  if level == 3 then
-    table.insert(wave, {'GROUP', 'chaser', 4, 'random'})
-    table.insert(wave, {'GROUP', 'snakearrow', 2, 'random'})
-    table.insert(wave, {'GROUP', 'selfburst', 1, 'random'})
-    table.insert(waves, wave)
-    return waves
-  end
-
-  if level == 4 then
-    table.insert(wave, {'GROUP', 'seeker', 2, 'random'})
-    table.insert(wave, {'GROUP', 'goblin_archer', 2, 'random'})
-    table.insert(wave, {'GROUP', 'cleaver', 1, 'random'})
-    table.insert(waves, wave)
-    return waves
-  end
+  local tier = LEVEL_TO_TIER(level)
   
   -- Step 1: Add a special enemy from the correct tier
-  local special_enemy = random:table(special_enemy_by_tier[tier])
-  table.insert(wave, {'GROUP', special_enemy, 1, 'nil'})
-  current_power = current_power + (enemy_to_round_power[special_enemy] or 300)
-  
-  -- Step 2: If we have room, add a second special enemy (different type)
-  if current_power + 500 <= target_power then
-    local special_enemy2 = random:table(special_enemy_by_tier[tier])
-    -- Make sure it's a different type
-    while special_enemy2 == special_enemy do
-      special_enemy2 = random:table(special_enemy_by_tier[tier])
-    end
-    table.insert(wave, {'GROUP', special_enemy2, 1, 'random'})
-    current_power = current_power + (enemy_to_round_power[special_enemy2] or 300)
-  end
-  
-  -- Step 3: Fill remaining power with normal enemies
-  local remaining_power = target_power - current_power
-  local normal_enemy_power = 100 -- Normal enemies are 100 power each
-  
-  if remaining_power >= normal_enemy_power then
-    -- Add normal enemies to fill the remaining power
-    local num_normal_enemies = math.floor(remaining_power / normal_enemy_power)
-    
-    if num_normal_enemies >= 2 then
-      -- Decide on distribution: 2 of same type, or 2 of same + 1 different
-      local distribution = random:table{1, 2} -- 1 = 2 same type, 2 = 2 same + 1 different
-      
-      if distribution == 1 then
-        -- 2 of the same type
-        local normal_enemy = random:table(normal_enemy_by_tier[tier])
-        table.insert(wave, {'GROUP', normal_enemy, 2, 'random'})
-      else
-        -- 2 of same type + 1 different type
-        local normal_enemy1 = random:table(normal_enemy_by_tier[tier])
-        local normal_enemy2 = random:table(normal_enemy_by_tier[tier])
-        -- Make sure they're different
-        while normal_enemy2 == normal_enemy1 do
-          normal_enemy2 = random:table(normal_enemy_by_tier[tier])
-        end
-        
-        table.insert(wave, {'GROUP', normal_enemy1, 2, 'random'})
-        table.insert(wave, {'GROUP', normal_enemy2, 1, 'random'})
-      end
+  current_power = current_power + self:Add_Special_Enemy(wave, power_budget, tier)
+  power_budget = target_power - current_power
+
+  while power_budget > 0 do
+    if math.random() < CHANCE_OF_SPECIAL_VS_NORMAL_ENEMY then
+      current_power = current_power + self:Add_Special_Enemy(wave, power_budget, tier)
     else
-      -- Just 1 normal enemy
-      local normal_enemy = random:table(normal_enemy_by_tier[tier])
-      table.insert(wave, {'GROUP', normal_enemy, 1, 'random'})
+      current_power = current_power + self:Add_Normal_Enemy(wave, power_budget, tier)
     end
+    power_budget = target_power - current_power
   end
   
   table.insert(waves, wave)
