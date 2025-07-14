@@ -1441,10 +1441,10 @@ function init()
   }
 
   enemy_to_round_power = {
-    ['shooter'] = 100,
-    ['seeker'] = 100,
-    ['chaser'] = 100,
-    ['goblin_archer'] = 100,
+    ['shooter'] = 150,
+    ['seeker'] = 150,
+    ['chaser'] = 150,
+    ['goblin_archer'] = 150,
     ['archer'] = 150,
     --special enemies t1
     ['cleaver'] = 300,
