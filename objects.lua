@@ -1572,6 +1572,7 @@ end
 
 function Unit:end_cast(cooldown, spell_duration)
   local random_cooldown = self:get_random_cooldown(cooldown)
+  
   self:reset_castcooldown(random_cooldown)
   self.spelldata = nil
   self.freezerotation = false

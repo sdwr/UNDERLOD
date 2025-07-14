@@ -33,9 +33,9 @@ ITEM_SET = {
 ITEM_STATS = {
   -- Core stats
   ['dmg'] = { name = 'dmg', min = 1, max = 5, increment = 0.1 },
-  ['aspd'] = { name = 'aspd', min = 1, max = 5, increment = 0.1 },
+  ['aspd'] = { name = 'aspd', min = 1, max = 5, increment = 0.05 },
   ['hp'] = { name = 'hp', min = 1, max = 5, increment = 0.15 },
-  ['mvspd'] = { name = 'mvspd', min = 1, max = 5, increment = 0.1 },
+  ['mvspd'] = { name = 'mvspd', min = 1, max = 5, increment = 0.05 },
   
   -- Defensive stats
   ['flat_def'] = { name = 'flat_def', min = 1, max = 5, increment = 0.1 },

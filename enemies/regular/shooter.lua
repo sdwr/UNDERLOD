@@ -93,7 +93,6 @@ function EnemyProjectile:die(x, y, r, n)
   for i = 1, n do HitParticle{group = main.current.effects, x = x, y = y, r = random:float(0, 2*math.pi), color = self.color} end
   HitCircle{group = main.current.effects, x = x, y = y}:scale_down()
   self.dead = true
-  proj_hit_wall1:play{pitch = random:float(0.9, 1.1), volume = 0.05}
 end
 
 
