@@ -63,6 +63,8 @@ function CharacterCard:init(args)
     --texts
     self:initText()
 
+    self.set_bonus_hovered = false
+
     -- FIX: The call to Refresh_All_Cards_Text() has been removed from here.
     -- It should be called once, AFTER all cards have been created.
     
@@ -372,7 +374,11 @@ function CharacterCard:show_set_bonus_popup_for_set(set_info)
       
       local stat_name = ''
       for stat, value in pairs(bonus.stats) do
-        stat_name = stat_name .. '+' .. value .. ' ' .. item_stat_lookup[stat] .. ', '
+        if item_stat_lookup[stat] then
+          stat_name = stat_name .. '+' .. value .. ' ' .. item_stat_lookup[stat] .. ', '
+        else
+          stat_name = stat .. ' stat not found'
+        end
       end
 
       table.insert(text_lines, {
@@ -382,11 +388,13 @@ function CharacterCard:show_set_bonus_popup_for_set(set_info)
       })
     end
   end
+
+  self:hide_set_bonus_popup()
   
   self.set_bonus_popup = InfoText{group = main.current.world_ui, force_update = false}
   self.set_bonus_popup:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
   self.set_bonus_popup.x = self.x
-  self.set_bonus_popup.y = self.y - self.h/2 + 60
+  self.set_bonus_popup.y = self.y - self.h/2 - 10
 end
 
 function CharacterCard:hide_popup()
@@ -449,15 +457,17 @@ function CharacterCard:update(dt)
   end
   
   -- Check set bonus elements hover state
+  self.set_bonus_hovered = false
   if self.set_bonus_elements then
     for _, element in ipairs(self.set_bonus_elements) do
-      if element.selected and not element.hovered then
-        element.hovered = true
+      if element.selected then
         self:show_set_bonus_popup_for_set(element.set_info)
-      elseif not element.selected and element.hovered then
-        element.hovered = false
-        self:hide_set_bonus_popup()
+        self.set_bonus_hovered = true
+        break
       end
+    end
+    if not self.set_bonus_hovered then
+      self:hide_set_bonus_popup()
     end
   end
   
