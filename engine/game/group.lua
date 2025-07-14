@@ -85,10 +85,33 @@ end
 
 -- scroll_factor_x and scroll_factor_y can be used for parallaxing, they should be values between 0 and 1
 -- The closer to 0, the more of a parallaxing effect there will be.
+--supports z_index and draw to custom canvas
 function Group:draw(scroll_factor_x, scroll_factor_y)
   if self.camera then self.camera:attach(scroll_factor_x, scroll_factor_y) end
+  local z_indexed_objects = {}
+
     for _, object in ipairs(self.objects) do
       if not object.hidden then
+        if object.z_index then
+          --separate z_indexed objects
+          if not z_indexed_objects[object.z_index] then z_indexed_objects[object.z_index] = {} end
+          table.insert(z_indexed_objects[object.z_index], object)
+        else
+          --draw normal objects
+          if self.custom_draw_list then
+            table.insert(self.custom_draw_list, function()
+              object:draw()
+            end)
+          else
+            object:draw()
+          end
+        end
+      end
+    end
+    
+    for k, objects in pairs(z_indexed_objects) do
+      for _, object in ipairs(objects) do
+        --draw z_indexed objects after the normal objects
         if self.custom_draw_list then
           table.insert(self.custom_draw_list, function()
             object:draw()
@@ -98,6 +121,7 @@ function Group:draw(scroll_factor_x, scroll_factor_y)
         end
       end
     end
+
   if self.camera then self.camera:detach() end
 end
 

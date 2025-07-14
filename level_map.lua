@@ -36,6 +36,19 @@ function LevelMap:init(args)
   self:build()
 end
 
+function LevelMap:create_level_map_level(level, x, y, line_color, fill_color)
+  return LevelMapLevel{
+    group = self.group, 
+    z_index = 1, 
+    x = x, 
+    y = y, 
+    line_color = line_color,
+    fill_color = fill_color,
+    level = level,
+    parent = self
+  }
+end
+
 function LevelMap:build()
   self.levels = {}
   self.level_connections = {}
@@ -44,16 +57,15 @@ function LevelMap:build()
 
   for i = 1, 5 do
     local level = start_level + i - 1
-    if level <= 0 or level > NUMBER_OF_ROUNDS then
+    if level < 0 or level > NUMBER_OF_ROUNDS then
       --pass
     else
-      table.insert(self.levels, i, 
-        LevelMapLevel{group = self.group, x = self.x - LEVEL_MAP_ICON_OFFSET_X + (i-1)*LEVEL_MAP_ICON_SPACING, y = self.y + LEVEL_MAP_ICON_OFFSET_Y, 
-        line_color = (level == self.level) and yellow[2] or fg[0],
-        fill_color = self.parent.level_list[level].color,
-        level = level,
-        parent = self
-        })
+      local x = self.x - LEVEL_MAP_ICON_OFFSET_X + (i-1)*LEVEL_MAP_ICON_SPACING
+      local y = self.y + LEVEL_MAP_ICON_OFFSET_Y
+      local line_color = (level == self.level) and yellow[2] or fg[0]
+      local fill_color = self.parent.level_list[level] and self.parent.level_list[level].color or grey[0]
+      
+      table.insert(self.levels, i, self:create_level_map_level(level, x, y, line_color, fill_color))
     end
   end
 
@@ -113,12 +125,12 @@ function LevelMap:add_next_level_to_map()
 
   if self.levels[5] and self.levels[5].level < NUMBER_OF_ROUNDS then
     local next_level = self.levels[5].level + 1
-    table.insert(self.levels, 6, LevelMapLevel{group = self.group, x = self.x - LEVEL_MAP_ICON_OFFSET_X + (3-1)*LEVEL_MAP_ICON_SPACING, y = self.y + LEVEL_MAP_ICON_OFFSET_Y, 
-    line_color = (next_level == self.level) and yellow[2] or fg[0],
-    fill_color = self.parent.level_list[next_level].color,
-    level = next_level,
-    parent = self
-    })
+    local x = self.x - LEVEL_MAP_ICON_OFFSET_X + (3-1)*LEVEL_MAP_ICON_SPACING
+    local y = self.y + LEVEL_MAP_ICON_OFFSET_Y
+    local line_color = (next_level == self.level) and yellow[2] or fg[0]
+    local fill_color = self.parent.level_list[next_level].color
+    
+    table.insert(self.levels, 6, self:create_level_map_level(next_level, x, y, line_color, fill_color))
   end
 end
 
@@ -247,7 +259,9 @@ function LevelMapLevel:draw()
       skull:draw(self.x, self.y, 0, 0.7, 0.7)
     else
       graphics.circle(self.x, self.y, LEVEL_MAP_ICON_RADIUS, self.line_color, LEVEL_MAP_ICON_BORDER_WIDTH)
-      graphics.print_centered(self.level, pixul_font, self.x, self.y +2, 0, 1, 1, 0, 0, self.text_color)
+      if self.level > 0 then
+        graphics.print_centered(self.level, pixul_font, self.x, self.y +2, 0, 1, 1, 0, 0, self.text_color)
+      end
     end
 
   graphics.pop()

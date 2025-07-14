@@ -175,7 +175,7 @@ function WorldManager:create_level_map()
   end
   
   -- Only show level map for non-boss levels and non-tutorial levels
-  if self.level ~= 0 and not Is_Boss_Level(self.level) then
+  if not Is_Boss_Level(self.level) then
     self.level_map = LevelMap{
       group = self.world_ui,
       x = gw/2,
