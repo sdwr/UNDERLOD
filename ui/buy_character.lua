@@ -11,6 +11,8 @@ function BuyCharacter:init(args)
   self.y = args.y or SpawnGlobals.wall_height or 30
 
   self.radius = args.radius or 40
+
+  self.cost = args.cost or 10
   
   -- Visual properties
   self.color = yellow[0]

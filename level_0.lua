@@ -63,7 +63,8 @@ function Level0:create_character_selection()
         y = positions[i].y,
         character = character,
         is_character_selection = true,
-        parent = self
+        parent = self,
+        interaction_activation_sound = gold2,
       }
       table.insert(self.character_items, floor_item)
     end
@@ -71,14 +72,25 @@ function Level0:create_character_selection()
 end
 
 function Level0:on_buy_character_triggered()
+  if gold < self.buy_character.cost then
+    Create_Info_Text('not enough gold', self.buy_character)
+    return
+  end
+
+  self:purchase_character()
+
   -- Remove tutorial text
   self:remove_tutorial_text()
   
-  -- Create character selection floor items
-  self:create_character_selection()
-  
   -- Create new tutorial text for character selection
   self.tutorial_text = Text2{group = self.floor, x = gw/2 + self.offset_x, y = ARENA_TITLE_TEXT_Y + self.offset_y, lines = {{text = '[wavy_mid, cbyc3]Choose your character:', font = fat_font, alignment = 'center'}}}
+end
+
+function Level0:purchase_character()
+  gold = gold - self.buy_character.cost
+  self.gold_counter:update_display()
+
+  self:create_character_selection()
 end
 
 function Level0:on_character_selected(character)
@@ -115,12 +127,6 @@ function Level0:remove_combat_tutorial_text()
     self.combat_tutorial_text.dead = true
     self.combat_tutorial_text = nil
   end
-end
-
-function Level0:on_transition_start()
-  self:remove_tutorial_text()
-  self:create_combat_tutorial_text()
-  self:remove_all_character_items()
 end
 
 function Level0:update(dt)

@@ -144,10 +144,6 @@ function WorldManager:create_arena(level, offset_x)
     self.camera_target_x = gw -- Scroll to the right
     self.transitioning = true
     self.transition_progress = 0
-
-    if self.current_arena and self.current_arena.on_transition_start then
-      self.current_arena:on_transition_start()
-    end
     
     -- Trigger level map transition animation
     if self.level_map then
@@ -443,6 +439,9 @@ function WorldManager:advance_to_next_level()
     
     if self.current_arena then
       self.current_arena:remove_all_floor_items()
+      if self.current_arena.gold_counter then
+        self.current_arena.gold_counter:hide_display()
+      end
     end
     self.transition_progress = 0
     
