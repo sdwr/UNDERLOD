@@ -36,20 +36,23 @@ function DrawAnimations.draw_specific_animation(unit, anim_set, x, y, r, scale_x
   local screen_x, screen_y = world_to_screen(x, y)
   local screen_scale = sx
 
+  local outline_thickness = 2 / sx
+
   table.insert(full_res_character_draws, function()
       -- 1. SET UP THE SHADER
-      hit_effect:set()
+      hit_effect_shader:set()
 
       local is_hit = useFlash and unit.hfx and unit.hfx.hit and unit.hfx.hit.f
       local sprite_w, sprite_h = animation:getDimensions()
 
       -- Send all data to the shader
-      hit_effect:send("use_outline", is_hit)
-      hit_effect:send("use_flash", false)
-      hit_effect:send("outline_color", {1.0, 1.0, 1.0, 1.0}) -- White outline
-      hit_effect:send("flash_color", {1.0, 1.0, 1.0, 0.7})   -- Bright white flash
-      hit_effect:send("outline_thickness", 1)
-      hit_effect:send("texture_size", {sprite_w, sprite_h})
+      --outline is only drawing on one side of the sprite, disable for now
+      hit_effect_shader:send("use_outline", false)
+      hit_effect_shader:send("use_flash", is_hit)
+      hit_effect_shader:send("outline_color", {1.0, 1.0, 1.0, 1.0}) -- White outline
+      hit_effect_shader:send("flash_color", {1.0, 1.0, 1.0, 0.2})   -- Bright white flash
+      hit_effect_shader:send("outline_thickness", outline_thickness)
+      hit_effect_shader:send("texture_size", {sprite_w, sprite_h})
 
       -- 2. DRAW THE SPRITE
       if color then
@@ -64,7 +67,7 @@ function DrawAnimations.draw_specific_animation(unit, anim_set, x, y, r, scale_x
       graphics.pop()
 
       -- 3. UNSET THE SHADER
-      hit_effect:unset()
+      hit_effect_shader:unset()
   end)
   return true -- Indicate success
 end

@@ -359,7 +359,6 @@ function Enemy:on_collision_enter(other, contact)
     local x, y = contact:getPositions()
     
     if other:is(Wall) then
-        self.hfx:use('hit', 0.15, 200, 10, 0.1)
         self:bounce(contact:getNormal())
 
     elseif table.any(main.current.friendlies, function(v) return other:is(v) end) then

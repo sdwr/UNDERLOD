@@ -92,8 +92,6 @@ function engine_run(config)
   replace = Shader("default.vert", "replace.frag")
   full_combine = Shader("default.vert", "full_combine.frag")
 
-  outline = Shader(nil, "outline.frag")
-  hit_flash = Shader(nil, "hit_flash.frag")
   hit_effect = Shader(nil, "hit_effect.frag")
 
   input = Input()

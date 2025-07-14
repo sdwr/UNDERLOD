@@ -30,12 +30,11 @@ vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) 
 
     // --- Sprite Pixel Logic ---
     if (original_color.a > 0.1) {
-        // If hit, apply an additive flash effect
+        // If hit, blend the sprite color with the flash color
         if (use_flash) {
-            // We combine the original color with the flash color.
-            // Using 'max' creates a nice, bright flash effect.
-            vec3 flashed_rgb = max(original_color.rgb, flash_color.rgb);
-            return vec4(flashed_rgb, original_color.a) * color;
+            // Use mix() to blend the colors based on the flash_color's alpha.
+            vec3 blended_rgb = mix(original_color.rgb, flash_color.rgb, flash_color.a);
+            return vec4(blended_rgb, original_color.a) * color;
         }
         // Otherwise, just draw the normal sprite pixel
         return original_color * color;
