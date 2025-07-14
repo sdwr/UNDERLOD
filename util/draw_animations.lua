@@ -23,42 +23,53 @@ function DrawAnimations.calculate_enemy_scale(enemy)
 end
 
 -- Draw a specific animation with given parameters
-function DrawAnimations.draw_specific_animation(unit, anim_set, x, y, r, scale_x, scale_y, alpha, color, use_hfx)
+function DrawAnimations.draw_specific_animation(unit, anim_set, x, y, r, scale_x, scale_y, alpha, color, useHfx, useFlash)
+  -- This function no longer needs the 'use_hfx' or 'use_flash' booleans
   if not anim_set or not anim_set[1] or not anim_set[2] then
-    return false
+      return false
   end
-  
+
   local animation = anim_set[1]
   local image = anim_set[2]
-  
   local frame_width, frame_height = animation:getDimensions()
-  local frame_center_x = frame_width / 2
-  local frame_center_y = frame_height / 2
-
-  -- Convert world coordinates to screen coordinates for full resolution canvas
+  local frame_center_x, frame_center_y = frame_width / 2, frame_height / 2
   local screen_x, screen_y = world_to_screen(x, y)
   local screen_scale = sx
 
-  -- Add drawing functions to full_res_character_canvas
-  table.insert(full_res_character_draws, function()
-    -- Use provided color or default to white
-    if color then
-      love.graphics.setColor(color.r, color.g, color.b, alpha or color.a or 1)
-    else
-      love.graphics.setColor(1, 1, 1, alpha or 1)
-    end
-    
-    if use_hfx then
-      graphics.push(screen_x, screen_y, r or 0, unit.hfx.hit.x, unit.hfx.hit.x)
-    else
-      graphics.push(screen_x, screen_y, r or 0, 1, 1)
-    end
-      animation:draw(image.image, screen_x, screen_y, 0, scale_x * screen_scale, scale_y * screen_scale, frame_center_x, frame_center_y)
-    graphics.pop()
-    love.graphics.setColor(1, 1, 1, 1)
-  end)
+  local outline_thickness = 2 / sx
 
-  return true
+  table.insert(full_res_character_draws, function()
+      -- 1. SET UP THE SHADER
+      hit_effect_shader:set()
+
+      local is_hit = useFlash and unit.hfx and unit.hfx.hit and unit.hfx.hit.f
+      local sprite_w, sprite_h = animation:getDimensions()
+
+      -- Send all data to the shader
+      --outline is only drawing on one side of the sprite, disable for now
+      hit_effect_shader:send("use_outline", false)
+      hit_effect_shader:send("use_flash", is_hit)
+      hit_effect_shader:send("outline_color", {1.0, 1.0, 1.0, 1.0}) -- White outline
+      hit_effect_shader:send("flash_color", {1.0, 1.0, 1.0, 0.2})   -- Bright white flash
+      hit_effect_shader:send("outline_thickness", outline_thickness)
+      hit_effect_shader:send("texture_size", {sprite_w, sprite_h})
+
+      -- 2. DRAW THE SPRITE
+      if color then
+          love.graphics.setColor(color.r, color.g, color.b, alpha or color.a or 1)
+      else
+          love.graphics.setColor(1, 1, 1, alpha or 1)
+      end
+
+      local hfx_scale = (useHfx and unit.hfx.hit.x) or 1.0
+      graphics.push(screen_x, screen_y, r or 0, hfx_scale, hfx_scale)
+          animation:draw(image.image, screen_x, screen_y, 0, scale_x * screen_scale, scale_y * screen_scale, frame_center_x, frame_center_y)
+      graphics.pop()
+
+      -- 3. UNSET THE SHADER
+      hit_effect_shader:unset()
+  end)
+  return true -- Indicate success
 end
 
 -- Draw enemy animation with spritesheet, buffs, and status effects
@@ -92,10 +103,12 @@ function DrawAnimations.draw_enemy_animation(enemy, state, x, y, r)
   local scale_x = base_scale_x * direction
   local scale_y = base_scale_y
 
-  -- Draw the animation using the helper function
-  local draw_success = DrawAnimations.draw_specific_animation(enemy, anim_set, x, y, r, scale_x, scale_y, 1.0)
+  -- Draw the base animation using the helper function
+  local draw_success = DrawAnimations.draw_specific_animation(enemy, anim_set, x, y, r, scale_x, scale_y, 1.0, nil, true, true)
   
   if draw_success then
+
+    
     -- Add status effect overlays
     local mask_color = nil
     if enemy.buffs['freeze'] then
@@ -108,7 +121,7 @@ function DrawAnimations.draw_enemy_animation(enemy, state, x, y, r)
     end
 
     if mask_color ~= nil then
-      DrawAnimations.draw_specific_animation(enemy, anim_set, x, y, r, scale_x, scale_y, mask_color.a, mask_color)
+      DrawAnimations.draw_specific_animation(enemy, anim_set, x, y, r, scale_x, scale_y, mask_color.a, mask_color, true, false)
     end
   end
 
@@ -116,31 +129,22 @@ function DrawAnimations.draw_enemy_animation(enemy, state, x, y, r)
 end
 
 -- Draw death animation with spritesheet, rotation, and scaling effects
-function DrawAnimations.draw_death_animation(enemy_data, x, y, rotation, scale, alpha)
-  -- Safety checks
-  if not enemy_data.spritesheet then
-    return false
-  end
-  if not enemy_data.icon then
-    print('no icon for death animation of unit ' .. enemy_data.type)
-    return false
-  end
+function DrawAnimations.draw_death_animation(enemy, anim_set, x, y, rotation, scale, alpha)
 
-  local anim_set = enemy_data.spritesheet['normal'] or enemy_data.spritesheet['death']
   if not anim_set then
-    print('no animation or image for death animation of unit ' .. enemy_data.type)
+    print('no animation or image for death animation of unit ' .. enemy.type)
     return false
   end
 
   -- Calculate base scale using the helper function
-  local base_scale_x, base_scale_y = DrawAnimations.calculate_enemy_scale(enemy_data)
+  local base_scale_x, base_scale_y = DrawAnimations.calculate_enemy_scale(enemy)
   
   -- Apply additional scaling and rotation
   local final_scale_x = base_scale_x * scale
   local final_scale_y = base_scale_y * scale
 
   -- Draw the animation using the helper function
-  return DrawAnimations.draw_specific_animation(anim_set, x, y, rotation, final_scale_x, final_scale_y, alpha, false)
+  return DrawAnimations.draw_specific_animation(enemy, anim_set, x, y, rotation, final_scale_x, final_scale_y, alpha, nil, false, false)
 end
 
 -- Create a normalized animation for a specific duration

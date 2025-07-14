@@ -92,6 +92,8 @@ function engine_run(config)
   replace = Shader("default.vert", "replace.frag")
   full_combine = Shader("default.vert", "full_combine.frag")
 
+  hit_effect_shader = Shader(nil, "hit_effect.frag")
+
   input = Input()
   input:bind_all()
   for k, v in pairs(config.input or {}) do input:bind(k, v) end

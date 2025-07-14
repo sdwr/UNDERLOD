@@ -1083,16 +1083,14 @@ function EnemyDeathAnimation:draw()
     -- Create a temporary anim_set with the normalized animation
     local temp_anim_set = {self.death_animation, self.death_anim_set[2]}
     
-    local animation_success = DrawAnimations.draw_specific_animation(
+    local animation_success = DrawAnimations.draw_death_animation(
       self.enemy,
-      temp_anim_set, 
+      temp_anim_set,
       self.x, 
       self.y, 
-      0, 
-      self.base_scale_x, 
-      self.base_scale_y, 
-      alpha,
-      self.enemy.color
+      0,  -- rotation
+      1.0, -- scale (no additional scaling)
+      alpha
     )
     
     if animation_success then
