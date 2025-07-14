@@ -47,6 +47,7 @@ function Level0:create_character_selection()
     if positions[i] then
       local floor_item = FloorItem{
         group = self.floor,
+        main_group = self.main,
         x = positions[i].x,
         y = positions[i].y,
         character = character,
