@@ -296,7 +296,7 @@ function Helper.Damage:process_elemental_reactions(unit, actual_damage, damageTy
     ChainLightning{
       group = main.current.main, 
       target = unit, range = 50, 
-      dmg = actual_damage, color = yellow[0], 
+      damage = actual_damage, color = yellow[0], 
       parent = from,
       is_troop = from and from.is_troop
     }
