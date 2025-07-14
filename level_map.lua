@@ -178,25 +178,27 @@ function LevelMap:update(dt)
   if self.transitioning_out then
     self.transition_progress = self.transition_progress + dt / self.transition_duration_out
 
+
+    -- Use smooth easing for the animation
+    local ease_progress = self.transition_progress * self.transition_progress * (3 - 2 * self.transition_progress)
+    self:update_level_positions(ease_progress)
+
     if self.transition_progress >= 1 then
       self.transition_progress = 1
       self:end_transition_out()
     end
 
-    -- Use smooth easing for the animation
-    local ease_progress = self.transition_progress * self.transition_progress * (3 - 2 * self.transition_progress)
-    self:update_level_positions(ease_progress)
   elseif self.transitioning_in then
     self.transition_progress = self.transition_progress + dt / self.transition_duration_in
+
+    -- For transition-in, we animate from the recentered positions back to normal spacing
+    local ease_progress = 1 - (1 - self.transition_progress) * (1 - self.transition_progress) * (3 - 2 * (1 - self.transition_progress))
+    self:update_level_positions_in(ease_progress)
 
     if self.transition_progress >= 1 then
       self.transition_progress = 1
       self:end_transition_in()
     end
-
-    -- For transition-in, we animate from the recentered positions back to normal spacing
-    local ease_progress = 1 - (1 - self.transition_progress) * (1 - self.transition_progress) * (3 - 2 * (1 - self.transition_progress))
-    self:update_level_positions_in(ease_progress)
   end
 end
 

@@ -9,6 +9,9 @@ function GoldCounter:init(args)
   self.color = yellow[0]
   self.text = nil
   
+  self.offset_x = args.offset_x or 0
+  self.offset_y = args.offset_y or 0
+  
   -- Update the display
   self:update_display()
 end
@@ -19,16 +22,15 @@ function GoldCounter:update(dt)
   -- Check if arena offset has changed and update display if needed
   local current_offset_x = 0
   local current_offset_y = 0
-  if main.current and main.current.offset_x then
-    current_offset_x = main.current.offset_x
-    current_offset_y = main.current.offset_y
-  end
-  
-  if self.last_offset_x ~= current_offset_x or self.last_offset_y ~= current_offset_y then
-    self.last_offset_x = current_offset_x
-    self.last_offset_y = current_offset_y
+  if self.parent and self.parent.offset_x and self.parent.offset_x ~= self.offset_x then
+    self.offset_x = self.parent.offset_x
     self:update_display()
   end
+  if self.parent and self.parent.offset_y and self.parent.offset_y ~= self.offset_y then
+    self.offset_y = self.parent.offset_y
+    self:update_display()
+  end
+  
 end
 
 function GoldCounter:update_display()
@@ -36,39 +38,23 @@ function GoldCounter:update_display()
   if self.text then
     self.text.dead = true
   end
-  
-  -- Get arena offset if available
-  local offset_x = 0
-  local offset_y = 0
-  if main.current and main.current.offset_x then
-    offset_x = main.current.offset_x
-    offset_y = main.current.offset_y
-  end
-  
-  self.text = Text2{
-    group = main.current.world_ui, 
-    x = self.x + offset_x, 
-    y = self.y + offset_y, 
-    lines = {{text = '[wavy_mid, fg]gold: [yellow]' .. tostring(gold), font = pixul_font, alignment = 'left'}}
-  }
+
+  -- self.text = Text2{
+  --   group = main.current.world_ui, 
+  --   x = self.x + self.offset_x, 
+  --   y = self.y + self.offset_y, 
+  --   lines = {{text = '[wavy_mid, fg]gold: [yellow]' .. tostring(gold), font = pixul_font, alignment = 'left'}}
+  -- }
 end
 
 function GoldCounter:add_gold(amount, source_x, source_y)
-  -- Get arena offset if available
-  local offset_x = 0
-  local offset_y = 0
-  if main.current and main.current.offset_x then
-    offset_x = main.current.offset_x
-    offset_y = main.current.offset_y
-  end
-  
   -- Create gold particle that flies to the counter
   GoldParticle{
     group = main.current.main,
     x = source_x,
     y = source_y,
-    target_x = self.x + offset_x,
-    target_y = self.y + offset_y,
+    target_x = self.x,
+    target_y = self.y,
     amount = amount,
     parent = self
   }

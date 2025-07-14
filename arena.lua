@@ -82,7 +82,7 @@ end
 
 function Arena:create_gold_counter()
   -- Create gold counter in top left
-  self.gold_counter = GoldCounter{group = self.ui, x = 60 + self.offset_x, y = 15 + self.offset_y}
+  self.gold_counter = GoldCounter{group = self.ui, parent = self,x = 60, y = 15, offset_x = self.offset_x, offset_y = self.offset_y}
 end
 
 function Arena:select_character_by_index(i)
