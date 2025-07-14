@@ -27,16 +27,13 @@ function BuyCharacter:init(args)
   self.pulse_speed = 2.0
   self.scale = 1.0
   
-  -- Character options
-  self.character_options = {'swordsman', 'archer', 'laser'}
-  self.character_items = {}
-  
   -- Sound properties
   self.charging_sound_played = false
   
   -- Set up interaction callbacks
   self.on_activation = function()
     self:trigger_character_selection()
+    self:die()
   end
 end
 
@@ -63,30 +60,9 @@ function BuyCharacter:trigger_character_selection()
   self.is_triggered = true
   self.color = self.highlight_color
   
-  -- Create character floor items
-  self:create_character_items()
-end
-
-function BuyCharacter:create_character_items()
-  local positions = {
-    {x = self.x - 100, y = self.y},
-    {x = self.x, y = self.y},
-    {x = self.x + 100, y = self.y}
-  }
-  
-  for i, character in ipairs(self.character_options) do
-    if positions[i] then
-      local floor_item = FloorItem{
-        group = self.parent.floor,
-        main_group = self.parent.main,
-        x = positions[i].x,
-        y = positions[i].y,
-        character = character,
-        is_character_selection = true,
-        parent = self.parent
-      }
-      table.insert(self.character_items, floor_item)
-    end
+  -- Call parent level callback if it exists
+  if self.parent and self.parent.on_buy_character_triggered then
+    self.parent:on_buy_character_triggered()
   end
 end
 
@@ -96,14 +72,6 @@ function BuyCharacter:deactivate()
   
   -- Deactivate floor interactable
   self:interaction_deactivate()
-  
-  -- Remove character items
-  for _, item in ipairs(self.character_items) do
-    if item and not item.dead then
-      item:die()
-    end
-  end
-  self.character_items = {}
 end
 
 function BuyCharacter:draw()
@@ -119,8 +87,8 @@ function BuyCharacter:draw()
     graphics.circle(self.x, self.y, self.radius * 0.4, self.color)
     
     -- Draw plus symbol
-    graphics.line(self.x - 8, self.y, self.x + 8, self.y, 2, self.color)
-    graphics.line(self.x, self.y - 8, self.x, self.y + 8, 2, self.color)
+    graphics.line(self.x - 8, self.y, self.x + 8, self.y, self.color, 2)
+    graphics.line(self.x, self.y - 8, self.x, self.y + 8, self.color, 2)
     
   graphics.pop()
 end

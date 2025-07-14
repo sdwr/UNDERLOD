@@ -10,15 +10,16 @@ function Level0:init(args)
   -- Character selection
   self.character_options = {'swordsman', 'archer', 'laser'}
   self.selected_character = nil
-  -- Create tutorial text
+  
+  -- Create tutorial text in the middle of the screen
   self:create_tutorial_text()
   
-  -- Create character selection
-  self:create_character_selection()
+  -- Create BuyCharacter object instead of character floor items
+  self:create_buy_character()
 end
 
 function Level0:create_tutorial_text()
-  self.tutorial_text = Text2{group = self.floor, x = gw/2 + self.offset_x, y = ARENA_TITLE_TEXT_Y + self.offset_y, lines = {{text = '[wavy_mid, cbyc3]Choose your character:', font = fat_font, alignment = 'center'}}}
+  self.tutorial_text = Text2{group = self.floor, x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, lines = {{text = '[wavy_mid, cbyc3]Buy a character', font = fat_font, alignment = 'center'}}}
 end
 
 function Level0:create_combat_tutorial_text()
@@ -32,6 +33,16 @@ function Level0:create_combat_tutorial_text()
     {text = '[wavy_mid, fg]C to open inventory', font = pixul_font, alignment = 'center'},
     {text = '[wavy_mid, fg]ESC to pause', font = pixul_font, alignment = 'center'},
   }}
+end
+
+function Level0:create_buy_character()
+  self.buy_character = BuyCharacter{
+    group = self.floor,
+    main_group = self.main,
+    x = gw/2 + self.offset_x,
+    y = 30,
+    parent = self,
+  }
 end
 
 function Level0:create_character_selection()
@@ -57,6 +68,17 @@ function Level0:create_character_selection()
       table.insert(self.character_items, floor_item)
     end
   end
+end
+
+function Level0:on_buy_character_triggered()
+  -- Remove tutorial text
+  self:remove_tutorial_text()
+  
+  -- Create character selection floor items
+  self:create_character_selection()
+  
+  -- Create new tutorial text for character selection
+  self.tutorial_text = Text2{group = self.floor, x = gw/2 + self.offset_x, y = ARENA_TITLE_TEXT_Y + self.offset_y, lines = {{text = '[wavy_mid, cbyc3]Choose your character:', font = fat_font, alignment = 'center'}}}
 end
 
 function Level0:on_character_selected(character)
