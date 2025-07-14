@@ -141,7 +141,7 @@ function ArrowProjectile:update(dt)
   if #targets > 0 then
     hit2:play{volume=0.5}
     -- Use primary hit for the exact target hit by the projectile
-    Helper.Damage:primary_hit(targets[1], self.damage, self.unit, nil, true)
+    Helper.Damage:indirect_hit(targets[1], self.damage, self.unit, nil, true)
     self:die()
     return
   end

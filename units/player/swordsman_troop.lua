@@ -72,6 +72,7 @@ function Swordsman_Troop:setup_cast(cast_target)
       opacity = 0.3,
 
       area_type = 'target',
+      apply_primary_hit_to_target = true,
               
       -- The Area spell needs to know its caster and what team it's on.
       unit = self,
