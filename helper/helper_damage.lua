@@ -211,14 +211,15 @@ function Helper.Damage:apply_hit_effects(unit, damage, playHitEffects)
       unit.hfx:use('hit', 0.15 * hitStrength, 200, 10)
     end
 
-  -- Only create HitCircle for non-animated enemies (those without spritesheets)
-  if not unit.spritesheet then
-    HitCircle{group = main.current.effects, x = unit.x, y = unit.y}:scale_down(0.3):change_color(0.5, unit.color)
-  end
-  
-  -- Player troop specific: camera shake
-  if unit.is_troop then
-    camera:shake(1, 0.5)
+    -- Only create HitCircle for non-animated enemies (those without spritesheets)
+    if not unit.spritesheet then
+      HitCircle{group = main.current.effects, x = unit.x, y = unit.y}:scale_down(0.3):change_color(0.5, unit.color)
+    end
+    
+    -- Player troop specific: camera shake
+    if unit.is_troop then
+      camera:shake(1, 0.5)
+    end
   end
 end
 
@@ -415,5 +416,4 @@ function Helper.Damage:apply_death_effects(unit, from)
       magic_die1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     end
   end
-
 end
