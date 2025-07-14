@@ -46,7 +46,7 @@ fns['init_enemy'] = function(self)
   local charge = {
     name = 'charge',
     viable = function() return true end,
-    castcooldown = 2, -- Shorter cooldown than charger (3)
+    castcooldown = 4, -- Shorter cooldown than charger (3)
     cast_length = 0.1,
     oncast = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); self.target = target end,
     spellclass = Launch_Spell,

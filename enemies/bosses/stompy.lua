@@ -34,7 +34,7 @@ fns['init_enemy'] = function(self)
   self:reset_castcooldown(self.baseCast)
 
 --set sensors
-  self.attack_sensor = Circle(self.x, self.y, 80)
+  self.attack_sensor = Circle(self.x, self.y, 800)
 
 
 
@@ -113,7 +113,12 @@ fns['init_enemy'] = function(self)
     viable = function() return true end,
     castcooldown = self.castcooldown,
     cast_length = 0.1,
-    oncast = function() end,
+    oncast = function() 
+      self.target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies) 
+      if self.target then
+        self:rotate_towards_object(self.target, 1)
+      end
+    end,
     cast_sound = usurer1,
     cast_volume = 2,
     spellclass = Launch_Spell,
@@ -153,9 +158,9 @@ fns['init_enemy'] = function(self)
     }
   }
 
-  table.insert(self.attack_options, stomp)
-  table.insert(self.attack_options, mortar)
-  table.insert(self.attack_options, avalanche)
+  -- table.insert(self.attack_options, stomp)
+  -- table.insert(self.attack_options, mortar)
+  -- table.insert(self.attack_options, avalanche)
   table.insert(self.attack_options, charge)
   -- table.insert(self.attack_options, prevent_casting)
 

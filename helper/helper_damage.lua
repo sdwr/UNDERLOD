@@ -201,14 +201,14 @@ function Helper.Damage:apply_hit_effects(unit, damage, playHitEffects)
   -- Calculate hit strength for visual effects
   local hitStrength = (damage * 1.0) / unit.max_hp
   hitStrength = math.min(hitStrength, 0.5)
-  hitStrength = math.remap(hitStrength, 0, 0.5, 1, 2)
+  hitStrength = math.remap(hitStrength, 0, 0.5, 1, 1.4)
   
   -- Apply hit flash effect
   if playHitEffects then
     if unit.isBoss then
       unit.hfx:use('hit', 0.01, 200, 20)
     else
-      unit.hfx:use('hit', 0.15 * hitStrength, 200, 10)
+      unit.hfx:use('hit', 0.08 * hitStrength, 200, 10)
     end
 
     -- Only create HitCircle for non-animated enemies (those without spritesheets)

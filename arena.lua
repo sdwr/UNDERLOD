@@ -1504,7 +1504,7 @@ function Arena:activate_enemies()
       if enemy and not enemy.dead then
         enemy.t:after(0.5, function()
           enemy.transition_active = true
-          enemy.idleTimer = enemy.baseIdleTimer or 0.5
+          enemy.idleTimer = INITIAL_ENEMY_IDLE_TIME
         end)
       end
     end
