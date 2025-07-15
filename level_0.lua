@@ -46,6 +46,7 @@ function Level0:create_buy_character()
     x = 50 + self.offset_x,
     y = gh/2 + self.offset_y,
     parent = self,
+    interaction_activation_sound = gold2,
   }
 end
 
@@ -98,7 +99,7 @@ function Level0:purchase_character()
 end
 
 function Level0:on_character_selected(character)
-  gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
+  ui_modern_click:play{pitch = random:float(0.95, 1.05), volume = 1}
   
   main.current:replace_first_unit(character)
 

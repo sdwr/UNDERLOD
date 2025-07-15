@@ -32,6 +32,8 @@ function BuyCharacter:init(args)
   -- Sound properties
   self.charging_sound_played = false
   
+  self.already_purchased = false
+  
   -- Set up interaction callbacks
   self.on_activation = function()
     self:trigger_character_selection()
@@ -39,8 +41,29 @@ function BuyCharacter:init(args)
   
   -- Set up disable function
   self.disable_interaction = function()
-    return gold < self.cost
+    return gold < self.cost or self.already_purchased
   end
+  
+  -- Create cost text
+  self:create_cost_text()
+end
+
+function BuyCharacter:create_cost_text()
+  if self.already_purchased then
+    if self.cost_text then
+      self.cost_text.dead = true
+      self.cost_text = nil
+    end
+    return
+  end
+
+  local color = self.interaction_is_disabled and 'grey[0]' or 'yellow[0]'
+  self.cost_text = Text2{
+    group = self.parent.ui,
+    x = self.x,
+    y = self.y,
+    lines = {{text = '[' .. color .. ']' .. tostring(self.cost), font = pixul_font, alignment = 'center'}}
+  }
 end
 
 function BuyCharacter:update(dt)
@@ -58,13 +81,25 @@ function BuyCharacter:update(dt)
       self:deactivate()
     end
   end
+  
+  -- Update cost text color based on disabled state
+  if self.cost_text then
+    if self.interaction_is_disabled then
+      self.cost_text.color = grey[0] -- Grey when disabled
+    else
+      self.cost_text.color = yellow[0] -- Yellow when enabled
+    end
+  end
 end
 
 function BuyCharacter:trigger_character_selection()
   if self.is_triggered then return end
-  
+
   self.is_triggered = true
+  self.already_purchased = true
   self.color = self.highlight_color
+
+  self:create_cost_text()
   
   -- Call parent level callback if it exists
   if self.parent and self.parent.on_buy_character_triggered then
@@ -145,23 +180,18 @@ function BuyCharacter:draw()
     graphics.arc('open', self.x, self.y, ripple_radius, -math.pi/2, math.pi/2, charging_color, 3)
   end 
 
-  -- 3. Central Icon (no change needed as it's centered)
-  -------------------
-  if self.interaction_shake_timer > 0 and not self.interaction_is_disabled then
-      -- Make the icon brighter while charging.
-      icon_color = charging_icon_color
-  end
-  
-  -- Draw the swirl icon.
-  graphics.circle(self.x, self.y, self.radius * 0.2, icon_color, 2)
-  graphics.arc('open', self.x + self.radius * 0.1, self.y, self.radius * 0.1, 0, math.pi, icon_color, 2)
-  graphics.arc('open', self.x - self.radius * 0.1, self.y, self.radius * 0.1, math.pi, 2*math.pi, icon_color, 2)
-
   graphics.pop()
 end
 
 function BuyCharacter:die()
   self:deactivate()
+  
+  -- Clean up cost text
+  if self.cost_text then
+    self.cost_text.dead = true
+    self.cost_text = nil
+  end
+  
   -- Call parent die (FloorInteractable)
   FloorInteractable.die(self)
   self.dead = true
