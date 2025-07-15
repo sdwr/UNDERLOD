@@ -190,7 +190,7 @@ function Arena:create_door()
   -- Create door on the right side of the arena
   self.door = Door{
     type = 'door',
-    group = self.main, -- Put door on post_main so it's drawn above units but below UI
+    group = self.main,
     x = gw - 50 + self.offset_x,
     y = gh/2 + self.offset_y,
     width = 40,
@@ -314,6 +314,7 @@ function Arena:create_floor_items()
       self.t:after(ITEM_SPAWN_DELAY_INITAL + i*ITEM_SPAWN_DELAY_OFFSET, function()
         local floor_item = FloorItem{
           group = self.floor,
+          main_group = self.main,
           x = positions[i].x + self.offset_x,
           y = positions[i].y + self.offset_y,
           item = item,
@@ -347,6 +348,7 @@ function Arena:create_perk_floor_items()
       self.t:after(ITEM_SPAWN_DELAY_INITAL + i*ITEM_SPAWN_DELAY_OFFSET, function()
         local floor_item = FloorItem{
           group = self.floor,
+          main_group = self.main,
           x = positions[i].x + self.offset_x,
           y = positions[i].y + self.offset_y,
           perk = perk,
@@ -986,10 +988,10 @@ function Arena:spawn_n_critters(p, j, n, pass, parent)
   end, n, function() self.spawning_enemies = false end, 'spawn_enemies_' .. j)
 end
 
-FloorItem = Object:extend()
-FloorItem:implement(GameObject)
+FloorItem = FloorInteractable:extend()
 function FloorItem:init(args)
-  self:init_game_object(args)
+  -- Initialize floor interactable base class
+  FloorItem.super.init(self, args)
   
   -- Generic properties
   self.item = args.item
@@ -1024,28 +1026,22 @@ function FloorItem:init(args)
     self.name = self.item.name
   end
   
-  -- Collision detection radius
-  self.interaction_radius = 35 -- Slightly smaller activation range
-  self.aggro_sensor = Circle(self.x, self.y, self.interaction_radius)
+  -- Set up interaction callbacks
+  self.on_activation = function()
+    if self.is_character_selection then
+      self:select_character()
+    elseif self.is_perk_selection then
+      self:select_perk()
+    else
+      self:purchase_item()
+    end
+  end
   
-  -- Prevent immediate activation when spawning
-  self.spawn_protection = true
+  self.on_failed_activation = function()
+    self.failed_to_purchase = true
+    Create_Info_Text('no empty item slots - right click to sell', self)
+  end
   
-  -- Visual effects
-  self.hover_timer = 0
-  self.hover_duration = 2
-  self.shake_timer = 0
-  self.shake_duration = 2
-  self.shake_intensity = 0
-  self.is_hovered = false
-  self.is_purchased = false
-  self.failed_to_purchase = false
-  
-
-  self.hover_sound= nil
-  self.hover_sound_pitch = 1
-  self.hover_sound_pitch_next = 0.5
-
   -- Mouse interaction
   self.shape = Rectangle(self.x, self.y, 60, 80)
   self.interact_with_mouse = true
@@ -1185,7 +1181,8 @@ function FloorItem:creation_effect()
 end
 
 function FloorItem:update(dt)
-  self:update_game_object(dt)
+  -- Call parent update (FloorInteractable)
+  FloorInteractable.update(self, dt)
   
   -- Handle tooltip
   if self.colliding_with_mouse then
@@ -1195,101 +1192,12 @@ function FloorItem:update(dt)
   else
     self:remove_tooltip()
   end
-
-  if self.parent and self.parent.main then
-    local objects = self.parent.main:get_objects_in_shape(self.aggro_sensor, troop_classes)
-    if #objects > 0 then
-      -- Only activate if spawn protection is off
-      if self.spawn_protection then
-        self.is_hovered = false
-      else
-        self.is_hovered = true
-      end
-    else
-      self.spawn_protection = false
-      self.is_hovered = false
-      self.failed_to_purchase = false
-    end
-  end
   
-  -- Update hover timer and shake
-  if self.is_hovered and not self.failed_to_purchase then
-    self.hover_timer = self.hover_timer + dt
-    self.hover_sound_pitch_next = self.hover_sound_pitch_next - dt
-    if self.hover_sound_pitch_next <= 0 then
-      self:hover_sound_pitch_up()
-    end
-    -- Start shaking immediately when unit is on it
-    if self.shake_timer <= 0 then
-      self:start_shake()
-    end
-  else
-    -- Reset when unit leaves
-    self.hover_timer = 0
-    self.shake_timer = 0
-    self.shake_intensity = 0
-  end
-  
-  -- Update shake
-  if self.shake_timer > 0 then
-    self.shake_timer = self.shake_timer - dt
-    self.shake_intensity = math.max(0, self.shake_timer / self.shake_duration)
-    
-    -- Purchase after 2 seconds of shaking
-    if self.shake_timer <= 0 then
-      if self.is_character_selection then
-        self:select_character()
-      elseif self.is_perk_selection then
-        self:select_perk()
-      else
-        self:purchase()
-      end
-    end
-  end
 end
 
-function FloorItem:hover_sound_pitch_up()
-  self.hover_sound_pitch_next = 0.5
-  self.hover_sound_pitch = self.hover_sound_pitch + .3
-
-  if self.hover_sound then
-    self.hover_sound:stop()
-  end
-  self.hover_sound = ui_modern_hover:play{pitch = self.hover_sound_pitch, volume = 1}
-end
-
-function FloorItem:start_shake()
-  if self.shake_timer <= 0 then
-    self.shake_timer = 2 -- 2 seconds of shaking
-    self.shake_intensity = 1
-  end
-  if not self.hover_sound then
-    self.hover_sound = ui_modern_hover:play{pitch = self.hover_sound_pitch, volume = 1}
-  end
-end
-
-function FloorItem:stop_shake()
-  self.hover_timer = 0
-  self.shake_timer = 0
-  self.shake_intensity = 0
-  if self.hover_sound then
-    self.hover_sound:stop()
-    self.hover_sound = nil
-  end
-  self.hover_sound_pitch = 1
-  self.hover_sound_pitch_next = 0.5
-end
-
-function FloorItem:purchase()
-  if self.is_character_selection then
-    -- Character selection mode
-    self:select_character()
-  elseif self.is_perk_selection then
-    -- Perk selection mode
-    self:select_perk()
-  else
-    -- Item purchase mode
-    self:purchase_item()
+function FloorItem:create_purchase_effect()
+  for i = 1, 20 do
+    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color or grey[0]}
   end
 end
 
@@ -1298,11 +1206,7 @@ function FloorItem:select_character()
 
   self.parent:on_character_selected(self.character)
   
-  -- Purchase effect
-  for i = 1, 20 do
-    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color or grey[0]}
-  end
-  
+  self:create_purchase_effect()
 end
 
 function FloorItem:select_perk()
@@ -1323,10 +1227,7 @@ function FloorItem:select_perk()
     
     ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     
-    -- Purchase effect
-    for i = 1, 20 do
-      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color or grey[0]}
-    end
+    self:create_purchase_effect()
     
     -- Remove all perk floor items and continue to buy screen
     self.parent:remove_all_floor_items()
@@ -1341,7 +1242,7 @@ function FloorItem:purchase_item()
   local try_purchase = main.current:put_in_first_available_inventory_slot(self.item)
   if not try_purchase then
     self:remove_tooltip()
-    self:stop_shake()
+    self:interaction_stop_shake()
     self.failed_to_purchase = true
     Create_Info_Text('no empty item slots - right click to sell', self)
     return
@@ -1360,22 +1261,19 @@ function FloorItem:purchase_item()
 
 
   
-  -- Purchase effect
-  for i = 1, 20 do
-    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color or grey[0]}
-  end
+  self:create_purchase_effect()
   
   -- Remove all floor items
   -- self.parent:remove_all_floor_items()
 end
 
 function FloorItem:draw()
-  -- Calculate shake offset
+  -- Calculate shake offset from floor interactable
   local shake_x = 0
   local shake_y = 0
-  if self.shake_intensity > 0 then
-    shake_x = random:float(-3, 3) * self.shake_intensity
-    shake_y = random:float(-3, 3) * self.shake_intensity
+  if self.interaction_shake_intensity > 0 then
+    shake_x = random:float(-3, 3) * self.interaction_shake_intensity
+    shake_y = random:float(-3, 3) * self.interaction_shake_intensity
   end
   
   graphics.push(self.x + shake_x, self.y + shake_y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
@@ -1427,9 +1325,9 @@ function FloorItem:draw()
   end
   
   -- Draw hover effect
-  if self.is_hovered then
-    local alpha = math.min(self.hover_timer / self.hover_duration, 1)
-    local radius = ((self.hover_timer / self.hover_duration) * 20) + 10
+  if self.interaction_is_hovered then
+    local alpha = math.min(self.interaction_hover_timer / 2, 1)
+    local radius = ((self.interaction_hover_timer / 2) * 20) + 10
     local color = white[0]
     color.a = alpha * 0.3
     graphics.rectangle(self.x + shake_x, self.y + shake_y, width, height, 6, 6, color)
@@ -1481,7 +1379,9 @@ function FloorItem:remove_tooltip()
 end
 
 function FloorItem:die()
-  self.dead = true
+  -- Call parent die (FloorInteractable)
+  FloorInteractable.die(self)
+  
   if self.tooltip then
     self.tooltip:die()
     self.tooltip = nil

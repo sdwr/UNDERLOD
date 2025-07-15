@@ -35,16 +35,21 @@ end
 
 function GoldCounter:update_display()
   -- Create text showing current gold
+  self:hide_display()
+
+  self.text = Text2{
+    group = self.group, 
+    x = self.x + self.offset_x, 
+    y = self.y + self.offset_y, 
+    lines = {{text = '[wavy_mid, fg]gold: [yellow]' .. tostring(gold), font = pixul_font, alignment = 'left'}}
+  }
+end
+
+function GoldCounter:hide_display()
   if self.text then
     self.text.dead = true
+    self.text = nil
   end
-
-  -- self.text = Text2{
-  --   group = main.current.world_ui, 
-  --   x = self.x + self.offset_x, 
-  --   y = self.y + self.offset_y, 
-  --   lines = {{text = '[wavy_mid, fg]gold: [yellow]' .. tostring(gold), font = pixul_font, alignment = 'left'}}
-  -- }
 end
 
 function GoldCounter:add_gold(amount, source_x, source_y)
