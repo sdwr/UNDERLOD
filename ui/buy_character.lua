@@ -18,7 +18,7 @@ function BuyCharacter:init(args)
   self.color = yellow[0]
   self.base_color = yellow[0]
   self.highlight_color = yellow[2]
-  self.radius = 25
+  self.radius = 45
   self.is_active = true
   self.is_triggered = false
   self.trigger_duration = 3.0
@@ -77,21 +77,68 @@ function BuyCharacter:deactivate()
 end
 
 function BuyCharacter:draw()
-  graphics.push(self.x, self.y, 0, self.scale, self.scale)
+  if self.dead then return end
+  
+  -- A vibrant teal and gold color palette for the fountain
+  local basin_color = Color(20/255, 120/255, 140/255, 0.4) -- Deep sea teal
+  local border_color = Color(100/255, 220/255, 255/255, 0.8) -- Bright cyan
+  local ripple_color = Color(100/255, 220/255, 255/255, 0.3) -- Fainter cyan for ripples
+  local ripple_color_inner = Color(100/255, 220/255, 255/255, 0.2) -- Faintest cyan for inner ripples
+  local charging_color = Color(255/255, 215/255, 80/255, 0.5) -- Energetic gold
+  local icon_color = Color(100/255, 220/255, 255/255, 0.8) -- Bright cyan to match the border
+  local charging_icon_color = Color(255/255, 215/255, 80/255, 1.0) -- Solid gold for emphasis
+  
+  graphics.push(self.x, self.y, 0, 1, 1)
+  
+  -- 1. Static (Idle) Design
+  --------------------------
+  -- Draw the main half-circle basin using 'closed' for a solid look.
+  -- Angle changed from (math.pi, 2*math.pi) to (0, math.pi) to draw the bottom half.
+  graphics.arc('closed', self.x, self.y, self.radius, 0, math.pi, basin_color)
+  
+  -- Add a crisp border on top.
+  -- Angle changed to draw the bottom half.
+  graphics.arc('open', self.x, self.y, self.radius, 0, math.pi, border_color, 3)
+  
+  -- Draw subtle, pulsing inner ripples.
+  local pulse = (math.sin(self.pulse_timer * 2) + 1) / 2 -- Smoothly pulses from 0 to 1.
+  local ripple_alpha = 0.3 + pulse * 0.2
+  
+  -- Angle changed for the inner ripples.
+  ripple_color.a = ripple_alpha
+  graphics.arc('open', self.x, self.y, self.radius * 0.75, 0, math.pi, ripple_color, 2)
+  ripple_color_inner.a = ripple_alpha - 0.1
+  graphics.arc('open', self.x, self.y, self.radius * 0.55, 0, math.pi, ripple_color_inner, 1.5)
+
+  -- 2. Activation (Charging) Effect
+  ------------------------------------
+  if self.is_charging then
+    -- Effect 1: The "Filling" progress bar, now a solid wedge.
+    -- The start and end angles are adjusted to fill from right-to-left across the bottom.
+    local start_angle = 0
+    local end_angle = math.pi * self.charge_progress
+    graphics.arc('closed', self.x, self.y, self.radius, start_angle, end_angle, charging_color)
     
-    -- Draw main circle
-    graphics.circle(self.x, self.y, self.radius, self.color, 3)
-    
-    -- Draw inner circle
-    graphics.circle(self.x, self.y, self.radius * 0.7, self.color, 2)
-    
-    -- Draw character icon in center
-    graphics.circle(self.x, self.y, self.radius * 0.4, self.color)
-    
-    -- Draw plus symbol
-    graphics.line(self.x - 8, self.y, self.x + 8, self.y, self.color, 2)
-    graphics.line(self.x, self.y - 8, self.x, self.y + 8, self.color, 2)
-    
+    -- Effect 2: Expanding ripple of power.
+    -- Angle changed to match the new downward orientation.
+    local ripple_radius = self.radius * self.charge_progress
+    local ripple_alpha_fade = 0.8 * (1 - self.charge_progress) -- Fades out as it expands.
+    charging_color.a = ripple_alpha_fade
+    graphics.arc('open', self.x, self.y, ripple_radius, 0, math.pi, charging_color, 3)
+  end 
+
+  -- 3. Central Icon (no change needed as it's centered)
+  -------------------
+  if self.is_charging then
+      -- Make the icon brighter while charging.
+      icon_color = charging_icon_color
+  end
+  
+  -- Draw the swirl icon.
+  graphics.circle(self.x, self.y, self.radius * 0.2, icon_color, 2)
+  graphics.arc('open', self.x, self.y + self.radius * 0.1, self.radius * 0.1, -math.pi/2, math.pi/2, icon_color, 2)
+  graphics.arc('open', self.x, self.y - self.radius * 0.1, self.radius * 0.1, math.pi/2, 3*math.pi/2, icon_color, 2)
+
   graphics.pop()
 end
 
