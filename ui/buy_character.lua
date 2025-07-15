@@ -35,7 +35,11 @@ function BuyCharacter:init(args)
   -- Set up interaction callbacks
   self.on_activation = function()
     self:trigger_character_selection()
-    self:die()
+  end
+  
+  -- Set up disable function
+  self.disable_interaction = function()
+    return gold < self.cost
   end
 end
 
@@ -79,14 +83,28 @@ end
 function BuyCharacter:draw()
   if self.dead then return end
   
-  -- A vibrant teal and gold color palette for the fountain
-  local basin_color = Color(20/255, 120/255, 140/255, 0.4) -- Deep sea teal
-  local border_color = Color(100/255, 220/255, 255/255, 0.8) -- Bright cyan
-  local ripple_color = Color(100/255, 220/255, 255/255, 0.3) -- Fainter cyan for ripples
-  local ripple_color_inner = Color(100/255, 220/255, 255/255, 0.2) -- Faintest cyan for inner ripples
-  local charging_color = Color(255/255, 215/255, 80/255, 0.5) -- Energetic gold
-  local icon_color = Color(100/255, 220/255, 255/255, 0.8) -- Bright cyan to match the border
-  local charging_icon_color = Color(255/255, 215/255, 80/255, 1.0) -- Solid gold for emphasis
+  -- Color definitions based on disabled state
+  local basin_color, border_color, ripple_color, ripple_color_inner, charging_color, icon_color, charging_icon_color
+  
+  if self.interaction_is_disabled then
+    -- Grey colors when disabled
+    basin_color = Color(80/255, 80/255, 80/255, 0.4) -- Dark grey
+    border_color = Color(120/255, 120/255, 120/255, 0.8) -- Medium grey
+    ripple_color = Color(100/255, 100/255, 100/255, 0.3) -- Light grey
+    ripple_color_inner = Color(90/255, 90/255, 90/255, 0.2) -- Lighter grey
+    charging_color = Color(100/255, 100/255, 100/255, 0.5) -- Grey
+    icon_color = Color(120/255, 120/255, 120/255, 0.8) -- Medium grey
+    charging_icon_color = Color(140/255, 140/255, 140/255, 1.0) -- Light grey
+  else
+    -- A vibrant teal and gold color palette for the fountain
+    basin_color = Color(20/255, 120/255, 140/255, 0.4) -- Deep sea teal
+    border_color = Color(100/255, 220/255, 255/255, 0.8) -- Bright cyan
+    ripple_color = Color(100/255, 220/255, 255/255, 0.3) -- Fainter cyan for ripples
+    ripple_color_inner = Color(100/255, 220/255, 255/255, 0.2) -- Faintest cyan for inner ripples
+    charging_color = Color(255/255, 215/255, 80/255, 0.5) -- Energetic gold
+    icon_color = Color(100/255, 220/255, 255/255, 0.8) -- Bright cyan to match the border
+    charging_icon_color = Color(255/255, 215/255, 80/255, 1.0) -- Solid gold for emphasis
+  end
   
   graphics.push(self.x, self.y, 0, 1, 1)
   
@@ -112,7 +130,7 @@ function BuyCharacter:draw()
 
   -- 2. Activation (Charging) Effect
   ------------------------------------
-  if self.is_charging then
+  if self.is_charging and not self.interaction_is_disabled then
     -- Effect 1: The "Filling" progress bar, now a solid wedge.
     -- The start and end angles are adjusted to fill from right-to-left across the bottom.
     local start_angle = -math.pi/2
@@ -129,7 +147,7 @@ function BuyCharacter:draw()
 
   -- 3. Central Icon (no change needed as it's centered)
   -------------------
-  if self.is_charging then
+  if self.is_charging and not self.interaction_is_disabled then
       -- Make the icon brighter while charging.
       icon_color = charging_icon_color
   end

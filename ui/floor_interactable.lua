@@ -22,51 +22,49 @@ function FloorInteractable:init(args)
   
   -- Audio configuration
   self.interaction_hover_sound = args.hover_sound or ui_modern_hover
-  self.interaction_activation_sound = args.activation_sound or ui_switch1
-  self.interaction_sound_pitch_base = args.sound_pitch_base or 1.0
+  self.interaction_activation_sound = args.activation_sound or ui_modern_click
+  self.interaction_failed_sound = args.failed_sound or ui_modern_error
   
-  -- Callback functions
-  self.on_activation = args.on_activation -- Called when fully activated
-  self.on_hover_start = args.on_hover_start -- Called when unit enters
-  self.on_hover_end = args.on_hover_end -- Called when unit leaves
-  self.on_failed_activation = args.on_failed_activation -- Called on failure
-  
-  -- Visual effects configuration
-  self.interaction_particle_count = args.particle_count or 8
-  self.interaction_camera_shake = args.camera_shake or {intensity = 3, duration = 0.5}
-  self.interaction_show_tooltip = args.show_tooltip or false
-  
-  -- Internal state
+  -- State flags
   self.interaction_is_active = true
-  self.interaction_is_triggered = false
-  self.interaction_hover_timer = 0
-  self.interaction_shake_timer = 0
-  self.interaction_shake_intensity = 0
   self.interaction_is_hovered = false
+  self.interaction_is_charging = false
+  self.interaction_is_disabled = false -- New flag for disabled state
   self.interaction_failed_activation = false
+  self.interaction_spawn_protection = true
   
-  -- Audio state
+  -- Timers
+  self.interaction_hover_timer = 0
+  self.interaction_charge_timer = 0
+  self.interaction_shake_timer = 0
+  self.interaction_shake_duration = 2.0
+  self.interaction_shake_intensity = 0
+
+  self.interaction_particle_count = 10
+  
+  -- Audio
   self.interaction_hover_sound_instance = nil
-  self.interaction_hover_sound_pitch = self.interaction_sound_pitch_base
+  self.interaction_hover_sound_pitch = 1.0
   self.interaction_hover_sound_pitch_next = 0.5
   
-  -- Detection setup
+  -- Callbacks
+  self.on_activation = args.on_activation
+  self.on_failed_activation = args.on_failed_activation
+  self.on_hover_start = args.on_hover_start
+  self.on_hover_end = args.on_hover_end
+  
+  -- Custom disable function
+  self.disable_interaction = args.disable_interaction
+  
+  -- Create collision sensor
   self.interaction_aggro_sensor = Circle(self.x, self.y, self.interaction_radius)
-  self.interaction_spawn_protection = true
 end
 
 function FloorInteractable:update(dt)
   self:update_game_object(dt)
   
-  if self.dead then return end
-  
-  -- Check for unit collision
-  if self.interaction_is_active and not self.interaction_is_triggered then
-    self:check_unit_collision()
-  end
-  
-  -- Update hover timer and shake
-  if self.interaction_is_hovered and not self.interaction_failed_activation then
+  -- Update timers
+  if self.interaction_is_hovered and not self.interaction_is_disabled then
     self.interaction_hover_timer = self.interaction_hover_timer + dt
     self.interaction_hover_sound_pitch_next = self.interaction_hover_sound_pitch_next - dt
     if self.interaction_hover_sound_pitch_next <= 0 then
@@ -83,19 +81,43 @@ function FloorInteractable:update(dt)
     self.interaction_shake_intensity = 0
   end
   
-  -- Update shake
+  -- Update shake timer
   if self.interaction_shake_timer > 0 then
     self.interaction_shake_timer = self.interaction_shake_timer - dt
-    self.interaction_shake_intensity = math.max(0, self.interaction_shake_timer / self.activation_duration)
+    self.interaction_shake_intensity = math.max(0, self.interaction_shake_timer / self.interaction_shake_duration)
     
     -- Activate after duration of shaking
     if self.interaction_shake_timer <= 0 then
       self:interaction_complete_activation()
     end
   end
+  
+  -- Check for unit collisions
+  self:check_unit_collision()
 end
 
 function FloorInteractable:check_unit_collision()
+  -- Check if interaction is disabled by custom function
+  local was_disabled = self.interaction_is_disabled
+  self.interaction_is_disabled = self.disable_interaction and self:disable_interaction()
+  
+  -- If newly disabled, clear hover state
+  if self.interaction_is_disabled and not was_disabled then
+    if self.interaction_is_hovered then
+      self.interaction_is_hovered = false
+      self.interaction_failed_activation = false
+      if self.on_hover_end then
+        self:on_hover_end()
+      end
+    end
+    return
+  end
+  
+  -- If disabled, don't process any interactions
+  if self.interaction_is_disabled then
+    return
+  end
+  
   if self.main_group then
     local objects = self.main_group:get_objects_in_shape(self.interaction_aggro_sensor, self.unit_classes)
     if #objects > 0 then
@@ -105,6 +127,7 @@ function FloorInteractable:check_unit_collision()
       else
         if not self.interaction_is_hovered then
           self.interaction_is_hovered = true
+          self.interaction_failed_activation = false
           if self.on_hover_start then
             self:on_hover_start()
           end
@@ -112,9 +135,9 @@ function FloorInteractable:check_unit_collision()
       end
     else
       self.interaction_spawn_protection = false
+      self.interaction_is_hovered = false
+      self.interaction_failed_activation = false
       if self.interaction_is_hovered then
-        self.interaction_is_hovered = false
-        self.interaction_failed_activation = false
         if self.on_hover_end then
           self:on_hover_end()
         end
