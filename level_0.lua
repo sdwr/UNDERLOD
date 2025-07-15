@@ -19,7 +19,11 @@ function Level0:init(args)
 end
 
 function Level0:create_tutorial_text()
-  self.tutorial_text = Text2{group = self.floor, x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, lines = {{text = '[wavy_mid, cbyc3]Buy a character', font = fat_font, alignment = 'center'}}}
+  local lines = {
+    {text = '[wavy_mid, cbyc3]Buy a character', font = fat_font, alignment = 'center'},
+    {text = '[wavy_mid, cbyc3] <-', font = fat_font, alignment = 'center'},
+  }
+  self.tutorial_text = Text2{group = self.floor, x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, lines = lines}
 end
 
 function Level0:create_combat_tutorial_text()
@@ -39,8 +43,8 @@ function Level0:create_buy_character()
   self.buy_character = BuyCharacter{
     group = self.floor,
     main_group = self.main,
-    x = gw/2 + self.offset_x,
-    y = 30,
+    x = 50 + self.offset_x,
+    y = gh/2 + self.offset_y,
     parent = self,
   }
 end

@@ -94,11 +94,11 @@ function BuyCharacter:draw()
   --------------------------
   -- Draw the main half-circle basin using 'closed' for a solid look.
   -- Angle changed from (math.pi, 2*math.pi) to (0, math.pi) to draw the bottom half.
-  graphics.arc('closed', self.x, self.y, self.radius, 0, math.pi, basin_color)
+  graphics.arc('closed', self.x, self.y, self.radius, -math.pi/2, math.pi/2, basin_color)
   
   -- Add a crisp border on top.
   -- Angle changed to draw the bottom half.
-  graphics.arc('open', self.x, self.y, self.radius, 0, math.pi, border_color, 3)
+  graphics.arc('open', self.x, self.y, self.radius, -math.pi/2, math.pi/2, border_color, 3)
   
   -- Draw subtle, pulsing inner ripples.
   local pulse = (math.sin(self.pulse_timer * 2) + 1) / 2 -- Smoothly pulses from 0 to 1.
@@ -106,17 +106,17 @@ function BuyCharacter:draw()
   
   -- Angle changed for the inner ripples.
   ripple_color.a = ripple_alpha
-  graphics.arc('open', self.x, self.y, self.radius * 0.75, 0, math.pi, ripple_color, 2)
+  graphics.arc('open', self.x, self.y, self.radius * 0.75, -math.pi/2, math.pi/2, ripple_color, 2)
   ripple_color_inner.a = ripple_alpha - 0.1
-  graphics.arc('open', self.x, self.y, self.radius * 0.55, 0, math.pi, ripple_color_inner, 1.5)
+  graphics.arc('open', self.x, self.y, self.radius * 0.55, -math.pi/2, math.pi/2, ripple_color_inner, 1.5)
 
   -- 2. Activation (Charging) Effect
   ------------------------------------
   if self.is_charging then
     -- Effect 1: The "Filling" progress bar, now a solid wedge.
     -- The start and end angles are adjusted to fill from right-to-left across the bottom.
-    local start_angle = 0
-    local end_angle = math.pi * self.charge_progress
+    local start_angle = -math.pi/2
+    local end_angle = -math.pi/2 + math.pi * self.charge_progress
     graphics.arc('closed', self.x, self.y, self.radius, start_angle, end_angle, charging_color)
     
     -- Effect 2: Expanding ripple of power.
@@ -124,7 +124,7 @@ function BuyCharacter:draw()
     local ripple_radius = self.radius * self.charge_progress
     local ripple_alpha_fade = 0.8 * (1 - self.charge_progress) -- Fades out as it expands.
     charging_color.a = ripple_alpha_fade
-    graphics.arc('open', self.x, self.y, ripple_radius, 0, math.pi, charging_color, 3)
+    graphics.arc('open', self.x, self.y, ripple_radius, -math.pi/2, math.pi/2, charging_color, 3)
   end 
 
   -- 3. Central Icon (no change needed as it's centered)
@@ -136,8 +136,8 @@ function BuyCharacter:draw()
   
   -- Draw the swirl icon.
   graphics.circle(self.x, self.y, self.radius * 0.2, icon_color, 2)
-  graphics.arc('open', self.x, self.y + self.radius * 0.1, self.radius * 0.1, -math.pi/2, math.pi/2, icon_color, 2)
-  graphics.arc('open', self.x, self.y - self.radius * 0.1, self.radius * 0.1, math.pi/2, 3*math.pi/2, icon_color, 2)
+  graphics.arc('open', self.x + self.radius * 0.1, self.y, self.radius * 0.1, 0, math.pi, icon_color, 2)
+  graphics.arc('open', self.x - self.radius * 0.1, self.y, self.radius * 0.1, math.pi, 2*math.pi, icon_color, 2)
 
   graphics.pop()
 end
