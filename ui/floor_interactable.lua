@@ -21,9 +21,9 @@ function FloorInteractable:init(args)
   self.interaction_visual_scale = args.visual_scale or 1.0
   
   -- Audio configuration
-  self.interaction_hover_sound = args.hover_sound or ui_modern_hover
-  self.interaction_activation_sound = args.activation_sound or ui_modern_click
-  self.interaction_failed_sound = args.failed_sound or ui_modern_error
+  self.interaction_hover_sound = args.interaction_hover_sound or ui_modern_hover
+  self.interaction_activation_sound = args.interaction_activation_sound or ui_modern_hover
+  self.interaction_failed_sound = args.interaction_failed_sound or error1
   
   -- State flags
   self.interaction_is_active = true

@@ -69,7 +69,7 @@ function Level0:create_character_selection()
         character = character,
         is_character_selection = true,
         parent = self,
-        interaction_activation_sound = gold2,
+        interaction_activation_sound = ui_modern_hover,
       }
       table.insert(self.character_items, floor_item)
     end
@@ -99,7 +99,6 @@ function Level0:purchase_character()
 end
 
 function Level0:on_character_selected(character)
-  ui_modern_click:play{pitch = random:float(0.95, 1.05), volume = 1}
   
   main.current:replace_first_unit(character)
 
