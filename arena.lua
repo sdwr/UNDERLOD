@@ -1195,16 +1195,9 @@ function FloorItem:update(dt)
   
 end
 
-function FloorItem:purchase()
-  if self.is_character_selection then
-    -- Character selection mode
-    self:select_character()
-  elseif self.is_perk_selection then
-    -- Perk selection mode
-    self:select_perk()
-  else
-    -- Item purchase mode
-    self:purchase_item()
+function FloorItem:create_purchase_effect()
+  for i = 1, 20 do
+    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color or grey[0]}
   end
 end
 
@@ -1213,11 +1206,7 @@ function FloorItem:select_character()
 
   self.parent:on_character_selected(self.character)
   
-  -- Purchase effect
-  for i = 1, 20 do
-    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color or grey[0]}
-  end
-  
+  self:create_purchase_effect()
 end
 
 function FloorItem:select_perk()
@@ -1238,10 +1227,7 @@ function FloorItem:select_perk()
     
     ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     
-    -- Purchase effect
-    for i = 1, 20 do
-      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color or grey[0]}
-    end
+    self:create_purchase_effect()
     
     -- Remove all perk floor items and continue to buy screen
     self.parent:remove_all_floor_items()
@@ -1275,10 +1261,7 @@ function FloorItem:purchase_item()
 
 
   
-  -- Purchase effect
-  for i = 1, 20 do
-    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color or grey[0]}
-  end
+  self:create_purchase_effect()
   
   -- Remove all floor items
   -- self.parent:remove_all_floor_items()

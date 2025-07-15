@@ -188,11 +188,6 @@ function FloorInteractable:interaction_complete_activation()
     self.interaction_activation_sound:play{pitch = random:float(0.95, 1.05), volume = 0.5}
   end
   
-  -- Visual feedback
-  for i = 1, self.interaction_particle_count do
-    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.interaction_color}
-  end
-  
   -- Camera shake
   if self.interaction_camera_shake then
     camera:shake(self.interaction_camera_shake.intensity, self.interaction_camera_shake.duration)

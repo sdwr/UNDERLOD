@@ -130,24 +130,24 @@ function BuyCharacter:draw()
 
   -- 2. Activation (Charging) Effect
   ------------------------------------
-  if self.is_charging and not self.interaction_is_disabled then
-    -- Effect 1: The "Filling" progress bar, now a solid wedge.
-    -- The start and end angles are adjusted to fill from right-to-left across the bottom.
-    local start_angle = -math.pi/2
-    local end_angle = -math.pi/2 + math.pi * self.charge_progress
-    graphics.arc('closed', self.x, self.y, self.radius, start_angle, end_angle, charging_color)
+  if self.interaction_shake_timer > 0 and not self.interaction_is_disabled then
+    -- Calculate progress based on shake timer
+    local charge_progress = (self.interaction_shake_duration - self.interaction_shake_timer) / self.interaction_shake_duration
+    
+    -- Effect 1: The "Filling" progress bar, fills the entire horizontal half-circle from left to right
+    graphics.circle(self.x, self.y, self.radius * charge_progress, charging_color)
     
     -- Effect 2: Expanding ripple of power.
-    -- Angle changed to match the new downward orientation.
-    local ripple_radius = self.radius * self.charge_progress
-    local ripple_alpha_fade = 0.8 * (1 - self.charge_progress) -- Fades out as it expands.
+    -- Angle changed to match the new horizontal orientation.
+    local ripple_radius = self.radius * charge_progress
+    local ripple_alpha_fade = 0.6 * (1 - charge_progress) -- Fades out as it expands.
     charging_color.a = ripple_alpha_fade
     graphics.arc('open', self.x, self.y, ripple_radius, -math.pi/2, math.pi/2, charging_color, 3)
   end 
 
   -- 3. Central Icon (no change needed as it's centered)
   -------------------
-  if self.is_charging and not self.interaction_is_disabled then
+  if self.interaction_shake_timer > 0 and not self.interaction_is_disabled then
       -- Make the icon brighter while charging.
       icon_color = charging_icon_color
   end
