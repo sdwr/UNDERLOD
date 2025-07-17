@@ -743,6 +743,14 @@ function InfoText:deactivate()
     self.t:tween(0.05, self, {sy = 0}, math.linear, function() self.sy = 0; self.dead = true end, 'deactivate')
 end
 
+function InfoText:die()
+    if self.cost_text_object then
+        self.cost_text_object.dead = true
+        self.cost_text_object = nil
+    end
+    self.dead = true
+end
+
 
 TutorialPopup = Object:extend()
 TutorialPopup:implement(GameObject)

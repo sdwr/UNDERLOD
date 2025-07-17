@@ -54,9 +54,9 @@ function Level0:create_character_selection()
   self.character_items = {}
   
   local positions = {
-    {x = gw/2 - 100 + self.offset_x, y = gh/2 + self.offset_y},
+    {x = gw/2 - 80 + self.offset_x, y = gh/2 + self.offset_y},
     {x = gw/2 +   0 + self.offset_x, y = gh/2 + self.offset_y},
-    {x = gw/2 + 100 + self.offset_x, y = gh/2 + self.offset_y}
+    {x = gw/2 + 80 + self.offset_x, y = gh/2 + self.offset_y}
   }
   
   for i, character in ipairs(self.character_options) do

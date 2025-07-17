@@ -44,7 +44,8 @@ function FloorInteractable:init(args)
   
   -- Audio
   self.interaction_hover_sound_instance = nil
-  self.interaction_hover_sound_pitch = 1.0
+  self.interaction_sound_pitch_base = 1.0
+  self.interaction_hover_sound_pitch = self.interaction_sound_pitch_base
   self.interaction_hover_sound_pitch_next = 0.5
   
   -- Callbacks

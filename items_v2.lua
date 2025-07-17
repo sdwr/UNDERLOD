@@ -22,7 +22,7 @@ ITEM_RARITY = {
 -- Item Sets
 ITEM_SET = {
   COLD = 'cold',
-  FIRE = 'fire', 
+  FIRE = 'fire',
   SHOCK = 'shock',
   CURSE = 'curse',
   REFLECT = 'reflect',
