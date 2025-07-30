@@ -72,8 +72,22 @@ end
 function BaseLevel:purchase_character()
   gold = gold - self.buy_character.cost
   self.gold_counter:update_display()
-
+  
+  self:create_choose_character_text()
   self:create_character_selection()
+end
+
+function BaseLevel:create_choose_character_text()
+  self:remove_tutorial_text()
+  
+  self.tutorial_text = Text2{group = self.floor, x = gw/2 + self.offset_x, y = ARENA_TITLE_TEXT_Y + self.offset_y, lines = {{text = '[wavy_mid, cbyc3]Choose your character:', font = fat_font, alignment = 'center'}}}
+end
+
+function BaseLevel:remove_tutorial_text()
+  if self.tutorial_text then
+    self.tutorial_text.dead = true
+    self.tutorial_text = nil
+  end
 end
 
 function BaseLevel:create_character_selection()

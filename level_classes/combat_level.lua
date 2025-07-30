@@ -7,6 +7,13 @@ end
 function CombatLevel:purchase_character()
   CombatLevel.super.purchase_character(self)
   --hide the floor items and text while the character is being purchased
+  self:remove_all_floor_items()
+end
+
+function CombatLevel:on_character_selected(character)
+  CombatLevel.super.on_character_selected(self, character)
+  self:remove_tutorial_text()
+  self:create_floor_items()
 end
 
 function CombatLevel:level_clear()
@@ -34,12 +41,14 @@ function CombatLevel:create_floor_items()
   self.floor_items = {}
   
   -- Generate 3 random items using the new V2 system
-  local items = {}
-  for i = 1, 3 do
-    local tier = LEVEL_TO_TIER(self.level or 1)
-    local item = create_random_item(tier)
-    if item then
-      table.insert(items, item)
+  if not self.items then
+    self.items = {}
+    for i = 1, 3 do
+      local tier = LEVEL_TO_TIER(self.level or 1)
+      local item = create_random_item(tier)
+      if item then
+        table.insert(self.items, item)
+      end
     end
   end
   
@@ -54,7 +63,7 @@ function CombatLevel:create_floor_items()
     self.floor_item_text = Text2{group = self.floor, x = gw/2 + self.offset_x, y =ARENA_TITLE_TEXT_Y + self.offset_y, lines = {{text = '[wavy_mid, cbyc3]Buy an item:', font = fat_font, alignment = 'center'}}}
   end
 
-  for i, item in ipairs(items) do
+  for i, item in ipairs(self.items) do
     if positions[i] then
       self.t:after(ITEM_SPAWN_DELAY_INITAL + i*ITEM_SPAWN_DELAY_OFFSET, function()
         local floor_item = FloorItem{
