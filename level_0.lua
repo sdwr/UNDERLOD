@@ -1,4 +1,4 @@
-Level0 = Arena:extend()
+Level0 = BaseLevel:extend()
 
 function Level0:init(args)
   Level0.super.init(self, args)
@@ -108,7 +108,7 @@ function Level0:on_character_selected(character)
   
   -- Open door after a short delay
   self.t:after(3, function()
-    self.door:open()
+    self:open_door()
   end)
 end
 

@@ -112,7 +112,7 @@ function WorldManager:create_class_lists()
 end
 
 function WorldManager:create_arena(level, offset_x)
-  local arena_class = level == 0 and Level0 or Arena
+  local arena_class = level == 0 and Level0 or BaseLevel
   
   local arena = arena_class{
     level = level,
@@ -131,7 +131,8 @@ function WorldManager:create_arena(level, offset_x)
     self.gold_counter = arena.gold_counter
 
     arena:create_walls()
-    
+    arena:create_door()
+
     -- Only spawn teams and enemies for non-tutorial levels
     Spawn_Teams(arena)
     arena.spawn_manager:spawn_all_enemies_at_once()
@@ -358,6 +359,7 @@ function WorldManager:complete_transition()
     -- Set up teams for the new arena
     Spawn_Teams(self.current_arena)
     self.current_arena:create_walls()
+    self.current_arena:create_door()
     self.current_arena.spawn_manager:spawn_all_enemies_at_once()
     
     -- Resume enemy updates and activate enemies
