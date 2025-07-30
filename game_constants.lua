@@ -162,6 +162,12 @@ UNIT_LEVEL_TO_LEVELUP_COST = {
   [4] = 20,
 }
 
+NUMBER_OF_TROOPS_TO_CHARACTER_COST = {
+  [0] = 10,
+  [1] = 15,
+  [2] = 20,
+}
+
 
 -- unit constants
 MELEE_ATTACK_RANGE = 50

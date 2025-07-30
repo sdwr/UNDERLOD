@@ -465,7 +465,6 @@ function SpawnManager:update(dt)
           if self.current_wave_index >= #self.level_data.waves then
               -- For the final wave, we just need all enemies dead
               self:change_state('finished')
-              print('level clear')
               self.arena:level_clear()
           else
               -- ===================================================================

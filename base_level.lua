@@ -9,7 +9,12 @@ function BaseLevel:init(args)
   self.door = nil
   self.floor_item_text = nil
   
--- Create door for this level
+  -- Buy character properties
+  self.buy_character = nil
+  self.character_items = {}
+  self.character_options = {'swordsman', 'archer', 'laser'}
+  
+  -- Create door for this level
   self:create_door()
 end
 
@@ -38,6 +43,7 @@ function BaseLevel:open_door()
   end
 end
 
+--
 function BaseLevel:level_clear()
   spawn_mark2:play{pitch = 1, volume = 0.8}
   Helper.Unit:update_units_with_combat_data(self)
@@ -55,6 +61,8 @@ function BaseLevel:level_clear()
   else
     self:create_floor_items()
   end
+  local num_troops = #self.units
+  self:create_buy_character(NUMBER_OF_TROOPS_TO_CHARACTER_COST[num_troops])
 end
 
 function BaseLevel:create_floor_items()
@@ -133,6 +141,72 @@ function BaseLevel:create_perk_floor_items()
   end
 end
 
+function BaseLevel:create_buy_character(cost)
+  if self.buy_character then
+    self.buy_character.dead = true
+    self.buy_character = nil
+  end
+
+  self.buy_character = BuyCharacter{
+    group = self.floor,
+    main_group = self.main,
+    x = 50 + self.offset_x,
+    y = gh/2 + self.offset_y,
+    cost = cost,
+    parent = self,
+    interaction_activation_sound = gold2,
+  }
+end
+
+function BaseLevel:on_buy_character_triggered()
+  if gold < self.buy_character.cost then
+    Create_Info_Text('not enough gold', self.buy_character)
+    return
+  end
+
+  self:purchase_character()
+end
+
+function BaseLevel:purchase_character()
+  gold = gold - self.buy_character.cost
+  self.gold_counter:update_display()
+
+  self:create_character_selection()
+end
+
+function BaseLevel:create_character_selection()
+  self.character_items = {}
+  
+  local positions = {
+    {x = gw/2 - 80 + self.offset_x, y = gh/2 + self.offset_y},
+    {x = gw/2 +   0 + self.offset_x, y = gh/2 + self.offset_y},
+    {x = gw/2 + 80 + self.offset_x, y = gh/2 + self.offset_y}
+  }
+  
+  for i, character in ipairs(self.character_options) do
+    if positions[i] then
+      local floor_item = FloorItem{
+        group = self.floor,
+        main_group = self.main,
+        x = positions[i].x,
+        y = positions[i].y,
+        character = character,
+        is_character_selection = true,
+        parent = self,
+        interaction_activation_sound = ui_modern_hover,
+      }
+      table.insert(self.character_items, floor_item)
+    end
+  end
+end
+
+function BaseLevel:remove_all_character_items()
+  for _, item in ipairs(self.character_items) do
+    item:die()
+  end
+  self.character_items = {}
+end
+
 function BaseLevel:remove_all_floor_items()
   if self.floor_item_text then
     self.floor_item_text.dead = true
@@ -147,6 +221,8 @@ function BaseLevel:remove_all_floor_items()
 end
 
 function BaseLevel:on_character_selected(character)
+  main.current:replace_first_unit(character)
+  self:remove_all_character_items()
   -- Override this in subclasses to handle character selection
 end
 
@@ -221,6 +297,7 @@ end
 function BaseLevel:destroy()
   -- Clean up level-specific resources
   self:remove_all_floor_items()
+  self:remove_all_character_items()
   
   if self.door then
     self.door.dead = true
