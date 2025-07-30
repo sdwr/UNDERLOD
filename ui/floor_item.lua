@@ -194,6 +194,8 @@ function FloorItem:update(dt)
   -- Call parent update (FloorInteractable)
   FloorInteractable.update(self, dt)
   
+  if self.dead then return end
+  
   -- Handle tooltip
   if self.colliding_with_mouse then
     if not self.tooltip then
