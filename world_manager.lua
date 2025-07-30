@@ -112,7 +112,7 @@ function WorldManager:create_class_lists()
 end
 
 function WorldManager:create_arena(level, offset_x)
-  local arena_class = level == 0 and Level0 or BaseLevel
+  local arena_class = level == 0 and Level0 or CombatLevel
   
   local arena = arena_class{
     level = level,
