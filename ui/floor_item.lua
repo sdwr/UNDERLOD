@@ -310,7 +310,7 @@ function FloorItem:draw()
     local top_half_height = height / 2 -- Only use top half
     local color_h = top_half_height / num_colors
     for i, color_name in ipairs(self.colors) do
-      local color = _G[color_name]
+      local color = _G[color_name] or _G['brown']
       color = color[0]:clone()
       color.a = 0.6
       local y = (self.y - height/2) + ((i-1) * color_h) + (color_h/2)

@@ -24,7 +24,7 @@ ITEM_SET = {
   COLD = 'cold',
   FROST_NOVA = 'frost_nova',
   FIRE = 'fire',
-  BURNING = 'burning',
+  BLAZIN = 'blazin',
   METEORS = 'meteors',
   SHOCK = 'shock',
   LIGHTNING_BALL = 'lightning_ball',
@@ -158,9 +158,9 @@ ITEM_SETS = {
   },
   [ITEM_SET.FROST_NOVA] = {
     name = 'Frost Nova Set',
-    color = 'blue[2]',
+    color = 'blue',
     bonuses = {
-      [1] = { stats = {['frost_nova'] = 1} } -- creates a frost nova when enemies get close
+      [1] = { stats = {}, procs = {'frostnova'} } -- creates a frost nova when enemies get close
     }
   },
   [ITEM_SET.FIRE] = {
@@ -172,16 +172,16 @@ ITEM_SETS = {
         [4] = { stats = {['fire_damage'] = 2} }
     }
   },
-  [ITEM_SET.BURNING] = {
-    name = 'Burning Set',
-    color = 'red[2]',
+  [ITEM_SET.BLAZIN] = {
+    name = 'Blazin Set',
+    color = 'red',
     bonuses = {
-      [1] = { stats = {['burning'] = 1} } -- increases attack speed per burning enemy
+      [1] = { stats = {}, procs = {'blazin'} } -- increases attack speed per burning enemy
     }
   },
   [ITEM_SET.METEORS] = {
     name = 'Meteors Set',
-    color = 'yellow[2]',
+    color = 'yellow',
     bonuses = {
       [1] = { stats = {['meteors'] = 1} }, --chance to create a meteor when attacking
       [2] = { stats = {['range'] = 2} }, --meteors have a larger radius
@@ -199,7 +199,7 @@ ITEM_SETS = {
   },
   [ITEM_SET.LIGHTNING_BALL] = {
     name = 'Lightning Ball Set',
-    color = 'yellow[2]',
+    color = 'yellow',
     bonuses = {
       [1] = { stats = {['lightning_ball'] = 1} } --chance to creating a lightning ball when attacking
     }
@@ -215,7 +215,7 @@ ITEM_SETS = {
   },
   [ITEM_SET.ATTACK_EFFECTS] = {
     name = 'Attack Effects Set',
-    color = 'purple[2]',
+    color = 'purple',
     bonuses = {
       [1] = { stats = {['attack_effects'] = 1} }, --every 4th attack is a critical hit
       [2] = { stats = {['crit_chance'] = 2} }, --every 3rd attack is a critical hit
@@ -224,7 +224,7 @@ ITEM_SETS = {
   },
   [ITEM_SET.LASER] = {
     name = 'Laser Set',
-    color = 'purple[2]',
+    color = 'purple',
     bonuses = {
       [1] = { stats = {['laser'] = 1} }, --a laser attacks nearby enemies periodically
       [2] = { stats = {['range'] = 2} }, --laser pierces through enemies
@@ -233,7 +233,7 @@ ITEM_SETS = {
   },
   [ITEM_SET.BLOODLUST] = {
     name = 'Bloodlust Set',
-    color = 'purple[2]',
+    color = 'purple',
     bonuses = {
       [1] = { stats = {['bloodlust'] = 1} }, --gain attack speed when you kill an enemy
       [2] = { stats = {['aspd'] = 2} }, --gain movespeed as well
@@ -241,7 +241,7 @@ ITEM_SETS = {
   },
   [ITEM_SET.SPLASH] = {
     name = 'Splash Set',
-    color = 'purple[2]',
+    color = 'purple',
     bonuses = {
       [1] = { stats = {['splash'] = 1} }, --attacks do splash damage to nearby enemies
       [2] = { stats = {['area_size'] = 2} }, --splash damage applies elemental effects
@@ -249,7 +249,7 @@ ITEM_SETS = {
   },
   [ITEM_SET.DAMAGE] = {
     name = 'Damage Set',
-    color = 'red[2]',
+    color = 'red',
     bonuses = {
       [1] = { stats = {['dmg'] = 1} },
       [2] = { stats = {['dmg'] = 2} },
@@ -258,7 +258,7 @@ ITEM_SETS = {
   },
   [ITEM_SET.SUPPORT] = {
     name = 'Support Set',
-    color = 'green[4]',
+    color = 'green',
     bonuses = {
       [1] = { stats = {['heal'] = 1} }, -- global attack speed
       [2] = { stats = {['heal'] = 2} },
@@ -267,7 +267,7 @@ ITEM_SETS = {
   },
   [ITEM_SET.SHIELD] = {
     name = 'Shield Set',
-    color = 'green[2]',
+    color = 'green',
     bonuses = {
       [1] = { stats = {['flat_def'] = 1} },
       [2] = { stats = {['flat_def'] = 2} },
@@ -285,7 +285,7 @@ ITEM_SETS = {
   },
   [ITEM_SET.REPEAT] = {
     name = 'Repeat Set',
-    color = 'green[2]',
+    color = 'green',
     bonuses = {
       [1] = { stats = {['repeat_attack_chance'] = 1} },
       [2] = { stats = {['crit_chance'] = 2} }
@@ -367,7 +367,7 @@ end
 
 -- Helper function to get random set
 function get_random_set()
-  local sets = {ITEM_SET.COLD, ITEM_SET.FIRE, ITEM_SET.SHOCK, ITEM_SET.CURSE, ITEM_SET.REFLECT, ITEM_SET.STUN}
+  local sets = {ITEM_SET.FROST_NOVA}
   return sets[math.random(1, #sets)]
 end
 

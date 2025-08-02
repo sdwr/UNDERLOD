@@ -1610,11 +1610,8 @@ function Proc_Holduground:die()
   if not self.unit then return end
   self.unit:remove_buff(self.buffname)
 end
-Proc_Frostnova = Proc:extend()
 
--- ===================================================================
--- INITIALIZATION
--- ===================================================================
+Proc_Frostnova = Proc:extend()
 function Proc_Frostnova:init(args)
     self.triggers = {PROC_ON_TICK}
     self.scope = 'troop'
