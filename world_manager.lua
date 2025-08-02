@@ -414,6 +414,10 @@ function WorldManager:add_unit(character)
   table.insert(self.units, unit)
   Spawn_Team(self, #self.units, unit)
 
+  if self.character_cards_open then
+    self:create_character_cards()
+  end
+
   local save_data = Collect_Save_Data_From_State(self)
   system.save_run(save_data)
 

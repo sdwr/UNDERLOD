@@ -279,6 +279,7 @@ function FloorItem:purchase_item()
   self:die()
   
   self.parent:remove_all_floor_items()
+  self.parent.items = {}
 
   self:create_purchase_effect()
 
