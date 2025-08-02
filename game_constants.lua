@@ -164,8 +164,8 @@ UNIT_LEVEL_TO_LEVELUP_COST = {
 
 NUMBER_OF_TROOPS_TO_CHARACTER_COST = {
   [0] = 10,
-  [1] = 1,
-  [2] = 1,
+  [1] = 15,
+  [2] = 20,
 }
 
 
