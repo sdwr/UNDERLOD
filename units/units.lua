@@ -39,7 +39,7 @@ function Team:init(i, unit)
   self.rallyCircle = nil
   self.index = i
   self.unit = unit
-  self.color = character_colors[unit.character]
+  self.color = character_colors[unit.character] or fg[0]
   
   -- Combat tracking
   self.total_damage_dealt = 0

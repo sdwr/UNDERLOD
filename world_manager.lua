@@ -135,6 +135,7 @@ function WorldManager:create_arena(level, offset_x)
 
     -- Only spawn teams and enemies for non-tutorial levels
     Spawn_Teams(arena)
+    Helper.Unit:update_unit_colors()
     arena.spawn_manager:spawn_all_enemies_at_once()
 
   else
@@ -358,6 +359,8 @@ function WorldManager:complete_transition()
     
     -- Set up teams for the new arena
     Spawn_Teams(self.current_arena)
+    Helper.Unit:update_unit_colors()
+    
     self.current_arena:create_walls()
     self.current_arena:create_door()
     self.current_arena.spawn_manager:spawn_all_enemies_at_once()
@@ -413,6 +416,7 @@ function WorldManager:add_unit(character)
   local unit = Get_Basic_Unit(character)
   table.insert(self.units, unit)
   Spawn_Team(self, #self.units, unit)
+  Helper.Unit:update_unit_colors()
 
   if self.character_cards_open then
     self:create_character_cards()

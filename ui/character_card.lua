@@ -45,7 +45,7 @@ function CharacterCard:init(args)
     self:init_game_object(args)
     self.background_color = args.background_color or bg[0]
     self.character = args.unit.character or 'none'
-    self.character_color = character_colors[self.character]
+    self.character_color = args.unit.color or character_colors[self.character]
     self.character_color_string = character_color_strings[self.character]
     
     self.w = CHARACTER_CARD_WIDTH

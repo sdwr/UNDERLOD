@@ -669,15 +669,18 @@ function Helper.Unit:update_unit_colors()
     local previous_teams = {}
     for _, team in pairs(Helper.Unit.teams) do
         if previous_teams[team.unit.character] then
-            team.unit.color = team.unit.color:clone():lighten(0.5)
+            local color = character_colors[team.unit.character] or fg[0]
+            color = color:clone():lighten(0.12 * previous_teams[team.unit.character])
+            team.unit.color = color
             previous_teams[team.unit.character] = previous_teams[team.unit.character] + 1
         else
-            team.unit.color = team.unit.color or fg[0]
+            local color = character_colors[team.unit.character] or fg[0]
+            team.unit.color = color:clone()
             previous_teams[team.unit.character] = 1
         end
 
         for _, troop in pairs(team.troops) do
-            troop.color = troop.color or fg[0]
+            troop.color = team.unit.color
         end
     end
 end
