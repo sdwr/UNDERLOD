@@ -1368,8 +1368,8 @@ function init()
   normal_enemy_by_tier = {
     [1] = {
       'swarmer',
-      -- 'seeker',
-      -- 'chaser',
+      'seeker',
+      'chaser',
     },
     [1.5] = {
       'swarmer',
