@@ -34,7 +34,7 @@ ITEM_STATS = {
   -- Core stats
   ['dmg'] = { name = 'dmg', min = 1, max = 5, increment = 0.1 },
   ['aspd'] = { name = 'aspd', min = 1, max = 5, increment = 0.05 },
-  ['hp'] = { name = 'hp', min = 1, max = 5, increment = 0.15 },
+  ['hp'] = { name = 'hp', min = 1, max = 5, increment = 0.2 },
   ['mvspd'] = { name = 'mvspd', min = 1, max = 5, increment = 0.05 },
   
   -- Defensive stats
@@ -66,9 +66,9 @@ ITEM_STATS = {
 ITEM_STATS_THAT_CAN_ROLL_ON_ITEMS = {
   -- Core stats
   ['dmg'] = { name = 'dmg', min = 1, max = 5, increment = 0.1 },
-  ['aspd'] = { name = 'aspd', min = 1, max = 5, increment = 0.1 },
-  ['hp'] = { name = 'hp', min = 1, max = 5, increment = 0.15 },
-  ['mvspd'] = { name = 'mvspd', min = 1, max = 5, increment = 0.1 },
+  ['aspd'] = { name = 'aspd', min = 1, max = 5, increment = 0.05 },
+  ['hp'] = { name = 'hp', min = 1, max = 5, increment = 0.2 },
+  ['mvspd'] = { name = 'mvspd', min = 1, max = 5, increment = 0.05 },
 
   
   ['flat_def'] = { name = 'flat_def', min = 1, max = 5, increment = 0.1 },
@@ -279,7 +279,7 @@ function roll_stat_for_type(item_type)
 end
 
 -- Main function to create a random item
-function create_random_item(tier)
+function create_random_item(tier, max_cost)
   -- Debug: Check if random is available
   if not random then
     print("ERROR: random object is not available!")
@@ -320,11 +320,14 @@ function create_random_item(tier)
   
   -- Generate stats
   local used_stats = {}
-  local min_power_budget = math.max(1, rarity_def.base_power_budget - 1)
-  local max_power_budget = rarity_def.base_power_budget + (rarity_def.base_power_budget * (tier-1) * 0.2)
+  local min_power_budget = rarity_def.base_power_budget * tier
+  local max_power_budget = rarity_def.base_power_budget * tier * 2
   max_power_budget = math.floor(max_power_budget)
 
   local power_budget = math.random(min_power_budget, max_power_budget)
+  if max_cost then
+    power_budget = math.min(power_budget, math.floor(max_cost / 2))
+  end
   item.cost = power_budget * 2
 
   -- Determine if item has sets

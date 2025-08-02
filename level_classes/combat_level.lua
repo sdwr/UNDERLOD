@@ -45,7 +45,12 @@ function CombatLevel:create_floor_items()
     self.items = {}
     for i = 1, 3 do
       local tier = LEVEL_TO_TIER(self.level or 1)
-      local item = create_random_item(tier)
+      local item = nil
+      if self.level == 1 then
+        item = create_random_item(tier, 2)
+      else
+        item = create_random_item(tier)
+      end
       if item then
         table.insert(self.items, item)
       end
