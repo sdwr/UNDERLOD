@@ -11,6 +11,8 @@ function GoldCounter:init(args)
   
   self.offset_x = args.offset_x or 0
   self.offset_y = args.offset_y or 0
+
+  self.previous_gold = gold
   
   -- Update the display
   self:update_display()
@@ -30,7 +32,11 @@ function GoldCounter:update(dt)
     self.offset_y = self.parent.offset_y
     self:update_display()
   end
-  
+
+  if self.previous_gold ~= gold then
+    self.previous_gold = gold
+    self:update_display()
+  end
 end
 
 function GoldCounter:update_display()

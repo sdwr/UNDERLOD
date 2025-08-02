@@ -97,52 +97,39 @@ function FloorInteractable:update(dt)
   self:check_unit_collision()
 end
 
+function FloorInteractable:can_interact()
+  return not self.interaction_is_disabled and not self.interaction_failed_activation
+end
+
+function FloorInteractable:currently_interacting()
+  return self.interaction_is_hovered
+end
+
 function FloorInteractable:check_unit_collision()
   -- Check if interaction is disabled by custom function
   local was_disabled = self.interaction_is_disabled
   self.interaction_is_disabled = self.disable_interaction and self:disable_interaction()
   
   -- If newly disabled, clear hover state
-  if self.interaction_is_disabled and not was_disabled then
-    if self.interaction_is_hovered then
-      self.interaction_is_hovered = false
-      self.interaction_failed_activation = false
-      if self.on_hover_end then
-        self:on_hover_end()
-      end
+  if self.interaction_is_disabled then
+    if not was_disabled then
+      self:interaction_deactivate()
     end
     return
   end
-  
-  -- If disabled, don't process any interactions
-  if self.interaction_is_disabled then
-    return
-  end
-  
+
   if self.main_group then
     local objects = self.main_group:get_objects_in_shape(self.interaction_aggro_sensor, self.unit_classes)
     if #objects > 0 then
-      -- Only activate if spawn protection is off
-      if self.interaction_spawn_protection then
-        self.interaction_is_hovered = false
-      else
-        if not self.interaction_is_hovered then
-          self.interaction_is_hovered = true
-          self.interaction_failed_activation = false
-          if self.on_hover_start then
-            self:on_hover_start()
-          end
-        end
+      if self:can_interact() and not self.interaction_is_hovered then
+        self:interaction_activate()
       end
     else
-      self.interaction_spawn_protection = false
-      self.interaction_is_hovered = false
-      self.interaction_failed_activation = false
-      if self.interaction_is_hovered then
-        if self.on_hover_end then
-          self:on_hover_end()
-        end
+      --clear failed activation if unit leaves
+      if self.interaction_failed_activation then
+        self.interaction_failed_activation = false
       end
+      self:interaction_deactivate()
     end
   end
 end
@@ -196,13 +183,36 @@ function FloorInteractable:interaction_complete_activation()
   
   -- Call activation callback
   if self.on_activation then
-    self:on_activation()
+    local success = self:on_activation()
+    if not success then
+      self.interaction_failed_activation = true
+      self.interaction_failed_sound:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+      self:interaction_deactivate()
+      if self.on_failed_activation then
+        self:on_failed_activation()
+      end
+    end
+  end
+end
+
+function FloorInteractable:interaction_activate()
+  self.interaction_is_hovered = true
+  self.interaction_failed_activation = false
+  if self.on_hover_start then
+    self:on_hover_start()
   end
 end
 
 function FloorInteractable:interaction_deactivate()
   self.interaction_is_active = false
+  self.interaction_is_hovered = false
+  self.interaction_spawn_protection = false
+  self.interaction_is_triggered = false
   self:interaction_stop_shake()
+
+  if self.on_hover_end then
+    self:on_hover_end()
+  end
 end
 
 function FloorInteractable:die()

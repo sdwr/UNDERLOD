@@ -1696,7 +1696,7 @@ end
 function Create_Info_Text(text, parent)
   if not parent.info_text then
     error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-    parent.info_text = InfoText{group = main.current.ui}
+    parent.info_text = InfoText{group = main.current.world_ui or main.current.ui}
     parent.info_text:activate({
       {text = '[fg]' .. text, font = pixul_font, alignment = 'center'},
     }, nil, nil, nil, nil, 16, 4, nil, 2)

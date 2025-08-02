@@ -27,7 +27,7 @@ function FloorItem:init(args)
   else
     -- Item mode
     -- self.cost = self.item.cost
-    self.cost = 0
+    self.cost = self.item.cost or 0
     self.image = find_item_image(self.item)
     self.colors = self.item.colors
     -- Use V2 item tier_color if available, otherwise fall back to item_to_color
@@ -39,17 +39,16 @@ function FloorItem:init(args)
   -- Set up interaction callbacks
   self.on_activation = function()
     if self.is_character_selection then
-      self:select_character()
+      return self:select_character()
     elseif self.is_perk_selection then
-      self:select_perk()
+      return self:select_perk()
     else
-      self:purchase_item()
+      return self:purchase_item()
     end
   end
   
   self.on_failed_activation = function()
-    self.failed_to_purchase = true
-    Create_Info_Text('no empty item slots - right click to sell', self)
+    --no effect
   end
   
   -- Mouse interaction
@@ -219,6 +218,8 @@ function FloorItem:select_character()
   self.parent:on_character_selected(self.character)
   
   self:create_purchase_effect()
+
+  return true
 end
 
 function FloorItem:select_perk()
@@ -245,38 +246,45 @@ function FloorItem:select_perk()
     self.parent:remove_all_floor_items()
     
     main.current:save_run()
+    return true
   end
-  
+
+  Create_Info_Text('perk not found', self)
+  return false
 end
 
 function FloorItem:purchase_item()
+
+  if self.item.cost and self.item.cost > 0 then
+    if gold < self.item.cost then
+      self:remove_tooltip()
+      Create_Info_Text('not enough gold to buy item', self)
+      return false
+    end
+  end
+  
   -- Add item to first available slot
   local try_purchase = main.current:put_in_first_available_inventory_slot(self.item)
   if not try_purchase then
     self:remove_tooltip()
-    self:interaction_stop_shake()
-    self.failed_to_purchase = true
     Create_Info_Text('no empty item slots - right click to sell', self)
-    return
+    return false
   end
 
   self.is_purchased = true
+  if self.item.cost and self.item.cost > 0 then
+    gold = gold - self.item.cost
+  end
   gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
   self:die()
   
   self.parent:remove_all_floor_items()
-  
-  -- -- Deduct gold
-  -- gold = gold - self.cost
+
+  self:create_purchase_effect()
 
   main.current:save_run()
 
-
-  
-  self:create_purchase_effect()
-  
-  -- Remove all floor items
-  -- self.parent:remove_all_floor_items()
+  return true  
 end
 
 function FloorItem:draw()
