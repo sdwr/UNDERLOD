@@ -1091,7 +1091,8 @@ function Unit:burn_explode_or_fizzle()
   local burn_buff = self.buffs['burn']
   if not burn_buff then return end
 
-  if burn_buff.total_damage >= BURN_MIN_EXPLOSION_THRESHOLD_PERCENT_OF_HP then
+  if burn_buff.total_damage >= BURN_MIN_EXPLOSION_THRESHOLD_PERCENT_OF_HP 
+  and Does_Static_Proc_Exist('burnexplode') then
     self:burn_explode()
   else
     self:remove_buff('burn')

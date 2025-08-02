@@ -168,8 +168,8 @@ ITEM_SETS = {
     color = 'red',
     bonuses = {
         [1] = { stats = {['fire_damage'] = 1} },
-        [2] = { stats = {['fire_damage'] = 1} }, --burning enemies explode (remove from current fire effect)
-        [4] = { stats = {['fire_damage'] = 2} }
+        [2] = { stats = {['fire_damage'] = 1}, procs = {'burnexplode'} }, --burning enemies explode (remove from current fire effect)
+        [4] = { stats = {['fire_damage'] = 2}, procs = {'volcano'} } -- burning enemies create a volcano on death
     }
   },
   [ITEM_SET.BLAZIN] = {

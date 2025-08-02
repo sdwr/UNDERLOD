@@ -1270,16 +1270,28 @@ function Proc_SympatheticVoltage:create_lightning_ball(target)
   }
 end
 
+Proc_BurnExplode = Proc:extend()
+function Proc_BurnExplode:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'global'
+
+  Proc_BurnExplode.super.init(self, args)
+
+  --define the proc's vars
+  self.radius = self.data.radius or 35
+  self.color = self.data.color or red[0]
+end
+
+
 Proc_Volcano = Proc:extend()
 function Proc_Volcano:init(args)
-  self.triggers = {PROC_ON_ATTACK}
-  self.scope = 'troop'
+  self.triggers = {PROC_ON_DEATH}
+  self.scope = 'global'
 
   Proc_Volcano.super.init(self, args)
   
 
   --define the proc's vars
-  self.chance_to_proc = self.data.chance_to_proc or 0.2
   self.duration = self.data.duration or 3
   self.color = self.data.color or red[0]
   self.damage = self.data.damage or 10
@@ -1289,13 +1301,15 @@ function Proc_Volcano:init(args)
   --define the procs memory
 end
 
-function Proc_Volcano:onAttack(target)
-  Proc_Volcano.super.onAttack(self, target)
+function Proc_Volcano:onDeath()
+  Proc_Volcano.super.onDeath(self)
 
-  if not target or not target:has_buff('burn') then return end
+  print('volcano', self.globalUnit)
 
-  if math.random() < self.chance_to_proc then
-    self:create_lava_pool(target)
+  if not self.globalUnit then return end
+  
+  if self.globalUnit:has_buff('burn') then
+    self:create_lava_pool(self.globalUnit)
   end
 end
 
@@ -1303,7 +1317,6 @@ function Proc_Volcano:create_lava_pool(target)
       --remove level from spell
       Area{
         group = main.current.floor,
-        unit = self.unit,
         x= target.x, y = target.y,
         pick_shape = 'circle',
         damage_ticks = true,
@@ -1311,9 +1324,7 @@ function Proc_Volcano:create_lava_pool(target)
         tick_immediately = true,
         damage = self.damage,
         r = self.radius, duration = self.duration, color = self.color,
-        is_troop = self.unit.is_troop,
-        burnDps = 10,
-        burnDuration = 2
+        is_troop = true,
       }
 end
 
@@ -1963,6 +1974,7 @@ proc_name_to_class = {
   ['shield'] = Proc_Shield,
   ['sympatheticvoltage'] = Proc_SympatheticVoltage,
   --red procs
+  ['burnexplode'] = Proc_BurnExplode,
   ['volcano'] = Proc_Volcano,
   ['firenova'] = Proc_Firenova,
   ['lavaman'] = Proc_Lavaman,

@@ -27,6 +27,7 @@ PROC_ON_SHOCK = 'onShockProcs'
 
 PROC_ON_ROUND_START = 'onRoundStartProcs'
 PROC_ON_SELL = 'onSellProcs'
+PROC_STATIC = 'staticProcs'
 
 --does not include onSell, as that doesn't go in the unit's callback lists
 LIST_OF_PROC_TYPES = {
@@ -42,6 +43,7 @@ LIST_OF_PROC_TYPES = {
   PROC_ON_BURN,
   PROC_ON_SHOCK,
   PROC_ON_ROUND_START,
+  PROC_STATIC,
 }
 
 --these need to have unit passed in, because they will be called on global procs
@@ -59,6 +61,7 @@ CALL_PROC_MAP = {
   [PROC_ON_BURN] = function(proc, target) return proc:onBurn(target) end,
   [PROC_ON_SHOCK] = function(proc, target) return proc:onShock(target) end,
   [PROC_ON_ROUND_START] = function(proc) return proc:onRoundStart() end,
+  [PROC_STATIC] = function(proc) end,
 }
 
 PROC_TYPE_TO_DISPLAY = {
@@ -75,6 +78,7 @@ PROC_TYPE_TO_DISPLAY = {
   [PROC_ON_SHOCK] = {text = 'onShock', color = 'yellow'},
   [PROC_ON_ROUND_START] = {text = 'onStart', color = 'black'},
   [PROC_ON_SELL] = {text = 'onSell', color = 'black'},
+  [PROC_STATIC] = {text = 'static', color = 'black'},
 
   [DAMAGE_TYPE_COLD] = {text = 'cold', color = 'blue'},
   [DAMAGE_TYPE_FIRE] = {text = 'fire', color = 'red'},
@@ -114,6 +118,15 @@ Clear_All_Procs = function(procList)
   for i, proc in ipairs(procList) do
     proc:die()
   end
+end
+
+Does_Static_Proc_Exist = function(procName)
+  for i, proc in ipairs(GLOBAL_PROC_LIST[PROC_STATIC]) do
+    if proc.name == procName then
+      return true
+    end
+  end
+  return false
 end
 
 
