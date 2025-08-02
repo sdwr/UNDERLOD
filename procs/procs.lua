@@ -1821,22 +1821,20 @@ function Proc_Shatterlance:init(args)
   Proc_Shatterlance.super.init(self, args)
 
   self.damageType = DAMAGE_TYPE_COLD
-  self.damageMulti = self.data.damageMulti or 2.5
   self.fallback_damage = self.data.fallback_damage or 20
-  self.radius = self.data.radius or 60
+  self.radius = self.data.radius or 35
   self.color = self.data.color or blue[0]
 end
 
 function Proc_Shatterlance:onPrimaryHit(target, damage, damageType)
   Proc_Shatterlance.super.onPrimaryHit(self, target, damage, damageType)
   if target:has_buff('freeze') then
-    local damage = self.unit.dmg or self.fallback_damage
-    damage = damage * self.damageMulti
     self:explode(target, damage)
   end
 end
 
 function Proc_Shatterlance:explode(target, damage)
+  print('explode', target, damage)
   Area{
     group = main.current.effects,
     x = target.x, y = target.y,

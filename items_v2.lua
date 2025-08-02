@@ -153,7 +153,7 @@ ITEM_SETS = {
     bonuses = {
       [1] = { stats = {['cold_damage'] = 1} },
       [2] = { stats = {['cold_damage'] = 1}, procs = {'frostfield'} }, -- freezing an enemy creates a frostfield
-      [4] = { stats = {['cold_damage'] = 2} } -- attacking a frozen target shatters them
+      [4] = { stats = {['cold_damage'] = 2}, procs = {'shatterlance'} } -- attacking a frozen target shatters them
     }
   },
   [ITEM_SET.FROST_NOVA] = {

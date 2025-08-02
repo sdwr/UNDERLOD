@@ -329,6 +329,7 @@ function Team:apply_item_procs()
     --add set procs
     local set_procs = self.troops[1]:get_set_procs()
     for _, procname in ipairs(set_procs) do
+      print('add_proc set', procname)
       local procObj = Create_Proc(procname, self, nil)
       self:add_proc(procObj)
     end
@@ -341,10 +342,13 @@ function Team:add_proc(proc)
     return
   end
 
+  print('add_proc', proc.name, proc.scope)
+
   if proc.scope == 'team' then
     table.insert(self.procs, proc)
   elseif proc.scope == 'troop' then
     for i, troop in ipairs(self.troops) do
+      print('add_proc troop', troop.character, proc.name, proc.scope)
       Create_Proc(proc.name, nil, troop)
     end
     proc:die()

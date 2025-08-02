@@ -2103,8 +2103,8 @@ function Unit:get_set_procs()
   for set, count in pairs(sets) do
     local set_data = ITEM_SETS[set]
     if set_data then
-      for i, bonus in ipairs(set_data.bonuses) do
-        if count >= i then
+      for key, bonus in pairs(set_data.bonuses) do
+        if count >= key then
           if bonus.procs then
             for _, proc_name in ipairs(bonus.procs) do
               table.insert(set_bonus_procs, proc_name)
