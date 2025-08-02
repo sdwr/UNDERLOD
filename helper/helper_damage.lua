@@ -343,7 +343,10 @@ end
 -- Handles unit death and related effects
 -- ===================================================================
 function Helper.Damage:handle_death(unit, from, actual_damage)
-  -- Check for death before callbacks (enemy specific)
+
+  -- OnDeath callbacks
+  unit:onDeathCallbacks(from)
+
   if unit.isEnemy then
     unit:die()
   end
@@ -353,9 +356,6 @@ function Helper.Damage:handle_death(unit, from, actual_damage)
     local overkill = -unit.hp
     from:onKillCallbacks(unit, overkill)
   end
-  
-  -- OnDeath callbacks
-  unit:onDeathCallbacks(from)
   
   -- Track kill for teams
   if from and from.team then

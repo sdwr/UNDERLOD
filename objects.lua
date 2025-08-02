@@ -989,17 +989,20 @@ function Unit:onKillCallbacks(target, overkill)
 end
 
 function Unit:onDeathCallbacks(from)
-  --some global procs here, could maybe be moved into onDeathProcs
-  self:burn_explode_or_fizzle()
-
+  
   for k, proc in ipairs(GLOBAL_PROC_LIST[PROC_ON_DEATH]) do
     proc.globalUnit = self
     proc:onDeath(from)
   end
 
+  
   for k, proc in ipairs(self.onDeathProcs) do
     proc:onDeath(from)
   end
+
+  --some global procs here, could maybe be moved into onDeathProcs
+  self:burn_explode_or_fizzle()
+  
 end
 
 function Unit:onMoveCallbacks(distance)

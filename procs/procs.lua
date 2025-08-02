@@ -1304,8 +1304,6 @@ end
 function Proc_Volcano:onDeath()
   Proc_Volcano.super.onDeath(self)
 
-  print('volcano', self.globalUnit)
-
   if not self.globalUnit then return end
   
   if self.globalUnit:has_buff('burn') then
