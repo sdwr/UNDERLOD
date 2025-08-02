@@ -314,6 +314,7 @@ function Team:apply_item_procs()
   local team_items = self.troops[1].items
 
   if team_items then
+    --add direct item procs
     for i = 1,6 do
       local item = team_items[i]
       if item and item.procs then
@@ -324,6 +325,12 @@ function Team:apply_item_procs()
           self:add_proc(procObj)
         end
       end
+    end
+    --add set procs
+    local set_procs = self.troops[1]:get_set_procs()
+    for _, procname in ipairs(set_procs) do
+      local procObj = Create_Proc(procname, self, nil)
+      self:add_proc(procObj)
     end
   end
 end
@@ -344,7 +351,7 @@ function Team:add_proc(proc)
   elseif proc.scope == 'global' then
     --do global stuff
   else
-    print('proc not on team or troop (in team)', self.name)
+    print('proc not on team or troop (in team)', proc.name)
     proc:die()
   end
 end
