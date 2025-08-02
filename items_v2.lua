@@ -131,6 +131,8 @@ ITEM_TYPES = {
   }
 }
 
+ITEM_SET_POWER_BUDGET = 1
+
 -- Set definitions with bonuses
 ITEM_SETS = {
   [ITEM_SET.COLD] = {
@@ -195,21 +197,21 @@ ITEM_RARITIES = {
     name = 'Common',
     base_power_budget = 1,
     max_stat_value = 2,
-    set_chance = 1, -- 10% chance to have a set
+    set_chance = 0.5, -- 10% chance to have a set
     color = 'grey'
   },
   [ITEM_RARITY.RARE] = {
     name = 'Rare',
     base_power_budget = 2,
     max_stat_value = 3,
-    set_chance = 1, -- 30% chance to have a set
+    set_chance = 0.5, -- 30% chance to have a set
     color = 'blue'
   },
   [ITEM_RARITY.EPIC] = {
     name = 'Epic',
     base_power_budget = 3,
     max_stat_value = 4,
-    set_chance = 1, -- 60% chance to have a set
+    set_chance = 0.8, -- 60% chance to have a set
     color = 'purple'
   },
   [ITEM_RARITY.LEGENDARY] = {
@@ -311,30 +313,33 @@ function create_random_item(tier)
     icon = ITEM_TYPES[item_type].icon,
     stats = {},
     sets = {},
-    cost = tier * (rarity_def.base_power_budget * 2), -- Cost based on tier and stat count
+    cost = 0, -- Cost based on tier and stat count
     procs = {}, -- Empty procs for compatibility with existing system
     tags = {} -- Empty tags for compatibility with existing system
   }
   
+  -- Generate stats
+  local used_stats = {}
+  local min_power_budget = math.max(1, rarity_def.base_power_budget - 1)
+  local max_power_budget = rarity_def.base_power_budget + (rarity_def.base_power_budget * (tier-1) * 0.2)
+  max_power_budget = math.floor(max_power_budget)
+
+  local power_budget = math.random(min_power_budget, max_power_budget)
+  item.cost = power_budget * 2
+
   -- Determine if item has sets
-  if random:float(0, 1) < rarity_def.set_chance then
+  if random:float(0, 1) < rarity_def.set_chance and power_budget >= ITEM_SET_POWER_BUDGET then
     -- Add 1-2 sets for higher rarities
     local set_count = rarity == ITEM_RARITY.LEGENDARY and 2 or 1
     for i = 1, set_count do
       local set = get_random_set()
       if not table.contains(item.sets, set) then
         table.insert(item.sets, set)
+        power_budget = power_budget - ITEM_SET_POWER_BUDGET
       end
     end
   end
   
-  -- Generate stats
-  local used_stats = {}
-  local min_power_budget = math.max(1, rarity_def.base_power_budget - 2)
-  local max_power_budget = rarity_def.base_power_budget + (rarity_def.base_power_budget * (tier-1) * 0.2)
-  max_power_budget = math.floor(max_power_budget)
-
-  local power_budget = math.random(min_power_budget, max_power_budget)
   while power_budget > 0 do
     local stat_name
     local attempts = 0
@@ -348,6 +353,8 @@ function create_random_item(tier)
     table.insert(used_stats, stat_name)
     
     local stat_value = math.random(1, rarity_def.max_stat_value)
+    stat_value = math.min(stat_value, power_budget)
+
     item.stats[stat_name] = stat_value + (item.stats[stat_name] or 0)
     
     --clamp stat value, still decrement power budget to prevent infinite loops
