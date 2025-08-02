@@ -321,6 +321,14 @@ function FloorItem:draw()
   local border_color = self.tier_color or grey[0]
   graphics.rectangle(self.x + shake_x, self.y + shake_y, width, height, 6, 6, border_color, 2)
   
+  --draw lock icon if interaction is disabled
+  if self.interaction_is_disabled then
+    self.locked_size = width * 0.5
+    self.locked_scale_x = (self.locked_size / LOCKED_W) * LOCKED_SCALE
+    self.locked_scale_y = (self.locked_size / LOCKED_H) * LOCKED_SCALE
+    locked_image:draw(self.x, self.y + 10, 0, self.locked_scale_x, self.locked_scale_y, 0, 0, bg[1])
+  end
+
   -- Draw name text at the top of the card
   if self.name_text then
     local name_y = self.y - height/2 + 8 -- Position at top with small padding

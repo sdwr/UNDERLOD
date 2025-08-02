@@ -100,6 +100,17 @@ function BaseLevel:create_character_selection()
   }
   
   for i, character in ipairs(self.character_options) do
+    local disable_interaction = nil
+    if i == 1 or i == 3 then
+      disable_interaction = function()
+        return true
+      end
+    else
+      disable_interaction = function()
+        return false
+      end
+    end
+
     if positions[i] then
       local floor_item = FloorItem{
         group = self.floor,
@@ -110,6 +121,7 @@ function BaseLevel:create_character_selection()
         is_character_selection = true,
         parent = self,
         interaction_activation_sound = ui_modern_hover,
+        disable_interaction = disable_interaction,
       }
       table.insert(self.character_items, floor_item)
     end
