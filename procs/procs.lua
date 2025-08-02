@@ -1516,18 +1516,17 @@ end
 
 Proc_Frostfield = Proc:extend()
 function Proc_Frostfield:init(args)
-  self.triggers = {PROC_ON_ATTACK, PROC_ON_HIT}
-  self.scope = 'troop'
+  self.triggers = {PROC_ON_FREEZE}
+  self.scope = 'global'
 
   Proc_Frostfield.super.init(self, args)
 
   --define the proc's vars
   self.duration = self.data.duration or 3
+  self.tick_rate = self.data.tick_rate or 0.5
   self.color = self.data.color or blue[0]
 
-  self.chill_amount = self.data.chill_amount or 0.3
-  self.chill_duration = self.data.chill_duration or 2
-  self.radius = self.data.radius or 20
+  self.radius = self.data.radius or 35
 
   self.every_attacks = self.data.every_attacks or 4
 
@@ -1536,36 +1535,19 @@ function Proc_Frostfield:init(args)
   self.attacks_left = math.random(1, self.every_attacks)
 end
 
-function Proc_Frostfield:onAttack(target)
-  Proc_Frostfield.super.onAttack(self, target)
-  if self.attacks_left > 0 then
-    self.has_attacked = true
-  end
-end
-
-function Proc_Frostfield:onHit(target, damage)
-  Proc_Frostfield.super.onHit(self, target, damage)
-  if self.has_attacked then
-    self.has_attacked = false
-    self.attacks_left = self.attacks_left - 1
-    if self.attacks_left == 0 then
-      self.attacks_left = self.every_attacks
-
-      --remove level from spell
-      Area{
-        group = main.current.floor,
-        unit = self.unit,
-        x= target.x, y = target.y,
-        pick_shape = 'circle',
-        damage_ticks = true,
-        damage = 0,
-        r = self.radius, duration = self.duration, color = self.color,
-        is_troop = self.unit.is_troop,
-        chillAmount = self.chill_amount,
-        chillDuration = self.chill_duration
-      }
-    end
-  end
+function Proc_Frostfield:onFreeze(unit, target)
+  Proc_Frostfield.super.onFreeze(self, target)
+  Area{
+    group = main.current.floor,
+    unit = unit,
+    x= target.x, y = target.y,
+    pick_shape = 'circle',
+    damage_ticks = true,
+    damage = 5,
+    r = self.radius, duration = self.duration, color = self.color,
+    is_troop = not target.is_troop,
+    damage_type = DAMAGE_TYPE_COLD,
+  }
 end
 
 Proc_Holduground = Proc:extend()

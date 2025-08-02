@@ -152,7 +152,7 @@ ITEM_SETS = {
     color = 'blue',
     bonuses = {
       [1] = { stats = {['cold_damage'] = 1} },
-      [2] = { stats = {['cold_damage'] = 1} }, -- freezing an enemy creates a frostfield
+      [2] = { stats = {['cold_damage'] = 1}, procs = {'frostfield'} }, -- freezing an enemy creates a frostfield
       [4] = { stats = {['cold_damage'] = 2} } -- attacking a frozen target shatters them
     }
   },

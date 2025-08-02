@@ -1045,6 +1045,16 @@ function Unit:burn(damage, from)
       elapsed_time = 0,
     }
     self:add_buff(burnBuff)
+
+    for k, proc in ipairs(GLOBAL_PROC_LIST[PROC_ON_BURN]) do
+      proc.globalUnit = self
+      proc:onBurn(from, self)
+    end
+    if from and from.onBurnProcs then
+      for k, proc in ipairs(from.onBurnProcs) do
+        proc:onBurn(from, self)
+      end
+    end
   end
 end
 
@@ -1154,6 +1164,16 @@ function Unit:freeze(from)
   freeze_sound:play{pitch = random:float(0.8, 1.2), volume = 1.1}
   local freezeBuff = {name = 'freeze', duration = FREEZE_DURATION, maxDuration = FREEZE_DURATION}
   self:add_buff(freezeBuff)
+
+  for k, proc in ipairs(GLOBAL_PROC_LIST[PROC_ON_FREEZE]) do
+    proc.globalUnit = self
+    proc:onFreeze(from, self)
+  end
+  if from and from.onFreezeProcs then
+    for k, proc in ipairs(from.onFreezeProcs) do
+      proc:onFreeze(from, self)
+    end
+  end
 end
 
 function Unit:freeze_gauge_fill(amount)
@@ -2052,7 +2072,8 @@ function Unit:process_set_bonuses_to_stats()
         if count >= number_required then
           if bonus.stats then
             for stat, value in pairs(bonus.stats) do
-              set_bonus_stats[stat] = (set_bonus_stats[stat] or 0) + value
+              local actual_amount = value * (ITEM_STATS[stat].increment or 1)
+              set_bonus_stats[stat] = (set_bonus_stats[stat] or 0) + actual_amount
             end
           end
         end

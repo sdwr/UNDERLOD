@@ -21,6 +21,10 @@ PROC_ON_MOVE = 'onMoveProcs'
 PROC_ON_DEATH = 'onDeathProcs'
 PROC_ON_KILL = 'onKillProcs'
 
+PROC_ON_FREEZE = 'onFreezeProcs'
+PROC_ON_BURN = 'onBurnProcs'
+PROC_ON_SHOCK = 'onShockProcs'
+
 PROC_ON_ROUND_START = 'onRoundStartProcs'
 PROC_ON_SELL = 'onSellProcs'
 
@@ -34,6 +38,9 @@ LIST_OF_PROC_TYPES = {
   PROC_ON_MOVE,
   PROC_ON_DEATH,
   PROC_ON_KILL,
+  PROC_ON_FREEZE,
+  PROC_ON_BURN,
+  PROC_ON_SHOCK,
   PROC_ON_ROUND_START,
 }
 
@@ -48,6 +55,9 @@ CALL_PROC_MAP = {
   [PROC_ON_MOVE] = function(proc, distance) return proc:onMove(distance) end,
   [PROC_ON_DEATH] = function(proc) return proc:onDeath() end,
   [PROC_ON_KILL] = function(proc, target) return proc:onKill(target) end,
+  [PROC_ON_FREEZE] = function(proc, target) return proc:onFreeze(target) end,
+  [PROC_ON_BURN] = function(proc, target) return proc:onBurn(target) end,
+  [PROC_ON_SHOCK] = function(proc, target) return proc:onShock(target) end,
   [PROC_ON_ROUND_START] = function(proc) return proc:onRoundStart() end,
 }
 
@@ -60,6 +70,9 @@ PROC_TYPE_TO_DISPLAY = {
   [PROC_ON_MOVE] = {text = 'onMove', color = 'green'},
   [PROC_ON_DEATH] = {text = 'onDeath', color = 'black'},
   [PROC_ON_KILL] = {text = 'onKill', color = 'black'},
+  [PROC_ON_FREEZE] = {text = 'onFreeze', color = 'blue'},
+  [PROC_ON_BURN] = {text = 'onBurn', color = 'red'},
+  [PROC_ON_SHOCK] = {text = 'onShock', color = 'yellow'},
   [PROC_ON_ROUND_START] = {text = 'onStart', color = 'black'},
   [PROC_ON_SELL] = {text = 'onSell', color = 'black'},
 
@@ -243,7 +256,25 @@ function Proc:onDeath(from)
   end
 end
 
---onKill is called in :hit(), when the unit drops to 0 hp
+function Proc:onFreeze(target)
+  if DEBUG_PROCS then
+    print('onFreeze', target, self.name)
+  end
+end
+
+function Proc:onBurn(target)
+  if DEBUG_PROCS then
+    print('onBurn', target, self.name)
+  end
+end
+
+function Proc:onShock(target)
+  if DEBUG_PROCS then
+    print('onShock', target, self.name)
+  end
+end
+
+  --onKill is called in :hit(), when the unit drops to 0 hp
 -- this means nothing should revive a unit that drops to 0 hp
 function Proc:onKill(target)
   if DEBUG_PROCS then
