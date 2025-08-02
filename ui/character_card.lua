@@ -373,11 +373,13 @@ function CharacterCard:show_set_bonus_popup_for_set(set_info)
       local color = is_reached and set_color or 'fg[2]' -- Use set color if reached, gray if not
       
       local stat_name = ''
-      for stat, value in pairs(bonus.stats) do
-        if item_stat_lookup[stat] then
-          stat_name = stat_name .. '+' .. value .. ' ' .. item_stat_lookup[stat] .. ', '
-        else
-          stat_name = stat .. ' stat not found'
+      if bonus.stats then
+        for stat, value in pairs(bonus.stats) do
+          if item_stat_lookup[stat] then
+            stat_name = stat_name .. '+' .. value .. ' ' .. item_stat_lookup[stat] .. ', '
+          else
+            stat_name = stat .. ' stat not found'
+          end
         end
       end
       if bonus.procs then

@@ -193,15 +193,15 @@ ITEM_SETS = {
     color = 'yellow',
           bonuses = {
         [1] = { stats = {['lightning_damage'] = 1} },
-        [2] = { stats = {['aspd'] = 2} }, --lightning shocks enemies, increasing damaage taken
-        [4] = { stats = {['aspd'] = 4} }
+        [2] = { stats = {['lightning_damage'] = 1}, procs = {'shock'} }, --lightning shocks enemies, increasing damaage taken
+        [4] = { stats = {['lightning_damage'] = 2} }
       }
   },
   [ITEM_SET.LIGHTNING_BALL] = {
     name = 'Lightning Ball Set',
     color = 'yellow',
     bonuses = {
-      [1] = { stats = {['lightning_ball'] = 1} } --chance to creating a lightning ball when attacking
+      [1] = { procs = {'lightningball'} } --chance to creating a lightning ball when attacking
     }
   },
   [ITEM_SET.CURSE] = {
@@ -367,7 +367,7 @@ end
 
 -- Helper function to get random set
 function get_random_set()
-  local sets = ITEM_SETS
+  local sets = {ITEM_SET.LIGHTNING_BALL, ITEM_SET.SHOCK}
   return sets[math.random(1, #sets)]
 end
 

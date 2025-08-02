@@ -1233,12 +1233,12 @@ function Proc_Shield:die()
   trigger:cancel(self.manual_trigger)
 end
 
-Proc_SympatheticVoltage = Proc:extend()
-function Proc_SympatheticVoltage:init(args)
+Proc_LightningBall = Proc:extend()
+function Proc_LightningBall:init(args)
   self.triggers = {PROC_ON_PRIMARY_HIT}
   self.scope = 'troop'
 
-  Proc_SympatheticVoltage.super.init(self, args)
+  Proc_LightningBall.super.init(self, args)
 
   --define the proc's vars
   self.chance_to_proc = self.data.chance_to_proc or 0.2
@@ -1246,12 +1246,12 @@ function Proc_SympatheticVoltage:init(args)
   self.color = self.data.color or yellow[0]
 end
 
-function Proc_SympatheticVoltage:onPrimaryHit(target, damage, damageType)
-  Proc_SympatheticVoltage.super.onPrimaryHit(self, target, damage, damageType)
+function Proc_LightningBall:onPrimaryHit(target, damage, damageType)
+  Proc_LightningBall.super.onPrimaryHit(self, target, damage, damageType)
 
   if not self.unit then return end
 
-  if not target or not target:has_buff('shock') then return end
+  if not target then return end
 
   if math.random() < self.chance_to_proc then
     self:create_lightning_ball(target)
@@ -1259,7 +1259,7 @@ function Proc_SympatheticVoltage:onPrimaryHit(target, damage, damageType)
   
 end
 
-function Proc_SympatheticVoltage:create_lightning_ball(target)
+function Proc_LightningBall:create_lightning_ball(target)
   LightningBall{
     group = main.current.main,
     x = target.x, y = target.y,
@@ -1268,6 +1268,15 @@ function Proc_SympatheticVoltage:create_lightning_ball(target)
     num_targets = 3,
     tick_rate = 1,
   }
+end
+
+Proc_Shock = Proc:extend()
+function Proc_Shock:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'global'
+
+  Proc_Shock.super.init(self, args)
+  
 end
 
 Proc_BurnExplode = Proc:extend()
@@ -1970,7 +1979,8 @@ proc_name_to_class = {
   --yellow procs
   ['radiance'] = Proc_Radiance,
   ['shield'] = Proc_Shield,
-  ['sympatheticvoltage'] = Proc_SympatheticVoltage,
+  ['lightningball'] = Proc_LightningBall,
+  ['shock'] = Proc_Shock,
   --red procs
   ['burnexplode'] = Proc_BurnExplode,
   ['volcano'] = Proc_Volcano,

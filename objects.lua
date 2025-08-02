@@ -1002,7 +1002,7 @@ function Unit:onDeathCallbacks(from)
 
   --some global procs here, could maybe be moved into onDeathProcs
   self:burn_explode_or_fizzle()
-  
+
 end
 
 function Unit:onMoveCallbacks(distance)
@@ -1144,6 +1144,9 @@ end
 
 --SHOCK SYSTEM
 function Unit:shock()
+  if not Does_Static_Proc_Exist('shock') then
+    return
+  end
 
   local shockBuff = {name = 'shock', color = yellow[0], duration = SHOCK_DURATION, maxDuration = SHOCK_DURATION, stats = {buff_def_m = SHOCK_DEF_REDUCTION}}
 
