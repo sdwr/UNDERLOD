@@ -665,6 +665,23 @@ function Helper.Unit:update_units_with_combat_data(arena)
   end
 end
 
+function Helper.Unit:update_unit_colors()
+    local previous_teams = {}
+    for _, team in pairs(Helper.Unit.teams) do
+        if previous_teams[team.unit.character] then
+            team.unit.color = team.unit.color:clone():lighten(0.5)
+            previous_teams[team.unit.character] = previous_teams[team.unit.character] + 1
+        else
+            team.unit.color = team.unit.color or fg[0]
+            previous_teams[team.unit.character] = 1
+        end
+
+        for _, troop in pairs(team.troops) do
+            troop.color = troop.color or fg[0]
+        end
+    end
+end
+
 function Helper.Unit:save_all_teams_hps()
     for _, team in pairs(Helper.Unit.teams) do
         local troop_hps = {}
