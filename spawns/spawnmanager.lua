@@ -850,31 +850,49 @@ function SpawnManager:calc_single_y(index, num_in_group)
   return TOP_BOUND + (spacing * index)
 end
 
+function SpawnManager:calc_swarmer_y()
+  return math.random(TOP_BOUND + 20, BOTTOM_BOUND - 20)
+end
+
 function SpawnManager:spawn_group_immediately(arena, group_data, group_x)
   local type, amount = group_data[1], group_data[2]
   local spawn_type = group_data[3]
   amount = amount or 1
   
+  local group_y = self:calc_swarmer_y()
+  local group_x = group_x
 
   for i = 1, amount do
-    local y = self:calc_single_y(i, amount)
-    local location = {x = group_x, y = y}
+    local y
+    local x
+    if type == 'swarmer' then
+      y = group_y + math.random(-10, 10)
+      x = group_x + math.random(-10, 10)
+    else
+      y = self:calc_single_y(i, amount)
+      x = group_x
+    end
+
+    local location = {x = x, y = y}
     
     -- Spawn enemy immediately without warning
-    local enemy = Enemy{
-      type = type, 
-      group = self.arena.main,
-      x = location.x, 
-      y = location.y,
-      level = self.arena.level, 
-      data = {}
-    }
-    
-    -- Set enemy to idle but inactive
-    Helper.Unit:set_state(enemy, unit_states['idle'])
-    enemy.idleTimer = math.random() * 2 + 1 -- Longer idle time
-    enemy.transition_active = false -- Keep inactive until transition complete
+    self:spawn_enemy_immediately(type, location)
   end
+end
+
+function SpawnManager:spawn_enemy_immediately(type, location)
+  local enemy = Enemy{
+    type = type, 
+    group = self.arena.main,
+    x = location.x, 
+    y = location.y,
+    level = self.arena.level, 
+    data = {}
+  }
+
+  Helper.Unit:set_state(enemy, unit_states['idle'])
+  enemy.idleTimer = math.random() * 2 + 1 -- Longer idle time
+  enemy.transition_active = false -- Keep inactive until transition complete
 end
 
 function SpawnManager:spawn_boss_immediately()

@@ -915,6 +915,7 @@ enemy_type_to_size = {
   ['turret'] = 'special',
   ['line_mortar'] = 'special',
   ['aim_spread'] = 'special',
+  ['swarmer'] = 'small',
   
   -- Minibosses
   ['bigstomper'] = 'huge',

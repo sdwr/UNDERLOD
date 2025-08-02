@@ -1328,6 +1328,7 @@ function init()
 
 
   normal_enemies = {
+    'swarmer',
     'shooter',
     'seeker',
     'chaser',
@@ -1366,20 +1367,24 @@ function init()
 
   normal_enemy_by_tier = {
     [1] = {
-      'seeker',
-      'chaser',
+      'swarmer',
+      -- 'seeker',
+      -- 'chaser',
     },
     [1.5] = {
+      'swarmer',
       'seeker',
       'chaser',
       'goblin_archer',
     },
     [2] = {
+      'swarmer',
       'shooter',
       'chaser',
       'goblin_archer',
     },
     [2.5] = {
+      'swarmer',
       'shooter',
       'chaser',
       'goblin_archer',
@@ -1443,6 +1448,7 @@ function init()
   }
 
   enemy_to_round_power = {
+    ['swarmer'] = 20,
     ['shooter'] = 150,
     ['seeker'] = 150,
     ['chaser'] = 150,
@@ -1484,6 +1490,7 @@ function init()
   }
 
   enemy_to_color = {
+    ['swarmer'] = grey[0],
     ['shooter'] = grey[0],
     ['seeker'] = grey[0],
     ['chaser'] = grey[0],

@@ -1512,7 +1512,7 @@ function Unit:pick_action()
     table.insert(viable_movements, v)
   end
 
-  if #viable_attacks > 0 and math.random() > (self.move_option_weight or 0.3) then
+  if #viable_attacks > 0 and math.random() > (self.move_option_weight or 0.15) then
     local attack = random:table(viable_attacks)
     while #viable_attacks > 1 and self.last_cast == attack.name do
       attack = random:table(viable_attacks)

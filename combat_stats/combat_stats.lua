@@ -98,7 +98,7 @@ LEVEL_TO_TIER = function(level)
   return tier
 end
 
-CHANCE_OF_SPECIAL_VS_NORMAL_ENEMY = 0.5
+CHANCE_OF_SPECIAL_VS_NORMAL_ENEMY = 0.4
 
 ROUND_POWER_BY_LEVEL = {
   [1] = 500,
@@ -133,6 +133,13 @@ MAX_NORMAL_ENEMY_GROUP_SIZE_BY_TIER = {
   [1.5] = 5,
   [2] = 8,
   [2.5] = 10,
+}
+
+MAX_SWARMER_GROUP_SIZE_BY_TIER = {
+  [1] = 8,
+  [1.5] = 10,
+  [2] = 12,
+  [2.5] = 14,
 }
 
 MAX_SPECIAL_ENEMY_GROUP_SIZE_BY_TIER = {
@@ -215,6 +222,7 @@ unit_stat_multipliers = {
 }
 
 enemy_type_to_stats = {
+    ['swarmer'] = { dmg = 0.5, mvspd = 0.6, hp = 0.4},
 
     ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
     ['chaser'] = { dmg = 1, mvspd = 1 },
