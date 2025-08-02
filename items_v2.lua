@@ -235,8 +235,9 @@ ITEM_SETS = {
     name = 'Bloodlust Set',
     color = 'purple',
     bonuses = {
-      [1] = { stats = {['bloodlust'] = 1} }, --gain attack speed when you kill an enemy
-      [2] = { stats = {['mvspd'] = 1} }, --bloodlust grants movement speed as well
+      [1] = { procs = {'bloodlust'} }, --gain stacking attack speed when you kill an enemy
+      [2] = { procs = {'bloodlustSpeedBoost'} }, --bloodlust grants movement speed as well
+      [4] = { procs = {'bloodlustMaxStacks'} } --bloodlust can stack up to 10 times
     }
   },
   [ITEM_SET.SPLASH] = {

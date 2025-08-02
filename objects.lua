@@ -1289,13 +1289,22 @@ end
 
 function Unit:bloodlust(duration)
   local bloodlustBuff = {name = 'bloodlust', color = purple[5], duration = duration, maxDuration = duration, 
-    stats = {aspd = 0.1, mvspd = 0.05}
+    stats = {aspd = 0.1}
   }
+
+  if Has_Static_Proc(self, 'bloodlustSpeedBoost') then
+    bloodlustBuff.stats.mvspd = 0.05
+  end
+
   local existing_buff = self.buffs['bloodlust']
 
   bloodlustBuff.stacks = 1
   if existing_buff then
-    bloodlustBuff.stacks = math.min((existing_buff.stacks or 1) + 1, MAX_STACKS_BLOODLUST)
+    local max_stacks = MAX_STACKS_BLOODLUST
+    if Has_Static_Proc(self, 'bloodlustMaxStacks') then
+      max_stacks = MAX_STACKS_BLOODLUST_WITH_BOOST
+    end
+    bloodlustBuff.stacks = math.min((existing_buff.stacks or 1) + 1, max_stacks)
   end
 
   self:remove_buff('bloodlust')

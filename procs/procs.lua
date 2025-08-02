@@ -739,6 +739,15 @@ function Proc_Bloodlust:onKill(target)
   end
 end
 
+Proc_BloodlustSpeedBoost = Proc:extend()
+function Proc_BloodlustSpeedBoost:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'team'
+
+  Proc_BloodlustSpeedBoost.super.init(self, args)
+end
+
+
 Proc_Shieldslam = Proc:extend()
 function Proc_Shieldslam:init(args)
   self.triggers = {PROC_ON_PRIMARY_HIT}
@@ -2092,6 +2101,7 @@ proc_name_to_class = {
   ['spikedcollar'] = Proc_SpikedCollar,
   ['overkill'] = Proc_Overkill,
   ['bloodlust'] = Proc_Bloodlust,
+  ['bloodlustSpeedBoost'] = Proc_BloodlustSpeedBoost,
 
   ['shieldslam'] = Proc_Shieldslam,
   ['rebuke'] = Proc_Rebuke,

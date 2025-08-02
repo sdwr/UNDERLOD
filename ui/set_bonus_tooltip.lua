@@ -62,19 +62,20 @@ function SetBonusTooltip:build_text_lines()
         
         -- Build bonus description from stats
         local bonus_desc = ""
+        local stat_parts = {}
         if bonus.stats then
-          local stat_parts = {}
           for stat, value in pairs(bonus.stats) do
             local display_name = item_stat_lookup and item_stat_lookup[stat] or stat
             table.insert(stat_parts, "+" .. value .. " " .. display_name)
           end
-          if bonus.procs then
-            for _, proc in ipairs(bonus.procs) do
-              table.insert(stat_parts, proc)
-            end
-          end
-          bonus_desc = table.concat(stat_parts, ", ")
         end
+        if bonus.procs then
+          for _, proc in ipairs(bonus.procs) do
+            table.insert(stat_parts, proc)
+          end
+        end
+        
+        bonus_desc = table.concat(stat_parts, ", ")
         
         table.insert(self.text_lines, {
           text = '[' .. color .. ']' .. i .. 'pc: ' .. bonus_desc, 
