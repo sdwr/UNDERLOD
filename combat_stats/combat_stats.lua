@@ -457,4 +457,5 @@ _set_unit_item_config = function(unit)
   unit.onDeathProcs = {}
   unit.onMoveProcs = {}
   unit.onRoundStartProcs = {}
+  unit.staticProcs = {}
 end 

@@ -1364,6 +1364,98 @@ function Proc_Volcano:create_lava_pool(target)
       }
 end
 
+Proc_Meteor = Proc:extend()
+function Proc_Meteor:init(args)
+  self.triggers = {PROC_ON_TICK}
+  self.scope = 'team'
+
+  Proc_Meteor.super.init(self, args)
+
+  --define the proc's vars
+  self.attack_radius = self.data.attack_radius or 150
+  self.target_offset = self.data.target_offset or 8
+  self.radius = self.data.radius or 18
+  self.color = self.data.color or red[0]
+  self.damage = self.data.damage or 30
+
+  self.charge_time = self.data.charge_time or 0.25
+
+  self.attack_sensor = Circle(0, 0, self.attack_radius)
+
+  self.baseTickInterval = 5
+  self.adjustedTickInterval = Helper.Unit:apply_cooldown_reduction(self, self.baseTickInterval)
+
+  --proc memory
+  self.tick_timer = math.random() * (self.adjustedTickInterval / 2)
+end
+
+function Proc_Meteor:onTick(dt, from)
+  Proc_Meteor.super.onTick(self, dt)
+
+  if not self.team then
+    print('error: no team for proc', self.name)
+    return
+  end
+
+  --only tick once per tick
+  if not self.team:is_first_alive_troop(from) then return end
+
+  self.tick_timer = self.tick_timer + dt
+  if self.tick_timer < self.adjustedTickInterval then return end
+
+  self.attack_sensor.x = from.x
+  self.attack_sensor.y = from.y
+  self:summon_meteor(from)
+  self.tick_timer = 0
+end
+
+function Proc_Meteor:summon_meteor(from)
+  --have to differentiate from enemy mortars somehow
+  local target = from:get_random_target(self.attack_sensor, enemy_classes)
+  if not target then return end
+
+  local radius = self.radius
+
+  if Has_Static_Proc(from, 'meteorSizeBoost') then
+    radius = radius * 1.4
+  end
+
+  local damage = self.damage
+  if Has_Static_Proc(from, 'meteorDamageBoost') then
+    damage = damage * 2
+  end
+
+  Stomp{
+    group = main.current.main,
+    chargeTime = self.charge_time,
+    knockback = true,
+    target = target,
+    target_offset = self.target_offset,
+    team = 'troop',
+    damage = damage,
+    rs = radius,
+    color = self.color,
+    unit = from,
+  }
+end
+
+Proc_MeteorSizeBoost = Proc:extend()
+function Proc_MeteorSizeBoost:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'team' 
+
+  Proc_MeteorSizeBoost.super.init(self, args)
+end
+
+Proc_MeteorDamageBoost = Proc:extend()
+function Proc_MeteorDamageBoost:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'team'
+  
+  Proc_MeteorDamageBoost.super.init(self, args)
+end
+
+
 Proc_Lavaman = Proc:extend()
 function Proc_Lavaman:init(args)
   self.triggers = {PROC_ON_TICK}
@@ -2014,6 +2106,9 @@ proc_name_to_class = {
   --red procs
   ['burnexplode'] = Proc_BurnExplode,
   ['volcano'] = Proc_Volcano,
+  ['meteor'] = Proc_Meteor,
+  ['meteorSizeBoost'] = Proc_MeteorSizeBoost,
+  ['meteorDamageBoost'] = Proc_MeteorDamageBoost,
   ['firenova'] = Proc_Firenova,
   ['lavaman'] = Proc_Lavaman,
   -- ['fireexplode'] = Proc_FireExplode,

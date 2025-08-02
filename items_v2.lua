@@ -25,7 +25,7 @@ ITEM_SET = {
   FROST_NOVA = 'frost_nova',
   FIRE = 'fire',
   BLAZIN = 'blazin',
-  METEORS = 'meteors',
+  METEOR = 'meteor',
   SHOCK = 'shock',
   LIGHTNING_BALL = 'lightning_ball',
   CURSE = 'curse',
@@ -179,13 +179,13 @@ ITEM_SETS = {
       [1] = { stats = {}, procs = {'blazin'} } -- increases attack speed per burning enemy
     }
   },
-  [ITEM_SET.METEORS] = {
-    name = 'Meteors Set',
-    color = 'yellow',
+  [ITEM_SET.METEOR] = {
+    name = 'Meteor Set',
+    color = 'red',
     bonuses = {
-      [1] = { stats = {['meteors'] = 1} }, --chance to create a meteor when attacking
-      [2] = { stats = {['range'] = 2} }, --meteors have a larger radius
-      [4] = { stats = {['range'] = 4} } --meteors knockback or proc fire or something
+      [1] = { procs = {'meteor'} }, --periodically summon meteors
+      [2] = { procs = {'meteorSizeBoost'} }, --meteors have a larger radius
+      [4] = { procs = {'meteorDamageBoost'} } --meteors deal more damage
     }
   },
   [ITEM_SET.SHOCK] = {
