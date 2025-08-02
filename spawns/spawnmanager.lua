@@ -219,7 +219,7 @@ function Kill_Teams()
   end
 end
 
-function Replace_Team(arena, index, character)
+function Replace_Team(arena, index, unit)
   local unit_locations = {}
   local team = Helper.Unit.teams[index]
   local troops = team.troops
@@ -230,7 +230,6 @@ function Replace_Team(arena, index, character)
   team:die()
   Helper.Unit.teams[index] = nil
 
-  local unit = Get_Basic_Unit(character)
   local newTeam = Team(index, unit)
   table.insert(Helper.Unit.teams, index, newTeam)
 
@@ -239,7 +238,7 @@ function Replace_Team(arena, index, character)
     x = unit_locations[1].x,
     y = unit_locations[1].y,
     level = 1,
-    character = character,
+    character = unit.character,
     items = {nil, nil, nil, nil, nil, nil},
     passives = arena.passives
   })
@@ -247,6 +246,39 @@ function Replace_Team(arena, index, character)
   Spawn_Troops_At_Locations(arena, newTeam, unit_locations)
   newTeam:apply_item_procs()
 end
+
+function Spawn_Team(arena, index, unit)
+  if Helper.Unit.teams[index] then
+    print('team already exists', index)
+    return
+  end
+
+  local first_team = Helper.Unit.teams[1]
+  if not first_team then
+    print('no first team')
+    return
+  end
+
+  local spawn_location = first_team:get_center()
+  
+  local newTeam = Team(index, unit)
+  table.insert(Helper.Unit.teams, index, newTeam)
+
+  newTeam:set_troop_data({
+    group = arena.main,
+    x = spawn_location.x,
+    y = spawn_location.y,
+    level = unit.level,
+    character = unit.character,
+    items = {nil, nil, nil, nil, nil, nil},
+    passives = arena.passives
+  })
+
+  Spawn_Troops(arena, newTeam, unit, spawn_location)
+  newTeam:apply_item_procs()
+end
+
+
 
 --spawns troops in triangle formation around centre of arena
 function Spawn_Teams(arena)

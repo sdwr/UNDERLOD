@@ -9,6 +9,7 @@ SPAWN_CHECKS = 10
 
 --make enemies more difficult after each boss
 
+ROUND_POWER_TO_GOLD = 100
 
 --stat constants
 TROOP_HP = 100

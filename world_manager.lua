@@ -396,8 +396,9 @@ end
 
 function WorldManager:replace_first_unit(character)
   -- Add character to units
-  self.units = {Get_Basic_Unit(character)}
-  Replace_Team(self, 1, character)
+  local unit = Get_Basic_Unit(character)
+  self.units = {unit}
+  Replace_Team(self, 1, unit)
 
   self.level = 1
 
@@ -405,6 +406,17 @@ function WorldManager:replace_first_unit(character)
   system.save_run(save_data)
 
   -- Save the run
+  self:save_run()
+end
+
+function WorldManager:add_unit(character)
+  local unit = Get_Basic_Unit(character)
+  table.insert(self.units, unit)
+  Spawn_Team(self, #self.units, unit)
+
+  local save_data = Collect_Save_Data_From_State(self)
+  system.save_run(save_data)
+
   self:save_run()
 end
 

@@ -158,9 +158,9 @@ fns['init_enemy'] = function(self)
     }
   }
 
-  -- table.insert(self.attack_options, stomp)
-  -- table.insert(self.attack_options, mortar)
-  -- table.insert(self.attack_options, avalanche)
+  table.insert(self.attack_options, stomp)
+  table.insert(self.attack_options, mortar)
+  table.insert(self.attack_options, avalanche)
   table.insert(self.attack_options, charge)
   -- table.insert(self.attack_options, prevent_casting)
 
