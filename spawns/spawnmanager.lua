@@ -224,7 +224,9 @@ function Replace_Team(arena, index, unit)
   local team = Helper.Unit.teams[index]
   local troops = team.troops
   for i, troop in ipairs(troops) do
-    table.insert(unit_locations, {x = troop.x, y = troop.y})
+    local x = troop.x + (math.random() - 0.5) * 2
+    local y = troop.y + (math.random() - 0.5) * 2
+    table.insert(unit_locations, {x = x, y = y})
   end
 
   team:die()
@@ -866,8 +868,8 @@ function SpawnManager:spawn_group_immediately(arena, group_data, group_x)
     local y
     local x
     if type == 'swarmer' then
-      y = group_y + math.random(-10, 10)
-      x = group_x + math.random(-10, 10)
+      y = group_y + (math.random() - 0.5) * 20
+      x = group_x + (math.random() - 0.5) * 20
     else
       y = self:calc_single_y(i, amount)
       x = group_x

@@ -308,14 +308,14 @@ ITEM_RARITIES = {
     name = 'Common',
     base_power_budget = 1,
     max_stat_value = 2,
-    set_chance = 0.5, -- 10% chance to have a set
+    set_chance = 0.6, -- 10% chance to have a set
     color = 'grey'
   },
   [ITEM_RARITY.RARE] = {
     name = 'Rare',
     base_power_budget = 2,
     max_stat_value = 3,
-    set_chance = 0.5, -- 30% chance to have a set
+    set_chance = 0.7, -- 30% chance to have a set
     color = 'blue'
   },
   [ITEM_RARITY.EPIC] = {
@@ -367,7 +367,7 @@ end
 
 -- Helper function to get random set
 function get_random_set()
-  local sets = {ITEM_SET.FROST_NOVA}
+  local sets = ITEM_SETS
   return sets[math.random(1, #sets)]
 end
 

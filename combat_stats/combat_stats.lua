@@ -136,10 +136,10 @@ MAX_NORMAL_ENEMY_GROUP_SIZE_BY_TIER = {
 }
 
 MAX_SWARMER_GROUP_SIZE_BY_TIER = {
-  [1] = 8,
-  [1.5] = 10,
-  [2] = 12,
-  [2.5] = 14,
+  [1] = 6,
+  [1.5] = 8,
+  [2] = 10,
+  [2.5] = 12,
 }
 
 MAX_SPECIAL_ENEMY_GROUP_SIZE_BY_TIER = {
