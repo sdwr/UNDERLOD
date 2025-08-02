@@ -205,12 +205,12 @@ ITEM_SETS = {
     }
   },
   [ITEM_SET.CURSE] = {
-    name = 'Shadow Set',
+    name = 'Curse Set',
     color = 'purple',
     bonuses = {
-      [1] = { stats = {['curse'] = 1} }, --curses nearby enemies, increasing damage taken
-      [2] = { stats = {['area_size'] = 2} }, --curses all enemies in an area
-      [4] = { stats = {['area_size'] = 4} }
+      [1] = { procs = {'curse'} }, --curses nearby enemies, increasing damage taken
+      [2] = { stats = {['area_size'] = 1} }, --cursed enemies share damage taken
+      [4] = { stats = {['area_size'] = 1} }
     }
   },
   [ITEM_SET.ATTACK_EFFECTS] = {
@@ -236,14 +236,14 @@ ITEM_SETS = {
     color = 'purple',
     bonuses = {
       [1] = { stats = {['bloodlust'] = 1} }, --gain attack speed when you kill an enemy
-      [2] = { stats = {['aspd'] = 2} }, --gain movespeed as well
+      [2] = { stats = {['mvspd'] = 1} }, --bloodlust grants movement speed as well
     }
   },
   [ITEM_SET.SPLASH] = {
     name = 'Splash Set',
-    color = 'purple',
+    color = 'brown',
     bonuses = {
-      [1] = { stats = {['splash'] = 1} }, --attacks do splash damage to nearby enemies
+      [1] = { procs = {'splash'} }, --attacks do splash damage to nearby enemies
       [2] = { stats = {['area_size'] = 2} }, --splash damage applies elemental effects
     }
   },
@@ -367,7 +367,7 @@ end
 
 -- Helper function to get random set
 function get_random_set()
-  local sets = {ITEM_SET.LIGHTNING_BALL, ITEM_SET.SHOCK}
+  local sets = ITEM_SETS
   return sets[math.random(1, #sets)]
 end
 

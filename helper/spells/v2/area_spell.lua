@@ -19,6 +19,8 @@ function Area_Spell:init(args)
     self.tick_rate = self.tick_rate or 0.2
     self.is_troop = self.is_troop or false
 
+    self.targets_to_exclude = self.targets_to_exclude or {}
+
     -- Optional callback function for when targets are hit
     self.on_hit_callback = args.on_hit_callback
 
@@ -94,10 +96,10 @@ function Area_Spell:apply_damage()
 
     local actual_targets_hit = {}
     
-    
+
     for _, target in ipairs(targets_in_area) do
         -- Only damage targets we haven't already hit in this spell's lifetime
-        if not self.targets_hit_map[target.id] then
+        if not self.targets_hit_map[target.id] and not self.targets_to_exclude[target.id] then
             if self.damage > 0 then
                 if self.apply_primary_hit_to_target and target == self.target then
                     Helper.Damage:primary_hit(target, self.damage, self.unit, self.damage_type, true)

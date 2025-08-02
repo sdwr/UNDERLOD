@@ -645,7 +645,36 @@ function Proc_Battlefury:onAttack(target, unit)
   }
 end
 
+Proc_Splash = Proc:extend()
+function Proc_Splash:init(args)
+  self.triggers = {PROC_ON_PRIMARY_HIT}
+  self.scope = 'troop'
 
+  self.radius = args.radius or 15
+  self.color = args.color or brown[0]
+  self.duration = args.duration or 0.15
+
+  Proc_Splash.super.init(self, args)
+end
+
+function Proc_Splash:onPrimaryHit(target, damage, damageType)
+  Proc_Splash.super.onPrimaryHit(self, target, damage, damageType)
+  if not target then return end
+  if not self.unit then return end
+  
+  Area_Spell{
+    group = main.current.effects,
+    x = target.x, y = target.y,
+    pick_shape = 'circle',
+    radius = self.radius,
+    duration = self.duration,
+    damage = damage,
+    color = self.color,
+    is_troop = self.unit.is_troop,
+    unit = self.unit,
+    targets_to_exclude = {[target.id] = true}
+  }
+end
 
 --proc overkill
 Proc_Overkill = Proc:extend()
@@ -1975,6 +2004,7 @@ proc_name_to_class = {
   ['shieldslam'] = Proc_Shieldslam,
   ['rebuke'] = Proc_Rebuke,
   ['battlefury'] = Proc_Battlefury,
+  ['splash'] = Proc_Splash,
 
   --yellow procs
   ['radiance'] = Proc_Radiance,
