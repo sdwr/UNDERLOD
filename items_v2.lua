@@ -22,10 +22,22 @@ ITEM_RARITY = {
 -- Item Sets
 ITEM_SET = {
   COLD = 'cold',
+  FROST_NOVA = 'frost_nova',
   FIRE = 'fire',
+  BURNING = 'burning',
+  METEORS = 'meteors',
   SHOCK = 'shock',
+  LIGHTNING_BALL = 'lightning_ball',
   CURSE = 'curse',
+  ATTACK_EFFECTS = 'attack_effects',
+  LASER = 'laser',
+  BLOODLUST = 'bloodlust',
+  SPLASH = 'splash',
+  DAMAGE = 'damage',
+  SUPPORT = 'support',
+  SHIELD = 'shield',
   REFLECT = 'reflect',
+  REPEAT = 'repeat',
   STUN = 'stun'
 }
 
@@ -138,19 +150,42 @@ ITEM_SETS = {
   [ITEM_SET.COLD] = {
     name = 'Frost Set',
     color = 'blue',
-          bonuses = {
-        [1] = { stats = {['cold_damage'] = 1} },
-        [2] = { stats = {['range'] = 2} },
-        [4] = { stats = {['range'] = 4} }
-      }
+    bonuses = {
+      [1] = { stats = {['cold_damage'] = 1} },
+      [2] = { stats = {['cold_damage'] = 1} }, -- freezing an enemy creates a frostfield
+      [4] = { stats = {['cold_damage'] = 2} } -- attacking a frozen target shatters them
+    }
+  },
+  [ITEM_SET.FROST_NOVA] = {
+    name = 'Frost Nova Set',
+    color = 'blue[2]',
+    bonuses = {
+      [1] = { stats = {['frost_nova'] = 1} } -- creates a frost nova when enemies get close
+    }
   },
   [ITEM_SET.FIRE] = {
     name = 'Inferno Set',
     color = 'red',
     bonuses = {
         [1] = { stats = {['fire_damage'] = 1} },
-        [2] = { stats = {['crit_chance'] = 2} },
-        [4] = { stats = {['crit_chance'] = 4} }
+        [2] = { stats = {['fire_damage'] = 1} }, --burning enemies explode (remove from current fire effect)
+        [4] = { stats = {['fire_damage'] = 2} }
+    }
+  },
+  [ITEM_SET.BURNING] = {
+    name = 'Burning Set',
+    color = 'red[2]',
+    bonuses = {
+      [1] = { stats = {['burning'] = 1} } -- increases attack speed per burning enemy
+    }
+  },
+  [ITEM_SET.METEORS] = {
+    name = 'Meteors Set',
+    color = 'yellow[2]',
+    bonuses = {
+      [1] = { stats = {['meteors'] = 1} }, --chance to create a meteor when attacking
+      [2] = { stats = {['range'] = 2} }, --meteors have a larger radius
+      [4] = { stats = {['range'] = 4} } --meteors knockback or proc fire or something
     }
   },
   [ITEM_SET.SHOCK] = {
@@ -158,26 +193,102 @@ ITEM_SETS = {
     color = 'yellow',
           bonuses = {
         [1] = { stats = {['lightning_damage'] = 1} },
-        [2] = { stats = {['aspd'] = 2} },
+        [2] = { stats = {['aspd'] = 2} }, --lightning shocks enemies, increasing damaage taken
         [4] = { stats = {['aspd'] = 4} }
       }
+  },
+  [ITEM_SET.LIGHTNING_BALL] = {
+    name = 'Lightning Ball Set',
+    color = 'yellow[2]',
+    bonuses = {
+      [1] = { stats = {['lightning_ball'] = 1} } --chance to creating a lightning ball when attacking
+    }
   },
   [ITEM_SET.CURSE] = {
     name = 'Shadow Set',
     color = 'purple',
     bonuses = {
-      [1] = { stats = {['curse'] = 1} },
-      [2] = { stats = {['area_size'] = 2} },
+      [1] = { stats = {['curse'] = 1} }, --curses nearby enemies, increasing damage taken
+      [2] = { stats = {['area_size'] = 2} }, --curses all enemies in an area
       [4] = { stats = {['area_size'] = 4} }
+    }
+  },
+  [ITEM_SET.ATTACK_EFFECTS] = {
+    name = 'Attack Effects Set',
+    color = 'purple[2]',
+    bonuses = {
+      [1] = { stats = {['attack_effects'] = 1} }, --every 4th attack is a critical hit
+      [2] = { stats = {['crit_chance'] = 2} }, --every 3rd attack is a critical hit
+      [4] = { stats = {['crit_chance'] = 4} } --every 2nd attack is a critical hit
+    }
+  },
+  [ITEM_SET.LASER] = {
+    name = 'Laser Set',
+    color = 'purple[2]',
+    bonuses = {
+      [1] = { stats = {['laser'] = 1} }, --a laser attacks nearby enemies periodically
+      [2] = { stats = {['range'] = 2} }, --laser pierces through enemies
+      [4] = { stats = {['range'] = 4} } --get a second laser
+    }
+  },
+  [ITEM_SET.BLOODLUST] = {
+    name = 'Bloodlust Set',
+    color = 'purple[2]',
+    bonuses = {
+      [1] = { stats = {['bloodlust'] = 1} }, --gain attack speed when you kill an enemy
+      [2] = { stats = {['aspd'] = 2} }, --gain movespeed as well
+    }
+  },
+  [ITEM_SET.SPLASH] = {
+    name = 'Splash Set',
+    color = 'purple[2]',
+    bonuses = {
+      [1] = { stats = {['splash'] = 1} }, --attacks do splash damage to nearby enemies
+      [2] = { stats = {['area_size'] = 2} }, --splash damage applies elemental effects
+    }
+  },
+  [ITEM_SET.DAMAGE] = {
+    name = 'Damage Set',
+    color = 'red[2]',
+    bonuses = {
+      [1] = { stats = {['dmg'] = 1} },
+      [2] = { stats = {['dmg'] = 2} },
+      [4] = { stats = {['dmg'] = 5} }
+    }
+  },
+  [ITEM_SET.SUPPORT] = {
+    name = 'Support Set',
+    color = 'green[4]',
+    bonuses = {
+      [1] = { stats = {['heal'] = 1} }, -- global attack speed
+      [2] = { stats = {['heal'] = 2} },
+      [4] = { stats = {['heal'] = 5} }
+    }
+  },
+  [ITEM_SET.SHIELD] = {
+    name = 'Shield Set',
+    color = 'green[2]',
+    bonuses = {
+      [1] = { stats = {['flat_def'] = 1} },
+      [2] = { stats = {['flat_def'] = 2} },
+      [4] = { stats = {['flat_def'] = 5} }
     }
   },
   [ITEM_SET.REFLECT] = {
     name = 'Mirror Set',
     color = 'green',
     bonuses = {
-      [1] = { stats = {['thorns'] = 1} },
+      [1] = { stats = {['thorns'] = 1} }, --knockback all nearby enemies when hit
       [2] = { stats = {['hp'] = 2} },
       [4] = { stats = {['hp'] = 4} }
+    }
+  },
+  [ITEM_SET.REPEAT] = {
+    name = 'Repeat Set',
+    color = 'green[2]',
+    bonuses = {
+      [1] = { stats = {['repeat_attack_chance'] = 1} },
+      [2] = { stats = {['crit_chance'] = 2} }
     }
   },
   [ITEM_SET.STUN] = {
