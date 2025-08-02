@@ -380,6 +380,11 @@ function CharacterCard:show_set_bonus_popup_for_set(set_info)
           stat_name = stat .. ' stat not found'
         end
       end
+      if bonus.procs then
+        for _, proc in ipairs(bonus.procs) do
+          stat_name = stat_name .. proc .. ', '
+        end
+      end
 
       table.insert(text_lines, {
         text = '[' .. color .. ']' .. i .. 'pc: ' .. stat_name, 

@@ -1543,6 +1543,7 @@ function Proc_Frostfield:onFreeze(unit, target)
     x= target.x, y = target.y,
     pick_shape = 'circle',
     damage_ticks = true,
+    tick_rate = self.tick_rate,
     damage = 5,
     r = self.radius, duration = self.duration, color = self.color,
     is_troop = not target.is_troop,

@@ -68,6 +68,11 @@ function SetBonusTooltip:build_text_lines()
             local display_name = item_stat_lookup and item_stat_lookup[stat] or stat
             table.insert(stat_parts, "+" .. value .. " " .. display_name)
           end
+          if bonus.procs then
+            for _, proc in ipairs(bonus.procs) do
+              table.insert(stat_parts, proc)
+            end
+          end
           bonus_desc = table.concat(stat_parts, ", ")
         end
         
