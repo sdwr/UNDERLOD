@@ -178,8 +178,33 @@ function Helper.Damage:deal_damage(unit, damage)
       local damage_to_deal = (damage * CURSE_DAMAGE_LINK_DAMAGE_PERCENT) / #units_to_hit
 
       for _, unit_to_hit in ipairs(units_to_hit) do
-        print('curse damage link', unit_to_hit.type, damage_to_deal)
-
+        ChainSpell{
+          group = main.current.main,
+          parent = curse_from,
+          source = unit,
+          target = unit_to_hit,
+          max_chains = 1,
+          range = 0,
+          delay = 0,
+          visual_duration = 0.2,
+          is_troop = curse_from and curse_from.is_troop,
+          skip_first_bounce = false,
+          on_hit = function(spell, target)
+            Helper.Damage:chained_hit(target, damage_to_deal, spell.caster, DAMAGE_TYPE_PHYSICAL, false)
+          end,
+          on_bounce = function(spell, from_target, to_target)
+            wizard1:play{pitch = random:float(0.9, 1.1), volume = 0.2}
+            -- The CurseLine effect is a separate, temporary object.
+            CurseLine{
+              group = main.current.effects,
+              src = from_target,
+              dst = to_target,
+              w = 1,
+              primary_color = purple[0],
+              secondary_color = purple[-3],
+              duration = 0.2
+            }        end
+          }
       end
 
     end
