@@ -204,19 +204,24 @@ function CharacterCard:create_set_bonus_display()
   -- Create button elements for each set
   local y_offset = 0
   for i, set_info in ipairs(unit_sets) do
+
+    local y_offset = ((i-1) % 2) * 16
+    local x_offset = math.floor((i-1) / 3) * 30
+
+    
     local max_pieces = 0
     for pieces, _ in pairs(set_info.bonuses) do
       max_pieces = math.max(max_pieces, pieces)
     end
     
     local set_color = set_info.color or 'fg'
-    local text = set_info.current_pieces .. ' / ' .. max_pieces .. ' ' .. set_info.name:upper()
+    local text = set_info.current_pieces .. ' / ' .. max_pieces
     
     local set_button = Button{
       group = self.group,
-      x = self.x,
+      x = self.x - 30 + x_offset,
       y = self.y + 40 + y_offset, -- Move up under character name
-      w = 80,
+      w = 25,
       h = 14,
       bg_color = 'bg',
       fg_color = set_color, -- Use set color for text
@@ -228,7 +233,6 @@ function CharacterCard:create_set_bonus_display()
     set_button.parent = self
     
     table.insert(self.set_bonus_elements, set_button)
-    y_offset = y_offset + 16
   end
 end
 
@@ -415,7 +419,7 @@ function CharacterCard:show_set_bonus_popup_for_set(set_info)
   self.set_bonus_popup = InfoText{group = main.current.world_ui, force_update = false}
   self.set_bonus_popup:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
   self.set_bonus_popup.x = self.x
-  self.set_bonus_popup.y = self.y - self.h/2 - 10
+  self.set_bonus_popup.y = self.y + 90
 end
 
 function CharacterCard:hide_popup()
@@ -737,7 +741,7 @@ function ItemPart:create_tooltip()
     group = main.current.world_ui,
     item = self:getItem(),
     x = gw/2, 
-    y = gh/2 - 50,
+    y = gh/2 + 80,
   }
 end
 
