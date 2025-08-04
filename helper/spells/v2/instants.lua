@@ -1158,7 +1158,7 @@ function LightningBall:init(args)
     self.max_target_distance = self.max_target_distance or 75
 
     -- Movement
-    self.r = random:float(0, 2 * math.pi)
+    self.r = default_to(self.r, random:float(0, 2 * math.pi))
     self:set_angle(self.r)
     local vx = math.cos(self.r) * self.speed
     local vy = math.sin(self.r) * self.speed
@@ -1211,7 +1211,7 @@ function LightningBall:find_and_shock_targets()
         end
 
         -- Shock the target
-        target:hit(self.damage, nil, DAMAGE_TYPE_LIGHTNING, false, true) -- Assuming units have an apply_shock method
+        target:hit(self.damage, self, DAMAGE_TYPE_LIGHTNING, true, true) -- Assuming units have an apply_shock method
 
         -- Create the lightning visual effect
         LightningLine{
@@ -1227,7 +1227,7 @@ function LightningBall:find_and_shock_targets()
     end
     
     if targets_shocked_this_tick > 0 then
-      spark2:play{pitch = random:float(0.8, 1.2), volume = 0.4}
+      spark2:play{pitch = random:float(0.8, 1.2), volume = 0.6}
     end
 end
 

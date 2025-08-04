@@ -1405,9 +1405,22 @@ function Proc_LightningBall:onPrimaryHit(target, damage, damageType)
 end
 
 function Proc_LightningBall:create_lightning_ball(target)
+  if not self.unit then return end
+
+  --spawn the lighning ball between the unit and the target
+  local spawn_location = {x = (self.unit.x + target.x) / 2, y = (self.unit.y + target.y) / 2}
+  --make the travel direction in the direction of the target
+  local travel_direction = {x = target.x - spawn_location.x, y = target.y - spawn_location.y}
+  local travel_direction_length = math.sqrt(travel_direction.x^2 + travel_direction.y^2)
+  local travel_direction_normalized = {x = travel_direction.x / travel_direction_length, y = travel_direction.y / travel_direction_length}
+  local travel_direction_angle = math.atan2(travel_direction_normalized.y, travel_direction_normalized.x)
+
+  new_spark:play{pitch = random:float(0.8, 1.2), volume = 0.5}
   LightningBall{
     group = main.current.main,
-    x = target.x, y = target.y,
+    x = spawn_location.x, y = spawn_location.y,
+    r = travel_direction_angle,
+    is_troop = self.unit.is_troop,
     duration = 4,
     damage = self.damage,
     num_targets = 3,
@@ -2213,7 +2226,7 @@ proc_name_to_class = {
   ['shieldslam'] = Proc_Shieldslam,
   ['rebuke'] = Proc_Rebuke,
   ['battlefury'] = Proc_Battlefury,
-  
+
   ['splash'] = Proc_Splash,
   ['splashSizeBoost'] = Proc_SplashSizeBoost,
   ['splashSizeBoost2'] = Proc_SplashSizeBoost2,

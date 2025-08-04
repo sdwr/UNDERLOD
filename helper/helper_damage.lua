@@ -354,7 +354,7 @@ function Helper.Damage:process_elemental_reactions(unit, actual_damage, damageTy
       target = unit, range = 50, 
       damage = actual_damage, color = yellow[0], 
       parent = from,
-      is_troop = from and from.is_troop
+      is_troop = from and from.is_troop,
     }
   end
 

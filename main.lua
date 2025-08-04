@@ -183,6 +183,8 @@ function init()
   freeze_sound = Sound('ice_cracking_trimmed.wav', s)
   arcspread_sound = Sound('arcspread.wav', s)
   arcspread_full_sound = Sound('arcspread_full.wav', s)
+  new_spark = Sound('new_spark.wav', s)
+  
   title_music = Sound('Debussy - Reverie.mp3', { tags = { music } })
 
 

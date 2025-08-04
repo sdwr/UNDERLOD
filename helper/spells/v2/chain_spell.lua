@@ -148,7 +148,7 @@ function ChainLightning:init(args)
   self.caster = args.parent
   self.source = args.source or args.parent
   self.range = args.range or 50
-  self.is_troop = args.is_troop or false
+  self.is_troop = default_to(args.is_troop, false)
   self.damage = get_dmg_value(args.damage)
   self.damageType = args.damageType or DAMAGE_TYPE_SHOCK
   self.color = args.color or {1, 1, 1, 1}
