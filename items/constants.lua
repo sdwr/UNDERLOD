@@ -10,33 +10,33 @@ ITEM_SLOT = {
 
 ITEM_SLOTS = {
   [ITEM_SLOT.HEAD] = {
-    name = 'Head',
-    icon = helmet,
+    name = 'head',
+    icon = 'helmet',
     index = 1,
   },
   [ITEM_SLOT.BODY] = {
-    name = 'Body',
-    icon = simplearmor,
+    name = 'body',
+    icon = 'simplearmor',
     index = 2,
   },
   [ITEM_SLOT.WEAPON] = {
-    name = 'Weapon',
-    icon = sword,
+    name = 'weapon',
+    icon = 'sword',
     index = 3,
   },
   [ITEM_SLOT.OFFHAND] = {
-    name = 'Offhand',
-    icon = simpleboots,
+    name = 'offhand',
+    icon = 'simpleboots',
     index = 4,
   },
   [ITEM_SLOT.FEET] = {
-    name = 'Feet',
-    icon = simpleboots,
+    name = 'feet',
+    icon = 'simpleboots',
     index = 5,
   },
   [ITEM_SLOT.AMULET] = {
-    name = 'Amulet',
-    icon = orb,
+    name = 'amulet',
+    icon = 'orb',
     index = 6,
   },
 }

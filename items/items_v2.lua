@@ -388,7 +388,7 @@ function create_random_item(tier, max_cost)
   -- Create the item
   local item = {
     name = ITEM_SLOTS[item_slot].name,
-    type = item_slot,
+    slot = item_slot,
     rarity = rarity,
     tier = tier or 1,
     icon = ITEM_SLOTS[item_slot].icon,

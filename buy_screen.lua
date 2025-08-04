@@ -247,7 +247,7 @@ function BuyScreen:buy_unit(character)
 end
 
 --item functions
-
+--NO LONGER FUNCTIONAL WITH SLOT SYSTEM
 function BuyScreen:unit_first_available_inventory_slot(unit)
   for i = 1, UNIT_LEVEL_TO_NUMBER_OF_ITEMS[unit.level] do
     if not unit.items[i] then
@@ -259,6 +259,7 @@ end
 
 --this returns the UI element "ItemPart" that corresponds to the first available inventory slot
 --can call :addItem on this element to add an item rfto the unit's inventory
+--NO LONGER FUNCTIONAL WITH SLOT SYSTEM
 function BuyScreen:get_first_available_inventory_slot()
   for i, character in ipairs(Character_Cards) do
     if character.unit then

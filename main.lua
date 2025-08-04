@@ -324,8 +324,7 @@ function init()
   simplearmor           = Image(d .. 'simplearmor')
   orb                   = Image(d .. 'orb')
   potion2               = Image(d .. 'potion2')
-
-
+  
 
   skull                 = Image(d .. 'skull-small')
   fancyarmor            = Image(d .. 'fancyarmor')

@@ -267,7 +267,7 @@ function FloorItem:purchase_item()
   local try_purchase = main.current:put_in_first_available_inventory_slot(self.item)
   if not try_purchase then
     self:remove_tooltip()
-    Create_Info_Text('no empty item slots - right click to sell', self)
+    Create_Info_Text('no empty ' .. ITEM_SLOTS[self.item.slot].name .. ' slots - right click items in character menu to sell', self)
     return false
   end
 

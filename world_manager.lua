@@ -507,20 +507,25 @@ function WorldManager:save_run()
   system.save_run(save_data)
 end
 
-function WorldManager:unit_first_available_inventory_slot(unit)
-  for i = 1, UNIT_LEVEL_TO_NUMBER_OF_ITEMS[unit.level] do
-    if not unit.items[i] then
-      return i
-    end
+function WorldManager:unit_has_open_inventory_slot(unit, slot_index)
+  if not unit.items[slot_index] then
+    return true
   end
-  return nil
+
+  return false
 end
 
 function WorldManager:put_in_first_available_inventory_slot(item)
+  local slot_index = ITEM_SLOTS[item.slot].index
+
+  if not slot_index then
+    print('ERROR: cannot find slot for item type', item.slot)
+    return false
+  end
+
   for _, unit in ipairs(self.units) do
-    local index = self:unit_first_available_inventory_slot(unit)
-    if index then
-      unit.items[index] = item
+    if self:unit_has_open_inventory_slot(unit, slot_index) then
+      unit.items[slot_index] = item
       return true
     end
   end

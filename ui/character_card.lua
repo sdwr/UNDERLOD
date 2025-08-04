@@ -594,12 +594,16 @@ function ItemPart:update(dt)
     self.looseItem:die()
     self.looseItem = nil
     local active = Active_Inventory_Slot
-    if active and not self:isActiveInvSlot() then
+    --try to move the grabbed item to this slot
+    --only if they are the same item type slot
+    if active and not self:isActiveInvSlot() and self.i == active.i then
+      --if the active slot has an item, swap them
       if active:hasItem() then
         local temp = active:getItem()
         active:addItem(self:getItem())
         self:addItem(temp)
       else
+        --if the active slot doesn't have an item, just add the grabbed item to it
         active:addItem(self:getItem())
         self:removeItem()
       end
@@ -656,6 +660,13 @@ function ItemPart:draw(y)
         -- local mouseX, mouseY = camera:get_mouse_position()
         -- image:draw(mouseX, mouseY, 0, 0.4, 0.4)
       end
+    else
+      --draw item type icon
+      local item_slot = ITEM_SLOTS_BY_INDEX[self.i]
+      local image = find_item_image(ITEM_SLOTS[item_slot])
+      local color = fg[5]:clone()
+      color.a = 0.5
+      image:draw(self.x, self.y, 0, 0.4, 0.4, 0, 0, color)
     end
     
     if self.colliding_with_mouse and main.current and not main.current.loose_inventory_item then
