@@ -14,6 +14,11 @@ function FloorInteractable:init(args)
   self.interaction_radius = args.interaction_radius or 35
   self.activation_duration = args.activation_duration or 2.0
   self.unit_classes = args.unit_classes or troop_classes -- What units can trigger this
+
+  --spawn protection
+  self.block_interaction_on_spawn = default_to(args.block_interaction_on_spawn, true)
+  self.freshly_spawned = true
+  self.ongoing_spawn_interaction = nil
   
   -- Visual configuration
   self.interaction_color = args.color or yellow[0]
@@ -98,7 +103,11 @@ function FloorInteractable:update(dt)
 end
 
 function FloorInteractable:can_interact()
-  return not self.interaction_is_disabled and not self.interaction_failed_activation
+  return not self.interaction_is_disabled and not self.interaction_failed_activation and not self:is_spawn_protection_active()
+end
+
+function FloorInteractable:is_spawn_protection_active()
+  return self.block_interaction_on_spawn and self.freshly_spawned
 end
 
 function FloorInteractable:currently_interacting()
@@ -125,6 +134,10 @@ function FloorInteractable:check_unit_collision()
         self:interaction_activate()
       end
     else
+      --clear spawn protection if unit leaves
+      if self.freshly_spawned then
+        self.freshly_spawned = false
+      end
       --clear failed activation if unit leaves
       if self.interaction_failed_activation then
         self.interaction_failed_activation = false
