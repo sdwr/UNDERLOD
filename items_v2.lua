@@ -307,30 +307,30 @@ ITEM_SETS = {
 ITEM_RARITIES = {
   [ITEM_RARITY.COMMON] = {
     name = 'Common',
-    base_power_budget = 1,
+    base_power_budget = 2,
     max_stat_value = 2,
-    set_chance = 0.6, -- 10% chance to have a set
+    set_chance = 1,
     color = 'grey'
   },
   [ITEM_RARITY.RARE] = {
     name = 'Rare',
-    base_power_budget = 2,
+    base_power_budget = 3,
     max_stat_value = 3,
-    set_chance = 0.7, -- 30% chance to have a set
+    set_chance = 1,
     color = 'blue'
   },
   [ITEM_RARITY.EPIC] = {
     name = 'Epic',
-    base_power_budget = 3,
+    base_power_budget = 4,
     max_stat_value = 4,
-    set_chance = 0.8, -- 60% chance to have a set
+    set_chance = 1,
     color = 'purple'
   },
   [ITEM_RARITY.LEGENDARY] = {
     name = 'Legendary',
-    base_power_budget = 4,
+    base_power_budget = 5,
     max_stat_value = 5,
-    set_chance = 1, -- 100% chance to have a set
+    set_chance = 1,
     color = 'orange'
   }
 }
@@ -368,8 +368,11 @@ end
 
 -- Helper function to get random set
 function get_random_set()
-  local sets = ITEM_SETS
-  return sets[math.random(1, #sets)]
+  local set_keys = {}
+  for set_name, _ in pairs(ITEM_SETS) do
+    table.insert(set_keys, set_name)
+  end
+  return random:table(set_keys)
 end
 
 -- Helper function to roll a stat for an item type
@@ -440,16 +443,16 @@ function create_random_item(tier, max_cost)
   if max_cost then
     power_budget = math.min(power_budget, math.floor(max_cost / 2))
   end
-  item.cost = power_budget * 2
+  item.cost = math.floor(power_budget * 1.5)
 
   -- Determine if item has sets
   if random:float(0, 1) < rarity_def.set_chance and power_budget >= ITEM_SET_POWER_BUDGET then
     -- Add 1-2 sets for higher rarities
     local set_count = rarity == ITEM_RARITY.LEGENDARY and 2 or 1
     for i = 1, set_count do
-      local set = get_random_set()
-      if not table.contains(item.sets, set) then
-        table.insert(item.sets, set)
+      local set_key = get_random_set()
+      if not table.contains(item.sets, set_key) then
+        table.insert(item.sets, set_key)
         power_budget = power_budget - ITEM_SET_POWER_BUDGET
       end
     end
@@ -486,8 +489,8 @@ function create_random_item(tier, max_cost)
   
   -- Add set colors if item has sets
   if #item.sets > 0 then
-    for _, set_name in ipairs(item.sets) do
-      local set_def = ITEM_SETS[set_name]
+    for _, set_key in ipairs(item.sets) do
+      local set_def = ITEM_SETS[set_key]
       if set_def and set_def.color then
         table.insert(item.colors, set_def.color)
       end

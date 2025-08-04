@@ -1448,7 +1448,7 @@ function init()
   }
 
   enemy_to_round_power = {
-    ['swarmer'] = 20,
+    ['swarmer'] = 40,
     ['shooter'] = 150,
     ['seeker'] = 150,
     ['chaser'] = 150,

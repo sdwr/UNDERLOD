@@ -42,11 +42,11 @@ function ItemTooltip:init(args)
   -- 3. ITEM SETS TEXT (New Section)
   local sets_text_definitions = {}
   if self.item.sets then
-      for _, set_name in ipairs(self.item.sets) do
-          local set_def = ITEM_SETS[set_name]
+      for _, set_key in ipairs(self.item.sets) do
+          local set_def = ITEM_SETS[set_key]
           if set_def then
               local color = set_def.color or 'fg'
-              local text = '[' .. color .. ']' .. set_name:upper()
+              local text = '[' .. color .. ']' .. set_def.name:upper()
               table.insert(sets_text_definitions, { text = text, font = pixul_font, alignment = 'center' })
           end
       end

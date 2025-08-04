@@ -226,19 +226,19 @@ function CharacterCard:get_unit_sets()
   if self.unit.items then
     for _, item in ipairs(self.unit.items) do
       if item and item.sets then
-        for _, set_name in ipairs(item.sets) do
-          set_counts[set_name] = (set_counts[set_name] or 0) + 1
+        for _, set_key in ipairs(item.sets) do
+          set_counts[set_key] = (set_counts[set_key] or 0) + 1
         end
       end
     end
   end
   
   -- Build set info
-  for set_name, count in pairs(set_counts) do
-    local set_def = ITEM_SETS[set_name]
+  for set_key, count in pairs(set_counts) do
+    local set_def = ITEM_SETS[set_key]
     if set_def then
       table.insert(sets, {
-        name = set_name,
+        name = set_def.name,
         current_pieces = count,
         bonuses = set_def.bonuses,
         color = set_def.color

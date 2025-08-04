@@ -97,11 +97,11 @@ function SetBonusTooltip:get_item_sets()
   
   -- Get all sets this item belongs to
   if self.item and self.item.sets then
-    for _, set_name in ipairs(self.item.sets) do
-      local set_def = ITEM_SETS[set_name]
+    for _, set_key in ipairs(self.item.sets) do
+      local set_def = ITEM_SETS[set_key]
       if set_def then
         table.insert(sets, {
-          name = set_name,
+          name = set_def.name,
           bonuses = set_def.bonuses,
           color = set_def.color
         })

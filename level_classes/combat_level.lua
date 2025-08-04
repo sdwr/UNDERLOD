@@ -21,10 +21,13 @@ function CombatLevel:level_clear()
   spawn_mark2:play{pitch = 1, volume = 0.8}
   Helper.Unit:update_units_with_combat_data(self)
   
-  self.t:after(1, function()
-    Helper.Unit:resurrect_all_teams()
-    Helper.Unit:heal_all_teams_to_full()
-  end)
+  
+  if table.contains(LEVELS_TO_HEAL_ON_CLEAR, self.level) then
+    self.t:after(1, function()
+        Helper.Unit:resurrect_all_teams()
+        Helper.Unit:heal_all_teams_to_full()
+      end)
+  end
 
   self.t:after(DOOR_OPEN_DELAY, function() self:open_door() end)
   main.current:increase_level()
