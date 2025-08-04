@@ -17,7 +17,7 @@ function get_item_slot_location(item_slot)
     [ITEM_SLOT.BODY] = {x = 1, y = 1},
     [ITEM_SLOT.WEAPON] = {x = 0, y = 1},
     [ITEM_SLOT.OFFHAND] = {x = 2, y = 1},
-    [ITEM_SLOT.FEET] = {x = 2, y = 2},
+    [ITEM_SLOT.FEET] = {x = 1, y = 2},
     [ITEM_SLOT.AMULET] = {x = 2, y = 0},
   }
   return ITEM_SLOT_LOCATIONS[item_slot]
