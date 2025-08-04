@@ -33,6 +33,7 @@ function FloorItem:init(args)
     -- Use V2 item tier_color if available, otherwise fall back to item_to_color
     self.tier_color = item_to_color(self.item)
     self.stats = self.item.stats
+    self.sets = self.item.sets
     self.name = self.item.name
   end
   
@@ -100,6 +101,15 @@ function FloorItem:create_bottom_text()
     self.bottom_text = Text(text_definitions, global_text_tags)
   else
     local stats_lines = {}
+
+    if self.sets then
+      for _, set_key in pairs(self.sets) do
+        local set_def = ITEM_SETS[set_key]
+        local color = set_def.color or 'orange'
+        table.insert(stats_lines, {text = '[' .. color .. ']' .. set_def.name, font = pixul_font, alignment = 'center'})
+      end
+    end
+
     if self.stats then
       for key, val in pairs(self.stats) do
         local text = ''
@@ -348,7 +358,7 @@ function FloorItem:draw()
   
   -- Draw bottom text just below the top section
   if self.bottom_text then
-    local top_section_bottom = self.y -- The center of the card (boundary between top and bottom)
+    local top_section_bottom = self.y + 3 -- The center of the card (boundary between top and bottom)
     local bottom_text_y = top_section_bottom + self.bottom_text.h/2-- Position just below the top section with small padding
     self.bottom_text:draw(self.x + shake_x, bottom_text_y)
   end

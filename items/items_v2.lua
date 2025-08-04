@@ -108,7 +108,7 @@ ITEM_SET_POWER_BUDGET = 1
 -- Set definitions with bonuses
 ITEM_SETS = {
   [ITEM_SET.COLD] = {
-    name = 'Frost Set',
+    name = 'Frost',
     color = 'blue',
     bonuses = {
       [1] = { stats = {['cold_damage'] = 1} },
@@ -117,14 +117,14 @@ ITEM_SETS = {
     }
   },
   [ITEM_SET.FROST_NOVA] = {
-    name = 'Frost Nova Set',
+    name = 'Frost Nova',
     color = 'blue',
     bonuses = {
       [1] = { stats = {}, procs = {'frostnova'} } -- creates a frost nova when enemies get close
     }
   },
   [ITEM_SET.FIRE] = {
-    name = 'Inferno Set',
+    name = 'Inferno',
     color = 'red',
     bonuses = {
         [1] = { stats = {['fire_damage'] = 1} },
@@ -133,14 +133,14 @@ ITEM_SETS = {
     }
   },
   [ITEM_SET.BLAZIN] = {
-    name = 'Blazin Set',
+    name = 'Blazin',
     color = 'red',
     bonuses = {
       [1] = { stats = {}, procs = {'blazin'} } -- increases attack speed per burning enemy
     }
   },
   [ITEM_SET.METEOR] = {
-    name = 'Meteor Set',
+    name = 'Meteor',
     color = 'red',
     bonuses = {
       [1] = { procs = {'meteor'} }, --periodically summon meteors
@@ -149,7 +149,7 @@ ITEM_SETS = {
     }
   },
   [ITEM_SET.SHOCK] = {
-    name = 'Storm Set',
+    name = 'Storm',
     color = 'yellow',
           bonuses = {
         [1] = { stats = {['lightning_damage'] = 1} },
@@ -158,14 +158,14 @@ ITEM_SETS = {
       }
   },
   [ITEM_SET.LIGHTNING_BALL] = {
-    name = 'Lightning Ball Set',
+    name = 'Lightning Ball',
     color = 'yellow',
     bonuses = {
       [1] = { procs = {'lightningball'} } --chance to creating a lightning ball when attacking
     }
   },
   [ITEM_SET.CURSE] = {
-    name = 'Curse Set',
+    name = 'Curse',
     color = 'purple',
     bonuses = {
       [1] = { procs = {'curse'} }, --curses nearby enemies, increasing damage taken
@@ -174,7 +174,7 @@ ITEM_SETS = {
     }
   },
   [ITEM_SET.ATTACK_EFFECTS] = {
-    name = 'Attack Effects Set',
+    name = 'Attack Effects',
     color = 'purple',
     bonuses = {
       [1] = { stats = {['attack_effects'] = 1} }, --every 4th attack is a critical hit
@@ -192,7 +192,7 @@ ITEM_SETS = {
   --   }
   -- },
   [ITEM_SET.BLOODLUST] = {
-    name = 'Bloodlust Set',
+    name = 'Bloodlust',
     color = 'purple',
     bonuses = {
       [1] = { procs = {'bloodlust'} }, --gain stacking attack speed when you kill an enemy
@@ -201,7 +201,7 @@ ITEM_SETS = {
     }
   },
   [ITEM_SET.SPLASH] = {
-    name = 'Splash Set',
+    name = 'Splash',
     color = 'brown',
     bonuses = {
       [1] = { procs = {'splash'} }, --attacks do splash damage to nearby enemies
@@ -209,7 +209,7 @@ ITEM_SETS = {
     }
   },
   [ITEM_SET.DAMAGE] = {
-    name = 'Damage Set',
+    name = 'Damage',
     color = 'red',
     bonuses = {
       [1] = { stats = {['dmg'] = 1} },
@@ -227,7 +227,7 @@ ITEM_SETS = {
   --   }
   -- },
   [ITEM_SET.SHIELD] = {
-    name = 'Shield Set',
+    name = 'Shield',
     color = 'green',
     bonuses = {
       [1] = { procs = {'shield'} }, --shields you periodically, blocking damage
@@ -235,7 +235,7 @@ ITEM_SETS = {
     }
   },
   [ITEM_SET.REFLECT] = {
-    name = 'Mirror Set',
+    name = 'Mirror',
     color = 'green',
     bonuses = {
       [1] = { procs = {'retaliate'} }, --retaliate with an attack when hit
@@ -244,7 +244,7 @@ ITEM_SETS = {
     }
   },
   [ITEM_SET.REPEAT] = {
-    name = 'Repeat Set',
+    name = 'Repeat',
     color = 'green',
     bonuses = {
       [1] = { stats = {['repeat_attack_chance'] = 1} },
@@ -252,7 +252,7 @@ ITEM_SETS = {
     }
   },
   [ITEM_SET.STUN] = {
-    name = 'Stun Set',
+    name = 'Stun',
     color = 'black',
     bonuses = {
       [1] = { stats = {['stun_chance'] = 1} },
