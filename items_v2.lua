@@ -306,29 +306,33 @@ ITEM_SETS = {
 ITEM_RARITIES = {
   [ITEM_RARITY.COMMON] = {
     name = 'Common',
-    base_power_budget = 2,
-    max_stat_value = 2,
+    cost = 4,
+    min_stat_value = 0,
+    max_stat_value = 0,
     set_chance = 1,
     color = 'grey'
   },
   [ITEM_RARITY.RARE] = {
     name = 'Rare',
-    base_power_budget = 3,
-    max_stat_value = 3,
+    cost = 6,
+    min_stat_value = 1,
+    max_stat_value = 2,
     set_chance = 1,
     color = 'blue'
   },
   [ITEM_RARITY.EPIC] = {
     name = 'Epic',
-    base_power_budget = 4,
+    cost = 10,
+    min_stat_value = 3,
     max_stat_value = 4,
     set_chance = 1,
     color = 'purple'
   },
   [ITEM_RARITY.LEGENDARY] = {
     name = 'Legendary',
-    base_power_budget = 5,
-    max_stat_value = 5,
+    cost = 15,
+    min_stat_value = 5,
+    max_stat_value = 6,
     set_chance = 1,
     color = 'orange'
   }
@@ -427,60 +431,30 @@ function create_random_item(tier, max_cost)
     icon = ITEM_TYPES[item_type].icon,
     stats = {},
     sets = {},
-    cost = 0, -- Cost based on tier and stat count
+    cost = rarity_def.cost,
     procs = {}, -- Empty procs for compatibility with existing system
     tags = {} -- Empty tags for compatibility with existing system
   }
-  
-  -- Generate stats
-  local used_stats = {}
-  local min_power_budget = rarity_def.base_power_budget * tier
-  local max_power_budget = rarity_def.base_power_budget * tier * 2
-  max_power_budget = math.floor(max_power_budget)
-
-  local power_budget = math.random(min_power_budget, max_power_budget)
-  if max_cost then
-    power_budget = math.min(power_budget, math.floor(max_cost / 2))
-  end
-  item.cost = math.floor(power_budget * 1.5)
 
   -- Determine if item has sets
-  if random:float(0, 1) < rarity_def.set_chance and power_budget >= ITEM_SET_POWER_BUDGET then
+  if random:float(0, 1) < rarity_def.set_chance then
     -- Add 1-2 sets for higher rarities
     local set_count = rarity == ITEM_RARITY.LEGENDARY and 2 or 1
     for i = 1, set_count do
       local set_key = get_random_set()
       if not table.contains(item.sets, set_key) then
         table.insert(item.sets, set_key)
-        power_budget = power_budget - ITEM_SET_POWER_BUDGET
       end
     end
   end
   
-  while power_budget > 0 do
-    local stat_name
-    local attempts = 0
-    local max_attempts = 10
+  if rarity_def.min_stat_value > 0 then
+    local stat_name = roll_stat_for_type(item_type)
     
-    repeat
-      stat_name = roll_stat_for_type(item_type)
-      attempts = attempts + 1
-    until not table.contains(used_stats, stat_name) or attempts >= max_attempts
-    
-    table.insert(used_stats, stat_name)
-    
-    local stat_value = math.random(1, rarity_def.max_stat_value)
-    stat_value = math.min(stat_value, power_budget)
+    -- Generate stat
+    local stat_value = math.random(rarity_def.min_stat_value, rarity_def.max_stat_value)
 
     item.stats[stat_name] = stat_value + (item.stats[stat_name] or 0)
-    
-    --clamp stat value, still decrement power budget to prevent infinite loops
-    if item.stats[stat_name] > rarity_def.max_stat_value 
-      or item.stats[stat_name] > ITEM_STATS[stat_name].max then
-      item.stats[stat_name] = math.min(rarity_def.max_stat_value, ITEM_STATS[stat_name].max)
-    end
-
-    power_budget = power_budget - stat_value
   end
   
   -- Set colors based on sets only (rarity color is used as tier color)
