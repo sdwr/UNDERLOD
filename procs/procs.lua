@@ -1255,7 +1255,7 @@ end
 --any new shield will overwrite the old one
 Proc_Shield = Proc:extend()
 function Proc_Shield:init(args)
-  self.triggers = {PROC_ON_ROUND_START}
+  self.triggers = {PROC_ON_TICK}
   self.scope = 'troop'
 
   Proc_Shield.super.init(self, args)
@@ -1269,21 +1269,29 @@ function Proc_Shield:init(args)
   self.adjustedTimeBetween = Helper.Unit:apply_cooldown_reduction(self, self.baseTimeBetween)
   self.buff_duration = self.data.buff_duration or 4
 
+  --proc memory
+  self.shield_timer = math.random() * (self.adjustedTimeBetween / 2)
+
 end
 
-function Proc_Shield:onRoundStart()
-  Proc_Shield.super.onRoundStart(self)
+function Proc_Shield:onTick(dt)
+  Proc_Shield.super.onTick(self, dt)
   if not self.unit then return end
-  self.manual_trigger = trigger:every_immediate(self.adjustedTimeBetween, function()
-    self.unit:shield(self.shield_amount, self.buff_duration)
-  end)
+  self.shield_timer = self.shield_timer + dt
+
+  if self.shield_timer < self.adjustedTimeBetween then return end
+
+  heal1:play{pitch = random:float(0.8, 1.2), volume = 0.3}
+  self.unit:shield(self.shield_amount, self.buff_duration)
+  self.shield_timer = 0
 end
 
---should cancel the trigger when the unit dies
-function Proc_Shield:die()
-  Proc_Shield.super.die(self)
-  if not self.manual_trigger then return end
-  trigger:cancel(self.manual_trigger)
+Proc_ShieldExplode = Proc:extend()
+function Proc_ShieldExplode:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'troop'
+
+  Proc_ShieldExplode.super.init(self, args)
 end
 
 Proc_LightningBall = Proc:extend()
@@ -2126,6 +2134,7 @@ proc_name_to_class = {
   --yellow procs
   ['radiance'] = Proc_Radiance,
   ['shield'] = Proc_Shield,
+  ['shieldexplode'] = Proc_ShieldExplode,
   ['lightningball'] = Proc_LightningBall,
   ['shock'] = Proc_Shock,
   --red procs

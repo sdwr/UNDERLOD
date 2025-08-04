@@ -234,7 +234,8 @@ function Helper.Damage:process_pre_hit(unit, damage, from, damageType, playHitEf
       damage = 0
     else
       damage = damage - unit.shielded
-      unit.shielded = 0
+      unit:remove_shield()
+      unit:shield_explode()
     end
   end
   

@@ -169,20 +169,15 @@ end
 -- Knockback Area Spell - Now with a cool shockwave effect!
 -- =================================================================================
 Knockback_Area_Spell = Area_Spell:extend()
-
 function Knockback_Area_Spell:init(args)
 
-    --set default opacity before calling super.init
-    args.opacity = args.opacity or 0.3
-
-    -- Call the parent init first to set up all the base spell properties
     Knockback_Area_Spell.super.init(self, args)
 
+    --set default opacity before calling super.init
+    self.opacity = self.opacity or 0.3
 
     -- Override properties for the knockback
     self.damage_ticks = false
-    self.knockback_force = self.knockback_force or LAUNCH_PUSH_FORCE_ENEMY
-    self.knockback_duration = self.knockback_duration or KNOCKBACK_DURATION_BOSS
 
     --[[
         NEW VISUAL EFFECT PROPERTIES
@@ -206,7 +201,7 @@ function Knockback_Area_Spell:update(dt)
     self.shockwave_spawn_timer = self.shockwave_spawn_timer - dt
     if self.shockwave_spawn_timer <= 0 then
         -- Add a new shockwave to our list. It starts at the center with full opacity.
-        table.insert(self.shockwaves, { radius = 0, opacity = 1 })
+        table.insert(self.shockwaves, { radius = 0, opacity = self.opacity })
         -- Reset the timer for the next one
         self.shockwave_spawn_timer = self.shockwave_interval
     end

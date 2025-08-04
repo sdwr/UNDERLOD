@@ -222,15 +222,15 @@ ITEM_SETS = {
       [4] = { stats = {['crit_chance'] = 4} } --every 2nd attack is a critical hit
     }
   },
-  [ITEM_SET.LASER] = {
-    name = 'Laser Set',
-    color = 'purple',
-    bonuses = {
-      [1] = { stats = {['laser'] = 1} }, --a laser attacks nearby enemies periodically
-      [2] = { stats = {['range'] = 2} }, --laser pierces through enemies
-      [4] = { stats = {['range'] = 4} } --get a second laser
-    }
-  },
+  -- [ITEM_SET.LASER] = {
+  --   name = 'Laser Set',
+  --   color = 'purple',
+  --   bonuses = {
+  --     [1] = { stats = {['laser'] = 1} }, --a laser attacks nearby enemies periodically
+  --     [2] = { stats = {['range'] = 2} }, --laser pierces through enemies
+  --     [4] = { stats = {['range'] = 4} } --get a second laser
+  --   }
+  -- },
   [ITEM_SET.BLOODLUST] = {
     name = 'Bloodlust Set',
     color = 'purple',
@@ -257,22 +257,21 @@ ITEM_SETS = {
       [4] = { stats = {['dmg'] = 5} }
     }
   },
-  [ITEM_SET.SUPPORT] = {
-    name = 'Support Set',
-    color = 'green',
-    bonuses = {
-      [1] = { stats = {['heal'] = 1} }, -- global attack speed
-      [2] = { stats = {['heal'] = 2} },
-      [4] = { stats = {['heal'] = 5} }
-    }
-  },
+  -- [ITEM_SET.SUPPORT] = {
+  --   name = 'Support Set',
+  --   color = 'green',
+  --   bonuses = {
+  --     [1] = { stats = {['heal'] = 1} }, -- global attack speed
+  --     [2] = { stats = {['heal'] = 2} },
+  --     [4] = { stats = {['heal'] = 5} }
+  --   }
+  -- },
   [ITEM_SET.SHIELD] = {
     name = 'Shield Set',
     color = 'green',
     bonuses = {
-      [1] = { stats = {['flat_def'] = 1} },
-      [2] = { stats = {['flat_def'] = 2} },
-      [4] = { stats = {['flat_def'] = 5} }
+      [1] = { procs = {'shield'} }, --shields you periodically, blocking damage
+      [2] = { procs = {'shieldexplode'} }, --shield explodes when destroyed, knocking back nearby enemies
     }
   },
   [ITEM_SET.REFLECT] = {

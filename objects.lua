@@ -488,13 +488,14 @@ end
 function Unit:remove_buff(buffName)
   local existing_buff = self.buffs[buffName]
   if existing_buff then
-    self.buffs[buffName] = nil
-  end
-  if buffName == 'shield' then
-    self:remove_shield()
-  end
-  if existing_buff then
-    self:decrement_buff_toggles(existing_buff)
+    if buffName == 'curse' then
+      self:remove_curse()
+    elseif buffName == 'shield' then
+      self:remove_shield()
+    elseif existing_buff then
+      self.buffs[buffName] = nil
+      self:decrement_buff_toggles(existing_buff)
+    end
   end
 end
 
@@ -657,17 +658,13 @@ function Unit:update_buffs(dt)
         end
       elseif k == 'invulnerable' then
         self.invulnerable = false
-      elseif k == 'shield' then
-        self:remove_shield()
-      elseif k == 'curse' then
-        self:remove_curse()
       end
       --this is where buff stacks tick down
       if v.stacks and v.stacks > 1 and not v.stacks_expire_together then
         v.stacks = v.stacks - 1
         v.duration = v.maxDuration
       else
-        self.buffs[k] = nil
+        self:remove_buff(k)
       end
     end
   end
@@ -1132,6 +1129,7 @@ function Unit:burn_explode(from)
     unit = from,
     x = self.x,
     y = self.y,
+    opacity = 0.3,
     radius = explosion_radius,
     damage = explosion_damage,
     duration = 0.3,
@@ -1209,6 +1207,7 @@ end
 function Unit:remove_curse()
   local curse_buff = self.buffs['curse']
   if not curse_buff then return end
+
   if curse_buff.from and Has_Static_Proc(curse_buff.from, 'curseHeal') then
     --pick a random damaged target from the curse buff's team
     local target = curse_buff.from
@@ -1231,7 +1230,10 @@ function Unit:remove_curse()
       }
     end
   end
-  self:remove_buff('curse')
+  --have to remove here, so there's no infinite loop
+  if self.buffs then
+    self.buffs['curse'] = nil
+  end
 end
 
 function Unit:isShielded()
@@ -1239,7 +1241,36 @@ function Unit:isShielded()
 end
 
 function Unit:remove_shield()
+  if not self.buffs or not self.buffs['shield'] then return end
+
+  if self.buffs then
+    self.buffs['shield'] = nil
+  end
   self.shielded = 0
+end
+
+function Unit:shield_explode()
+  if Has_Static_Proc(self, 'shieldexplode') then
+    
+    headbutt1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+
+    Knockback_Area_Spell{
+      group = main.current.effects,
+      is_troop = true,
+      unit = self,
+      x = self.x,
+      y = self.y,
+      opacity = 0.5,
+      radius = SHIELD_EXPLOSION_RADIUS,
+      damage = 0,
+      duration = SHIELD_EXPLOSION_DURATION,
+      area_type = 'area',
+      pick_shape = 'circle',
+      color = yellow[0],
+      knockback_force = LAUNCH_PUSH_FORCE_BOSS,
+      knockback_duration = KNOCKBACK_DURATION_SPECIAL_ENEMY,
+    }
+  end
 end
 
 --keep the highest shield value, don't stack, don't refresh duration
@@ -1322,11 +1353,11 @@ end
 
 function Unit:bloodlust(duration)
   local bloodlustBuff = {name = 'bloodlust', color = purple[5], duration = duration, maxDuration = duration, 
-    stats = {aspd = 0.1}
+    stats = {aspd = BLOODLUST_ASPD_BOOST_PER_STACK}
   }
 
   if Has_Static_Proc(self, 'bloodlustSpeedBoost') then
-    bloodlustBuff.stats.mvspd = 0.05
+    bloodlustBuff.stats.mvspd = BLOODLUST_SPEED_BOOST_PER_STACK
   end
 
   local existing_buff = self.buffs['bloodlust']
