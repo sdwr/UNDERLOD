@@ -112,15 +112,23 @@ ITEM_SETS = {
     color = 'blue',
     bonuses = {
       [1] = { stats = {['cold_damage'] = 1} },
-      [2] = { stats = {['cold_damage'] = 1}, procs = {'frostfield'} }, -- freezing an enemy creates a frostfield
-      [4] = { stats = {['cold_damage'] = 2}, procs = {'shatterlance'} } -- attacking a frozen target shatters them
+      [2] = { stats = {['cold_damage'] = 1}, procs = {'frostfield'} },
+      [4] = { stats = {['cold_damage'] = 2}, procs = {'shatterlance'} }
+    },
+    descriptions = {
+      [1] = 'Adds cold damage to attacks',
+      [2] = 'Freezing an enemy creates a frostfield',
+      [4] = 'Attacking a frozen target shatters them'
     }
   },
   [ITEM_SET.FROST_NOVA] = {
     name = 'Frost Nova',
     color = 'blue',
     bonuses = {
-      [1] = { stats = {}, procs = {'frostnova'} } -- creates a frost nova when enemies get close
+      [1] = { stats = {}, procs = {'frostnova'} }
+    },
+    descriptions = {
+      [1] = 'Creates a frost nova when enemies get close'
     }
   },
   [ITEM_SET.FIRE] = {
@@ -128,24 +136,37 @@ ITEM_SETS = {
     color = 'red',
     bonuses = {
         [1] = { stats = {['fire_damage'] = 1} },
-        [2] = { stats = {['fire_damage'] = 1}, procs = {'burnexplode'} }, --burning enemies explode (remove from current fire effect)
-        [4] = { stats = {['fire_damage'] = 2}, procs = {'volcano'} } -- burning enemies create a volcano on death
+        [2] = { stats = {['fire_damage'] = 1}, procs = {'burnexplode'} },
+        [4] = { stats = {['fire_damage'] = 2}, procs = {'volcano'} }
+    },
+    descriptions = {
+      [1] = 'Adds fire damage to attacks',
+      [2] = 'Burning enemies explode',
+      [4] = 'Burning enemies create a volcano on death'
     }
   },
   [ITEM_SET.BLAZIN] = {
-    name = 'Blazin',
+    name = 'Blazing',
     color = 'red',
     bonuses = {
-      [1] = { stats = {}, procs = {'blazin'} } -- increases attack speed per burning enemy
+      [1] = { stats = {}, procs = {'blazin'} }
+    },
+    descriptions = {
+      [1] = 'Increases attack speed per burning enemy'
     }
   },
   [ITEM_SET.METEOR] = {
     name = 'Meteor',
     color = 'red',
     bonuses = {
-      [1] = { procs = {'meteor'} }, --periodically summon meteors
-      [2] = { procs = {'meteorSizeBoost'} }, --meteors have a larger radius
-      [4] = { procs = {'meteorDamageBoost'} } --meteors deal more damage
+      [1] = { procs = {'meteor'} },
+      [2] = { procs = {'meteorSizeBoost'} },
+      [4] = { procs = {'meteorDamageBoost'} }
+    },
+    descriptions = {
+      [1] = 'Periodically summon meteors',
+      [2] = 'Meteors have a larger radius',
+      [4] = 'Meteors deal more damage'
     }
   },
   [ITEM_SET.SHOCK] = {
@@ -153,35 +174,53 @@ ITEM_SETS = {
     color = 'yellow',
           bonuses = {
         [1] = { stats = {['lightning_damage'] = 1} },
-        [2] = { stats = {['lightning_damage'] = 1}, procs = {'shock'} }, --lightning shocks enemies, increasing damaage taken
+        [2] = { stats = {['lightning_damage'] = 1}, procs = {'shock'} },
         [4] = { stats = {['lightning_damage'] = 2} }
-      }
+    },
+    descriptions = {
+      [1] = 'Adds lightning damage to attacks',
+      [2] = 'Lightning shocks enemies, increasing damaage taken',
+      [4] = 'Adds more lightning damage to attacks'
+    }
   },
   [ITEM_SET.LIGHTNING_BALL] = {
-    name = 'Lightning Ball',
+    name = 'Lightning',
     color = 'yellow',
     bonuses = {
-      [1] = { procs = {'lightningball'} } --chance to creating a lightning ball when attacking
+      [1] = { procs = {'lightningball'} }
+    },
+    descriptions = {
+      [1] = 'Chance to create a lightning ball on attack'
     }
   },
   [ITEM_SET.CURSE] = {
     name = 'Curse',
     color = 'purple',
     bonuses = {
-      [1] = { procs = {'curse'} }, --curses nearby enemies, increasing damage taken
-      [2] = { procs = {'curseHeal'} }, --heal from damage dealt to cursed enemies 
-      [4] = { procs = {'curseDamageLink'} } --cursed enemies share damage taken
+      [1] = { procs = {'curse'} },
+      [2] = { procs = {'curseHeal'} },
+      [4] = { procs = {'curseDamageLink'} }
+    },
+    descriptions = {
+      [1] = 'Curses nearby enemies, increasing damage taken',
+      [2] = 'Heal a percentage of damage dealt to cursed enemies',
+      [4] = 'Cursed enemies share damage taken'
     }
   },
-  [ITEM_SET.ATTACK_EFFECTS] = {
-    name = 'Attack Effects',
-    color = 'purple',
-    bonuses = {
-      [1] = { stats = {['attack_effects'] = 1} }, --every 4th attack is a critical hit
-      [2] = { stats = {['crit_chance'] = 2} }, --every 3rd attack is a critical hit
-      [4] = { stats = {['crit_chance'] = 4} } --every 2nd attack is a critical hit
-    }
-  },
+  -- [ITEM_SET.ATTACK_EFFECTS] = {
+  --   name = 'Critical',
+  --   color = 'purple',
+  --   bonuses = {
+  --     [1] = { stats = {['attack_effects'] = 1} },
+  --     [2] = { stats = {['crit_chance'] = 2} },
+  --     [4] = { stats = {['crit_chance'] = 4} }
+  --   },
+  --   descriptions = {
+  --     [1] = 'Every 4th attack is a critical hit',
+  --     [2] = 'Every 3rd attack is a critical hit',
+  --     [4] = 'Every 2nd attack is a critical hit'
+  --   }
+  -- },
   -- [ITEM_SET.LASER] = {
   --   name = 'Laser Set',
   --   color = 'purple',
@@ -195,17 +234,26 @@ ITEM_SETS = {
     name = 'Bloodlust',
     color = 'purple',
     bonuses = {
-      [1] = { procs = {'bloodlust'} }, --gain stacking attack speed when you kill an enemy
-      [2] = { procs = {'bloodlustSpeedBoost'} }, --bloodlust grants movement speed as well
-      [4] = { procs = {'bloodlustMaxStacks'} } --bloodlust can stack up to 10 times
+      [1] = { procs = {'bloodlust'} },
+      [2] = { procs = {'bloodlustSpeedBoost'} },
+      [4] = { procs = {'bloodlustMaxStacks'} }
+    },
+    descriptions = {
+      [1] = 'Gain stacking attack speed when you kill an enemy',
+      [2] = 'Bloodlust grants movement speed as well',
+      [4] = 'Bloodlust can stack up to 10 times'
     }
   },
   [ITEM_SET.SPLASH] = {
     name = 'Splash',
     color = 'brown',
     bonuses = {
-      [1] = { procs = {'splash'} }, --attacks do splash damage to nearby enemies
-      [2] = { stats = {['area_size'] = 2} }, --splash damage applies elemental effects
+      [1] = { procs = {'splash'} },
+      [2] = { stats = {['area_size'] = 2} },
+    },
+    descriptions = {
+      [1] = 'Attacks do splash damage to nearby enemies',
+      [2] = 'Splash damage applies elemental effects (TODO)'
     }
   },
   [ITEM_SET.DAMAGE] = {
@@ -215,6 +263,11 @@ ITEM_SETS = {
       [1] = { stats = {['dmg'] = 1} },
       [2] = { stats = {['dmg'] = 2} },
       [4] = { stats = {['dmg'] = 5} }
+    },
+    descriptions = {
+      [1] = 'Gain damage',
+      [2] = 'Gain more damage',
+      [4] = 'Gain even more damage'
     }
   },
   -- [ITEM_SET.SUPPORT] = {
@@ -230,17 +283,26 @@ ITEM_SETS = {
     name = 'Shield',
     color = 'green',
     bonuses = {
-      [1] = { procs = {'shield'} }, --shields you periodically, blocking damage
-      [2] = { procs = {'shieldexplode'} }, --shield explodes when destroyed, knocking back nearby enemies
+      [1] = { procs = {'shield'} },
+      [2] = { procs = {'shieldexplode'} },
+    },
+    descriptions = {
+      [1] = 'Shields you periodically, blocking damage',
+      [2] = 'Shield explodes when destroyed, knocking back nearby enemies'
     }
   },
   [ITEM_SET.REFLECT] = {
     name = 'Mirror',
     color = 'green',
     bonuses = {
-      [1] = { procs = {'retaliate'} }, --retaliate with an attack when hit
-      [2] = { procs = {'elementalRetaliate'} }, --retaliate applies elemental effects
-      [4] = { procs = {'retaliateNearby'} }, --retaliate hits all nearby enemies
+      [1] = { procs = {'retaliate'} },
+      [2] = { procs = {'elementalRetaliate'} },
+      [4] = { procs = {'retaliateNearby'} },
+    },
+    descriptions = {
+      [1] = 'Retaliate with an attack when hit',
+      [2] = 'Retaliate applies elemental effects',
+      [4] = 'Retaliate hits all nearby enemies'
     }
   },
   [ITEM_SET.REPEAT] = {
@@ -249,6 +311,10 @@ ITEM_SETS = {
     bonuses = {
       [1] = { stats = {['repeat_attack_chance'] = 1} },
       [2] = { stats = {['crit_chance'] = 2} }
+    },
+    descriptions = {
+      [1] = 'Chance to repeat an attack',
+      [2] = 'Increase chance to repeat an attack (TODO)'
     }
   },
   [ITEM_SET.STUN] = {
@@ -258,6 +324,11 @@ ITEM_SETS = {
       [1] = { stats = {['stun_chance'] = 1} },
       [2] = { stats = {['dmg'] = 2} },
       [4] = { stats = {['dmg'] = 4} }
+    },
+    descriptions = {
+      [1] = 'Chance to stun an enemy',
+      [2] = 'TODO',
+      [4] = 'TODO'
     }
   }
 }

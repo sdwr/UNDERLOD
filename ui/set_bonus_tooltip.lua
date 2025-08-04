@@ -44,7 +44,7 @@ function SetBonusTooltip:build_text_lines()
   -- Sort sets by name for consistent display
   table.sort(item_sets, function(a, b) return a.name < b.name end)
   
-  for _, set_info in ipairs(item_sets) do
+  for _, set_info in pairs(item_sets) do
     -- Set name header
     local set_color = set_info.color or 'fg'
     table.insert(self.text_lines, {
@@ -54,34 +54,27 @@ function SetBonusTooltip:build_text_lines()
     })
     
     -- Set bonuses
-    for i = 1, MAX_SET_BONUS_PIECES do
-      local bonus = set_info.bonuses[i]
-      if bonus then
+    if set_info.bonuses and set_info.descriptions then
+      for i = 1, MAX_SET_BONUS_PIECES do
+        if set_info.bonuses[i] then
+        
+          local bonus = set_info.bonuses[i]
+          local desc_text = set_info.descriptions[i]
+          
+          local stat_text = nil
+          if bonus.stats then
+            stat_text = self:get_bonus_stat_text(bonus.stats)
+          end
 
-        local color = 'fgm2' -- Always show as unreached since we don't know current count
-        
-        -- Build bonus description from stats
-        local bonus_desc = ""
-        local stat_parts = {}
-        if bonus.stats then
-          for stat, value in pairs(bonus.stats) do
-            local display_name = item_stat_lookup and item_stat_lookup[stat] or stat
-            table.insert(stat_parts, "+" .. value .. " " .. display_name)
-          end
+          local color = 'fgm2'
+          local bonus_text = desc_text or stat_text or ""
+          table.insert(self.text_lines, {
+            text = '[' .. color .. ']' .. i .. 'pc: ' .. bonus_text, 
+            font = pixul_font, 
+            alignment = 'left'
+          })
+
         end
-        if bonus.procs then
-          for _, proc in ipairs(bonus.procs) do
-            table.insert(stat_parts, proc)
-          end
-        end
-        
-        bonus_desc = table.concat(stat_parts, ", ")
-        
-        table.insert(self.text_lines, {
-          text = '[' .. color .. ']' .. i .. 'pc: ' .. bonus_desc, 
-          font = pixul_font, 
-          alignment = 'left'
-        })
       end
     end
     
@@ -92,6 +85,31 @@ function SetBonusTooltip:build_text_lines()
   end
 end
 
+function SetBonusTooltip:get_bonus_stat_text(bonus)
+  local stat_text = nil
+  if bonus then
+    local color = 'fgm2' -- Always show as unreached since we don't know current count
+    
+    -- Build bonus description from stats
+    local stat_parts = {}
+    if bonus.stats then
+      for stat, value in pairs(bonus.stats) do
+        local display_name = item_stat_lookup and item_stat_lookup[stat] or stat
+        table.insert(stat_parts, "+" .. value .. " " .. display_name)
+      end
+    end
+    if bonus.procs then
+      for _, proc in ipairs(bonus.procs) do
+        table.insert(stat_parts, proc)
+      end
+    end
+    
+    stat_text = table.concat(stat_parts, ", ")
+    
+  end
+  return stat_text
+end
+
 function SetBonusTooltip:get_item_sets()
   local sets = {}
   
@@ -100,11 +118,7 @@ function SetBonusTooltip:get_item_sets()
     for _, set_key in ipairs(self.item.sets) do
       local set_def = ITEM_SETS[set_key]
       if set_def then
-        table.insert(sets, {
-          name = set_def.name,
-          bonuses = set_def.bonuses,
-          color = set_def.color
-        })
+        table.insert(sets, set_def)
       end
     end
   end
