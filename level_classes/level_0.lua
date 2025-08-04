@@ -47,10 +47,12 @@ function Level0:on_character_selected(character)
   -- Call parent method first
   Level0.super.on_character_selected(self, character)
 
+  main.current:replace_first_unit(character)
+
   self:create_combat_tutorial_text()
   
   -- Open door after a short delay
-  self.t:after(3, function()
+  self.t:after(2, function()
     self:open_door()
   end)
 end

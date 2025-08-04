@@ -11,10 +11,15 @@ function CombatLevel:purchase_character()
 end
 
 function CombatLevel:on_character_selected(character)
+  CombatLevel.super.on_character_selected(self, character)
+
   main.current:add_unit(character)
-  self:remove_all_character_items()
   self:remove_tutorial_text()
-  self:create_floor_items()
+  --self:create_floor_items()
+
+  self.t:after(1, function()
+    self:open_door()
+  end)
 end
 
 function CombatLevel:level_clear()
@@ -51,7 +56,7 @@ function CombatLevel:create_floor_items()
       local tier = LEVEL_TO_TIER(self.level or 1)
       local item = nil
       if self.level == 1 then
-        item = create_random_item(tier, 4)
+        item = create_random_item(tier, ITEM_RARITIES[1])
       else
         item = create_random_item(tier)
       end

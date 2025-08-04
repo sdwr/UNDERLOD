@@ -24,20 +24,20 @@ function get_item_slot_location(item_slot)
 end
 
 function Refresh_All_Cards_Text()
-  for i, text in ipairs(ALL_CARD_TEXTS) do
+  for _, text in pairs(ALL_CARD_TEXTS) do
     if not text.dead then
       text.dead = true
     end
   end
   ALL_CARD_TEXTS = {}
-  for i, card in ipairs(Character_Cards) do
+  for _, card in pairs(Character_Cards) do
     card:refreshText()
   end
 end
 
 function Kill_All_Cards()
   if not Character_Cards then return end
-  for i, card in ipairs(Character_Cards) do
+  for _, card in pairs(Character_Cards) do
     if card.last_round_display then
       card.last_round_display:deactivate()
       card.last_round_display.dead = true
@@ -45,7 +45,7 @@ function Kill_All_Cards()
     card:die()
   end
   Character_Cards = {}
-  for i, text in ipairs(ALL_CARD_TEXTS) do
+  for _, text in pairs(ALL_CARD_TEXTS) do
     text.dead = true
   end
 end
@@ -436,29 +436,6 @@ function CharacterCard:hide_set_bonus_popup()
   end
 end
 
-function CharacterCard:refreshText()
-  -- Remove old buttons if they exist
-  if self.unit_stats_icon then
-    self.unit_stats_icon.dead = true
-  end
-  
-  -- Remove old last round stats icon if it exists
-  if self.last_round_stats_icon then
-    self.last_round_stats_icon.dead = true
-  end
-
-  if self.set_bonus_elements then
-    for _, element in ipairs(self.set_bonus_elements) do
-      element.dead = true
-    end
-    self.set_bonus_elements = {}
-  end
-  
-
-  
-  self:createUIElements()
-end
-
 function CharacterCard:draw()
   graphics.push(self.x, self.y, 0, self.spring.x, self.spring.x)
   --draw background
@@ -470,6 +447,7 @@ function CharacterCard:draw()
 end
   
 function CharacterCard:update(dt)
+  if self.dead then return end
   self:update_game_object(dt)
   
   -- Check unit stats icon hover state
@@ -702,7 +680,6 @@ end
 
 function ItemPart:die()
   self.dead = true
-  Refresh_All_Cards_Text()
   if Active_Inventory_Slot == self then
     Active_Inventory_Slot = nil
   end
