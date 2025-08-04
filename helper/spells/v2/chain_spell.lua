@@ -21,16 +21,15 @@ function ChainSpell:init(args)
   if not self.group.world then self.dead = true; return end
 
   -- Parameters for configuration by subclasses.
-  self.parent = args.parent                      -- The object that cast the spell.
+  self.caster = args.parent                      -- The object that originally cast the spell.
+  self.source = args.source or args.parent       -- The object that the current chain link starts from.
   self.initial_target = args.target              -- The first target to be hit.
-  self.second_target = args.second_target        -- The second target to be hit.
-  self.max_chains = default_to(args.max_chains, 5)         -- Maximum number of bounces.
-  self.range = default_to(args.range, 50)                -- The radius to search for the next target.
-  self.delay = default_to(args.delay, 0.15)                -- The time in seconds between each chain link.
-  self.target_classes = default_to(args.target_classes, {})-- Table of classes to consider valid targets (e.g., main.current.enemies).
-  self.target_condition = default_to(args.target_condition, function() return true end)
-  self.skip_first_bounce = default_to(args.skip_first_bounce, false)    -- Skip bounce effect from parent to first target
-  self.draw_first_line = default_to(args.draw_first_line, true)
+  self.max_chains = args.max_chains or 5         -- Maximum number of bounces.
+  self.range = args.range or 50                -- The radius to search for the next target.
+  self.delay = args.delay or 0.15                -- The time in seconds between each chain link.
+  self.target_classes = args.target_classes or {}-- Table of classes to consider valid targets (e.g., main.current.enemies).
+  self.target_condition = args.target_condition or function() return true end
+  self.skip_first_bounce = args.skip_first_bounce or false -- Skip bounce effect from parent to first target
 
   -- Callback functions to be defined by the spell implementation.
   -- on_hit(spell, target): Action to perform on the target (e.g., deal damage).
@@ -46,15 +45,15 @@ function ChainSpell:init(args)
   if self.skip_first_bounce then
     self.last_target = nil  -- No initial source for first bounce
   else
-    self.last_target = self.parent  -- The source of the current chain link
+    self.last_target = self.source  -- The source of the current chain link
   end
 
   -- Initiate the chaining process. We use a timer to avoid blocking the main thread
   -- and to handle the delay between bounces.
-  self:process_next_link(self.second_target, not self.draw_first_line)
+  self:process_next_link()
 end
 
-function ChainSpell:process_next_link(next_target, skip_bounce)
+function ChainSpell:process_next_link()
   self.current_index = self.current_index + 1
 
   -- ## Termination Conditions ##
@@ -85,16 +84,12 @@ function ChainSpell:process_next_link(next_target, skip_bounce)
     end
 
     -- 2. Trigger the visual/audio effect for the bounce.
-    if self.on_bounce and self.last_target and not skip_bounce then
+    if self.on_bounce and self.last_target then
       self:on_bounce(self.last_target, current_target)
     end
 
     -- 3. Find all valid new targets around the current one for the next link.
-    if next_target then
-      self.targets = {next_target}
-    else
-      self:find_next_targets(current_target)
-    end
+    self:find_next_targets(current_target)
 
     -- 4. The current target becomes the starting point for the next bounce.
     self.last_target = current_target
@@ -150,7 +145,8 @@ function ChainLightning:init(args)
   -- 1. Define lightning-specific parameters.
   self.group = args.group or main.current.main
   self.target = args.target
-  self.parent = args.parent
+  self.caster = args.parent
+  self.source = args.source or args.parent
   self.range = args.range or 50
   self.is_troop = args.is_troop or false
   self.damage = get_dmg_value(args.damage)
@@ -168,7 +164,7 @@ function ChainLightning:init(args)
   -- 2. Create the configuration table for the base ChainSpell.
   local spell_args = {
     group = self.group,
-    parent = self.parent,
+    parent = self.caster,
     target = self.target,
     max_chains = SHOCK_MAX_CHAINS,
     range = self.range, -- Use the radius specified in the original arguments
@@ -211,7 +207,8 @@ function ChainHeal:init(args)
   -- 1. Define heal-specific parameters
   self.group = args.group or main.current.main
   self.target = args.target
-  self.parent = args.parent
+  self.caster = args.parent
+  self.source = args.source or args.parent
   self.range = args.range or 50
   self.heal_amount = args.heal_amount or 10
   self.time_between_bounces = args.time_between_bounces or 0.3
@@ -233,7 +230,7 @@ function ChainHeal:init(args)
   -- 2. Create the configuration table for the base ChainSpell.
   local spell_args = {
     group = self.group,
-    parent = self.parent,
+    parent = self.caster,
     target = self.target,
     max_chains = args.max_chains or 4,
     delay = self.time_between_bounces,
@@ -282,28 +279,18 @@ function ChainCurse:init(args)
   -- 1. Define curse-specific parameters.
   self.group = args.group or main.current.main
   self.target = args.target
-  self.second_target = default_to(args.second_target, nil)
-  self.parent = args.parent
-  self.damage = default_to(args.damage, 0)
+  self.caster = args.parent
+  self.source = args.source or args.parent
   self.range = args.range or 50
-  self.is_troop = args.is_troop
+  self.is_troop = args.is_troop or false
+  self.curse_data = args.curse_data or {name = 'curse', duration = 3, color = purple[0], stats = {percent_def = -0.4}}
   self.primary_color = args.primary_color or purple[-3] -- Dark purple
   self.secondary_color = args.secondary_color or black[0] -- Black
 
   self.primary_color.a = 0.8
   self.secondary_color.a = 0.3
 
-  self.max_chains = default_to(args.max_chains, 4)
-
-  self.delay = default_to(args.delay, 0.5)
-  self.visual_duration = default_to(args.visual_duration, 0.6)
-  self.draw_first_line = default_to(args.draw_first_line, true)
-  self.apply_curse = default_to(args.apply_curse, true)
-  self.skip_first_bounce = default_to(args.skip_first_bounce, false)
-
-  self.damageType = default_to(args.damageType, DAMAGE_TYPE_PHYSICAL)
-
-  self.volume = default_to(args.volume, 0.4)
+  self.delay = args.delay or 0.5
   -- Define the enemy/friendly targeting logic.
   local target_classes
   if not self.is_troop then
@@ -315,33 +302,24 @@ function ChainCurse:init(args)
   -- 2. Create the configuration table for the base ChainSpell.
   local spell_args = {
     group = self.group,
-    parent = self.parent,
+    parent = self.caster,
     target = self.target,
-    second_target = self.second_target,
-    max_chains = self.max_chains,
+    max_chains = args.max_chains or 4,
     range = self.range,
-    damage = self.damage,
-    damageType = self.damageType,
     target_classes = target_classes,
-    skip_first_bounce = self.skip_first_bounce, -- Skip curse line from parent to first target
-    draw_first_line = self.draw_first_line,
+    skip_first_bounce = false, -- Skip curse line from parent to first target
     delay = self.delay,
     -- ## Define Callbacks ##
 
     -- on_hit: This function is called on each target in the chain.
     on_hit = function(spell, target)
       -- Apply curse debuff to the target
-      if self.damage > 0 then
-        Helper.Damage:chained_hit(target, self.damage, spell.parent, self.damageType, true)
-      end
-      if self.apply_curse then
-        target:curse(spell.parent)
-      end
+      target:curse(spell.caster)
     end,
 
     -- on_bounce: This function creates the visual and audio effects between targets.
     on_bounce = function(spell, from_target, to_target)
-      wizard1:play{pitch = random:float(0.9, 1.1), volume = self.volume}
+      wizard1:play{pitch = random:float(0.9, 1.1), volume = 0.4}
       -- The CurseLine effect is a separate, temporary object.
       CurseLine{
         group = main.current.effects,
@@ -349,7 +327,7 @@ function ChainCurse:init(args)
         dst = to_target,
         primary_color = self.primary_color,
         secondary_color = self.secondary_color,
-        duration = self.visual_duration
+        duration = 0.6
       }
     end
   }

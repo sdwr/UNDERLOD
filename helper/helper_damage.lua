@@ -178,23 +178,8 @@ function Helper.Damage:deal_damage(unit, damage)
       local damage_to_deal = (damage * CURSE_DAMAGE_LINK_DAMAGE_PERCENT) / #units_to_hit
 
       for _, unit_to_hit in ipairs(units_to_hit) do
-        ChainCurse{
-          group = main.current.main,
-          parent = unit, -- Use unit as parent instead of curse_from
-          target = unit_to_hit, -- Use unit_to_hit as target
-          skip_first_bounce = false, -- Don't skip the bounce
-          draw_first_line = true, -- Draw the line
-          range = 0,
-          max_chains = 1,
-          is_troop = curse_from.is_troop,
-          apply_curse = false,
-          color = purple[0],
-          visual_duration = 0.2,
-          delay = 0,
-          damage = damage_to_deal,
-          damageType = DAMAGE_TYPE_PHYSICAL,
-          volume = 0.2,
-        }
+        print('curse damage link', unit_to_hit.type, damage_to_deal)
+
       end
 
     end
