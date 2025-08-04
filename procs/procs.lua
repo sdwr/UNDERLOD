@@ -609,7 +609,7 @@ function Proc_Retaliate:init(args)
   
   --define the proc's vars
   self.baseCooldown = self.data.cooldown or 2
-  self.cooldown = self.baseCooldown
+  self.cooldown = 0
 
   --proc memory
 end
@@ -620,12 +620,58 @@ function Proc_Retaliate:onTick(dt, from)
   self.cooldown = self.cooldown - dt
 end
 
-function Proc_Retaliate:onGotHit(target, damage)
-  Proc_Retaliate.super.onGotHit(self, target, damage)
+function Proc_Retaliate:onGotHit(from, damage)
+  Proc_Retaliate.super.onGotHit(self, from, damage)
+  if not self.unit then return end
   if self.cooldown > 0 then return end
+
   self.cooldown = self.baseCooldown
-  -- have to create a new spell object here, which means
-  -- making a generic fn for that for troop
+  if self.unit.instant_attack then
+    self.unit:instant_attack(from)
+  else
+    print('no instant attack', self.unit.character)
+  end
+
+  --try retaliatenearby
+  if Has_Static_Proc(self.unit, 'retaliateNearby') then
+    self:retaliateNearby(from)
+  end
+end
+
+function Proc_Retaliate:retaliateNearby(from)
+  local nearbyProc = Get_Static_Proc(self.unit, 'retaliateNearby')
+  if not nearbyProc then return end
+  if not self.unit then return end
+  if not self.unit.instant_attack then
+    print('no instant attack', self.unit.character)
+    return
+  end
+
+  local max_targets = nearbyProc.max_targets
+  local radius = nearbyProc.radius
+
+  local attack_sensor = Circle(self.unit.x, self.unit.y, radius)
+  local enemies = self.unit:get_objects_in_shape(attack_sensor, enemy_classes)
+  if not enemies or #enemies == 0 then return end
+
+  if #enemies > max_targets then
+    enemies = table.slice(enemies, 1, max_targets)
+  end
+
+  for i, enemy in ipairs(enemies) do
+    self.unit:instant_attack(enemy)
+  end
+end
+
+Proc_RetaliateNearby = Proc:extend()
+function Proc_RetaliateNearby:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'troop'
+
+  Proc_RetaliateNearby.super.init(self, args)
+
+  self.max_targets = 5
+  self.radius = 100
 end
 
 Proc_Battlefury = Proc:extend()
@@ -2162,6 +2208,7 @@ proc_name_to_class = {
   ['healingwave'] = Proc_HealingWave,
   ['root'] = Proc_Root,
   ['retaliate'] = Proc_Retaliate,
+  ['retaliateNearby'] = Proc_RetaliateNearby,
   ['curse'] = Proc_Curse,
   ['curseHeal'] = Proc_CurseHeal,
   ['curseDamageLink'] = Proc_CurseDamageLink,

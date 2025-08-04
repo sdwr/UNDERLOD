@@ -84,6 +84,25 @@ function Swordsman_Troop:setup_cast(cast_target)
     self.castObject = Cast(cast_data)
 end
 
+function Swordsman_Troop:instant_attack(cast_target)
+  Area_Spell{
+    group = main.current.effects,
+    sound = self.play_attack_sound,
+    target = cast_target,
+    on_attack_callbacks = false,
+    unit = self,
+    damage = function() return self.dmg end,
+    radius = self.base_attack_area,
+    duration = 0.2,
+    damage_ticks = false,
+    color = orange[0],
+    opacity = 0.3,
+    area_type = 'target',
+    apply_primary_hit_to_target = false,
+    is_troop = true,
+  }
+end
+
 function Swordsman_Troop:set_state_functions()
   self.state_always_run_functions['always_run'] = function(self)
   end

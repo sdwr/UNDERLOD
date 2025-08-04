@@ -140,6 +140,16 @@ Has_Static_Proc = function(teamOrUnit, procName)
   return false
 end
 
+Get_Static_Proc = function(teamOrUnit, procName)
+  if teamOrUnit.staticProcs then
+    for i, proc in ipairs(teamOrUnit.staticProcs) do
+      if proc.name == procName then
+        return proc
+      end
+    end
+  end
+end
+
 --name is passed in from the item data
 Proc = Object:extend()
 function Proc:init(args)

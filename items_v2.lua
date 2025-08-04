@@ -278,9 +278,9 @@ ITEM_SETS = {
     name = 'Mirror Set',
     color = 'green',
     bonuses = {
-      [1] = { stats = {['thorns'] = 1} }, --knockback all nearby enemies when hit
-      [2] = { stats = {['hp'] = 2} },
-      [4] = { stats = {['hp'] = 4} }
+      [1] = { procs = {'retaliate'} }, --retaliate with an attack when hit
+      [2] = { procs = {'elementalRetaliate'} }, --retaliate applies elemental effects
+      [4] = { procs = {'retaliateNearby'} }, --retaliate hits all nearby enemies
     }
   },
   [ITEM_SET.REPEAT] = {

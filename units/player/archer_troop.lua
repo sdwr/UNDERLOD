@@ -10,7 +10,6 @@ function Archer_Troop:init(data)
   self.castTime = self.baseCast
   self.backswing = data.backswing or 0.1
   self:reset_castcooldown(math.random() * (self.base_castcooldown or self.baseCast))
-
 end
 
 function Archer_Troop:setup_cast(cast_target)
@@ -31,13 +30,26 @@ function Archer_Troop:setup_cast(cast_target)
     spelldata = {
       group = main.current.effects,
       on_attack_callbacks = true,
-      spell_duration = 1,
+      spell_duration = 3,
       color = blue[0],
       damage = function() return self.dmg end,
 
     }
   }
   self.castObject = Cast(data)
+end
+
+--instant attack skips the unit cooldown, is a double attack or retaliate
+function Archer_Troop:instant_attack(cast_target)
+  Arrow{
+    group = main.current.effects,
+    target = cast_target,
+    on_attack_callbacks = false,
+    unit = self,
+    spell_duration = 3,
+    color = blue[0],
+    damage = function() return self.dmg end,
+  }
 end
 
 --need to implement generic cooldown time and cast time, so that we can use the same logic for all units

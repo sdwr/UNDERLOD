@@ -77,6 +77,29 @@ function Laser_Troop:setup_cast(cast_target)
   self:cast(data)
 end
 
+function Laser_Troop:instant_attack(cast_target)
+  Laser_Spell{
+    group = main.current.effects,
+    target = cast_target,
+    on_attack_callbacks = false,
+    unit = self,
+    spell_duration = 10,
+    color = blue[0],
+    damage = function() return self.dmg end,
+    reduce_pierce_damage = true,
+    lasermode = 'target',
+    laser_aim_width = 1,
+    laser_width = 8,
+    charge_duration = 0.5,
+    damage_troops = false,
+    damage_once = true,
+    end_spell_on_fire = false,
+    fire_follows_unit = true,
+    fade_fire_draw = true,
+    fade_in_aim_draw = true,
+  }
+end
+
 -- NOTE: Laser hits are currently left as indirect hits for now.
 -- TODO: Implement primary hit for the exact target only, with chained hits for other targets hit by the beam.
 -- This requires modifying the Laser_Spell to distinguish between the intended target and other targets.
