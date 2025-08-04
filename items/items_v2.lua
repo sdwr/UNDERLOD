@@ -249,11 +249,13 @@ ITEM_SETS = {
     color = 'brown',
     bonuses = {
       [1] = { procs = {'splash'} },
-      [2] = { stats = {['area_size'] = 2} },
+      [2] = { procs = {'splashSizeBoost'} },
+      [4] = { procs = {'splashSizeBoost2'} }
     },
     descriptions = {
       [1] = 'Attacks do splash damage to nearby enemies',
-      [2] = 'Splash damage applies elemental effects (TODO)'
+      [2] = 'Attacks splash in a larger area',
+      [4] = 'Attacks splash in an even larger area'
     }
   },
   [ITEM_SET.DAMAGE] = {

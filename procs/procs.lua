@@ -731,12 +731,21 @@ function Proc_Splash:onPrimaryHit(target, damage, damageType)
   Proc_Splash.super.onPrimaryHit(self, target, damage, damageType)
   if not target then return end
   if not self.unit then return end
+
+  local radiusMulti = 1
+  if Has_Static_Proc(self.unit, 'splashSizeBoost') then
+    local proc = Get_Static_Proc(self.unit, 'splashSizeBoost')
+    radiusMulti = radiusMulti * proc.radiusMulti
+  elseif Has_Static_Proc(self.unit, 'splashSizeBoost2') then
+    local proc = Get_Static_Proc(self.unit, 'splashSizeBoost2')
+    radiusMulti = radiusMulti * proc.radiusMulti
+  end
   
   Area_Spell{
     group = main.current.effects,
     x = target.x, y = target.y,
     pick_shape = 'circle',
-    radius = self.radius,
+    radius = self.radius * radiusMulti,
     duration = self.duration,
     damage = damage,
     color = self.color,
@@ -744,6 +753,26 @@ function Proc_Splash:onPrimaryHit(target, damage, damageType)
     unit = self.unit,
     targets_to_exclude = {[target.id] = true}
   }
+end
+
+Proc_SplashSizeBoost = Proc:extend()
+function Proc_SplashSizeBoost:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'troop'
+
+  Proc_SplashSizeBoost.super.init(self, args)
+
+  self.radiusMulti = 1.7
+end
+
+Proc_SplashSizeBoost2 = Proc:extend()
+function Proc_SplashSizeBoost2:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'troop'
+
+  Proc_SplashSizeBoost2.super.init(self, args)
+
+  self.radiusMulti = 1.5
 end
 
 --proc overkill
@@ -2184,7 +2213,10 @@ proc_name_to_class = {
   ['shieldslam'] = Proc_Shieldslam,
   ['rebuke'] = Proc_Rebuke,
   ['battlefury'] = Proc_Battlefury,
+  
   ['splash'] = Proc_Splash,
+  ['splashSizeBoost'] = Proc_SplashSizeBoost,
+  ['splashSizeBoost2'] = Proc_SplashSizeBoost2,
 
   --yellow procs
   ['radiance'] = Proc_Radiance,
