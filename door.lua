@@ -68,6 +68,13 @@ function Door:open()
   end
 end
 
+function Door:close()
+  self.is_open = false
+  self.open_sound_played = false
+  self.animation_progress = 0
+  self.pulse_timer = 0
+end
+
 function Door:draw()
   if self.is_open then
     -- Calculate fade-in alpha over 2 seconds

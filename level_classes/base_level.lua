@@ -66,6 +66,10 @@ function BaseLevel:on_buy_character_triggered()
     return
   end
 
+  if self.door then
+    self.door:close()
+  end
+
   self:purchase_character()
 end
 
@@ -152,6 +156,10 @@ function BaseLevel:on_character_selected(character)
   main.current:replace_first_unit(character)
   self:remove_all_character_items()
   -- Override this in subclasses to handle character selection
+
+  if self.door and not self.door.is_open then
+    self.door:open()
+  end
 end
 
 function BaseLevel:quit()
