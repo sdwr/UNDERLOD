@@ -674,6 +674,15 @@ function Proc_RetaliateNearby:init(args)
   self.radius = 100
 end
 
+Proc_ElementalRetaliate = Proc:extend()
+function Proc_ElementalRetaliate:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'troop'
+
+  Proc_ElementalRetaliate.super.init(self, args)
+end
+
+
 Proc_Battlefury = Proc:extend()
 function Proc_Battlefury:init(args)
   self.triggers = {PROC_ON_ATTACK}
@@ -2207,8 +2216,11 @@ proc_name_to_class = {
   ['sacrificialclam'] = Proc_SacrificialClam,
   ['healingwave'] = Proc_HealingWave,
   ['root'] = Proc_Root,
+
   ['retaliate'] = Proc_Retaliate,
+  ['elementalRetaliate'] = Proc_ElementalRetaliate,
   ['retaliateNearby'] = Proc_RetaliateNearby,
+
   ['curse'] = Proc_Curse,
   ['curseHeal'] = Proc_CurseHeal,
   ['curseDamageLink'] = Proc_CurseDamageLink,
