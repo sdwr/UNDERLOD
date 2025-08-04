@@ -1209,18 +1209,27 @@ end
 function Unit:remove_curse()
   local curse_buff = self.buffs['curse']
   if not curse_buff then return end
-  if curse_buff.from and curse_buff.damage_taken > 0 and Has_Static_Proc(curse_buff.from, 'curseHeal') then
-    --cast a heal line from the cursed unit to the curser
-    ChainHeal{
-      group = main.current.main,
-      parent = self,
-      target = curse_buff.from,
-      range = 0,
-      is_troop = curse_buff.from.is_troop,
-      color = purple[0],
-      max_chains = 1,
-      heal_amount = curse_buff.damage_taken * CURSE_HEAL_PERCENT_OF_DAMAGE_TAKEN,
-    }
+  if curse_buff.from and Has_Static_Proc(curse_buff.from, 'curseHeal') then
+    --pick a random damaged target from the curse buff's team
+    local target = curse_buff.from
+    local team = curse_buff.from:get_team()
+    if team then
+      target = team:get_random_hurt_troop()
+    end
+    
+    if target then
+      --cast a heal line from the cursed unit to the curser
+      ChainHeal{
+        group = main.current.main,
+        parent = self,
+        target = curse_buff.from,
+        range = 0,
+        is_troop = curse_buff.from.is_troop,
+        color = purple[0],
+        max_chains = 1,
+        heal_amount = curse_buff.damage_taken * CURSE_HEAL_PERCENT_OF_DAMAGE_TAKEN,
+      }
+    end
   end
   self:remove_buff('curse')
 end
@@ -1403,20 +1412,21 @@ function Unit:start_curse(from)
         target = self,
         range = 0, -- No additional chaining
         is_troop = from.is_troop,
-        curse_data = curseBuff,
+        apply_curse = true,
         color = purple[-3], -- Dark purple
         max_chains = 1 -- Only one line from caster to target
       }
     else
       --add buff if the line is not drawn
-      self:curse(curseBuff)
+      self:curse(from)
     end
   end)
 end
 
-function Unit:curse(curse_buff)
+function Unit:curse(from)
+  local curseBuff = {name = 'curse', from = from, duration = 4, damage_taken = 0, color = purple[0], stats = {percent_def = -0.4}}
   self:remove_curse()
-  self:add_buff(curse_buff)
+  self:add_buff(curseBuff)
 end
 
 --unit level state functions

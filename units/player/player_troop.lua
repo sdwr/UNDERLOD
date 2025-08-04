@@ -650,3 +650,8 @@ function Troop:get_hurt_ally_without_shield(sensor)
   end
   return false
 end
+
+function Troop:get_team()
+  if not self.team then return end
+  return Helper.Unit.teams[self.team]
+end

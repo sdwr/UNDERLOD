@@ -77,6 +77,13 @@ function table.extend(t, t2)
   end
 end
 
+function default_to(value, default)
+  if value ~= nil then
+    return value
+  end
+  return default
+end
+
 function random_offset(offset)
   return math.random(-offset, offset)
 end

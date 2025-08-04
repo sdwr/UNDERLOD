@@ -132,7 +132,6 @@ end
 Has_Static_Proc = function(teamOrUnit, procName)
   if teamOrUnit.staticProcs then
     for i, proc in ipairs(teamOrUnit.staticProcs) do
-      print('proc', proc.name, procName)
       if proc.name == procName then
         return true
       end

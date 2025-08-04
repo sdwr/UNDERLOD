@@ -169,15 +169,32 @@ function Helper.Damage:deal_damage(unit, damage)
 
   --only for non-chained hits, to prevent an infinite loop
   if unit.buffs['curse'] and unit.buffs['curse'].from then
-    if Has_Static_Proc(unit.buffs['curse'].from, 'curseDamageLink') then
+    local curse_from = unit.buffs['curse'].from
+    if Has_Static_Proc(curse_from, 'curseDamageLink') then
       --deal damage to some nearby cursed units
-      local attack_sensor = Circle(unit.buffs['curse'].from.x, unit.buffs['curse'].from.y, CURSE_DAMAGE_LINK_RADIUS)
-      local units_to_hit = unit.buffs['curse'].from:get_cursed_targets(attack_sensor, enemy_classes)
+      local attack_sensor = Circle(unit.x, unit.y, CURSE_DAMAGE_LINK_RADIUS)
+      local units_to_hit = unit:get_cursed_targets(attack_sensor, enemy_classes)
 
       local damage_to_deal = (damage * CURSE_DAMAGE_LINK_DAMAGE_PERCENT) / #units_to_hit
 
       for _, unit_to_hit in ipairs(units_to_hit) do
-        Helper.Damage:chained_hit(unit_to_hit, damage_to_deal, unit.buffs['curse'].from, DAMAGE_TYPE_PHYSICAL, false)
+        ChainCurse{
+          group = main.current.main,
+          parent = unit, -- Use unit as parent instead of curse_from
+          target = unit_to_hit, -- Use unit_to_hit as target
+          skip_first_bounce = false, -- Don't skip the bounce
+          draw_first_line = true, -- Draw the line
+          range = 0,
+          max_chains = 1,
+          is_troop = curse_from.is_troop,
+          apply_curse = false,
+          color = purple[0],
+          visual_duration = 0.2,
+          delay = 0,
+          damage = damage_to_deal,
+          damageType = DAMAGE_TYPE_PHYSICAL,
+          volume = 0.2,
+        }
       end
 
     end
