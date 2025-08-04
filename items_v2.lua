@@ -209,8 +209,8 @@ ITEM_SETS = {
     color = 'purple',
     bonuses = {
       [1] = { procs = {'curse'} }, --curses nearby enemies, increasing damage taken
-      [2] = { stats = {['area_size'] = 1} }, --cursed enemies share damage taken
-      [4] = { stats = {['area_size'] = 1} }
+      [2] = { procs = {'curseHeal'} }, --heal from damage dealt to cursed enemies 
+      [4] = { procs = {'curseDamageLink'} } --cursed enemies share damage taken
     }
   },
   [ITEM_SET.ATTACK_EFFECTS] = {

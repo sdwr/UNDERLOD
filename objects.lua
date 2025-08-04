@@ -471,6 +471,9 @@ function Unit:add_buff(buff)
     if buffCopy.nextTick then
       self.buffs[buffCopy.name].nextTick = buffCopy.nextTick
     end
+    if buffCopy.from then
+      self.buffs[buffCopy.name].from = buffCopy.from
+    end
   else
     if buffCopy.color then
       local color = buffCopy.color:clone()
@@ -656,6 +659,8 @@ function Unit:update_buffs(dt)
         self.invulnerable = false
       elseif k == 'shield' then
         self:remove_shield()
+      elseif k == 'curse' then
+        self:remove_curse()
       end
       --this is where buff stacks tick down
       if v.stacks and v.stacks > 1 and not v.stacks_expire_together then
@@ -1201,6 +1206,25 @@ function Unit:on_freeze_expired()
   self:add_buff(freeze_immunity_buff)
 end
 
+function Unit:remove_curse()
+  local curse_buff = self.buffs['curse']
+  if not curse_buff then return end
+  if curse_buff.from and curse_buff.damage_taken > 0 and Has_Static_Proc(curse_buff.from, 'curseHeal') then
+    --cast a heal line from the cursed unit to the curser
+    ChainHeal{
+      group = main.current.main,
+      parent = self,
+      target = curse_buff.from,
+      range = 0,
+      is_troop = curse_buff.from.is_troop,
+      color = purple[0],
+      max_chains = 1,
+      heal_amount = curse_buff.damage_taken * CURSE_HEAL_PERCENT_OF_DAMAGE_TAKEN,
+    }
+  end
+  self:remove_buff('curse')
+end
+
 function Unit:isShielded()
   return self.shielded > 0
 end
@@ -1334,6 +1358,25 @@ function Unit:get_random_target(shape, classes)
   end
 end
 
+function Unit:get_targets_that_satisfy(shape, classes, conditional)
+  local targets = self:get_objects_in_shape(shape, classes)
+  local out = {}
+  for _, target in ipairs(targets) do
+    if conditional(target) then
+      table.insert(out, target)
+    end
+  end
+  return out
+end
+
+function Unit:get_cursed_targets(shape, classes)
+  return self:get_targets_that_satisfy(shape, classes, function(target)
+    return target and target.buffs and target.buffs['curse']
+  end)
+end
+
+
+
 function Unit:get_closest_hurt_target(shape, classes)
   local targets = self:get_objects_in_shape(shape, classes)
   if targets and #targets > 0 then
@@ -1342,12 +1385,12 @@ function Unit:get_closest_hurt_target(shape, classes)
 
 end
 
-function Unit:curse(from)
+function Unit:start_curse(from)
   -- Random delay between 0.25 and 0.5 seconds
-  local delay = random:float(0.2, 0.7)
+  local delay = random:float(0.1, 0.4)
   
   -- Create curse data
-  local curseBuff = {name = 'curse', duration = 3, color = purple[0], stats = {percent_def = -0.4}}
+  local curseBuff = {name = 'curse', from = from, duration = 4, damage_taken = 0, color = purple[0], stats = {percent_def = -0.4}}
   
   -- Apply curse debuff and create visual effect after delay
   self.t:after(delay, function()
@@ -1366,9 +1409,14 @@ function Unit:curse(from)
       }
     else
       --add buff if the line is not drawn
-      self:add_buff(curseBuff)
+      self:curse(curseBuff)
     end
   end)
+end
+
+function Unit:curse(curse_buff)
+  self:remove_curse()
+  self:add_buff(curse_buff)
 end
 
 --unit level state functions
@@ -1763,7 +1811,11 @@ end
 function Unit:die()
   --cleanup buffs
   for k, v in pairs(self.buffs) do
-    self:remove_buff(k)
+    if k == 'curse' then
+      self:remove_curse()
+    else
+      self:remove_buff(k)
+    end
   end
   for k, v in pairs(self.procs) do
     v:die()

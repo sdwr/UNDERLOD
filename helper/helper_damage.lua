@@ -130,7 +130,7 @@ function Helper.Damage:chained_hit(unit, damage, from, damageType, playHitEffect
   local actual_damage = Helper.Damage:calculate_final_damage(unit, damage, damageType)
   
   -- Apply damage
-  Helper.Damage:deal_damage(unit, actual_damage)
+  Helper.Damage:deal_damage_chained(unit, actual_damage)
   
   -- Unit-specific post-damage processing
   Helper.Damage:process_post_damage(unit, actual_damage, damageType, from)
@@ -162,6 +162,34 @@ end
 
 function Helper.Damage:deal_damage(unit, damage)
   unit.hp = unit.hp - damage
+
+  if unit.buffs['curse'] then
+    unit.buffs['curse'].damage_taken = unit.buffs['curse'].damage_taken + damage
+  end
+
+  --only for non-chained hits, to prevent an infinite loop
+  if unit.buffs['curse'] and unit.buffs['curse'].from then
+    if Has_Static_Proc(unit.buffs['curse'].from, 'curseDamageLink') then
+      --deal damage to some nearby cursed units
+      local attack_sensor = Circle(unit.buffs['curse'].from.x, unit.buffs['curse'].from.y, CURSE_DAMAGE_LINK_RADIUS)
+      local units_to_hit = unit.buffs['curse'].from:get_cursed_targets(attack_sensor, enemy_classes)
+
+      local damage_to_deal = (damage * CURSE_DAMAGE_LINK_DAMAGE_PERCENT) / #units_to_hit
+
+      for _, unit_to_hit in ipairs(units_to_hit) do
+        Helper.Damage:chained_hit(unit_to_hit, damage_to_deal, unit.buffs['curse'].from, DAMAGE_TYPE_PHYSICAL, false)
+      end
+
+    end
+  end
+end
+
+function Helper.Damage:deal_damage_chained(unit, damage)
+  unit.hp = unit.hp - damage
+
+  if unit.buffs['curse'] then
+    unit.buffs['curse'].damage_taken = unit.buffs['curse'].damage_taken + damage
+  end
 end
 
 -- ===================================================================

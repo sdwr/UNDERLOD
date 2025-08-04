@@ -461,8 +461,6 @@ function Proc_Curse:init(args)
 
   Proc_Curse.super.init(self, args)
   
-  
-
   --define the proc's vars
   self.seek_radius = 100
   self.baseTickInterval = 5
@@ -518,10 +516,27 @@ function Proc_Curse:curse(target, from)
     damage = 0, -- No damage, just visual
     unit = from, -- Pass the caster unit for stat scaling
     on_hit_callback = function(spell, hit_target, unit)
-      hit_target:curse(from)
+      hit_target:start_curse(from)
     end
   }
 end
+
+Proc_CurseHeal = Proc:extend()
+function Proc_CurseHeal:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'team'
+
+  Proc_CurseHeal.super.init(self, args)
+end
+
+Proc_CurseDamageLink = Proc:extend()
+function Proc_CurseDamageLink:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'team'
+
+  Proc_CurseDamageLink.super.init(self, args)
+end
+
 
 Proc_Root = Proc:extend()
 function Proc_Root:init(args)
@@ -2136,10 +2151,12 @@ proc_name_to_class = {
   ['heal'] = Proc_Heal,
   ['sacrificialclam'] = Proc_SacrificialClam,
   ['healingwave'] = Proc_HealingWave,
-  ['curse'] = Proc_Curse,
   ['root'] = Proc_Root,
   ['retaliate'] = Proc_Retaliate,
-  
+  ['curse'] = Proc_Curse,
+  ['curseHeal'] = Proc_CurseHeal,
+  ['curseDamageLink'] = Proc_CurseDamageLink,
+
   --stack on attack
   ['overcharge'] = Proc_Overcharge,
   ['vulncharge'] = Proc_Vulncharge,

@@ -311,7 +311,7 @@ function ChainCurse:init(args)
     -- on_hit: This function is called on each target in the chain.
     on_hit = function(spell, target)
       -- Apply curse debuff to the target
-      target:add_buff(self.curse_data)
+      target:curse(self.curse_data)
     end,
 
     -- on_bounce: This function creates the visual and audio effects between targets.
