@@ -47,7 +47,7 @@ function GoldCounter:update_display()
     group = self.group, 
     x = self.x + self.offset_x, 
     y = self.y + self.offset_y, 
-    lines = {{text = '[wavy_mid, fg]gold: [yellow]' .. tostring(gold), font = pixul_font, alignment = 'left'}}
+    lines = {{text = '[wavy_mid, fg]gold: [yellow]' .. tostring(math.floor(gold)), font = pixul_font, alignment = 'left'}}
   }
 end
 
@@ -56,6 +56,19 @@ function GoldCounter:hide_display()
     self.text.dead = true
     self.text = nil
   end
+end
+
+function GoldCounter:add_round_power(round_power, source_x, source_y)
+  local level = self.parent.level
+  if not level then return end
+
+  local total_round_gold = GOLD_GAINED_BY_LEVEL[level] or 10
+  local total_round_power = ROUND_POWER_BY_LEVEL[level] or 500
+  
+  local percent_of_round_power = (round_power * 1.0) / total_round_power
+  local gold_to_add = percent_of_round_power * total_round_gold
+  
+  self:add_gold(gold_to_add, source_x, source_y)
 end
 
 function GoldCounter:add_gold(amount, source_x, source_y)

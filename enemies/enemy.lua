@@ -429,8 +429,7 @@ function Enemy:die()
   -- Drop gold when enemy dies
   if main.current and main.current.gold_counter then
     local round_power = enemy_to_round_power[self.type] or 100
-    local gold_to_drop = math.floor(round_power / ROUND_POWER_TO_GOLD) --100 power = 1 gold
-    main.current.gold_counter:add_gold(gold_to_drop, self.x, self.y)
+    main.current.gold_counter:add_round_power(round_power, self.x, self.y)
   end
 
   if self.parent and self.parent.summons and self.parent.summons > 0 then

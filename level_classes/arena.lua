@@ -579,7 +579,7 @@ end
 -- the final event will add in the last gold gain to the total gold
 --and everything will add up
 function Arena:draw_gold(plusgold, plusgoldtext)
-  local text_content = '[wavy_mid, yellow[0]' .. tostring(gold) .. ' gold '
+  local text_content = '[wavy_mid, yellow[0]' .. tostring(math.floor(gold)) .. ' gold '
   self.gold_text = Text({{text = text_content, font = fat_font, alignment = 'center'}}, global_text_tags)
 
   if plusgold == 0 then return end
