@@ -1407,9 +1407,15 @@ end
 function Proc_LightningBall:create_lightning_ball(target)
   if not self.unit then return end
 
-  --spawn the lighning ball between the unit and the target
-  local spawn_location = {x = (self.unit.x + target.x) / 2, y = (self.unit.y + target.y) / 2}
-  --make the travel direction in the direction of the target
+  local spawn_distance_factor = 0.35
+
+  -- Calculate the spawn location as a weighted average
+  local spawn_location = {
+      x = self.unit.x + (target.x - self.unit.x) * spawn_distance_factor,
+      y = self.unit.y + (target.y - self.unit.y) * spawn_distance_factor
+  }
+  
+  -- The rest of the code remains the same
   local travel_direction = {x = target.x - spawn_location.x, y = target.y - spawn_location.y}
   local travel_direction_length = math.sqrt(travel_direction.x^2 + travel_direction.y^2)
   local travel_direction_normalized = {x = travel_direction.x / travel_direction_length, y = travel_direction.y / travel_direction_length}
