@@ -103,46 +103,6 @@ ITEM_STATS_DAMAGE_STATS = {
   ['repeat_attack_chance'] = { name = 'repeat_attack_chance', min = 1, max = 5, increment = 0.1 },
 }
 
--- Item type definitions with preferred stats
-ITEM_TYPES = {
-  [ITEM_TYPE.HEAD] = {
-    name = 'Helmet',
-    icon = 'helmet', -- Using orb for head items
-    preferred_stats = {'hp', 'flat_def', 'crit_chance'},
-    preferred_chance = 0.5 -- 70% chance to roll preferred stats
-  },
-  [ITEM_TYPE.BODY] = {
-    name = 'Armor',
-    icon = 'simplearmor',
-    preferred_stats = {'hp', 'flat_def', 'area_size'},
-    preferred_chance = 0.5
-  },
-  [ITEM_TYPE.WEAPON] = {
-    name = 'Weapon',
-    icon = 'sword',
-    preferred_stats = {'dmg', 'aspd', 'range', 'crit_chance'},
-    preferred_chance = 0.5
-  },
-  [ITEM_TYPE.OFFHAND] = {
-    name = 'Offhand',
-    icon = 'simpleshield',
-    preferred_stats = {'flat_def', 'hp', 'crit_chance'},
-    preferred_chance = 0.5
-  },
-  [ITEM_TYPE.FEET] = {
-    name = 'Boots',
-    icon = 'simpleboots',
-    preferred_stats = {'mvspd', 'aspd'},
-    preferred_chance = 0.5
-  },
-  [ITEM_TYPE.AMULET] = {
-    name = 'Amulet',
-    icon = 'potion2', -- Using potion for amulet items
-    preferred_stats = {'crit_chance'},
-    preferred_chance = 0.5
-  }
-}
-
 ITEM_SET_POWER_BUDGET = 1
 
 -- Set definitions with bonuses
@@ -339,9 +299,12 @@ ITEM_RARITIES = {
 }
 
 -- Helper function to get random item type
-function get_random_item_type()
-  local types = {ITEM_TYPE.HEAD, ITEM_TYPE.BODY, ITEM_TYPE.WEAPON, ITEM_TYPE.OFFHAND, ITEM_TYPE.FEET, ITEM_TYPE.AMULET}
-  return types[math.random(1, #types)]
+function get_random_item_slot()
+  local slots = {}
+  for _, slot in pairs(ITEM_SLOTS_BY_INDEX) do
+    table.insert(slots, slot)
+  end
+  return slots[math.random(1, #slots)]
 end
 
 -- Helper function to get random rarity
@@ -380,7 +343,7 @@ end
 
 -- Helper function to roll a stat for an item type
 function roll_stat_for_type(item_type)
-  local type_def = ITEM_TYPES[item_type]
+  local type_def = ITEM_SLOTS_PREFERRED_STATS[item_type]
   local all_stats = {}
   for stat, _ in pairs(ITEM_STATS_THAT_CAN_ROLL_ON_ITEMS) do
     table.insert(all_stats, stat)
@@ -404,9 +367,9 @@ function create_random_item(tier, max_cost)
     return nil
   end
   
-  local item_type = get_random_item_type()
-  if not item_type then
-    print("ERROR: Failed to get random item type!")
+  local item_slot = get_random_item_slot()
+  if not item_slot then
+    print("ERROR: Failed to get random item slot!")
     return nil
   end
   
@@ -424,11 +387,11 @@ function create_random_item(tier, max_cost)
   
   -- Create the item
   local item = {
-    name = ITEM_TYPES[item_type].name,
-    type = item_type,
+    name = ITEM_SLOTS[item_slot].name,
+    type = item_slot,
     rarity = rarity,
     tier = tier or 1,
-    icon = ITEM_TYPES[item_type].icon,
+    icon = ITEM_SLOTS[item_slot].icon,
     stats = {},
     sets = {},
     cost = rarity_def.cost,
@@ -449,7 +412,7 @@ function create_random_item(tier, max_cost)
   end
   
   if rarity_def.min_stat_value > 0 then
-    local stat_name = roll_stat_for_type(item_type)
+    local stat_name = roll_stat_for_type(item_slot)
     
     -- Generate stat
     local stat_value = math.random(rarity_def.min_stat_value, rarity_def.max_stat_value)
