@@ -324,7 +324,7 @@ function init()
   simplearmor           = Image(d .. 'simplearmor')
   orb                   = Image(d .. 'orb')
   potion2               = Image(d .. 'potion2')
-  
+
 
   skull                 = Image(d .. 'skull-small')
   fancyarmor            = Image(d .. 'fancyarmor')
@@ -977,20 +977,22 @@ function init()
   item_images = {
     ['default'] = sword,
     
+    ['sword'] = sword,
+    ['simplearmor'] = simplearmor,
+    ['orb'] = orb,
+    ['helmet'] = helmet,
+    ['simpleshield'] = simpleshield,
+    ['simpleboots'] = simpleboots,
+
     ['potion2'] = potion2,
     ['linegoesup'] = linegoesup,
     ['fancyarmor'] = fancyarmor,
     ['turtle'] = turtle,
     ['leaf'] = leaf,
-    ['orb'] = orb,
-    ['simpleshield'] = simpleshield,
-    ['helmet'] = helmet,
-    ['sword'] = sword,
     ['rock'] = rock,
     ['flask'] = flask,
     ['gem'] = gem,
     ['sun'] = sun,
-    ['simpleboots'] = simpleboots,
     ['mace'] = mace,
     ['fire'] = fire,
     ['lightning'] = lightning,

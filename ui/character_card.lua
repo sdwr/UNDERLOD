@@ -11,6 +11,18 @@ Character_Cards = {}
 ALL_CARD_TEXTS = {}
 
 
+function get_item_slot_location(item_slot)
+  local ITEM_SLOT_LOCATIONS = {
+    [ITEM_SLOT.HEAD] = {x = 1, y = 0},
+    [ITEM_SLOT.BODY] = {x = 1, y = 1},
+    [ITEM_SLOT.WEAPON] = {x = 0, y = 1},
+    [ITEM_SLOT.OFFHAND] = {x = 2, y = 1},
+    [ITEM_SLOT.FEET] = {x = 2, y = 2},
+    [ITEM_SLOT.AMULET] = {x = 2, y = 0},
+  }
+  return ITEM_SLOT_LOCATIONS[item_slot]
+end
+
 function Refresh_All_Cards_Text()
   for i, text in ipairs(ALL_CARD_TEXTS) do
     if not text.dead then
@@ -77,9 +89,11 @@ function CharacterCard:createItemParts()
 
     for i = 1, MAX_ITEMS do
       if i <= UNIT_LEVEL_TO_NUMBER_OF_ITEMS[self.unit.level] then
+        local item_slot = ITEM_SLOTS_BY_INDEX[i]
+        local location = get_item_slot_location(item_slot)
         table.insert(self.items, ItemPart{group = self.group,
-            x = item_x + (CHARACTER_CARD_ITEM_X_SPACING*((i-1) % 3)), 
-            y = item_y + (i > 3 and 25 or 0),
+            x = item_x + (CHARACTER_CARD_ITEM_X_SPACING*location.x), 
+            y = item_y + (CHARACTER_CARD_ITEM_Y_SPACING*location.y),
             i = i, parent = self})
       end
     end
@@ -201,7 +215,7 @@ function CharacterCard:create_set_bonus_display()
     local set_button = Button{
       group = self.group,
       x = self.x,
-      y = self.y - self.h/2 + 30 + y_offset, -- Move up under character name
+      y = self.y + 40 + y_offset, -- Move up under character name
       w = 80,
       h = 14,
       bg_color = 'bg',
@@ -224,9 +238,9 @@ function CharacterCard:get_unit_sets()
   
   -- Count items by set
   if self.unit.items then
-    for _, item in ipairs(self.unit.items) do
+    for _, item in pairs(self.unit.items) do
       if item and item.sets then
-        for _, set_key in ipairs(item.sets) do
+        for _, set_key in pairs(item.sets) do
           set_counts[set_key] = (set_counts[set_key] or 0) + 1
         end
       end

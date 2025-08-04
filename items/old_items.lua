@@ -96,7 +96,7 @@ function Get_Random_Item(shop_level, units, all_items)
     if not unit.items then
       print('no items in Get_Random_Item')
     end
-    for j, item in ipairs(unit.items) do
+    for j, item in pairs(unit.items) do
       
       owned_items[item.name] = true
       --add item tags as well

@@ -26,7 +26,7 @@ ITEM_SLOTS = {
   },
   [ITEM_SLOT.OFFHAND] = {
     name = 'offhand',
-    icon = 'simpleboots',
+    icon = 'simpleshield',
     index = 4,
   },
   [ITEM_SLOT.FEET] = {
