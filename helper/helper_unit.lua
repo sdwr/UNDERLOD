@@ -532,11 +532,39 @@ function Helper.Unit:get_points(troop_points)
     return points
 end
 
--- ===================================================================
--- UPDATED HELPER FUNCTION
--- This function now applies damage impulses instead of changing state
--- to prevent knockback from affecting casting
--- ===================================================================
+function Helper.Unit:set_knockback_variables(unit, force_multiplier)
+    unit.being_knocked_back = true
+    unit.steering_enabled = false
+    unit:set_damping(1.5 * (1/force_multiplier))
+end
+
+function Helper.Unit:reset_knockback_variables(unit)
+    unit.being_knocked_back = false
+    unit.steering_enabled = true
+    unit:set_damping(get_damping_by_unit_class(unit.class))
+end
+
+function Helper.Unit:apply_knockback_enemy(unit, force, angle)
+    if math.length(unit:get_velocity()) > ENEMY_KNOCKBACK_VELOCITY_THRESHOLD then
+        return
+    end
+
+    local force_multiplier = 1
+    if unit.class == 'miniboss' then
+        force_multiplier = 0.5
+    elseif unit.class == 'boss' then
+        force_multiplier = 0.2
+    end
+
+    local final_force = force * force_multiplier
+    unit.push_force = final_force
+
+    Helper.Unit:set_knockback_variables(unit, force_multiplier)
+
+    unit:apply_impulse(final_force * math.cos(angle), final_force * math.sin(angle))
+    unit:apply_angular_impulse(random:table{random:float(-12*math.pi, -4*math.pi), random:float(4*math.pi, 12*math.pi)})
+end
+
 function Helper.Unit:apply_knockback(unit, force, angle, duration, push_invulnerable)
     -- Prevent knockback stacking
     if unit.being_knocked_back then

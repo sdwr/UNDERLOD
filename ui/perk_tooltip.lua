@@ -29,23 +29,24 @@ function PerkTooltip:init(args)
 
   -- 3. STATS TEXT
   local stats_text_definitions = {}
-  local perk_stats = Get_Perk_Stats(self.perk)
-  if perk_stats then
-      for key, val in pairs(perk_stats) do
-          local text = ''
-          if key == 'gold' then
-              text = '[yellow] ' .. val .. ' ' .. (item_stat_lookup[key] or '')
-          elseif key == 'enrage' or key == 'ghost' then
-              text = '[yellow] ' .. (item_stat_lookup[key] or '')
-          elseif key == 'proc' then
-              text = '[yellow]' .. 'custom proc... add later'
-          else
-              local prefix, value, suffix, display_name = format_stat_display(key, val)
-              text = '[yellow] ' .. prefix .. value .. suffix .. display_name
-          end
-          table.insert(stats_text_definitions, { text = text, font = pixul_font, alignment = 'center' })
-      end
-  end
+  --don't show perk stats, the description is enough
+  -- local perk_stats = Get_Perk_Stats(self.perk)
+  -- if perk_stats then
+  --     for key, val in pairs(perk_stats) do
+  --         local text = ''
+  --         if key == 'gold' then
+  --             text = '[yellow] ' .. val .. ' ' .. (item_stat_lookup[key] or '')
+  --         elseif key == 'enrage' or key == 'ghost' then
+  --             text = '[yellow] ' .. (item_stat_lookup[key] or '')
+  --         elseif key == 'proc' then
+  --             text = '[yellow]' .. 'custom proc... add later'
+  --         else
+  --             local prefix, value, suffix, display_name = format_stat_display(key, val)
+  --             text = '[yellow] ' .. prefix .. value .. suffix .. display_name
+  --         end
+  --         table.insert(stats_text_definitions, { text = text, font = pixul_font, alignment = 'center' })
+  --     end
+  -- end
   self.stats_text = Text(stats_text_definitions, global_text_tags)
 
   -- 4. DESCRIPTION TEXT

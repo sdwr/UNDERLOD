@@ -168,7 +168,7 @@ function Cast:cast()
   else 
     Helper.Unit:set_state(self.unit, unit_states['channeling'])
   end
-  self.unit:end_cast(castcooldown, self.spell_duration)
+  self.unit:end_cast(castcooldown)
   self:die()
 end
 

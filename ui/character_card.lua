@@ -407,7 +407,7 @@ function CharacterCard:show_set_bonus_popup_for_set(set_info)
       end
 
       table.insert(text_lines, {
-        text = '[' .. color .. ']' .. i .. 'pc: ' .. stat_name, 
+        text = '[' .. color .. ']' .. i .. ': ' .. stat_name, 
         font = pixul_font, 
         alignment = 'left'
       })

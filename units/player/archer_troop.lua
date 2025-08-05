@@ -26,11 +26,15 @@ function Archer_Troop:setup_cast(cast_target)
     cast_length = self.castTime,
     backswing = 0.2,
     instantspell = true,
-    spellclass = Arrow,
+    spellclass = ArrowProjectile,
     spelldata = {
       group = main.current.effects,
       on_attack_callbacks = true,
-      spell_duration = 3,
+      spell_duration = 10,
+      bullet_size = 3,
+      pierce = false,
+      speed = 180,
+      is_troop = true,
       color = blue[0],
       damage = function() return self.dmg end,
 
@@ -41,12 +45,16 @@ end
 
 --instant attack skips the unit cooldown, is a double attack or retaliate
 function Archer_Troop:instant_attack(cast_target)
-  Arrow{
+  ArrowProjectile{
     group = main.current.effects,
     target = cast_target,
     on_attack_callbacks = false,
     unit = self,
-    spell_duration = 3,
+    spell_duration = 10,
+    bullet_size = 3,
+    pierce = false,
+    speed = 180,
+    is_troop = true,
     color = blue[0],
     damage = function() return self.dmg end,
   }

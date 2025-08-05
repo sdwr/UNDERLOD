@@ -181,7 +181,7 @@ function ChainLightning:init(args)
 
     -- on_bounce: This function creates the visual and audio effects between targets.
     on_bounce = function(spell, from_target, to_target)
-      spark2:play{pitch = random:float(0.8, 1.2), volume = 0.4}
+      spark2:play{pitch = random:float(0.8, 1.2), volume = 0.2}
       -- The LightningLine effect is a separate, temporary object.
       LightningLine{
         group = main.current.effects,

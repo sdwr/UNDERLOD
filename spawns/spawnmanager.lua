@@ -840,10 +840,10 @@ end
 function SpawnManager:calc_group_x(index, num_groups)
   --use the right 60% of the arena, with equal padding between and around the groups
   local playable_width = (RIGHT_BOUND - LEFT_BOUND) * 0.6
-  local start_x = RIGHT_BOUND - playable_width
+  local start_x = RIGHT_BOUND
   local spacing = playable_width / (num_groups + 1)
 
-  return start_x + (spacing * index)
+  return start_x - (spacing * index)
 end
 
 function SpawnManager:calc_single_y(index, num_in_group)

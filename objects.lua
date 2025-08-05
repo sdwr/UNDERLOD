@@ -189,51 +189,51 @@ function Unit:config_physics_object()
   
   if self.class == 'boss' then
 
-    self:set_damping(BOSS_DAMPING)
+    self:set_damping(get_damping_by_unit_class(self.class))
     self:set_restitution(BOSS_RESTITUTION)
     self:set_friction(BOSS_FRICTION)
 
     self:set_mass(BOSS_MASS)
 
     --heigan had 1000, stompy had 10000, dragon had default
-    self:set_as_steerable(MAX_V, MAX_BOSS_FORCE, 2*math.pi, 2)
+    self:set_as_steerable(self.max_v, MAX_BOSS_FORCE, 2*math.pi, 2)
 
   elseif self.class == 'miniboss' then
     --ignore for now
   elseif self.class == 'special_enemy' then
 
-    self:set_damping(SPECIAL_ENEMY_DAMPING)
+    self:set_damping(get_damping_by_unit_class(self.class))
     self:set_restitution(SPECIAL_ENEMY_RESTITUTION)
     self:set_friction(ENEMY_FRICTION)
 
     self:set_mass(SPECIAL_ENEMY_MASS)
 
-    self:set_as_steerable(MAX_V, MAX_ENEMY_FORCE, 4*math.pi, 4)
+    self:set_as_steerable(self.max_v, MAX_ENEMY_FORCE, 4*math.pi, 4)
 
   elseif self.class == 'regular_enemy' then
     
-    self:set_damping(REGULAR_ENEMY_DAMPING)
+    self:set_damping(get_damping_by_unit_class(self.class))
     self:set_restitution(REGULAR_ENEMY_RESTITUTION)
     self:set_friction(ENEMY_FRICTION)
 
     self:set_mass(REGULAR_ENEMY_MASS)
 
-    self:set_as_steerable(MAX_V, MAX_ENEMY_FORCE, 4*math.pi, 4)
+    self:set_as_steerable(self.max_v, MAX_ENEMY_FORCE, 4*math.pi, 4)
   
   elseif self.class == 'enemy_critter' then
-    self:set_damping(CRITTER_DAMPING)
+    self:set_damping(get_damping_by_unit_class(self.class))
     self:set_restitution(CRITTER_RESTITUTION)
     self:set_friction(ENEMY_FRICTION)
 
     self:set_mass(CRITTER_MASS)
-    self:set_as_steerable(MAX_V, MAX_ENEMY_FORCE, 4*math.pi, 4)
+    self:set_as_steerable(self.max_v, MAX_ENEMY_FORCE, 4*math.pi, 4)
   elseif self.class =='critter' then
-    self:set_damping(CRITTER_DAMPING)
+    self:set_damping(get_damping_by_unit_class(self.class))
     self:set_restitution(CRITTER_RESTITUTION)
     self:set_friction(ENEMY_FRICTION)
 
     self:set_mass(CRITTER_MASS)
-    self:set_as_steerable(MAX_V, MAX_ENEMY_FORCE, 4*math.pi, 4)
+    self:set_as_steerable(self.max_v, MAX_ENEMY_FORCE, 4*math.pi, 4)
 
   elseif self.class == 'troop' then
     if self.ghost == true then
@@ -242,13 +242,13 @@ function Unit:config_physics_object()
       self:set_as_rectangle(self.size, self.size,'dynamic', 'troop')
     end
 
-    self:set_damping(TROOP_DAMPING)
+    self:set_damping(get_damping_by_unit_class(self.class))
     self:set_restitution(TROOP_RESITUTION)
     self:set_friction(TROOP_FRICTION)
 
     self:set_mass(TROOP_MASS)
 
-    self:set_as_steerable(MAX_V, MAX_TROOP_FORCE, 4*math.pi, 4)
+    self:set_as_steerable(self.max_v, MAX_TROOP_FORCE, 4*math.pi, 4)
 
   end
   
@@ -845,6 +845,9 @@ function Unit:calculate_stats(first_run)
   self.max_hp = (self.base_hp + self.class_hp_a + self.buff_hp_a)*self.class_hp_m*self.buff_hp_m
   --need to set hp after buffs
   if first_run then self.hp = self.max_hp end
+  if self.hp > self.max_hp then
+    self.hp = self.max_hp
+  end
 
   self.class_dmg_m = self.class_dmg_m*unit_stat_mult.dmg
   self.dmg = (self.base_dmg + self.class_dmg_a + self.buff_dmg_a)*self.class_dmg_m*self.buff_dmg_m
@@ -884,8 +887,10 @@ function Unit:calculate_stats(first_run)
     elemental_slow_m = 1 - (self.slow_per_element*num_elemental_afflictions)
   end
 
-  self.max_move_v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m*elemental_slow_m
-  self.max_v = self.max_move_v * 50
+  self.mvspd = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m*elemental_slow_m
+  self.max_v = self.mvspd
+
+
 
   -- Calculate final elemental damage stats
   self.fire_damage = self.buff_fire_damage_a * self.buff_fire_damage_m
@@ -1698,7 +1703,7 @@ function Unit:should_freeze_rotation()
     or (self.castObject and self.castObject.freeze_rotation)
 end
 
-function Unit:end_cast(cooldown, spell_duration)
+function Unit:end_cast(cooldown)
   local random_cooldown = self:get_random_cooldown(cooldown)
   
   self:reset_castcooldown(random_cooldown)
@@ -1819,15 +1824,9 @@ function Unit:launch_at_facing(force_magnitude, duration)
   self.launch_force_x = math.cos(facing) * force_magnitude * mass
   self.launch_force_y = math.sin(facing) * force_magnitude * mass
   self:set_velocity(0, 0)
+  self.max_v = LAUNCH_MAX_V
   self:apply_impulse(self.launch_force_x, self.launch_force_y)
   
-
-  local orig_damping
-  if self.body then
-    orig_damping = self:get_damping()
-  else
-    orig_damping = BOSS_DAMPING
-  end
 
   local orig_friction
   if self.body then
@@ -1841,10 +1840,10 @@ function Unit:launch_at_facing(force_magnitude, duration)
 
   self.t:after(duration, function()
     if self.is_launching then
-      self:set_velocity(0, 0)
       self.is_launching = false
+      self.max_v = self.mvspd
     end
-    self:set_damping(orig_damping)
+    self:set_damping(get_damping_by_unit_class(self.class))
     self:set_friction(orig_friction)
   end)
 
