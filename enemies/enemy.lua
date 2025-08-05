@@ -102,6 +102,12 @@ function Enemy:update(dt)
 
     self:update_animation(dt)
 
+    if self.being_knocked_back then
+      if math.length(self:get_velocity()) < ENEMY_KNOCKBACK_VELOCITY_REGAIN_CONTROL_THRESHOLD then
+        Helper.Unit:reset_knockback_variables(self)
+      end
+    end
+
 
 
     self:calculate_stats()
@@ -364,7 +370,7 @@ function Enemy:on_collision_enter(other, contact)
     elseif table.any(main.current.friendlies, function(v) return other:is(v) end) then
       if self.class == 'regular_enemy' then
         local duration = KNOCKBACK_DURATION_ENEMY
-        local push_force = LAUNCH_PUSH_FORCE_ENEMY
+        local push_force = ENEMY_KNOCKBACK_FORCE_TROOP_COLLISION
         local dmg = REGULAR_PUSH_DAMAGE
         self:push(push_force, self:angle_to_object(other) + math.pi, nil, duration)
         --delay the damage to avoid box2d lock
@@ -385,14 +391,14 @@ function Enemy:on_collision_enter(other, contact)
         end
       end
     elseif table.any(main.current.enemies, function(v) return other:is(v) end) then
-        -- if self.being_pushed and math.length(self:get_velocity()) > 60 then
-        --     other:hit(math.floor(self.push_force/4), nil, nil, true)
-        --     self:hit(math.floor(self.push_force/2), nil, nil, true)
-        --     other:push(math.floor(self.push_force/2), other:angle_to_object(self))
-        --     HitCircle{group = main.current.effects, x = x, y = y, rs = 6, color = fg[0], duration = 0.1}
-        --     for i = 1, 2 do HitParticle{group = main.current.effects, x = x, y = y, color = self.color} end
-        --     hit2:play{pitch = random:float(0.95, 1.05), volume = 0.35}
-        -- end
+      if self.being_knocked_back and math.length(self:get_velocity()) > ENEMY_KNOCKBACK_CHAIN_VELOCITY_THRESHOLD then
+        other:push(math.floor(self.push_force * ENEMY_KNOCKBACK_FORCE_CHAIN_MULTIPLIER), other:angle_to_object(self))
+        --delay the damage to avoid box2d lock
+        self.t:after(0, function()
+          self:hit(ENEMY_KNOCKBACK_CHAIN_DAMAGE, nil, nil, true)
+          other:hit(ENEMY_KNOCKBACK_CHAIN_DAMAGE, nil, nil, true)
+        end)
+      end
     end
 end
 
@@ -441,16 +447,13 @@ end
 -- REFACTORED Enemy:push
 -- Now also calls the standardized helper function.
 -- ===================================================================
-function Enemy:push(f, r, push_invulnerable, duration)
-  -- Set a default duration if one isn't provided
-  duration = duration or KNOCKBACK_DURATION_ENEMY
+function Enemy:push(f, r, push_invulnerable)
 
-  -- Apply a multiplier to reduce knockback force on bosses
-  local force_multiplier = 1
+  
   if self.class == 'boss' then 
     return
   end
 
   -- Call the universal knockback function with the modified force
-  Helper.Unit:apply_knockback(self, f * force_multiplier, r, duration, push_invulnerable)
+  Helper.Unit:apply_knockback_enemy(self, f, r)
 end

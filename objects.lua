@@ -185,7 +185,7 @@ function Unit:config_physics_object()
   
   if self.class == 'boss' then
 
-    self:set_damping(BOSS_DAMPING)
+    self:set_damping(get_damping_by_unit_class(self.class))
     self:set_restitution(BOSS_RESTITUTION)
     self:set_friction(BOSS_FRICTION)
 
@@ -198,7 +198,7 @@ function Unit:config_physics_object()
     --ignore for now
   elseif self.class == 'special_enemy' then
 
-    self:set_damping(SPECIAL_ENEMY_DAMPING)
+    self:set_damping(get_damping_by_unit_class(self.class))
     self:set_restitution(SPECIAL_ENEMY_RESTITUTION)
     self:set_friction(ENEMY_FRICTION)
 
@@ -208,7 +208,7 @@ function Unit:config_physics_object()
 
   elseif self.class == 'regular_enemy' then
     
-    self:set_damping(REGULAR_ENEMY_DAMPING)
+    self:set_damping(get_damping_by_unit_class(self.class))
     self:set_restitution(REGULAR_ENEMY_RESTITUTION)
     self:set_friction(ENEMY_FRICTION)
 
@@ -217,14 +217,14 @@ function Unit:config_physics_object()
     self:set_as_steerable(MAX_V, MAX_ENEMY_FORCE, 4*math.pi, 4)
   
   elseif self.class == 'enemy_critter' then
-    self:set_damping(CRITTER_DAMPING)
+    self:set_damping(get_damping_by_unit_class(self.class))
     self:set_restitution(CRITTER_RESTITUTION)
     self:set_friction(ENEMY_FRICTION)
 
     self:set_mass(CRITTER_MASS)
     self:set_as_steerable(MAX_V, MAX_ENEMY_FORCE, 4*math.pi, 4)
   elseif self.class =='critter' then
-    self:set_damping(CRITTER_DAMPING)
+    self:set_damping(get_damping_by_unit_class(self.class))
     self:set_restitution(CRITTER_RESTITUTION)
     self:set_friction(ENEMY_FRICTION)
 
@@ -238,7 +238,7 @@ function Unit:config_physics_object()
       self:set_as_rectangle(self.size, self.size,'dynamic', 'troop')
     end
 
-    self:set_damping(TROOP_DAMPING)
+    self:set_damping(get_damping_by_unit_class(self.class))
     self:set_restitution(TROOP_RESITUTION)
     self:set_friction(TROOP_FRICTION)
 
@@ -1818,13 +1818,6 @@ function Unit:launch_at_facing(force_magnitude, duration)
   self:apply_impulse(self.launch_force_x, self.launch_force_y)
   
 
-  local orig_damping
-  if self.body then
-    orig_damping = self:get_damping()
-  else
-    orig_damping = BOSS_DAMPING
-  end
-
   local orig_friction
   if self.body then
     orig_friction = self:get_friction()
@@ -1840,7 +1833,7 @@ function Unit:launch_at_facing(force_magnitude, duration)
       self:set_velocity(0, 0)
       self.is_launching = false
     end
-    self:set_damping(orig_damping)
+    self:set_damping(get_damping_by_unit_class(self.class))
     self:set_friction(orig_friction)
   end)
 
