@@ -307,6 +307,23 @@ function Helper.Unit:get_team_by_index(index)
     return Helper.Unit.teams[index]
 end
 
+function Helper.Unit:get_center_of_all_troops()
+    local x = 0
+    local y = 0
+    local count = 0
+    for i, team in ipairs(Helper.Unit.teams) do
+        local num_alive = team:get_alive_troop_count()
+        local center = team:get_center()
+        x = x + center.x * num_alive
+        y = y + center.y * num_alive
+        count = count + num_alive
+    end
+    if count == 0 then
+        return {x = gw/2, y = gh/2}
+    end
+    return {x = x / count, y = y / count}
+end
+
 function Helper.Unit:select_team(index)
     Helper.Unit:deselect_all_troops()
     local team = Helper.Unit:get_team_by_index(index)

@@ -147,13 +147,19 @@ function shared_draw(draw_action)
     shadow_shader:unset()
   end)
 
-  local x, y = 0, 0
-  background_canvas:draw(x, y, 0, sx, sy)
-  shadow_canvas:draw(x + 1.5*sx, y + 1.5*sy, 0, sx, sy)
-  main_canvas:draw(x, y, 0, sx, sy)
-  full_res_character_canvas:draw(x, y)
-  main_effects_canvas:draw(x, y, 0, sx, sy)
-  full_res_canvas:draw(x, y)
+  -- Calculate camera offset for canvas positioning
+  local cam_offset_x = -(camera.x - gw/2)
+  local cam_offset_y = -(camera.y - gh/2)
+  
+  -- Apply camera transform to all canvases
+  local x, y = cam_offset_x * sx, cam_offset_y * sy
+  
+  background_canvas:draw(x, y, camera.r, sx * camera.sx, sy * camera.sy)
+  shadow_canvas:draw(x + 1.5*sx, y + 1.5*sy, camera.r, sx * camera.sx, sy * camera.sy)
+  main_canvas:draw(x, y, camera.r, sx * camera.sx, sy * camera.sy)
+  full_res_character_canvas:draw(x, y, camera.r, camera.sx, camera.sy)
+  main_effects_canvas:draw(x, y, camera.r, sx * camera.sx, sy * camera.sy)
+  full_res_canvas:draw(x, y, camera.r, camera.sx, camera.sy)
 end
 
 

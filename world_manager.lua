@@ -282,6 +282,16 @@ function WorldManager:update(dt)
   if input.z.pressed then
     camera.x = camera.x - 100
   end
+
+  if Helper.Unit.teams[1] then
+    local center = Helper.Unit:get_center_of_all_troops()
+    local center_x = math.max(gw/2 - 20, math.min(gw/2 + 20, center.x))
+    local center_y = math.max(gh/2 - 20, math.min(gh/2 + 20, center.y))
+    camera.follow_style = 'lockon_tight'
+    camera.lerp.x = 0.05
+    camera.lerp.y = 0.05
+    camera.target = {x = center_x, y = center_y}
+  end
   
   if not self.paused then
   -- Update Helper system for input handling and troop movement
