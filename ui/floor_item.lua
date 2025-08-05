@@ -51,6 +51,37 @@ function FloorItem:init(args)
   self.on_failed_activation = function()
     --no effect
   end
+
+  self.can_activate_condition = function()
+    if self.is_character_selection then
+      return true
+    elseif self.is_perk_selection then
+      return true
+    else
+      if gold < self.cost then  
+        return false
+      end
+      local unit, slot_index = main.current:find_available_inventory_slot(self.item)
+      if not unit or not slot_index then
+        return false
+      end
+    end
+    return true
+  end
+
+  self.on_prevented_activation = function()
+    if self.is_character_selection then
+      return
+    elseif self.is_perk_selection then
+      return
+    else
+      if gold < self.cost then
+        Create_Info_Text('not enough gold to buy item', self)
+      else
+        Create_Info_Text('no empty ' .. ITEM_SLOTS[self.item.slot].name .. ' slots - right click items in character menu to sell', self)
+      end
+    end
+  end
   
   -- Mouse interaction
   self.shape = Rectangle(self.x, self.y, 60, 80)
