@@ -339,7 +339,7 @@ ITEM_SETS = {
 ITEM_RARITIES = {
   [ITEM_RARITY.COMMON] = {
     name = 'Common',
-    cost = 4,
+    cost = 2,
     min_stat_value = 0,
     max_stat_value = 0,
     set_chance = 1,
@@ -347,7 +347,7 @@ ITEM_RARITIES = {
   },
   [ITEM_RARITY.RARE] = {
     name = 'Rare',
-    cost = 6,
+    cost = 4,
     min_stat_value = 1,
     max_stat_value = 2,
     set_chance = 1,
@@ -355,17 +355,17 @@ ITEM_RARITIES = {
   },
   [ITEM_RARITY.EPIC] = {
     name = 'Epic',
-    cost = 10,
-    min_stat_value = 3,
-    max_stat_value = 4,
+    cost = 8,
+    min_stat_value = 0,
+    max_stat_value = 2,
     set_chance = 1,
     color = 'purple'
   },
   [ITEM_RARITY.LEGENDARY] = {
     name = 'Legendary',
-    cost = 15,
-    min_stat_value = 5,
-    max_stat_value = 6,
+    cost = 16,
+    min_stat_value = 3,
+    max_stat_value = 4,
     set_chance = 1,
     color = 'orange'
   }
@@ -381,10 +381,15 @@ function get_random_item_slot()
 end
 
 -- Helper function to get random rarity
-function get_random_rarity()
+function get_random_rarity(tier)
   local rarities = {ITEM_RARITY.COMMON, ITEM_RARITY.RARE, ITEM_RARITY.EPIC, ITEM_RARITY.LEGENDARY}
-  local weights = {0.6, 0.3, 0.08, 0.02} -- 60% common, 30% rare, 8% epic, 2% legendary
-  
+  local weights = TIER_TO_ITEM_RARITY_WEIGHTS[tier] or {1, 0, 0, 0}
+
+  if not weights then
+    print("ERROR: weights is nil for tier:", tier)
+    return nil
+  end
+
   -- Simple weighted random selection
   local total_weight = 0
   for _, weight in ipairs(weights) do
@@ -433,7 +438,7 @@ function roll_stat_for_type(item_type)
 end
 
 -- Main function to create a random item
-function create_random_item(tier, rarity)
+function create_random_item(tier)
   -- Debug: Check if random is available
   if not random then
     print("ERROR: random object is not available!")
@@ -446,7 +451,7 @@ function create_random_item(tier, rarity)
     return nil
   end
   
-  local rarity = rarity or get_random_rarity()
+  local rarity = get_random_rarity(tier)
   if not rarity then
     print("ERROR: Failed to get random rarity!")
     return nil
@@ -475,7 +480,11 @@ function create_random_item(tier, rarity)
   -- Determine if item has sets
   if random:float(0, 1) < rarity_def.set_chance then
     -- Add 1-2 sets for higher rarities
-    local set_count = rarity == ITEM_RARITY.LEGENDARY and 2 or 1
+    local set_count = 1
+    if rarity == ITEM_RARITY.LEGENDARY or rarity == ITEM_RARITY.EPIC then
+      set_count = 2
+    end
+
     for i = 1, set_count do
       local set_key = get_random_set()
       if not table.contains(item.sets, set_key) then
@@ -484,13 +493,15 @@ function create_random_item(tier, rarity)
     end
   end
   
-  if rarity_def.min_stat_value > 0 then
+  if rarity_def.max_stat_value > 0 then
     local stat_name = roll_stat_for_type(item_slot)
     
     -- Generate stat
     local stat_value = math.random(rarity_def.min_stat_value, rarity_def.max_stat_value)
 
-    item.stats[stat_name] = stat_value + (item.stats[stat_name] or 0)
+    if stat_value > 0 then
+      item.stats[stat_name] = stat_value + (item.stats[stat_name] or 0)
+    end
   end
   
   -- Set colors based on sets only (rarity color is used as tier color)

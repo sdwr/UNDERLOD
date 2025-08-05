@@ -56,7 +56,7 @@ function CombatLevel:create_floor_items()
       local tier = LEVEL_TO_TIER(self.level or 1)
       local item = nil
       if self.level == 1 then
-        item = create_random_item(tier, ITEM_RARITY.COMMON)
+        item = create_random_item(tier)
       else
         item = create_random_item(tier)
       end

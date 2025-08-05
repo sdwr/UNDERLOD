@@ -26,7 +26,7 @@ system.load_stats()
 
 --gold
 --note that HoG econ check is in arena.lua (gain_gold)
-STARTING_GOLD = 10.0
+STARTING_GOLD = 5.0
 GOLD_PER_ROUND = 6
 GOLD_FOR_BOSS_ROUND = {10, 15, 20, 25}
 INTEREST_AMOUNT = 0.1
@@ -164,9 +164,9 @@ UNIT_LEVEL_TO_LEVELUP_COST = {
 }
 
 NUMBER_OF_TROOPS_TO_CHARACTER_COST = {
-  [0] = 10,
-  [1] = 15,
-  [2] = 20,
+  [0] = 5,
+  [1] = 10,
+  [2] = 15,
 }
 
 

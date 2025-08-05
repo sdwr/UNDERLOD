@@ -184,7 +184,7 @@ function init()
   arcspread_sound = Sound('arcspread.wav', s)
   arcspread_full_sound = Sound('arcspread_full.wav', s)
   new_spark = Sound('new_spark.wav', s)
-  
+
   title_music = Sound('Debussy - Reverie.mp3', { tags = { music } })
 
 
@@ -1452,42 +1452,42 @@ function init()
   }
 
   enemy_to_round_power = {
-    ['swarmer'] = 50,
+    ['swarmer'] = 25,
 
-    ['shooter'] = 100,
-    ['seeker'] = 100,
-    ['chaser'] = 100,
+    ['shooter'] = 50,
+    ['seeker'] = 50,
+    ['chaser'] = 50,
 
-    ['goblin_archer'] = 150,
-    ['archer'] = 150,
+    ['goblin_archer'] = 75,
+    ['archer'] = 75,
     --special enemies t1
-    ['cleaver'] = 150,
+    ['cleaver'] = 100,
 
-    ['laser'] = 200,
-    ['rager'] = 200,
-    ['stomper'] = 200,
-    ['charger'] = 200,
-    ['bomb'] = 200,
-    ['burst'] = 200,
-    ['boomerang'] = 200,
-    ['plasma'] = 200,
-    ['big_goblin_archer'] = 200,
-    ['selfburst'] = 200,
-    ['slowcharger'] = 200,
-    ['turret'] = 200,
+    ['laser'] = 150,
+    ['rager'] = 150,
+    ['stomper'] = 150,
+    ['charger'] = 150,
+    ['bomb'] = 150,
+    ['burst'] = 150,
+    ['boomerang'] = 150,
+    ['plasma'] = 150,
+    ['big_goblin_archer'] = 150,
+    ['selfburst'] = 150,
+    ['slowcharger'] = 150,
+    ['turret'] = 150,
     --special enemies t2
-    ['firewall_caster'] = 300,
-    ['mortar'] = 300,
-    ['singlemortar'] = 300,
-    ['line_mortar'] = 300,
-    ['aim_spread'] = 300,
-    ['snakearrow'] = 300,
-    ['spread'] = 300,
-    ['spawner'] = 300,
-    ['arcspread'] = 300,
+    ['firewall_caster'] = 250,
+    ['mortar'] = 250,
+    ['singlemortar'] = 250,
+    ['line_mortar'] = 250,
+    ['aim_spread'] = 250,
+    ['snakearrow'] = 250,
+    ['spread'] = 250,
+    ['spawner'] = 250,
+    ['arcspread'] = 250,
     --special enemies t3
-    ['summoner'] = 400,
-    ['assassin'] = 400,
+    ['summoner'] = 300,
+    ['assassin'] = 300,
 
     --bosses
     ['stompy'] = BOSS_ROUND_POWER,
