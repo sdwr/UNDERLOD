@@ -26,7 +26,7 @@ REGULAR_ENEMY_HP = 35
 REGULAR_ENEMY_DAMAGE = 10
 REGULAR_ENEMY_MS = 15
 
-SPECIAL_ENEMY_HP = 60
+SPECIAL_ENEMY_HP = 85
 SPECIAL_ENEMY_DAMAGE = 18
 SPECIAL_ENEMY_MS = 20
 
@@ -78,8 +78,6 @@ SHOCK_DEF_REDUCTION = -0.2
 REPEAT_ATTACK_DELAY = 0.15
 
 BOSS_LEVELS = {6, 11, 16, 21}
-ENEMY_SCALING_PER_LEVEL = 0.15
-ENEMY_SCALING_PER_ZONE = 1
 
 
 GET_LAST_BOSS_LEVEL = function(level)
@@ -116,31 +114,31 @@ TIER_TO_ITEM_RARITY_WEIGHTS = {
   [2.5] = {0, 0.25, 0.5, 0.25},
 }
 
-CHANCE_OF_SPECIAL_VS_NORMAL_ENEMY = 0.4
+CHANCE_OF_SPECIAL_VS_NORMAL_ENEMY = 0.7
 
 ROUND_POWER_BY_LEVEL = {
   [1] = 350,
-  [2] = 500,
-  [3] = 600,
-  [4] = 700,
-  [5] = 800,
+  [2] = 400,
+  [3] = 500,
+  [4] = 600,
+  [5] = 700,
   [6] = 800,
-  [7] = 1000,
-  [8] = 1200,
-  [9] = 1400,
-  [10] = 1500,
-  [11] = 1600,
-  [12] = 1700,
-  [13] = 1800,
-  [14] = 1900,
-  [15] = 2000,
-  [16] = 2100,
-  [17] = 2200,
-  [18] = 2300,
-  [19] = 2400,
-  [20] = 2500,
-  [21] = 2600,
-  [22] = 2700,
+  [7] = 900,
+  [8] = 1000,
+  [9] = 1100,
+  [10] = 1200,
+  [11] = 1300,
+  [12] = 1400,
+  [13] = 1500,
+  [14] = 1600,
+  [15] = 1700,
+  [16] = 1800,
+  [17] = 1900,
+  [18] = 2000,
+  [19] = 2100,
+  [20] = 2200,
+  [21] = 2300,
+  [22] = 2400,
   [23] = 2800,
   [24] = 2900,
   [25] = 3000,
@@ -149,25 +147,25 @@ ROUND_POWER_BY_LEVEL = {
 GOLD_GAINED_BY_LEVEL = {
   [1] = 4,
   [2] = 4,
-  [3] = 5,
-  [4] = 5,
-  [5] = 6,
-  [6] = 10,
-  [7] = 8,
-  [8] = 8,
-  [9] = 9,
-  [10] = 9,
-  [11] = 12,
-  [12] = 10,
-  [13] = 10,
-  [14] = 10,
-  [15] = 10,
-  [16] = 15,
-  [17] = 10,
-  [18] = 10,
-  [19] = 10,
+  [3] = 4,
+  [4] = 4,
+  [5] = 4,
+  [6] = 6,
+  [7] = 6,
+  [8] = 6,
+  [9] = 6,
+  [10] = 6,
+  [11] = 8,
+  [12] = 8,
+  [13] = 8,
+  [14] = 8,
+  [15] = 8,
+  [16] = 8,
+  [17] = 8,
+  [18] = 8,
+  [19] = 8,
   [20] = 10,
-  [21] = 20,
+  [21] = 10,
   [22] = 10,
   [23] = 10,
   [24] = 10,
@@ -196,10 +194,10 @@ MAX_SPECIAL_ENEMY_GROUP_SIZE_BY_TIER = {
 }
 
 ENEMY_SCALE_BY_LEVEL = 
-{2, 2, 3, 4, 5, 6, 
- 5, 6, 9, 7, 8, 12, 
- 10, 11, 15, 12, 13, 18, 16, 
- 17, 21, 17, 20, 24, 25}
+{0, 0, 0.5, 0.5, 1, 1, 
+ 1, 1.5, 1.5, 2, 2, 2, 
+ 3, 3, 4, 4, 5, 5, 5, 
+ 6, 7, 8, 9, 10, 10}
 
 ENEMY_LEVEL_SCALING = function(level)
   local scale = ENEMY_SCALE_BY_LEVEL[level] or 30
@@ -222,10 +220,10 @@ SCALED_ENEMY_MS = function(level, base_ms)
 end
 
 BOSS_SCALE_BY_LEVEL = 
-{0, 0, 0, 0, 0, 2,
- 0, 0, 0, 0, 0, 4,
- 0, 0, 0, 0, 0, 0, 0, 6,
- 0, 0, 0, 0, 0, 0, 8}
+{0, 0, 0, 0, 0, 0,
+ 0, 0, 0, 0, 0, 1,
+ 0, 0, 0, 0, 0, 0, 0, 2,
+ 0, 0, 0, 0, 0, 0, 4}
 
 SCALED_BOSS_HP = function(level, base_hp)
   local scale = BOSS_SCALE_BY_LEVEL[level]
@@ -268,7 +266,7 @@ unit_stat_multipliers = {
 }
 
 enemy_type_to_stats = {
-    ['swarmer'] = { dmg = 0.5, mvspd = 0.8, hp = 0.4},
+    ['swarmer'] = { dmg = 0.5, mvspd = 0.8, hp = 0.6},
 
     ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
     ['chaser'] = { dmg = 1, mvspd = 1 },
