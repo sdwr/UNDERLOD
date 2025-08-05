@@ -222,7 +222,9 @@ end
 function world_to_screen(world_x, world_y)
   -- Use the window scaling factor directly
   local scale = sx
-  return world_x * scale, world_y * scale
+  local relative_x = world_x + (gw/2 - camera.x)
+  local relative_y = world_y + (gh/2 - camera.y)
+  return relative_x * scale, relative_y * scale
 end
 
 function is_point_in_rectangle(x, y, rect_x, rect_y, rect_w, rect_h)

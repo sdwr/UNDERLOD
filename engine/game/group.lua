@@ -125,33 +125,6 @@ function Group:draw(scroll_factor_x, scroll_factor_y)
   if self.camera then self.camera:detach() end
 end
 
-function Group:draw_custom()
-  local ghosts = {}
-  local under_units = {}
-  local regular = {}
-
-  for _, object in ipairs(self.objects) do
-    if not object.hidden then
-      if object.ghost == true then
-        table.insert(ghosts, object)
-      elseif object.draw_under_units then
-        table.insert(under_units, object)
-      else
-        table.insert(regular, object)
-      end
-    end
-  end
-  for i, object in ipairs(under_units) do
-    object:draw()
-  end
-  for i, object in ipairs(regular) do
-    object:draw()
-  end
-  for i, object in ipairs(ghosts) do
-    object:draw()
-  end
-end
-
 function Group:set_custom_draw_list(draw_list)
   self.custom_draw_list = draw_list
 end
