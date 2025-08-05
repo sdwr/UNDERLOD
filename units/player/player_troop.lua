@@ -55,7 +55,7 @@ function Troop:follow_mouse()
   if self.being_knocked_back then return end
   self:steering_separate(SEPARATION_RADIUS, troop_classes)
   if self:distance_to_mouse() > 10 then
-    self:seek_mouse(SEEK_DECELERATION, SEEK_WEIGHT)
+    self:seek_mouse(SEEK_DECELERATION, SEEK_WEIGHT * 1.5)
     self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
     self:rotate_towards_velocity(1)
   else
@@ -219,7 +219,7 @@ function Troop:update(dt)
   elseif self.state == unit_states['stopped'] then
       -- The unit is still and cannot start a new action yet.
       -- A timer set by the Cast object should move it from 'stopped' to 'normal'.
-      self:set_velocity(0, 0)
+      -- self:set_velocity(0, 0)
 
   -- PRIORITY 4: Autonomous AI State
   -- If the unit is not doing any of the above, it's 'normal' and can think for itself.
@@ -245,10 +245,10 @@ function Troop:update(dt)
           --move towards the closest enemy (don't bother targeting it)
           local movement_target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies)
           if movement_target then
-            self:seek_point(movement_target.x, movement_target.y, SEEK_DECELERATION, SEEK_WEIGHT)
+            -- self:seek_point(movement_target.x, movement_target.y, SEEK_DECELERATION, SEEK_WEIGHT)
+            -- self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
+            -- self:rotate_towards_velocity(1)
             self:steering_separate(SEPARATION_RADIUS, troop_classes)
-            self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
-            self:rotate_towards_velocity(1)
           else
             self:steering_separate(SEPARATION_RADIUS, troop_classes)
           end
