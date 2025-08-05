@@ -291,7 +291,7 @@ PERK_DEFINITIONS = {
   --generic active perks
   immovable = {
     name = "Immovable",
-    description = "Standing still increases damage up to 30%/40%/50%",
+    description = "Standing still increases damage over time, up to 30%/40%/50%",
     icon = "immovable",
     rarity = "common",
     stats1 = {immovable = 0.3},
@@ -309,7 +309,7 @@ PERK_DEFINITIONS = {
   },
   kamikaze = {
     name = "Kamikaze",
-    description = "When a unit dies, knockback and deal 20%/30%/40% of its max health to nearby enemies",
+    description = "When a troop dies, knockback and deal 20%/30%/40% of its max health to nearby enemies",
     icon = "kamikaze",
     rarity = "common",
     stats1 = {kamikaze = 0.2},
@@ -318,7 +318,7 @@ PERK_DEFINITIONS = {
   },
   inspiration = {
     name = "Inspiration",
-    description = "When a unit dies, temporarily give nearby units +10%/15%/20% attack speed",
+    description = "When a troop dies, temporarily give nearby units +10%/15%/20% attack speed",
     icon = "inspiration",
     rarity = "common",
     stats1 = {inspiration = 0.1},

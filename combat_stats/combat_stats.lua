@@ -26,7 +26,7 @@ REGULAR_ENEMY_HP = 35
 REGULAR_ENEMY_DAMAGE = 10
 REGULAR_ENEMY_MS = 15
 
-SPECIAL_ENEMY_HP = 85
+SPECIAL_ENEMY_HP = 115
 SPECIAL_ENEMY_DAMAGE = 18
 SPECIAL_ENEMY_MS = 20
 
@@ -332,6 +332,7 @@ move_speeds = {
 unit_size = {
     ['small'] = 4,
     ['medium'] = 8,
+    ['medium-plus'] = 10,
     ['large'] = 14,
   }
 

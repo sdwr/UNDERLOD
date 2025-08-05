@@ -4,7 +4,7 @@ Troop:implement(Physics)
 function Troop:init(args)
   self.class = 'troop'
   self.faction = 'friendly'
-  self.size = unit_size['medium']
+  self.size = unit_size['medium-plus']
   self.is_troop = true
   self.target_rally = nil
   self.castTime = 0.3
