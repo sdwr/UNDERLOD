@@ -272,7 +272,7 @@ function Spawn_Team(arena, index, unit)
     y = spawn_location.y,
     level = unit.level,
     character = unit.character,
-    items = {nil, nil, nil, nil, nil, nil},
+    items = unit.items,
     passives = arena.passives
   })
 
