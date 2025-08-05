@@ -64,9 +64,12 @@ EnemyProjectile:implement(Physics)
 function EnemyProjectile:init(args)
   self:init_game_object(args)
 
+  self.width = args.width or 10
+  self.height = args.height or 4
+
   self.damage = get_dmg_value(self.damage)
   if tostring(self.x) == tostring(0/0) or tostring(self.y) == tostring(0/0) then self.dead = true; return end
-  self:set_as_rectangle(10, 4, 'dynamic', 'enemy_projectile')
+  self:set_as_rectangle(self.width, self.height, 'dynamic', 'enemy_projectile')
 end
 
 

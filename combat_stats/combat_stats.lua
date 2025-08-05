@@ -27,7 +27,7 @@ REGULAR_ENEMY_DAMAGE = 15
 REGULAR_ENEMY_MS = 30
 
 SPECIAL_ENEMY_HP = 115
-SPECIAL_ENEMY_DAMAGE = 25
+SPECIAL_ENEMY_DAMAGE = 35
 SPECIAL_ENEMY_MS = 20
 
 MINIBOSS_HP = 400
@@ -117,18 +117,18 @@ TIER_TO_ITEM_RARITY_WEIGHTS = {
 CHANCE_OF_SPECIAL_VS_NORMAL_ENEMY = 0.7
 
 ROUND_POWER_BY_LEVEL = {
-  [1] = 350,
-  [2] = 400,
-  [3] = 500,
-  [4] = 600,
-  [5] = 700,
-  [6] = 800,
-  [7] = 900,
-  [8] = 1000,
-  [9] = 1100,
-  [10] = 1200,
-  [11] = 1300,
-  [12] = 1400,
+  [1] = 400,
+  [2] = 600,
+  [3] = 800,
+  [4] = 1100,
+  [5] = 1300,
+  [6] = 1500,
+  [7] = 1700,
+  [8] = 1900,
+  [9] = 2100,
+  [10] = 2300,
+  [11] = 2500,
+  [12] = 2700,
   [13] = 1500,
   [14] = 1600,
   [15] = 1700,
@@ -206,17 +206,17 @@ end
 
 SCALED_ENEMY_HP = function(level, base_hp)
   local scale = ENEMY_SCALE_BY_LEVEL[level]
-  return base_hp + (base_hp * 0.5 * scale)
+  return base_hp + (base_hp * 0.25 * scale)
 end
 
 SCALED_ENEMY_DAMAGE = function(level, base_dmg)
   local scale = ENEMY_SCALE_BY_LEVEL[level]
-  return base_dmg + (base_dmg * 0.3 * scale)
+  return base_dmg + (base_dmg * 0.2 * scale)
 end
 
 SCALED_ENEMY_MS = function(level, base_ms)
   local scale = ENEMY_SCALE_BY_LEVEL[level]
-  return base_ms + (base_ms * 0.05 * scale)
+  return base_ms + (base_ms * 0.02 * scale)
 end
 
 BOSS_SCALE_BY_LEVEL = 
@@ -266,16 +266,16 @@ unit_stat_multipliers = {
 }
 
 enemy_type_to_stats = {
-    ['swarmer'] = { dmg = 0.5, mvspd = 0.8, hp = 0.6},
+    ['swarmer'] = { dmg = 0.5, hp = 0.6},
 
     ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
     ['chaser'] = { dmg = 1, mvspd = 1 },
     ['shooter'] = {},
     
     ['cleaver'] = { dmg = 1.5 },
-    ['big_goblin_archer'] = { dmg = 1.5, mvspd = 3 },
-    ['goblin_archer'] = { dmg = 1.5, mvspd = 3 },
-    ['archer'] = { dmg = 1.8, mvspd = 2.5 },
+    ['big_goblin_archer'] = { dmg = 1.5 },
+    ['goblin_archer'] = { dmg = 1.5 },
+    ['archer'] = { dmg = 1.3 },
     ['turret'] = { dmg = 1.2 },
 
     ['arcspread'] = { dmg = 0.5 },

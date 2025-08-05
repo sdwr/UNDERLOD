@@ -1401,8 +1401,8 @@ function init()
       'selfburst',
       'burst',
       'snakearrow',
-      -- 'slowcharger',
       'turret',
+      -- 'slowcharger',
     },
     [1.5] = {
       'mortar',

@@ -1317,7 +1317,7 @@ function Proc_Radiance:init(args)
 
   --define the proc's vars
   self.radius = self.data.radius or 60
-  self.damage = self.data.damage or 20
+  self.damage = self.data.damage or 8
   self.damageType = DAMAGE_TYPE_FIRE
 end
 

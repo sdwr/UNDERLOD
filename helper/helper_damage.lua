@@ -163,6 +163,8 @@ end
 function Helper.Damage:deal_damage(unit, damage)
   unit.hp = unit.hp - damage
 
+  if unit.character then
+
   if unit.buffs['curse'] then
     unit.buffs['curse'].damage_taken = unit.buffs['curse'].damage_taken + damage
   end
