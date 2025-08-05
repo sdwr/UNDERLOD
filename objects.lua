@@ -883,7 +883,9 @@ function Unit:calculate_stats(first_run)
     elemental_slow_m = 1 - (self.slow_per_element*num_elemental_afflictions)
   end
 
-  self.max_v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m*elemental_slow_m
+  self.mvspd = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m*elemental_slow_m
+  self.max_v = MAX_V
+
 
 
   -- Calculate final elemental damage stats
@@ -1833,7 +1835,6 @@ function Unit:launch_at_facing(force_magnitude, duration)
 
   self.t:after(duration, function()
     if self.is_launching then
-      self:set_velocity(0, 0)
       self.is_launching = false
     end
     self:set_damping(get_damping_by_unit_class(self.class))
