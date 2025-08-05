@@ -150,6 +150,7 @@ function Arena:init_physics()
   self.main:disable_collision_between('ghost', 'projectile')
   self.main:disable_collision_between('ghost', 'enemy')
 
+  self.main:disable_collision_between('effect', 'effect')
   self.main:disable_collision_between('effect', 'troop')
   self.main:disable_collision_between('effect', 'projectile')
   self.main:disable_collision_between('effect', 'enemy')
