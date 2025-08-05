@@ -33,7 +33,7 @@ function Archer_Troop:setup_cast(cast_target)
       spell_duration = 10,
       bullet_size = 3,
       pierce = false,
-      speed = 130,
+      speed = 150,
       is_troop = true,
       color = blue[0],
       damage = function() return self.dmg end,

@@ -6,16 +6,16 @@
 
 Wave_Types = {}
 
-function Wave_Types:Add_Enemy(wave, power_budget, tier, enemy_type)
+function Wave_Types:Add_Enemy(wave, power_budget, tier, enemy_type, number)
   
   local power_added = 0
 
   --try to add special, fallback to normal, fallback to swarmer
   if enemy_type == 'special' then
-     power_added = self:Add_Special_Enemy(wave, power_budget, tier)
+     power_added = self:Add_Special_Enemy(wave, power_budget, tier, number)
   end
   if power_added == 0 then
-    power_added = self:Add_Swarmers(wave, power_budget, tier)
+    power_added = self:Add_Swarmers(wave, power_budget, tier, number)
   end
   
   if power_added == 0 then
@@ -25,7 +25,7 @@ function Wave_Types:Add_Enemy(wave, power_budget, tier, enemy_type)
   return power_added
 end
 
-function Wave_Types:Add_Special_Enemy(wave, power_budget, tier)
+function Wave_Types:Add_Special_Enemy(wave, power_budget, tier, number)
   local special_enemy = random:table(special_enemy_by_tier[tier])
   local max_num_enemies_in_budget = math.floor(power_budget / enemy_to_round_power[special_enemy])
   
@@ -33,13 +33,18 @@ function Wave_Types:Add_Special_Enemy(wave, power_budget, tier)
     return 0
   end
 
-  local max_enemies_in_group = math.min(max_num_enemies_in_budget, MAX_SPECIAL_ENEMY_GROUP_SIZE_BY_TIER[tier])
-  local num_enemies_in_group = math.random(1, max_enemies_in_group)
+  local num_enemies_in_group = 0
+  if number and number <= max_num_enemies_in_budget then
+    num_enemies_in_group = number
+  else
+    local max_enemies_in_group = math.min(max_num_enemies_in_budget, MAX_SPECIAL_ENEMY_GROUP_SIZE_BY_TIER[tier])
+    num_enemies_in_group = math.random(1, max_enemies_in_group)
+  end
   table.insert(wave, {'GROUP', special_enemy, num_enemies_in_group, 'nil'})
   return enemy_to_round_power[special_enemy] * num_enemies_in_group
 end
 
-function Wave_Types:Add_Normal_Enemy(wave, power_budget, tier)
+function Wave_Types:Add_Normal_Enemy(wave, power_budget, tier, number)
   local normal_enemy = random:table(normal_enemy_by_tier[tier])
   local max_num_enemies_in_budget = math.floor(power_budget / enemy_to_round_power[normal_enemy])
 
@@ -47,18 +52,23 @@ function Wave_Types:Add_Normal_Enemy(wave, power_budget, tier)
     return 0
   end
 
-  local max_group_size = MAX_NORMAL_ENEMY_GROUP_SIZE_BY_TIER[tier]
-  if normal_enemy == 'swarmer' then
-    max_group_size = MAX_SWARMER_GROUP_SIZE_BY_TIER[tier]
-  end 
-  local max_enemies_in_group = math.min(max_num_enemies_in_budget, max_group_size)
-  local min_enemies_in_group = math.max(1, math.floor(max_enemies_in_group / 2))
-  local num_enemies_in_group = math.random(min_enemies_in_group, max_enemies_in_group)
+  local num_enemies_in_group = 0
+  if number and number <= max_num_enemies_in_budget then
+    num_enemies_in_group = number
+  else
+    local max_group_size = MAX_NORMAL_ENEMY_GROUP_SIZE_BY_TIER[tier]
+    if normal_enemy == 'swarmer' then
+      max_group_size = MAX_SWARMER_GROUP_SIZE_BY_TIER[tier]
+    end 
+    local max_enemies_in_group = math.min(max_num_enemies_in_budget, max_group_size)
+    local min_enemies_in_group = math.max(1, math.floor(max_enemies_in_group / 2))
+    num_enemies_in_group = math.random(min_enemies_in_group, max_enemies_in_group)
+  end
   table.insert(wave, {'GROUP', normal_enemy, num_enemies_in_group, 'nil'})
   return enemy_to_round_power[normal_enemy] * num_enemies_in_group
 end
 
-function Wave_Types:Add_Swarmers(wave, power_budget, tier)
+function Wave_Types:Add_Swarmers(wave, power_budget, tier, number)
   local swarmer = 'swarmer'
   local max_num_enemies_in_budget = math.floor(power_budget / enemy_to_round_power[swarmer])
 
@@ -68,7 +78,13 @@ function Wave_Types:Add_Swarmers(wave, power_budget, tier)
 
   local max_enemies_in_group = math.min(max_num_enemies_in_budget, MAX_SWARMER_GROUP_SIZE_BY_TIER[tier])
   local min_enemies_in_group = math.max(1, math.floor(max_enemies_in_group / 2))
-  local num_enemies_in_group = math.random(min_enemies_in_group, max_enemies_in_group)
+  
+  local num_enemies_in_group = 0
+  if number and number <= max_num_enemies_in_budget then
+    num_enemies_in_group = number
+  else
+    num_enemies_in_group = math.random(min_enemies_in_group, max_enemies_in_group)
+  end
   table.insert(wave, {'GROUP', swarmer, num_enemies_in_group, 'nil'})
   return enemy_to_round_power[swarmer] * num_enemies_in_group
 end
@@ -86,7 +102,7 @@ function Wave_Types:Get_Waves(level)
   local tier = LEVEL_TO_TIER(level)
   
   -- Step 1: Add a special enemy from the correct tier
-  current_power = current_power + self:Add_Enemy(wave, power_budget, tier, 'special')
+  current_power = current_power + self:Add_Enemy(wave, power_budget, tier, 'special', 2)
   power_budget = target_power - current_power
 
   current_power = current_power + self:Add_Enemy(wave, power_budget, tier, 'swarmer')

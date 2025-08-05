@@ -286,11 +286,11 @@ ITEM_SETS = {
     name = 'Shield',
     color = 'green',
     bonuses = {
-      [1] = { procs = {'shield'} },
+      [1] = { procs = {'shield', 'radiance'} },
       [2] = { procs = {'shieldexplode'} },
     },
     descriptions = {
-      [1] = 'Shields you periodically, blocking damage',
+      [1] = 'Grants you a shield and damage aura',
       [2] = 'Shield explodes when destroyed, knocking back nearby enemies'
     }
   },

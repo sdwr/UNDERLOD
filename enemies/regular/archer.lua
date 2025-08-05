@@ -17,7 +17,7 @@ fns['init_enemy'] = function(self)
   self.cooldownTime = attack_speeds['fast']
   self:reset_castcooldown(self.cooldownTime)
 
-  self.baseActionTimer = 1.5  -- Short action timer
+  self.baseActionTimer = 2  -- Short action timer
 
   self.move_option_weight = 0
 
