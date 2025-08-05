@@ -58,6 +58,9 @@ function FloorInteractable:init(args)
   self.on_failed_activation = args.on_failed_activation
   self.on_hover_start = args.on_hover_start
   self.on_hover_end = args.on_hover_end
+
+  self.can_activate_condition = args.can_activate_condition
+  self.on_prevented_activation = args.on_prevented_activation
   
   -- Custom disable function
   self.disable_interaction = args.disable_interaction
@@ -104,6 +107,7 @@ end
 
 function FloorInteractable:can_interact()
   return not self.interaction_is_disabled and not self.interaction_failed_activation and not self:is_spawn_protection_active()
+  and not self.interaction_is_triggered
 end
 
 function FloorInteractable:is_spawn_protection_active()
@@ -131,7 +135,13 @@ function FloorInteractable:check_unit_collision()
     local objects = self.main_group:get_objects_in_shape(self.interaction_aggro_sensor, self.unit_classes)
     if #objects > 0 then
       if self:can_interact() and not self.interaction_is_hovered then
-        self:interaction_activate()
+        if self.can_activate_condition and not self.can_activate_condition() then
+          if self.on_prevented_activation then
+            self:on_prevented_activation()
+          end
+        else
+          self:interaction_activate()
+        end
       end
     else
       --clear spawn protection if unit leaves
@@ -220,7 +230,6 @@ function FloorInteractable:interaction_deactivate()
   self.interaction_is_active = false
   self.interaction_is_hovered = false
   self.interaction_spawn_protection = false
-  self.interaction_is_triggered = false
   self:interaction_stop_shake()
 
   if self.on_hover_end then

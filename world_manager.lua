@@ -516,20 +516,28 @@ function WorldManager:unit_has_open_inventory_slot(unit, slot_index)
 end
 
 function WorldManager:put_in_first_available_inventory_slot(item)
+  local unit, slot_index = self:find_available_inventory_slot(item)
+  if unit and slot_index then
+    unit.items[slot_index] = item
+    return true
+  end
+  return false
+end
+
+function WorldManager:find_available_inventory_slot(item)
   local slot_index = ITEM_SLOTS[item.slot].index
 
   if not slot_index then
     print('ERROR: cannot find slot for item type', item.slot)
-    return false
+    return nil, nil
   end
 
   for _, unit in ipairs(self.units) do
     if self:unit_has_open_inventory_slot(unit, slot_index) then
-      unit.items[slot_index] = item
-      return true
+      return unit, slot_index
     end
   end
-  return false
+  return nil, nil
 end
 
 -- Perk management functions
