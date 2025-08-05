@@ -22,13 +22,13 @@ TROOP_RANGE = 100
 TROOP_SWORDSMAN_RANGE = 50
 
 
-REGULAR_ENEMY_HP = 30
+REGULAR_ENEMY_HP = 35
 REGULAR_ENEMY_DAMAGE = 10
-REGULAR_ENEMY_MS = 30
+REGULAR_ENEMY_MS = 40
 
 SPECIAL_ENEMY_HP = 60
 SPECIAL_ENEMY_DAMAGE = 18
-SPECIAL_ENEMY_MS = 40
+SPECIAL_ENEMY_MS = 45
 
 MINIBOSS_HP = 500
 MINIBOSS_DAMAGE = 20
@@ -182,17 +182,17 @@ MAX_NORMAL_ENEMY_GROUP_SIZE_BY_TIER = {
 }
 
 MAX_SWARMER_GROUP_SIZE_BY_TIER = {
-  [1] = 6,
-  [1.5] = 8,
-  [2] = 10,
-  [2.5] = 12,
+  [1] = 10,
+  [1.5] = 14,
+  [2] = 18,
+  [2.5] = 22,
 }
 
 MAX_SPECIAL_ENEMY_GROUP_SIZE_BY_TIER = {
-  [1] = 2,
-  [1.5] = 3,
-  [2] = 4,
-  [2.5] = 5,
+  [1] = 1,
+  [1.5] = 2,
+  [2] = 3,
+  [2.5] = 4,
 }
 
 ENEMY_SCALE_BY_LEVEL = 
@@ -268,7 +268,7 @@ unit_stat_multipliers = {
 }
 
 enemy_type_to_stats = {
-    ['swarmer'] = { dmg = 0.5, mvspd = 0.6, hp = 0.4},
+    ['swarmer'] = { dmg = 0.5, mvspd = 0.8, hp = 0.4},
 
     ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
     ['chaser'] = { dmg = 1, mvspd = 1 },

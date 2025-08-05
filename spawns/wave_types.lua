@@ -14,9 +14,6 @@ function Wave_Types:Add_Enemy(wave, power_budget, tier, enemy_type)
   if enemy_type == 'special' then
      power_added = self:Add_Special_Enemy(wave, power_budget, tier)
   end
-  if power_added == 0 or enemy_type == 'normal' then
-    power_added = self:Add_Normal_Enemy(wave, power_budget, tier)
-  end
   if power_added == 0 then
     power_added = self:Add_Swarmers(wave, power_budget, tier)
   end
