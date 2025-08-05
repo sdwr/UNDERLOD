@@ -132,7 +132,7 @@ function Arena:init_physics()
   self.tutorial = Group()
   self.tutorial:set_custom_draw_list(full_res_draws)
   self.options_ui = Group()
-  self.options_ui:set_custom_draw_list(main_after_characters)
+  self.options_ui:set_custom_draw_list(main_ui_draws)
   self.credits = Group()
   self.credits:set_custom_draw_list(main_after_characters)
 
