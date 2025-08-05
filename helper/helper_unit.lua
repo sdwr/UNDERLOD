@@ -534,9 +534,9 @@ function Helper.Unit:apply_knockback_enemy(unit, force, angle)
 
     local force_multiplier = 1
     if unit.class == 'miniboss' then
-        force_multiplier = 0.3
-    elseif unit.class == 'boss' then
         force_multiplier = 0.5
+    elseif unit.class == 'boss' then
+        force_multiplier = 0.2
     end
 
     local final_force = force * force_multiplier

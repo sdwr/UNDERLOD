@@ -192,7 +192,7 @@ function Unit:config_physics_object()
     self:set_mass(BOSS_MASS)
 
     --heigan had 1000, stompy had 10000, dragon had default
-    self:set_as_steerable(MAX_V, MAX_BOSS_FORCE, 2*math.pi, 2)
+    self:set_as_steerable(self.max_v, MAX_BOSS_FORCE, 2*math.pi, 2)
 
   elseif self.class == 'miniboss' then
     --ignore for now
@@ -204,7 +204,7 @@ function Unit:config_physics_object()
 
     self:set_mass(SPECIAL_ENEMY_MASS)
 
-    self:set_as_steerable(MAX_V, MAX_ENEMY_FORCE, 4*math.pi, 4)
+    self:set_as_steerable(self.max_v, MAX_ENEMY_FORCE, 4*math.pi, 4)
 
   elseif self.class == 'regular_enemy' then
     
@@ -214,7 +214,7 @@ function Unit:config_physics_object()
 
     self:set_mass(REGULAR_ENEMY_MASS)
 
-    self:set_as_steerable(MAX_V, MAX_ENEMY_FORCE, 4*math.pi, 4)
+    self:set_as_steerable(self.max_v, MAX_ENEMY_FORCE, 4*math.pi, 4)
   
   elseif self.class == 'enemy_critter' then
     self:set_damping(get_damping_by_unit_class(self.class))
@@ -222,14 +222,14 @@ function Unit:config_physics_object()
     self:set_friction(ENEMY_FRICTION)
 
     self:set_mass(CRITTER_MASS)
-    self:set_as_steerable(MAX_V, MAX_ENEMY_FORCE, 4*math.pi, 4)
+    self:set_as_steerable(self.max_v, MAX_ENEMY_FORCE, 4*math.pi, 4)
   elseif self.class =='critter' then
     self:set_damping(get_damping_by_unit_class(self.class))
     self:set_restitution(CRITTER_RESTITUTION)
     self:set_friction(ENEMY_FRICTION)
 
     self:set_mass(CRITTER_MASS)
-    self:set_as_steerable(MAX_V, MAX_ENEMY_FORCE, 4*math.pi, 4)
+    self:set_as_steerable(self.max_v, MAX_ENEMY_FORCE, 4*math.pi, 4)
 
   elseif self.class == 'troop' then
     if self.ghost == true then
@@ -244,7 +244,7 @@ function Unit:config_physics_object()
 
     self:set_mass(TROOP_MASS)
 
-    self:set_as_steerable(MAX_V, MAX_TROOP_FORCE, 4*math.pi, 4)
+    self:set_as_steerable(self.max_v, MAX_TROOP_FORCE, 4*math.pi, 4)
 
   end
   
@@ -883,8 +883,8 @@ function Unit:calculate_stats(first_run)
     elemental_slow_m = 1 - (self.slow_per_element*num_elemental_afflictions)
   end
 
-  self.max_move_v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m*elemental_slow_m
-  self.max_v = self.max_move_v * 50
+  self.max_v = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m*elemental_slow_m
+
 
   -- Calculate final elemental damage stats
   self.fire_damage = self.buff_fire_damage_a * self.buff_fire_damage_m
