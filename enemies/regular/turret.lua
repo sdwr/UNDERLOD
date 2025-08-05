@@ -8,7 +8,7 @@ fns['init_enemy'] = function(self)
   self.color = red[0]:clone()
   Set_Enemy_Shape(self, self.size)
 
-  self.class = 'regular_enemy'
+  self.class = 'special_enemy'
   self.icon = 'goblin'
   self.name = 'turret'
 
