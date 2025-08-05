@@ -916,15 +916,11 @@ function Unit:onAttackCallbacks(target)
   for k, proc in ipairs(self.onAttackProcs) do
     proc:onAttack(target, self)
   end
-
-  -- Handle elemental damage on attack
-  self:handle_elemental_damage_on_attack(target)
 end
 
-function Unit:handle_elemental_damage_on_attack(target)
+function Unit:handle_elemental_damage_on_primary_hit(target)
   -- Only apply elemental damage if target is a valid unit
   if not target or not target.hit then return end
-  
   -- Fire damage
   if self.fire_damage and self.fire_damage > 0 then
     local fire_damage = self.dmg * self.fire_damage
@@ -966,6 +962,9 @@ function Unit:onPrimaryHitCallbacks(target, damage, damageType)
   for k, proc in ipairs(self.onPrimaryHitProcs) do
     proc:onPrimaryHit(target, damage, damageType)
   end
+
+  -- Handle elemental damage on primary hit
+  self:handle_elemental_damage_on_primary_hit(target)
 end
 
 function Unit:onGotHitCallbacks(from, damage)
@@ -2164,11 +2163,11 @@ function Unit:process_set_bonuses_to_stats()
   local set_bonus_stats = {}
   local sets = {}
   
-  if not self.items or #self.items == 0 then return set_bonus_stats end
+  if not self.items then return set_bonus_stats end
   
-  for _, item in ipairs(self.items) do
+  for _, item in pairs(self.items) do
     if item.sets and #item.sets > 0 then
-      for _, set in ipairs(item.sets) do
+      for _, set in pairs(item.sets) do
         sets[set] = (sets[set] or 0) + 1
       end
     end
@@ -2177,7 +2176,7 @@ function Unit:process_set_bonuses_to_stats()
   for set, count in pairs(sets) do
     local set_data = ITEM_SETS[set]
     if set_data then
-      for number_required, bonus in ipairs(set_data.bonuses) do
+      for number_required, bonus in pairs(set_data.bonuses) do
         if count >= number_required then
           if bonus.stats then
             for stat, value in pairs(bonus.stats) do
@@ -2205,7 +2204,7 @@ function Unit:get_set_procs()
 
   for _, item in pairs(self.items) do
     if item.sets and #item.sets > 0 then
-      for _, set in ipairs(item.sets) do
+      for _, set in pairs(item.sets) do
         sets[set] = (sets[set] or 0) + 1
       end
     end
@@ -2217,7 +2216,7 @@ function Unit:get_set_procs()
       for key, bonus in pairs(set_data.bonuses) do
         if count >= key then
           if bonus.procs then
-            for _, proc_name in ipairs(bonus.procs) do
+            for _, proc_name in pairs(bonus.procs) do
               table.insert(set_bonus_procs, proc_name)
             end
           end

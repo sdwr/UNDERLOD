@@ -172,10 +172,10 @@ ITEM_SETS = {
   [ITEM_SET.SHOCK] = {
     name = 'Storm',
     color = 'yellow',
-          bonuses = {
-        [1] = { stats = {['lightning_damage'] = 1} },
-        [2] = { stats = {['lightning_damage'] = 1}, procs = {'shock'} },
-        [4] = { stats = {['lightning_damage'] = 2} }
+    bonuses = {
+      [1] = { stats = {['lightning_damage'] = 1} },
+      [2] = { stats = {['lightning_damage'] = 1}, procs = {'shock'} },
+      [4] = { stats = {['lightning_damage'] = 2} }
     },
     descriptions = {
       [1] = 'Adds lightning damage to attacks',
