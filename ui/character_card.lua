@@ -206,7 +206,7 @@ function CharacterCard:create_set_bonus_display()
   for i, set_info in ipairs(unit_sets) do
 
     local y_offset = ((i-1) % 2) * 16
-    local x_offset = math.floor((i-1) / 3) * 30
+    local x_offset = math.floor((i-1) / 2) * 35
 
     
     local max_pieces = 0
