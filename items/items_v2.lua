@@ -453,7 +453,7 @@ function roll_stat_for_type(item_type)
 end
 
 -- Main function to create a random item
-function create_random_item(tier)
+function create_random_item(tier, rarity)
   -- Debug: Check if random is available
   if not random then
     print("ERROR: random object is not available!")
@@ -466,7 +466,7 @@ function create_random_item(tier)
     return nil
   end
   
-  local rarity = get_random_rarity(tier)
+  local rarity = rarity or get_random_rarity(tier)
   if not rarity then
     print("ERROR: Failed to get random rarity!")
     return nil
