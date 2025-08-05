@@ -26,11 +26,15 @@ function Archer_Troop:setup_cast(cast_target)
     cast_length = self.castTime,
     backswing = 0.2,
     instantspell = true,
-    spellclass = Arrow,
+    spellclass = ArrowProjectile,
     spelldata = {
       group = main.current.effects,
       on_attack_callbacks = true,
-      spell_duration = 3,
+      spell_duration = 10,
+      bullet_size = 3,
+      pierce = false,
+      speed = 130,
+      is_troop = true,
       color = blue[0],
       damage = function() return self.dmg end,
 
