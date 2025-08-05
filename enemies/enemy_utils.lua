@@ -2,6 +2,7 @@ enemy_size_to_xy = {
   critter = {x = 7, y = 4},
   small = {x = 8, y = 6},
   regular = {x = 10, y = 10},
+  swarmer = {x = 10, y = 6},
   regular_big = {x = 16, y = 12},
   special = {x = 14, y = 14},
   huge = {x = 36, y = 24},

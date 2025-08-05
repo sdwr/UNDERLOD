@@ -138,7 +138,7 @@ function Enemy:update(dt)
 
     if self.state == unit_states['stopped'] or self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
       if self.target and not self.target.dead and not self:should_freeze_rotation() then
-        self:rotate_towards_object(self.target, 1)
+        self:rotate_towards_object(self.target, 0.5)
       end
     end
 
@@ -262,7 +262,7 @@ function Enemy:acquire_target_random()
 end
 
 function Enemy:update_move_wander()
-  self:wander(10, 10, 5)
+  self:wander(50, 100, 20)
   return true
 end
 
@@ -275,18 +275,18 @@ function Enemy:update_move_seek()
   -- 2. Check if we are in range.
   if self:in_range_of(self.target) and self.stopChasingInRange then
       -- We are in range and should stop, so just mill about.
-      self:wander(10, 10, 5)
+      self:wander(50, 100, 20)
 
   else
       -- We are OUT of range, OR we are not supposed to stop.
       -- In either case, we must seek the target.
       self:seek_point(self.target.x, self.target.y, SEEK_DECELERATION, SEEK_WEIGHT)
-      self:wander(10, 10, 5) -- Add a little variation to the seek.
+      self:wander(50, 100, 20) -- Add a little variation to the seek.
   end
 
   -- 3. Apply final steering adjustments in all active cases.
-  self:rotate_towards_velocity(1)
-  self:steering_separate(12, {Enemy}, 4)
+  self:rotate_towards_velocity(0.5)
+  self:steering_separate(4, {Enemy}, 1)
 
   -- 4. Return true because the movement action is successfully ongoing.
   return true
@@ -299,9 +299,9 @@ function Enemy:update_move_loose_seek()
       return false
     else
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, SEEK_WEIGHT)
-      self:wander(10, 10, 5)
-      self:rotate_towards_velocity(1)
-      self:steering_separate(12, {Enemy}, 4)
+      self:wander(50, 100, 20)
+      self:rotate_towards_velocity(0.5)
+      self:steering_separate(4, {Enemy}, 1)
       return true
     end
   end
@@ -314,9 +314,9 @@ function Enemy:update_move_seek_to_range()
       return false
     else
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, SEEK_WEIGHT)
-      self:wander(10, 10, 5)
-      self:rotate_towards_velocity(1)
-      self:steering_separate(12, {Enemy}, 4)
+      self:wander(50, 100, 20)
+      self:rotate_towards_velocity(0.5)
+      self:steering_separate(4, {Enemy}, 1)
       return true
     end
   end
@@ -329,9 +329,9 @@ function Enemy:update_move_random()
       return false
     else
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, SEEK_WEIGHT)
-      self:wander(10, 10, 5)
-      self:rotate_towards_velocity(1)
-      self:steering_separate(12, {Enemy}, 4)
+      self:wander(50, 100, 20)
+      self:rotate_towards_velocity(0.5)
+      self:steering_separate(4, {Enemy}, 1)
       return true
     end
   end
