@@ -115,9 +115,6 @@ function PerkSlot:try_level_perk()
   self.perk.level = self.perk.level + 1
 
   main.current:save_run()
-
-  main.current.shop_text:set_text{{text = '[wavy_mid, fg]gold: [yellow]' .. gold, font = pixul_font, alignment = 'right'}}
-
 end
 
 function PerkSlot:update(dt)
