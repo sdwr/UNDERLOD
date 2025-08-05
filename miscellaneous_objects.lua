@@ -1229,9 +1229,7 @@ function CustomCursor:update(dt)
     self:update_game_object(dt)
 
     -- Update cursor position to follow the mouse
-    local mouse_x, mouse_y = love.mouse.getPosition()
-    mouse_x = mouse_x / sx
-    mouse_y = mouse_y / sx
+    local mouse_x, mouse_y = camera:get_mouse_position()
     self.x = mouse_x
     self.y = mouse_y
     

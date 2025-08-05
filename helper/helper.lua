@@ -81,9 +81,7 @@ function Helper:update(dt)
 
 
 
-    Helper.mousex, Helper.mousey = love.mouse.getPosition()
-    Helper.mousex = Helper.mousex / sx
-    Helper.mousey = Helper.mousey / sx
+    Helper.mousex, Helper.mousey = camera:get_mouse_position()
 
     if love.keyboard.isDown( "d" ) then
         Area{
