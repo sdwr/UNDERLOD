@@ -282,7 +282,7 @@ enemy_type_to_stats = {
     ['assassin'] = {},
     ['laser'] = {},
     ['mortar'] = { dmg = 1.5 },
-    ['rager'] = { dmg = 0.5, mvspd = 2 },
+    ['rager'] = { dmg = 0.5 },
     ['spawner'] = {},
     ['stomper'] = { dmg = 2.5 },
     ['charger'] = { dmg = 1.5, mvspd  = 0.5 },

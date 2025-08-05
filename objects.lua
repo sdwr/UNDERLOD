@@ -884,7 +884,7 @@ function Unit:calculate_stats(first_run)
   end
 
   self.mvspd = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m*elemental_slow_m
-  self.max_v = MAX_V
+  self.max_v = self.mvspd
 
 
 
@@ -1699,7 +1699,7 @@ function Unit:should_freeze_rotation()
     or (self.castObject and self.castObject.freeze_rotation)
 end
 
-function Unit:end_cast(cooldown, spell_duration)
+function Unit:end_cast(cooldown)
   local random_cooldown = self:get_random_cooldown(cooldown)
   
   self:reset_castcooldown(random_cooldown)
@@ -1820,6 +1820,7 @@ function Unit:launch_at_facing(force_magnitude, duration)
   self.launch_force_x = math.cos(facing) * force_magnitude * mass
   self.launch_force_y = math.sin(facing) * force_magnitude * mass
   self:set_velocity(0, 0)
+  self.max_v = LAUNCH_MAX_V
   self:apply_impulse(self.launch_force_x, self.launch_force_y)
   
 
@@ -1836,6 +1837,7 @@ function Unit:launch_at_facing(force_magnitude, duration)
   self.t:after(duration, function()
     if self.is_launching then
       self.is_launching = false
+      self.max_v = self.mvspd
     end
     self:set_damping(get_damping_by_unit_class(self.class))
     self:set_friction(orig_friction)
