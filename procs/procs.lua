@@ -1367,7 +1367,7 @@ function Proc_Shield:onTick(dt)
 
   if self.shield_timer < self.adjustedTimeBetween then return end
 
-  heal1:play{pitch = random:float(0.8, 1.2), volume = 0.3}
+  heal1:play{pitch = random:float(0.8, 1.2), volume = 0.15}
   self.unit:shield(self.shield_amount, self.buff_duration)
   self.shield_timer = 0
 end

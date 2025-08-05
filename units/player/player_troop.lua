@@ -55,7 +55,7 @@ function Troop:follow_mouse()
   if self.being_knocked_back then return end
   self:steering_separate(SEPARATION_RADIUS, troop_classes)
   if self:distance_to_mouse() > 10 then
-    self:seek_mouse(SEEK_DECELERATION, SEEK_WEIGHT * 1.5)
+    self:seek_mouse(SEEK_DECELERATION, SEEK_WEIGHT * 1.8)
     self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
     self:rotate_towards_velocity(1)
   else
