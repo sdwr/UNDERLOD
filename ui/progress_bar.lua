@@ -115,3 +115,7 @@ function ProgressBar:create_progress_particle(roundPower, x, y)
   }
 
 end
+
+function ProgressBar:die()
+  self.dead = true
+end

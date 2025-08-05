@@ -147,9 +147,10 @@ function WorldManager:create_arena(level, offset_x)
     self.transitioning = true
     self.transition_progress = 0
     
-    -- Trigger level map transition animation
-    if self.level_map then
-      self.level_map:start_transition_out()
+    -- Trigger level progress transition animation
+    if self.level_progress then
+      -- Progress bar doesn't need transition animation, just update
+      self:update_level_progress()
     end
 
   end
@@ -168,27 +169,45 @@ function WorldManager:assign_physics_groups(arena)
 end
 
 function WorldManager:create_level_map()
-  if self.level_map then
-    self.level_map:die()
+  self:create_level_progress()
+end
+
+function WorldManager:update_level_map()
+  self:update_level_progress()
+end
+
+function WorldManager:create_level_progress()
+  if self.level_progress then
+    self.level_progress:die()
   end
   
-  -- Only show level map for non-boss levels and non-tutorial levels
+  -- Only show progress bar for non-boss levels and non-tutorial levels
   if not Is_Boss_Level(self.level) then
-    self.level_map = LevelMap{
+    -- Calculate total levels in the level list
+    local total_levels = #self.level_list or 10  -- Default to 10 if no level list
+    local current_progress = self.level or 1
+    
+    self.level_progress = ProgressBar{
       group = self.world_ui,
       x = gw/2,
       y = LEVEL_MAP_Y_POSITION,
-      parent = self,
-      level = self.level,
-      loop = self.loop,
-      level_list = self.level_list,
+      w = 300,  -- Width of progress bar
+      h = 5,   -- Height of progress bar
+      progress = current_progress,
+      max_progress = total_levels,
+      color = fg[0],  -- Foreground color
+      bgcolor = bg[1], -- Background color
+      parent = self
     }
   end
 end
 
-function WorldManager:update_level_map()
-  if self.level_map then
-    self.level_map:reset()
+function WorldManager:update_level_progress()
+  if self.level_progress then
+    -- Update progress to current level
+    local total_levels = #self.level_list or 10
+    self.level_progress:set_progress(self.level or 1)
+    self.level_progress:set_max_progress(total_levels)
   end
 end
 
@@ -372,8 +391,9 @@ function WorldManager:complete_transition()
     -- Recreate level map for new level
     self:create_level_map()
 
-    if self.level_map then
-      self.level_map:end_transition_in()
+    if self.level_progress then
+      -- Progress bar doesn't need transition animation, just update
+      self:update_level_progress()
     end
     
   end
@@ -444,9 +464,9 @@ function WorldManager:on_exit(to)
   end
   
   -- Clean up level map
-  if self.level_map then
-    self.level_map:die()
-    self.level_map = nil
+  if self.level_progress then
+    self.level_progress:die()
+    self.level_progress = nil
   end
 end
 
@@ -472,9 +492,10 @@ function WorldManager:advance_to_next_level()
       self.next_arena.enemies_paused = true
     end
     
-    -- Trigger level map transition animation
-    if self.level_map then
-      self.level_map:start_transition_out()
+    -- Trigger level progress transition animation
+    if self.level_progress then
+      -- Progress bar doesn't need transition animation, just update
+      self:update_level_progress()
     end
   end
 end

@@ -194,7 +194,7 @@ function Get_Offscreen_Spawn_Point()
 end
 
 function Is_In_Camera_Bounds(x, y)
-  return x >= 0 and x <= gw and y >= 0 and y <= gh
+  return x >= 5 and x <= gw-5 and y >= 5 and y <= gh-5
 end
 
 function Suction_Troops_To_Spawn_Locations(arena)
