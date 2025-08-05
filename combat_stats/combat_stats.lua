@@ -382,36 +382,6 @@ elemental_affliction_buffs = {
     'chill',   -- Cold affliction
 }
 
--- round stats
-
-level_to_round_power = {
-    [1] = 100,
-    [2] = 300,    -- Base round
-    [3] = 450,    -- 1.5x base of 300
-    [4] = 600,    -- 2x base of 300
-    [5] = 800,    -- Next round base
-    [6] = 1200,   -- 1.5x base of 800
-    [7] = 1600,   -- 2x base of 800
-    [8] = 2000,   -- Next round base
-    [9] = 3000,   -- 1.5x base of 2000
-    [10] = 4000,  -- 2x base of 2000
-    [11] = 5000,  -- Next round base
-    [12] = 7500,  -- 1.5x base of 5000
-    [13] = 10000, -- 2x base of 5000
-    [14] = 11000, -- Next round base
-    [15] = 16500, -- 1.5x base of 11000
-    [16] = 22000, -- 2x base of 11000
-    [17] = 20000, -- Next round base
-    [18] = 30000, -- 1.5x base of 20000
-    [19] = 40000, -- 2x base of 20000
-    [20] = 35000, -- Next round base
-    [21] = 52500, -- 1.5x base of 35000
-    [22] = 70000, -- 2x base of 35000
-    [23] = 50000, -- Next round base
-    [24] = 75000, -- 1.5x base of 50000
-    [25] = 100000 -- 2x base of 50000
-  }
-
 -- unit stat functions
 
 

@@ -1402,6 +1402,7 @@ function init()
       'burst',
       'snakearrow',
       'turret',
+      'cleaver',
       -- 'slowcharger',
     },
     [1.5] = {
