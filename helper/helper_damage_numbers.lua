@@ -85,7 +85,7 @@ function Helper.DamageNumbers.GetRelativeScale(damage)
     local scale_bonus = (math.sqrt(ratio) - 1)
     
     -- Clamp the result to prevent extremely tiny or huge numbers.
-    return math.clamp(Helper.DamageNumbers.base_scale * (1 + scale_bonus), 0.7, 2)
+    return math.clamp(Helper.DamageNumbers.base_scale * (1 + scale_bonus), 0.7, 1.2)
 end
 
 

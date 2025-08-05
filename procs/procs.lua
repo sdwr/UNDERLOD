@@ -724,6 +724,8 @@ function Proc_Splash:init(args)
   self.color = args.color or brown[0]
   self.duration = args.duration or 0.15
 
+  self.damageMulti = args.damageMulti or 0.4
+
   Proc_Splash.super.init(self, args)
 end
 
@@ -747,7 +749,7 @@ function Proc_Splash:onPrimaryHit(target, damage, damageType)
     pick_shape = 'circle',
     radius = self.radius * radiusMulti,
     duration = self.duration,
-    damage = damage,
+    damage = damage * self.damageMulti,
     color = self.color,
     is_troop = self.unit.is_troop,
     unit = self.unit,
@@ -762,7 +764,7 @@ function Proc_SplashSizeBoost:init(args)
 
   Proc_SplashSizeBoost.super.init(self, args)
 
-  self.radiusMulti = 1.7
+  self.radiusMulti = 1.5
 end
 
 Proc_SplashSizeBoost2 = Proc:extend()
@@ -1315,7 +1317,7 @@ function Proc_Radiance:init(args)
 
   --define the proc's vars
   self.radius = self.data.radius or 60
-  self.damage = self.data.damage or 20
+  self.damage = self.data.damage or 8
   self.damageType = DAMAGE_TYPE_FIRE
 end
 
@@ -1365,7 +1367,7 @@ function Proc_Shield:onTick(dt)
 
   if self.shield_timer < self.adjustedTimeBetween then return end
 
-  heal1:play{pitch = random:float(0.8, 1.2), volume = 0.3}
+  heal1:play{pitch = random:float(0.8, 1.2), volume = 0.15}
   self.unit:shield(self.shield_amount, self.buff_duration)
   self.shield_timer = 0
 end

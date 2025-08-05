@@ -34,7 +34,7 @@ function Helper.Damage:primary_hit(unit, damage, from, damageType, playHitEffect
     from:onPrimaryHitCallbacks(unit, damage, damageType)
   end
 
-  Helper.Damage:apply_knockback(unit, from)
+  -- Helper.Damage:apply_knockback(unit, from)
   
   -- Unit-specific pre-hit processing
   if not Helper.Damage:process_pre_hit(unit, damage, from, damageType, playHitEffects) then
@@ -262,9 +262,9 @@ function Helper.Damage:apply_hit_effects(unit, damage, playHitEffects)
   -- Apply hit flash effect
   if playHitEffects then
     if unit.isBoss then
-      unit.hfx:use('hit', 0.01, 200, 20)
+      unit.hfx:use('hit', 0.01, 200, 20, 0.1)
     else
-      unit.hfx:use('hit', 0.08 * hitStrength, 200, 10)
+      unit.hfx:use('hit', 0.03 * hitStrength, 200, 10, 0.1)
     end
 
     -- Only create HitCircle for non-animated enemies (those without spritesheets)
@@ -437,11 +437,7 @@ end
 function Helper.Damage:apply_death_effects(unit, from)
   if unit.is_troop then
     -- Player troop death effects
-    if from then
-      _G[random:table{'player_hit1', 'player_hit2'}]:play{pitch = random:float(0.95, 1.05), volume = 0.8}
-    else
-      hit4:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-    end
+    hit4:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     
     for i = 1, random:int(4, 6) do 
       HitParticle{group = main.current.effects, x = unit.x, y = unit.y, color = unit.color} 
@@ -449,8 +445,7 @@ function Helper.Damage:apply_death_effects(unit, from)
     HitCircle{group = main.current.effects, x = unit.x, y = unit.y, rs = 12}:scale_down(0.3):change_color(0.5, unit.color)
     
     -- Create death animation
-    slow(0.25, 1.5)
-    shoot1:play{pitch = random:float(0.95, 1.05), volume = 1}
+    slow(0.25, 1)
     TroopDeathAnimation{group = main.current.effects, x = unit.x, y = unit.y}
     
     -- Clean up dot area
@@ -465,11 +460,12 @@ function Helper.Damage:apply_death_effects(unit, from)
       HitParticle{group = main.current.effects, x = unit.x, y = unit.y, color = unit.color} 
     end
     HitCircle{group = main.current.effects, x = unit.x, y = unit.y, rs = 12}:scale_down(0.3):change_color(0.5, unit.color)
-    magic_hit1:play{pitch = random:float(0.9, 1.1), volume = 0.5}
-
+    
     if unit.isBoss then
       slow(0.25, 1)
       magic_die1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    else
+      _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.5}
     end
   end
 end

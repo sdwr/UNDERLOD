@@ -27,12 +27,10 @@ function CombatLevel:level_clear()
   Helper.Unit:update_units_with_combat_data(self)
   
   
-  if table.contains(LEVELS_TO_HEAL_ON_CLEAR, self.level) then
-    self.t:after(1, function()
-        Helper.Unit:resurrect_all_teams()
-        Helper.Unit:heal_all_teams_to_full()
-      end)
-  end
+  self.t:after(1, function()
+      Helper.Unit:resurrect_all_teams()
+      Helper.Unit:heal_all_teams_to_full()
+    end)
 
   self.t:after(DOOR_OPEN_DELAY, function() self:open_door() end)
   main.current:increase_level()
@@ -56,7 +54,7 @@ function CombatLevel:create_floor_items()
       local tier = LEVEL_TO_TIER(self.level or 1)
       local item = nil
       if self.level == 1 then
-        item = create_random_item(tier, ITEM_RARITY.COMMON)
+        item = create_random_item(tier, 'common')
       else
         item = create_random_item(tier)
       end

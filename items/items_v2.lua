@@ -38,7 +38,8 @@ ITEM_SET = {
   SHIELD = 'shield',
   REFLECT = 'reflect',
   REPEAT = 'repeat',
-  STUN = 'stun'
+  STUN = 'stun',
+  MULTI_SHOT = 'multi_shot',
 }
 
 -- Stat definitions
@@ -285,11 +286,11 @@ ITEM_SETS = {
     name = 'Shield',
     color = 'green',
     bonuses = {
-      [1] = { procs = {'shield'} },
+      [1] = { procs = {'shield', 'radiance'} },
       [2] = { procs = {'shieldexplode'} },
     },
     descriptions = {
-      [1] = 'Shields you periodically, blocking damage',
+      [1] = 'Grants you a shield and damage aura',
       [2] = 'Shield explodes when destroyed, knocking back nearby enemies'
     }
   },
@@ -317,6 +318,20 @@ ITEM_SETS = {
     descriptions = {
       [1] = 'Chance to repeat an attack',
       [2] = 'Increase chance to repeat an attack (TODO)'
+    }
+  },
+  [ITEM_SET.MULTI_SHOT] = {
+    name = 'Multi-Shot',
+    color = 'green',
+    bonuses = {
+      [1] = { procs = {'multishot'} },
+      [2] = { procs = {'multishotFullDamage'} },
+      [4] = { procs = {'multishotRepeat'} }
+    },
+    descriptions = {
+      [1] = 'Shoot extra attacks at an angle for 50% damage TODO',
+      [2] = 'The extra attacks deal full damage TODO',
+      [4] = 'Have a chance to repeat your attack when you hit an enemy TODO'
     }
   },
   [ITEM_SET.STUN] = {
@@ -347,7 +362,7 @@ ITEM_RARITIES = {
   },
   [ITEM_RARITY.RARE] = {
     name = 'Rare',
-    cost = 6,
+    cost = 8,
     min_stat_value = 1,
     max_stat_value = 2,
     set_chance = 1,
@@ -355,17 +370,17 @@ ITEM_RARITIES = {
   },
   [ITEM_RARITY.EPIC] = {
     name = 'Epic',
-    cost = 10,
-    min_stat_value = 3,
-    max_stat_value = 4,
+    cost = 12,
+    min_stat_value = 0,
+    max_stat_value = 2,
     set_chance = 1,
     color = 'purple'
   },
   [ITEM_RARITY.LEGENDARY] = {
     name = 'Legendary',
-    cost = 15,
-    min_stat_value = 5,
-    max_stat_value = 6,
+    cost = 16,
+    min_stat_value = 3,
+    max_stat_value = 4,
     set_chance = 1,
     color = 'orange'
   }
@@ -381,10 +396,15 @@ function get_random_item_slot()
 end
 
 -- Helper function to get random rarity
-function get_random_rarity()
+function get_random_rarity(tier)
   local rarities = {ITEM_RARITY.COMMON, ITEM_RARITY.RARE, ITEM_RARITY.EPIC, ITEM_RARITY.LEGENDARY}
-  local weights = {0.6, 0.3, 0.08, 0.02} -- 60% common, 30% rare, 8% epic, 2% legendary
-  
+  local weights = TIER_TO_ITEM_RARITY_WEIGHTS[tier] or {1, 0, 0, 0}
+
+  if not weights then
+    print("ERROR: weights is nil for tier:", tier)
+    return nil
+  end
+
   -- Simple weighted random selection
   local total_weight = 0
   for _, weight in ipairs(weights) do
@@ -446,7 +466,7 @@ function create_random_item(tier, rarity)
     return nil
   end
   
-  local rarity = rarity or get_random_rarity()
+  local rarity = rarity or get_random_rarity(tier)
   if not rarity then
     print("ERROR: Failed to get random rarity!")
     return nil
@@ -475,7 +495,11 @@ function create_random_item(tier, rarity)
   -- Determine if item has sets
   if random:float(0, 1) < rarity_def.set_chance then
     -- Add 1-2 sets for higher rarities
-    local set_count = rarity == ITEM_RARITY.LEGENDARY and 2 or 1
+    local set_count = 1
+    if rarity == ITEM_RARITY.LEGENDARY or rarity == ITEM_RARITY.EPIC then
+      set_count = 2
+    end
+
     for i = 1, set_count do
       local set_key = get_random_set()
       if not table.contains(item.sets, set_key) then
@@ -484,13 +508,15 @@ function create_random_item(tier, rarity)
     end
   end
   
-  if rarity_def.min_stat_value > 0 then
+  if rarity_def.max_stat_value > 0 then
     local stat_name = roll_stat_for_type(item_slot)
     
     -- Generate stat
     local stat_value = math.random(rarity_def.min_stat_value, rarity_def.max_stat_value)
 
-    item.stats[stat_name] = stat_value + (item.stats[stat_name] or 0)
+    if stat_value > 0 then
+      item.stats[stat_name] = stat_value + (item.stats[stat_name] or 0)
+    end
   end
   
   -- Set colors based on sets only (rarity color is used as tier color)

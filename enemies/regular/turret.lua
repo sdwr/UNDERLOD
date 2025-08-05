@@ -8,7 +8,7 @@ fns['init_enemy'] = function(self)
   self.color = red[0]:clone()
   Set_Enemy_Shape(self, self.size)
 
-  self.class = 'regular_enemy'
+  self.class = 'special_enemy'
   self.icon = 'goblin'
   self.name = 'turret'
 
@@ -74,7 +74,7 @@ function MultiProjectile:init(args)
   self:init_game_object(args)
 
   self.damage = get_dmg_value(self.damage)
-  self.angle_offset = random:float(-math.pi/8, math.pi/8)
+  self.angle_offset = random:float(-math.pi/12, math.pi/12)
   self.projectile_count = self.projectile_count or 3
   self.spread_angle = self.spread_angle or math.pi/12
   self.delay_between = self.delay_between or 0.1
@@ -144,7 +144,10 @@ SingleProjectile = Object:extend()
 SingleProjectile:implement(GameObject)
 function SingleProjectile:init(args)
   self:init_game_object(args)
-  
+
+  self.width = args.width or 10
+  self.height = args.height or 4
+
   -- Calculate angle to target
   local angle = 0
   if self.target then
@@ -162,6 +165,8 @@ function SingleProjectile:init(args)
     y = self.y,
     r = angle,
     v = self.v or 120,
+    width = self.width or 10,
+    height = self.height or 4,
     damage = self.damage,
     color = self.color,
     unit = self.unit,

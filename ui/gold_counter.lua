@@ -13,6 +13,9 @@ function GoldCounter:init(args)
   self.offset_y = args.offset_y or 0
 
   self.previous_gold = gold
+
+  self.sound_cooldown = 0.5
+  self.sound_cooldown_timer = 0
   
   -- Update the display
   self:update_display()
@@ -20,6 +23,10 @@ end
 
 function GoldCounter:update(dt)
   self:update_game_object(dt)
+
+  if self.sound_cooldown_timer > 0 then
+    self.sound_cooldown_timer = self.sound_cooldown_timer - dt
+  end
   
   -- Check if arena offset has changed and update display if needed
   local current_offset_x = 0
@@ -87,12 +94,19 @@ end
 function GoldCounter:receive_gold(amount)
   -- Update global gold
   gold = gold + amount
+
+  if math.floor(gold + .0001) ~= math.floor(gold) then
+    gold = math.floor(gold + .0001)
+  end
   
   -- Update display
   self:update_display()
   
   -- Play sound
-  gold2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+  if self.sound_cooldown_timer <= 0 then
+    gold2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    self.sound_cooldown_timer = self.sound_cooldown
+  end
   
   -- Create particles at the counter
   for i = 1, 5 do

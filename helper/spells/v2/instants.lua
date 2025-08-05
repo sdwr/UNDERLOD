@@ -112,6 +112,8 @@ function ArrowProjectile:init(args)
   self.r = self.angle
   
   alert1:play{volume=0.9}
+
+  self.already_hit_targets = {}
 end
 
 function ArrowProjectile:update(dt)
@@ -138,12 +140,27 @@ function ArrowProjectile:update(dt)
   -- Check for collisions with enemies
   local target_classes = self.is_troop and main.current.enemies or main.current.friendlies
   local targets = main.current.main:get_objects_in_shape(self.shape, target_classes)
+  local hit_target = false
   if #targets > 0 then
-    hit2:play{volume=0.5}
-    -- Use primary hit for the exact target hit by the projectile
-    Helper.Damage:indirect_hit(targets[1], self.damage, self.unit, nil, true)
-    self:die()
-    return
+    for _, target in ipairs(targets) do
+      if #self.already_hit_targets == 0 then
+        Helper.Damage:primary_hit(target, self.damage, self.unit, nil, true)
+        self.damage = self.damage * 0.8
+        table.insert(self.already_hit_targets, target)
+        hit2:play{volume=0.5}
+        hit_target = true
+      else
+        if self.pierce and not table.contains(self.already_hit_targets, target) then
+          Helper.Damage:indirect_hit(target, self.damage, self.unit, nil, true)
+          self.damage = self.damage * 0.8
+          table.insert(self.already_hit_targets, target)
+          hit_target = true
+        end
+      end
+    end
+    if hit_target and not self.pierce then
+      self:die()
+    end
   end
 end
 

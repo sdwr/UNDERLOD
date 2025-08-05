@@ -12,7 +12,7 @@ fns['init_enemy'] = function(self)
   self.icon = 'ghost'
   self.movementStyle = MOVEMENT_TYPE_RANDOM
 
-  self.baseCast = attack_speeds['medium']
+  self.baseCast = attack_speeds['medium-fast']
   self:reset_castcooldown(self.baseCast)
 
   --set attacks
@@ -31,10 +31,11 @@ fns['init_enemy'] = function(self)
       group = main.current.main,
       unit = self,
       team = "enemy",
+      num_arrows = 2,
       damage = function() return self.dmg end,
-      speed = 40,
+      speed = 55,
       freeze_rotation = true,
-      arrow_interval = 1.5,
+      arrow_interval = 1.1,
       color = purple[0],
       parent = self
     }

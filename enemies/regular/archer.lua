@@ -17,7 +17,7 @@ fns['init_enemy'] = function(self)
   self.cooldownTime = attack_speeds['fast']
   self:reset_castcooldown(self.cooldownTime)
 
-  self.baseActionTimer = 1.5  -- Short action timer
+  self.baseActionTimer = 2  -- Short action timer
 
   self.move_option_weight = 0
 
@@ -34,7 +34,7 @@ fns['init_enemy'] = function(self)
     oncast = function() 
       self.target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies)
     end,
-    cast_length = 0.2,  -- Very short cast time
+    cast_length = 0.5,  -- Very short cast time
     castcooldown = self.cooldownTime,
     cancel_on_range = false,
     instantspell = true,
@@ -43,6 +43,8 @@ fns['init_enemy'] = function(self)
     spelldata = {
       group = main.current.main,
       color = red[0],
+      width = 20,
+      height = 4,
       damage = function() return self.dmg end,
       v = 150,  -- Speed for physics-based movement
       unit = self,

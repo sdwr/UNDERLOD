@@ -62,6 +62,7 @@ function Physics:calculate_steering_force(dt)
   if self.separating then self.steering_force:add(self.separation_f) end
   if self.aligning then self.steering_force:add(self.alignment_f) end
   if self.cohesing then self.steering_force:add(self.cohesion_f) end
+
   self.seeking = false
   self.fleeing = false
   self.pursuing = false

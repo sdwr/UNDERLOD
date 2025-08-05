@@ -123,8 +123,8 @@ function FloorItem:create_bottom_text()
   if self.is_character_selection then
     self.bottom_text = nil
   elseif self.is_perk_selection then
-    local desc = self.perk.description or 'No description available.'
-    local wrapped_lines = self:wrap_text(desc, 52, pixul_font)
+    local name = self.perk.name or 'No perk name'
+    local wrapped_lines = self:wrap_text(name, 52, pixul_font)
     local text_definitions = {}
     for _, line in ipairs(wrapped_lines) do
       table.insert(text_definitions, {text = '[fgm2]' .. line, font = pixul_font, alignment = 'center'})

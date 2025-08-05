@@ -69,7 +69,7 @@ function SetBonusTooltip:build_text_lines()
           local color = 'fgm2'
           local bonus_text = desc_text or stat_text or ""
           table.insert(self.text_lines, {
-            text = '[' .. color .. ']' .. i .. 'pc: ' .. bonus_text, 
+            text = '[' .. color .. ']' .. i .. ': ' .. bonus_text, 
             font = pixul_font, 
             alignment = 'left'
           })
