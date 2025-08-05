@@ -130,7 +130,7 @@ function WorldManager:create_arena(level, offset_x)
     arena.units = self.units
     self.gold_counter = arena.gold_counter
 
-    arena:create_walls()
+    -- arena:create_walls()
     arena:create_door()
 
     -- Only spawn teams and enemies for non-tutorial levels
@@ -361,7 +361,7 @@ function WorldManager:complete_transition()
     Spawn_Teams(self.current_arena)
     Helper.Unit:update_unit_colors()
     
-    self.current_arena:create_walls()
+    -- self.current_arena:create_walls()
     self.current_arena:create_door()
     self.current_arena.spawn_manager:spawn_all_enemies_at_once()
     

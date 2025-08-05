@@ -108,7 +108,16 @@ function Enemy:update(dt)
       end
     end
 
-
+    if self.offscreen then
+      if Is_In_Camera_Bounds(self.x, self.y) then
+        self.offscreen = false
+        self.invulnerable = false
+        spawn1:play{pitch = random:float(0.9, 1.1), volume = 0.4}
+        for i = 1, 5 do
+          HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color}
+        end
+      end
+    end
 
     self:calculate_stats()
     
@@ -188,6 +197,8 @@ function Enemy:choose_movement_target()
     return self:acquire_target_seek_to_range()
   elseif self.currentMovementAction == MOVEMENT_TYPE_RANDOM then
     return self:acquire_target_random()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_ENTER_ARENA then
+    return self:acquire_target_enter_arena()
   elseif self.currentMovementAction == MOVEMENT_TYPE_NONE then
     return false -- Stationary enemies don't need movement targets
   end
@@ -207,6 +218,8 @@ function Enemy:update_movement()
     return self:update_move_random()
   elseif self.currentMovementAction == MOVEMENT_TYPE_WANDER then
     return self:update_move_wander()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_ENTER_ARENA then
+    return self:update_move_enter_arena()
   elseif self.currentMovementAction == MOVEMENT_TYPE_NONE then
     return false -- Stationary enemies don't move
   end
@@ -264,6 +277,12 @@ end
 
 function Enemy:acquire_target_random()
   self.target_location = Get_Point_In_Arena()
+  return true
+end
+
+function Enemy:acquire_target_enter_arena()
+  -- Set target to center of arena for straight-line movement
+  self.target_location = {x = gw/2, y = gh/2}
   return true
 end
 
@@ -338,6 +357,22 @@ function Enemy:update_move_random()
       self:wander(50, 100, 20)
       self:rotate_towards_velocity(0.5)
       self:steering_separate(4, {Enemy}, 1)
+      return true
+    end
+  end
+  return false
+end
+
+function Enemy:update_move_enter_arena()
+  if self.target_location then
+    -- Check if we've reached the arena bounds
+    if Is_In_Camera_Bounds(self.x, self.y) then
+      -- Once in arena, go back to idle and let normal movement take over
+      return false -- Will trigger state change to idle, then pick_action will use movementStyle
+    else
+      -- Move straight toward arena center
+      self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, SEEK_WEIGHT)
+      self:rotate_towards_velocity(0.5)
       return true
     end
   end

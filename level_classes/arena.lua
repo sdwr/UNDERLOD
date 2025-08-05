@@ -33,7 +33,7 @@ function Arena:init(args)
   self:init_spawn_manager()
   
   self:create_gold_counter()
-  self:create_walls()
+  -- self:create_walls()
 
   -- self:create_hotbar()
 

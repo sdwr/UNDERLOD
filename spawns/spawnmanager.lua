@@ -14,6 +14,8 @@ function SpawnGlobals.Init()
   
   local y_corner_offset = 50
 
+  SpawnGlobals.offscreen_spawn_offset = 15
+
   SpawnGlobals.wall_width = 0.2*gw/2
   SpawnGlobals.wall_height = 0.2*gh/2
 
@@ -166,6 +168,33 @@ function Get_Point_In_Right_Half(arena)
   x = x + arena.offset_x
   y = y + arena.offset_y
   return {x = x, y = y}
+end
+
+function Get_Offscreen_Spawn_Point()
+  local x, y
+  
+  -- Choose which edge to spawn from (top, bottom, left, right)
+  local edge = random:int(1, 4)
+  
+  if edge == 1 then -- Top edge
+    x = random:int(-20, gw + 20)
+    y = -SpawnGlobals.offscreen_spawn_offset -- Just off the top edge
+  elseif edge == 2 then -- Bottom edge
+    x = random:int(-20, gw + 20)
+    y = gh + SpawnGlobals.offscreen_spawn_offset -- Just off the bottom edge
+  elseif edge == 3 then -- Left edge
+    x = -SpawnGlobals.offscreen_spawn_offset -- Just off the left edge
+    y = random:int(-20, gh + 20)
+  else -- Right edge
+    x = gw + SpawnGlobals.offscreen_spawn_offset -- Just off the right edge
+    y = random:int(-20, gh + 20)
+  end
+  
+  return {x = x, y = y}
+end
+
+function Is_In_Camera_Bounds(x, y)
+  return x >= 0 and x <= gw and y >= 0 and y <= gh
 end
 
 function Suction_Troops_To_Spawn_Locations(arena)
@@ -861,18 +890,18 @@ function SpawnManager:spawn_group_immediately(arena, group_data, group_x)
   local spawn_type = group_data[3]
   amount = amount or 1
   
-  local group_y = self:calc_swarmer_y()
-  local group_x = group_x
+  -- Get off-screen spawn point for the entire group
+  local group_spawn_point = Get_Offscreen_Spawn_Point()
 
   for i = 1, amount do
     local y
     local x
     if type == 'swarmer' then
-      y = group_y + (math.random() - 0.5) * 20
-      x = group_x + (math.random() - 0.5) * 20
+      y = group_spawn_point.y + (math.random() - 0.5) * 10
+      x = group_spawn_point.x + (math.random() - 0.5) * 10
     else
-      y = self:calc_single_y(i, amount)
-      x = group_x
+      y = group_spawn_point.y + (math.random() - 0.5) * 10
+      x = group_spawn_point.x + (math.random() - 0.5) * 10
     end
 
     local location = {x = x, y = y}
@@ -889,7 +918,9 @@ function SpawnManager:spawn_enemy_immediately(type, location)
     x = location.x, 
     y = location.y,
     level = self.arena.level, 
-    data = {}
+    data = {},
+    offscreen = true,
+    invulnerable = true
   }
 
   Helper.Unit:set_state(enemy, unit_states['idle'])

@@ -1629,7 +1629,10 @@ function Unit:pick_action()
   local viable_attacks = {}
   local viable_movements = {}
 
-  if self.castcooldown ~= nil and self.castcooldown <= 0 then
+  if not self.offscreen 
+    and self.castcooldown ~= nil 
+    and self.castcooldown <= 0 then
+      
     for k, v in pairs(attack_options) do
       if v.viable(self) then
         table.insert(viable_attacks, v)
@@ -1652,7 +1655,10 @@ function Unit:pick_action()
   else
     local chosen_movement
 
-    if #viable_movements > 0 then
+    -- Check if enemy is outside camera bounds and needs to enter arena
+    if self.offscreen then
+      chosen_movement = MOVEMENT_TYPE_ENTER_ARENA
+    elseif #viable_movements > 0 then
         -- We have dynamic options, pick one.
         chosen_movement = random:table(viable_movements)
     else
