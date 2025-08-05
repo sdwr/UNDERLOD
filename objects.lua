@@ -841,6 +841,9 @@ function Unit:calculate_stats(first_run)
   self.max_hp = (self.base_hp + self.class_hp_a + self.buff_hp_a)*self.class_hp_m*self.buff_hp_m
   --need to set hp after buffs
   if first_run then self.hp = self.max_hp end
+  if self.hp > self.max_hp then
+    self.hp = self.max_hp
+  end
 
   self.class_dmg_m = self.class_dmg_m*unit_stat_mult.dmg
   self.dmg = (self.base_dmg + self.class_dmg_a + self.buff_dmg_a)*self.class_dmg_m*self.buff_dmg_m

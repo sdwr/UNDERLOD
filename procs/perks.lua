@@ -137,12 +137,12 @@ PERK_DEFINITIONS = {
   },
   repeat_attack_chance = {
     name = "Double Attack Chance",
-    description = "+8%/12%/16% chance to attack twice",
+    description = "+10%/15%/20% chance to attack twice",
     icon = "repeat_attack_chance",
     rarity = "common",
-    stats1 = {repeat_attack_chance = 0.08},
-    stats2 = {repeat_attack_chance = 0.12},
-    stats3 = {repeat_attack_chance = 0.16},
+    stats1 = {repeat_attack_chance = 0.1},
+    stats2 = {repeat_attack_chance = 0.15},
+    stats3 = {repeat_attack_chance = 0.2},
   },
   crit_chance = {
     name = "Crit Chance",
@@ -272,33 +272,35 @@ PERK_DEFINITIONS = {
   --generic weird perks
   the_meek = {
     name = "The Meek",
-    description = "Your lowest level troop deals 30%/40%/50% more damage",
+    description = "Your troop with the least items has 30%/40%/50% more attack speed",
     icon = "the_meek",
     rarity = "common",
     stats1 = {the_meek = 0.3},
     stats2 = {the_meek = 0.4},
     stats3 = {the_meek = 0.5},
   },
-  critter_explosion = {
-    name = "Critter Explosion",
-    description = "Friendly critters explode on death",
-    icon = "critter_explosion",
-    rarity = "common",
-    proc_name = "critter_explosion",
-  },
+  -- critter_explosion = {
+  --   name = "Critter Explosion",
+  --   description = "Friendly critters explode on death",
+  --   icon = "critter_explosion",
+  --   rarity = "common",
+  --   proc_name = "critter_explosion",
+  -- },
 
   
   --generic active perks
-  super_saiyan = {
-    name = "Super Saiyan",
-    description = "The longer a troop goes without attacking, the more damage they deal on their next attack",
-    icon = "super_saiyan",
+  immovable = {
+    name = "Immovable",
+    description = "Standing still increases damage up to 30%/40%/50%",
+    icon = "immovable",
     rarity = "common",
-    stats1 = {super_saiyan = 3},
+    stats1 = {immovable = 0.3},
+    stats2 = {immovable = 0.4},
+    stats3 = {immovable = 0.5},
   },
   selfless = {
     name = "Selfless",
-    description = "When a unit dies, heal nearby units for 20%/30%/40% of their max health",
+    description = "When a troop dies, heal nearby troops for 20%/30%/40% of their max health",
     icon = "selfless",
     rarity = "common",
     stats1 = {selfless = 0.2},
@@ -335,12 +337,6 @@ PERK_DEFINITIONS = {
     stats2 = {elemental_damage_m = 0.2},
     stats3 = {elemental_damage_m = 0.3},
   },
-  elemental_volatility = {
-    name = "Elemental Volatility",
-    description = "Your elemental afflictions react with each other on contact, triggering immediately",
-    icon = "elemental_volatility",
-    rarity = "rare",
-  },
 
   --fire perks
   fire_mastery = {
@@ -353,12 +349,12 @@ PERK_DEFINITIONS = {
     stats3 = {fire_damage_m = 0.6},
     prereqs = {"fire"}
   },
-  volcano = {
-    name = "Volcano",
-    description = "Fire explosions linger as an AoE",
-    icon = "volcano",
-    rarity = "common",
-    proc_name = "volcano",
+  burning_trail = {
+    name = "Burning Trail",
+    description = "Burning enemies leave behind a trail of fire",
+    icon = "burning_trail",
+    rarity = "rare",
+    proc_name = "burning_trail",
     prereqs = {"fire"}
   },
 
@@ -381,17 +377,9 @@ PERK_DEFINITIONS = {
     proc_name = "shatterlance",
     prereqs = {"cold"}
   },
-  rimeheart = {
-    name = "Rimeheart",
-    desc = "Killing a [blue]frozen[fg] enemy creates a [blue]ice prison[fg]",
-    icon = "rimeheart",
-    rarity = "rare",
-    proc_name = "rimeheart",
-    prereqs = {"cold"}
-  },
   waterelemental = {
     name = "Water Elemental",
-    description = "When a chilled enemy dies, have a chance to spawn a water elemental",
+    description = "When a chilled enemy dies, you have a chance to spawn a water elemental",
     icon = "water_elemental",
     rarity = "rare",
     proc_name = "waterelemental",
@@ -440,9 +428,12 @@ PERK_DEFINITIONS = {
   },
   curse_of_doom = {
     name = "Curse of Doom",
-    description = "When curse expires or is reapplied, deal damage based on the damage taken during the curse",
+    description = "When curse expires, deal 50/70/100 damage",
     icon = "curse_of_doom",
     rarity = "rare",
+    stats1 = {curse_of_doom = 0.5},
+    stats2 = {curse_of_doom = 0.7},
+    stats3 = {curse_of_doom = 1},
     proc_name = "curse_of_doom",
     prereqs = {"curse"}
   },
@@ -452,16 +443,6 @@ PERK_DEFINITIONS = {
     icon = "curse_of_agony",
     rarity = "rare",
     proc_name = "curse_of_agony",
-    prereqs = {"curse"}
-  },
-  curse_chain = {
-    name = "Curse Chain",
-    description = "Curse chains to 1/2/3 additional enemies",
-    icon = "curse_chain",
-    rarity = "rare",
-    stats1 = {curse_chain = 1},
-    stats2 = {curse_chain = 2},
-    stats3 = {curse_chain = 3},
     prereqs = {"curse"}
   },
 }

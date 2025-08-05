@@ -319,8 +319,8 @@ function FloorItem:purchase_item()
   gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
   self:die()
   
-  --self.parent:remove_all_floor_items()
-  --self.parent.items = {}
+  self.parent:remove_all_floor_items()
+  self.parent.items = {}
 
   self:create_purchase_effect()
 

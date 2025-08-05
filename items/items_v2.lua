@@ -38,7 +38,8 @@ ITEM_SET = {
   SHIELD = 'shield',
   REFLECT = 'reflect',
   REPEAT = 'repeat',
-  STUN = 'stun'
+  STUN = 'stun',
+  MULTI_SHOT = 'multi_shot',
 }
 
 -- Stat definitions
@@ -319,6 +320,20 @@ ITEM_SETS = {
       [2] = 'Increase chance to repeat an attack (TODO)'
     }
   },
+  [ITEM_SET.MULTI_SHOT] = {
+    name = 'Multi-Shot',
+    color = 'green',
+    bonuses = {
+      [1] = { procs = {'multishot'} },
+      [2] = { procs = {'multishotFullDamage'} },
+      [4] = { procs = {'multishotRepeat'} }
+    },
+    descriptions = {
+      [1] = 'Shoot extra attacks at an angle for 50% damage TODO',
+      [2] = 'The extra attacks deal full damage TODO',
+      [4] = 'Have a chance to repeat your attack when you hit an enemy TODO'
+    }
+  },
   [ITEM_SET.STUN] = {
     name = 'Stun',
     color = 'black',
@@ -339,7 +354,7 @@ ITEM_SETS = {
 ITEM_RARITIES = {
   [ITEM_RARITY.COMMON] = {
     name = 'Common',
-    cost = 2,
+    cost = 4,
     min_stat_value = 0,
     max_stat_value = 0,
     set_chance = 1,
@@ -347,7 +362,7 @@ ITEM_RARITIES = {
   },
   [ITEM_RARITY.RARE] = {
     name = 'Rare',
-    cost = 4,
+    cost = 8,
     min_stat_value = 1,
     max_stat_value = 2,
     set_chance = 1,
@@ -355,7 +370,7 @@ ITEM_RARITIES = {
   },
   [ITEM_RARITY.EPIC] = {
     name = 'Epic',
-    cost = 8,
+    cost = 12,
     min_stat_value = 0,
     max_stat_value = 2,
     set_chance = 1,

@@ -143,11 +143,11 @@ end
 
 --disable perks for now
 LEVEL_TO_PERKS = {
-  -- [2] = true,
-  -- [8] = true,
-  -- [12] = true,
-  -- [16] = true,
-  -- [20] = true,
+  [3] = true,
+  [8] = true,
+  [13] = true,
+  [18] = true,
+  [23] = true,
 }
 
 UNIT_LEVEL_TO_NUMBER_OF_TROOPS = {
