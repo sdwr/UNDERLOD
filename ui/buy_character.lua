@@ -59,7 +59,7 @@ function BuyCharacter:create_cost_text()
 
   local color = self.interaction_is_disabled and 'grey[0]' or 'yellow[0]'
   self.cost_text = Text2{
-    group = self.parent.ui,
+    group = self.group,
     x = self.x,
     y = self.y,
     lines = {{text = '[' .. color .. ']' .. tostring(self.cost), font = pixul_font, alignment = 'center'}}
