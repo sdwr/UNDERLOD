@@ -229,7 +229,7 @@ function PerkSlot:show_perk_tooltip()
     self.cost_text = 'Level up cost: ' .. Perk_Level_Up_Cost(self.perk)
   end
 
-  self.info_text = InfoText{group = main.current.ui, cost_text_object = self.cost_text}
+  self.info_text = InfoText{group = main.current.world_ui, cost_text_object = self.cost_text}
   self.info_text:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
   self.info_text.x, self.info_text.y = gw/2, gh/2 + 10
 end
