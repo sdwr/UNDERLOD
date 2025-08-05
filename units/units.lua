@@ -315,10 +315,9 @@ function Team:apply_item_procs()
 
   if team_items then
     --add direct item procs
-    for i = 1,6 do
-      local item = team_items[i]
+    for _, item in pairs(team_items) do
       if item and item.procs then
-        for _, proc in ipairs(item.procs) do
+        for _, proc in pairs(item.procs) do
           local procname = proc
           --can fill data from item here, but defaults should be ok
           local procObj = Create_Proc(procname, self, nil)
@@ -328,7 +327,7 @@ function Team:apply_item_procs()
     end
     --add set procs
     local set_procs = self.troops[1]:get_set_procs()
-    for _, procname in ipairs(set_procs) do
+    for _, procname in pairs(set_procs) do
       local procObj = Create_Proc(procname, self, nil)
       self:add_proc(procObj)
     end

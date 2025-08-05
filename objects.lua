@@ -2166,7 +2166,7 @@ function Unit:process_set_bonuses_to_stats()
   
   if not self.items or #self.items == 0 then return set_bonus_stats end
   
-  for _, item in pairs(self.items) do
+  for _, item in ipairs(self.items) do
     if item.sets and #item.sets > 0 then
       for _, set in ipairs(item.sets) do
         sets[set] = (sets[set] or 0) + 1
@@ -2199,7 +2199,9 @@ function Unit:get_set_procs()
   local set_bonus_procs = {}
   local sets = {}
 
-  if not self.items or #self.items == 0 then return set_bonus_procs end
+  if not self.items then 
+    return set_bonus_procs 
+  end
 
   for _, item in pairs(self.items) do
     if item.sets and #item.sets > 0 then
