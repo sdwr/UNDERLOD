@@ -167,7 +167,11 @@ function Unit:init_unit()
   self.toggles = {}
   self.hfx:add('hit', 1)
   self.hfx:add('shoot', 1)
-  self.hp_bar = HPBar{group = main.current.effects, parent = self, isBoss = self.isBoss}
+  local hp_bar_group = main.current.effects
+  if self.isBoss then
+    hp_bar_group = main.current.world_ui
+  end
+  self.hp_bar = HPBar{group = hp_bar_group, parent = self, isBoss = self.isBoss}
   self.effect_bar = EffectBar{group = main.current.effects, parent = self}
 
   --chill system
@@ -1935,7 +1939,7 @@ function HPBar:update(dt)
     local x2 = self:get_percent_hp(self.last_hp) * w + x
     
     HPBar_Damage_Chunk{
-      group = main.current.effects,
+      group = self.group,
       x1 = x1,
       y1 = 20,
       x2 = x2,

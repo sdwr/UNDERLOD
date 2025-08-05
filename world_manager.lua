@@ -162,6 +162,7 @@ function WorldManager:assign_physics_groups(arena)
   self.effects = arena.effects
   self.arena_ui = arena.ui
   self.world_ui = Group()
+  self.world_ui:set_custom_draw_list(main_ui_draws)
   self.tutorial = arena.tutorial
   self.options_ui = arena.options_ui
   self.credits = arena.credits

@@ -68,6 +68,7 @@ function shared_init()
 
   main_effects_canvas = Canvas(gw, gh, {stencil = true})
   main_after_characters = {}
+  main_ui_draws = {}
   
 
   shadow_canvas = Canvas(gw, gh)
@@ -127,7 +128,13 @@ function shared_draw(draw_action)
       drawFn()
     end
     camera:detach()
+    for i, drawFn in ipairs(main_ui_draws) do
+      drawFn()
+    end
     -- Clear the table instead of recreating it
+    for i = #main_ui_draws, 1, -1 do
+      table.remove(main_ui_draws, i)
+    end
     for i = #main_after_characters, 1, -1 do
       table.remove(main_after_characters, i)
     end
