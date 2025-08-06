@@ -317,7 +317,7 @@ function CharacterCard:show_last_round_stats_popup()
     table.insert(text_lines, {text = '[fg]No combat data', font = pixul_font, alignment = 'center'})
   end
   
-  self.last_round_popup = InfoText{group = main.current.world_ui, force_update = false}
+  self.last_round_popup = InfoText{group = self.group, force_update = false}
   self.last_round_popup:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
   self.last_round_popup.x = self.x
   self.last_round_popup.y = self.y - self.h/2 + 60
@@ -366,7 +366,7 @@ function CharacterCard:show_unit_stats_popup()
     })
   end
   
-  self.popup = InfoText{group = main.current.world_ui, force_update = false}
+  self.popup = InfoText{group = self.group, force_update = false}
   self.popup:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
   self.popup.x = self.x
   self.popup.y = self.y - self.h/2 + 60

@@ -198,14 +198,14 @@ function ItemCard:update(dt)
       -- SUCCESS: The player can afford it and has space.
       self.timeGrabbed = love.timer.getTime()
       self.grabbed = true
-      self:remove_tooltip()
+      self:remove_set_bonus_tooltip()
         
     elseif not unit or not slot_index then
-      self:remove_tooltip()
+      self:remove_set_bonus_tooltip()
       Create_Info_Text('no empty ' .. ITEM_SLOTS[self.item.slot].name .. ' slots - right click items in character menu to sell', self)
 
     elseif gold < self.cost then
-      self:remove_tooltip()
+      self:remove_set_bonus_tooltip()
       Create_Info_Text('not enough gold', self)
 
     end
