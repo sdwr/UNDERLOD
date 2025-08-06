@@ -1127,7 +1127,7 @@ function ProgressParticle:update(dt)
     self:finish()
   end
 
-  local progress_location = get_progress_location()
+  local progress_location = self.parent:get_progress_location()
   self:seek_point(progress_location.x, progress_location.y)
 
   if self:distance_to_point(progress_location.x, progress_location.y) < 5 then

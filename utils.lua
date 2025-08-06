@@ -184,21 +184,6 @@ function find_enemy_spritesheet(enemy)
   return clone_spritesheet(spritesheet)
 end
 
-function get_progress_bar()
-  if main and main.current and main.current.progress_bar then
-    return main.current.progress_bar
-  end
-  return nil
-end
-
-function get_progress_location()
-  local bar = get_progress_bar()
-  if bar then
-    return bar:get_progress_location()
-  end
-  return {x = 0, y = 0}
-end
-
 function clone_spritesheet(spritesheet)
   if not spritesheet then return nil end
   
