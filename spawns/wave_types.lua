@@ -133,6 +133,7 @@ function Wave_Types:Get_Waves(level)
   end
   
   table.insert(waves, wave)
+  table.insert(waves, {{'GROUP', 'swarmer', 8, 'nil'}})
   return waves
 end
 

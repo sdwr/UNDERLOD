@@ -74,11 +74,15 @@ function GoldCounter:add_round_power(round_power, source_x, source_y)
   
   local percent_of_round_power = (round_power * 1.0) / total_round_power
   local gold_to_add = percent_of_round_power * total_round_gold
-  
-  self:add_gold(gold_to_add, source_x, source_y)
+
+  if math.floor(gold) < math.floor(gold + gold_to_add + .0001) then
+    self:create_gold_particle(gold_to_add, source_x, source_y)
+  else
+    self:add_gold(gold_to_add)
+  end
 end
 
-function GoldCounter:add_gold(amount, source_x, source_y)
+function GoldCounter:create_gold_particle(amount, source_x, source_y)
   -- Create gold particle that flies to the counter
   GoldParticle{
     group = main.current.main,
@@ -91,16 +95,9 @@ function GoldCounter:add_gold(amount, source_x, source_y)
   }
 end
 
-function GoldCounter:receive_gold(amount)
-  -- Update global gold
-  gold = gold + amount
+function GoldCounter:receive_gold_particle(amount)
 
-  if math.floor(gold + .0001) ~= math.floor(gold) then
-    gold = math.floor(gold + .0001)
-  end
-  
-  -- Update display
-  self:update_display()
+  self:add_gold(amount)
   
   -- Play sound
   if self.sound_cooldown_timer <= 0 then
@@ -112,6 +109,18 @@ function GoldCounter:receive_gold(amount)
   for i = 1, 5 do
     HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color}
   end
+end
+
+function GoldCounter:add_gold(amount)
+  -- Update global gold
+  gold = gold + amount
+
+  if math.floor(gold + .0001) ~= math.floor(gold) then
+    gold = math.floor(gold + .0001)
+  end
+  
+  -- Update display
+  self:update_display()
 end
 
 function GoldCounter:draw()
@@ -164,7 +173,7 @@ function GoldParticle:update(dt)
   if distance_to_target < 10 or self.elapsed > self.duration then
     -- Arrived at target, give gold to parent
     if self.parent then
-      self.parent:receive_gold(self.amount)
+      self.parent:receive_gold_particle(self.amount)
     end
     self:die()
   end

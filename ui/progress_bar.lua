@@ -6,17 +6,19 @@ function ProgressBar:init(args)
   self.interact_with_mouse = false
   self.progress = args.progress or 0
   self.max_progress = args.max_progress or 1
-  self.number_of_waves = args.number_of_waves or 1
+  self.number_of_waves = #args.waves_power
   self.waves_power = args.waves_power or {self.max_progress}
   self.color = args.color or fg[0]
   self.bgcolor = args.bgcolor or bg[1]
   
   self.segments = {}
+  local segment_width = self.shape.w / self.number_of_waves
+  local segment_x = self.x - (self.shape.w / 2) + (segment_width / 2)
   for i = 1, self.number_of_waves do
     self.segments[i] = ProgressBarSegment{
       group = self.group,
       parent = self, segment_index = i, max_segment_index = self.number_of_waves, color = self.color, bgcolor = self.bgcolor, wave_power = self.waves_power[i],
-      x = self.x + (self.shape.w / self.number_of_waves) * (i - 1),
+      x = segment_x + (segment_width * (i - 1)),
       y = self.y,
       w = self.shape.w / self.number_of_waves,
       h = self.shape.h,
