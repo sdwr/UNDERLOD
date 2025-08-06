@@ -470,7 +470,7 @@ function SpawnManager:init(arena)
     self.spawn_reservations = {}
 
     -- Spawning State Machine
-    self:change_state('entry_delay')
+    self:change_state('arena_start')
     -- Possible States:
     -- 'entry_delay':           Initial wait before the first wave.
     -- 'between_waves_delay':   Pause between clearing one wave and starting the next.
@@ -520,6 +520,8 @@ end
 
 function SpawnManager:update(dt)
     if self.state == 'finished' then return end
+    --don't do anything until triggered by world manager
+    if self.state == 'arena_start' then return end
 
     -- Handle states that are purely time-based
     if self.state == 'entry_delay' or self.state == 'waiting_for_delay' then
@@ -939,6 +941,7 @@ function SpawnManager:spawn_waves_with_timing()
     self.current_wave_index = 1
     self.current_instruction_index = 1
     self:change_state('entry_delay')
+    print('from world manager')
     self.timer = self.arena.entry_delay or 2
   end
 end
