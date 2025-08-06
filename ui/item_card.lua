@@ -53,11 +53,12 @@ function ItemCard:create_set_bonus_elements()
       x = 0, -- Position relative to ItemCard center
       y = 10 + i*20, -- Position relative to ItemCard center
       bg_color = 'bg',
+      selected_bg_color = fg[-5],
       fg_color = set_def.color or 'orange',
       button_text = set_def.name or "unknown set",
       action = function() end, -- No action on click, just hover
       set_info = set_def, -- Store set info for hover
-      no_spring = true -- Keep no_spring since we'll handle positioning manually
+      no_spring = true, -- Keep no_spring since we'll handle positioning manually
     }
 
     table.insert(self.set_bonus_elements, set_button)
@@ -238,7 +239,18 @@ function ItemCard:update(dt)
     set_button.y = self.y + 10 + (i-1)*20
   end
 
+  --check if the set buttons are hovered
+  --have to do manually because item card eats mouse events
+  for _, set_button in ipairs(self.set_bonus_elements) do
+    if self.shape:is_colliding_with_point(camera:get_mouse_position()) then
+      set_button.selected = true
+    else
+      set_button.selected = false
+    end
+  end
+
   self.set_button_hovered = false
+
   if not self.grabbed then
     for _, set_button in ipairs(self.set_bonus_elements) do
       if set_button.selected then

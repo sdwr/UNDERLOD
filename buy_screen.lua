@@ -875,7 +875,8 @@ function Button:draw()
       graphics.arc('open', self.x, self.y, 0.6*self.shape.w, 0, math.remap(love.timer.getTime() - self.press_time, 0, self.hold_button, 0, 1)*2*math.pi)
       graphics.set_line_width(1)
     end
-    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, self.selected and fg[0] or _G[self.bg_color][0])
+    local selected_bg_color = self.selected_bg_color or fg[0]
+    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, self.selected and selected_bg_color or _G[self.bg_color][0])
     self.text:draw(self.x, self.y + 1, 0, 1, 1)
   graphics.pop()
 end
