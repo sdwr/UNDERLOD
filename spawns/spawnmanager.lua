@@ -21,6 +21,7 @@ function SpawnGlobals.Init()
   SpawnGlobals.TROOP_0_SPAWN_Y = gh - 50
 
   SpawnGlobals.FURTHEST_SPAWN_POINT = 1/3
+  SpawnGlobals.SPAWN_DISTANCE_OUTSIDE_ARENA = 75
 
   SpawnGlobals.TROOP_SPAWN_BASE_X = SpawnGlobals.wall_width + 50  -- Further left than before
   SpawnGlobals.TROOP_SPAWN_BASE_Y = gh/2
@@ -29,8 +30,8 @@ function SpawnGlobals.Init()
   SpawnGlobals.TROOP_FORMATION_HORIZONTAL_SPACING = 20
   SpawnGlobals.TROOP_FORMATION_VERTICAL_SPACING = 10
 
-  SpawnGlobals.SUCTION_FORCE = 800
-  SpawnGlobals.SUCTION_MIN_DISTANCE = 5
+  SpawnGlobals.SUCTION_FORCE = 1200
+  SpawnGlobals.SUCTION_MIN_DISTANCE = 12
 
   TROOP_0_SPAWN_LOCATION = {x = SpawnGlobals.TROOP_0_SPAWN_X, y = SpawnGlobals.TROOP_0_SPAWN_Y}
   TEAM_INDEX_TO_SPAWN_LOCATION = {
@@ -216,26 +217,13 @@ function Get_Random_Spawn_Point()
   return {x = x, y = y}
 end
 
-function Suction_Troops_To_Spawn_Locations(arena)
+function Suction_Troops_To_Spawn_Locations(arena, angular_force)
   -- Get all teams and their spawn locations
   for i, team in ipairs(Helper.Unit.teams) do
     if team and not team.dead then
       -- Calculate spawn location for this team (same as in Spawn_Teams)
-      local spawn_x, spawn_y
-      if i == 1 then
-          spawn_x = SpawnGlobals.TROOP_SPAWN_BASE_X
-          spawn_y = SpawnGlobals.TROOP_SPAWN_BASE_Y - SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING
-      elseif i == 2 then
-          spawn_x = SpawnGlobals.TROOP_SPAWN_BASE_X
-          spawn_y = SpawnGlobals.TROOP_SPAWN_BASE_Y + SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING
-      elseif i == 3 then
-          spawn_x = SpawnGlobals.TROOP_SPAWN_BASE_X
-          spawn_y = SpawnGlobals.TROOP_SPAWN_BASE_Y + SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING * 1.5
-      else
-          local angle = (i - 1) * (2 * math.pi / math.max(#arena.units, 3))
-          spawn_x = SpawnGlobals.TROOP_SPAWN_BASE_X + math.cos(angle) * SpawnGlobals.TROOP_SPAWN_CIRCLE_RADIUS
-          spawn_y = SpawnGlobals.TROOP_SPAWN_BASE_Y + math.sin(angle) * SpawnGlobals.TROOP_SPAWN_CIRCLE_RADIUS
-      end
+      local spawn_x = team.spawn_location.x
+      local spawn_y = team.spawn_location.y
       
       -- Apply suction to each troop in the team
       for j, troop in ipairs(team.troops) do
@@ -249,12 +237,19 @@ function Suction_Troops_To_Spawn_Locations(arena)
           
           if distance > SpawnGlobals.SUCTION_MIN_DISTANCE then  -- Only apply if not already at spawn
             local angle_to_spawn = math.atan2(target_y - troop.y, target_x - troop.x)
-            local force_x = math.cos(angle_to_spawn) * SpawnGlobals.SUCTION_FORCE
-            local force_y = math.sin(angle_to_spawn) * SpawnGlobals.SUCTION_FORCE
+            local suction_force_x = math.cos(angle_to_spawn) * SpawnGlobals.SUCTION_FORCE
+            local suction_force_y = math.sin(angle_to_spawn) * SpawnGlobals.SUCTION_FORCE
             
-            troop:apply_force(force_x, force_y)
+            troop:apply_force(suction_force_x, suction_force_y)
+
+            if angular_force then
+              local swirl_force_x = - suction_force_y * angular_force
+              local swirl_force_y = suction_force_x * angular_force
+              troop:apply_force(swirl_force_x, swirl_force_y)
+            end
             
           end
+          
         end
       end
     end
@@ -363,15 +358,18 @@ function Spawn_Teams(arena)
 
   else
     local spawn_locations = SpawnGlobals.Get_Team_Spawn_Locations(#arena.units)
+
     for i, unit in ipairs(arena.units) do
         --add a new team
         local team = Team(i, unit)
         table.insert(Helper.Unit.teams, i, team)
-
+        
         -- Left side formation positions
         local team_spawn_location = spawn_locations[i]
-        local spawn_x = team_spawn_location.x + math.random(-5, 5)
-        local spawn_y = team_spawn_location.y + math.random(-5, 5)
+        team.spawn_location = team_spawn_location
+        
+        local spawn_x = team_spawn_location.x
+        local spawn_y = team_spawn_location.y
 
         team:set_troop_data({
             group = arena.main,
@@ -383,7 +381,7 @@ function Spawn_Teams(arena)
             passives = arena.passives
         })
 
-        Spawn_Troops(arena, team, unit, {x = spawn_x, y = spawn_y})
+        Spawn_Troops(arena, team, unit)
         team:apply_item_procs()
     end
   end
@@ -395,48 +393,55 @@ function Spawn_Troops_At_Locations(arena, team, locations)
   end
 end
 
+function Get_Random_Spawn_Outside_Arena(distance)
+  if math.random() < 0.5 then
+    local x = math.random() * gw
+    local y = table.random({-distance, gh})
+    return {x = x, y = y}
+  else
+    local x = table.random({-distance, gw})
+    local y = math.random() * gh
+    return {x = x, y = y}
+  end
+end
+
 function Spawn_Troops(arena, team, unit, spawn_location)
-        -- ====================================================================
-      -- MODIFIED SPAWN LOGIC
-      -- Spawns 5 troops in a cluster with fixed, non-overlapping positions.
-      -- ====================================================================
+
+
+  local team_spawn_location = spawn_location
+
+  local number_of_troops = UNIT_LEVEL_TO_NUMBER_OF_TROOPS[unit.level]
+
+  if unit.troop_hps then
+    for i = 1, number_of_troops do
       
-      -- Define 5 fixed positions that look random but are carefully spaced to avoid collisions
-      -- Each position is at least 12 pixels apart from others to prevent overlapping
-      local offsets = {
-        {x = 0, y = 0},       -- Center
-        {x = -12, y = -10},   -- Top-left
-        {x = 12, y = -10},    -- Top-right  
-        {x = -10, y = 12},    -- Bottom-left
-        {x = 10, y = 12},      -- Bottom-right
-        {x = 0, y = 24},       -- Bottom-center
-        {x = 0, y = -20}       -- Top-center
-    }
-
-    local number_of_troops = UNIT_LEVEL_TO_NUMBER_OF_TROOPS[unit.level]
-
-    if unit.troop_hps then
-      for i = 1, number_of_troops do
-        local health = unit.troop_hps[i]
-        if health and health > 0 then
-          local offset = offsets[i]
-          local x = spawn_location.x + offset.x
-          local y = spawn_location.y + offset.y
-          local troop = team:add_troop(x, y)
-          troop.hp = unit.troop_hps[i]
+      local health = unit.troop_hps[i]
+      if health and health > 0 then
+        if not team_spawn_location then
+          spawn_location = Get_Random_Spawn_Outside_Arena(SpawnGlobals.SPAWN_DISTANCE_OUTSIDE_ARENA)
         end
-      end
-    else
-      for i = 1, number_of_troops do
-        local offset = offsets[i]
-          local x = spawn_location.x + offset.x
-          local y = spawn_location.y + offset.y
-          
-          team:add_troop(x, y)
+        local offset_x = (math.random() - 0.5) * 10
+        local offset_y = (math.random() - 0.5) * 10
+        local x = spawn_location.x + offset_x
+        local y = spawn_location.y + offset_y
+        local troop = team:add_troop(x, y)
+        troop.hp = unit.troop_hps[i]
       end
     end
-    -- ====================================================================
+  else
+    for i = 1, number_of_troops do
+      if not team_spawn_location then
+        spawn_location = Get_Random_Spawn_Outside_Arena(SpawnGlobals.SPAWN_DISTANCE_OUTSIDE_ARENA)
+      end
+      local offset_x = (math.random() - 0.5) * 10
+      local offset_y = (math.random() - 0.5) * 10
+      local x = spawn_location.x + offset_x
+      local y = spawn_location.y + offset_y
+        
+        team:add_troop(x, y)
+    end
   end
+end
 
 -- possible hazards:
 -- 1. laser
@@ -521,7 +526,10 @@ end
 function SpawnManager:update(dt)
     if self.state == 'finished' then return end
     --don't do anything until triggered by world manager
-    if self.state == 'arena_start' then return end
+    if self.state == 'arena_start' then 
+      Suction_Troops_To_Spawn_Locations(self.arena, 0.6)
+      return
+    end
 
     -- Handle states that are purely time-based
     if self.state == 'entry_delay' or self.state == 'waiting_for_delay' then
