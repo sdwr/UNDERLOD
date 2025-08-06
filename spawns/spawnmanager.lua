@@ -179,17 +179,17 @@ function Get_Edge_Spawn_Point()
   local center_y = gh / 2
   
   if edge == 1 then -- top
-    x = math.random(0, gw)
+    x = math.random(gw * third_toward_center, gw - third_toward_center)
     y = third_toward_center * center_y
   elseif edge == 2 then -- right  
     x = gw - third_toward_center * center_x
-    y = math.random(0, gh)
+    y = math.random(gh * third_toward_center, gh - third_toward_center)
   elseif edge == 3 then -- bottom
-    x = math.random(0, gw)
+    x = math.random(gw * third_toward_center, gw - third_toward_center)
     y = gh - third_toward_center * center_y
   else -- left
     x = third_toward_center * center_x
-    y = math.random(0, gh)
+    y = math.random(gh * third_toward_center, gh - third_toward_center)
   end
   
   return {x = x, y = y}

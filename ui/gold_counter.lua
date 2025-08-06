@@ -67,10 +67,13 @@ end
 
 function GoldCounter:add_round_power(round_power, source_x, source_y)
   local level = self.parent.level
+  local level_list = self.parent.level_list
+
   if not level then return end
+  if not level_list then return end
 
   local total_round_gold = GOLD_GAINED_BY_LEVEL[level] or 10
-  local total_round_power = ROUND_POWER_BY_LEVEL[level] or 500
+  local total_round_power = level_list[level].round_power or 500
   
   local percent_of_round_power = (round_power * 1.0) / total_round_power
   local gold_to_add = percent_of_round_power * total_round_gold
