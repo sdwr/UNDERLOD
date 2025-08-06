@@ -238,6 +238,8 @@ function Arena:destroy()
 end
 
 function Arena:update(dt)
+  if self.dead then return end
+  
   self:update_game_object(dt)
 
   if Helper.Unit:all_troops_are_dead() and self.level ~= 0 then

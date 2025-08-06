@@ -150,7 +150,7 @@ function PerkCard:update(dt)
       self.parent:die(self.i)
       
       -- Continue to buy screen after perk selection
-      main.current:on_perk_selected()
+      main.current:transition_to_buy_screen()
     end
   end
 end

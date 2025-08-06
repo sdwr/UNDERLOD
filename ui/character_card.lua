@@ -259,7 +259,8 @@ function CharacterCard:get_unit_sets()
         name = set_def.name,
         current_pieces = count,
         bonuses = set_def.bonuses,
-        color = set_def.color
+        color = set_def.color,
+        descriptions = set_def.descriptions
       })
     end
   end
@@ -385,29 +386,14 @@ function CharacterCard:show_set_bonus_popup_for_set(set_info)
   
   -- Set bonuses
   for i = 1, MAX_SET_BONUS_PIECES do
-    local bonus = set_info.bonuses[i]
-    if bonus then
+    local description = set_info.descriptions[i]
+    if description then
       local is_reached = set_info.current_pieces >= i
       local color = is_reached and set_color or 'fg[2]' -- Use set color if reached, gray if not
       
-      local stat_name = ''
-      if bonus.stats then
-        for stat, value in pairs(bonus.stats) do
-          if item_stat_lookup[stat] then
-            stat_name = stat_name .. '+' .. value .. ' ' .. item_stat_lookup[stat] .. ', '
-          else
-            stat_name = stat .. ' stat not found'
-          end
-        end
-      end
-      if bonus.procs then
-        for _, proc in ipairs(bonus.procs) do
-          stat_name = stat_name .. proc .. ', '
-        end
-      end
-
+      
       table.insert(text_lines, {
-        text = '[' .. color .. ']' .. i .. ': ' .. stat_name, 
+        text = '[' .. color .. ']' .. i .. ': ' .. description, 
         font = pixul_font, 
         alignment = 'left'
       })
@@ -416,10 +402,10 @@ function CharacterCard:show_set_bonus_popup_for_set(set_info)
 
   self:hide_set_bonus_popup()
   
-  self.set_bonus_popup = InfoText{group = main.current.world_ui, force_update = false}
+  self.set_bonus_popup = InfoText{group = self.group, force_update = false}
   self.set_bonus_popup:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
-  self.set_bonus_popup.x = self.x
-  self.set_bonus_popup.y = self.y + 90
+  self.set_bonus_popup.x = gw/2
+  self.set_bonus_popup.y = gh/2
 end
 
 function CharacterCard:hide_popup()
@@ -715,10 +701,10 @@ function ItemPart:create_tooltip()
   end
 
   self.tooltip = ItemTooltip{
-    group = main.current.world_ui,
+    group = self.group,
     item = self:getItem(),
     x = gw/2, 
-    y = gh/2 + 80,
+    y = gh/2,
   }
 end
 

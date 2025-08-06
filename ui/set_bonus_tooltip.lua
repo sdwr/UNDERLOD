@@ -21,7 +21,7 @@ function SetBonusTooltip:init(args)
   self:build_text_lines()
   
   -- Create info text
-  self.info_text = InfoText{group = main.current.world_ui}
+  self.info_text = InfoText{group = self.group}
   self.info_text:activate(self.text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
   self.info_text.x = self.x
   self.info_text.y = self.y

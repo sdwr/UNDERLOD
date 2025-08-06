@@ -841,4 +841,27 @@ function Helper.Unit:resurrect_troop(team, troop, location, invulnerable_duratio
   return troop
 end
 
+function Helper.Unit:find_available_inventory_slot(units, item)
+  local slot_index = ITEM_SLOTS[item.slot].index
+
+  if not slot_index then
+    print('ERROR: cannot find slot for item type', item.slot)
+    return nil, nil
+  end
+
+  for _, unit in ipairs(units) do
+    if Helper.Unit:unit_has_open_inventory_slot(unit, slot_index) then
+      return unit, slot_index
+    end
+  end
+  return nil, nil
+end
+
+function Helper.Unit:unit_has_open_inventory_slot(unit, slot_index)
+  if not unit.items[slot_index] then
+    return true
+  end
+  return false
+end
+
 

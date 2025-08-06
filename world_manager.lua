@@ -35,7 +35,7 @@ function WorldManager:on_enter(from)
   -- Set up the current arena if it doesn't exist
   if not self.current_arena then
     -- Create arena with the current level from save data
-    local level = self.level or 0
+    local level = self.level or 1
     self:create_arena(level, 0)
     -- Activate enemies for the first arena
     self.current_arena:set_transition_complete()
@@ -108,7 +108,7 @@ function WorldManager:create_class_lists()
 end
 
 function WorldManager:create_arena(level, offset_x)
-  local arena_class = level == 0 and Level0 or CombatLevel
+  local arena_class = CombatLevel
   
   local arena = arena_class{
     level = level,
@@ -461,13 +461,6 @@ function WorldManager:save_run()
   system.save_run(save_data)
 end
 
-function WorldManager:unit_has_open_inventory_slot(unit, slot_index)
-  if not unit.items[slot_index] then
-    return true
-  end
-
-  return false
-end
 
 function WorldManager:put_in_first_available_inventory_slot(item)
   local unit, slot_index = self:find_available_inventory_slot(item)
@@ -479,19 +472,7 @@ function WorldManager:put_in_first_available_inventory_slot(item)
 end
 
 function WorldManager:find_available_inventory_slot(item)
-  local slot_index = ITEM_SLOTS[item.slot].index
-
-  if not slot_index then
-    print('ERROR: cannot find slot for item type', item.slot)
-    return nil, nil
-  end
-
-  for _, unit in ipairs(self.units) do
-    if self:unit_has_open_inventory_slot(unit, slot_index) then
-      return unit, slot_index
-    end
-  end
-  return nil, nil
+  return Helper.Unit:find_available_inventory_slot(self.units, item)
 end
 
 -- Perk management functions

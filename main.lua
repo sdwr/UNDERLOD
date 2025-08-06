@@ -1729,11 +1729,11 @@ function open_options(self)
           
           local new_run = Start_New_Run()
           system.save_state()
-          main:add(WorldManager'world_manager')
+          main:add(BuyScreen'buy_screen')
           system.save_run()
 
-          new_run.level = 0
-          main:go_to('world_manager', new_run)
+          new_run.level = 1
+          main:go_to('buy_screen', new_run)
         end, text = Text({ { text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center' } }, global_text_tags) }
       end }
     end

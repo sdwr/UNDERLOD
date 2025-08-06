@@ -61,7 +61,7 @@ function FloorItem:init(args)
       if gold < self.cost then  
         return false
       end
-      local unit, slot_index = main.current:find_available_inventory_slot(self.item)
+      local unit, slot_index = Helper.Unit:find_available_inventory_slot(main.current.units, self.item)
       if not unit or not slot_index then
         return false
       end

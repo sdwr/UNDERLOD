@@ -353,7 +353,7 @@ function BuyScreen:set_party()
   Kill_All_Cards()
   Character_Cards = {}
 
-  local y = gh/2 - 10
+  local y = gh/2 - 25
   local x = gw/2
 
   local number_of_cards = #self.units
@@ -462,12 +462,14 @@ function BuyScreen:set_items(shop_level, is_shop_start)
     shop_already_rolled = true
   end
 
+  local tier = LEVEL_TO_TIER(self.level)
+  
   if self.shop_item_data[1] and locked_state then
     item_1 = self.shop_item_data[1]
   elseif not self.reroll_shop then
     item_1 = self.shop_item_data[1]
   else
-    item_1 = Get_Random_Item(shop_level, self.units, all_items)
+    item_1 = create_random_item(tier)
   end
 
   all_items[1] = item_1
@@ -477,7 +479,7 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   elseif not self.reroll_shop then
     item_2 = self.shop_item_data[2]
   else
-    item_2 = Get_Random_Item(shop_level, self.units, all_items)
+    item_2 = create_random_item(tier)
   end
 
   all_items[2] = item_2
@@ -487,7 +489,7 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   elseif not self.reroll_shop then
     item_3 = self.shop_item_data[3]
   else
-    item_3 = Get_Random_Item(shop_level, self.units, all_items)
+    item_3 = create_random_item(tier)
   end
 
   all_items[3] = item_3
@@ -509,8 +511,8 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   local item_h = 50
   local item_w = 40
 
-  local y = gh - (item_h / 2) - 10
-  local x = gw/2 - 60
+  local y = gh - (item_h / 2) - 20
+  local x = gw/2 - 70
 
   -- Create items with staggered timing
   local transition_duration = is_shop_start and TRANSITION_DURATION + 0.2 or 0
@@ -553,7 +555,17 @@ function BuyScreen:set_items(shop_level, is_shop_start)
     if all_items[i] then
       item_count = item_count + 1
       self.t:after((0.3 * (item_count-1)) + transition_duration, function()
-        local item = ItemCard{group = self.ui, x = x + (i-1)*60, y = y, w = item_w, h = item_h, item = all_items[i], parent = self, i = i}
+        local item = ItemCard{
+          group = self.ui, 
+          x = x + (i-1)*70, 
+          y = y, 
+          w = 60,
+          h = 80,
+          item = all_items[i], 
+          parent = self, 
+          i = i,
+          is_perk_selection = self.is_perk_selection
+        }
         table.insert(self.items, item)
       end)
     end
@@ -772,8 +784,8 @@ function RestartButton:update(dt)
       local new_run = Start_New_Run()
       system.save_state()
       main:add(BuyScreen'buy_screen')
+      run_time = 0
       system.save_run()
-
       main:go_to('buy_screen', new_run)
     end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
   end
@@ -1272,252 +1284,6 @@ function PassiveCard:die()
 end
 
 
-
---find a way for clicks to buy into first empty slot
---need either a time check or distance check
---so that if you click and drag, you can drop halfway to cancel the buy
-ItemCard = Object:extend()
-ItemCard:implement(GameObject)
-function ItemCard:init(args)
-  self:init_game_object(args)
-  self.shape = Rectangle(self.x, self.y, self.w, self.h)
-  self.origX = self.x
-  self.origY = self.y
-  self.interact_with_mouse = true
-
-  self.cost = self.item.cost
-  -- putin item data?
-  self.image = find_item_image(self.item)
-  self.colors = self.item.colors
-
-  -- Use V2 item tier_color if available, otherwise fall back to item_to_color
-  self.tier_color = self.item.tier_color or item_to_color(self.item)
-  self.stats = self.item.stats
-
-  self.cost_text = Text({{text = '[yellow]' .. self.cost, font = pixul_font, alignment = 'center'}}, global_text_tags)
-
-  self.timeGrabbed = 0
-  self.buyTimer = 0.2
-
-  self:creation_effect()
-  
-end
-
-function ItemCard:creation_effect()
-  if self.cost <= 5 then
-    --no effect
-    pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-    self.spring:pull(0.2, 200, 10)
-    for i = 1, 10 do
-      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
-    end
-  elseif self.cost <= 10 then
-    pop2:play{pitch = random:float(0.95, 1.05), volume = 0.7}
-    self.spring:pull(0.2, 200, 10)
-    for i = 1, 20 do
-      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
-    end
-  elseif self.cost <= 15 then
-    pop1:play{pitch = random:float(0.95, 1.05), volume = 0.8}
-    self.spring:pull(0.4, 200, 10)
-    for i = 1, 30 do
-      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
-    end
-  else
-    gold3:play{pitch = random:float(0.95, 1.05), volume = 0.8}
-    self.spring:pull(0.6, 200, 10)
-    for i = 1, 40 do
-      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
-    end
-  
-  end
-
-end
-
-function ItemCard:buy_item(slot)
-  if not slot or not slot.addItem then 
-    print("no slot to buy item")
-    return
-  end
-  gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
-  slot:addItem(self.item)
-  gold = gold - self.cost
-
-  if self.cost > 10 then
-    Stats_Current_Run_Over10Cost_Items_Purchased()
-  end
-  buyScreen:save_run()
-
-  self.parent.shop_item_data[self.i] = nil
-  self.parent.shop_text:set_text{{text = '[wavy_mid, fg]gold: [yellow]' .. gold, font = pixul_font, alignment = 'right'}}
-  self:die()
-end
-
-function ItemCard:update(dt)
-  self:update_game_object(dt)
-
-  if self.parent:is(Arena) then return end
-
-  if input.m1.pressed and self.colliding_with_mouse and not self.grabbed then
-
-    -- Now, check if the purchase is possible.
-    local firstEmptySlot = self.parent:get_first_available_inventory_slot()
-    
-    if gold >= self.cost and firstEmptySlot then
-      -- SUCCESS: The player can afford it and has space.
-      self.timeGrabbed = love.timer.getTime()
-      self.grabbed = true
-      self:remove_tooltip()
-        
-    elseif not firstEmptySlot then
-      self:remove_tooltip()
-      Create_Info_Text('no empty item slots - right click to sell', self)
-
-    elseif gold < self.cost then
-      self:remove_tooltip()
-      Create_Info_Text('not enough gold', self)
-
-    end
-end
-
-  --determine when to purchase the item vs when to cancel the purchase
-  --should be able to click to buy?
-  --but also cancel by letting go if you drag it halfway
-  --leave this for now, kinda confusing to track the mouse position or duration of click
-  -- and have 2 different ways to cancel the purchase
-  if self.grabbed and input.m1.released then
-    self.grabbed = false
-    if Active_Inventory_Slot and not Active_Inventory_Slot:hasItem() then
-      self:buy_item(Active_Inventory_Slot)
-    elseif love.timer.getTime() - self.timeGrabbed < self.buyTimer then
-      --buy the item if the mouse is released within the buyTimer
-      firstEmptySlot = self.parent:get_first_available_inventory_slot()
-      if firstEmptySlot then
-        self:buy_item(firstEmptySlot)
-      end
-    else
-      self.x = self.origX
-      self.y = self.origY
-    end
-  end
-
-  if self.grabbed then
-    self.x, self.y = camera:get_mouse_position()
-  end
-
-  self.shape:move_to(self.x, self.y)
-end
-
-function ItemCard:distance_from_slots()
-  local slot_y = ITEM_SLOT_LOWER_BOUND
-  if self.y < slot_y then
-    return 0
-  else
-    return math.min(self.y - slot_y, ITEM_SLOT_DISTANCE) / ITEM_SLOT_DISTANCE
-  end
-end
-
-function ItemCard:get_drawn_size()
-  local max_h = ITEM_CARD_HEIGHT
-  local min_h = ITEM_SLOT_SIZE
-
-  local max_w = ITEM_CARD_WIDTH
-  local min_w = ITEM_SLOT_SIZE
-
-  local dist = self:distance_from_slots()
-  local w = math.lerp(dist, min_w, max_w)
-  local h = math.lerp(dist, min_h, max_h)
-
-
-  return w, h
-end
-
-function ItemCard:draw()
-  if self.item then
-    local width = self.w
-    local height = self.h
-    local item_sx = 1
-    local item_sy = 1
-
-    if self.grabbed then
-      width, height = self:get_drawn_size()
-      item_sx = width / ITEM_CARD_WIDTH
-      item_sy = height / ITEM_CARD_HEIGHT
-    end
-    graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
-
-    graphics.rectangle(self.x, self.y, width, height, 6,6, bg[5])
-    if self.colors then
-      local num_colors = #self.colors
-      local color_h = height / num_colors
-      for i, color_name in ipairs(self.colors) do
-        --make a copy of the color so we can change the alpha
-        local color = _G[color_name]
-        color = color[0]:clone()
-        color.a = 0.6
-        --find the y midpoint of the rectangle
-        local y = (self.y - height/2) + ((i-1) * color_h) + (color_h/2)
-
-        graphics.rectangle(self.x, y, width, color_h, 6, 6, color)
-      end
-    end
-    --draw the locked color under the border
-    if locked_state then
-      local color = grey[0]:clone()
-      color.a = 0.8
-      graphics.rectangle(self.x, self.y, width, height, 6, 6, color)
-    end
-    graphics.rectangle(self.x, self.y, width, height, 6, 6, self.tier_color, 2)
-
-    self.cost_text:draw(self.x + width/2, self.y - height/2)
-    if self.image then
-      self.image:draw(self.x, self.y, 0, item_sx, item_sy)
-    end
-
-
-
-    graphics.pop()
-  end
-end
-
-
-function ItemCard:on_mouse_enter()
-  self.selected = true
-  ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
-  self.spring:pull(0.2, 200, 10)
-
-  self:remove_tooltip()
-  
-  -- Create and position the new tooltip
-  self.tooltip = ItemTooltip{
-    group = main.current.ui,
-    item = self.item,
-    x = gw/2, 
-    y = gh/2
-  }
-end
-
-
-function ItemCard:on_mouse_exit()
-  self.selected = false
-  -- Deactivate the tooltip, which will play its closing animation
-  self:remove_tooltip()
-end
-
-
-function ItemCard:die()
-  self.dead = true
-  self.cost_text = nil
-  -- Ensure the tooltip is removed when the card dies
-  self:remove_tooltip()
-end
-
-function ItemCard:remove_tooltip()
-  if self.tooltip then
-    self.tooltip:die()
-    self.tooltip = nil
-  end
-end
 
 CharacterIcon = Object:extend()
 CharacterIcon:implement(GameObject)

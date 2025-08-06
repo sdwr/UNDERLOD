@@ -25,23 +25,26 @@ end
 function CombatLevel:level_clear()
   spawn_mark2:play{pitch = 1, volume = 0.8}
   Helper.Unit:update_units_with_combat_data(self)
-  
-  
-  self.t:after(1, function()
-      Helper.Unit:resurrect_all_teams()
-      Helper.Unit:heal_all_teams_to_full()
-    end)
+    
+  -- self.t:after(1, function()
+  --     Helper.Unit:resurrect_all_teams()
+  --     Helper.Unit:heal_all_teams_to_full()
+  --   end)
 
-  self.t:after(DOOR_OPEN_DELAY, function() self:open_door() end)
   main.current:increase_level()
-  -- Create 3 floor items for selection
+  print('level clear')
+  
+  -- Only create perk selection on perk levels
   if LEVEL_TO_PERKS[self.level] then
-    self:create_perk_floor_items()
+    self.perks = Get_Random_Perk_Choices(self.perks or {})
+    self.perk_overlay = PerkOverlay{
+      group = self.ui,
+      perks = self.perks or {}
+    }
   else
-    self:create_floor_items()
+    -- Auto-transition to buy screen without door opening or character selection
+    main.current:transition_to_buy_screen()
   end
-  local num_troops = #self.units
-  self:create_buy_character(NUMBER_OF_TROOPS_TO_CHARACTER_COST[num_troops])
 end
 
 function CombatLevel:create_floor_items()
