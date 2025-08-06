@@ -128,13 +128,7 @@ function MainMenu:on_enter(from)
     ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
       self.transitioning = true
-      local new_run = Start_New_Run()
-      system.save_state()
-      main:add(BuyScreen'buy_screen')
-      new_run.difficulty = 'normal'
-      new_run.level = 1
-      run_time = 0
-      main:go_to('buy_screen', new_run)
+      Start_New_Run_And_Go_To_Buy_Screen()
     end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
   end}
 
@@ -171,13 +165,7 @@ function MainMenu:on_enter(from)
     ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
       self.transitioning = true
-      local new_run = Start_New_Run()
-      system.save_state()
-      main:add(BuyScreen'buy_screen')
-      new_run.difficulty = 'hard'
-      new_run.level = 1
-      run_time = 0
-      main:go_to('buy_screen', new_run)
+      Start_New_Run_And_Go_To_Buy_Screen()
     end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
   end}
 

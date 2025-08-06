@@ -46,6 +46,20 @@ function PerkOverlay:init(args)
   self.t:after(0.25, function() self.interact_with_mouse = true end)
 end
 
+function PerkOverlay:on_perk_selected(perk_key)
+
+  local new_perk = Create_Perk(perk_key, 1) -- Start at level 1
+  table.insert(main.current.perks, new_perk)
+  local run_data = Collect_Save_Data_From_State(main.current)
+  Save_Run(run_data)
+
+  ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+  self:die(self.i)
+  
+  -- Continue to buy screen after perk selection
+  main.current:transition_to_next_level_buy_screen()
+end
+
 function PerkOverlay:draw()
   -- Title text - made larger and positioned to draw over background
   graphics.set_color(fg[0])
@@ -143,14 +157,7 @@ function PerkCard:update(dt)
     end
     
     if perk_key then
-      local new_perk = Create_Perk(perk_key, 1) -- Start at level 1
-      table.insert(main.current.perks, new_perk)
-      
-      ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-      self.parent:die(self.i)
-      
-      -- Continue to buy screen after perk selection
-      main.current:transition_to_buy_screen()
+      self.parent:on_perk_selected(perk_key)
     end
   end
 end

@@ -500,18 +500,20 @@ function WorldManager:set_perks(perks)
   self:save_run()
 end
 
-function WorldManager:transition_to_buy_screen()
-  -- Transition to buy screen for level 1
+function WorldManager:transition_to_next_level_buy_screen()
+  
+  if self.current_arena then
+    self.current_arena.transitioning = true
+  end
+
   Reset_Global_Proc_List()
-  slow_amount = 1
-  music_slow_amount = 1
-  main:add(BuyScreen'buy_screen')
-  
-  local save_data = Collect_Save_Data_From_State(self)
-  save_data.level = 1
-  save_data.reroll_shop = true
-  save_data.times_rerolled = 0
-  
-  system.save_run(save_data)
-  main:go_to('buy_screen', save_data)
+
+  Increment_Run_Level()
+
+  self.t:after(1, function()
+    TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
+      Go_To_Buy_Screen()
+    end}
+  end)
+
 end

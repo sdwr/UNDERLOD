@@ -30,9 +30,6 @@ function CombatLevel:level_clear()
   --     Helper.Unit:resurrect_all_teams()
   --     Helper.Unit:heal_all_teams_to_full()
   --   end)
-
-  main.current:increase_level()
-  print('level clear')
   
   -- Only create perk selection on perk levels
   if LEVEL_TO_PERKS[self.level] then
@@ -43,7 +40,7 @@ function CombatLevel:level_clear()
     }
   else
     -- Auto-transition to buy screen without door opening or character selection
-    main.current:transition_to_buy_screen()
+    main.current:transition_to_next_level_buy_screen()
   end
 end
 

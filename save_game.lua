@@ -4,6 +4,7 @@ function Start_New_Run()
 
   --clean up stats from last run
   Clear_User_Stats()
+  run_time = 0
 
   -- Initialize state with all expected fields
   for _, field in ipairs(EXPECTED_SAVE_FIELDS) do
@@ -15,6 +16,39 @@ function Start_New_Run()
   state.difficulty = data.difficulty
 
   return data
+end
+
+function Save_Run(run_data)
+  if not run_data then
+    run_data = system.load_run()
+  end
+  
+  system.save_run(run_data)
+  system.save_state()
+end
+
+function Increment_Run_Level()
+  local run_data = system.load_run()
+  
+  run_data.level = run_data.level + 1
+  run_data.reroll_shop = true
+  run_data.times_rerolled = 0
+
+  Save_Run(run_data)
+end
+
+function Start_New_Run_And_Go_To_Buy_Screen()
+  -- Common logic to start a new run and transition to buy screen
+  local new_run = Start_New_Run()
+  Save_Run(new_run)
+  
+  Go_To_Buy_Screen()
+end
+
+function Go_To_Buy_Screen()
+  local run_data = system.load_run()
+  main:add(BuyScreen'buy_screen')
+  main:go_to('buy_screen', run_data)
 end
 
 
@@ -69,7 +103,7 @@ end
 
 function Create_Blank_Save_Data()
   local data = {}
-  data.level = 0
+  data.level = 1
   data.level_list = {}
   data.loop = 0
   data.gold = STARTING_GOLD
