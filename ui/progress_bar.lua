@@ -26,9 +26,10 @@ function ProgressBar:draw()
     graphics.rectangle(new_center_x, self.y, width, self.shape.h, 4, 4, self.color)
   graphics.pop()
 
+  -- Draw wave markers at even intervals
   local x = self.x - self.shape.w/2
   for i = 1, self.number_of_waves do
-    x = x + (self.waves_power[i] / self.max_progress) * self.shape.w
+    x = x + (self.shape.w / self.number_of_waves)
     graphics.circle(x, self.y, 4, fg[0])
   end
 end
@@ -46,6 +47,17 @@ function ProgressBar:highest_wave_complete()
     end
   end
   return 0
+end
+
+function ProgressBar:complete_wave(wave_index)
+  -- Failsafe function to ensure a wave is marked as complete
+  if wave_index <= self.number_of_waves and self.wave_cumulative_power and self.wave_cumulative_power[wave_index] then
+    local target_progress = self.wave_cumulative_power[wave_index]
+    if self.progress < target_progress then
+      self.progress = target_progress
+      self:create_particles()
+    end
+  end
 end
 
 function ProgressBar:get_progress_location()
@@ -114,4 +126,8 @@ function ProgressBar:create_progress_particle(roundPower, x, y)
     parent = self, 
   }
 
+end
+
+function ProgressBar:die()
+  self.dead = true
 end

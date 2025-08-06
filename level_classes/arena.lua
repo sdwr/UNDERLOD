@@ -33,7 +33,8 @@ function Arena:init(args)
   self:init_spawn_manager()
   
   self:create_gold_counter()
-  self:create_walls()
+  self:create_progress_bar()
+  -- self:create_walls()
 
   -- self:create_hotbar()
 
@@ -77,6 +78,25 @@ end
 function Arena:create_gold_counter()
   -- Create gold counter in top left
   self.gold_counter = GoldCounter{group = self.ui, parent = self,x = 60, y = 15, offset_x = self.offset_x, offset_y = self.offset_y}
+end
+
+function Arena:create_progress_bar()
+  if Is_Boss_Level(self.level) then
+    return -- No progress bar for boss levels
+  end
+  
+  local level_data = self.level_list and self.level_list[self.level]
+  if level_data and level_data.waves then
+    local waves_power = Wave_Types:Get_Waves_Power(level_data.waves)
+    
+    self.progress_bar = ProgressBar{
+      group = self.ui, parent = self, w = 300, h = 5,
+      x = gw/2, y = LEVEL_MAP_Y_POSITION, offset_x = self.offset_x, offset_y = self.offset_y,
+      color = fg[0], bgcolor = bg[1],
+      progress = 0,
+      waves_power = waves_power,
+    }
+  end
 end
 
 function Arena:select_character_by_index(i)

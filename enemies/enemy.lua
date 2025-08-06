@@ -7,7 +7,7 @@ function Enemy:init(args)
   self:init_game_object(args)
 
   self.faction = 'enemy'
-  self.transition_active = false
+  self.transition_active = true
 
   self:setExtraFunctions()
   Helper.Unit:add_custom_variables_to_unit(self)
@@ -436,6 +436,12 @@ function Enemy:die()
   if main.current and main.current.gold_counter then
     local round_power = enemy_to_round_power[self.type] or 100
     main.current.gold_counter:add_round_power(round_power, self.x, self.y)
+  end
+
+  -- Add progress to wave progress bar
+  if main.current and main.current.current_arena and main.current.current_arena.progress_bar then
+    local round_power = enemy_to_round_power[self.type] or 100
+    main.current.current_arena.progress_bar:increase_with_particles(round_power, self.x, self.y)
   end
 
   if self.parent and self.parent.summons and self.parent.summons > 0 then

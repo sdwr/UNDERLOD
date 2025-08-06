@@ -49,10 +49,6 @@ function WorldManager:on_enter(from)
       end
     end
   end
-  
-  -- Create level map
-  self:create_level_map()
-  
   -- Set cursor to animated mode for arena
   set_cursor_animated()
   
@@ -130,13 +126,13 @@ function WorldManager:create_arena(level, offset_x)
     arena.units = self.units
     self.gold_counter = arena.gold_counter
 
-    arena:create_walls()
+    -- arena:create_walls()
     arena:create_door()
 
     -- Only spawn teams and enemies for non-tutorial levels
     Spawn_Teams(arena)
     Helper.Unit:update_unit_colors()
-    arena.spawn_manager:spawn_all_enemies_at_once()
+    arena.spawn_manager:spawn_waves_with_timing()
 
   else
     self.next_arena = arena
@@ -146,11 +142,6 @@ function WorldManager:create_arena(level, offset_x)
     self.camera_target_x = gw -- Scroll to the right
     self.transitioning = true
     self.transition_progress = 0
-    
-    -- Trigger level map transition animation
-    if self.level_map then
-      self.level_map:start_transition_out()
-    end
 
   end
 end
@@ -165,31 +156,6 @@ function WorldManager:assign_physics_groups(arena)
   self.tutorial = arena.tutorial
   self.options_ui = arena.options_ui
   self.credits = arena.credits
-end
-
-function WorldManager:create_level_map()
-  if self.level_map then
-    self.level_map:die()
-  end
-  
-  -- Only show level map for non-boss levels and non-tutorial levels
-  if not Is_Boss_Level(self.level) then
-    self.level_map = LevelMap{
-      group = self.world_ui,
-      x = gw/2,
-      y = LEVEL_MAP_Y_POSITION,
-      parent = self,
-      level = self.level,
-      loop = self.loop,
-      level_list = self.level_list,
-    }
-  end
-end
-
-function WorldManager:update_level_map()
-  if self.level_map then
-    self.level_map:reset()
-  end
 end
 
 function WorldManager:set_arenas_paused(paused)
@@ -361,20 +327,13 @@ function WorldManager:complete_transition()
     Spawn_Teams(self.current_arena)
     Helper.Unit:update_unit_colors()
     
-    self.current_arena:create_walls()
+    -- self.current_arena:create_walls()
     self.current_arena:create_door()
-    self.current_arena.spawn_manager:spawn_all_enemies_at_once()
+    self.current_arena.spawn_manager:spawn_waves_with_timing()
     
     -- Resume enemy updates and activate enemies
     self.current_arena.enemies_paused = false
     self.current_arena:set_transition_complete()
-    
-    -- Recreate level map for new level
-    self:create_level_map()
-
-    if self.level_map then
-      self.level_map:end_transition_in()
-    end
     
   end
   
@@ -444,9 +403,9 @@ function WorldManager:on_exit(to)
   end
   
   -- Clean up level map
-  if self.level_map then
-    self.level_map:die()
-    self.level_map = nil
+  if self.level_progress then
+    self.level_progress:die()
+    self.level_progress = nil
   end
 end
 
@@ -470,11 +429,6 @@ function WorldManager:advance_to_next_level()
     -- Pause enemy updates in the new arena during transition
     if self.next_arena then
       self.next_arena.enemies_paused = true
-    end
-    
-    -- Trigger level map transition animation
-    if self.level_map then
-      self.level_map:start_transition_out()
     end
   end
 end

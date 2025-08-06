@@ -168,6 +168,33 @@ function Get_Point_In_Right_Half(arena)
   return {x = x, y = y}
 end
 
+function Get_Edge_Spawn_Point()
+  -- Randomly choose an edge: 1=top, 2=right, 3=bottom, 4=left
+  local edge = math.random(1, 4)
+  local x, y
+  
+  -- Calculate 1/3 way toward center from edge
+  local third_toward_center = 1/3
+  local center_x = gw / 2
+  local center_y = gh / 2
+  
+  if edge == 1 then -- top
+    x = math.random(0, gw)
+    y = third_toward_center * center_y
+  elseif edge == 2 then -- right  
+    x = gw - third_toward_center * center_x
+    y = math.random(0, gh)
+  elseif edge == 3 then -- bottom
+    x = math.random(0, gw)
+    y = gh - third_toward_center * center_y
+  else -- left
+    x = third_toward_center * center_x
+    y = math.random(0, gh)
+  end
+  
+  return {x = x, y = y}
+end
+
 function Suction_Troops_To_Spawn_Locations(arena)
   -- Get all teams and their spawn locations
   for i, team in ipairs(Helper.Unit.teams) do
@@ -440,6 +467,7 @@ function SpawnManager:init(arena)
     self.current_instruction_index = 1
 
     self.pending_spawns = 0
+    self.wave_spawn_delay = 0 -- Track cumulative spawn delay for the current wave
   
 end
 
@@ -461,35 +489,43 @@ function SpawnManager:change_state(new_state)
     end
 end
 
+function SpawnManager:complete_wave(wave_index)
+    -- Failsafe function to ensure wave progress is complete
+    if self.arena and self.arena.progress_bar then
+        self.arena.progress_bar:complete_wave(wave_index)
+    end
+end
+
 function SpawnManager:update(dt)
-    -- if self.state == 'finished' then return end
+    if self.state == 'finished' then return end
 
-    -- -- Handle states that are purely time-based
-    -- if self.state == 'entry_delay' or self.state == 'waiting_for_delay' then
-    --   self.timer = self.timer - dt
-    --   if self.timer <= 0 then
-    --     self.pending_spawns = 0
-    --       self:change_state('processing_wave')
-    --       spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
-    --   end
-    -- elseif self.state == 'between_waves_delay' then
-    --     -- Apply continuous suction effect during between-waves delay
-    --     Suction_Troops_To_Spawn_Locations(self.arena)
-    --     self.timer = self.timer - dt
-    --     if self.timer <= 0 then
-    --       self.pending_spawns = 0
-    --         self:change_state('processing_wave')
-    --         spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
-    --     end
-    -- end
+    -- Handle states that are purely time-based
+    if self.state == 'entry_delay' or self.state == 'waiting_for_delay' then
+      self.timer = self.timer - dt
+      if self.timer <= 0 then
+        self.pending_spawns = 0
+          self:change_state('processing_wave')
+          spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
+      end
+    elseif self.state == 'between_waves_delay' then
+        -- Apply continuous suction effect during between-waves delay
+        -- Suction_Troops_To_Spawn_Locations(self.arena)
+        self.timer = self.timer - dt
+        if self.timer <= 0 then
+          self.pending_spawns = 0
+            self:change_state('processing_wave')
+            spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
+        end
+    end
 
-    -- -- If we are ready to process the next instruction in a wave, do so.
-    -- if self.state == 'processing_wave' then
-    --     self:process_next_instruction()
-    --     -- Only change to waiting_for_clear if we're not in a delay state
-    --     if self.state == 'processing_wave' then
-    --         self:change_state('waiting_for_clear')
-    --     end
+    -- If we are ready to process the next instruction in a wave, do so.
+    if self.state == 'processing_wave' then
+        self:process_next_instruction()
+        -- Only change to waiting_for_clear if we're not in a delay state
+        if self.state == 'processing_wave' then
+            self:change_state('waiting_for_clear')
+        end
+    end
     
     -- If all instructions are done, wait for the arena to be clear.
     if self.state == 'waiting_for_clear' then
@@ -506,11 +542,14 @@ function SpawnManager:update(dt)
               -- all enemies are dead. We no longer check the progress bar here.
               -- ===================================================================
               -- Trigger suction effect to pull troops back to spawn locations
-              Suction_Troops_To_Spawn_Locations(self.arena)
+              -- Suction_Troops_To_Spawn_Locations(self.arena)
               
               self.t:after(0.5, function()
                 spawn_mark2:play{pitch = 1, volume = 1.2}
               end)
+              -- Ensure wave progress is complete before advancing
+              self:complete_wave(self.current_wave_index)
+              
               self.current_wave_index = self.current_wave_index + 1
               self.current_instruction_index = 1
               self:change_state('between_waves_delay')
@@ -532,6 +571,12 @@ function SpawnManager:process_next_instruction()
     Spawn_Enemy_Sound(self.arena, false)
   end)
   
+  -- Reset wave spawn delay for this wave
+  self.wave_spawn_delay = 0
+  
+  -- Get single spawn location for this entire wave (around screen edges, 1/3 toward center)
+  local wave_spawn_location = Get_Edge_Spawn_Point()
+  
   -- Loop until we explicitly break out (due to a delay or end of wave).
   while true do
       local wave_instructions = self.level_data.waves[self.current_wave_index]
@@ -548,11 +593,12 @@ function SpawnManager:process_next_instruction()
 
       if type == 'GROUP' then
           local group_data = {instruction[2], instruction[3], instruction[4]}
-          -- Call Spawn_Group. It will handle incrementing the pending_spawns counter.
-          -- No callback is needed here.
-          Spawn_Group(self.arena, group_data)
+          -- Call Spawn_Group with the wave's spawn location
+          Spawn_Group_With_Location(self.arena, group_data, wave_spawn_location)
 
       elseif type == 'DELAY' then
+          -- Add delay time to wave spawn delay so enemies after the delay spawn later
+          self.wave_spawn_delay = self.wave_spawn_delay + (instruction[2] or 1)
           -- Pause for the specified duration.
           self:change_state('waiting_for_delay')
           self.timer = instruction[2] or 1
@@ -594,6 +640,38 @@ function Spawn_Group(arena, group_data, on_finished)
     Spawn_Group_Internal(arena, spawn_marker_index, group_data, on_finished)
 end
 
+function Spawn_Group_With_Location(arena, group_data, wave_spawn_location, on_finished)
+    local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
+    amount = amount or 1
+
+    AnimatedSpawnCircle{
+      group = arena.floor, x = wave_spawn_location.x, y = wave_spawn_location.y,
+      duration = WAVE_SPAWN_WARNING_TIME,
+      expected_spawn_time = WAVE_SPAWN_WARNING_TIME,
+    }
+
+    -- This loop initiates all spawn processes with 0.1 second spacing using SpawnManager's delay counter
+    for i = 1, amount do
+        local location = {
+            x = wave_spawn_location.x + (math.random() - 0.5) * 20,
+            y = wave_spawn_location.y + (math.random() - 0.5) * 20
+        }
+
+        local create_enemy_action = function()
+            Spawn_Enemy(arena, type, location)
+            arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns - 1
+        end
+        arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns + 1
+        
+        -- Schedule each enemy spawn using cumulative wave delay
+        local spawn_delay = WAVE_SPAWN_WARNING_TIME + arena.spawn_manager.wave_spawn_delay
+        arena.t:after(spawn_delay, create_enemy_action)
+        
+        -- Increment wave spawn delay for next enemy
+        arena.spawn_manager.wave_spawn_delay = arena.spawn_manager.wave_spawn_delay + 0.1
+    end
+end
+
 function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
     local type, amount = group_data[1], group_data[2]
     local spawn_type = group_data[3]
@@ -629,11 +707,8 @@ function Spawn_Enemy(arena, type, location)
                       x = location.x, y = location.y,
                       level = arena.level, data = data}
 
+  Spawn_Enemy_Sound(arena, false)
   Spawn_Enemy_Effect(arena, enemy)
-
-  -- Set enemy to idle for a bit on spawn.
-  Helper.Unit:set_state(enemy, unit_states['idle'])
-  enemy.idleTimer = math.random() / 2
 end
 
 function Countdown(arena)
@@ -708,7 +783,7 @@ function Spawn_Enemy_Effect(arena, enemy)
     camera:shake(3, 0.3)
   end
   
-  local num_particles = enemy_size_to_num_particles[enemy_size]
+  local num_particles = enemy_size_to_num_particles[enemy_size] or 4
   for i = 1, num_particles do
     local particle = HitParticle{
       group = arena.effects,
@@ -749,12 +824,12 @@ function Create_Unit_With_Warning(arena, location, warning_time, creation_callba
 
   -- 1. Create the visual warning marker immediately.
   -- We get a reference to it so we can destroy it manually later.
-  local warning_marker = AnimatedSpawnCircle{
-      group = arena.floor, x = location.x, y = location.y,
-      duration = 1000, -- Give it a long duration so it doesn't fade early
-      expected_spawn_time = warning_time,
-      enemy_type = enemy_type
-  }
+  -- local warning_marker = AnimatedSpawnCircle{
+  --     group = arena.floor, x = location.x, y = location.y,
+  --     duration = 1000, -- Give it a long duration so it doesn't fade early
+  --     expected_spawn_time = warning_time,
+  --     enemy_type = enemy_type
+  -- }
 
   -- 2. After the initial warning time, start checking if the space is clear.
   arena.t:after(warning_time, function()
@@ -778,7 +853,7 @@ function Create_Unit_With_Warning(arena, location, warning_time, creation_callba
           -- The area is finally clear! Time to spawn.
           
           -- First, remove the warning marker since the unit is now appearing.
-          warning_marker.dead = true
+          -- warning_marker.dead = true
 
           -- Then, run the callbacks to create the unit and notify the spawn manager.
           if creation_callback then creation_callback() end
@@ -794,10 +869,9 @@ function Create_Unit_With_Warning(arena, location, warning_time, creation_callba
 end
 
 -- ===================================================================
--- NEW METHOD: Spawn all enemies for a level at once
--- This creates all enemies but keeps them inactive until transition is complete
+-- NEW METHOD: Spawn enemies in waves with timing and markers
 -- ===================================================================
-function SpawnManager:spawn_all_enemies_at_once()
+function SpawnManager:spawn_waves_with_timing()
   if self.arena.level == 0 then
     self:change_state('finished')
     return
@@ -812,29 +886,15 @@ function SpawnManager:spawn_all_enemies_at_once()
   -- Check if this is a boss level
   if table.contains(BOSS_ROUNDS, self.arena.level) then
     self:spawn_boss_immediately()
+    self:change_state('waiting_for_clear')
   else
-    -- Get all waves for this level
-    local waves = self.level_data.waves
-    if not waves then
-      return
-    end
-    
-    -- Spawn all enemies from all waves at once
-    for wave_index, wave in ipairs(waves) do
-      for instruction_index, instruction in ipairs(wave) do
-        local type = instruction[1]
-        
-        if type == 'GROUP' then
-          local group_x = self:calc_group_x(instruction_index, #wave)
-          local group_data = {instruction[2], instruction[3], instruction[4]}
-          self:spawn_group_immediately(self.arena, group_data, group_x)
-        end
-      end
-    end
+    -- Start the wave-based spawning using the state machine
+    -- Reset to first wave and start with entry delay
+    self.current_wave_index = 1
+    self.current_instruction_index = 1
+    self:change_state('entry_delay')
+    self.timer = self.arena.entry_delay or 2
   end
-  
-  -- Mark as finished since all enemies are spawned
-  self:change_state('waiting_for_clear')
 end
 
 function SpawnManager:calc_group_x(index, num_groups)
