@@ -41,6 +41,8 @@ end
 
 
 function State:enter(from, data)
+  reset_slow_amount()
+  
   self.active = true
   if self.on_enter then
     Load_Save_Data_Into_State(self, data)

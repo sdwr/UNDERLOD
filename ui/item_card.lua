@@ -211,24 +211,12 @@ function ItemCard:draw()
     graphics.rectangle(self.x, self.y, width, height, 6, 6, bg[5])
     
     -- Set colors (like FloorItem)
-    if self.sets then
-      local num_sets = #self.sets
-      local set_h = height / num_sets
-      for i, set_key in ipairs(self.sets) do
-        local set_def = ITEM_SETS[set_key]
-        if set_def then
-          local color = _G[set_def.color] and _G[set_def.color][0] or orange[0]
-          color = color:clone()
-          color.a = 0.6
-          local y = (self.y - height/2) + ((i-1) * set_h) + (set_h/2)
-          graphics.rectangle(self.x, y, width, set_h, 6, 6, color)
-        end
-      end
-    elseif self.colors then
+    if self.colors then
       local num_colors = #self.colors
-      local color_h = height / num_colors
+      local top_half_height = height / 2 -- Only use top half
+      local color_h = top_half_height / num_colors
       for i, color_name in ipairs(self.colors) do
-        local color = _G[color_name]
+        local color = _G[color_name] or _G['brown']
         color = color[0]:clone()
         color.a = 0.6
         local y = (self.y - height/2) + ((i-1) * color_h) + (color_h/2)
@@ -253,7 +241,7 @@ function ItemCard:draw()
     
     -- Image in center
     if self.image then
-      self.image:draw(self.x, self.y - 15, 0, 0.8, 0.8)
+      self.image:draw(self.x, self.y - 20, 0, 0.8, 0.8)
     end
     
     -- Stats text (lower part)

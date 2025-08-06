@@ -41,7 +41,6 @@ end
 
 function BuyScreen:on_enter(from)
 
-  
   self.shop_level = level_to_shop_tier(self.level)
   self.last_shop_level = level_to_shop_tier(self.level - 1)
   

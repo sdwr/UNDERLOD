@@ -1629,6 +1629,11 @@ function draw()
   end
 end
 
+function reset_slow_amount()
+  slow_amount = 1
+  music_slow_amount = 1
+end
+
 function open_options(self)
   -- input:set_mouse_visible(true)
   trigger:tween(0.25, _G, { slow_amount = 0 }, math.linear, function()
