@@ -373,32 +373,8 @@ function CharacterCard:show_unit_stats_popup()
 end
 
 function CharacterCard:show_set_bonus_popup_for_set(set_info)
-  -- Create text lines for this specific set
-  local text_lines = {}
-  
-  -- Set name header
-  local set_color = set_info.color or 'fg'
-  table.insert(text_lines, {
-    text = '[' .. set_color .. ']' .. set_info.name:upper(), 
-    font = pixul_font, 
-    alignment = 'center'
-  })
-  
-  -- Set bonuses
-  for i = 1, MAX_SET_BONUS_PIECES do
-    local description = set_info.descriptions[i]
-    if description then
-      local is_reached = set_info.current_pieces >= i
-      local color = is_reached and set_color or 'fg[2]' -- Use set color if reached, gray if not
-      
-      
-      table.insert(text_lines, {
-        text = '[' .. color .. ']' .. i .. ': ' .. description, 
-        font = pixul_font, 
-        alignment = 'left'
-      })
-    end
-  end
+
+  local text_lines = DrawUtils.build_set_bonus_tooltip_text(set_info)
 
   self:hide_set_bonus_popup()
   

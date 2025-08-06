@@ -24,11 +24,45 @@ function ItemCard:init(args)
   self.timeGrabbed = 0
   self.buyTimer = 0.2
 
+  self.set_bonus_elements = {}
+  if self.sets then
+    self:create_set_bonus_elements()
+  end
+
+  self.set_bonus_hovered = false
+
   -- Create name and stats text like FloorItem
   self:create_stats_text()
   
   self:creation_effect()
   
+end
+
+function ItemCard:create_set_bonus_elements()
+  local i = 0
+
+  for _, set_key in pairs(self.sets) do
+    local set_def = ITEM_SETS[set_key]
+    local color = set_def.color or 'orange'
+
+    local text = set_def.name
+
+    local set_button = Button{
+      group = self.group,
+      parent = self,
+      x = 0, -- Position relative to ItemCard center
+      y = 10 + i*20, -- Position relative to ItemCard center
+      bg_color = 'bg',
+      fg_color = set_def.color or 'orange',
+      button_text = set_def.name or "unknown set",
+      action = function() end, -- No action on click, just hover
+      set_info = set_def, -- Store set info for hover
+      no_spring = true -- Keep no_spring since we'll handle positioning manually
+    }
+
+    table.insert(self.set_bonus_elements, set_button)
+    i = i + 1
+  end
 end
 
 function ItemCard:create_stats_text()
@@ -197,7 +231,39 @@ function ItemCard:update(dt)
     self.x, self.y = camera:get_mouse_position()
   end
 
+  -- Update set button positions to move with the ItemCard's spring
+  for i, set_button in ipairs(self.set_bonus_elements) do
+    -- Position setbuttons relative to ItemCard center, accounting for spring scaling
+    set_button.x = self.x
+    set_button.y = self.y + 10 + (i-1)*20
+  end
+
+  self.set_button_hovered = false
+  if not self.grabbed then
+    for _, set_button in ipairs(self.set_bonus_elements) do
+      if set_button.selected then
+        self:show_set_bonus_tooltip(set_button.set_info)
+        self.set_bonus_hovered = true
+      end
+    end
+  end
+
+  if not self.set_bonus_hovered then
+    self:remove_set_bonus_tooltip()
+  end
+
   self.shape:move_to(self.x, self.y)
+end
+
+function ItemCard:show_set_bonus_tooltip(set_info)
+  local text_lines = DrawUtils.build_set_bonus_tooltip_text(set_info)
+
+  self:remove_set_bonus_tooltip()
+
+  self.set_bonus_tooltip = InfoText{group = self.group, force_update = false}
+  self.set_bonus_tooltip:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
+  self.set_bonus_tooltip.x = gw/2
+  self.set_bonus_tooltip.y = gh/2
 end
 
 function ItemCard:draw()
@@ -260,21 +326,12 @@ function ItemCard:on_mouse_enter()
   ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
   self.spring:pull(0.2, 200, 10)
 
-  self:remove_tooltip()
   
-  -- Create and position the new tooltip
-  self.tooltip = SetBonusTooltip{
-    group = self.parent.ui,
-    item = self.item,
-    x = gw/2, 
-    y = gh/2 - 50,
-  }
 end
 
 function ItemCard:on_mouse_exit()
   self.selected = false
-  -- Deactivate the tooltip, which will play its closing animation
-  self:remove_tooltip()
+  self:remove_set_bonus_tooltip()
 end
 
 function ItemCard:die()
@@ -283,12 +340,14 @@ function ItemCard:die()
   self.name_text = nil
   self.bottom_text = nil
   -- Ensure the tooltip is removed when the card dies
-  self:remove_tooltip()
+  self:remove_set_bonus_tooltip()
 end
 
-function ItemCard:remove_tooltip()
-  if self.tooltip then
-    self.tooltip:die()
-    self.tooltip = nil
+function ItemCard:remove_set_bonus_tooltip()
+  self.set_bonus_hovered = false
+
+  if self.set_bonus_tooltip then
+    self.set_bonus_tooltip:die()
+    self.set_bonus_tooltip = nil
   end
 end

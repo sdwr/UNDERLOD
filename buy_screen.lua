@@ -514,7 +514,7 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   local x = gw/2 - 70
 
   -- Create items with staggered timing
-  local transition_duration = is_shop_start and TRANSITION_DURATION + 0.2 or 0
+  local transition_duration = is_shop_start and TRANSITION_DURATION_IN_NEW_STATE + 0.2 or 0
 
  -- Check if the shop has actually leveled up since the last time we animated it.
   if self.shop_level > self.last_shop_level then
@@ -534,7 +534,7 @@ function BuyScreen:set_items(shop_level, is_shop_start)
     end)
     
     -- Delay item creation to happen after the text animation
-    transition_duration = transition_duration + 0.5
+    transition_duration = transition_duration
     
     -- IMPORTANT: Update last_shop_level immediately.
     -- This "remembers" that we've played the animation for this level,
@@ -861,7 +861,14 @@ end
 
 
 function Button:draw()
-  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
+  -- If this button is a child of an ItemCard, use the parent's spring scaling
+  local spring_x, spring_y = self.spring.x, self.spring.y
+  if self.parent and self.parent.item then -- ItemCard has an 'item' property
+    spring_x = self.parent.sx * self.parent.spring.x
+    spring_y = self.parent.sy * self.parent.spring.x
+  end
+  
+  graphics.push(self.x, self.y, 0, spring_x, spring_y)
     if self.hold_button and self.press_time then
       graphics.set_line_width(5)
       graphics.set_color(fg[-5])
