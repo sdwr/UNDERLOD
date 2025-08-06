@@ -8,17 +8,18 @@ function ProgressBar:init(args)
   self.max_progress = args.max_progress or 1
   self.number_of_waves = #args.waves_power
   self.waves_power = args.waves_power or {self.max_progress}
-  self.color = args.color or fg[0]
-  self.bgcolor = args.bgcolor or bg[1]
+  self.bgcolor = args.bgcolor or bg[-1]
   
   self.segments = {}
   local segment_width = self.shape.w / self.number_of_waves
   local segment_x = self.x - (self.shape.w / 2) + (segment_width / 2)
+  local spacing = 4 -- Spacing between segments in pixels
+
   for i = 1, self.number_of_waves do
     self.segments[i] = ProgressBarSegment{
       group = self.group,
       parent = self, segment_index = i, max_segment_index = self.number_of_waves, color = self.color, bgcolor = self.bgcolor, wave_power = self.waves_power[i],
-      x = segment_x + (segment_width * (i - 1)),
+      x = segment_x + (segment_width * (i - 1)) + (spacing * (i - 1)),
       y = self.y,
       w = self.shape.w / self.number_of_waves,
       h = self.shape.h,
@@ -33,11 +34,14 @@ function ProgressBar:update(dt)
 end
 
 function ProgressBar:draw()
-  --just draw a background rectangle
+  local background_padding = 6 -- Add some padding for visual separation
+  -- Draw the background for the entire progress bar, offset slightly
   graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
-    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, self.bgcolor)
+    graphics.rectangle(
+      self.x, self.y, self.shape.w + background_padding, self.shape.h + background_padding, 
+      6, 6, self.bgcolor -- Use a slightly larger corner radius for the background
+    )
   graphics.pop()
-
 end
 
 function ProgressBar:highest_wave_complete()
@@ -73,8 +77,8 @@ function ProgressBarSegment:init(args)
   self.parent = args.parent
   self.segment_index = args.segment_index
   self.max_segment_index = args.max_segment_index
-  self.color = args.color or fg[0]
-  self.bgcolor = args.bgcolor or bg[1]
+  self.segment_color = args.segment_color or yellow[-4]
+  self.segment_bgcolor = args.segment_bgcolor or fg[-10]
   self.wave_power = args.wave_power or 100
   self.progress = args.progress or 0
   self.max_progress = args.max_progress or self.wave_power
@@ -89,11 +93,21 @@ end
 
 function ProgressBarSegment:draw()
   local progressPct = math.min(self.progress / self.max_progress, 1)
-  local width = self.shape.w*progressPct
+  local width = self.shape.w * progressPct
   local new_center_x = self.x - self.shape.w/2 + width/2
+  
   graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
-    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, self.bgcolor)
-    graphics.rectangle(new_center_x, self.y, width, self.shape.h, 4, 4, self.color)
+    graphics.rectangle(
+      self.x, self.y, self.shape.w, self.shape.h, 
+      4, 4, self.segment_bgcolor
+    )
+    -- This rectangle should be a solid block of color
+    if progressPct > 0 then
+      graphics.rectangle(
+        new_center_x, self.y, width, self.shape.h, 
+        4, 4, self.segment_color
+      )
+    end
   graphics.pop()
 end
 

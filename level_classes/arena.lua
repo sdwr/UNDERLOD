@@ -92,7 +92,6 @@ function Arena:create_progress_bar()
     self.progress_bar = ProgressBar{
       group = self.ui, parent = self, w = 300, h = 5,
       x = gw/2, y = LEVEL_MAP_Y_POSITION, offset_x = self.offset_x, offset_y = self.offset_y,
-      color = fg[0], bgcolor = bg[1],
       progress = 0,
       waves_power = waves_power,
     }
