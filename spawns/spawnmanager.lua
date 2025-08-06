@@ -25,9 +25,10 @@ function SpawnGlobals.Init()
   SpawnGlobals.TROOP_SPAWN_BASE_X = SpawnGlobals.wall_width + 50  -- Further left than before
   SpawnGlobals.TROOP_SPAWN_BASE_Y = gh/2
   SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING = 60
-  SpawnGlobals.TROOP_SPAWN_CIRCLE_RADIUS = 80
+  SpawnGlobals.TROOP_SPAWN_CIRCLE_RADIUS = 30
   SpawnGlobals.TROOP_FORMATION_HORIZONTAL_SPACING = 20
   SpawnGlobals.TROOP_FORMATION_VERTICAL_SPACING = 10
+
   SpawnGlobals.SUCTION_FORCE = 800
   SpawnGlobals.SUCTION_MIN_DISTANCE = 5
 
@@ -38,7 +39,21 @@ function SpawnGlobals.Init()
     [2] = {x = SpawnGlobals.TROOP_SPAWN_BASE_X, y = SpawnGlobals.TROOP_SPAWN_BASE_Y + SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING},
     [3] = {x = SpawnGlobals.TROOP_SPAWN_BASE_X, y = SpawnGlobals.TROOP_SPAWN_BASE_Y + SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING * 1.5},
   }
-  
+
+  SpawnGlobals.Get_Team_Spawn_Locations = function(num_teams)
+    local center = {x = gw/2, y = gh/2}
+    local angle_per_team = 2 * math.pi / num_teams
+    local base_angle = -math.pi / 2
+
+    local spawn_locations = {}
+    for i = 1, num_teams do
+      local angle = base_angle + (i - 1) * angle_per_team
+      local spawn_location = {x = center.x + math.cos(angle) * SpawnGlobals.TROOP_SPAWN_CIRCLE_RADIUS, y = center.y + math.sin(angle) * SpawnGlobals.TROOP_SPAWN_CIRCLE_RADIUS}
+      table.insert(spawn_locations, spawn_location)
+    end
+    return spawn_locations
+  end
+
   SpawnGlobals.spawn_markers = {
     {x = right_x, y = mid_y},
     {x = right_x, y = mid_y - y_offset},
@@ -347,15 +362,16 @@ function Spawn_Teams(arena)
     team:apply_item_procs()
 
   else
+    local spawn_locations = SpawnGlobals.Get_Team_Spawn_Locations(#arena.units)
     for i, unit in ipairs(arena.units) do
         --add a new team
         local team = Team(i, unit)
         table.insert(Helper.Unit.teams, i, team)
 
         -- Left side formation positions
-        local spawn_location = TEAM_INDEX_TO_SPAWN_LOCATION[i]
-        local spawn_x = spawn_location.x
-        local spawn_y = spawn_location.y
+        local team_spawn_location = spawn_locations[i]
+        local spawn_x = team_spawn_location.x + math.random(-5, 5)
+        local spawn_y = team_spawn_location.y + math.random(-5, 5)
 
         team:set_troop_data({
             group = arena.main,
