@@ -20,6 +20,8 @@ function SpawnGlobals.Init()
   SpawnGlobals.TROOP_0_SPAWN_X = gw/2
   SpawnGlobals.TROOP_0_SPAWN_Y = gh - 50
 
+  SpawnGlobals.FURTHEST_SPAWN_POINT = 1/3
+
   SpawnGlobals.TROOP_SPAWN_BASE_X = SpawnGlobals.wall_width + 50  -- Further left than before
   SpawnGlobals.TROOP_SPAWN_BASE_Y = gh/2
   SpawnGlobals.TROOP_SPAWN_VERTICAL_SPACING = 60
@@ -173,25 +175,29 @@ function Get_Edge_Spawn_Point()
   local edge = math.random(1, 4)
   local x, y
   
-  -- Calculate 1/3 way toward center from edge
-  local third_toward_center = 1/3
   local center_x = gw / 2
   local center_y = gh / 2
   
   if edge == 1 then -- top
-    x = math.random(gw * third_toward_center, gw - third_toward_center)
-    y = third_toward_center * center_y
+    x = math.random(gw * SpawnGlobals.FURTHEST_SPAWN_POINT, gw * (1 - SpawnGlobals.FURTHEST_SPAWN_POINT))
+    y = SpawnGlobals.FURTHEST_SPAWN_POINT * center_y
   elseif edge == 2 then -- right  
-    x = gw - third_toward_center * center_x
-    y = math.random(gh * third_toward_center, gh - third_toward_center)
+    x = gw * (1 - SpawnGlobals.FURTHEST_SPAWN_POINT)
+    y = math.random(gh * SpawnGlobals.FURTHEST_SPAWN_POINT, gh * (1 - SpawnGlobals.FURTHEST_SPAWN_POINT))
   elseif edge == 3 then -- bottom
-    x = math.random(gw * third_toward_center, gw - third_toward_center)
-    y = gh - third_toward_center * center_y
+    x = math.random(gw * SpawnGlobals.FURTHEST_SPAWN_POINT, gw * (1 - SpawnGlobals.FURTHEST_SPAWN_POINT))
+    y = gh * (1 - SpawnGlobals.FURTHEST_SPAWN_POINT)
   else -- left
-    x = third_toward_center * center_x
-    y = math.random(gh * third_toward_center, gh - third_toward_center)
+    x = SpawnGlobals.FURTHEST_SPAWN_POINT * center_x
+    y = math.random(gh * SpawnGlobals.FURTHEST_SPAWN_POINT, gh * (1 - SpawnGlobals.FURTHEST_SPAWN_POINT))
   end
   
+  return {x = x, y = y}
+end
+
+function Get_Random_Spawn_Point()
+  local x = math.random(gw * SpawnGlobals.FURTHEST_SPAWN_POINT, gw * (1 - SpawnGlobals.FURTHEST_SPAWN_POINT))
+  local y = math.random(gh * SpawnGlobals.FURTHEST_SPAWN_POINT, gh * (1 - SpawnGlobals.FURTHEST_SPAWN_POINT))
   return {x = x, y = y}
 end
 
@@ -590,11 +596,16 @@ function SpawnManager:process_next_instruction()
 
       local instruction = wave_instructions[self.current_instruction_index]
       local type = instruction[1]
+      local spawn_type = instruction[4]
 
       if type == 'GROUP' then
           local group_data = {instruction[2], instruction[3], instruction[4]}
           -- Call Spawn_Group with the wave's spawn location
-          Spawn_Group_With_Location(self.arena, group_data, wave_spawn_location)
+          if spawn_type == 'scatter' then
+            Spawn_Group_Scattered(self.arena, group_data)
+          else
+            Spawn_Group_With_Location(self.arena, group_data, wave_spawn_location)
+          end
 
       elseif type == 'DELAY' then
           -- Add delay time to wave spawn delay so enemies after the delay spawn later
@@ -670,6 +681,25 @@ function Spawn_Group_With_Location(arena, group_data, wave_spawn_location, on_fi
         -- Increment wave spawn delay for next enemy
         arena.spawn_manager.wave_spawn_delay = arena.spawn_manager.wave_spawn_delay + 0.1
     end
+end
+
+function Spawn_Group_Scattered(arena, group_data)
+  local type, amount = group_data[1], group_data[2]
+  amount = amount or 1
+
+  for i = 1, amount do
+    local location = Get_Random_Spawn_Point()
+    local create_enemy_action = function()
+      Spawn_Enemy(arena, type, location)
+      arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns - 1
+    end
+    arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns + 1
+
+    local spawn_delay = WAVE_SPAWN_WARNING_TIME + arena.spawn_manager.wave_spawn_delay
+    arena.t:after(spawn_delay, create_enemy_action)
+
+    arena.spawn_manager.wave_spawn_delay = arena.spawn_manager.wave_spawn_delay + 0.1
+  end
 end
 
 function Spawn_Group_Internal(arena, group_index, group_data, on_finished)

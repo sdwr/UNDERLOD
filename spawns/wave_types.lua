@@ -134,6 +134,58 @@ function Wave_Types:Get_Waves(level)
   
   table.insert(waves, wave)
   table.insert(waves, {{'GROUP', 'swarmer', 8, 'nil'}})
+
+  if level == 1 then
+    waves = {}
+    wave = {}
+    table.insert(wave, {'GROUP', 'swarmer', 6, 'nil'})
+    table.insert(wave, {'GROUP', 'archer', 1, 'nil'})
+    table.insert(wave, {'DELAY', 4})
+    
+    table.insert(wave, {'GROUP', 'swarmer', 6, 'nil'})
+    table.insert(wave, {'GROUP', 'archer', 1, 'nil'})
+    table.insert(waves, wave)
+
+    wave = {}
+    table.insert(wave, {'GROUP', 'swarmer', 6, 'nil'})
+    table.insert(wave, {'GROUP', 'swarmer', 6, 'nil'})
+    table.insert(wave, {'GROUP', 'burst', 2, 'nil'})
+    table.insert(wave, {'DELAY', 4})
+
+    table.insert(wave, {'GROUP', 'swarmer', 6, 'scatter'})
+    table.insert(wave, {'DELAY', 2})
+    table.insert(wave, {'GROUP', 'swarmer', 6, 'nil'})
+    table.insert(wave, {'GROUP', 'snakearrow', 2, 'nil'})
+    table.insert(waves, wave)
+
+  elseif level == 2 then
+    waves = {}
+    wave = {}
+    table.insert(wave, {'GROUP', 'swarmer', 6, 'nil'})
+    table.insert(wave, {'GROUP', 'snakearrow', 2, 'nil'})
+    table.insert(wave, {'DELAY', 4})
+    
+    table.insert(wave, {'GROUP', 'swarmer', 6, 'scatter'})
+    table.insert(wave, {'DELAY', 2})
+
+    table.insert(wave, {'GROUP', 'swarmer', 6, 'nil'})
+    table.insert(wave, {'GROUP', 'snakearrow', 2, 'nil'})
+    table.insert(waves, wave)
+
+    wave = {}
+    table.insert(wave, {'GROUP', 'swarmer', 6, 'nil'})
+    table.insert(wave, {'GROUP', 'swarmer', 6, 'nil'})
+    table.insert(wave, {'GROUP', 'burst', 2, 'nil'})
+
+    table.insert(wave, {'DELAY', 4})
+
+    table.insert(wave, {'GROUP', 'swarmer', 6, 'scatter'})
+    table.insert(wave, {'DELAY', 2})
+
+    table.insert(wave, {'GROUP', 'swarmer', 6, 'nil'})
+    table.insert(wave, {'GROUP', 'snakearrow', 2, 'nil'})
+    table.insert(waves, wave)
+  end
   return waves
 end
 

@@ -512,7 +512,7 @@ function WorldManager:transition_to_next_level_buy_screen()
 
   self.t:after(1, function()
     TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
-      Go_To_Buy_Screen()
+      Save_Run_And_Go_To_Buy_Screen()
     end}
   end)
 

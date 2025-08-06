@@ -29,7 +29,7 @@ function ItemCard:init(args)
     self:create_set_bonus_elements()
   end
 
-  self.set_bonus_hovered = false
+  self.set_button_hovered = false
 
   -- Create name and stats text like FloorItem
   self:create_stats_text()
@@ -181,14 +181,15 @@ function ItemCard:buy_item()
   if self.cost > 10 then
     Stats_Current_Run_Over10Cost_Items_Purchased()
   end
+  self.parent.shop_item_data[self.i] = nil
   self.parent:save_run()
 
-  self.parent.shop_item_data[self.i] = nil
   self.parent.shop_text:set_text{{text = '[wavy_mid, fg]gold: [yellow]' .. gold, font = pixul_font, alignment = 'center'}}
   self:die()
 end
 
 function ItemCard:update(dt)
+  if self.dead then return end
   self:update_game_object(dt)
 
   if input.m1.pressed and self.colliding_with_mouse and not self.grabbed then
@@ -230,6 +231,7 @@ function ItemCard:update(dt)
 
   if self.grabbed then
     self.x, self.y = camera:get_mouse_position()
+    self:remove_set_bonus_tooltip()
   end
 
   -- Update set button positions to move with the ItemCard's spring
@@ -237,12 +239,14 @@ function ItemCard:update(dt)
     -- Position setbuttons relative to ItemCard center, accounting for spring scaling
     set_button.x = self.x
     set_button.y = self.y + 10 + (i-1)*20
+    if set_button.shape then
+      set_button.shape:move_to(set_button.x, set_button.y)
+    end
   end
 
   --check if the set buttons are hovered
-  --have to do manually because item card eats mouse events
   for _, set_button in ipairs(self.set_bonus_elements) do
-    if self.shape:is_colliding_with_point(camera:get_mouse_position()) then
+    if set_button.shape:is_colliding_with_point(camera:get_mouse_position()) then
       set_button.selected = true
     else
       set_button.selected = false
@@ -255,12 +259,12 @@ function ItemCard:update(dt)
     for _, set_button in ipairs(self.set_bonus_elements) do
       if set_button.selected then
         self:show_set_bonus_tooltip(set_button.set_info)
-        self.set_bonus_hovered = true
+        self.set_button_hovered = true
       end
     end
   end
 
-  if not self.set_bonus_hovered then
+  if not self.set_button_hovered then
     self:remove_set_bonus_tooltip()
   end
 
@@ -268,6 +272,8 @@ function ItemCard:update(dt)
 end
 
 function ItemCard:show_set_bonus_tooltip(set_info)
+  if self.dead then return end
+  
   local text_lines = DrawUtils.build_set_bonus_tooltip_text(set_info)
 
   self:remove_set_bonus_tooltip()
@@ -353,13 +359,18 @@ function ItemCard:die()
   self.bottom_text = nil
   -- Ensure the tooltip is removed when the card dies
   self:remove_set_bonus_tooltip()
+  for _, set_button in ipairs(self.set_bonus_elements) do
+    set_button.dead = true
+  end
 end
 
 function ItemCard:remove_set_bonus_tooltip()
-  self.set_bonus_hovered = false
+  self.set_button_hovered = false
 
   if self.set_bonus_tooltip then
+    self.set_bonus_tooltip:deactivate()
     self.set_bonus_tooltip:die()
+    self.set_bonus_tooltip.dead = true
     self.set_bonus_tooltip = nil
   end
 end

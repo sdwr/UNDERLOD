@@ -28,7 +28,7 @@ function Save_Run(run_data)
 end
 
 function Increment_Run_Level()
-  local run_data = system.load_run()
+  local run_data = Collect_Save_Data_From_State(main.current)
   
   run_data.level = run_data.level + 1
   run_data.reroll_shop = true
@@ -42,6 +42,12 @@ function Start_New_Run_And_Go_To_Buy_Screen()
   local new_run = Start_New_Run()
   Save_Run(new_run)
   
+  Go_To_Buy_Screen()
+end
+
+function Save_Run_And_Go_To_Buy_Screen()
+  local run_data = Collect_Save_Data_From_State(main.current)
+  Save_Run(run_data)
   Go_To_Buy_Screen()
 end
 
