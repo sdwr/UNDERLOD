@@ -53,7 +53,7 @@ end
 function Troop:follow_mouse()
   -- If not, continue moving towards the mouse.
   if self.being_knocked_back then return end
-  self:steering_separate(SEPARATION_RADIUS, troop_classes)
+  self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
   if self:distance_to_mouse() > 10 then
     self:seek_mouse(SEEK_DECELERATION, SEEK_WEIGHT * 3)
     self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
@@ -79,7 +79,7 @@ function Troop:rally_to_point()
   end
 
   self:seek_point(self.target_pos.x, self.target_pos.y, SEEK_DECELERATION, SEEK_WEIGHT)
-  self:steering_separate(SEPARATION_RADIUS, troop_classes)
+  self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
   self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
   self:rotate_towards_velocity(1)
 end
@@ -208,11 +208,11 @@ function Troop:update(dt)
         end
       elseif self:my_target() then
         -- In range, allow some movement for positioning
-        self:steering_separate(SEPARATION_RADIUS, troop_classes)
+        self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
         self:rotate_towards_object(self:my_target(), 1)
       else
         -- No target, allow normal movement
-        self:steering_separate(SEPARATION_RADIUS, troop_classes)
+        self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
       end
 
   -- If the unit is in its "backswing" after an attack.
@@ -236,10 +236,10 @@ function Troop:update(dt)
       else
         --if in range of any target, don't move
         if self:in_range('assigned')() then
-          self:steering_separate(SEPARATION_RADIUS, troop_classes)
+          self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
           self:rotate_towards_object(self.assigned_target, 1)
         elseif self:in_range('regular')() then
-          self:steering_separate(SEPARATION_RADIUS, troop_classes)
+          self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
           self:rotate_towards_object(self.target, 1)
         else
           --move towards the closest enemy (don't bother targeting it)
@@ -248,9 +248,9 @@ function Troop:update(dt)
             -- self:seek_point(movement_target.x, movement_target.y, SEEK_DECELERATION, SEEK_WEIGHT)
             -- self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
             -- self:rotate_towards_velocity(1)
-            self:steering_separate(SEPARATION_RADIUS, troop_classes)
+            self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
           else
-            self:steering_separate(SEPARATION_RADIUS, troop_classes)
+            self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
           end
         end
       end
