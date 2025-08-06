@@ -11,9 +11,10 @@ function ProgressBar:init(args)
   self.bgcolor = args.bgcolor or bg[-1]
   
   self.segments = {}
-  local segment_width = self.shape.w / self.number_of_waves
-  local segment_x = self.x - (self.shape.w / 2) + (segment_width / 2)
   local spacing = 4 -- Spacing between segments in pixels
+  local width_minus_spacing = self.shape.w - (self.number_of_waves - 1) * spacing
+  local segment_width = width_minus_spacing / self.number_of_waves
+  local segment_x = self.x - (self.shape.w / 2) + (segment_width / 2)
 
   for i = 1, self.number_of_waves do
     self.segments[i] = ProgressBarSegment{

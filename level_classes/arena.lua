@@ -77,7 +77,7 @@ end
 
 function Arena:create_gold_counter()
   -- Create gold counter in top left
-  self.gold_counter = GoldCounter{group = self.ui, parent = self,x = 60, y = 15, offset_x = self.offset_x, offset_y = self.offset_y}
+  self.gold_counter = GoldCounter{group = self.ui, parent = self,x = GOLD_COUNTER_X_OFFSET, y = LEVEL_MAP_Y_POSITION + 1, offset_x = self.offset_x, offset_y = self.offset_y}
 end
 
 function Arena:create_progress_bar()
