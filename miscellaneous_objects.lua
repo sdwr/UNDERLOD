@@ -1098,14 +1098,14 @@ function EnemyDeathAnimation:draw()
     end
   end
   
-  -- Fallback to simple colored circle if no spritesheet available
-  local color = self.enemy.color or fg[0]
-  local fallback_color = color:clone()
-  fallback_color.a = alpha
+  -- -- Fallback to simple colored circle if no spritesheet available
+  -- local color = self.enemy.color or fg[0]
+  -- local fallback_color = color:clone()
+  -- fallback_color.a = alpha
   
-  graphics.push(self.x, self.y, 0, 1, 1)
-    graphics.circle(self.x, self.y, self.enemy.shape.w / 2, fallback_color)
-  graphics.pop()
+  -- graphics.push(self.x, self.y, 0, 1, 1)
+  --   graphics.circle(self.x, self.y, self.enemy.shape.w / 2, fallback_color)
+  -- graphics.pop()
 end
 
 RallyCircle = Object:extend()

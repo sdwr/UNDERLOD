@@ -514,7 +514,7 @@ function WorldManager:transition_to_next_level_buy_screen()
 
   Increment_Run_Level()
 
-  self.t:after(1, function()
+  self.t:after(2, function()
     TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
       Save_Run_And_Go_To_Buy_Screen()
     end}
