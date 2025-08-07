@@ -304,10 +304,16 @@ function Suction_Troops_To_Spawn_Locations(arena, apply_angular_force)
   end
 end
 
+--has to be safe to call multiple times, because there's the fallback call in world manager
 function End_Suction(arena)
   Helper.Unit:all_troops_end_suction()
-  arena.spawn_manager.timer = TIME_BETWEEN_WAVES
-  arena.spawn_manager:change_state('entry_delay')
+
+  if arena.spawn_manager.state == 'suction_to_targets' then
+    ui_switch1:play{pitch = random:float(1.1, 1.3), volume = 1}
+    arena.spawn_manager.timer = TIME_BETWEEN_WAVES
+    arena.spawn_manager:change_state('entry_delay')
+  end
+
 end
 
 function Kill_Teams()

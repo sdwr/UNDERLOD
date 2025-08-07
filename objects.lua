@@ -112,7 +112,7 @@ function SpawnMarker:init(args)
 end
 
 function SpawnMarker:troop_suctioned()
-  hit3:play()
+  hit3:play({pitch = random:float(0.8, 1.2), volume = 0.7})
   self.num_troops_suctioned = self.num_troops_suctioned + 1
   if self.num_troops_suctioned == self.num_troops then
     self:die()
@@ -122,7 +122,35 @@ function SpawnMarker:troop_suctioned()
 end
 
 function SpawnMarker:arrival_animation()
-  --pass
+
+  local original_radius = self.radius
+  local target_radius = self.effect_radius
+  local flash_duration = 0.2
+  
+  -- Create a particle burst that gets more intense with each arrival
+  for i = 1, 5 do
+    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color, size = 1, life = 0.5}
+  end
+
+  -- Tween the marker to grow and flash
+  self.t:tween(flash_duration, self, {
+      radius = target_radius,
+  }, math.in_out_cubic, nil, 'arrival')
+  
+  self.t:tween(flash_duration, self.color, {
+      a = 1
+  }, math.in_out_cubic, nil, 'arrival')
+  
+  -- Then, tween it back to its original state
+  self.t:after(flash_duration, function()
+    self.t:tween(flash_duration, self, {
+      radius = self.original_radius,
+    }, math.out_cubic, nil, 'arrival')
+    
+    self.t:tween(flash_duration, self.color, {
+      a = self.original_color_a,
+    }, math.out_cubic, nil, 'arrival')
+  end)
 end
 
 function SpawnMarker:update(dt)
@@ -148,9 +176,6 @@ function SpawnMarker:die()
   for i = 1, 10 do
     HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color}
   end
-
-  ui_switch1:play{pitch = random:float(1.1, 1.3), volume = 1}
-
 
   -- Animate a final expanding circle that fades out
   self.t:tween(self.die_duration, self, {
