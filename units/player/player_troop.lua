@@ -224,8 +224,8 @@ function Troop:do_automatic_movement()
   --separate from other troops
   local sameTeam = function(object) return object.team == self.team end
   local notSameTeam = function(object) return object.team ~= self.team end
-  self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes, 1, sameTeam)
-  self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes, 1, notSameTeam)
+  self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes, TROOP_SEPARATION_WEIGHT, notSameTeam)
+  self:steering_separate(TROOP_SEPARATION_RADIUS_SAME_TEAM, troop_classes, TROOP_SEPARATION_WEIGHT_SAME_TEAM, sameTeam)
 
   --cohesion with other troops
   local team = Helper.Unit.teams[self.team]

@@ -68,6 +68,7 @@ function Physics:calculate_steering_force(dt)
   --so have to reset it
   self.separation_f:set(0, 0)
 
+
   self.seeking = false
   self.fleeing = false
   self.pursuing = false
