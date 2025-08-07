@@ -1110,7 +1110,7 @@ function ProgressParticle:init(args)
   self.v = self.v or 400
   self.r = args.r or random:float(0, 2*math.pi)
   self.duration = self.duration or 3
-  self.rs = self.rs or random:float(3, 4)
+  self.rs = self.rs or random:float(1.5, 3)
   
   self:set_as_circle(self.rs, 'dynamic', 'effect')
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)

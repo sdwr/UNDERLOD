@@ -21,7 +21,7 @@ function SpawnGlobals.Init()
   SpawnGlobals.TROOP_0_SPAWN_Y = gh - 50
 
   SpawnGlobals.FURTHEST_SPAWN_POINT = 1/3
-  SpawnGlobals.FURTHEST_SPAWN_POINT_SCATTER = 1/5
+  SpawnGlobals.FURTHEST_SPAWN_POINT_SCATTER = 1/7
   SpawnGlobals.SPAWN_DISTANCE_OUTSIDE_ARENA = 75
 
   SpawnGlobals.TROOP_SPAWN_BASE_X = SpawnGlobals.wall_width + 50  -- Further left than before
@@ -710,14 +710,14 @@ function Spawn_Group_With_Location(arena, group_data, wave_spawn_location, on_fi
     }
 
     -- This loop initiates all spawn processes with 0.1 second spacing using SpawnManager's delay counter
+    local spawn_offsets = {{x = -12, y = -12}, {x = 12, y = -12}, {x = 12, y = 12}, {x = -12, y = 12}, {x = 0, y = 0}}
+    
     for i = 1, amount do
-        local location = {
-            x = wave_spawn_location.x + (math.random() - 0.5) * 20,
-            y = wave_spawn_location.y + (math.random() - 0.5) * 20
-        }
+        local offset = spawn_offsets[i % #spawn_offsets + 1]
+        local location = {x = wave_spawn_location.x + offset.x, y = wave_spawn_location.y + offset.y}
 
         local create_enemy_action = function()
-            Spawn_Enemy(arena, type, location)
+            Spawn_Enemy(arena, type, location, offset)
             arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns - 1
         end
         arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns + 1

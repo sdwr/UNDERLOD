@@ -111,7 +111,7 @@ function Team:set_rally_point(x, y)
   for i, troop in ipairs(self.troops) do
     troop.rallying = true
 
-      Helper.Unit:set_state(troop, unit_states['rallying'])
+    Helper.Unit:set_state(troop, unit_states['rallying'])
 
     troop:set_rally_position(math.random(1, 5))
 

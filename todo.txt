@@ -5,7 +5,13 @@ FINAL BUG TODO:
 - level UI group stays in place while moving camera (but walls move? maybe its related to physics)
 - laser can't move while shooting with space (but can with m1?)
 - laser cooldown triggers twice, once on end cast and once on end channel (?)
+
+
 - knockback end might re-enable steering, overwriting later effects
+- knockback is a var, rallying is a state and a var, confusing
+- need to be able to disable player movement when knockbacked/suction
+- and prevent state change
+- but still rerally to existing point when knockback ends
 
 PLAYTEST FEEDBACK:
   - special enemy damage reduced at tier 1
