@@ -238,18 +238,7 @@ end
 
 function CharacterCard:get_unit_sets()
   local sets = {}
-  local set_counts = {}
-  
-  -- Count items by set
-  if self.unit.items then
-    for _, item in pairs(self.unit.items) do
-      if item and item.sets then
-        for _, set_key in pairs(item.sets) do
-          set_counts[set_key] = (set_counts[set_key] or 0) + 1
-        end
-      end
-    end
-  end
+  local set_counts = Helper.Unit:count_unit_set_pieces(self.unit)
   
   -- Build set info
   for set_key, count in pairs(set_counts) do
@@ -257,6 +246,7 @@ function CharacterCard:get_unit_sets()
     if set_def then
       table.insert(sets, {
         name = set_def.name,
+        key = set_key,
         current_pieces = count,
         bonuses = set_def.bonuses,
         color = set_def.color,
@@ -374,7 +364,8 @@ end
 
 function CharacterCard:show_set_bonus_popup_for_set(set_info)
 
-  local text_lines = DrawUtils.build_set_bonus_tooltip_text(set_info)
+  local set_count = Helper.Unit:get_unit_set_count(self.unit, set_info.key)
+  local text_lines = DrawUtils.build_set_bonus_tooltip_text(set_info, set_count)
 
   self:hide_set_bonus_popup()
   

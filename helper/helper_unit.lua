@@ -904,3 +904,26 @@ function Helper.Unit:all_troops_end_suction()
         troop:set_damping(get_damping_by_unit_class(troop.class))
     end
 end
+
+function Helper.Unit:get_unit_set_count(unit, setName)
+  local set_counts = Helper.Unit:count_unit_set_pieces(unit)
+  return set_counts[setName] or 0
+end
+
+function Helper.Unit:count_unit_set_pieces(unit)
+  local set_counts = {}
+  
+  if not unit.items then 
+    return set_counts 
+  end
+
+  for _, item in pairs(unit.items) do
+    if item.sets and #item.sets > 0 then
+      for _, setName in pairs(item.sets) do
+        set_counts[setName] = (set_counts[setName] or 0) + 1
+      end
+    end
+  end
+
+  return set_counts
+end

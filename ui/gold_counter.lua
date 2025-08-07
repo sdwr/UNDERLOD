@@ -78,13 +78,10 @@ function GoldCounter:add_round_power(round_power, source_x, source_y)
   local percent_of_round_power = (round_power * 1.0) / total_round_power
   local gold_to_add = percent_of_round_power * total_round_gold
 
-  if math.floor(gold) < math.floor(gold + gold_to_add + .0001) then
-    self:create_gold_particle(gold_to_add, source_x, source_y)
-  else
-    self:add_gold(gold_to_add)
-  end
+  self:add_gold(gold_to_add)
 end
 
+--unused
 function GoldCounter:create_gold_particle(amount, source_x, source_y)
   -- Create gold particle that flies to the counter
   GoldParticle{

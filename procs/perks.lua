@@ -431,9 +431,9 @@ PERK_DEFINITIONS = {
     description = "When curse expires, deal 50/70/100 damage",
     icon = "curse_of_doom",
     rarity = "rare",
-    stats1 = {curse_of_doom = 0.5},
-    stats2 = {curse_of_doom = 0.7},
-    stats3 = {curse_of_doom = 1},
+    stats1 = {curse_of_doom = 50},
+    stats2 = {curse_of_doom = 70},
+    stats3 = {curse_of_doom = 100},
     proc_name = "curse_of_doom",
     prereqs = {"curse"}
   },

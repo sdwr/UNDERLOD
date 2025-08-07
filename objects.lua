@@ -2231,17 +2231,7 @@ end
 
 function Unit:process_set_bonuses_to_stats()
   local set_bonus_stats = {}
-  local sets = {}
-  
-  if not self.items then return set_bonus_stats end
-  
-  for _, item in pairs(self.items) do
-    if item.sets and #item.sets > 0 then
-      for _, set in pairs(item.sets) do
-        sets[set] = (sets[set] or 0) + 1
-      end
-    end
-  end
+  local sets = Helper.Unit:count_unit_set_pieces(self)
   
   for set, count in pairs(sets) do
     local set_data = ITEM_SETS[set]
@@ -2266,19 +2256,7 @@ end
 
 function Unit:get_set_procs()
   local set_bonus_procs = {}
-  local sets = {}
-
-  if not self.items then 
-    return set_bonus_procs 
-  end
-
-  for _, item in pairs(self.items) do
-    if item.sets and #item.sets > 0 then
-      for _, set in pairs(item.sets) do
-        sets[set] = (sets[set] or 0) + 1
-      end
-    end
-  end
+  local sets = Helper.Unit:count_unit_set_pieces(self)
 
   for set, count in pairs(sets) do
     local set_data = ITEM_SETS[set]
