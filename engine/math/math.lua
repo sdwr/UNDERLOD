@@ -178,6 +178,11 @@ function math.remap(v, old_min, old_max, new_min, new_max)
   return ((v - old_min)/(old_max - old_min))*(new_max - new_min) + new_min
 end
 
+function math.remap_clamped(v, old_min, old_max, new_min, new_max)
+  local v = math.clamp(v, old_min, old_max)
+  return math.remap(v, old_min, old_max, new_min, new_max)
+end
+
 
 -- TODO: fix this since it doesn't work properly for some reason
 -- Lerp corrected for usage with delta time, see more here https://www.construct.net/en/blogs/ashleys-blog-2/using-lerp-delta-time-924

@@ -518,7 +518,9 @@ end
 function Helper.Unit:set_knockback_variables(unit, force_multiplier)
     unit.being_knocked_back = true
     unit.steering_enabled = false
-    unit:set_damping(1.5 * (1/force_multiplier))
+    if force_multiplier then
+        unit:set_damping(1.5 * (1/force_multiplier))
+    end
 end
 
 function Helper.Unit:reset_knockback_variables(unit)
@@ -582,11 +584,10 @@ function Helper.Unit:apply_knockback(unit, force, angle, duration, push_invulner
     unit.mass = knockback_mass
     unit:set_damping(knockback_damping)
     
-    -- Set knockback flag and disable steering
+    -- Set knockback flag but DON'T disable steering completely
+    -- Instead, add a flag to prevent certain steering behaviors
     unit.being_knocked_back = true
-    if unit.steering_enabled ~= nil then
-        unit.steering_enabled = false
-    end
+    unit.knockback_steering_disabled = true
     
     -- Reset velocity for a clean push
     unit:set_velocity(0, 0)
@@ -603,9 +604,7 @@ function Helper.Unit:apply_knockback(unit, force, angle, duration, push_invulner
         unit.mass = unit.original_mass
         unit:set_damping(unit.original_damping)
         unit.being_knocked_back = false
-        if unit.steering_enabled ~= nil then
-            unit.steering_enabled = true
-        end
+        unit.knockback_steering_disabled = false
     end)
 end
 
@@ -864,4 +863,27 @@ function Helper.Unit:unit_has_open_inventory_slot(unit, slot_index)
   return false
 end
 
+function Helper.Unit:get_all_troops()
+    local troop_list = {}
+    for _, team in pairs(Helper.Unit.teams) do
+        for _, troop in pairs(team.troops) do
+            table.insert(troop_list, troop)
+        end
+    end
+    return troop_list
+end
 
+function Helper.Unit:all_troops_begin_suction()
+    for _, troop in pairs(Helper.Unit:get_all_troops()) do
+        Helper.Unit:set_knockback_variables(troop)
+        troop.max_v = 150
+    end
+end
+
+function Helper.Unit:all_troops_end_suction()
+    for _, troop in pairs(Helper.Unit:get_all_troops()) do
+        Helper.Unit:reset_knockback_variables(troop)
+        troop.max_v = troop.mvspd
+        troop:set_damping(get_damping_by_unit_class(troop.class))
+    end
+end

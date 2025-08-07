@@ -30,8 +30,9 @@ function SpawnGlobals.Init()
   SpawnGlobals.TROOP_FORMATION_HORIZONTAL_SPACING = 20
   SpawnGlobals.TROOP_FORMATION_VERTICAL_SPACING = 10
 
-  SpawnGlobals.SUCTION_FORCE = 1200
+  SpawnGlobals.SUCTION_FORCE = 700
   SpawnGlobals.SUCTION_MIN_DISTANCE = 12
+  SpawnGlobals.SUCTION_CANCELABLE_DISTANCE = 20
 
   TROOP_0_SPAWN_LOCATION = {x = SpawnGlobals.TROOP_0_SPAWN_X, y = SpawnGlobals.TROOP_0_SPAWN_Y}
   TEAM_INDEX_TO_SPAWN_LOCATION = {
@@ -217,7 +218,8 @@ function Get_Random_Spawn_Point()
   return {x = x, y = y}
 end
 
-function Suction_Troops_To_Spawn_Locations(arena, angular_force)
+function Suction_Troops_To_Spawn_Locations(arena, apply_angular_force)
+
   -- Get all teams and their spawn locations
   for i, team in ipairs(Helper.Unit.teams) do
     if team and not team.dead then
@@ -234,17 +236,25 @@ function Suction_Troops_To_Spawn_Locations(arena, angular_force)
           
           -- Apply strong suction force towards spawn location
           local distance = Helper.Geometry:distance(troop.x, troop.y, target_x, target_y)
+          local multiplier = math.remap_clamped(distance, 10, 100, 0.1, 1)
+          local force = SpawnGlobals.SUCTION_FORCE * multiplier
+
+          local damping_multiplier = math.remap_clamped(distance, 100, 10, 1, 2)
           
+          if distance < SpawnGlobals.SUCTION_CANCELABLE_DISTANCE then
+            troop.steering_enabled = true
+          end
           if distance > SpawnGlobals.SUCTION_MIN_DISTANCE then  -- Only apply if not already at spawn
+            troop:set_damping(get_damping_by_unit_class(troop.class) * damping_multiplier)
             local angle_to_spawn = math.atan2(target_y - troop.y, target_x - troop.x)
-            local suction_force_x = math.cos(angle_to_spawn) * SpawnGlobals.SUCTION_FORCE
-            local suction_force_y = math.sin(angle_to_spawn) * SpawnGlobals.SUCTION_FORCE
+            local suction_force_x = math.cos(angle_to_spawn) * force
+            local suction_force_y = math.sin(angle_to_spawn) * force
             
             troop:apply_force(suction_force_x, suction_force_y)
 
-            if angular_force then
-              local swirl_force_x = - suction_force_y * angular_force
-              local swirl_force_y = suction_force_x * angular_force
+            if apply_angular_force then
+              local swirl_force_x = - suction_force_y * 0.6 * multiplier
+              local swirl_force_y = suction_force_x * 0.6 * multiplier
               troop:apply_force(swirl_force_x, swirl_force_y)
             end
             
@@ -527,7 +537,7 @@ function SpawnManager:update(dt)
     if self.state == 'finished' then return end
     --don't do anything until triggered by world manager
     if self.state == 'arena_start' then 
-      Suction_Troops_To_Spawn_Locations(self.arena, 0.6)
+      Suction_Troops_To_Spawn_Locations(self.arena, true)
       return
     end
 
@@ -949,7 +959,6 @@ function SpawnManager:spawn_waves_with_timing()
     self.current_wave_index = 1
     self.current_instruction_index = 1
     self:change_state('entry_delay')
-    print('from world manager')
     self.timer = self.arena.entry_delay or 2
   end
 end
