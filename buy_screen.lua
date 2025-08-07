@@ -459,13 +459,14 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   end
 
   local tier = LEVEL_TO_TIER(self.level)
+  local rarity = self.level <= 2 and 'common' or nil
   
   if self.shop_item_data[1] and locked_state then
     item_1 = self.shop_item_data[1]
   elseif not self.reroll_shop then
     item_1 = self.shop_item_data[1]
   else
-    item_1 = create_random_item(tier)
+    item_1 = create_random_item(tier, rarity)
   end
 
   all_items[1] = item_1
@@ -475,7 +476,7 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   elseif not self.reroll_shop then
     item_2 = self.shop_item_data[2]
   else
-    item_2 = create_random_item(tier)
+    item_2 = create_random_item(tier, rarity)
   end
 
   all_items[2] = item_2
@@ -485,7 +486,7 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   elseif not self.reroll_shop then
     item_3 = self.shop_item_data[3]
   else
-    item_3 = create_random_item(tier)
+    item_3 = create_random_item(tier, rarity)
   end
 
   all_items[3] = item_3

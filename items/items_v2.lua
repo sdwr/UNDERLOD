@@ -362,7 +362,7 @@ ITEM_RARITIES = {
   },
   [ITEM_RARITY.RARE] = {
     name = 'Rare',
-    cost = 8,
+    cost = 6,
     min_stat_value = 1,
     max_stat_value = 2,
     set_chance = 1,
@@ -370,15 +370,16 @@ ITEM_RARITIES = {
   },
   [ITEM_RARITY.EPIC] = {
     name = 'Epic',
-    cost = 12,
-    min_stat_value = 0,
-    max_stat_value = 2,
+    cost = 8,
+    min_stat_value = 2,
+    max_stat_value = 3,
     set_chance = 1,
+    second_set_chance = 0.5,
     color = 'purple'
   },
   [ITEM_RARITY.LEGENDARY] = {
     name = 'Legendary',
-    cost = 16,
+    cost = 12,
     min_stat_value = 3,
     max_stat_value = 4,
     set_chance = 1,
@@ -496,7 +497,7 @@ function create_random_item(tier, rarity)
   if random:float(0, 1) < rarity_def.set_chance then
     -- Add 1-2 sets for higher rarities
     local set_count = 1
-    if rarity == ITEM_RARITY.LEGENDARY or rarity == ITEM_RARITY.EPIC then
+    if rarity_def.second_set_chance and random:float(0, 1) < rarity_def.second_set_chance then
       set_count = 2
     end
 
@@ -508,15 +509,13 @@ function create_random_item(tier, rarity)
     end
   end
   
-  if rarity_def.max_stat_value > 0 then
+  if rarity_def.max_stat_value > 0 and #item.sets < 2 then
     local stat_name = roll_stat_for_type(item_slot)
     
     -- Generate stat
     local stat_value = math.random(rarity_def.min_stat_value, rarity_def.max_stat_value)
 
-    if stat_value > 0 then
-      item.stats[stat_name] = stat_value + (item.stats[stat_name] or 0)
-    end
+    item.stats[stat_name] = stat_value + (item.stats[stat_name] or 0)
   end
   
   -- Set colors based on sets only (rarity color is used as tier color)

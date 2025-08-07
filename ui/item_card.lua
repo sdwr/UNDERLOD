@@ -69,11 +69,12 @@ end
 function ItemCard:create_stats_text()
   local stats_lines = {}
 
+  --add blank lines so the stats show up below the set buttons
   if self.sets then
     for _, set_key in pairs(self.sets) do
       local set_def = ITEM_SETS[set_key]
       local color = set_def.color or 'orange'
-      table.insert(stats_lines, {text = '[' .. color .. ']' .. set_def.name, font = pixul_font, alignment = 'center'})
+      table.insert(stats_lines, {text = '', font = pixul_font, alignment = 'center'})
     end
   end
 
