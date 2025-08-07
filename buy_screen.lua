@@ -1470,7 +1470,8 @@ function Create_Info_Text(text, parent)
   info_text:activate({
     {text = '[fg]' .. text, font = pixul_font, alignment = 'center'},
   }, nil, nil, nil, nil, 16, 4, nil, 2)
-  info_text.x, info_text.y = gw/2, gh/2 + 10
+  local pos = Get_UI_Popup_Position()
+  info_text.x, info_text.y = pos.x, pos.y
   info_text.t:after(2, function() info_text:deactivate(); info_text.dead = true; info_text = nil end, 'info_text')
   
   global_info_text = info_text

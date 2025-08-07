@@ -190,8 +190,9 @@ function AchievementsPanel:update(dt)
             self.achievement_info_text = InfoText{group = main.current.ui, force_update = false}
         end
         self.achievement_info_text:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
-        self.achievement_info_text.x = gw/2
-        self.achievement_info_text.y = gh/2 + 10
+        local pos = Get_UI_Popup_Position()
+        self.achievement_info_text.x = pos.x
+        self.achievement_info_text.y = pos.y
         
     elseif not self.hovered_slot and self.selected_achievement then
         self.selected_achievement = nil

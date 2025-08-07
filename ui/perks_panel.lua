@@ -242,7 +242,8 @@ function PerkSlot:show_perk_tooltip()
 
   self.info_text = InfoText{group = main.current.world_ui or main.current.ui}
   self.info_text:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
-  self.info_text.x, self.info_text.y = gw/2, gh/2 + 10
+  local pos = Get_UI_Popup_Position()
+  self.info_text.x, self.info_text.y = pos.x, pos.y
   global_info_text = self.info_text.cost_text_object
 end
 

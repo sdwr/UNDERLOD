@@ -767,8 +767,9 @@ function TutorialPopup:init(args)
   -- Container for the popup elements
   self.popup_width = 300
   self.popup_height = 200
-  self.popup_x = gw/2
-  self.popup_y = gh/2
+  local pos = Get_UI_Popup_Position()
+  self.popup_x = pos.x
+  self.popup_y = pos.y
 
   self.display_show_hints_checkbox = args.display_show_hints_checkbox or false
   self.okay_button_offset = self.display_show_hints_checkbox and 60 or 0

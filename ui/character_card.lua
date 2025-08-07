@@ -370,8 +370,9 @@ function CharacterCard:show_set_bonus_popup_for_set(set_info)
   
   self.set_bonus_popup = InfoText{group = self.group, force_update = false}
   self.set_bonus_popup:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
-  self.set_bonus_popup.x = gw/2
-  self.set_bonus_popup.y = gh/2
+  local pos = Get_UI_Popup_Position()
+  self.set_bonus_popup.x = pos.x
+  self.set_bonus_popup.y = pos.y
 end
 
 function CharacterCard:hide_popup()
@@ -664,11 +665,12 @@ function ItemPart:create_tooltip()
     self.tooltip = nil
   end
 
+  local pos = Get_UI_Popup_Position()
   self.tooltip = ItemTooltip{
     group = self.group,
     item = self:getItem(),
-    x = gw/2, 
-    y = gh/2,
+    x = pos.x, 
+    y = pos.y,
   }
 end
 
