@@ -18,9 +18,15 @@ function Start_New_Run()
   return data
 end
 
+function Save_Run_From_Current()
+  local run_data = Collect_Save_Data_From_State(main.current)
+  Save_Run(run_data)
+end
+
 function Save_Run(run_data)
-  if not run_data then
-    run_data = system.load_run()
+  if not run_data then 
+    print('no run data to save')
+    return
   end
   
   system.save_run(run_data)
@@ -32,13 +38,6 @@ function Start_New_Run_And_Go_To_Buy_Screen()
   local new_run = Start_New_Run()
   Save_Run(new_run)
   
-  Go_To_Buy_Screen()
-end
-
-function Save_Run_And_Go_To_Buy_Screen()
-  local run_data = Collect_Save_Data_From_State(main.current)
-  
-  Save_Run(run_data)
   Go_To_Buy_Screen()
 end
 

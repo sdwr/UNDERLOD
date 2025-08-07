@@ -21,7 +21,7 @@ function BuyScreen:on_exit()
   self.ui_top = nil
   self.overlay_ui = nil
   self.options_ui = nil
-  self.shop_text = nil
+  self.gold_counter = nil
   self.items_text = nil
   self.sets = nil
   self.info_text = nil
@@ -95,7 +95,7 @@ function BuyScreen:on_enter(from)
   
   self.show_level_buttons = false
   
-  self.shop_text = Text({{text = '[wavy_mid, fg]gold: [yellow]' .. gold, font = pixul_font, alignment = 'center'}}, global_text_tags)
+  self.gold_counter = GoldCounter{group = self.ui, x = GOLD_COUNTER_X_OFFSET, y = LEVEL_MAP_Y_POSITION + 1}
 
   self.items_text_x, self.items_text_y = gw/2 - 150, gh - 60
   self.items_text = Text({{text = '[wavy_mid, fg]shop - Lv. ' .. self.last_shop_level, font = pixul_font, alignment = 'center'}}, global_text_tags)
@@ -167,7 +167,6 @@ function BuyScreen:update(dt)
     self.ui_top:update(dt*slow_amount)
     self.overlay_ui:update(dt*slow_amount)
     self.options_ui:update(dt*slow_amount)
-    if self.shop_text then self.shop_text:update(dt) end
     if self.items_text then self.items_text:update(dt) end
   elseif self.choose_character and not self.paused then
     self.overlay_ui:update(dt*slow_amount)
@@ -183,7 +182,6 @@ function BuyScreen:update(dt)
   if input['lctrl'].down or input['rctrl'].down then
     if input['g'].pressed then
       gold = gold + 100
-      self.shop_text:set_text{{text = '[wavy_mid, fg]gold: [yellow]' .. gold, font = pixul_font, alignment = 'center'}}
     end
     if input['u'].pressed then
       self.show_level_buttons = not self.show_level_buttons
@@ -339,7 +337,6 @@ function BuyScreen:draw()
   self.effects:draw()
   if self.items_text then self.items_text:draw(self.items_text_x, self.items_text_y) end
 
-  if self.shop_text then self.shop_text:draw(64, 20) end
 
   self.ui:draw()
   self.ui_top:draw()
@@ -353,7 +350,6 @@ end
 
 function BuyScreen:gain_gold(amount)
   gold = (gold + amount) or 0
-  self.shop_text:set_text{{text = '[wavy_mid, fg]gold: [yellow]' .. gold, font = pixul_font, alignment = 'center'}}
 end
 
 function BuyScreen:set_party()
@@ -1104,8 +1100,6 @@ function RerollButton:update(dt)
         gold2:play{pitch = random:float(0.95, 1.05), volume = 0.3}
         self.selected = true
         self.spring:pull(0.2, 200, 10)
-        self.parent.shop_text:set_text{{text = '[wavy_mid, fg]gold: [yellow]' .. gold, font = pixul_font, alignment = 'center'}}
-
 
         Stats_Current_Run_Rerolls()
         Stats_Total_Rerolls()

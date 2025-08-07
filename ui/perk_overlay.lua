@@ -46,8 +46,7 @@ function PerkOverlay:on_perk_selected(perk_key)
 
   local new_perk = Create_Perk(perk_key, 1) -- Start at level 1
   table.insert(main.current.perks, new_perk)
-  local run_data = Collect_Save_Data_From_State(main.current)
-  Save_Run(run_data)
+  Save_Run_From_Current()
 
   ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
   self:die(self.i)

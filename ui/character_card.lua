@@ -363,7 +363,6 @@ function CharacterCard:show_unit_stats_popup()
 end
 
 function CharacterCard:show_set_bonus_popup_for_set(set_info)
-
   local set_count = Helper.Unit:get_unit_set_count(self.unit, set_info.key)
   local text_lines = DrawUtils.build_set_bonus_tooltip_text(set_info, set_count)
 
@@ -482,32 +481,30 @@ function ItemPart:addItem(item)
 end
 
 function ItemPart:sellItem()
-  --kill the item first, to trigger the item's die function
-  --have to create the item first to remove it
-  -- unit.items is just the item data, not the item object
-  if self.parent.unit.items[self.i] then
-    local item = Create_Item(self.parent.unit.items[self.i].name)
-    if item then
-      if item.consumable then
-        spawn_mark2:play{pitch = random:float(0.8, 1.2), volume = 1}
-        --item:consume()
-        Stats_Consume_Item()
-      else
-        --play sell sound
-        spawn_mark1:play{pitch = random:float(0.8, 1.2), volume = 1}
-        local sell_value = math.ceil(item.cost / 3)
-        main.current:gain_gold(sell_value)
 
-        Stats_Sell_Item()
-        Stats_Max_Gold()
-      end
-      item:sell()
-      self:remove_tooltip()
+  --dont create an item object
+  --add that back when there are consumables or sell effects
+
+  local item = self.parent.unit.items[self.i]
+  if item then
+    if item.consumable then
+      spawn_mark2:play{pitch = random:float(0.8, 1.2), volume = 1}
+      --item:consume()
+      Stats_Consume_Item()
+    else
+      --play sell sound
+      coins1:play{pitch = random:float(0.8, 1.2), volume = 1}
+      local sell_value = math.floor(item.cost / 2)
+      gold = gold + sell_value
+
+      Stats_Sell_Item()
+      Stats_Max_Gold()
     end
+    self:remove_tooltip()
   end
 
-  --then remove the item from the unit
   self:removeItem()
+  Save_Run_From_Current()
 end
 
 function ItemPart:removeItem()

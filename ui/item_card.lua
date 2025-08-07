@@ -190,7 +190,6 @@ function ItemCard:buy_item()
     self.parent:on_item_purchased(unit, slot_index, self.item)
   end
 
-  self.parent.shop_text:set_text{{text = '[wavy_mid, fg]gold: [yellow]' .. gold, font = pixul_font, alignment = 'center'}}
   self:die()
 end
 
