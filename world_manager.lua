@@ -130,9 +130,13 @@ function WorldManager:create_arena(level, offset_x)
     arena:create_door()
 
     -- Only spawn teams and enemies for non-tutorial levels
-    Spawn_Teams(arena)
+    Spawn_Teams(arena, true)
     Helper.Unit:update_unit_colors()
-    arena.spawn_manager:spawn_waves_with_timing()
+
+    self.t:after(DELAY_BEFORE_SUCTION, function()
+      Helper.Unit:all_troops_begin_suction(arena)
+      arena.spawn_manager:change_state('suction_to_targets')
+    end)
 
   else
     self.next_arena = arena

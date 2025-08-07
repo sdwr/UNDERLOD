@@ -41,6 +41,24 @@ function Helper.Unit:sort_by_distance(unit_list, unit)
     return sorted_units
 end
 
+function Helper.Unit:get_closest_unit(team, location)
+    if not team then return nil, nil end
+
+    local closest_unit = nil
+    local closest_distance = 999999
+
+    for _, troop in ipairs(team.troops) do
+        if troop and not troop.dead then
+            local dist = Helper.Geometry:distance(location.x, location.y, troop.x, troop.y)
+            if dist < closest_distance then
+                closest_unit = troop
+                closest_distance = dist
+            end
+        end
+    end
+    return closest_unit, closest_distance
+end
+
 function Helper.Unit:get_all_units()
     local unit_list = {}
     for i, unit in ipairs(Helper.Unit:get_list(true)) do
@@ -515,10 +533,10 @@ function Helper.Unit:get_points(troop_points)
     return points
 end
 
-function Helper.Unit:set_knockback_variables(unit, force_multiplier)
+function Helper.Unit:set_knockback_variables(unit)
     unit.being_knocked_back = true
     unit.steering_enabled = false
-    unit:set_damping(1.5 * (1/force_multiplier))
+    unit:set_damping(1)
 end
 
 function Helper.Unit:reset_knockback_variables(unit)
@@ -542,7 +560,7 @@ function Helper.Unit:apply_knockback_enemy(unit, force, angle)
     local final_force = force * force_multiplier
     unit.push_force = final_force
 
-    Helper.Unit:set_knockback_variables(unit, force_multiplier)
+    Helper.Unit:set_knockback_variables(unit)
 
     unit:apply_impulse(final_force * math.cos(angle), final_force * math.sin(angle))
     unit:apply_angular_impulse(random:table{random:float(-12*math.pi, -4*math.pi), random:float(4*math.pi, 12*math.pi)})
@@ -582,11 +600,9 @@ function Helper.Unit:apply_knockback(unit, force, angle, duration, push_invulner
     unit.mass = knockback_mass
     unit:set_damping(knockback_damping)
     
-    -- Set knockback flag and disable steering
-    unit.being_knocked_back = true
-    if unit.steering_enabled ~= nil then
-        unit.steering_enabled = false
-    end
+    -- Set knockback flag but DON'T disable steering completely
+    -- Instead, add a flag to prevent certain steering behaviors
+    Helper.Unit:set_knockback_variables(unit)
     
     -- Reset velocity for a clean push
     unit:set_velocity(0, 0)
@@ -602,10 +618,7 @@ function Helper.Unit:apply_knockback(unit, force, angle, duration, push_invulner
     unit.cancel_trigger_tag = unit.t:after(final_duration, function()
         unit.mass = unit.original_mass
         unit:set_damping(unit.original_damping)
-        unit.being_knocked_back = false
-        if unit.steering_enabled ~= nil then
-            unit.steering_enabled = true
-        end
+        Helper.Unit:reset_knockback_variables(unit)
     end)
 end
 
@@ -864,4 +877,30 @@ function Helper.Unit:unit_has_open_inventory_slot(unit, slot_index)
   return false
 end
 
+function Helper.Unit:get_all_troops()
+    local troop_list = {}
+    for _, team in pairs(Helper.Unit.teams) do
+        for _, troop in pairs(team.troops) do
+            table.insert(troop_list, troop)
+        end
+    end
+    return troop_list
+end
 
+function Helper.Unit:all_troops_begin_suction()
+    for _, troop in pairs(Helper.Unit:get_all_troops()) do
+        Helper.Unit:set_knockback_variables(troop)
+        troop.max_v = SpawnGlobals.SUCTION_MAX_V
+    end
+end
+
+function Helper.Unit:all_troops_end_suction()
+    for _, team in pairs(Helper.Unit.teams) do
+        team:clear_spawn_marker()
+    end
+    for _, troop in pairs(Helper.Unit:get_all_troops()) do
+        Helper.Unit:reset_knockback_variables(troop)
+        troop.max_v = troop.mvspd
+        troop:set_damping(get_damping_by_unit_class(troop.class))
+    end
+end

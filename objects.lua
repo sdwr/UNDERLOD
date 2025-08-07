@@ -86,6 +86,77 @@ function AnimatedSpawnCircle:die()
     self.dead = true
 end
 
+--team spawn marker that gets brighter as the team gets closer to spawning
+SpawnMarker = Object:extend()
+SpawnMarker:implement(GameObject)
+
+function SpawnMarker:init(args)
+    self:init_game_object(args)
+    
+    self.team = args.team or 1
+    self.min_distance = args.min_distance or 15
+    self.max_distance = args.max_distance or 150
+
+    self.color = args.color or white[0]
+    self.color = self.color:clone()
+    
+    self.radius = 6
+    self.effect_radius = self.radius * 2
+    
+    -- The duration of the final 'explosion' animation
+    self.die_duration = 0.2
+end
+
+function SpawnMarker:update(dt)
+    self:update_game_object(dt)
+    
+    local closest_troop, closest_distance = Helper.Unit:get_closest_unit(self.team, {x = self.x, y = self.y})
+
+    if closest_troop then
+      self.color.a = math.remap_clamped(closest_distance, self.max_distance, self.min_distance, 0.4, 0.6)
+    end
+
+    if closest_distance < self.min_distance then
+      self:die()
+    end
+end
+
+
+
+function SpawnMarker:draw()
+  -- Only draw if the radius is greater than 0
+  if self.radius > 0 then
+    -- Draw a filled circle that represents the glow
+    graphics.circle(self.x, self.y, self.radius, self.color)
+  end
+end
+
+function SpawnMarker:die()
+  -- Prevent the die function from being called multiple times
+  if self.is_dying then return end
+  self.is_dying = true
+
+  -- Create a particle burst when the marker dies
+  for i = 1, 10 do
+    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color}
+  end
+
+  ui_switch1:play{pitch = random:float(1.1, 1.3), volume = 1}
+
+
+  -- Animate a final expanding circle that fades out
+  self.t:tween(self.die_duration, self, {
+    radius = self.effect_radius
+  }, math.linear, function()
+    self.dead = true
+  end)
+  self.t:tween(self.die_duration, self.color, {
+    a = 0
+  }, math.linear, function()
+    self.dead = true
+  end)
+
+end
 
 WallKnife = Object:extend()
 WallKnife:implement(GameObject)

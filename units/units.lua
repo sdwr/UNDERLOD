@@ -64,6 +64,10 @@ function Team:add_troop(x, y)
   return troop
 end
 
+--need to prevent changing state to following/rallying/moving
+--if they are being knocked back
+--but there are a lot of places to change
+--state is doubling as active state (is moving) and intention (rally point)
 function Team:set_troop_state_to_following()
   for i, troop in ipairs(self.troops) do
       Helper.Unit:set_state(troop, unit_states['following'])
@@ -126,6 +130,24 @@ function Team:clear_rally_point()
       Helper.Unit:set_state(troop, unit_states['idle'])
     end
     troop.rallying = false
+  end
+end
+
+function Team:create_spawn_marker()
+  local spawn_location = self.spawn_location or {x = gw/2, y = gh/2}
+  self.spawn_marker = SpawnMarker{
+    group = main.current.floor,
+    x = spawn_location.x,
+    y = spawn_location.y,
+    team = self,
+    color = self.color
+  }
+end
+
+function Team:clear_spawn_marker()
+  if self.spawn_marker then
+    self.spawn_marker:die()
+    self.spawn_marker = nil
   end
 end
 
