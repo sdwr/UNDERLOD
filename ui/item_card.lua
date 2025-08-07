@@ -210,7 +210,7 @@ function ItemCard:update(dt)
         
     elseif not unit or not slot_index then
       self:remove_set_bonus_tooltip()
-      Create_Info_Text('no empty ' .. ITEM_SLOTS[self.item.slot].name .. ' slots - right click items in character menu to sell', self)
+      Create_Info_Text('no empty ' .. ITEM_SLOTS[self.item.slot].name .. ' slots - right click to sell', self)
 
     elseif gold < self.cost then
       self:remove_set_bonus_tooltip()

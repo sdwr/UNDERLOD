@@ -220,18 +220,18 @@ SCALED_ENEMY_MS = function(level, base_ms)
 end
 
 function SWARMERS_PER_LEVEL(level)
-  return 3 + math.floor(level / 2)
+  return 5 + math.floor(level / 3)
 end
 
 function SPECIAL_ENEMIES_PER_LEVEL(level)
-  if level == 1 then return math.random(0, 1) end
+  if level == 1 then return 1 end
   if level == 2 then return 1 end
 
   if level <= 6 then
-    return math.random(1, 2)
+    return 2
   end
 
-  return math.random(2, 3)
+  return 3
 end
 
 function WAVES_PER_LEVEL(level)

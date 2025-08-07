@@ -114,7 +114,7 @@ function Wave_Types:Get_Waves(level)
     group = {'DELAY', 5}
     table.insert(wave, group)
   
-    group = {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), table.random({'scatter', 'nil'}) }
+    group = {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'}
     table.insert(wave, group)
     group = {'GROUP',
       random:table(special_enemy_by_tier[tier]), 
