@@ -140,6 +140,14 @@ function BuyScreen:on_enter(from)
   buyScreen:save_run()
 end
 
+function BuyScreen:on_item_purchased(unit, slot_index, item)
+  -- Refresh character cards to show the new item
+  Refresh_All_Cards_Text()
+  
+  -- You can add additional logic here if needed
+  -- For example, play a specific sound, show a notification, etc.
+end
+
 
 function BuyScreen:update(dt)
   if main_song_instance and main_song_instance:isStopped() then
@@ -1456,13 +1464,19 @@ end
 
 -- helper functions
 function Create_Info_Text(text, parent)
-  if not parent.info_text then
-    error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-    parent.info_text = InfoText{group = main.current.world_ui or main.current.ui}
-    parent.info_text:activate({
-      {text = '[fg]' .. text, font = pixul_font, alignment = 'center'},
-    }, nil, nil, nil, nil, 16, 4, nil, 2)
-    parent.info_text.x, parent.info_text.y = gw/2, gh/2 + 10
+  if global_info_text then
+    global_info_text:deactivate()
+    global_info_text.dead = true
+    global_info_text = nil
   end
-  parent.t:after(2, function() parent.info_text:deactivate(); parent.info_text.dead = true; parent.info_text = nil end, 'info_text')
+  error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+  local info_text = InfoText{group = main.current.world_ui or main.current.ui}
+  
+  info_text:activate({
+    {text = '[fg]' .. text, font = pixul_font, alignment = 'center'},
+  }, nil, nil, nil, nil, 16, 4, nil, 2)
+  info_text.x, info_text.y = gw/2, gh/2 + 10
+  info_text.t:after(2, function() info_text:deactivate(); info_text.dead = true; info_text = nil end, 'info_text')
+  
+  global_info_text = info_text
 end

@@ -176,6 +176,7 @@ function ItemCard:buy_item()
   
   gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
   unit.items[slot_index] = self.item
+  
   gold = gold - self.cost
 
   if self.cost > 10 then
@@ -183,6 +184,11 @@ function ItemCard:buy_item()
   end
   self.parent.shop_item_data[self.i] = nil
   self.parent:save_run()
+
+  -- Notify buy screen that an item was purchased
+  if self.parent.on_item_purchased then
+    self.parent:on_item_purchased(unit, slot_index, self.item)
+  end
 
   self.parent.shop_text:set_text{{text = '[wavy_mid, fg]gold: [yellow]' .. gold, font = pixul_font, alignment = 'center'}}
   self:die()
