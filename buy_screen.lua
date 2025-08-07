@@ -372,33 +372,26 @@ function BuyScreen:set_party()
 
   --center single unit, otherwise start on the left
 
-  if number_of_cards == 2 then
-    x = gw/2 - CHARACTER_CARD_WIDTH/2 - CHARACTER_CARD_SPACING
-  elseif number_of_cards == 3 then
-    x = gw/2 - CHARACTER_CARD_WIDTH - CHARACTER_CARD_SPACING - 30
-  end
+  local x = gw/2 - CHARACTER_CARD_WIDTH - CHARACTER_CARD_SPACING - 15
+  local card_order = {[1] = 2, [2] = 3, [3] = 1}
 
   for i, unit in ipairs(self.units) do
-    table.insert(Character_Cards, CharacterCard{group = self.main, x = x + (i-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, unit = unit, character = unit.character, i = i, parent = self})
+    local card_index = card_order[i]
+    table.insert(Character_Cards, CharacterCard{group = self.main, x = x + (card_index-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, unit = unit, character = unit.character, i = i, parent = self})
     unit.spawn_effect = true
     self.first_shop = false
   end
 
-  if #Character_Cards == 0 then
-    table.insert(Character_Cards, CharacterCardBuy{group = self.main, x = x + (#Character_Cards)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, i = #Character_Cards+1, parent = self,
-      is_unlocked = true, cost = 5})
-  elseif #Character_Cards == 1 then
-    table.insert(Character_Cards, CharacterCardBuy{group = self.main, x = x + (#Character_Cards)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, i = #Character_Cards+1, parent = self,
-      is_unlocked = true, cost = 10})
-  elseif #Character_Cards == 2 then
-    table.insert(Character_Cards, CharacterCardBuy{group = self.main, x = x + (#Character_Cards)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, i = #Character_Cards+1, parent = self,
-      is_unlocked = true, cost = 15})
+  local num_cards = #Character_Cards
+  local buy_card_index = num_cards + 1
+  local buy_card_order = card_order[buy_card_index]
+  local buy_card_cost = 5 * num_cards
+
+  if #Character_Cards < 3 then
+    table.insert(Character_Cards, CharacterCardBuy{group = self.main, x = x + (buy_card_order-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, i = buy_card_index, parent = self,
+      is_unlocked = true, cost = buy_card_cost})
   end
 
-
-  for i, card in ipairs(Character_Cards) do
-    card.x = x + (i-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING)
-  end
 
 
   --check how many of the same unit are in the party
