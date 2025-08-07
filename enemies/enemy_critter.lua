@@ -9,6 +9,7 @@ function EnemyCritter:init(args)
 
   self:init_game_object(args)
   Helper.Unit:add_custom_variables_to_unit(self)
+  Helper.Unit:set_state(self, unit_states['idle'])
   if tostring(self.x) == tostring(0/0) or tostring(self.y) == tostring(0/0) then self.dead = true; return end
   self:init_unit()
   Set_Enemy_Shape(self, 'critter')

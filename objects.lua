@@ -226,6 +226,10 @@ end
 Unit = Object:extend()
 function Unit:init_unit()
   self.level = self.level or 1
+  
+  --set state to idle at start
+  --still blocked from moving at start of arena
+  self.state = unit_states['idle']
 
   self:config_physics_object()
 

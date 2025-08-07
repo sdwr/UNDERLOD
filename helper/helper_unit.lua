@@ -107,7 +107,27 @@ function Helper.Unit:add_custom_variables_to_unit(unit)
     Helper.Unit:add_default_state_always_run_functions(unit)
 end
 
+function Helper.Unit:state_allows_movement(unit, state)
+    local states_can_move = unit.is_troop and unit_states_can_move or unit_states_enemy_can_move
+
+    if not table.contains(states_can_move, state) then
+        return false
+    end
+
+    if unit.is_troop and Helper.Unit:block_troop_movement() then
+        return false
+    end
+
+    return true
+end
+
 function Helper.Unit:set_state(unit, state)
+
+    --dont change state if troops cant move
+    if unit.is_troop and not Helper.Unit:state_allows_movement(unit, state) then
+        return
+    end
+
     local previous_state = unit.state
     unit.state = state
 
@@ -386,6 +406,17 @@ function Helper.Unit:all_teams_set_rally_point(x, y)
     end
 end
 
+function Helper.Unit:block_troop_movement()
+    arena_states_cant_move = {
+        'arena_start',
+        'suction_to_targets',
+    }
+    if main and main.current and main.current.current_arena and 
+    main.current.current_arena.spawn_manager then
+        local state = main.current.current_arena.spawn_manager.state
+        return table.any(arena_states_cant_move, function(v) return state == v end)
+    end
+end
 
 --select + target from input
 function Helper.Unit:select()
