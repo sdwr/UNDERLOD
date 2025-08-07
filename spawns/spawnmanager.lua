@@ -21,6 +21,7 @@ function SpawnGlobals.Init()
   SpawnGlobals.TROOP_0_SPAWN_Y = gh - 50
 
   SpawnGlobals.FURTHEST_SPAWN_POINT = 1/3
+  SpawnGlobals.FURTHEST_SPAWN_POINT_SCATTER = 1/5
   SpawnGlobals.SPAWN_DISTANCE_OUTSIDE_ARENA = 75
 
   SpawnGlobals.TROOP_SPAWN_BASE_X = SpawnGlobals.wall_width + 50  -- Further left than before
@@ -227,6 +228,12 @@ end
 function Get_Random_Spawn_Point()
   local x = math.random(gw * SpawnGlobals.FURTHEST_SPAWN_POINT, gw * (1 - SpawnGlobals.FURTHEST_SPAWN_POINT))
   local y = math.random(gh * SpawnGlobals.FURTHEST_SPAWN_POINT, gh * (1 - SpawnGlobals.FURTHEST_SPAWN_POINT))
+  return {x = x, y = y}
+end
+
+function Get_Random_Spawn_Point_Scatter()
+  local x = math.random(gw * SpawnGlobals.FURTHEST_SPAWN_POINT_SCATTER, gw * (1 - SpawnGlobals.FURTHEST_SPAWN_POINT_SCATTER))
+  local y = math.random(gh * SpawnGlobals.FURTHEST_SPAWN_POINT_SCATTER, gh * (1 - SpawnGlobals.FURTHEST_SPAWN_POINT_SCATTER))
   return {x = x, y = y}
 end
 
@@ -615,16 +622,14 @@ end
 -- This function processes all instructions for a wave segment at once.
 function SpawnManager:process_next_instruction()
   
-  --play spawn sound only once for the wave
-  self.arena.t:after(WAVE_SPAWN_WARNING_TIME, function()
-    Spawn_Enemy_Sound(self.arena, false)
-  end)
-  
   -- Reset wave spawn delay for this wave
   self.wave_spawn_delay = 0
   
   -- Get single spawn location for this entire wave (around screen edges, 1/3 toward center)
   local wave_spawn_location = Get_Edge_Spawn_Point()
+  
+  --play spawn sound only once for the wave
+  Spawn_Enemy_Sound(self.arena, false)
   
   -- Loop until we explicitly break out (due to a delay or end of wave).
   while true do
@@ -731,7 +736,7 @@ function Spawn_Group_Scattered(arena, group_data)
   amount = amount or 1
 
   for i = 1, amount do
-    local location = Get_Random_Spawn_Point()
+    local location = Get_Random_Spawn_Point_Scatter()
     local create_enemy_action = function()
       Spawn_Enemy(arena, type, location)
       arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns - 1
@@ -739,6 +744,16 @@ function Spawn_Group_Scattered(arena, group_data)
     arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns + 1
 
     local spawn_delay = WAVE_SPAWN_WARNING_TIME + arena.spawn_manager.wave_spawn_delay
+
+    arena.t:after(arena.spawn_manager.wave_spawn_delay, function()
+      local warning_marker = AnimatedSpawnCircle{
+        group = arena.floor, x = location.x, y = location.y,
+        duration = spawn_delay,
+        expected_spawn_time = spawn_delay,
+        enemy_type = type
+      }
+    end)
+
     arena.t:after(spawn_delay, create_enemy_action)
 
     arena.spawn_manager.wave_spawn_delay = arena.spawn_manager.wave_spawn_delay + 0.1
