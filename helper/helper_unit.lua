@@ -533,12 +533,10 @@ function Helper.Unit:get_points(troop_points)
     return points
 end
 
-function Helper.Unit:set_knockback_variables(unit, force_multiplier)
+function Helper.Unit:set_knockback_variables(unit)
     unit.being_knocked_back = true
     unit.steering_enabled = false
-    if force_multiplier then
-        unit:set_damping(1.5 * (1/force_multiplier))
-    end
+    unit:set_damping(1)
 end
 
 function Helper.Unit:reset_knockback_variables(unit)
@@ -562,7 +560,7 @@ function Helper.Unit:apply_knockback_enemy(unit, force, angle)
     local final_force = force * force_multiplier
     unit.push_force = final_force
 
-    Helper.Unit:set_knockback_variables(unit, force_multiplier)
+    Helper.Unit:set_knockback_variables(unit)
 
     unit:apply_impulse(final_force * math.cos(angle), final_force * math.sin(angle))
     unit:apply_angular_impulse(random:table{random:float(-12*math.pi, -4*math.pi), random:float(4*math.pi, 12*math.pi)})
@@ -604,8 +602,7 @@ function Helper.Unit:apply_knockback(unit, force, angle, duration, push_invulner
     
     -- Set knockback flag but DON'T disable steering completely
     -- Instead, add a flag to prevent certain steering behaviors
-    unit.being_knocked_back = true
-    unit.knockback_steering_disabled = true
+    Helper.Unit:set_knockback_variables(unit)
     
     -- Reset velocity for a clean push
     unit:set_velocity(0, 0)
@@ -621,8 +618,7 @@ function Helper.Unit:apply_knockback(unit, force, angle, duration, push_invulner
     unit.cancel_trigger_tag = unit.t:after(final_duration, function()
         unit.mass = unit.original_mass
         unit:set_damping(unit.original_damping)
-        unit.being_knocked_back = false
-        unit.knockback_steering_disabled = false
+        Helper.Unit:reset_knockback_variables(unit)
     end)
 end
 
