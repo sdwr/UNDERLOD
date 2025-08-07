@@ -156,8 +156,10 @@ function Cast:cast()
   end
 
   if self.instantspell then
-    self:try_repeat_attack(self.spellclass, self.spelldata)
+    self:try_multishot()
+    self:try_repeat_attack()
   end
+  
 
   local spell = self.spellclass(self.spelldata)
   
@@ -172,27 +174,31 @@ function Cast:cast()
   self:die()
 end
 
+function Cast:try_multishot()
+  if not self.unit then return end
+  if not Has_Static_Proc(self.unit, 'multishot') then return end
+
+  local unit = self.unit
+  local target = self.target
+  local angle_to_target = math.atan2(target.y - unit.y, target.x - unit.x)
+
+  unit:multishot(angle_to_target)
+end
+
 -- only repeat instant spells, no channeling spells
 -- repeat triggers onattack callbacks, but doesn't end the unit's cast
 -- trigger spell after a delay
-function Cast:try_repeat_attack(spellclass, spelldata)
+function Cast:try_repeat_attack()
   if not self.unit then return end
   if not self.unit.repeat_attack_chance then return end
 
+  local repeat_time_delay = random:float(0.1, 0.2)
+
   if random:float(0, 1) < self.unit.repeat_attack_chance then
-    --cast will probably be dead by the time it triggers
-    --so make the timer global
     local unit = self.unit
     local target = self.target
-    local new_spelldata = Deep_Copy_Spelldata(spelldata)
-
-    main.current.t:after(REPEAT_ATTACK_DELAY, function()
-      if unit and not unit.dead and target and not target.dead then
-        local spell = spellclass(new_spelldata)
-        if spelldata.on_attack_callbacks and self.unit.onAttackCallbacks then
-          self.unit:onAttackCallbacks(self.target)
-        end
-      end
+    unit.t:after(repeat_time_delay, function()
+      unit:instant_attack(target)
     end)
   end
 end

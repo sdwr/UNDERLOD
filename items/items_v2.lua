@@ -60,7 +60,7 @@ ITEM_STATS = {
   ['slow'] = { name = 'slow', min = 1, max = 5, increment = 0.1 },
   ['thorns'] = { name = 'thorns', min = 1, max = 5, increment = 0.1 },
   ['range'] = { name = 'range', min = 1, max = 5, increment = 0.05 },
-  ['repeat_attack_chance'] = { name = 'repeat_attack_chance', min = 1, max = 5, increment = 0.1 },
+  ['repeat_attack_chance'] = { name = 'repeat_attack_chance', min = 1, max = 5, increment = 0.2 },
   ['gold'] = { name = 'gold', min = 1, max = 5, increment = 1 },
   ['heal'] = { name = 'heal', min = 1, max = 5, increment = 0.05 },
   
@@ -71,7 +71,7 @@ ITEM_STATS = {
   
   -- Advanced stats
   ['crit_chance'] = { name = 'crit_chance', min = 1, max = 5, increment = 0.1 },
-  ['stun_chance'] = { name = 'stun_chance', min = 1, max = 5, increment = 0.1 },
+  ['stun_chance'] = { name = 'stun_chance', min = 1, max = 5, increment = 0.2 },
   ['cooldown_reduction'] = { name = 'cooldown_reduction', min = 1, max = 5, increment = 0.1 },
 }
 
@@ -89,7 +89,7 @@ ITEM_STATS_THAT_CAN_ROLL_ON_ITEMS = {
   -- Special stats
   ['area_size'] = { name = 'area_size', min = 1, max = 5, increment = 0.1 },
   ['range'] = { name = 'range', min = 1, max = 5, increment = 0.05 },
-  ['repeat_attack_chance'] = { name = 'repeat_attack_chance', min = 1, max = 5, increment = 0.1 },
+  ['repeat_attack_chance'] = { name = 'repeat_attack_chance', min = 1, max = 5, increment = 0.2 },
 
   
   --advanced stats
@@ -101,7 +101,7 @@ ITEM_STATS_DAMAGE_STATS = {
   ['aspd'] = { name = 'aspd', min = 1, max = 5, increment = 0.1 },
   ['range'] = { name = 'range', min = 1, max = 5, increment = 0.05 },
   ['crit_chance'] = { name = 'crit_chance', min = 1, max = 5, increment = 0.1 },
-  ['repeat_attack_chance'] = { name = 'repeat_attack_chance', min = 1, max = 5, increment = 0.1 },
+  ['repeat_attack_chance'] = { name = 'repeat_attack_chance', min = 1, max = 5, increment = 0.2 },
 }
 
 ITEM_SET_POWER_BUDGET = 1
@@ -313,11 +313,13 @@ ITEM_SETS = {
     color = 'green',
     bonuses = {
       [1] = { stats = {['repeat_attack_chance'] = 1} },
-      [2] = { stats = {['crit_chance'] = 2} }
+      [2] = { stats = {['repeat_attack_chance'] = 2} },
+      [4] = { stats = {['repeat_attack_chance'] = 4} }
     },
     descriptions = {
-      [1] = 'Chance to repeat an attack',
-      [2] = 'Increase chance to repeat an attack (TODO)'
+      [1] = '20% chance to repeat your attacks',
+      [2] = '40% chance to repeat your attacks',
+      [4] = '80% chance to repeat your attacks'
     }
   },
   [ITEM_SET.MULTI_SHOT] = {
@@ -326,12 +328,12 @@ ITEM_SETS = {
     bonuses = {
       [1] = { procs = {'multishot'} },
       [2] = { procs = {'multishotFullDamage'} },
-      [4] = { procs = {'multishotRepeat'} }
+      [4] = { procs = {'extraMultishot'} }
     },
     descriptions = {
-      [1] = 'Shoot extra attacks at an angle for 50% damage TODO',
-      [2] = 'The extra attacks deal full damage TODO',
-      [4] = 'Have a chance to repeat your attack when you hit an enemy TODO'
+      [1] = 'Shoot extra attacks at an angle (for 50% damage)',
+      [2] = 'Your multi-shot attacks deal full damage',
+      [4] = 'Shoot an extra 2 attacks'
     }
   },
   [ITEM_SET.STUN] = {
@@ -339,13 +341,13 @@ ITEM_SETS = {
     color = 'black',
     bonuses = {
       [1] = { stats = {['stun_chance'] = 1} },
-      [2] = { stats = {['dmg'] = 2} },
-      [4] = { stats = {['dmg'] = 4} }
+      [2] = { stats = {['stun_chance'] = 2} },
+      [4] = { stats = {['stun_chance'] = 4} }
     },
     descriptions = {
-      [1] = 'Chance to stun an enemy',
-      [2] = 'TODO',
-      [4] = 'TODO'
+      [1] = '20% chance to stun an enemy',
+      [2] = '40% chance to stun an enemy',
+      [4] = '80% chance to stun an enemy'
     }
   }
 }

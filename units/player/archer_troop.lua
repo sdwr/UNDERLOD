@@ -60,6 +60,41 @@ function Archer_Troop:instant_attack(cast_target)
   }
 end
 
+function Archer_Troop:instant_attack_at_angle(angle, damage_multi)
+  ArrowProjectile{
+    group = main.current.effects,
+    on_attack_callbacks = false,
+    unit = self,
+    spell_duration = 10,
+    bullet_size = 3,
+    pierce = false,
+    speed = 180,
+    is_troop = true,
+    color = blue[0],
+    damage = function() return self.dmg * damage_multi end,
+    angle = angle,
+  }
+end
+
+function Archer_Troop:multishot(angle)
+  local angle1 = angle + MULTISHOT_ANGLE_OFFSET
+  local angle2 = angle - MULTISHOT_ANGLE_OFFSET
+
+  local proc = Get_Static_Proc(self, 'multishot')
+  local damage_multi = proc:get_damage_multi()
+
+  self:instant_attack_at_angle(angle1, damage_multi)
+  self:instant_attack_at_angle(angle2, damage_multi)
+  
+  if Get_Static_Proc(self, 'extraMultishot') then
+    local angle3 = angle + MULTISHOT_ANGLE_OFFSET / 2
+    local angle4 = angle - MULTISHOT_ANGLE_OFFSET / 2
+
+    self:instant_attack_at_angle(angle3, damage_multi)
+    self:instant_attack_at_angle(angle4, damage_multi)
+  end
+end
+
 --need to implement generic cooldown time and cast time, so that we can use the same logic for all units
 --it should go on UNIT, not on TROOP or CHARACTER
 --and have decision-making separate from the actual attack

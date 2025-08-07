@@ -777,6 +777,37 @@ function Proc_SplashSizeBoost2:init(args)
   self.radiusMulti = 1.5
 end
 
+Proc_Multishot = Proc:extend()
+function Proc_Multishot:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'troop'
+
+  Proc_Multishot.super.init(self, args)
+
+  self.damageMulti = 0.5
+
+  self.damageMulti = 0.5
+end
+
+function Proc_Multishot:get_damage_multi()
+  if not self.unit then return self.damageMulti end
+
+  if Has_Static_Proc(self.unit, 'multishotFullDamage') then
+    return Get_Static_Proc(self.unit, 'multishotFullDamage').damageMulti
+  end
+  return self.damageMulti
+end
+
+Proc_MultishotFullDamage = Proc:extend()
+function Proc_MultishotFullDamage:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'troop'
+
+  Proc_MultishotFullDamage.super.init(self, args)
+
+  self.damageMulti = 1
+end
+
 --proc overkill
 Proc_Overkill = Proc:extend()
 function Proc_Overkill:init(args)
@@ -2274,6 +2305,10 @@ proc_name_to_class = {
   ['splash'] = Proc_Splash,
   ['splashSizeBoost'] = Proc_SplashSizeBoost,
   ['splashSizeBoost2'] = Proc_SplashSizeBoost2,
+
+  ['multishot'] = Proc_Multishot,
+  ['multishotFullDamage'] = Proc_MultishotFullDamage,
+  ['multishotRepeat'] = Proc_MultishotRepeat,
 
   --yellow procs
   ['radiance'] = Proc_Radiance,

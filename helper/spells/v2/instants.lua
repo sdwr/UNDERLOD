@@ -104,9 +104,13 @@ function ArrowProjectile:init(args)
   self.start_y = self.y
   
   -- Calculate direction to target
+  if self.target then
   local xdist = self.target.x - self.x
-  local ydist = self.target.y - self.y
-  self.angle = math.atan2(ydist, xdist)
+    local ydist = self.target.y - self.y
+    self.angle = math.atan2(ydist, xdist)
+  else
+    self.angle = self.angle or 0
+  end
   
   -- Set the arrow's rotation to match its direction
   self.r = self.angle
