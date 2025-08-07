@@ -1073,7 +1073,7 @@ function RerollButton:update(dt)
 
   if (self.selected and input.m1.pressed) or input.r.pressed then
     if self.parent.level == 1 then
-      Create_Info_Text('cannot roll items in the first level', self)
+      Create_Info_Text('cannot roll items in the first level', self, 'error')
     elseif self.parent:is(BuyScreen) then
       local rerollCost = REROLL_COST(self.parent.times_rerolled)
       if gold < rerollCost then
@@ -1458,7 +1458,7 @@ function TypeIcon:unhighlight()
 end
 
 -- helper functions
-function Create_Info_Text(text, parent)
+function Create_Info_Text(text, parent, type)
   if global_info_text then
     global_info_text:deactivate()
     global_info_text.dead = true
@@ -1470,7 +1470,7 @@ function Create_Info_Text(text, parent)
   info_text:activate({
     {text = '[fg]' .. text, font = pixul_font, alignment = 'center'},
   }, nil, nil, nil, nil, 16, 4, nil, 2)
-  local pos = Get_UI_Popup_Position()
+  local pos = Get_UI_Popup_Position(type)
   info_text.x, info_text.y = pos.x, pos.y
   info_text.t:after(2, function() info_text:deactivate(); info_text.dead = true; info_text = nil end, 'info_text')
   

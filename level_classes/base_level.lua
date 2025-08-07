@@ -61,7 +61,7 @@ end
 
 function BaseLevel:on_buy_character_triggered()
   if gold < self.buy_character.cost then
-    Create_Info_Text('not enough gold', self.buy_character)
+    Create_Info_Text('not enough gold', self.buy_character, 'error')
     return
   end
 
