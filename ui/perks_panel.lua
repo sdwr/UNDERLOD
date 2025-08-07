@@ -120,6 +120,7 @@ end
 function PerkSlot:update(dt)
   self:update_game_object(dt)
   self.shape:move_to(self.x, self.y)
+  self:update_cost()
 
   if input.m1.pressed and self.colliding_with_mouse and self.perk then
     self:try_level_perk()
@@ -146,9 +147,27 @@ function PerkSlot:draw()
       
       -- Draw level ticks at the bottom
       self:draw_level_ticks()
+
+      if self.cost_text then
+        self.cost_text:draw(self.x + self.w/2 - 5, self.y - self.h/2 + 3)
+      end
     end
     
+    
   graphics.pop()
+end
+
+function PerkSlot:update_cost()
+  if not self.perk then return end
+  if not Can_Perk_Level_Up(self.perk) then 
+    self.cost = nil
+    self.cost_text = nil
+    return 
+  end
+
+  self.cost = Perk_Level_Up_Cost(self.perk)
+  self.cost_text = Text({{text = '[yellow]' .. self.cost, font = pixul_font, alignment = 'center'}}, global_text_tags)
+
 end
 
 function PerkSlot:draw_level_ticks()
@@ -220,15 +239,11 @@ function PerkSlot:show_perk_tooltip()
   for _, line in ipairs(wrapped_lines) do
     table.insert(text_lines, {text = '[fg]' .. line, font = pixul_font, alignment = 'center'})
   end
-  
-  self.cost_text = nil
-  if Can_Perk_Level_Up(self.perk) then
-    self.cost_text = 'Level up cost: ' .. Perk_Level_Up_Cost(self.perk)
-  end
 
-  self.info_text = InfoText{group = main.current.world_ui, cost_text_object = self.cost_text}
+  self.info_text = InfoText{group = main.current.world_ui or main.current.ui}
   self.info_text:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
   self.info_text.x, self.info_text.y = gw/2, gh/2 + 10
+  global_info_text = self.info_text.cost_text_object
 end
 
 function PerkSlot:hide_perk_tooltip()
