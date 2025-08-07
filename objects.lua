@@ -226,7 +226,7 @@ end
 Unit = Object:extend()
 function Unit:init_unit()
   self.level = self.level or 1
-  
+
   --set state to idle at start
   --still blocked from moving at start of arena
   self.state = unit_states['idle']
@@ -1635,29 +1635,6 @@ function Unit:in_aggro_range()
       table.any(unit_states_can_target, function(v) return self.state == v end) and 
       self:distance_to_object(target) - target_size_offset < self.aggro_sensor.rs
   end
-end
-
---looks like space is the override for all units move
---and RMB sets 'following' or 'rallying' state in player_troop?
---change to the original control design
--- space for "all units follow mouse"
--- LMB for "selected troop follows mouse"
--- shift+ LMB for "selected troop rallies to mouse"
--- RMB for "selected troop targets enemy"
-
-
---controls possibiltiies:
--- RMB - target enemy
--- RMB - target enemy OR rally to location
--- RMB - target enemy OR attack move while holding button
--- RMB- target enemy OR attack move to location
-function Unit:should_follow()
-  local input = input['space'].down
-  if input then
-    Helper.Unit:clear_all_rally_points()
-  end
-  local canMove = table.any(unit_states_can_move, function(v) return self.state == v end)
-  return input and canMove
 end
 
 --casting functions

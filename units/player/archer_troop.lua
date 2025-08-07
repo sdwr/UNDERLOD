@@ -98,10 +98,6 @@ function Archer_Troop:set_state_functions()
   self.state_always_run_functions['casting'] = function(self)
   end
 
-
-  self.state_always_run_functions['following_or_rallying'] = function(self)
-  end
-
   self.state_always_run_functions['normal_or_stopped'] = function(self)
   end
 

@@ -153,6 +153,16 @@ function Troop:update(dt)
     self:update_ai_logic()
   end
 
+  if table.contains(unit_states_can_rally, self.state) then
+    if self.rallying and self.target_pos then
+      if not Helper.Unit:in_range_of_rally_point(self) then
+        self:rally_to_point()
+      end
+    end
+  end
+
+
+
   -- PRIORITY 1: Uninterruptible States
   -- If a unit is frozen, it can't do anything else.
   if self.state == unit_states['frozen'] then
@@ -169,25 +179,12 @@ function Troop:update(dt)
       -- self:clear_assigned_target()
 
       -- Check if we should STOP following.
-      if input['m1'].released or input['space'].released then
+      if input['m1'].released then
           Helper.Unit:set_state(self, unit_states['idle'])
       else
         self:follow_mouse()
 
       end
-
-  -- If the unit is moving to a rally point.
-  elseif self.state == unit_states['rallying'] then
-
-    -- clear my target (but not assigned target)
-    self:clear_my_target()
-
-    -- Check if we have arrived at the rally point.
-    if Helper.Unit:in_range_of_rally_point(self) or not self.rallying then -- Also stop if rally is cancelled
-        Helper.Unit:set_state(self, unit_states['idle'])
-    else
-        self:rally_to_point()
-    end
 
   -- PRIORITY 3: Action States (Busy States)
   -- If the unit is in the middle of casting an ability.
@@ -199,14 +196,8 @@ function Troop:update(dt)
         end
       end
 
-      -- Allow movement while casting - troops can shoot while moving
-      if self:should_follow() then
-        self:follow_mouse()
-      elseif self.rallying then
-        if not Helper.Unit:in_range_of_rally_point(self) then
-          self:rally_to_point()
-        end
-      elseif self:my_target() then
+
+      if self:my_target() then
         -- In range, allow some movement for positioning
         self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
         self:rotate_towards_object(self:my_target(), 1)
@@ -224,37 +215,28 @@ function Troop:update(dt)
   -- PRIORITY 4: Autonomous AI State
   -- If the unit is not doing any of the above, it's 'normal' and can think for itself.
   elseif self.state == unit_states['normal'] or self.state == unit_states['idle'] then
-      -- First, check if a player command is being issued that would override this state.
-      if self:should_follow() then
-          Helper.Unit:clear_all_rally_points()
-          Helper.Unit:set_state(self, unit_states['following'])
-          self.target = nil
-          self.target_pos = nil
-      elseif self.rallying then
-          -- Helper.Unit:set_state(self, unit_states['rallying'])
-          -- self:set_rally_position(random:int(1, 10))
+    -- First, check if a player command is being issued that would override this state.
+
+    --if in range of any target, don't move
+    if self:in_range('assigned')() then
+      self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
+      self:rotate_towards_object(self.assigned_target, 1)
+    elseif self:in_range('regular')() then
+      self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
+      self:rotate_towards_object(self.target, 1)
+    else
+      --move towards the closest enemy (don't bother targeting it)
+      local movement_target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies)
+      if movement_target then
+        -- self:seek_point(movement_target.x, movement_target.y, SEEK_DECELERATION, SEEK_WEIGHT)
+        -- self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
+        -- self:rotate_towards_velocity(1)
+        self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
       else
-        --if in range of any target, don't move
-        if self:in_range('assigned')() then
-          self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
-          self:rotate_towards_object(self.assigned_target, 1)
-        elseif self:in_range('regular')() then
-          self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
-          self:rotate_towards_object(self.target, 1)
-        else
-          --move towards the closest enemy (don't bother targeting it)
-          local movement_target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies)
-          if movement_target then
-            -- self:seek_point(movement_target.x, movement_target.y, SEEK_DECELERATION, SEEK_WEIGHT)
-            -- self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
-            -- self:rotate_towards_velocity(1)
-            self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
-          else
-            self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
-          end
-        end
+        self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
       end
     end
+  end
 
   -- ===================================================================
   -- 3. FINAL PHYSICS AND POSITIONING (These also always run)
@@ -456,12 +438,6 @@ function Troop:set_character()
     self.attack_sensor = Circle(self.x, self.y, attack_ranges['long'])
     -- self.cooldownTime = 2
     self.castTime = 0
-
-    self.state_change_functions['following_or_rallying'] = function(self)
-      Helper.Time:cancel_wait(self.spell_wait_id)
-      self.spell_wait_id = -1
-    end
-
 
     self.state_change_functions['target_death'] = function(self)
       Helper.Unit:unclaim_target(self)

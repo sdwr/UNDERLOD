@@ -229,14 +229,8 @@ function Helper.Unit:add_default_state_change_functions(unit)
     end
     unit.state_change_functions['following'] = function(self) 
         self.state_change_functions['regain_control'](self)
-        self.state_change_functions['following_or_rallying'](self)
-    end
-    unit.state_change_functions['rallying'] = function(self)
-        self.state_change_functions['regain_control'](self) 
-        self.state_change_functions['following_or_rallying'](self)
     end
     
-    unit.state_change_functions['following_or_rallying'] = function() end
     unit.state_change_functions['regain_control'] = function(self)
         self.being_pushed = false
         self.steering_enabled = true
@@ -260,15 +254,9 @@ function Helper.Unit:add_default_state_always_run_functions(unit)
     unit.state_always_run_functions['stopped'] = function(self) 
         self.state_always_run_functions['normal_or_stopped'](self)
     end
-    unit.state_always_run_functions['following'] = function(self) 
-        self.state_always_run_functions['following_or_rallying'](self)
-    end
-    unit.state_always_run_functions['rallying'] = function(self) 
-        self.state_always_run_functions['following_or_rallying'](self)
-    end
+    unit.state_always_run_functions['following'] = function(self) end
 
     unit.state_always_run_functions['normal_or_stopped'] = function() end
-    unit.state_always_run_functions['following_or_rallying'] = function() end
     unit.state_always_run_functions['always_run'] = function() end
 end
 

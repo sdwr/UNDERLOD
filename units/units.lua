@@ -111,7 +111,9 @@ function Team:set_rally_point(x, y)
   for i, troop in ipairs(self.troops) do
     troop.rallying = true
 
-    Helper.Unit:set_state(troop, unit_states['rallying'])
+    if troop.state == unit_states['following'] then
+      Helper.Unit:set_state(troop, unit_states['normal'])
+    end
 
     troop:set_rally_position(math.random(1, 5))
 
@@ -125,10 +127,6 @@ function Team:clear_rally_point()
   end
   for i, troop in ipairs(self.troops) do
     troop.target_pos = nil
-    --only clear state if rallying (might be attacking somehow)
-    if troop.state == unit_states['rallying'] or troop.state == unit_states['stopped'] then
-      Helper.Unit:set_state(troop, unit_states['idle'])
-    end
     troop.rallying = false
   end
 end

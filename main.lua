@@ -389,7 +389,6 @@ function init()
     ['casting'] = 'casting',
     ['channeling'] = 'channeling',
     ['stopped'] = 'stopped',
-    ['rallying'] = 'rallying',
     ['following'] = 'following',
     ['launching'] = 'launching',
     ['knockback'] = 'knockback',
@@ -400,7 +399,16 @@ function init()
     unit_states['idle'],
     unit_states['normal'],
     unit_states['stopped'],
-    unit_states['rallying'],
+    unit_states['following'],
+    unit_states['casting'],
+    unit_states['channeling'],
+    unit_states['casting_blocked'],
+  }
+
+  unit_states_can_rally = {
+    unit_states['idle'],
+    unit_states['normal'],
+    unit_states['stopped'],
     unit_states['following'],
     unit_states['casting'],
     unit_states['channeling'],
@@ -410,7 +418,6 @@ function init()
   unit_states_enemy_can_move = {
     unit_states['idle'],
     unit_states['normal'],
-    unit_states['rallying'],
     unit_states['following'],
     unit_states['casting_blocked'],
   }
