@@ -10,13 +10,7 @@ function PerkOverlay:init(args)
   main.current.choosing_perks = true
 
   -- Make overlay (opaque bg)
-  self.overlay = PerkOverlayBackground{
-    group = self.group,
-    x = gw/2,
-    y = gh/2,
-    w = gw,
-    h = gh
-  }
+  
 
   -- Get perk choices
   self.perk_choices = Get_Random_Perk_Choices(self.player_perks)
@@ -45,7 +39,7 @@ function PerkOverlay:init(args)
 
   -- Disable clicking for the first .25 seconds
   self.interact_with_mouse = false
-  self.t:after(0.25, function() self.interact_with_mouse = true end)
+  self.t:after(0.5, function() self.interact_with_mouse = true end)
 end
 
 function PerkOverlay:on_perk_selected(perk_key)
@@ -59,13 +53,16 @@ function PerkOverlay:on_perk_selected(perk_key)
   self:die(self.i)
   
   -- Continue to buy screen after perk selection
-  main.current:transition_to_next_level_buy_screen()
+  main.current:transition_to_next_level_buy_screen(0)
 end
 
 function PerkOverlay:draw()
+  local color = bg[1]:clone()
+  color.a = 0.7
+  graphics.rectangle(gw/2, gh/2, gw, gh, nil, nil, color)
+
   -- Title text - made larger and positioned to draw over background
-  graphics.set_color(fg[0])
-  graphics.print_centered("Choose a Perk", fat_font, gw/2, gh/2 - 120, 0, 1.5, 1.5, nil, nil, fg[0])
+  graphics.print_centered("Choose a Perk", fat_font, gw/2, 40, 0, 1.5, 1.5, nil, nil, fg[0])
 end
 
 function PerkOverlay:update(dt)
@@ -74,36 +71,10 @@ end
 
 function PerkOverlay:die(index_selected)
   self.dead = true
-  self.overlay:die()
   for i, card in ipairs(self.cards) do 
     local not_selected = index_selected ~= i
     card:die(not_selected) 
   end
-end
-
--- Overlay background
-PerkOverlayBackground = Object:extend()
-PerkOverlayBackground:implement(GameObject)
-
-function PerkOverlayBackground:init(args)
-  self:init_game_object(args)
-  self.shape = Rectangle(self.x, self.y, self.w, self.h)
-  self.interact_with_mouse = true
-end
-
-function PerkOverlayBackground:draw()
-  local color = bg[1]:clone()
-  color.a = 0.8
-  graphics.rectangle(self.x, self.y, self.w, self.h, nil, nil, color)
-end
-
-function PerkOverlayBackground:update(dt)
-  self:update_game_object(dt)
-end
-
-function PerkOverlayBackground:die()
-  self.dead = true
-  main.current.choosing_perks = false
 end
 
 -- Perk card
@@ -119,13 +90,6 @@ function PerkCard:init(args)
   -- Initialize properties used in tweening
   self.sx, self.sy = 1, 1
   self.plus_r = 0
-  
-  -- Create perk icon (placeholder for now)
-  self.perk_icon = PerkIcon{
-    group = self.group, 
-    x = self.x, y = self.y - 30, 
-    perk = self.perk, parent = self
-  }
   
   -- Create perk name text above the icon
   self.perk_name_text = Text2{
@@ -193,6 +157,8 @@ function PerkCard:draw()
     end
     graphics.rectangle(self.x, self.y, self.w, self.h, 4, 4, bg[1], 5)
     
+    local color = self:get_rarity_color(self.perk.rarity)
+    graphics.circle(self.x, self.y, 15, color)
     -- Draw perk description text on the card
     
     self.desc_text:draw(self.x, self.y + 15)
@@ -245,14 +211,10 @@ function PerkCard:on_mouse_enter()
   ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
   pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
   self:select()
-  self.perk_icon.spring:pull(0.1, 200, 10)
-  self.perk_name_text.spring:pull(0.1, 200, 10)
 end
 
 function PerkCard:on_mouse_exit()
   self:unselect()
-  self.perk_icon.spring:pull(0.1, 200, 10)
-  self.perk_name_text.spring:pull(0.1, 200, 10)
 end
 
 function PerkCard:die(not_selected)
@@ -268,25 +230,3 @@ function PerkCard:die(not_selected)
   
   self.dead = true
 end
-
--- Perk icon (placeholder)
-PerkIcon = Object:extend()
-PerkIcon:implement(GameObject)
-
-function PerkIcon:init(args)
-  self:init_game_object(args)
-  self.perk = args.perk
-  self.spring:pull(0.2, 200, 10)
-end
-
-function PerkIcon:update(dt)
-  self:update_game_object(dt)
-end
-
-function PerkIcon:draw()
-  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.x)
-    -- Placeholder icon - just a colored circle
-    local color = self.parent:get_rarity_color(self.perk.rarity)
-    graphics.circle(self.x, self.y, 15, color)
-  graphics.pop()
-end 

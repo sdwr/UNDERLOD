@@ -504,7 +504,7 @@ function WorldManager:set_perks(perks)
   self:save_run()
 end
 
-function WorldManager:transition_to_next_level_buy_screen()
+function WorldManager:transition_to_next_level_buy_screen(delay)
   
   if self.current_arena then
     self.current_arena.transitioning = true
@@ -518,7 +518,11 @@ function WorldManager:transition_to_next_level_buy_screen()
   self.times_rerolled = 0
   self:save_run()
 
-  self.t:after(2, function()
+  if delay == nil then
+    delay = 2
+  end
+
+  self.t:after(delay, function()
     TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
       Go_To_Buy_Screen()
     end}
