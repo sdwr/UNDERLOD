@@ -33,10 +33,8 @@ function CombatLevel:level_clear()
   
   -- Only create perk selection on perk levels
   if LEVEL_TO_PERKS[self.level] then
-    self.perks = Get_Random_Perk_Choices(self.perks or {})
     self.perk_overlay = PerkOverlay{
       group = self.ui,
-      perks = self.perks or {}
     }
   else
     -- Auto-transition to buy screen without door opening or character selection

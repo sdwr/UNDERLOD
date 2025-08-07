@@ -19,10 +19,10 @@ function AnimatedSpawnCircle:init(args)
             -- Make the spawn circle proportional to the enemy size
             self.radius = math.max(6, enemy_size / 2)
         else
-            self.radius = 6 -- Default fallback
+            self.radius = 10 -- Default fallback
         end
     else
-        self.radius = 6 -- Default size
+        self.radius = 10 -- Default size
     end
 
     self.exclamation_point_size = self.radius * 0.5

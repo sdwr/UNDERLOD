@@ -34,11 +34,13 @@ function PerkOverlay:init(args)
   -- Create perk cards
   for i, perk in ipairs(self.perk_choices) do
     local x = x1 + (i-1) * (w + w_between)
-    self.cards[i] = PerkCard{
-      group = self.group, 
-      x = x, y = card_y, w = w, h = h, 
-      perk = perk, parent = self, i = i
-    }
+    self.t:after(0.3 * i, function()
+      self.cards[i] = PerkCard{
+        group = self.group, 
+          x = x, y = card_y, w = w, h = h, 
+          perk = perk, parent = self, i = i
+        }
+    end)
   end
 
   -- Disable clicking for the first .25 seconds
