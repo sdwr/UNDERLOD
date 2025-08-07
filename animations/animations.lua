@@ -929,10 +929,11 @@ enemy_type_to_size = {
 }
 
 enemy_size_to_num_particles = {
-  ['small'] = 3,
-  ['regular'] = 4,
-  ['regular_special'] = 5,
-  ['special'] = 6,
+  ['small'] = 2,
+  ['swarmer'] = 2,
+  ['regular'] = 2,
+  ['regular_special'] = 3,
+  ['special'] = 4,
   ['huge'] = 7,
   ['boss'] = 10,
   ['heigan'] = 10,

@@ -907,7 +907,7 @@ function Spawn_Enemy_Effect(arena, enemy)
       size = 1,
       speed = 10,
       direction = random:float(0, 2 * math.pi),
-      duration = 1,
+      duration = 0.4,
       fade_out = true,
       fade_out_duration = 1,
     }
