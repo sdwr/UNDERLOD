@@ -142,8 +142,8 @@ function Wave_Types:Get_Waves(level)
     table.insert(wave, {'GROUP', 'archer', 1, 'nil'})
     table.insert(wave, {'DELAY', 4})
     
-    table.insert(wave, {'GROUP', 'swarmer', 8, 'nil'})
-    table.insert(wave, {'GROUP', 'archer', 2, 'nil'})
+    table.insert(wave, {'GROUP', 'swarmer', 6, 'nil'})
+    table.insert(wave, {'GROUP', 'archer', 1, 'nil'})
     table.insert(waves, wave)
 
     wave = {}
@@ -151,11 +151,10 @@ function Wave_Types:Get_Waves(level)
     table.insert(wave, {'GROUP', 'burst', 1, 'nil'})
     table.insert(wave, {'DELAY', 2})
 
-    table.insert(wave, {'GROUP', 'swarmer', 8, 'nil'})
-    table.insert(wave, {'GROUP', 'burst', 2, 'nil'})
+    table.insert(wave, {'GROUP', 'swarmer', 6, 'nil'})
+    table.insert(wave, {'GROUP', 'burst', 1, 'nil'})
     table.insert(wave, {'DELAY', 4})
 
-    table.insert(wave, {'GROUP', 'swarmer', 8, 'scatter'})
     table.insert(waves, wave)
 
   elseif level == 2 then

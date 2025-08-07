@@ -512,11 +512,15 @@ function WorldManager:transition_to_next_level_buy_screen()
 
   Reset_Global_Proc_List()
 
-  Increment_Run_Level()
+  -- Increment level and set reroll_shop in the current state
+  self.level = self.level + 1
+  self.reroll_shop = true
+  self.times_rerolled = 0
+  self:save_run()
 
   self.t:after(2, function()
     TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
-      Save_Run_And_Go_To_Buy_Screen()
+      Go_To_Buy_Screen()
     end}
   end)
 
