@@ -319,7 +319,7 @@ function ChainCurse:init(args)
 
     -- on_bounce: This function creates the visual and audio effects between targets.
     on_bounce = function(spell, from_target, to_target)
-      wizard1:play{pitch = random:float(0.9, 1.1), volume = 0.4}
+      wizard1:play{pitch = random:float(0.9, 1.1), volume = 0.2}
       -- The CurseLine effect is a separate, temporary object.
       CurseLine{
         group = main.current.effects,

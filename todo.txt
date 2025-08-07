@@ -1,9 +1,6 @@
 FINAL BUG TODO:
-- character card set bonuses overlap
-- set popup description (bottom of screen, floorItem?) stayed up afterwards
-- charactercard set popup has bonuses instead of desc
-- level UI group stays in place while moving camera (but walls move? maybe its related to physics)
-- laser can't move while shooting with space (but can with m1?)
+- need to make laser work with repeat and multishot
+- careful with the state changes in laser
 - laser cooldown triggers twice, once on end cast and once on end channel (?)
 
 

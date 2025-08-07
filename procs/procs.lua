@@ -499,7 +499,7 @@ function Proc_Curse:onTick(dt, from)
 end
 
 function Proc_Curse:curse(target, from)
-  earth1:play{pitch = random:float(0.8, 1.2), volume = 0.9}
+  earth1:play{pitch = random:float(0.8, 1.2), volume = 0.4}
   
   self.tick_timer = 0
   self.proc_timer = 0
