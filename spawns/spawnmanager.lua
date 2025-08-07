@@ -405,10 +405,10 @@ end
 function Get_Random_Spawn_Outside_Arena(distance)
   if math.random() < 0.5 then
     local x = math.random() * gw
-    local y = table.random({-distance, gh})
+    local y = table.random({-distance, gh + distance})
     return {x = x, y = y}
   else
-    local x = table.random({-distance, gw})
+    local x = table.random({-distance, gw + distance})
     local y = math.random() * gh
     return {x = x, y = y}
   end
