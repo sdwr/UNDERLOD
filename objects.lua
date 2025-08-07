@@ -94,7 +94,7 @@ function SpawnMarker:init(args)
     self:init_game_object(args)
     
     self.team = args.team or 1
-    self.min_distance = args.min_distance or 20
+    self.min_distance = args.min_distance or 15
     self.max_distance = args.max_distance or 150
 
     self.color = args.color or white[0]
