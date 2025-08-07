@@ -242,7 +242,7 @@ function Arena:update(dt)
   
   self:update_game_object(dt)
 
-  if Helper.Unit:all_troops_are_dead() and self.level ~= 0 then
+  if self.spawn_manager.state ~= 'arena_start' and Helper.Unit:all_troops_are_dead() and self.level ~= 0 then
     self:die()
   end
   

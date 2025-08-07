@@ -31,8 +31,10 @@ function SpawnGlobals.Init()
   SpawnGlobals.TROOP_FORMATION_VERTICAL_SPACING = 10
 
   SpawnGlobals.SUCTION_FORCE = 700
+  
   SpawnGlobals.SUCTION_MIN_DISTANCE = 12
   SpawnGlobals.SUCTION_CANCELABLE_DISTANCE = 20
+  SpawnGlobals.SUCTION_CANCEL_THRESHOLD = 0.65
 
   TROOP_0_SPAWN_LOCATION = {x = SpawnGlobals.TROOP_0_SPAWN_X, y = SpawnGlobals.TROOP_0_SPAWN_Y}
   TEAM_INDEX_TO_SPAWN_LOCATION = {
@@ -219,8 +221,12 @@ function Get_Random_Spawn_Point()
 end
 
 function Suction_Troops_To_Spawn_Locations(arena, apply_angular_force)
+  
 
   -- Get all teams and their spawn locations
+  local num_troops_close_to_target = 0
+  local num_total_troops = #Helper.Unit:get_all_troops()
+
   for i, team in ipairs(Helper.Unit.teams) do
     if team and not team.dead then
       -- Calculate spawn location for this team (same as in Spawn_Teams)
@@ -242,8 +248,9 @@ function Suction_Troops_To_Spawn_Locations(arena, apply_angular_force)
           local damping_multiplier = math.remap_clamped(distance, 100, 10, 1, 2)
           
           if distance < SpawnGlobals.SUCTION_CANCELABLE_DISTANCE then
-            troop.steering_enabled = true
+            num_troops_close_to_target = num_troops_close_to_target + 1
           end
+            
           if distance > SpawnGlobals.SUCTION_MIN_DISTANCE then  -- Only apply if not already at spawn
             troop:set_damping(get_damping_by_unit_class(troop.class) * damping_multiplier)
             local angle_to_spawn = math.atan2(target_y - troop.y, target_x - troop.x)
@@ -257,12 +264,17 @@ function Suction_Troops_To_Spawn_Locations(arena, apply_angular_force)
               local swirl_force_y = suction_force_x * 0.6 * multiplier
               troop:apply_force(swirl_force_x, swirl_force_y)
             end
-            
-          end
-          
+          end  
         end
       end
     end
+  end
+
+  if num_troops_close_to_target * 1.0 / num_total_troops > SpawnGlobals.SUCTION_CANCEL_THRESHOLD then
+    Helper.Unit:all_troops_end_suction()
+    arena.spawn_manager.timer = 2
+    spawn_mark1:play{pitch = random:float(1.1, 1.3), volume = 1}
+    arena.spawn_manager:change_state('entry_delay')
   end
 end
 
@@ -521,9 +533,9 @@ function SpawnManager:reserve_spawn(x, y)
 end
 
 function SpawnManager:change_state(new_state)
-    if self.state ~= new_state then
-        self.state = new_state
-    end
+  if self.state ~= new_state then
+      self.state = new_state
+  end
 end
 
 function SpawnManager:complete_wave(wave_index)
