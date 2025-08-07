@@ -153,12 +153,17 @@ function Troop:update(dt)
     self:update_ai_logic()
   end
 
+  --dont need to check if following, because m1 cancels the rally point
   if table.contains(unit_states_can_rally, self.state) then
     if self.rallying and self.target_pos then
       if not Helper.Unit:in_range_of_rally_point(self) then
         self:rally_to_point()
       end
     end
+  end
+
+  if table.contains(unit_states_can_move, self.state) then
+    self:do_automatic_movement()
   end
 
 
@@ -190,50 +195,9 @@ function Troop:update(dt)
   -- If the unit is in the middle of casting an ability.
   elseif self.state == unit_states['casting'] then
 
-      if self.castObject then
-        if Helper.Unit:target_out_of_range(self, self.castObject.target) then
-          self:cancel_cast()
-        end
-      end
-
-
-      if self:my_target() then
-        -- In range, allow some movement for positioning
-        self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
-        self:rotate_towards_object(self:my_target(), 1)
-      else
-        -- No target, allow normal movement
-        self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
-      end
-
-  -- If the unit is in its "backswing" after an attack.
-  elseif self.state == unit_states['stopped'] then
-      -- The unit is still and cannot start a new action yet.
-      -- A timer set by the Cast object should move it from 'stopped' to 'normal'.
-      -- self:set_velocity(0, 0)
-
-  -- PRIORITY 4: Autonomous AI State
-  -- If the unit is not doing any of the above, it's 'normal' and can think for itself.
-  elseif self.state == unit_states['normal'] or self.state == unit_states['idle'] then
-    -- First, check if a player command is being issued that would override this state.
-
-    --if in range of any target, don't move
-    if self:in_range('assigned')() then
-      self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
-      self:rotate_towards_object(self.assigned_target, 1)
-    elseif self:in_range('regular')() then
-      self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
-      self:rotate_towards_object(self.target, 1)
-    else
-      --move towards the closest enemy (don't bother targeting it)
-      local movement_target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies)
-      if movement_target then
-        -- self:seek_point(movement_target.x, movement_target.y, SEEK_DECELERATION, SEEK_WEIGHT)
-        -- self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
-        -- self:rotate_towards_velocity(1)
-        self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
-      else
-        self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
+    if self.castObject then
+      if Helper.Unit:target_out_of_range(self, self.castObject.target) then
+        self:cancel_cast()
       end
     end
   end
@@ -244,6 +208,31 @@ function Troop:update(dt)
   self.r = self:get_angle()
   self.attack_sensor:move_to(self.x, self.y)
   self.aggro_sensor:move_to(self.x, self.y)
+end
+
+--unused right now
+function Troop:move_towards_target()
+  local movement_target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies)
+  if movement_target then
+    self:seek_point(movement_target.x, movement_target.y, SEEK_DECELERATION, SEEK_WEIGHT)
+    self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
+  end
+end
+
+function Troop:do_automatic_movement()
+
+  --separate from other troops
+  self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
+
+  --rotate towards target or velocity
+  if self:in_range('assigned')() then
+    self:rotate_towards_object(self.assigned_target, 1)
+  elseif self:in_range('regular')() then
+    self:rotate_towards_object(self.target, 1)
+  else
+    self:rotate_towards_velocity(1)
+  end
+  
 end
 
 function Troop:update_ai_logic()
@@ -434,76 +423,7 @@ end
 
 
 function Troop:set_character()
-  if self.character == 'pyro' then
-    self.attack_sensor = Circle(self.x, self.y, attack_ranges['long'])
-    -- self.cooldownTime = 2
-    self.castTime = 0
-
-    self.state_change_functions['target_death'] = function(self)
-      Helper.Unit:unclaim_target(self)
-    end
-
-    self.state_change_functions['death'] = function(self)
-      Helper.Time:cancel_wait(self.spell_wait_id)
-      self.spell_wait_id = -1
-      -- Helper.Spell.Burst:stop_firing(self)
-      Helper.Unit:unclaim_target(self)
-
-    end
-
-
-
-  elseif self.character == 'cannon' then
-    self.attack_sensor = Circle(self.x, self.y, attack_ranges['long'])
-
-    --cooldown
-    self.baseCooldown = attack_speeds['medium-fast']
-    self.cooldownTime = self.baseCooldown
-    self.baseCast = attack_speeds['short-cast']
-    self.castTime = self.baseCast
-    self.state_change_functions['normal'] = function() end
-
-    --cancel on death
-    self.state_change_functions['death'] = function()
-      -- Helper.Spell.Missile:stop_aiming(self)
-      Helper.Unit:unclaim_target(self)
-    end
-
-  elseif self.character == 'bomber' then
-    self.attack_sensor = Circle(self.x, self.y, attack_ranges['whole-map'])
-
-    --cooldown
-    self.baseCooldown = attack_speeds['medium']
-    self.cooldownTime = self.baseCooldown
-    self.baseCast = attack_speeds['long-cast']
-    self.castTime = self.baseCast
-
-    --attack
-    self.explode_radius = 15
-
-    self.state_change_functions['normal'] = function() end
-
-    --cancel on death
-    self.state_change_functions['death'] = function(self)
-      Helper.Spell.Bomb:stop_aiming(self)
-      Helper.Unit:unclaim_target(self)
-    end
-
-  elseif self.character == 'sniper' then
-    self.attack_sensor = Circle(self.x, self.y, attack_ranges['ultra-long'])
-
-    --cooldown
-    self.baseCooldown = attack_speeds['medium']
-    self.cooldownTime = self.baseCooldown
-    self.baseCast = attack_speeds['ultra-long-cast']
-    self.castTime = self.baseCast
-
-    self.state_change_functions['normal'] = function() end
-    --cancel on death
-    self.state_change_functions['death'] = function(self)
-      self.spell:cancel()
-    end
-  end
+  --override in subclasses
 end
 
 function Troop:hit(damage, from, damageType, playHitEffects, cannotProcOnHit)
