@@ -14,7 +14,7 @@ ROUND_POWER_TO_GOLD = 100
 --stat constants
 TROOP_HP = 100
 TROOP_DAMAGE = 13
-TROOP_MS = 75
+TROOP_MS = 45
 TROOP_BASE_COOLDOWN = 1.1
 TROOP_SWORDSMAN_BASE_COOLDOWN = 0.8
 
@@ -220,7 +220,7 @@ SCALED_ENEMY_MS = function(level, base_ms)
 end
 
 function SWARMERS_PER_LEVEL(level)
-  return 6 + math.floor(level / 2)
+  return 3 + math.floor(level / 2)
 end
 
 function SPECIAL_ENEMIES_PER_LEVEL(level)
@@ -310,7 +310,7 @@ unit_stat_multipliers = {
 }
 
 enemy_type_to_stats = {
-    ['swarmer'] = { dmg = 0.5, hp = 0.6},
+    ['swarmer'] = { dmg = 0.5, hp = 1},
 
     ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
     ['chaser'] = { dmg = 1, mvspd = 1 },
