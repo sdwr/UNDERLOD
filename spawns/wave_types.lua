@@ -100,90 +100,41 @@ function Wave_Types:Get_Waves(level)
   
   -- Determine tier for this level
   local tier = LEVEL_TO_TIER(level)
+
+  for i = 1, WAVES_PER_LEVEL(level) do
+    local wave = {}
+    local group = {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'}
+    table.insert(wave, group)
+    group = {'GROUP', 
+      random:table(special_enemy_by_tier[tier]), 
+      SPECIAL_ENEMIES_PER_LEVEL(level), 
+      'nil'
+    }
+    table.insert(wave, group)
+    group = {'DELAY', 3}
+    table.insert(wave, group)
   
-  -- Step 1: Add a special enemy from the correct tier
-  current_power = current_power + self:Add_Enemy(wave, power_budget, tier, 'special', 2)
-  power_budget = target_power - current_power
+    group = {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'scatter' }
+    table.insert(wave, group)
+    group = {'GROUP',
+      random:table(special_enemy_by_tier[tier]), 
+      SPECIAL_ENEMIES_PER_LEVEL(level), 
+      'nil'
+    }
+    table.insert(wave, group)
 
-  current_power = current_power + self:Add_Enemy(wave, power_budget, tier, 'swarmer')
-  power_budget = target_power - current_power
-
-  while power_budget > 0 do
-    local group_power = 0
-    if math.random() < CHANCE_OF_SPECIAL_VS_NORMAL_ENEMY then
-      group_power = self:Add_Enemy(wave, power_budget, tier, 'special')
-    else
-      group_power = self:Add_Enemy(wave, power_budget, tier, 'swarmer')
+    if IS_SPECIAL_WAVE(level, i) then
+      group = {'DELAY', 4}
+      table.insert(wave, group)
+      
+      group = {'GROUP', random:table(special_enemy_by_tier[tier]), i, 'scatter'}
+      table.insert(wave, group)
     end
+    
+    table.insert(waves, wave)
 
-    if group_power == 0 then
-      print('failed to add enemy for level', level, ', power budget', power_budget)
-      break
-    end
-
-    current_power = current_power + group_power
-
-
-    power_budget = target_power - current_power
-
-    if power_budget < 0 then
-      print('power budget is negative for level', level, ', power budget', power_budget, ', current power', current_power)
-      break
-    end
   end
   
-  table.insert(waves, wave)
-  table.insert(waves, {{'GROUP', 'swarmer', 8, 'nil'}})
-
-  if level == 1 then
-    waves = {}
-    wave = {}
-    table.insert(wave, {'GROUP', 'swarmer', 6, 'nil'})
-    table.insert(wave, {'GROUP', 'archer', 1, 'nil'})
-    table.insert(wave, {'DELAY', 4})
-    
-    table.insert(wave, {'GROUP', 'swarmer', 6, 'nil'})
-    table.insert(wave, {'GROUP', 'archer', 1, 'nil'})
-    table.insert(waves, wave)
-
-    wave = {}
-    table.insert(wave, {'GROUP', 'swarmer', 6, 'nil'})
-    table.insert(wave, {'GROUP', 'burst', 1, 'nil'})
-    table.insert(wave, {'DELAY', 2})
-
-    table.insert(wave, {'GROUP', 'swarmer', 6, 'nil'})
-    table.insert(wave, {'GROUP', 'burst', 1, 'nil'})
-    table.insert(wave, {'DELAY', 4})
-
-    table.insert(waves, wave)
-
-  elseif level == 2 then
-    waves = {}
-    wave = {}
-    table.insert(wave, {'GROUP', 'swarmer', 8, 'nil'})
-    table.insert(wave, {'GROUP', 'snakearrow', 2, 'nil'})
-    table.insert(wave, {'DELAY', 4})
-    
-    table.insert(wave, {'GROUP', 'swarmer', 8, 'scatter'})
-    table.insert(wave, {'DELAY', 2})
-
-    table.insert(wave, {'GROUP', 'swarmer', 8, 'nil'})
-    table.insert(wave, {'GROUP', 'snakearrow', 2, 'nil'})
-    table.insert(waves, wave)
-
-    wave = {}
-    table.insert(wave, {'GROUP', 'swarmer', 8, 'nil'})
-    table.insert(wave, {'GROUP', 'burst', 2, 'nil'})
-
-    table.insert(wave, {'DELAY', 4})
-
-    table.insert(wave, {'GROUP', 'swarmer', 6, 'scatter'})
-    table.insert(wave, {'DELAY', 2})
-
-    table.insert(wave, {'GROUP', 'swarmer', 10, 'nil'})
-    table.insert(wave, {'GROUP', 'snakearrow', 2, 'nil'})
-    table.insert(waves, wave)
-  end
   return waves
 end
 

@@ -385,7 +385,7 @@ function BuyScreen:set_party()
   local num_cards = #Character_Cards
   local buy_card_index = num_cards + 1
   local buy_card_order = card_order[buy_card_index]
-  local buy_card_cost = 5 * num_cards
+  local buy_card_cost = 5 * (num_cards+1)
 
   if #Character_Cards < 3 then
     table.insert(Character_Cards, CharacterCardBuy{group = self.main, x = x + (buy_card_order-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, i = buy_card_index, parent = self,

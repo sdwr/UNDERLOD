@@ -111,7 +111,7 @@ function ArrowProjectile:init(args)
   -- Set the arrow's rotation to match its direction
   self.r = self.angle
   
-  alert1:play{volume=0.9}
+  table.random({arrow_release1, arrow_release2, arrow_release3}):play{volume=2}
 
   self.already_hit_targets = {}
 end
@@ -147,7 +147,7 @@ function ArrowProjectile:update(dt)
         Helper.Damage:primary_hit(target, self.damage, self.unit, nil, true)
         self.damage = self.damage * 0.8
         table.insert(self.already_hit_targets, target)
-        hit2:play{volume=0.5}
+        -- hit2:play{volume=0.5}
         hit_target = true
       else
         if self.pierce and not table.contains(self.already_hit_targets, target) then

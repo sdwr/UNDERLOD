@@ -430,7 +430,7 @@ function Enemy:die()
   if self.dead then return end
   self.super.die(self)
   self.dead = true
-  _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.9}
+  _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.5}
   
   -- Drop gold when enemy dies
   if main.current and main.current.gold_counter then

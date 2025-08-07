@@ -194,30 +194,74 @@ MAX_SPECIAL_ENEMY_GROUP_SIZE_BY_TIER = {
 }
 
 ENEMY_SCALE_BY_LEVEL = 
-{0, 0, 0.5, 0.5, 1, 1, 
- 1, 1.5, 1.5, 2, 2, 2, 
- 3, 3, 4, 4, 5, 5, 5, 
- 6, 7, 8, 9, 10, 10}
+{0, 1, 2, 2, 3, 4, 
+ 5, 6, 7, 8, 9, 10, 
+ 11, 12, 13, 14, 15, 16, 17, 
+ 18, 19, 20, 21, 22, 23, 24}
 
 ENEMY_LEVEL_SCALING = function(level)
-  local scale = ENEMY_SCALE_BY_LEVEL[level] or 30
+  local scale = ENEMY_SCALE_BY_LEVEL[level] or 0
   return scale
 end
 
 SCALED_ENEMY_HP = function(level, base_hp)
   local scale = ENEMY_SCALE_BY_LEVEL[level]
-  return base_hp + (base_hp * 0.25 * scale)
+  return base_hp + (base_hp * 0.2 * scale)
 end
 
 SCALED_ENEMY_DAMAGE = function(level, base_dmg)
   local scale = ENEMY_SCALE_BY_LEVEL[level]
-  return base_dmg + (base_dmg * 0.2 * scale)
+  return base_dmg + (base_dmg * 0.3 * scale)
 end
 
 SCALED_ENEMY_MS = function(level, base_ms)
   local scale = ENEMY_SCALE_BY_LEVEL[level]
-  return base_ms + (base_ms * 0.02 * scale)
+  return base_ms + (base_ms * 0.03 * scale)
 end
+
+function SWARMERS_PER_LEVEL(level)
+  return 6 + math.floor(level / 2)
+end
+
+function SPECIAL_ENEMIES_PER_LEVEL(level)
+  if level == 1 then return math.random(0, 1) end
+  if level == 2 then return 1 end
+
+  if level <= 6 then
+    return math.random(1, 2)
+  end
+
+  return math.random(2, 3)
+end
+
+function WAVES_PER_LEVEL(level)
+  if level == 4 then return 3 end
+  if level == 9 then return 4 end
+  if level == 14 then return 5 end
+  if level == 19 then return 6 end
+
+  if level <= 6 then
+    return 2
+  elseif level <= 11 then
+    return 3
+  elseif level <= 16 then
+    return 4
+  elseif level <= 21 then
+    return 5
+  end
+
+  return 5
+end
+
+function IS_SPECIAL_WAVE(level, wave)
+  if level == 4 then return wave == 3 end
+  if level == 9 then return wave == 4 end
+  if level == 14 then return wave == 5 end
+  if level == 19 then return wave == 6 end
+  
+end
+
+
 
 BOSS_SCALE_BY_LEVEL = 
 {0, 0, 0, 0, 0, 0,
