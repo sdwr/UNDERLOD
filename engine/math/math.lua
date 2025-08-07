@@ -179,7 +179,12 @@ function math.remap(v, old_min, old_max, new_min, new_max)
 end
 
 function math.remap_clamped(v, old_min, old_max, new_min, new_max)
-  local v = math.clamp(v, old_min, old_max)
+  if old_min < old_max then
+    v = math.clamp(v, old_min, old_max)
+  else
+    v = math.clamp(v, old_max, old_min)
+  end
+
   return math.remap(v, old_min, old_max, new_min, new_max)
 end
 

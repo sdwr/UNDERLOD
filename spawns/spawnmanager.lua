@@ -30,7 +30,7 @@ function SpawnGlobals.Init()
   SpawnGlobals.TROOP_FORMATION_HORIZONTAL_SPACING = 20
   SpawnGlobals.TROOP_FORMATION_VERTICAL_SPACING = 10
 
-  SpawnGlobals.SUCTION_FORCE = 700
+  SpawnGlobals.SUCTION_FORCE = 600
   SpawnGlobals.SUCTION_MAX_V = 150
   
   SpawnGlobals.SUCTION_MIN_DISTANCE = 12
@@ -252,10 +252,13 @@ function Suction_Troops_To_Spawn_Locations(arena, apply_angular_force)
           
           -- Apply strong suction force towards spawn location
           local distance = Helper.Geometry:distance(troop.x, troop.y, target_x, target_y)
-          local multiplier = math.remap_clamped(distance, 10, 100, 0.1, 1)
+          
+          local multiplier = math.remap_clamped(distance, 15, 100, 0.5, 1)
+          local damping_multiplier = math.remap_clamped(distance, 100, 10, 1, 3)
+          local angular_multiplier = math.remap_clamped(distance, 100, 10, 0.1, 0)
+
           local force = SpawnGlobals.SUCTION_FORCE * multiplier
 
-          local damping_multiplier = math.remap_clamped(distance, 100, 10, 1, 2)
           
           if distance < SpawnGlobals.SUCTION_CANCELABLE_DISTANCE then
             num_troops_close_to_target = num_troops_close_to_target + 1
@@ -269,9 +272,12 @@ function Suction_Troops_To_Spawn_Locations(arena, apply_angular_force)
             
             troop:apply_force(suction_force_x, suction_force_y)
 
+            local angular_force = SpawnGlobals.SUCTION_FORCE * angular_multiplier
+
             if apply_angular_force then
-              local swirl_force_x = - suction_force_y * 0.6 * multiplier
-              local swirl_force_y = suction_force_x * 0.6 * multiplier
+              local perpendicular_angle = angle_to_spawn + (math.pi / 2)
+              local swirl_force_x = math.cos(perpendicular_angle) * angular_force
+              local swirl_force_y = math.sin(perpendicular_angle) * angular_force
               troop:apply_force(swirl_force_x, swirl_force_y)
             end
           end  
