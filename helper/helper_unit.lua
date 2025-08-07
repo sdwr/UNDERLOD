@@ -114,7 +114,7 @@ function Helper.Unit:state_allows_movement(unit, state)
         return false
     end
 
-    if unit.is_troop and Helper.Unit:block_troop_movement() then
+    if unit.is_troop and unit.being_knocked_back and Helper.Unit:block_troop_movement() then
         return false
     end
 
@@ -906,6 +906,15 @@ function Helper.Unit:get_all_troops()
     return troop_list
 end
 
+function Helper.Unit:all_troops_done_suction()
+    for _, troop in pairs(Helper.Unit:get_all_troops()) do
+        if troop.being_knocked_back then
+            return false
+        end
+    end
+    return true
+end
+
 function Helper.Unit:all_troops_begin_suction()
     for _, troop in pairs(Helper.Unit:get_all_troops()) do
         Helper.Unit:set_knockback_variables(troop)
@@ -918,6 +927,12 @@ function Helper.Unit:all_troops_end_suction()
         team:clear_spawn_marker()
     end
     for _, troop in pairs(Helper.Unit:get_all_troops()) do
+       Helper.Unit:troop_end_suction(troop)
+    end
+end
+
+function Helper.Unit:troop_end_suction(troop)
+    if troop.being_knocked_back then
         Helper.Unit:reset_knockback_variables(troop)
         troop.max_v = troop.mvspd
         troop:set_damping(get_damping_by_unit_class(troop.class))

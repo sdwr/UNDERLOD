@@ -22,7 +22,7 @@ function SpawnGlobals.Init()
 
   SpawnGlobals.FURTHEST_SPAWN_POINT = 1/3
   SpawnGlobals.FURTHEST_SPAWN_POINT_SCATTER = 1/7
-  SpawnGlobals.SPAWN_DISTANCE_OUTSIDE_ARENA = 75
+  SpawnGlobals.SPAWN_DISTANCE_OUTSIDE_ARENA = 100
 
   SpawnGlobals.TROOP_SPAWN_BASE_X = SpawnGlobals.wall_width + 50  -- Further left than before
   SpawnGlobals.TROOP_SPAWN_BASE_Y = gh/2
@@ -252,7 +252,7 @@ function Suction_Troops_To_Spawn_Locations(arena, apply_angular_force)
       
       -- Apply suction to each troop in the team
       for j, troop in ipairs(team.troops) do
-        if troop and not troop.dead then
+        if troop and not troop.dead and troop.being_knocked_back then
           
           local target_x = spawn_x
           local target_y = spawn_y
@@ -288,17 +288,26 @@ function Suction_Troops_To_Spawn_Locations(arena, apply_angular_force)
               local swirl_force_y = math.sin(perpendicular_angle) * angular_force
               troop:apply_force(swirl_force_x, swirl_force_y)
             end
-          end  
+          else
+            if team.spawn_marker then
+              team.spawn_marker:troop_suctioned()
+            end
+            Helper.Unit:troop_end_suction(troop)
+          end
         end
       end
     end
   end
 
-  if num_troops_close_to_target * 1.0 / num_total_troops > SpawnGlobals.SUCTION_CANCEL_THRESHOLD then
-    Helper.Unit:all_troops_end_suction()
-    arena.spawn_manager.timer = TIME_BETWEEN_WAVES
-    arena.spawn_manager:change_state('entry_delay')
+  if Helper.Unit:all_troops_done_suction() then
+    End_Suction(arena)
   end
+end
+
+function End_Suction(arena)
+  Helper.Unit:all_troops_end_suction()
+  arena.spawn_manager.timer = TIME_BETWEEN_WAVES
+  arena.spawn_manager:change_state('entry_delay')
 end
 
 function Kill_Teams()
@@ -417,12 +426,13 @@ function Spawn_Troops_At_Locations(arena, team, locations)
 end
 
 function Get_Random_Spawn_Outside_Arena(distance)
+  local random_offset = random:float(0.5, 1) * distance
   if math.random() < 0.5 then
     local x = math.random() * gw
-    local y = table.random({-distance, gh + distance})
+    local y = table.random({-distance - random_offset, gh + distance + random_offset})
     return {x = x, y = y}
   else
-    local x = table.random({-distance, gw + distance})
+    local x = table.random({-distance - random_offset, gw + distance + random_offset})
     local y = math.random() * gh
     return {x = x, y = y}
   end

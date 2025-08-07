@@ -132,10 +132,15 @@ function WorldManager:create_arena(level, offset_x)
     -- Only spawn teams and enemies for non-tutorial levels
     Spawn_Teams(arena, true)
     Helper.Unit:update_unit_colors()
+    Helper.Unit:all_troops_begin_suction(arena)
 
     self.t:after(DELAY_BEFORE_SUCTION, function()
-      Helper.Unit:all_troops_begin_suction(arena)
       arena.spawn_manager:change_state('suction_to_targets')
+    end)
+
+    --cancel suction after 5 seconds
+    self.t:after(5, function()
+      End_Suction(arena)
     end)
 
   else

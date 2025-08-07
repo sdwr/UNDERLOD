@@ -93,7 +93,11 @@ SpawnMarker:implement(GameObject)
 function SpawnMarker:init(args)
     self:init_game_object(args)
     
-    self.team = args.team or 1
+    self.team = args.team
+    self.num_troops = self.team:get_alive_troop_count()
+    self.num_troops_suctioned = 0
+
+
     self.min_distance = args.min_distance or 15
     self.max_distance = args.max_distance or 150
 
@@ -107,18 +111,22 @@ function SpawnMarker:init(args)
     self.die_duration = 0.2
 end
 
+function SpawnMarker:troop_suctioned()
+  hit3:play()
+  self.num_troops_suctioned = self.num_troops_suctioned + 1
+  if self.num_troops_suctioned == self.num_troops then
+    self:die()
+  else
+    self:arrival_animation()
+  end
+end
+
+function SpawnMarker:arrival_animation()
+  --pass
+end
+
 function SpawnMarker:update(dt)
     self:update_game_object(dt)
-    
-    local closest_troop, closest_distance = Helper.Unit:get_closest_unit(self.team, {x = self.x, y = self.y})
-
-    if closest_troop then
-      self.color.a = math.remap_clamped(closest_distance, self.max_distance, self.min_distance, 0.4, 0.6)
-    end
-
-    if closest_distance < self.min_distance then
-      self:die()
-    end
 end
 
 
