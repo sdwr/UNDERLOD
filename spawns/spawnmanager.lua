@@ -31,6 +31,7 @@ function SpawnGlobals.Init()
   SpawnGlobals.TROOP_FORMATION_VERTICAL_SPACING = 10
 
   SpawnGlobals.SUCTION_FORCE = 700
+  SpawnGlobals.SUCTION_MAX_V = 150
   
   SpawnGlobals.SUCTION_MIN_DISTANCE = 12
   SpawnGlobals.SUCTION_CANCELABLE_DISTANCE = 20
@@ -50,9 +51,13 @@ function SpawnGlobals.Init()
     if num_teams == 1 then
       return {center}
     end
+    
+    local base_angle = 0
+    if num_teams == 3 then
+      base_angle = -math.pi / 2
+    end
 
     local angle_per_team = 2 * math.pi / num_teams
-    local base_angle = -math.pi / 2
 
     local spawn_locations = {}
     for i = 1, num_teams do

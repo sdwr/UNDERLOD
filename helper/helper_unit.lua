@@ -890,7 +890,7 @@ end
 function Helper.Unit:all_troops_begin_suction()
     for _, troop in pairs(Helper.Unit:get_all_troops()) do
         Helper.Unit:set_knockback_variables(troop)
-        troop.max_v = 150
+        troop.max_v = SpawnGlobals.SUCTION_MAX_V
     end
 end
 
