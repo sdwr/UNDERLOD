@@ -254,7 +254,7 @@ function Suction_Troops_To_Spawn_Locations(arena, apply_angular_force)
           local distance = Helper.Geometry:distance(troop.x, troop.y, target_x, target_y)
           
           local multiplier = math.remap_clamped(distance, 15, 100, 0.2, 1)
-          local damping_multiplier = math.remap_clamped(distance, 100, 10, 1, 4)
+          local damping_multiplier = math.remap_clamped(distance, 100, 10, 1, 3)
           -- local angular_multiplier = math.remap_clamped(distance, 100, 10, 0.2, 0)
           local angular_multiplier = 0
 
