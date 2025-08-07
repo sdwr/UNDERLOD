@@ -534,7 +534,7 @@ function Troop:hit(damage, from, damageType, playHitEffects, cannotProcOnHit)
   -- Mark this unit as a troop for the damage helper
   self.is_troop = true
   -- Use the indirect hit function (current behavior)
-  hit4:play{pitch = random:float(0.95, 1.05), volume = 0.8}
+  table.random({player_hit1, player_hit2}):play{pitch = random:float(0.95, 1.05), volume = 0.5}
   Helper.Damage:indirect_hit(self, damage, from, damageType, playHitEffects)
 end
 
@@ -561,8 +561,6 @@ function Troop:on_collision_enter(other, contact)
       player_hit_wall1:play{pitch = r, volume = 0.1}
       pop1:play{pitch = r, volume = 0.2}
   elseif table.any(main.current.enemies, function(v) return other:is(v) end) then
-
-    player_hit1:play{pitch = random:float(0.95, 1.05), volume = 1.5}
 
     local duration = KNOCKBACK_DURATION_ENEMY
     local push_force = LAUNCH_PUSH_FORCE_ENEMY
