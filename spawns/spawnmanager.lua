@@ -560,8 +560,13 @@ function SpawnManager:update(dt)
       self.timer = self.timer - dt
       if self.timer <= 0 then
         self.pending_spawns = 0
+        if Is_Boss_Level(self.arena.level) then
+          self:change_state('spawning_boss')
+          spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.5}
+        else
           self:change_state('processing_wave')
           spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
+        end
       end
     elseif self.state == 'between_waves_delay' then
         -- Apply continuous suction effect during between-waves delay
@@ -581,6 +586,11 @@ function SpawnManager:update(dt)
         if self.state == 'processing_wave' then
             self:change_state('waiting_for_clear')
         end
+    end
+
+    if self.state == 'spawning_boss' then
+      self:spawn_boss_immediately()
+      self:change_state('waiting_for_clear')
     end
     
     -- If all instructions are done, wait for the arena to be clear.
@@ -1061,8 +1071,7 @@ function SpawnManager:spawn_boss_immediately()
     
     -- Set boss to idle but inactive
     Helper.Unit:set_state(boss, unit_states['idle'])
-    boss.idleTimer = math.random() * 2 + 1 -- Longer idle time
-    boss.transition_active = false -- Keep inactive until transition complete
+    boss.idleTimer = 1 -- Longer idle time
     
     -- Set as active boss for level manager
     LevelManager.activeBoss = boss
