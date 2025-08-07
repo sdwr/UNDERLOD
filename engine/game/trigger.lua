@@ -27,8 +27,11 @@ function Trigger:after(delay, action, tag)
   local tag = tag or random:uid()
   if type(delay) == "number" or type(delay) == "table" then
     self.triggers[tag] = {type = "after", timer = 0, unresolved_delay = delay, delay = self:resolve_delay(delay), action = action}
-  else
+  elseif type(delay) == "function" then
     self.triggers[tag] = {type = "conditional_after", condition = delay, action = action}
+  else
+    -- Safety check: if delay is not a function, treat it as a regular after trigger
+    self.triggers[tag] = {type = "after", timer = 0, unresolved_delay = 0, delay = 0, action = action}
   end
   return tag
 end
@@ -231,7 +234,7 @@ function Trigger:update(dt)
       end
 
     elseif trigger.type == "conditional_after" then
-      if trigger.condition() then
+      if trigger.condition and trigger.condition() then
         trigger.action()
         self.triggers[tag] = nil
       end

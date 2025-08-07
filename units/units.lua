@@ -64,6 +64,10 @@ function Team:add_troop(x, y)
   return troop
 end
 
+--need to prevent changing state to following/rallying/moving
+--if they are being knocked back
+--but there are a lot of places to change
+--state is doubling as active state (is moving) and intention (rally point)
 function Team:set_troop_state_to_following()
   for i, troop in ipairs(self.troops) do
       Helper.Unit:set_state(troop, unit_states['following'])

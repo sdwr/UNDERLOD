@@ -282,7 +282,7 @@ function Suction_Troops_To_Spawn_Locations(arena, apply_angular_force)
 
   if num_troops_close_to_target * 1.0 / num_total_troops > SpawnGlobals.SUCTION_CANCEL_THRESHOLD then
     Helper.Unit:all_troops_end_suction()
-    arena.spawn_manager.timer = 2
+    arena.spawn_manager.timer = TIME_BETWEEN_WAVES
     arena.spawn_manager:change_state('entry_delay')
   end
 end
@@ -497,7 +497,6 @@ function SpawnManager:init(arena)
     -- 'boss_fight':            A special state for boss levels.
 
     -- Timers and Trackers
-    self.time_between_waves = arena.time_between_waves or 3
     self.timer = arena.entry_delay or 2
     self.current_wave_index = 1
     self.current_instruction_index = 1
@@ -535,7 +534,9 @@ end
 function SpawnManager:update(dt)
     if self.state == 'finished' then return end
     --don't do anything until triggered by world manager
-    if self.state == 'arena_start' then 
+    if self.state == 'arena_start' then return end
+
+    if self.state == 'suction_to_targets' then 
       Suction_Troops_To_Spawn_Locations(self.arena, true)
       return
     end
@@ -594,7 +595,7 @@ function SpawnManager:update(dt)
               self.current_wave_index = self.current_wave_index + 1
               self.current_instruction_index = 1
               self:change_state('between_waves_delay')
-              self.timer = self.time_between_waves
+              self.timer = TIME_BETWEEN_WAVES
               -- self:show_wave_complete_text()
           end
         end
