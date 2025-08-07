@@ -46,6 +46,11 @@ function SpawnGlobals.Init()
 
   SpawnGlobals.Get_Team_Spawn_Locations = function(num_teams)
     local center = {x = gw/2, y = gh/2}
+
+    if num_teams == 1 then
+      return {center}
+    end
+
     local angle_per_team = 2 * math.pi / num_teams
     local base_angle = -math.pi / 2
 
@@ -273,7 +278,6 @@ function Suction_Troops_To_Spawn_Locations(arena, apply_angular_force)
   if num_troops_close_to_target * 1.0 / num_total_troops > SpawnGlobals.SUCTION_CANCEL_THRESHOLD then
     Helper.Unit:all_troops_end_suction()
     arena.spawn_manager.timer = 2
-    spawn_mark1:play{pitch = random:float(1.1, 1.3), volume = 1}
     arena.spawn_manager:change_state('entry_delay')
   end
 end
@@ -347,65 +351,43 @@ end
 
 
 
---spawns troops in triangle formation around centre of arena
-function Spawn_Teams(arena)
+--if suction enabled, troops will be spawned outside [fg]when enemies hit walls they create an area based to the knockback force
+--so they can be sucked back in
+function Spawn_Teams(arena, suction_enabled)
   --clear Helper.Unit.teams
   Helper.Unit.teams = {}
   
-  if #arena.units == 0 then
+  local spawn_locations = SpawnGlobals.Get_Team_Spawn_Locations(#arena.units)
 
-    local unit = Get_Basic_Unit()
-    --add a new team
-    local index = 1
-    local team = Team(index, unit)
-    table.insert(Helper.Unit.teams, index, team)
+  for i, unit in ipairs(arena.units) do
+      --add a new team
+      local team = Team(i, unit)
+      table.insert(Helper.Unit.teams, i, team)
+      
+      -- Left side formation positions
+      local team_spawn_location = spawn_locations[i]
+      team.spawn_location = team_spawn_location
+      
+      local spawn_x = team_spawn_location.x
+      local spawn_y = team_spawn_location.y
 
-    -- Left side formation positions
-    local spawn_location = TROOP_0_SPAWN_LOCATION
-    local spawn_x = spawn_location.x
-    local spawn_y = spawn_location.y
+      team:set_troop_data({
+          group = arena.main,
+          x = spawn_x,
+          y = spawn_y,
+          level = unit.level,
+          character = unit.character,
+          items = unit.items,
+          passives = arena.passives
+      })
 
-    team:set_troop_data({
-        group = arena.main,
-        x = spawn_x,
-        y = spawn_y,
-        level = unit.level,
-        character = unit.character,
-        items = unit.items,
-        passives = arena.passives
-    })
-
-    Spawn_Troops(arena, team, unit, {x = spawn_x, y = spawn_y})
-    team:apply_item_procs()
-
-  else
-    local spawn_locations = SpawnGlobals.Get_Team_Spawn_Locations(#arena.units)
-
-    for i, unit in ipairs(arena.units) do
-        --add a new team
-        local team = Team(i, unit)
-        table.insert(Helper.Unit.teams, i, team)
-        
-        -- Left side formation positions
-        local team_spawn_location = spawn_locations[i]
-        team.spawn_location = team_spawn_location
-        
-        local spawn_x = team_spawn_location.x
-        local spawn_y = team_spawn_location.y
-
-        team:set_troop_data({
-            group = arena.main,
-            x = spawn_x,
-            y = spawn_y,
-            level = unit.level,
-            character = unit.character,
-            items = unit.items,
-            passives = arena.passives
-        })
-
+      if suction_enabled then
         Spawn_Troops(arena, team, unit)
-        team:apply_item_procs()
-    end
+        team:create_spawn_marker()
+      else
+        Spawn_Troops(arena, team, unit, team_spawn_location)
+      end
+      team:apply_item_procs()
   end
 end
 
@@ -880,9 +862,9 @@ end
 
 function Spawn_Enemy_Sound(arena, isBoss)
   if isBoss then
-    hit4:play{pitch = random:float(0.8, 1.2), volume = 0.4}
+    alert1:play{pitch = random:float(0.8, 1.2), volume = 1}
   else
-    hit3:play{pitch = random:float(0.8, 1.2), volume = 0.4}
+    alert1:play{pitch = random:float(0.8, 1.2), volume = 1}
   end
 end
 

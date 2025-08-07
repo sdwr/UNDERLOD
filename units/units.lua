@@ -129,6 +129,24 @@ function Team:clear_rally_point()
   end
 end
 
+function Team:create_spawn_marker()
+  local spawn_location = self.spawn_location or {x = gw/2, y = gh/2}
+  self.spawn_marker = SpawnMarker{
+    group = main.current.floor,
+    x = spawn_location.x,
+    y = spawn_location.y,
+    team = self,
+    color = self.color
+  }
+end
+
+function Team:clear_spawn_marker()
+  if self.spawn_marker then
+    self.spawn_marker:die()
+    self.spawn_marker = nil
+  end
+end
+
 --selection functions
 function Team:select()
   for i, troop in ipairs(self.troops) do

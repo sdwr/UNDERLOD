@@ -41,6 +41,24 @@ function Helper.Unit:sort_by_distance(unit_list, unit)
     return sorted_units
 end
 
+function Helper.Unit:get_closest_unit(team, location)
+    if not team then return nil, nil end
+
+    local closest_unit = nil
+    local closest_distance = 999999
+
+    for _, troop in ipairs(team.troops) do
+        if troop and not troop.dead then
+            local dist = Helper.Geometry:distance(location.x, location.y, troop.x, troop.y)
+            if dist < closest_distance then
+                closest_unit = troop
+                closest_distance = dist
+            end
+        end
+    end
+    return closest_unit, closest_distance
+end
+
 function Helper.Unit:get_all_units()
     local unit_list = {}
     for i, unit in ipairs(Helper.Unit:get_list(true)) do
@@ -881,6 +899,9 @@ function Helper.Unit:all_troops_begin_suction()
 end
 
 function Helper.Unit:all_troops_end_suction()
+    for _, team in pairs(Helper.Unit.teams) do
+        team:clear_spawn_marker()
+    end
     for _, troop in pairs(Helper.Unit:get_all_troops()) do
         Helper.Unit:reset_knockback_variables(troop)
         troop.max_v = troop.mvspd
