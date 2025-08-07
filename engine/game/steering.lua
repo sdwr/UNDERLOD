@@ -63,6 +63,11 @@ function Physics:calculate_steering_force(dt)
   if self.aligning then self.steering_force:add(self.alignment_f) end
   if self.cohesing then self.steering_force:add(self.cohesion_f) end
 
+  --using :add() instead of :set()
+  --for multiple calls to steering separate
+  --so have to reset it
+  self.separation_f:set(0, 0)
+
   self.seeking = false
   self.fleeing = false
   self.pursuing = false
@@ -162,21 +167,38 @@ end
 -- Keeps this object separated from other objects of specific classes according to the radius passed in
 -- What this function does is simply look at all nearby objects and apply forces to this object such that it remains separated from them
 -- self:separate(40, {Enemy}) -> when this is called every frame, this applies forces to this object to keep it separated from other Enemy instances by 40 units at all times
-function Physics:steering_separate(rs, class_avoid_list, weight)
+function Physics:steering_separate(rs, class_avoid_list, weight, comparator)
   self.separating = true
   local fx, fy = 0, 0
   local objects = table.flatten(table.foreachn(class_avoid_list, function(v) return self.group:get_objects_by_class(v) end), true)
+
   for _, object in ipairs(objects) do
     if object.id ~= self.id and math.distance(object.x, object.y, self.x, self.y) < 2*rs then
-      local tx, ty = self.x - object.x, self.y - object.y
-      local nx, ny = math.normalize(tx, ty)
-      local l = math.length(nx, ny)
-      fx = fx + rs*(nx/l)
-      fy = fy + rs*(ny/l)
+      if comparator and comparator(object) then
+        local tx, ty = self.x - object.x, self.y - object.y
+        local nx, ny = math.normalize(tx, ty)
+        local l = math.length(nx, ny)
+        fx = fx + rs*(nx/l)
+        fy = fy + rs*(ny/l)
+      end
     end
   end
-  self.separation_f:set(fx*(weight or 1), fy*(weight or 1))
+  self.separation_f:add(fx*(weight or 1), fy*(weight or 1))
 end
+
+function Physics:add_cohesion(location, min_distance, weight)
+  self.cohesing = true
+  local fx, fy = 0, 0
+  local tx, ty = location.x - self.x, location.y - self.y
+  local d = math.length(tx, ty)
+  if d > min_distance then
+    local nx, ny = math.normalize(tx, ty)
+    fx = fx + (nx/d)
+    fy = fy + (ny/d)
+  end
+  self.cohesion_f:set(fx*(weight or 1), fy*(weight or 1))
+end
+
 
 -- Wander steering behavior
 -- Makes the object move in a jittery manner, adding some randomness to its movement while keeping the overall direction
