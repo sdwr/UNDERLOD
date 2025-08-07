@@ -228,8 +228,10 @@ function Troop:do_automatic_movement()
   self:steering_separate(TROOP_SEPARATION_RADIUS_SAME_TEAM, troop_classes, TROOP_SEPARATION_WEIGHT_SAME_TEAM, sameTeam)
 
   --cohesion with other troops
-  local team = Helper.Unit.teams[self.team]
-  self:add_cohesion(team:get_center(), TROOP_COHESION_MIN_DISTANCE, TROOP_COHESION_WEIGHT)
+  if self.team then
+    local team = Helper.Unit.teams[self.team]
+    self:add_cohesion(team:get_center(), TROOP_COHESION_MIN_DISTANCE, TROOP_COHESION_WEIGHT)
+  end
 
   --rotate towards target or velocity
   if self:in_range('assigned')() then

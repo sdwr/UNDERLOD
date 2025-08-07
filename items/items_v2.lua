@@ -283,8 +283,8 @@ ITEM_SETS = {
   --   }
   -- },
   [ITEM_SET.SHIELD] = {
-    name = 'Shield',
-    color = 'green',
+    name = 'Radiance',
+    color = 'red',
     bonuses = {
       [1] = { procs = {'shield', 'radiance'} },
       [2] = { procs = {'shieldexplode'} },

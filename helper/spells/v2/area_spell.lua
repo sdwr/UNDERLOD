@@ -14,10 +14,11 @@ function Area_Spell:init(args)
     self.duration_minus_fade = self.duration - self.fade_duration
 
     self.damage = get_dmg_value(self.damage)
-    self.damage_ticks = self.damage_ticks or false
+    self.damage_ticks = default_to(self.damage_ticks, false)
     self.damage_type = self.damage_type or DAMAGE_TYPE_PHYSICAL
+    self.hit_only_once = default_to(self.hit_only_once, not self.damage_ticks)
     self.tick_rate = self.tick_rate or 0.2
-    self.is_troop = self.is_troop or false
+    self.is_troop = default_to(self.is_troop, false)
 
     self.targets_to_exclude = self.targets_to_exclude or {}
 
@@ -122,7 +123,7 @@ function Area_Spell:apply_damage()
             table.insert(actual_targets_hit, target)
             -- If it's not a DoT, mark as hit so it can't be hit again.
             -- For DoTs, we could clear this list each tick if we wanted to allow multiple hits.
-            if not self.damage_ticks then
+            if self.hit_only_once then
                  self.targets_hit_map[target.id] = true
             end
         end
@@ -140,10 +141,10 @@ function Area_Spell:draw()
     graphics.push(self.x, self.y, self.r)
     if self.pick_shape == 'circle' then
       graphics.circle(self.x, self.y, self.radius, self.color_transparent)
-      graphics.circle(self.x, self.y, self.radius, self.color, 1 * self.flashFactor)
+      graphics.circle(self.x, self.y, self.radius, self.color, self.line_width * self.flashFactor)
     else
       graphics.rectangle(self.x, self.y, self.radius, self.radius, 0, 0, self.color_transparent)
-      graphics.rectangle(self.x, self.y, self.radius, self.radius, 0, 0, self.color, 1 * self.flashFactor)
+      graphics.rectangle(self.x, self.y, self.radius, self.radius, 0, 0, self.color, self.line_width * self.flashFactor)
     end
     graphics.pop()
 end

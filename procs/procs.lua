@@ -1308,7 +1308,7 @@ end
 --last for a second, reapplied all the time, but only ticks once
 Proc_Radiance = Proc:extend()
 function Proc_Radiance:init(args)
-  self.triggers = {PROC_ON_TICK}
+  self.triggers = {PROC_ON_DEATH}
   self.scope = 'troop'
 
   Proc_Radiance.super.init(self, args)
@@ -1316,25 +1316,61 @@ function Proc_Radiance:init(args)
   
 
   --define the proc's vars
+  self.color = self.data.color or red[0]
   self.radius = self.data.radius or 60
   self.damage = self.data.damage or 8
   self.damageType = DAMAGE_TYPE_FIRE
+
+  if self.unit then
+    self.damage_aura = self:create_damage_aura()
+  end
 end
 
-function Proc_Radiance:onTick(dt)
-  Proc_Radiance.super.onTick(self, dt)
-  local enemies = main.current.main:get_objects_by_classes(enemy_classes)
-  for i, enemy in ipairs(enemies) do
-    if Helper.Spell:is_in_range(self.unit, enemy, self.radius, false) then
-      --backwards from how it 'should' work, but easier to implement
-      if not enemy:has_buff('radianceburn') then
-        enemy:add_buff({name = 'radianceburn', damage = self.damage, duration = 1})
-        
-        --Helper.Sound:play_radiance()
-        enemy:hit(self.damage, nil, self.damageType, false, true)
-      end
+function Proc_Radiance:onDeath(unit)
+  Proc_Radiance.super.onDeath(self, unit)
+  self:delete_aura()
+  self:die()
+end
+
+function Proc_Radiance:create_damage_aura()
+
+  local on_hit_callback = function(area_spell, target, unit)
+    if not target:has_buff('radianceburn') then
+      target:add_buff({name = 'radianceburn', damage = self.damage, duration = 1})
+      target:hit(self.damage, unit, self.damageType, false, true)
     end
   end
+  local aura = Area_Spell{
+    group = main.current.effects,
+    unit = self.unit,
+    follow_unit = true,
+    x = self.unit.x, y = self.unit.y,
+    pick_shape = 'circle',
+    damage = 0,
+    damage_ticks = true,
+    hit_only_once = false,
+    r = self.radius, 
+    duration = 1000, 
+    color = self.color,
+    opacity = 0.08,
+    line_width = 0,
+    tick_rate = 0.5,
+    is_troop = self.unit.is_troop,
+    on_hit_callback = on_hit_callback,
+  }
+  return aura
+end
+
+function Proc_Radiance:delete_aura()
+  if self.damage_aura then
+    self.damage_aura:die()
+    self.damage_aura = nil
+  end
+end
+
+function Proc_Radiance:die()
+  Proc_Radiance.super.die(self)
+  self:delete_aura()
 end
 
 --can only have 1 shield at a time, no stack for now
