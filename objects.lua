@@ -845,9 +845,6 @@ function Unit:calculate_stats(first_run)
   self.class_mvspd_a = 0
   self.class_hp_m = 1
   self.class_dmg_m = 1
-  if self.type == 'laser' then
-    self.class_dmg_m = 2
-  end
   self.class_aspd_m = 1
   self.class_area_dmg_m = 1
   self.class_area_size_m = 1

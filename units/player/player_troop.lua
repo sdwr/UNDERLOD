@@ -266,14 +266,6 @@ function Troop:update_ai_logic()
       -- or closest in aggro range
       self:set_target(Helper.Target:get_closest_enemy(self))
       cast_target = self.target
-      
-      -- Stagger initial attacks when first target is acquired
-      if cast_target and not self.first_target_acquired then
-        self.first_target_acquired = true
-        -- Randomize initial cast cooldown to stagger attacks
-        local random_delay = random:float(0.5, 1.5)
-        self:reset_castcooldown(self.cooldownTime * random_delay)
-      end
   end
 
   -- 3. ACT BASED ON TARGET STATUS
