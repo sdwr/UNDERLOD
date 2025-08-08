@@ -24,8 +24,8 @@ fns['init_enemy'] = function(self)
     viable = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end,
     oncast = function() end,
     instantspell = true,
-    castcooldown = 2.5,
-    cast_length = SLIME_CAST_TIME,
+
+
     cast_sound = sword_swing,
     cast_volume = 1,
     backswing = 1,

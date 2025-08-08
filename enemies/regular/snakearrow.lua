@@ -12,8 +12,7 @@ fns['init_enemy'] = function(self)
   self.icon = 'ghost'
   self.movementStyle = MOVEMENT_TYPE_RANDOM
 
-  self.baseCast = attack_speeds['medium-fast']
-  self:reset_castcooldown(self.baseCast)
+  -- Attack speed now handled by base class
 
   --set attacks
   self.attack_options = {}
@@ -21,11 +20,11 @@ fns['init_enemy'] = function(self)
   local snakearrows = {
     name = 'snakearrows',
     viable = function() return Helper.Target:get_random_enemy(self) end,
-    castcooldown = self.castcooldown,
+
     oncast = function() self.target = Helper.Target:get_random_enemy(self) end,
     freeze_rotation = true,
     rotation_lock = true,
-    cast_length = GHOST_CAST_TIME,
+
     spellclass = SnakeArrows,
     spelldata = {
       group = main.current.main,

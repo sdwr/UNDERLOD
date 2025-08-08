@@ -20,8 +20,7 @@ fns['init_enemy'] = function(self)
     self.movementStyle = MOVEMENT_TYPE_RANDOM -- Moves around randomly
 
     -- Set stats and cooldowns
-    self.baseCast = attack_speeds['medium-slow']
-    self:reset_castcooldown(attack_speeds['medium-slow'])
+      -- Attack speed now handled by base class
 
     -- This enemy will stop to cast and will be locked facing its cast direction.
     self.direction_lock = false
@@ -43,8 +42,8 @@ fns['init_enemy'] = function(self)
         -- oncast is not needed because the spell fires instantly at the caster's angle.
 
         oncast = function() end,
-        castcooldown = self.castcooldown,
-        cast_length = 0.8,
+
+    
         hide_cast_timer = false,
 
         -- Use the EnemyFirewallSpell class we defined previously.

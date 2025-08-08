@@ -12,8 +12,7 @@ fns['init_enemy'] = function(self)
   self.icon = 'plant1'
   self.movementStyle = MOVEMENT_TYPE_RANDOM
 
-  self.baseCast = attack_speeds['medium']
-  self:reset_castcooldown(self.baseCast)
+  -- Attack speed now handled by base class
 
   --set attacks
   self.attack_options = {}
@@ -21,11 +20,11 @@ fns['init_enemy'] = function(self)
   local aim_spread = {
     name = 'aim_spread',
     viable = function() return Helper.Target:get_random_enemy(self) end,
-    castcooldown = self.castcooldown,
+
     oncast = function() 
       self.target = Helper.Target:get_random_enemy(self)
     end,
-    cast_length = 1,
+
     spellclass = AimProjectile_Spell,
     spelldata = {
       group = main.current.main,

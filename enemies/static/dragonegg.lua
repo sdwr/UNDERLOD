@@ -26,9 +26,9 @@ fns['init_enemy'] = function(self)
   local summon = {
     name = 'summon',
     viable = function() return self.summons < self.maxSummons end,
-    castcooldown = 3,
+
     oncast = function() end,
-    cast_length = 0.1,
+
     spellclass = Summon_Spell,
     spelldata = {
       cancel_on_death = true,

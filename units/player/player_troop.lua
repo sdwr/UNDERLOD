@@ -7,9 +7,8 @@ function Troop:init(args)
   self.size = unit_size['medium-plus']
   self.is_troop = true
   self.target_rally = nil
-  self.castTime = 0.3
   self.backswing = 0.2
-  self:reset_castcooldown(self.baseCast or 1)
+  -- Cast/cooldown values are set in calculate_stats() first run
   --buff examples...
   --self.buffs[1] = {name = buff_types['dmg'], amount = 0.2, color = red_transparent_weak}
   --self.buffs[2] = {name = buff_types['aspd'], amount = 0.2, color = green_transparent_weak}
@@ -354,36 +353,31 @@ function Troop:draw()
 end
 
 function Troop:draw_cooldown_timer()
-  -- Only draw if the cooldown is active
-  if not self.castcooldown or self.castcooldown <= 0 then return end
+  -- Show animation during both casting and cooldown
+  local is_casting = (self.state == unit_states['casting'])
+  local is_cooling = (self.attack_cooldown_timer and self.attack_cooldown_timer > 0)
+  
+  if not is_casting and not is_cooling then return end
 
   -- --- Configuration ---
-  local growth_duration = 0.1 -- The first 0.15 seconds are for growing
   local bodySize = self.shape.rs or self.shape.w / 2 or 5
-  local min_radius_mod = 0.4 -- The smallest size of the circle (relative to bodySize)
-  local max_radius_mod = 1.7 -- The largest size of the circle (relative to bodySize)
-
-  -- --- Calculations ---
-  local elapsed_time = self.total_castcooldown - self.castcooldown
+  local min_radius_mod = 0.3 -- Smaller min size 
+  local max_radius_mod = 1.2 -- Smaller max size
   local current_radius = 0
 
-  if elapsed_time < growth_duration then
-      -- PHASE 1: GROWING
-      -- Calculate the progress of the growth phase (from 0 to 1)
-      local growth_pct = elapsed_time / growth_duration
-      -- Interpolate the radius from min to max size
-      current_radius = (min_radius_mod * bodySize) + (max_radius_mod * bodySize - min_radius_mod * bodySize) * growth_pct
-  else
-      -- PHASE 2: SHRINKING
-      -- Calculate the duration and progress of the shrink phase
-      local shrink_duration = self.total_castcooldown - growth_duration
-      local shrink_elapsed = elapsed_time - growth_duration
-      local shrink_pct = shrink_elapsed / shrink_duration
-      -- Interpolate the radius from max back down to min size
-      current_radius = (max_radius_mod * bodySize) - (max_radius_mod * bodySize - min_radius_mod * bodySize) * shrink_pct
+  if is_casting then
+      -- PHASE 1: EXPANDING during cast (grows outward)
+      local cast_progress = 1 - ((self.castObject and self.castObject.elapsedTime) or 0) / (self.cast_time or 0.1)
+      cast_progress = math.clamp(cast_progress, 0, 1)
+      current_radius = (min_radius_mod * bodySize) + (max_radius_mod * bodySize - min_radius_mod * bodySize) * cast_progress
+      
+  elseif is_cooling then
+      -- PHASE 2: SHRINKING during cooldown (shrinks inward)  
+      local cooldown_progress = self.attack_cooldown_timer / self.total_attack_cooldown_timer
+      current_radius = (min_radius_mod * bodySize) + (max_radius_mod * bodySize - min_radius_mod * bodySize) * cooldown_progress
   end
   
-  -- Ensure the radius never becomes negative if timings are off
+  -- Ensure the radius never becomes negative
   current_radius = math.max(0, current_radius)
 
   -- Draw the final circle

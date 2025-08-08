@@ -13,9 +13,7 @@ fns['init_enemy'] = function(self)
   self.movementStyle = MOVEMENT_TYPE_SEEK_TO_RANGE
 
   --set stats and cooldowns
-  self.baseCast = attack_speeds['medium-fast']
-  self.cooldownTime = attack_speeds['medium-fast']
-  self:reset_castcooldown(self.cooldownTime)
+  -- Attack speed now handled by base class
 
   self.stopChasingInRange = true
 
@@ -32,8 +30,8 @@ fns['init_enemy'] = function(self)
     oncast = function() 
       self.target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies)
     end,
-    cast_length = GOBLIN2_CAST_TIME,
-    castcooldown = self.cooldownTime,
+
+
     cancel_on_range = false,
     instantspell = true,
     cast_sound = scout1,

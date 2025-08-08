@@ -20,8 +20,8 @@ fns['init_enemy'] = function(self)
   local charge = {
     name = 'charge',
     viable = function() return Helper.Target:get_random_enemy(self) end,
-    castcooldown = 3,
-    cast_length = 0.1,
+
+
     oncast = function() self.target = Helper.Target:get_random_enemy(self) end,
     spellclass = Launch_Spell,
     spelldata = {

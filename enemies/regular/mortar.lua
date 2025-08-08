@@ -18,9 +18,9 @@ fns['init_enemy'] = function(self)
   local mortar = {
     name = 'mortar',
     viable = function() return Helper.Target:get_random_enemy(self) end,
-    castcooldown = 1,
+
     oncast = function() self.target = Helper.Target:get_random_enemy(self) end,
-    cast_length = 1,
+
     spellclass = Mortar_Spell,
     spelldata = {
       group = main.current.main,

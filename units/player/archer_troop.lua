@@ -3,13 +3,8 @@ function Archer_Troop:init(data)
   self.base_attack_range = TROOP_RANGE
   Archer_Troop.super.init(self, data)
 
-
-  self.baseCooldown = TROOP_BASE_COOLDOWN
-  self.cooldownTime = self.baseCooldown
-  self.baseCast = 0
-  self.castTime = self.baseCast
   self.backswing = data.backswing or 0.1
-  self:reset_castcooldown(math.random() * (self.base_castcooldown or self.baseCast))
+  -- Cast/cooldown values are now set in calculate_stats() first run
 end
 
 function Archer_Troop:create_spelldata()
@@ -36,9 +31,7 @@ function Archer_Troop:setup_cast(cast_target)
     end,
     unit = self,
     target = cast_target,
-    castcooldown = self.cooldownTime,
-    cast_length = self.castTime,
-    backswing = 0.2,
+    backswing = self.backswing,
     instantspell = true,
     spellclass = ArrowProjectile,
     spelldata = self:create_spelldata()
@@ -134,16 +127,11 @@ end
 
 function Archer_Troop:set_character()
   self.attack_sensor = Circle(self.x, self.y, self.base_attack_range)
-  --total cooldown is cooldownTime + castTime
-  self.baseCooldown = TROOP_BASE_COOLDOWN
-  self.cooldownTime = self.baseCooldown
-  self.baseCast = attack_speeds['buff']
-  self.castTime = self.baseCast
-
+  
   self.infinite_range = true
 
-
   self:set_state_functions()
+  -- Cast/cooldown values are set in calculate_stats() first run
 end
 
 

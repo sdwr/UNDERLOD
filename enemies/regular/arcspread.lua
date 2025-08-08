@@ -21,9 +21,9 @@ fns['init_enemy'] = function(self)
     cast_sound = arcspread_full_sound,
     cast_sound_at_start = true,
     cast_volume = 0.8,
-    castcooldown = 2,
+
     instantspell = true,
-    cast_length = 1.5,
+
     spellclass = Arcspread,
     spelldata = {
       group = main.current.main,

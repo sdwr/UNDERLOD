@@ -19,8 +19,8 @@ fns['init_enemy'] = function(self)
     name = 'spread_laser',
     viable = function() return Helper.Target:get_random_enemy(self) end,
     oncast = function() self.target = Helper.Target:get_random_enemy(self) end,
-    castcooldown = 1,
-    cast_length = 0.1,
+
+
     spellclass = Spread_Laser,
     spelldata = {
       group = main.current.main,

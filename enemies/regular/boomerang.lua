@@ -11,8 +11,7 @@ fns['init_enemy'] = function(self)
   self.class = 'special_enemy'
   self.icon = 'ent'
 
-  self.baseCast = attack_speeds['medium-slow']
-  self:reset_castcooldown(self.baseCast)
+  -- Attack speed now handled by base class
 
   self.stopChasingInRange = true
 
@@ -24,9 +23,9 @@ fns['init_enemy'] = function(self)
     name = 'boomerang',
     viable = function () return true end,
     oncast = function() end,
-    castcooldown = self.castcooldown,
+
     instantspell = true,
-    cast_length = ENT_CAST_TIME,
+
     spellclass = Boomerang,
     spelldata = {
       group = main.current.main,

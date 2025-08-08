@@ -172,12 +172,12 @@ function Helper.Unit:in_range_of_rally_point(unit)
 end
     
 function Helper.Unit:cast_off_cooldown(unit)
-    return unit.castcooldown <= 0
+    return unit.attack_cooldown_timer <= 0
 end
 
 function Helper.Unit:can_cast(unit, target)
     -- We can only cast if we have a valid target in the first place.
-    if unit and target then
+    if unit and not unit.castObject and target then
         return table.any(unit_states_can_cast, function(v) return unit.state == v end)
             and unit:in_range_of(target)  -- The key change: Use the same logic as the movement check.
             and Helper.Unit:cast_off_cooldown(unit)

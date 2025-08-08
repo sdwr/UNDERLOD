@@ -19,9 +19,9 @@ fns['init_enemy'] = function(self)
   local plasma_barrage_straight = {
     name = 'plasma_barrage',
     viable = function () return true end,
-    castcooldown = 1,
+
     oncast = function() end,
-    cast_length = 1,
+
     spellclass = Plasma_Barrage,
     spelldata = {
       group = main.current.main,

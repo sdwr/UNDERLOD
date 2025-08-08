@@ -267,7 +267,7 @@ function Unit:init_unit()
   self:config_physics_object()
 
   --also set in child classes
-  self:reset_castcooldown(self.castcooldown or 0)
+  self:reset_attack_cooldown_timer(0)
 
   self.target = nil
   self.assigned_target = nil
@@ -833,6 +833,23 @@ function Unit:calculate_stats(first_run)
   --and add procs (+buffs) from items
   if(first_run) then
     self:init_stats()
+    
+    -- Set base cast/cooldown values based on unit type
+    if self.is_troop then
+      local character = self.character or 'default'
+      self.base_attack_cooldown = troop_attack_cooldowns[character] or troop_attack_cooldowns['default']
+      self.base_cast_time = troop_cast_times[character] or troop_cast_times['default']
+    elseif self.faction == 'enemy' then
+      local enemy_type = self.type or 'default'
+      self.base_attack_cooldown = enemy_attack_cooldowns[enemy_type] or enemy_attack_cooldowns['default']
+      self.base_cast_time = enemy_cast_times[enemy_type] or enemy_cast_times['default']
+    end
+    
+    -- Initialize attack cooldown timer
+    if not self.attack_cooldown_timer then
+      self.attack_cooldown_timer = 0
+      self.total_attack_cooldown_timer = 0
+    end
   end
 
   self.base_aspd_m = 1
@@ -966,11 +983,12 @@ function Unit:calculate_stats(first_run)
   -- if self.buff_hp_m == 1 then
   --   Stats_Max_Dmg_Without_Hp(self.buff_dmg_m or 0)
   -- end
-  if self.baseCooldown then
-    self.cooldownTime = self.baseCooldown * self.aspd_m
+  -- Updated simplified cast/cooldown system
+  if self.base_attack_cooldown then
+    self.attack_cooldown = self.base_attack_cooldown * self.aspd_m
   end
-  if self.baseCast then
-    self.castTime = self.baseCast * self.aspd_m
+  if self.base_cast_time then
+    self.cast_time = self.base_cast_time * self.aspd_m
   end
 
   self.attack_range = ((self.base_attack_range or 0) + self.buff_range_a) * self.buff_range_m
@@ -1695,7 +1713,7 @@ function Unit:pick_action()
   local viable_attacks = {}
   local viable_movements = {}
 
-  if self.castcooldown ~= nil and self.castcooldown <= 0 then
+  if not self.castObject and self.attack_cooldown_timer ~= nil and self.attack_cooldown_timer <= 0 then
     for k, v in pairs(attack_options) do
       if v.viable(self) then
         table.insert(viable_attacks, v)
@@ -1734,13 +1752,13 @@ end
 
 
 function Unit:update_cast_cooldown(dt)
-  if not self.castcooldown then
-    print('no castcooldown in update_cast_cooldown', self.type)
+  if not self.attack_cooldown_timer then
+    print('no attack_cooldown_timer in update_cast_cooldown', self.type)
     return
   end
 
-  if self.castcooldown > 0 then
-    self:set_castcooldown(self.castcooldown - dt)
+  if self.attack_cooldown_timer > 0 then
+    self:set_attack_cooldown_timer(self.attack_cooldown_timer - dt)
   end
 end
 
@@ -1766,9 +1784,8 @@ function Unit:should_freeze_rotation()
 end
 
 function Unit:end_cast(cooldown)
-  local random_cooldown = self:get_random_cooldown(cooldown)
   
-  self:reset_castcooldown(random_cooldown)
+  self:reset_attack_cooldown_timer(cooldown)
   self.spelldata = nil
   self.freezerotation = false
 
@@ -1799,13 +1816,14 @@ function Unit:try_backswing()
 end
 
 function Unit:get_random_cooldown(cooldown)
-  return cooldown + ((math.random() * RANDOM_COOLDOWN_VARIANCE) - 0.5 * RANDOM_COOLDOWN_VARIANCE)
+  return cooldown * random:float(0.8, 1.2)
 end
 
 function Unit:end_channel(cooldown)
   if self.state == unit_states['channeling'] then
-    local random_cooldown = self:get_random_cooldown(self.baseCooldown)
-    self:reset_castcooldown(random_cooldown)
+    local base_cooldown = cooldown or self.base_attack_cooldown or 1
+    local random_cooldown = self:get_random_cooldown(base_cooldown)
+    self:reset_attack_cooldown_timer(random_cooldown)
     self.spelldata = nil
     self.freezerotation = false
     Helper.Unit:set_state(self, unit_states['idle'])
@@ -1831,7 +1849,7 @@ function Unit:cancel_cast()
 
   if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
     Helper.Unit:set_state(self, unit_states['idle'])
-    self:reset_castcooldown(0)
+    self:reset_attack_cooldown_timer(0)
     self.spelldata = nil
   end
 
@@ -1840,7 +1858,7 @@ end
 
 function Unit:interrupt_cast()
   if self.castObject then
-    self:reset_castcooldown(self.baseCast or 1)
+    self:reset_attack_cooldown_timer(self.base_cast_time or 0.5)
     self.spelldata = nil
     Cancel_Cast(self)
   end
@@ -1848,7 +1866,7 @@ end
 
 function Unit:interrupt_channel()
   if self.state == unit_states['channeling'] then
-    self:reset_castcooldown(0)
+    self:reset_attack_cooldown_timer(self.base_cast_time or 0.5)
     self.spelldata = nil
     Cancel_Cast(self)
   end
@@ -1868,7 +1886,9 @@ function Unit:launch_at_facing(force_magnitude, duration)
   if self.state == unit_states['casting'] then
     self:end_cast()
   elseif self.state == unit_states['channeling'] then
-    self:end_channel()
+    local base_cooldown = self.attack_cooldown or 1
+    local random_cooldown = self:get_random_cooldown(base_cooldown)
+    self:end_channel(random_cooldown)
   end
 
   duration = duration or 0.7
@@ -1933,13 +1953,14 @@ function Unit:die()
 
 end
 
-function Unit:set_castcooldown(value)
-  self.castcooldown = value
+-- New simplified functions
+function Unit:set_attack_cooldown_timer(value)
+  self.attack_cooldown_timer = value
 end
 
-function Unit:reset_castcooldown(value)
-  self.castcooldown = value
-  self.total_castcooldown = value
+function Unit:reset_attack_cooldown_timer(value)
+  self.attack_cooldown_timer = value
+  self.total_attack_cooldown_timer = value
 end
 
 

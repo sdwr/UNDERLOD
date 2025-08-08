@@ -19,18 +19,12 @@ fns['init_enemy'] = function(self)
   self.movementStyle = MOVEMENT_TYPE_RANDOM
 
   --set special attrs
-  --castTime is what is used to determine the spell duration 
-  -- and is set to a default if baseCast is not set
-  self.baseCast = attack_speeds['medium']
-
-  self:reset_castcooldown(attack_speeds['medium-slow'])
-
+  -- Attack speed now handled by base class
+  
   self.direction_lock = false
   self.rotation_lock = false
 
   if self.mega then
-    self.baseCast = attack_speeds['fast']
-    self:reset_castcooldown(attack_speeds['medium-fast'])
     self.direction_lock = false
     self.rotation_lock = true
   end
@@ -48,8 +42,8 @@ fns['init_enemy'] = function(self)
     name = 'laser',
     viable = function() return Helper.Target:get_random_enemy(self) end,
     oncast = function() self.target = Helper.Target:get_random_enemy(self) end,
-    castcooldown = self.castcooldown,
-    cast_length = 0.1,
+
+
     hide_cast_timer = true,
     spellclass = Laser_Spell,
     --spell ends itself when firing, doesn't use duration
@@ -71,7 +65,7 @@ fns['init_enemy'] = function(self)
       fade_fire_draw = true,
       fade_in_aim_draw = true,
       lock_last_duration = 1.5,
-      charge_duration = self.baseCast,
+      charge_duration = 1.0,
     },
   }
 

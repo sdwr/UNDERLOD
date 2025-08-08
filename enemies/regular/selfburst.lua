@@ -12,8 +12,7 @@ fns['init_enemy'] = function(self)
   self.icon = 'rockslime'
   self.movementStyle = MOVEMENT_TYPE_RANDOM
 
-  self.baseCast = attack_speeds['medium-slow']
-  self:reset_castcooldown(self.baseCast)
+  -- Attack speed now handled by base class
 
   --set attacks
 
@@ -23,9 +22,9 @@ fns['init_enemy'] = function(self)
     name = 'selfburst',
     viable = function () return true end,
     oncast = function() end,
-    castcooldown = self.castcooldown,
+
     instantspell = true,
-    cast_length = ROCKSLIME_CAST_TIME,
+
     spellclass = Burst,
     spelldata = {
       group = main.current.main,

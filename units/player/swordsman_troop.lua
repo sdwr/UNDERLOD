@@ -3,15 +3,9 @@ function Swordsman_Troop:init(data)
   self.base_attack_range = TROOP_SWORDSMAN_RANGE
   Swordsman_Troop.super.init(self, data)
 
-  self.baseCooldown = TROOP_SWORDSMAN_BASE_COOLDOWN
-  self.cooldownTime = self.baseCooldown
-  self.baseCast = attack_speeds['short-cast']
-  self.castTime = self.baseCast
   self.backswing = 0.1
-  self:reset_castcooldown(math.random() * (self.base_castcooldown or self.baseCast))
-
   self.base_attack_area = 20
-
+  -- Cast/cooldown values are set in calculate_stats() first run
 end
 
 function Swordsman_Troop:update(dt)
@@ -28,19 +22,12 @@ function Swordsman_Troop:play_attack_sound()
 end
 
 function Swordsman_Troop:set_character()
-
   --the size of this is updated in objects.lua, and re-set in :update
   self.attack_sensor = Circle(self.x, self.y, self.base_attack_range)
 
-  --cooldowns
-  self.baseCooldown = TROOP_SWORDSMAN_BASE_COOLDOWN
-  self.cooldownTime = self.baseCooldown
-  self.baseCast = 0
-  self.castTime = self.baseCast
   self.backswing = 0.2
-  self:reset_castcooldown(math.random() * (self.base_castcooldown or self.baseCast))
-
   self:set_state_functions()
+  -- Cast/cooldown values are set in calculate_stats() first run
 end
 
 function Swordsman_Troop:setup_cast(cast_target)
@@ -53,8 +40,6 @@ function Swordsman_Troop:setup_cast(cast_target)
     end,
     unit = self,
     target = cast_target,
-    castcooldown = self.cooldownTime,
-    cast_length = self.castTime,
     backswing = self.backswing,
     instantspell = true,
     

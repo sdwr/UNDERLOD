@@ -17,8 +17,7 @@ fns['init_enemy'] = function(self)
 
   self.movementStyle = MOVEMENT_TYPE_RANDOM
 
-  self.baseCast = attack_speeds['medium-slow']
-  self:reset_castcooldown(self.baseCast)
+  -- Attack speed now handled by base class
 
   --set attacks
   self.attack_options = {}
@@ -32,7 +31,7 @@ fns['init_enemy'] = function(self)
     cast_length = BEHOLDER_CAST_TIME,
     cast_sound = earth1,
     cast_volume = 1.5,
-    castcooldown = 8.0, -- The cooldown after the spell is cast
+    -- Boss abilities have longer cooldowns, handled by base class
     
     spellclass = SafetyDanceSpell,
     
@@ -53,7 +52,7 @@ fns['init_enemy'] = function(self)
   local laser_ball = {
     name = 'laser_ball',
     viable = function () return true end,
-    castcooldown = self.baseCast,
+
     oncast = function() end,
     cast_length = BEHOLDER_CAST_TIME,
     cast_sound = earth1,
@@ -75,7 +74,7 @@ fns['init_enemy'] = function(self)
   local plasma_barrage_spiral = {
     name = 'plasma_barrage',
     viable = function () return true end,
-    castcooldown = self.baseCast,
+
     oncast = function() end,
     cast_length = BEHOLDER_CAST_TIME,
     cast_sound = earth1,
@@ -99,7 +98,7 @@ fns['init_enemy'] = function(self)
   local plasma_barrage_straight = {
     name = 'plasma_barrage_straight',
     viable = function () return true end,
-    castcooldown = self.baseCast,
+
     oncast = function() end,
     cast_length = BEHOLDER_CAST_TIME,
     cast_sound = earth1,
@@ -121,7 +120,7 @@ fns['init_enemy'] = function(self)
   local plasma_ball = {
     name = 'plasma_ball',
     viable = function () return true end,
-    castcooldown = self.baseCast,
+
     instantspell = true,
     oncast = function() end,
     cast_length = BEHOLDER_CAST_TIME,
@@ -143,7 +142,7 @@ fns['init_enemy'] = function(self)
   local quick_stomp = {
     name = 'quick_stomp',
     viable = function() return self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies) end,
-    castcooldown = self.baseCast,
+
     oncast = function() end,
     cast_length = BEHOLDER_CAST_TIME, 
     cast_sound = earth1,

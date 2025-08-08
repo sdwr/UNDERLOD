@@ -13,9 +13,7 @@ fns['init_enemy'] = function(self)
   self.movementStyle = MOVEMENT_TYPE_RANDOM  -- Moves randomly
 
   --set stats and cooldowns - fast attack speed for short action timer
-  self.baseCast = attack_speeds['fast']
-  self.cooldownTime = attack_speeds['fast']
-  self:reset_castcooldown(self.cooldownTime)
+  -- Attack speed and cast time now handled by base class
 
   self.baseActionTimer = 2  -- Short action timer
 
@@ -34,8 +32,7 @@ fns['init_enemy'] = function(self)
     oncast = function() 
       self.target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies)
     end,
-    cast_length = 0.5,  -- Very short cast time
-    castcooldown = self.cooldownTime,
+
     cancel_on_range = false,
     instantspell = true,
     cast_sound = scout1,

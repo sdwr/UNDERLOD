@@ -61,7 +61,7 @@ end
 function SnakeArrows:die()
   SnakeArrows.super.die(self)
   if self.unit then
-    self.unit:reset_castcooldown(self.unit.baseCast)
+    self.unit:reset_attack_cooldown_timer(self.unit.base_cast_time or 0.5)
   end
 end
 

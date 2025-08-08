@@ -12,8 +12,7 @@ fns['init_enemy'] = function(self)
   self.icon = 'lich'
   self.movementStyle = MOVEMENT_TYPE_RANDOM
 
-  self.baseCast = attack_speeds['medium']
-  self:reset_castcooldown(self.baseCast)
+  -- Attack speed now handled by base class
 
   --set attacks
 
@@ -23,9 +22,9 @@ fns['init_enemy'] = function(self)
     name = 'burst',
     viable = function () return true end,
     oncast = function() self.target = Helper.Target:get_random_enemy(self) end,
-    castcooldown = self.castcooldown,
+
     instantspell = true,
-    cast_length = LICH_CAST_TIME,
+
     spellclass = Burst,
     spelldata = {
       group = main.current.main,

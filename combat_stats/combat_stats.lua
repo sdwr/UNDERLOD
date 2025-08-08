@@ -15,8 +15,113 @@ ROUND_POWER_TO_GOLD = 100
 TROOP_HP = 100
 TROOP_DAMAGE = 13
 TROOP_MS = 45
+-- Legacy constants (will be replaced)
 TROOP_BASE_COOLDOWN = 1.1
 TROOP_SWORDSMAN_BASE_COOLDOWN = 0.8
+
+-- New troop cooldown system
+attack_cooldowns = {
+  ['very-fast'] = 0.8,
+  ['fast'] = 1.1,
+  ['medium'] = 1.5,
+  ['slow'] = 2.5,
+  ['very-slow'] = 4.0
+}
+
+troop_attack_cooldowns = {
+  ['archer'] = attack_cooldowns['fast'],
+  ['laser'] = attack_cooldowns['fast'], 
+  ['swordsman'] = attack_cooldowns['very-fast'],
+  ['default'] = attack_cooldowns['fast']
+}
+-- Enemy type to cooldown mapping (replaces magic numbers)
+enemy_attack_cooldowns = {
+  -- Regular enemies
+  ['stomper'] = attack_cooldowns['fast'],
+  ['plasma'] = attack_cooldowns['fast'], 
+  ['spread'] = attack_cooldowns['fast'],
+  ['mortar'] = attack_cooldowns['fast'],
+  ['arcspread'] = attack_cooldowns['medium'],
+  ['cleaver'] = attack_cooldowns['slow'],
+  ['charger'] = attack_cooldowns['slow'],
+  ['summoner'] = attack_cooldowns['slow'],
+  ['seeker'] = attack_cooldowns['very-slow'],
+  
+  -- Bosses  
+  ['stompy'] = attack_cooldowns['fast'],
+  ['dragon'] = attack_cooldowns['fast'],
+  ['heigan'] = attack_cooldowns['fast'],
+  ['heigan_eruption'] = 8.0, -- Special case for boss abilities
+  
+  -- Static
+  ['dragonegg'] = attack_cooldowns['slow'],
+  
+  -- Default for any enemy not specified
+  ['default'] = attack_cooldowns['medium']
+}
+
+-- Simplified cast/cooldown system
+cast_times = {
+  ['instant'] = 0,
+  ['short'] = 0.15,
+  ['medium'] = 0.37,
+  ['long'] = 0.66,
+  ['very-long'] = 1.0
+}
+
+troop_cast_times = {
+  ['archer'] = cast_times['medium'],
+  ['laser'] = cast_times['instant'],
+  ['swordsman'] = cast_times['short'],
+  ['default'] = cast_times['instant']
+}
+
+enemy_cast_times = {
+  -- Regular enemies with animations
+  ['shooter'] = GOBLIN_CAST_TIME,
+  ['turret'] = GOBLIN_CAST_TIME,  
+  ['goblin_archer'] = GOBLIN2_CAST_TIME,
+  ['big_goblin_archer'] = GOBLIN2_CAST_TIME,
+  ['archer'] = GOBLIN2_CAST_TIME,
+  ['cleaver'] = SLIME_CAST_TIME,
+  ['burst'] = LICH_CAST_TIME,
+  ['selfburst'] = ROCKSLIME_CAST_TIME,
+  ['singlemortar'] = PLANT2_CAST_TIME,
+  ['snakearrow'] = GHOST_CAST_TIME,
+  ['boomerang'] = ENT_CAST_TIME,
+  
+  -- Enemies with instant cast (no animation or simple attacks)
+  ['stomper'] = cast_times['instant'],
+  ['plasma'] = cast_times['instant'],
+  ['spread'] = cast_times['instant'],
+  ['mortar'] = cast_times['instant'],
+  ['arcspread'] = cast_times['instant'],
+  ['charger'] = cast_times['instant'],
+  ['summoner'] = cast_times['instant'],
+  ['seeker'] = cast_times['instant'],
+  ['laser'] = cast_times['instant'],
+  ['firewall_caster'] = cast_times['instant'],
+  ['line_mortar'] = cast_times['instant'],
+  ['aim_spread'] = cast_times['instant'],
+  ['slowcharger'] = cast_times['instant'],
+  
+  -- Bosses with longer cast times
+  --stompy has short casts and spell duration that matches the 
+  --animation
+  ['stompy'] = cast_times['short'],
+  --dragon has no animation
+  ['dragon'] = cast_times['long'], 
+  ['heigan'] = BEHOLDER_CAST_TIME,
+  
+  -- Static enemies
+  ['dragonegg'] = cast_times['instant'],
+  
+  -- Default for any enemy not specified
+  ['default'] = cast_times['instant']
+}
+
+
+
 
 TROOP_RANGE = 500
 TROOP_SWORDSMAN_RANGE = 80
@@ -347,21 +452,21 @@ attack_ranges = {
   }
 
 attack_speeds = {
-    ['short-cast'] = 0.15,
-    ['medium-cast'] = 0.37,
-    ['long-cast'] = 0.66,
-    ['ultra-long-cast'] = 1,
+  ['short-cast'] = 0.15,
+  ['medium-cast'] = 0.37,
+  ['long-cast'] = 0.66,
+  ['ultra-long-cast'] = 1,
 
-    ['buff'] = 0.66,
-    ['quick'] = 0.8,
-    ['ultra-fast'] = 1,
-    ['fast'] = 1.35,
-    ['medium-fast'] = 1.75,
-    ['medium'] = 2.5,
-    ['medium-slow'] = 3.5,
-    ['slow'] = 5,
-    ['ultra-slow'] = 8
-  }
+  ['buff'] = 0.66,
+  ['quick'] = 0.8,
+  ['ultra-fast'] = 1,
+  ['fast'] = 1.35,
+  ['medium-fast'] = 1.75,
+  ['medium'] = 2.5,
+  ['medium-slow'] = 3.5,
+  ['slow'] = 5,
+  ['ultra-slow'] = 8
+}
 
 move_speeds = {
     ['ultra-fast'] = 2.5,
@@ -487,8 +592,6 @@ _set_unit_base_stats = function(unit)
         unit.baseline_hp = unit.base_hp
     end
 
-    unit.baseCooldown = unit.baseCooldown or attack_speeds['medium']
-    unit.baseCast = unit.baseCast or attack_speeds['medium-cast']
     unit.stun_cooldown = 0
 end
 

@@ -12,8 +12,7 @@ fns['init_enemy'] = function(self)
   self.icon = 'plant2'
   self.movementStyle = MOVEMENT_TYPE_RANDOM
 
-  self.baseCast = attack_speeds['medium-slow']
-  self:reset_castcooldown(self.baseCast)
+  -- Attack speed now handled by base class
 
   --set attacks
   self.attack_options = {}
@@ -22,10 +21,10 @@ fns['init_enemy'] = function(self)
     name = 'singlemortar',
     viable = function() return true end,
     oncast = function() self.target = Helper.Target:get_random_enemy(self) end,
-    castcooldown = self.castcooldown,
+
     instantspell = true,
     cancel_on_death = false,
-    cast_length = PLANT2_CAST_TIME,
+
     cast_sound = usurer1,
     cast_volume = 2,
     spellclass = Stomp,

@@ -82,14 +82,15 @@ function Cast:init(args)
   end
   self.spelldata.unit = self.unit
   
+  -- Store the cooldown to apply when cast completes, don't set it yet
   if self.unit then
-    local castcooldown = random:float(0.8, 1.2) * (self.castcooldown or 1)
-    self.unit:reset_castcooldown(castcooldown)
+    local base_cooldown = self.attack_cooldown or self.unit.attack_cooldown or 1
+    self.final_cooldown = self.unit:get_random_cooldown(base_cooldown)
   end
 
   --vars from data
   self.rotation_lock = self.rotation_lock or false
-  self.cast_length = self.cast_length or 0.5
+  self.cast_length = self.cast_length or (self.unit and self.unit.cast_time) or 0.5
   
   self.cancel_on_death = self.cancel_on_death or true
   self.cancel_on_range = self.cancel_on_range or false
@@ -144,9 +145,6 @@ function Cast:cast()
   self.spelldata.unit = self.unit
   self.spelldata.target = self.target
 
-  local castcooldown = self.castcooldown or 1
-  self.spelldata.castcooldown = castcooldown
-
   if self.cast_sound and not self.cast_sound_at_start then
     self.cast_volume = self.cast_volume or 1
     self.cast_sound:play{volume = self.cast_volume}
@@ -171,7 +169,7 @@ function Cast:cast()
   else 
     Helper.Unit:set_state(self.unit, unit_states['channeling'])
   end
-  self.unit:end_cast(castcooldown)
+  self.unit:end_cast(self.final_cooldown or self.unit.attack_cooldown or 1)
   self:die()
 end
 
@@ -371,7 +369,7 @@ function Spell:try_end_cast()
     if self.on_attack_callbacks and self.unit.onAttackCallbacks then
       self.unit:onAttackCallbacks(self.target)
     end
-    self.unit:end_cast(self.castcooldown)
+    self.unit:end_cast(self.final_cooldown or self.unit.attack_cooldown or 1)
     if self.unit_dies_at_end then
       self.unit:die()
     end
@@ -394,8 +392,10 @@ function Spell:die()
   if DEBUG_SPELLS then
     print('destroying spell: ', self.name)
   end
-  if self.unit and self.unit.end_channel then
-    self.unit:end_channel()
+  if self.unit and self.unit.state == unit_states['channeling'] and self.unit.end_channel then
+    local base_cooldown = self.unit.attack_cooldown or 1
+    local random_cooldown = self.unit:get_random_cooldown(base_cooldown)
+    self.unit:end_channel(random_cooldown)
   end
   --reset the unit's rotation lock
   if self.freeze_rotation or self.rotation_lock then

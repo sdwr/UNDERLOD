@@ -12,9 +12,6 @@ fns['init_enemy'] = function(self)
   self.icon = 'goblin'
   self.name = 'turret'
 
-  self.baseCooldown = attack_speeds['medium-fast']
-  self.cooldownTime = self.baseCooldown
-
   -- Stationary enemy - doesn't move
   self.movementStyle = MOVEMENT_TYPE_NONE
 
@@ -28,8 +25,8 @@ fns['init_enemy'] = function(self)
         -- Rotate randomly (about 1/5th of a circle)
         self.target = Helper.Target:get_random_enemy(self)
       end,
-      cast_length = GOBLIN_CAST_TIME,
-      castcooldown = self.cooldownTime,
+  
+
       cancel_on_range = false,
       instantspell = true,
       cast_sound = scout1,

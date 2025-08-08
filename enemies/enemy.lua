@@ -14,10 +14,6 @@ function Enemy:init(args)
   Helper.Unit:set_state(self, unit_states['idle'])
   self.size = self.size or enemy_type_to_size[self.type]
   self.init_enemy(self)
-  --cast_cooldown and basecast are set custom in init_enemy
-  --overwrite again for The longer a troop goes without attacking, the more damage they deal on their next attack
-  self.baseCast = 1
-  self.castcooldown = 1
 
   self:init_unit()
   self:init_hitbox_points()
@@ -36,7 +32,7 @@ function Enemy:init(args)
   self.stopChasingInRange = not not self.stopChasingInRange
   self.haltOnPlayerContact = not not self.haltOnPlayerContact
 
-  self:reset_castcooldown(self.castcooldown or 1)
+  self:reset_attack_cooldown_timer(0)
   
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20 + self.shape.w / 2)
   

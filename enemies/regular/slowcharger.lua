@@ -13,9 +13,7 @@ fns['init_enemy'] = function(self)
   self.movementStyle = MOVEMENT_TYPE_SEEK
 
   --set stats and cooldowns
-  self.baseCast = attack_speeds['medium-slow']
-  self.cooldownTime = attack_speeds['medium-slow']
-  self:reset_castcooldown(self.cooldownTime)
+  -- Attack speed now handled by base class
 
   self.stopChasingInRange = false
   self.haltOnPlayerContact = false
@@ -38,8 +36,8 @@ fns['init_enemy'] = function(self)
     oncast = function() 
       self.target = Helper.Target:get_random_enemy(self)
     end,
-    cast_length = 0.5,  -- Brief windup
-    castcooldown = self.cooldownTime,
+
+
     instantspell = false,
     cast_sound = usurer1,
     cast_volume = 1.5,
