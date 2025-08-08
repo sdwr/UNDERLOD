@@ -808,7 +808,7 @@ function init()
     local group = Group():set_as_physics_world(32, 0, 0, { 'troop', 'enemy', 'projectile', 'enemy_projectile' })
     local troop_data = { group = group, character = unit.character, level = unit.level, items = unit.items, perks = main.current.perks or {} }
     local troop = Create_Troop(troop_data)
-    troop:update(0)
+    troop:calculate_stats()
     
     -- Get item stats
     local item_stats = troop:get_item_stats_for_display()
@@ -844,52 +844,6 @@ function init()
     return final_stats
   end
 
-  get_unit_buffs = function(unit)
-    local group = Group():set_as_physics_world(32, 0, 0, { 'troop', 'enemy', 'projectile', 'enemy_projectile' })
-    local troop_data = { group = group, character = unit.character, level = unit.level, items = unit.items }
-    local troop = Create_Troop(troop_data)
-    troop:update(0)
-    return troop:get_buff_names()
-  end
-
-  build_character_info_text = function(unit)
-    local item_stats = get_unit_stats(unit)
-    local buffs = get_unit_buffs(unit)
-    local text_lines = {}
-
-    local next_line = { text = '', font = pixul_font, alignment = 'center' }
-    next_line.text = unit.character:capitalize() .. ': '
-
-    table.insert(text_lines, next_line)
-    --add item stats
-    if #item_stats > 0 then
-      next_line = { text = '', font = pixul_font, alignment = 'center' }
-      next_line.text = 'Item stats:'
-      table.insert(text_lines, next_line)
-    end
-    for k, v in pairs(item_stats) do
-      next_line = { text = '', font = pixul_font, alignment = 'left' }
-      local prefix, value, suffix, display_name = format_stat_display(k, v)
-      next_line.text = prefix .. value .. suffix .. display_name:capitalize()
-      table.insert(text_lines, next_line)
-    end
-    --add item buffs
-    if #buffs > 0 then
-      next_line = { text = '', font = pixul_font, alignment = 'center' }
-      next_line.text = 'Item buffs:'
-      table.insert(text_lines, next_line)
-    end
-    for k, v in pairs(buffs) do
-      next_line = { text = '', font = pixul_font, alignment = 'left' }
-      next_line.text = v
-      table.insert(text_lines, next_line)
-    end
-
-    local info_text = InfoText { group = main.current.ui, force_update = false }
-    info_text:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
-
-    return info_text
-  end
 
   build_round_stats_text = function(unit)
     local text_lines = {}
@@ -926,32 +880,6 @@ function init()
       force_update = false }
     
     return text2
-  end
-
-  build_character_text = function(unit)
-    -- Check if unit has combat data from previous round
-    if unit.last_round_dps and unit.last_round_damage then
-      return build_round_stats_text(unit)
-    else
-      -- Fall back to item stats if no combat data
-      local item_stats = get_unit_stats(unit)
-      local buffs = get_unit_buffs(unit)
-
-      local text_lines = {}
-      local next_line = { text = '', font = pixul_font, alignment = 'center' }
-      for k, v in pairs(item_stats) do
-        next_line = { text = '', font = pixul_font, alignment = 'center' }
-        local prefix, value, suffix, display_name = format_stat_display(k, v)
-        next_line.text = '[yellow[0]]' .. prefix .. value .. suffix .. display_name:capitalize()
-        table.insert(text_lines, next_line)
-      end
-
-      local text2 = Text2 { group = main.current.ui, x = 0, y = 0,
-        lines = text_lines, font = pixul_font, alignment = 'center',
-        force_update = false }
-
-      return text2
-    end
   end
 
   local ylb1 = function(lvl)
