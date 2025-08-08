@@ -919,7 +919,7 @@ function Unit:calculate_stats(first_run)
     self.knockback_resistance = 0.9
   end
 
-  if self.class == 'regular_enemy' then
+  if self.class == 'regular_enemy' or self.class == 'special_enemy' then
     local enemy_stats = enemy_type_to_stats[self.type]
     if enemy_stats then
       for stat, amt in pairs(enemy_stats) do
