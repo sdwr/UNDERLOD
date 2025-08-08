@@ -266,12 +266,7 @@ function Troop:update_ai_logic()
       --find target if not already found
       -- pick random in attack range
       -- or closest in aggro range
-      if not self.infinite_range and self.attack_sensor then
-        local max_range = self.attack_sensor.rs
-        self:set_target(Helper.Target:get_close_enemy(self, nil, max_range))
-      else
-        self:set_target(Helper.Target:get_random_enemy(self))
-      end
+      self:set_target(Helper.Target:get_closest_enemy(self))
       cast_target = self.target
   end
 

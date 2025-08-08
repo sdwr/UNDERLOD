@@ -225,7 +225,7 @@ function Helper.Unit:add_default_state_change_functions(unit)
     unit.state_change_functions['knockback'] = function(self)
         self.being_pushed = true
         self.steering_enabled = false
-        self:interrupt_cast()
+        --self:interrupt_cast()
     end
     unit.state_change_functions['following'] = function(self) 
         self.state_change_functions['regain_control'](self)
