@@ -147,7 +147,7 @@ function HotbarButton:action_animation()
 end
 
 function HotbarButton:on_mouse_enter()
-  Helper.mouse_on_button = true
+  Helper.disable_unit_controls = true
   self:action_animation()
 end
 
@@ -155,7 +155,7 @@ end
 function HotbarButton:on_mouse_exit()
   if main.current.in_credits and not self.credits_button then return end
 
-  Helper.mouse_on_button = false
+  Helper.disable_unit_controls = false
 end    
 
 

@@ -217,18 +217,30 @@ function WorldManager:create_character_cards()
   end
 end
 
+function WorldManager:pause_arena()
+  if not self.paused then
+    self.paused = true
+    self:set_arenas_paused(true)
+  end
+end
+
+function WorldManager:unpause_arena()
+  if self.paused then
+    self.paused = false
+    self:set_arenas_paused(false)
+  end
+end
+
 function WorldManager:update(dt)
   self:update_game_object(dt)
 
   if input.escape.pressed then
     if not self.paused then
-      self.paused = true
+      self:pause_arena()
       open_options(self)
-      self:set_arenas_paused(true)
     else
-      self.paused = false
+      self:unpause_arena()
       close_options(self, self.in_tutorial)
-      self:set_arenas_paused(false)
     end
   end
 

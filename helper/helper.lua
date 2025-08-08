@@ -16,7 +16,7 @@ Helper.mousex = 0
 Helper.mousey = 0
 Helper.window_width = 0
 Helper.window_height = 0
-Helper.mouse_on_button = false
+Helper.disable_unit_controls = false
 
 --helper fns only work in arena, not in buy screen
 function Helper:init()

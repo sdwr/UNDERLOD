@@ -6,8 +6,8 @@ function BaseCard:init(args)
   self:init_game_object(args)
   
   -- Card dimensions
-  self.w = args.w or 60
-  self.h = args.h or 80
+  self.w = args.w or CARD_WIDTH
+  self.h = args.h or CARD_HEIGHT
   
   -- Visual properties
   self.image = args.image
@@ -17,7 +17,7 @@ function BaseCard:init(args)
   
   -- Mouse interaction
   self.shape = Rectangle(self.x, self.y, self.w, self.h)
-  self.interact_with_mouse = true
+  self.interact_with_mouse = default_to(args.interact_with_mouse, true)
   self.selected = false
   
   -- Text content (to be set by subclasses)

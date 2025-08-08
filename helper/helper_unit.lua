@@ -406,9 +406,17 @@ function Helper.Unit:block_troop_movement()
     end
 end
 
+function Helper.Unit:disable_unit_controls()
+    Helper.disable_unit_controls = true
+end
+
+function Helper.Unit:enable_unit_controls()
+    Helper.disable_unit_controls = false
+end
+
 --select + target from input
 function Helper.Unit:select()
-    if not Helper.mouse_on_button then
+    if not Helper.disable_unit_controls then
         local flag = false
         --should be on key release, not press? or at least only check the first press
 
