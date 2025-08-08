@@ -677,6 +677,9 @@ function SpawnManager:process_next_instruction()
           -- Call Spawn_Group with the wave's spawn location
           if spawn_type == 'scatter' then
             Spawn_Group_Scattered(self.arena, group_data)
+          elseif spawn_type == 'location' then
+            local location = instruction[5]
+            Spawn_Group_With_Location(self.arena, group_data, location)
           else
             Spawn_Group_With_Location(self.arena, group_data, wave_spawn_location)
           end

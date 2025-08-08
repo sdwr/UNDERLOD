@@ -1402,6 +1402,24 @@ function init()
     }
   }
 
+  special_enemy_by_tier_melee = {
+    [1] = {
+      'cleaver',
+    },
+    [1.5] = {
+      'cleaver',
+    },
+    [2] = {
+      'charger',
+    },
+    [2.5] = {
+      'charger',
+    },
+    [3] = {
+      'charger',
+    },
+  }
+
   special_enemy_by_tier = {
     [1] = {
       'archer',

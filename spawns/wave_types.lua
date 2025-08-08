@@ -6,87 +6,59 @@
 
 Wave_Types = {}
 
-function Wave_Types:Add_Enemy(wave, power_budget, tier, enemy_type, number)
-  
-  local power_added = 0
+function Wave_Types:Create_Ranged_Wave(level)
+  local tier = LEVEL_TO_TIER(level)
 
-  --try to add special, fallback to normal, fallback to swarmer
-  if enemy_type == 'special' then
-     power_added = self:Add_Special_Enemy(wave, power_budget, tier, number)
-  end
-  if power_added == 0 then
-    power_added = self:Add_Swarmers(wave, power_budget, tier, number)
-  end
-  
-  if power_added == 0 then
-    print('failed to add enemy', enemy_type)
+  local RANGED_SPAWN_OFFSET = 50
+  local ranged_spawn_locations = {
+    {x = RANGED_SPAWN_OFFSET, y = RANGED_SPAWN_OFFSET},
+    {x = gw - RANGED_SPAWN_OFFSET, y = RANGED_SPAWN_OFFSET},
+    {x = RANGED_SPAWN_OFFSET, y = gh - RANGED_SPAWN_OFFSET},
+    {x = gw - RANGED_SPAWN_OFFSET, y = gh - RANGED_SPAWN_OFFSET},
+  }
+
+  local wave = {}
+  local enemy = random:table(special_enemy_by_tier[tier])
+  while table.contains(special_enemy_by_tier_melee[tier], enemy) do
+    enemy = random:table(special_enemy_by_tier[tier])
   end
 
-  return power_added
+  table.insert(wave, {'GROUP', enemy, 1, 'location', ranged_spawn_locations[1]})
+  table.insert(wave, {'GROUP', enemy, 1, 'location', ranged_spawn_locations[2]})
+  table.insert(wave, {'GROUP', enemy, 1, 'location', ranged_spawn_locations[3]})
+  table.insert(wave, {'GROUP', enemy, 1, 'location', ranged_spawn_locations[4]})
+
+  return wave
 end
 
-function Wave_Types:Add_Special_Enemy(wave, power_budget, tier, number)
-  local special_enemy = random:table(special_enemy_by_tier[tier])
-  local max_num_enemies_in_budget = math.floor(power_budget / enemy_to_round_power[special_enemy])
-  
-  if max_num_enemies_in_budget == 0 then
-    return 0
-  end
+function Wave_Types:Create_Close_Wave(level)
+  local tier = LEVEL_TO_TIER(level)
 
-  local num_enemies_in_group = 0
-  if number and number <= max_num_enemies_in_budget then
-    num_enemies_in_group = number
-  else
-    local max_enemies_in_group = math.min(max_num_enemies_in_budget, MAX_SPECIAL_ENEMY_GROUP_SIZE_BY_TIER[tier])
-    num_enemies_in_group = math.random(1, max_enemies_in_group)
-  end
-  table.insert(wave, {'GROUP', special_enemy, num_enemies_in_group, 'nil'})
-  return enemy_to_round_power[special_enemy] * num_enemies_in_group
+  local wave = {}
+  local enemy = random:table(special_enemy_by_tier[tier])
+
+  table.insert(wave, {'GROUP', enemy, 1, 'nil'})
+  table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
+  table.insert(wave, {'DELAY', 5})
+  table.insert(wave, {'GROUP', enemy, 1, 'nil'})
+  table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
+  return wave
 end
 
-function Wave_Types:Add_Normal_Enemy(wave, power_budget, tier, number)
-  local normal_enemy = random:table(normal_enemy_by_tier[tier])
-  local max_num_enemies_in_budget = math.floor(power_budget / enemy_to_round_power[normal_enemy])
+function Wave_Types:Create_Kicker_Wave(level)
+  local tier = LEVEL_TO_TIER(level)
+  local wave = {}
+  local enemy = random:table(special_enemy_by_tier[tier])
+  local enemy2 = random:table(special_enemy_by_tier[tier])
 
-  if max_num_enemies_in_budget == 0 then
-    return 0
-  end
+  table.insert(wave, {'GROUP', enemy, 1, 'scatter'})
+  table.insert(wave, {'GROUP', enemy, 1, 'scatter'})
+  table.insert(wave, {'GROUP', enemy2, 1, 'scatter'})
+  table.insert(wave, {'GROUP', enemy2, 1, 'scatter'})
+  table.insert(wave, {'DELAY', 5})
+  table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
 
-  local num_enemies_in_group = 0
-  if number and number <= max_num_enemies_in_budget then
-    num_enemies_in_group = number
-  else
-    local max_group_size = MAX_NORMAL_ENEMY_GROUP_SIZE_BY_TIER[tier]
-    if normal_enemy == 'swarmer' then
-      max_group_size = MAX_SWARMER_GROUP_SIZE_BY_TIER[tier]
-    end 
-    local max_enemies_in_group = math.min(max_num_enemies_in_budget, max_group_size)
-    local min_enemies_in_group = math.max(1, math.floor(max_enemies_in_group / 2))
-    num_enemies_in_group = math.random(min_enemies_in_group, max_enemies_in_group)
-  end
-  table.insert(wave, {'GROUP', normal_enemy, num_enemies_in_group, 'nil'})
-  return enemy_to_round_power[normal_enemy] * num_enemies_in_group
-end
-
-function Wave_Types:Add_Swarmers(wave, power_budget, tier, number)
-  local swarmer = 'swarmer'
-  local max_num_enemies_in_budget = math.floor(power_budget / enemy_to_round_power[swarmer])
-
-  if max_num_enemies_in_budget == 0 then
-    return 0
-  end
-
-  local max_enemies_in_group = math.min(max_num_enemies_in_budget, MAX_SWARMER_GROUP_SIZE_BY_TIER[tier])
-  local min_enemies_in_group = math.max(1, math.floor(max_enemies_in_group / 2))
-  
-  local num_enemies_in_group = 0
-  if number and number <= max_num_enemies_in_budget then
-    num_enemies_in_group = number
-  else
-    num_enemies_in_group = math.random(min_enemies_in_group, max_enemies_in_group)
-  end
-  table.insert(wave, {'GROUP', swarmer, num_enemies_in_group, 'nil'})
-  return enemy_to_round_power[swarmer] * num_enemies_in_group
+  return wave
 end
 
 function Wave_Types:Get_Waves(level)
@@ -102,29 +74,15 @@ function Wave_Types:Get_Waves(level)
   local tier = LEVEL_TO_TIER(level)
 
   for i = 1, WAVES_PER_LEVEL(level) do
-    local wave = {}
-    local group = {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'}
-    table.insert(wave, group)
-    group = {'GROUP', 
-      random:table(special_enemy_by_tier[tier]), 
-      SPECIAL_ENEMIES_PER_LEVEL(level), 
-      'nil'
-    }
-    table.insert(wave, group)
-    group = {'DELAY', 5}
-    table.insert(wave, group)
-  
-    group = {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'}
-    table.insert(wave, group)
-    group = {'GROUP',
-      random:table(special_enemy_by_tier[tier]), 
-      SPECIAL_ENEMIES_PER_LEVEL(level), 
-      'nil'
-    }
-    table.insert(wave, group)
+    local wave_type = random:table({
+      'Create_Ranged_Wave',
+      'Create_Close_Wave',
+      'Create_Kicker_Wave',
+    })
     
-    table.insert(waves, wave)
+    local wave = self[wave_type](self, level)
 
+    table.insert(waves, wave)
   end
   
   return waves
