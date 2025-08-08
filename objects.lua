@@ -1707,6 +1707,8 @@ function Unit:pick_action()
     return false
   end
   
+    
+  
   local attack_options = self.attack_options or {}
   local movement_options = self.movement_options or {}
 
@@ -1725,29 +1727,43 @@ function Unit:pick_action()
     table.insert(viable_movements, v)
   end
 
-  if #viable_attacks > 0 and math.random() > (self.move_option_weight or 0.15) then
-    local attack = random:table(viable_attacks)
-    while #viable_attacks > 1 and self.last_cast == attack.name do
-      attack = random:table(viable_attacks)
-    end
-    self:cast(attack)
-    self.last_cast = attack.name
-    return true
+  local type, action
+  if self.custom_action_selector then
+    type, action = self:custom_action_selector(viable_attacks, viable_movements)
   else
-    local chosen_movement
 
-    if #viable_movements > 0 then
-        -- We have dynamic options, pick one.
-        chosen_movement = random:table(viable_movements)
+    if #viable_attacks > 0 and math.random() > (self.move_option_weight or 0.15) then
+      type = 'attack'
+      
+      action = random:table(viable_attacks)
+
+      while #viable_attacks > 1 and self.last_cast == action.name do
+        action = random:table(viable_attacks)
+      end
     else
-        -- No dynamic options, use the enemy's default style.
-        chosen_movement = self.movementStyle or MOVEMENT_TYPE_RANDOM
-    end
+      type = 'movement'
 
-    -- Now, commit to the chosen movement action once.
-    self:set_movement_action(chosen_movement)
+      if #viable_movements > 0 then
+          -- We have dynamic options, pick one.
+          action = random:table(viable_movements)
+      else
+          -- No dynamic options, use the enemy's default style.
+          action = self.movementStyle or MOVEMENT_TYPE_RANDOM
+      end
+    end
+  end
+
+  if action then
+    if type == 'attack' then
+      self:cast(action)
+      self.last_cast = action.name
+    elseif type == 'movement' then
+      self:set_movement_action(action)
+    end
     return true
   end
+
+  return false
 end
 
 

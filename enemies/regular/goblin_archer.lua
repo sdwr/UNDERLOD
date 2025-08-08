@@ -10,7 +10,7 @@ fns['init_enemy'] = function(self)
 
   self.class = 'special_enemy'
   self.icon = 'goblin2'
-  self.movementStyle = MOVEMENT_TYPE_SEEK_TO_RANGE
+  self.movementStyle = MOVEMENT_TYPE_RANDOM
 
   --set stats and cooldowns
   -- Attack speed now handled by base class
@@ -25,14 +25,25 @@ fns['init_enemy'] = function(self)
   self.attack_range = attack_ranges['ranged']
   self.attack_sensor = Circle(self.x, self.y, self.attack_range)
 
+  self.last_action = 'attack'
+  self.custom_action_selector = function(self, viable_attacks, viable_movements)
+    if self.last_action == 'attack' then
+      self.last_action = 'movement'
+      return 'movement', MOVEMENT_TYPE_RANDOM
+    else
+      self.last_action = 'attack'
+      return 'attack', random:table(viable_attacks)
+    end
+  end
+
   --set attacks
   self.attack_options = {}
 
   local shoot = {
     name = 'shoot',
-    viable = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end,
+    viable = function() local target = Helper.Target:get_closest_enemy(self); return target end,
     oncast = function() 
-      self.target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies)
+      self.target = Helper.Target:get_closest_enemy(self)
     end,
 
 
