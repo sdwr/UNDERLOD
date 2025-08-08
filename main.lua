@@ -1424,11 +1424,11 @@ function init()
   special_enemy_by_tier = {
     [1] = {
       'archer',
-      -- 'selfburst',
-      -- 'burst',
-      -- 'snakearrow',
-      -- 'turret',
-      -- 'cleaver',
+      'selfburst',
+      'burst',
+      'snakearrow',
+      'turret',
+      'cleaver',
       -- 'slowcharger',
     },
     [1.5] = {
