@@ -21,9 +21,6 @@ fns['init_enemy'] = function(self)
   self.haltOnPlayerContact = false
 
   -- Set unlimited attack range
-  self.attack_range = 9999  -- Unlimited range
-  self.attack_sensor = Circle(self.x, self.y, self.attack_range)
-  self.aggro_sensor = Circle(self.x, self.y, self.attack_range)
 
   -- No movement options - only attacks
   self.movement_options = {}
@@ -35,11 +32,11 @@ fns['init_enemy'] = function(self)
   local charge_attack = {
     name = 'charge',
     viable = function() 
-      local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
+      local target = Helper.Target:get_random_enemy(self)
       return target 
     end,
     oncast = function() 
-      self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
+      self.target = Helper.Target:get_random_enemy(self)
     end,
     cast_length = 0.5,  -- Brief windup
     castcooldown = self.cooldownTime,

@@ -34,7 +34,6 @@ fns['init_enemy'] = function(self)
   self:reset_castcooldown(self.baseCast)
 
 --set sensors
-  self.aggro_sensor = Circle(self.x, self.y, 800)
   self.attack_sensor = Circle(self.x, self.y, 120)
 
 
@@ -115,7 +114,7 @@ fns['init_enemy'] = function(self)
     castcooldown = self.castcooldown,
     cast_length = 0.1,
     oncast = function() 
-      self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) 
+      self.target = Helper.Target:get_random_enemy(self)
       if self.target then
         self:rotate_towards_object(self.target, 1)
       end

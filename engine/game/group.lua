@@ -344,6 +344,19 @@ function Group:get_objects_in_shape(shape, object_types, exclude_list)
   return out
 end
 
+function Group:get_closest_object_by_class(object, object_types, exclude_list)
+  return self:get_closest_object(object, function(o) 
+    local is_valid_type = table.any(object_types, function(v) return o:is(v) end)
+    local is_not_excluded = not exclude_list or not table.any(exclude_list, function(v) return v.id == o.id end)
+    return is_valid_type and is_not_excluded
+  end)
+end
+
+function Group:get_random_object_by_class(object_types)
+  local objects = self:get_objects_by_classes(object_types)
+  return table.random(objects)
+end
+
 
 -- Returns the closest object in this group to the object passed in
 -- Optionally also pass in a function which will only allow objects that pass its test to be considered in the calculations

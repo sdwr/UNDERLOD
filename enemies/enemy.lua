@@ -39,7 +39,6 @@ function Enemy:init(args)
   self:reset_castcooldown(self.castcooldown or 1)
   
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20 + self.shape.w / 2)
-  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, 1000)
   
   self.last_attack_started = 0
 
@@ -158,7 +157,6 @@ function Enemy:update(dt)
   
   
     self.attack_sensor:move_to(self.x, self.y)
-    self.aggro_sensor:move_to(self.x, self.y)
   
     if self.area_sensor then self.area_sensor:move_to(self.x, self.y) end
 end
@@ -216,16 +214,16 @@ end
 function Enemy:acquire_target_seek()
   -- 30% chance to target critters
   if random:float(0, 1) < ENEMY_CHANCE_TO_TARGET_CRITTER then
-    self.target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.friendlies)
+    self.target = Helper.Target:get_closest_enemy(self)
   else
-    self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies_without_critters)
+    self.target = Helper.Target:get_random_enemy(self)
   end
   return self.target ~= nil
 end
 
 function Enemy:acquire_target_loose_seek()
   self.target_location = nil
-  self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
+  self.target = Helper.Target:get_random_enemy(self)
   if self.target then
     self.target_location = {x = self.target.x + random:float(-LOOSE_SEEK_OFFSET, LOOSE_SEEK_OFFSET), y = self.target.y + random:float(-LOOSE_SEEK_OFFSET, LOOSE_SEEK_OFFSET)}
   end
@@ -236,7 +234,7 @@ function Enemy:acquire_target_seek_to_range()
   self.target_location = nil 
   -- Step 1: Validate the current target. If it's dead or out of range, find a new one.
   if not self.target or self.target.dead or not self:in_range_of(self.target) then
-    self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
+    self.target = Helper.Target:get_closest_enemy(self)
     -- When we get a new target, we must clear the old target_location
     -- so we calculate a fresh one in the next step.
   end

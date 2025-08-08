@@ -15,15 +15,13 @@ fns['init_enemy'] = function(self)
   self.baseCast = attack_speeds['medium-slow']
   self:reset_castcooldown(self.baseCast)
 
-  self.aggro_sensor = Circle(self.x, self.y, 999)
-
   --set attacks
   self.attack_options = {}
 
   local singlemortar = {
     name = 'singlemortar',
     viable = function() return true end,
-    oncast = function() self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) end,
+    oncast = function() self.target = Helper.Target:get_random_enemy(self) end,
     castcooldown = self.castcooldown,
     instantspell = true,
     cancel_on_death = false,

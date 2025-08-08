@@ -19,10 +19,10 @@ fns['init_enemy'] = function(self)
 
   local charge = {
     name = 'charge',
-    viable = function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); return target end,
+    viable = function() return Helper.Target:get_random_enemy(self) end,
     castcooldown = 3,
     cast_length = 0.1,
-    oncast = function() local target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies); self.target = target end,
+    oncast = function() self.target = Helper.Target:get_random_enemy(self) end,
     spellclass = Launch_Spell,
     spelldata = {
       group = main.current.main,

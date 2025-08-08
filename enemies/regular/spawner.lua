@@ -15,7 +15,6 @@ fns['init_enemy'] = function(self)
   --set special attrs
   self.maxSummons = 10
   self.summons = 0
-  self.aggro_sensor = Circle(self.x, self.y, 1)
 
   --set attacks
   self.spawn_pos = {x = self.x, y = self.y}

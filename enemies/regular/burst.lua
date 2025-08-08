@@ -22,7 +22,7 @@ fns['init_enemy'] = function(self)
   local burst = {
     name = 'burst',
     viable = function () return true end,
-    oncast = function() self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) end,
+    oncast = function() self.target = Helper.Target:get_random_enemy(self) end,
     castcooldown = self.castcooldown,
     instantspell = true,
     cast_length = LICH_CAST_TIME,

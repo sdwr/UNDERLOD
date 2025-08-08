@@ -26,7 +26,7 @@ fns['init_enemy'] = function(self)
       viable = function() return true end,
       oncast = function()
         -- Rotate randomly (about 1/5th of a circle)
-        self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
+        self.target = Helper.Target:get_random_enemy(self)
       end,
       cast_length = GOBLIN_CAST_TIME,
       castcooldown = self.cooldownTime,

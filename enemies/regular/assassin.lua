@@ -14,12 +14,6 @@ fns['init_enemy'] = function(self)
 
   --set attacks
   self.spawn_pos = {x = self.x, y = self.y}
-  self.t:cooldown(attack_speeds['ultra-slow'], function() local targets = self:get_objects_in_shape(self.aggro_sensor, main.current.friendlies); return targets and #targets > 0 end, function()
-    local furthest_enemy = self:get_furthest_object_to_point(self.aggro_sensor, main.current.friendlies, {x = self.x, y = self.y})
-    if furthest_enemy then
-      Vanish{group = main.current.main, team = "enemy", x = self.x, y = self.y, target = furthest_enemy, level = self.level, parent = self}
-    end
-  end, nil, nil, 'vanish')
 end
 
 fns['draw_enemy'] = function(self)   

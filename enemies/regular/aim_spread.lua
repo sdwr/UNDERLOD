@@ -20,10 +20,10 @@ fns['init_enemy'] = function(self)
 
   local aim_spread = {
     name = 'aim_spread',
-    viable = function() return self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) end,
+    viable = function() return Helper.Target:get_random_enemy(self) end,
     castcooldown = self.castcooldown,
     oncast = function() 
-      self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies)
+      self.target = Helper.Target:get_random_enemy(self)
     end,
     cast_length = 1,
     spellclass = AimProjectile_Spell,

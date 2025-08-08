@@ -15,7 +15,6 @@ function EnemyCritter:init(args)
   Set_Enemy_Shape(self, 'critter')
   self:set_restitution(0.5)
 
-  self.aggro_sensor = Circle(self.x, self.y, 1000)
   self.attack_sensor = Circle(self.x, self.y, 25)
 
   self.color = args.color or grey[0]
@@ -53,7 +52,6 @@ function EnemyCritter:update(dt)
   end
   self.r = self:get_angle()
 
-  self.aggro_sensor:move_to(self.x, self.y)
   self.attack_sensor:move_to(self.x, self.y)
 end
 

@@ -36,7 +36,6 @@ function Troop:init(args)
   self.type = character_types[self.character]
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 40)
   
-  self.aggro_sensor = self.aggro_sensor or Circle(self.x, self.y, self.attack_sensor.rs + AGGRO_RANGE_BOOST)
   self:set_character()
 
   Helper.Unit:set_state(self, unit_states['idle'])
@@ -207,12 +206,11 @@ function Troop:update(dt)
   -- ===================================================================
   self.r = self:get_angle()
   self.attack_sensor:move_to(self.x, self.y)
-  self.aggro_sensor:move_to(self.x, self.y)
 end
 
 --unused right now
 function Troop:move_towards_target()
-  local movement_target = self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies)
+  local movement_target = Helper.Target:get_closest_enemy(self)
   if movement_target then
     self:seek_point(movement_target.x, movement_target.y, SEEK_DECELERATION, SEEK_WEIGHT)
     self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
@@ -275,10 +273,10 @@ function Troop:update_ai_logic()
       -- pick random in attack range
       -- or closest in aggro range
       if self:has_potential_target_in_range() then
-        self:set_target(self:get_random_object_in_shape(self.attack_sensor, main.current.enemies))
+        self:set_target(Helper.Target:get_random_enemy(self))
         cast_target = self.target
       else
-        self:set_target(self:get_closest_object_in_shape(self.aggro_sensor, main.current.enemies))
+        self:set_target(Helper.Target:get_closest_enemy(self))
       end
   end
 

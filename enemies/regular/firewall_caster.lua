@@ -37,7 +37,7 @@ fns['init_enemy'] = function(self)
         
         -- The attack is viable if there is any friendly unit within its large aggro sensor range.
         viable = function() 
-            return self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) 
+            return Helper.Target:get_random_enemy(self) 
         end,
 
         -- oncast is not needed because the spell fires instantly at the caster's angle.

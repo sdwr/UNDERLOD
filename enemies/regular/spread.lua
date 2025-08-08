@@ -17,8 +17,8 @@ fns['init_enemy'] = function(self)
 
   local spread_laser = {
     name = 'spread_laser',
-    viable = function() return self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) end,
-    oncast = function() self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) end,
+    viable = function() return Helper.Target:get_random_enemy(self) end,
+    oncast = function() self.target = Helper.Target:get_random_enemy(self) end,
     castcooldown = 1,
     cast_length = 0.1,
     spellclass = Spread_Laser,

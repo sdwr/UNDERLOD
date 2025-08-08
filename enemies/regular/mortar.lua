@@ -17,9 +17,9 @@ fns['init_enemy'] = function(self)
 
   local mortar = {
     name = 'mortar',
-    viable = function() return self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) end,
+    viable = function() return Helper.Target:get_random_enemy(self) end,
     castcooldown = 1,
-    oncast = function() self.target = self:get_random_object_in_shape(self.aggro_sensor, main.current.friendlies) end,
+    oncast = function() self.target = Helper.Target:get_random_enemy(self) end,
     cast_length = 1,
     spellclass = Mortar_Spell,
     spelldata = {

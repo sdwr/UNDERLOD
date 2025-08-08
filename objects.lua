@@ -687,9 +687,6 @@ function Unit:draw_debug_info()
   if self.attack_sensor then
     graphics.circle(self.attack_sensor.x, self.attack_sensor.y, self.attack_sensor.rs, yellow[0] ,1)
   end
-  if self.aggro_sensor then
-    graphics.circle(self.aggro_sensor.x, self.aggro_sensor.y, self.aggro_sensor.rs, blue[0], 2)
-  end
 end
 
 --should move this somewhere, maybe to the proc class
@@ -1654,20 +1651,6 @@ function Unit:in_range_of(target)
     not target.dead and 
     table.any(unit_states_can_target, function(v) return self.state == v end) and 
     self:distance_to_object(target) - target_size_offset < self.attack_sensor.rs
-end
-
-function Unit:in_aggro_range()
-  return function()
-    local target = self:my_target()
-    local target_size_offset = 0
-    if self.attack_range and self.attack_range < MELEE_ATTACK_RANGE and target and not target.dead then
-      target_size_offset = target.shape.w/2
-    end
-    return target and 
-      not target.dead and 
-      table.any(unit_states_can_target, function(v) return self.state == v end) and 
-      self:distance_to_object(target) - target_size_offset < self.aggro_sensor.rs
-  end
 end
 
 --casting functions
