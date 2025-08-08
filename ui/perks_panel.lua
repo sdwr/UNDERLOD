@@ -108,9 +108,14 @@ end
 function PerkSlot:try_level_perk()
   if not self.perk then return end
   if not Can_Perk_Level_Up(self.perk) then return end
-  if gold < Perk_Level_Up_Cost(self.perk) then return end
   
-  gold = gold - Perk_Level_Up_Cost(self.perk)
+  local cost = Perk_Level_Up_Cost(self.perk)
+  if gold < cost then 
+    Create_Info_Text('not enough gold', self, 'error')
+    return 
+  end
+  
+  gold = gold - cost
   ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
   self.perk.level = self.perk.level + 1
 

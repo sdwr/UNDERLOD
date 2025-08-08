@@ -96,7 +96,6 @@ function Get_Random_Perk_Choices(player_perks)
   return choices
 end
 
-
 PERK_DEFINITIONS = {
   --generic unit perks
   movespeed = {

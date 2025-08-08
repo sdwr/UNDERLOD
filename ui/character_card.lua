@@ -1,4 +1,5 @@
 Active_Inventory_Slot = nil
+Loose_Inventory_Item = nil
 Character_Cards = {}
 
 --still have duplicate text bug 
@@ -461,7 +462,6 @@ function ItemPart:init(args)
   self.shape = Rectangle(self.x, self.y, self.sx * 20, self.sy * 20)
   self.interact_with_mouse = true
   self.itemGrabbed = false
-  self.looseItem = nil
   self.info_text = nil
 
   self.h = ITEM_PART_HEIGHT
@@ -544,38 +544,92 @@ end
 function ItemPart:update(dt)
   self:update_game_object(dt)
 
-  if self.colliding_with_mouse then
-    Active_Inventory_Slot = self
-  elseif Active_Inventory_Slot == self then
-    Active_Inventory_Slot = nil
+  -- Disable interaction only when item is hidden
+  if self.hide_item_display then
+    self.interact_with_mouse = false
+    if Active_Inventory_Slot == self then
+      Active_Inventory_Slot = nil
+    end
+  else
+    self.interact_with_mouse = true
+    
+    if self.colliding_with_mouse then
+      Active_Inventory_Slot = self
+    elseif Active_Inventory_Slot == self then
+      Active_Inventory_Slot = nil
+    end
   end
 
-  if input.m1.pressed and self.colliding_with_mouse and self:hasItem() then
+  if input.m1.pressed and self.colliding_with_mouse and self:hasItem() and not Loose_Inventory_Item then
     self.itemGrabbed = true
-    self.looseItem = LooseItem{group = main.current.world_ui, item = self:getItem(), parent = self}
+    Loose_Inventory_Item = LooseItem{group = main.current.ui, item = self:getItem(), parent = self}
     self:remove_tooltip()
   end
 
   if self.itemGrabbed and input.m1.released then
     self.itemGrabbed = false
-    self.looseItem:die()
-    self.looseItem = nil
+    --loose item dies when it reaches the target slot
+    --and has to be manually killed when you drop it on a new slot
+    local loose_item = Loose_Inventory_Item
+    Loose_Inventory_Item = nil
+    local source_item = self:getItem()
     local active = Active_Inventory_Slot
-    --try to move the grabbed item to this slot
-    --only if they are the same item type slot
+    
+    -- Determine what to do based on target
     if active and not self:isActiveInvSlot() and self.i == active.i then
-      --if the active slot has an item, swap them
+      -- Valid target slot of same type
       if active:hasItem() then
-        local temp = active:getItem()
-        active:addItem(self:getItem())
-        self:addItem(temp)
+        -- SWAP: Exchange items between slots
+        local target_item = active:getItem()
+        
+        -- Do the swap immediately without triggering refreshes
+        self.parent.unit.items[self.i] = nil
+        active.parent.unit.items[active.i] = nil
+        active.parent.unit.items[active.i] = source_item
+        self.parent.unit.items[self.i] = target_item
+        main.current:save_run()
+                
+        -- Loose item creates particle effect and dies at target
+        loose_item:move_item_to_slot(active, function()
+          active:create_item_added_effect(source_item)
+        end, true, 0)
+
+        active.just_dropped_item = true
+        
+        -- Create displaced item animation
+        local swap_item = LooseItem{group = main.current.ui, item = target_item, parent = active}
+        swap_item.x = active.x
+        swap_item.y = active.y
+        swap_item:move_item_to_slot(self, function()
+          self.hide_item_display = false
+          Refresh_All_Cards_Text()
+        end, true, 0.2)
+        
       else
-        --if the active slot doesn't have an item, just add the grabbed item to it
-        active:addItem(self:getItem())
+        -- MOVE: Simple move to empty slot
         self:removeItem()
+        active:addItem(source_item)
+        main.current:save_run()
+
+        Refresh_All_Cards_Text()
+
+        loose_item:move_item_to_slot(active, function()
+          active:create_item_added_effect(source_item)
+        end, true, 0)
+        
       end
-      main.current:save_run()
+    
+    else
+      -- RETURN: No valid target, return to original slot
+      loose_item:move_item_to_slot(self, function()
+        self.hide_item_display = false
+      end, false, 0)
     end
+    
+    if active then
+      active.just_dropped_item = true
+    end
+
   end
 
   --differentiate between moving the item to another slot, and selling the item w m2
@@ -598,11 +652,12 @@ function ItemPart:draw(y)
     graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
     local item = self.parent.unit.items[self.i]
     -- Use V2 item tier_color if available, otherwise fall back to item_to_color
-    local tier_color = item and (item.tier_color or item_to_color(item)) or grey[0]
+    -- But show default color when item is grabbed
+    local tier_color = (item and not self.itemGrabbed and not self.hide_item_display) and (item.tier_color or item_to_color(item)) or grey[0]
     graphics.rectangle(self.x, self.y, self.w+4, self.h+4, 3, 3, tier_color)
     graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, bg[5])
 
-    if item and not self.hide_item_display then
+    if item and not self.hide_item_display and not self.itemGrabbed then
       -- draw item background colors (duplicated from itemCard code)
       if item.colors then
         local num_colors = #item.colors
@@ -620,13 +675,15 @@ function ItemPart:draw(y)
       end
 
       local image = find_item_image(item)
-      if not self.itemGrabbed then
-        image:draw(self.x, self.y, 0, 0.4, 0.4)
-      else
-        --draw loose item instead
-        -- local mouseX, mouseY = camera:get_mouse_position()
-        -- image:draw(mouseX, mouseY, 0, 0.4, 0.4)
-      end
+      image:draw(self.x, self.y, 0, 0.4, 0.4)
+    elseif item and not self.hide_item_display and self.itemGrabbed then
+      -- When item is grabbed, show empty slot appearance
+      --draw item type icon
+      local item_slot = ITEM_SLOTS_BY_INDEX[self.i]
+      local image = find_item_image(ITEM_SLOTS[item_slot])
+      local color = fg[5]:clone()
+      color.a = 0.5
+      image:draw(self.x, self.y, 0, 0.4, 0.4, 0, 0, color)
     else
       --draw item type icon
       local item_slot = ITEM_SLOTS_BY_INDEX[self.i]
@@ -636,7 +693,7 @@ function ItemPart:draw(y)
       image:draw(self.x, self.y, 0, 0.4, 0.4, 0, 0, color)
     end
     
-    if self.colliding_with_mouse and main.current and not main.current.loose_inventory_item then
+    if self.colliding_with_mouse and main.current and not Loose_Inventory_Item and not self.just_dropped_item then
       if not self.tooltip then
         self:create_tooltip()
       end
@@ -671,6 +728,12 @@ end
 --BUG: calls as soon as entered sometimes
 function ItemPart:on_mouse_exit()
   self.selected = false
+  
+  -- Re-enable interaction if it was disabled from dropping an item
+  if self.just_dropped_item then
+    self.just_dropped_item = false
+  end
+  
   if self.tooltip then 
     self.tooltip:die() 
     self.tooltip = nil

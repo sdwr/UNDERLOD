@@ -295,7 +295,7 @@ ITEM_SETS = {
     }
   },
   [ITEM_SET.REFLECT] = {
-    name = 'Mirror',
+    name = 'Reflect',
     color = 'green',
     bonuses = {
       [1] = { procs = {'retaliate'} },

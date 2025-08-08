@@ -26,7 +26,6 @@ function BuyScreen:on_exit()
   self.sets = nil
   self.info_text = nil
   self.units = nil
-  self.loose_inventory_item = nil
   self.passives = nil
   self.player = nil
   self.t = nil
@@ -117,23 +116,23 @@ function BuyScreen:on_enter(from)
   
   GoButton{group = self.main, x = gw - 90, y = gh - 20, parent = self}
   
-  self.tutorial_button = Button{group = self.main, x = gw/2 + 129, y = 18, button_text = '?', fg_color = 'bg10', bg_color = 'bg', 
-    action = function()
-      self.tutorial_popup:open()
-      self.in_tutorial = true
-    end,
-    mouse_enter = function(b)
-    b.info_text = InfoText{group = main.current.ui, force_update = true}
-    b.info_text:activate({
-      {text = '[fg]controls', font = pixul_font, alignment = 'center'},
-    }, nil, nil, nil, nil, 16, 4, nil, 2)
-    b.info_text.x, b.info_text.y = b.x, b.y + 20
-  end, mouse_exit = function(b)
-    if not b.info_text then return end
-    b.info_text:deactivate()
-    b.info_text.dead = true
-    b.info_text = nil
-  end}
+  -- self.tutorial_button = Button{group = self.main, x = gw/2 + 129, y = 18, button_text = '?', fg_color = 'bg10', bg_color = 'bg', 
+  --   action = function()
+  --     self.tutorial_popup:open()
+  --     self.in_tutorial = true
+  --   end,
+  --   mouse_enter = function(b)
+  --   b.info_text = InfoText{group = main.current.ui, force_update = true}
+  --   b.info_text:activate({
+  --     {text = '[fg]controls', font = pixul_font, alignment = 'center'},
+  --   }, nil, nil, nil, nil, 16, 4, nil, 2)
+  --   b.info_text.x, b.info_text.y = b.x, b.y + 20
+  -- end, mouse_exit = function(b)
+  --   if not b.info_text then return end
+  --   b.info_text:deactivate()
+  --   b.info_text.dead = true
+  --   b.info_text = nil
+  -- end}
 
   trigger:tween(1, main_song_instance, {volume = 0.2, pitch = 1}, math.linear)
 
@@ -1181,15 +1180,17 @@ function LooseItem:init(args)
   self.shape = Rectangle(self.x, self.y, self.w, self.h)
   self.interact_with_mouse = false
 
-  if buyScreen then
-    buyScreen.loose_inventory_item = self
-  end
 end
 
 function LooseItem:update(dt)
+  if self.dead then return end
+
   self:update_game_object(dt)
-  self.x, self.y = camera:get_mouse_position()
-  self.shape:move_to(self.x, self.y)
+
+  if not self.flying_to_slot then
+    self.x, self.y = camera:get_mouse_position()
+    self.shape:move_to(self.x, self.y)
+  end
 end
 
 
@@ -1223,10 +1224,57 @@ function LooseItem:draw()
 
 end
 
+function LooseItem:move_item_to_slot(target_item_part, on_complete, create_hit_effect, duration)
+  -- Set flag on target ItemPart to hide display during animation
+  target_item_part.hide_item_display = true
+  
+  -- Disable interaction during animation
+  self.interact_with_mouse = false
+  self.flying_to_slot = true
+  
+  -- Default to creating hit effects unless explicitly disabled
+  if create_hit_effect == nil then create_hit_effect = true end
+  
+  -- Animate towards the target slot
+  if duration == nil then duration = 0.2 end
+  self.t:tween(duration, self, {
+    x = target_item_part.x, 
+    y = target_item_part.y,
+    sx = ITEM_PART_WIDTH / self.w,
+    sy = ITEM_PART_HEIGHT / self.h
+  }, math.out_cubic, function()
+    -- Animation complete
+    target_item_part.hide_item_display = false
+    
+    -- Create particle effect at the target slot only if requested
+    if create_hit_effect then
+      target_item_part:create_item_added_effect(self.item)
+    end
+    
+    -- Call completion callback
+    if on_complete then
+      on_complete()
+    end
+    
+    self:die()
+  end)
+end
+
+function LooseItem:update(dt)
+  self:update_game_object(dt)
+  
+  -- Only follow mouse if not flying to slot
+  if not self.flying_to_slot then
+    self.x, self.y = camera:get_mouse_position()
+  end
+  
+  self.shape:move_to(self.x, self.y)
+end
+
 function LooseItem:die()
   self.dead = true
-  if buyScreen then
-    buyScreen.loose_inventory_item = nil
+  if Loose_Inventory_Item and Loose_Inventory_Item.id == self.id then
+    Loose_Inventory_Item = nil
   end
 end
 

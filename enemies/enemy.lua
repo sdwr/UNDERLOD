@@ -26,7 +26,7 @@ function Enemy:init(args)
 
   self:calculate_stats(true)
 
-  self.baseIdleTimer = self.baseIdleTimer or 0.5
+  self.baseIdleTimer = self.baseIdleTimer or 0.3
   self.idleTimer = self.baseIdleTimer
   self.baseActionTimer = self.baseActionTimer or 1
   self.actionTimer = 0
