@@ -464,8 +464,8 @@ function ItemPart:init(args)
   self.looseItem = nil
   self.info_text = nil
 
-  self.h = 18
-  self.w = 18
+  self.h = ITEM_PART_HEIGHT
+  self.w = ITEM_PART_WIDTH
 
   self.spring:pull(0.2, 200, 10)
   self.just_created = true
@@ -479,6 +479,26 @@ end
 function ItemPart:addItem(item)
   self.parent.unit.items[self.i] = item
   Refresh_All_Cards_Text()
+end
+
+function ItemPart:create_item_added_effect(item)
+  if not item then return end
+  
+  -- Get item tier color
+  local tier_color = item.tier_color or item_to_color(item) or grey[0]
+  
+  -- Create hit particles at the ItemPart position
+  for i = 1, 15 do
+    HitParticle{
+      group = main.current.effects, 
+      x = self.x, 
+      y = self.y, 
+      color = tier_color
+    }
+  end
+  
+  -- Play a sound effect
+  pop2:play{pitch = random:float(0.95, 1.05), volume = 0.4}
 end
 
 function ItemPart:sellItem()
@@ -582,7 +602,7 @@ function ItemPart:draw(y)
     graphics.rectangle(self.x, self.y, self.w+4, self.h+4, 3, 3, tier_color)
     graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, bg[5])
 
-    if item then
+    if item and not self.hide_item_display then
       -- draw item background colors (duplicated from itemCard code)
       if item.colors then
         local num_colors = #item.colors
