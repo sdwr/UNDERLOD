@@ -437,7 +437,7 @@ function ItemCard:show_set_bonus_tooltip(set_info)
 
   self:remove_set_bonus_tooltip()
 
-  self.set_bonus_tooltip = InfoText{group = self.group, force_update = false}
+  self.set_bonus_tooltip = InfoText{group = self.parent.ui_top or self.group, force_update = false}
   self.set_bonus_tooltip:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
   local pos = Get_UI_Popup_Position()
   self.set_bonus_tooltip.x = pos.x

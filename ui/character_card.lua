@@ -357,7 +357,7 @@ function CharacterCard:show_unit_stats_popup()
     })
   end
   
-  self.popup = InfoText{group = self.group, force_update = false}
+  self.popup = InfoText{group = main.current.ui_top or self.group, force_update = false}
   self.popup:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
   self.popup.x = self.x
   self.popup.y = self.y - self.h/2 + 60
@@ -369,7 +369,7 @@ function CharacterCard:show_set_bonus_popup_for_set(set_info)
 
   self:hide_set_bonus_popup()
   
-  self.set_bonus_popup = InfoText{group = self.group, force_update = false}
+  self.set_bonus_popup = InfoText{group = main.current.ui_top or self.group, force_update = false}
   self.set_bonus_popup:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
   local pos = Get_UI_Popup_Position()
   self.set_bonus_popup.x = pos.x
@@ -750,7 +750,7 @@ function ItemPart:create_tooltip()
 
   local pos = Get_UI_Popup_Position()
   self.tooltip = ItemTooltip{
-    group = self.group,
+    group = main.current.ui_top or self.group,
     item = self:getItem(),
     x = pos.x, 
     y = pos.y,
