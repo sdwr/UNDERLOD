@@ -52,7 +52,6 @@ end
 function Troop:follow_mouse()
   -- If not, continue moving towards the mouse.
   if self.being_knocked_back then return end
-  self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
   if self:distance_to_mouse() > 10 then
     self:seek_mouse(SEEK_DECELERATION, SEEK_WEIGHT * 3)
     self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
@@ -78,7 +77,6 @@ function Troop:rally_to_point()
   end
 
   self:seek_point(self.target_pos.x, self.target_pos.y, SEEK_DECELERATION, SEEK_WEIGHT)
-  self:steering_separate(TROOP_SEPARATION_RADIUS, troop_classes)
   self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
   self:rotate_towards_velocity(1)
 end
@@ -268,6 +266,14 @@ function Troop:update_ai_logic()
       -- or closest in aggro range
       self:set_target(Helper.Target:get_closest_enemy(self))
       cast_target = self.target
+      
+      -- Stagger initial attacks when first target is acquired
+      if cast_target and not self.first_target_acquired then
+        self.first_target_acquired = true
+        -- Randomize initial cast cooldown to stagger attacks
+        local random_delay = random:float(0.5, 1.5)
+        self:reset_castcooldown(self.cooldownTime * random_delay)
+      end
   end
 
   -- 3. ACT BASED ON TARGET STATUS

@@ -19,7 +19,7 @@ function Archer_Troop:create_spelldata()
     spell_duration = 10,
     bullet_size = 3,
     pierce = false,
-    speed = 180,
+    speed = 210,
     is_troop = true,
     color = blue[0],
     damage = function() return self.dmg end,

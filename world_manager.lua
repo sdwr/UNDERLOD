@@ -24,6 +24,7 @@ end
 function WorldManager:on_enter(from)
 
   Reset_Global_Proc_List()
+  Helper.Unit:enable_unit_controls()
 
 
   self:create_class_lists()
