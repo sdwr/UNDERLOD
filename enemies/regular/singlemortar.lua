@@ -37,8 +37,8 @@ fns['init_enemy'] = function(self)
       cancel_on_death = false,
       knockback = true,
       chargeTime = 2.5,
-      rs = 70,
-      target_offset = 20,
+      rs = 40,
+      target_offset = 25,
       parent = self
     }
   }

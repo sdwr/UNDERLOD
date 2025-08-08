@@ -6,7 +6,7 @@ function Archer_Troop:init(data)
 
   self.baseCooldown = TROOP_BASE_COOLDOWN
   self.cooldownTime = self.baseCooldown
-  self.baseCast = 0
+  self.baseCast = 0.4
   self.castTime = self.baseCast
   self.backswing = data.backswing or 0.1
   self:reset_castcooldown(math.random() * (self.base_castcooldown or self.baseCast))
@@ -130,6 +130,14 @@ function Archer_Troop:set_state_functions()
     self:cancel_cast()
     Helper.Unit:unclaim_target(self)
   end
+  
+  --cancel cast when player issues movement commands
+  self.state_change_functions['following'] = function(self, old_state)
+    if old_state == unit_states['casting'] then
+      self:cancel_cast()
+    end
+  end
+  
 end
 
 function Archer_Troop:set_character()

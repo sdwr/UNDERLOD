@@ -155,6 +155,7 @@ function Troop:update(dt)
     if self.rallying and self.target_pos then
       if not Helper.Unit:in_range_of_rally_point(self) then
         self:rally_to_point()
+        self:cancel_cast()
       end
     end
   end
@@ -176,7 +177,7 @@ function Troop:update(dt)
   -- If the unit is actively following the mouse.
   elseif self.state == unit_states['following'] then
 
-      -- self:cancel_cast()
+      self:cancel_cast()
       -- self:clear_my_target()
       -- self:clear_assigned_target()
 

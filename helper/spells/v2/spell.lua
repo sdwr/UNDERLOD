@@ -82,9 +82,8 @@ function Cast:init(args)
   end
   self.spelldata.unit = self.unit
   
-  if self.unit then
-    local castcooldown = random:float(0.8, 1.2) * (self.castcooldown or 1)
-    self.unit:reset_castcooldown(castcooldown)
+  if self.castcooldown then
+    self.castcooldown = random:float(0.8, 1.2) * (self.castcooldown or 1)
   end
 
   --vars from data
