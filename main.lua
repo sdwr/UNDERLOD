@@ -808,7 +808,6 @@ function init()
     local group = Group():set_as_physics_world(32, 0, 0, { 'troop', 'enemy', 'projectile', 'enemy_projectile' })
     local troop_data = { group = group, character = unit.character, level = unit.level, items = unit.items, perks = main.current.perks or {} }
     local troop = Create_Troop(troop_data)
-    troop:calculate_stats()
     
     -- Get item stats
     local item_stats = troop:get_item_stats_for_display()
@@ -840,6 +839,10 @@ function init()
         final_stats[stat_name] = combined_stats[stat_name]
       end
     end
+    
+    -- Clean up temporary objects
+    troop.dead = true
+    group:destroy()
     
     return final_stats
   end
