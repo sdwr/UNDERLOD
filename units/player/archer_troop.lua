@@ -12,6 +12,20 @@ function Archer_Troop:init(data)
   self:reset_castcooldown(math.random() * (self.base_castcooldown or self.baseCast))
 end
 
+function Archer_Troop:create_spelldata()
+  return {
+    group = main.current.effects,
+    on_attack_callbacks = true,
+    spell_duration = 10,
+    bullet_size = 3,
+    pierce = false,
+    speed = 180,
+    is_troop = true,
+    color = blue[0],
+    damage = function() return self.dmg end,
+  }
+end
+
 function Archer_Troop:setup_cast(cast_target)
   local data = {
     name = 'arrow',
@@ -27,53 +41,28 @@ function Archer_Troop:setup_cast(cast_target)
     backswing = 0.2,
     instantspell = true,
     spellclass = ArrowProjectile,
-    spelldata = {
-      group = main.current.effects,
-      on_attack_callbacks = true,
-      spell_duration = 10,
-      bullet_size = 3,
-      pierce = false,
-      speed = 180,
-      is_troop = true,
-      color = blue[0],
-      damage = function() return self.dmg end,
-
-    }
+    spelldata = self:create_spelldata()
   }
   self.castObject = Cast(data)
 end
 
 --instant attack skips the unit cooldown, is a double attack or retaliate
 function Archer_Troop:instant_attack(cast_target)
-  ArrowProjectile{
-    group = main.current.effects,
-    target = cast_target,
-    on_attack_callbacks = false,
-    unit = self,
-    spell_duration = 10,
-    bullet_size = 3,
-    pierce = false,
-    speed = 180,
-    is_troop = true,
-    color = blue[0],
-    damage = function() return self.dmg end,
-  }
+  local spelldata = self:create_spelldata()
+  spelldata.on_attack_callbacks = false
+  spelldata.unit = self
+  spelldata.target = cast_target
+  ArrowProjectile(spelldata)
 end
-
+  
 function Archer_Troop:instant_attack_at_angle(angle, damage_multi)
-  ArrowProjectile{
-    group = main.current.effects,
-    on_attack_callbacks = false,
-    unit = self,
-    spell_duration = 10,
-    bullet_size = 3,
-    pierce = false,
-    speed = 180,
-    is_troop = true,
-    color = blue[0],
-    damage = function() return self.dmg * damage_multi end,
-    angle = angle,
-  }
+  local spelldata = self:create_spelldata()
+  spelldata.on_attack_callbacks = false
+  spelldata.unit = self
+  spelldata.target = cast_target
+  spelldata.angle = angle
+  spelldata.damage = function() return self.dmg * damage_multi end
+  ArrowProjectile(spelldata)
 end
 
 function Archer_Troop:multishot(angle)

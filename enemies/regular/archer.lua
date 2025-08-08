@@ -46,7 +46,7 @@ fns['init_enemy'] = function(self)
       width = 20,
       height = 4,
       damage = function() return self.dmg end,
-      v = 150,  -- Speed for physics-based movement
+      v = 120,  -- Speed for physics-based movement
       unit = self,
       source = 'archer',
     },

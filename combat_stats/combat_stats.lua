@@ -26,7 +26,7 @@ REGULAR_ENEMY_DAMAGE = 15
 REGULAR_ENEMY_MS = 32
 
 SPECIAL_ENEMY_HP = 70
-SPECIAL_ENEMY_DAMAGE = 35
+SPECIAL_ENEMY_DAMAGE = 20
 SPECIAL_ENEMY_MS = 25
 
 MINIBOSS_HP = 400
@@ -210,7 +210,7 @@ end
 
 SCALED_ENEMY_DAMAGE = function(level, base_dmg)
   local scale = ENEMY_SCALE_BY_LEVEL[level]
-  return base_dmg + (base_dmg * 0.3 * scale)
+  return base_dmg + (base_dmg * 0.1 * scale)
 end
 
 SCALED_ENEMY_MS = function(level, base_ms)
@@ -234,6 +234,8 @@ function SPECIAL_ENEMIES_PER_LEVEL(level)
 end
 
 function WAVES_PER_LEVEL(level)
+  if level == 1 then return 2 end
+  if level == 2 then return 2 end
 
   if level <= 6 then
     return 3
@@ -305,29 +307,29 @@ unit_stat_multipliers = {
 }
 
 enemy_type_to_stats = {
-    ['swarmer'] = { dmg = 0.5, hp = 1},
+    ['swarmer'] = { dmg = 0.5, hp = 0.6},
 
     ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
     ['chaser'] = { dmg = 1, mvspd = 1 },
     ['shooter'] = {},
     
-    ['cleaver'] = { dmg = 1.5 },
-    ['big_goblin_archer'] = { dmg = 1.5 },
-    ['goblin_archer'] = { dmg = 1.5 },
-    ['archer'] = { dmg = 1.3 },
-    ['turret'] = { dmg = 1.2 },
+    ['cleaver'] = {  },
+    ['big_goblin_archer'] = {  },
+    ['goblin_archer'] = {  },
+    ['archer'] = {  },
+    ['turret'] = {  },
 
-    ['arcspread'] = { dmg = 0.5 },
+    ['arcspread'] = {  },
     ['assassin'] = {},
     ['laser'] = {},
-    ['mortar'] = { dmg = 1.5 },
-    ['rager'] = { dmg = 0.5 },
+    ['mortar'] = {  },
+    ['rager'] = {  },
     ['spawner'] = {},
-    ['stomper'] = { dmg = 2.5 },
-    ['charger'] = { dmg = 1.5, mvspd  = 0.5 },
+    ['stomper'] = {  },
+    ['charger'] = {  },
     ['summoner'] = {},
     ['bomb'] = { hp = -0.25 },
-    ['firewall_caster'] = { dmg = 1.5 },
+    ['firewall_caster'] = {  },
 }
 
 -- general values
