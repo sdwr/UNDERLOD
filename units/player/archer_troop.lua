@@ -151,6 +151,8 @@ function Archer_Troop:set_character()
   self.baseCast = attack_speeds['buff']
   self.castTime = self.baseCast
 
+  self.infinite_range = true
+
 
   self:set_state_functions()
 end

@@ -234,15 +234,11 @@ function SPECIAL_ENEMIES_PER_LEVEL(level)
 end
 
 function WAVES_PER_LEVEL(level)
-  if level == 4 then return 3 end
-  if level == 9 then return 4 end
-  if level == 14 then return 5 end
-  if level == 19 then return 6 end
 
   if level <= 6 then
-    return 2
-  elseif level <= 11 then
     return 3
+  elseif level <= 11 then
+    return 4
   elseif level <= 16 then
     return 4
   elseif level <= 21 then

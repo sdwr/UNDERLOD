@@ -22,6 +22,18 @@ function Helper.Target:get_closest_friendly(object, exclude_list)
   return main.current.main:get_closest_object_by_class(object, class_list, exclude_list)
 end
 
+-----------------------------------------
+function Helper.Target:get_close_enemy(object, exclude_list, max_range_from_self)
+  local class_list
+  if object.faction == 'friendly' then
+    class_list = main.current.enemies
+  else
+    class_list = main.current.friendlies
+  end
+
+  return main.current.main:get_random_close_object(object, class_list, exclude_list, max_range_from_self)
+end
+
 function Helper.Target:get_random_enemy(object)
   local class_list
   if object.faction == 'friendly' then

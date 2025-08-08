@@ -1650,8 +1650,9 @@ function Unit:in_range_of(target)
   return target and 
     not target.dead and 
     table.any(unit_states_can_target, function(v) return self.state == v end) and 
-    self:distance_to_object(target) - target_size_offset < self.attack_sensor.rs
+    (self.infinite_range or self:distance_to_object(target) - target_size_offset < self.attack_sensor.rs)
 end
+
 
 --casting functions
 -- uses 

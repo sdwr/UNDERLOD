@@ -377,6 +377,64 @@ function Group:get_closest_object(object, select_function)
   return self.objects[min_index]
 end
 
+function Group:get_random_close_object(object, object_types, exclude_list, max_range_from_self, distance_tolerance, percentage_tolerance)
+  exclude_list = exclude_list or {}
+  distance_tolerance = distance_tolerance or 20
+  percentage_tolerance = percentage_tolerance or 20
+
+  -- First, get all potential candidates based on their class and exclude list.
+  -- This pre-filters the objects, making the distance check more efficient.
+  local candidates = self:get_objects_by_classes(object_types)
+
+  -- Filter out any objects that are in the exclude list.
+  if #exclude_list > 0 then
+    candidates = table.filter(candidates, function(o) 
+      return not table.any(exclude_list, function(v) return v.id == o.id end)
+    end)
+  end
+  
+  -- If there are no candidates after initial filtering, return nil.
+  if #candidates == 0 then
+      return nil
+  end
+
+  local min_distance = math.huge
+
+  -- PASS 1: Find the absolute closest object and its distance
+  for _, o in ipairs(candidates) do
+      local d = math.distance(o.x, o.y, object.x, object.y)
+      if d < min_distance then
+          min_distance = d
+      end
+  end
+
+  -- Determine the tolerance threshold
+  local max_distance_option = min_distance + distance_tolerance
+  local max_percentage_option = min_distance * (percentage_tolerance / 100)
+
+  local max_distance_for_candidates = math.min(max_distance_option, max_percentage_option)
+  if max_range_from_self then
+    max_distance_for_candidates = math.min(max_distance_for_candidates, max_range_from_self)
+  end
+
+  local final_candidates = {}
+  -- PASS 2: Find all other objects that are within the tolerance
+  for _, o in ipairs(candidates) do
+      local d = math.distance(o.x, o.y, object.x, object.y)
+      if d <= max_distance_for_candidates then
+          table.insert(final_candidates, o)
+      end
+  end
+
+  -- Randomly select and return a target from the final candidates list
+  if #final_candidates > 0 then
+      return table.random(final_candidates)
+  end
+
+  return nil
+end
+  
+
 
 -- Sets this group as a physics box2d world
 -- This means that objects inserted here can also be initialized as physics objects (see the gameobject file for more on this)

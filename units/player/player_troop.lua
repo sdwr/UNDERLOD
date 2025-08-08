@@ -254,15 +254,9 @@ function Troop:update_ai_logic()
     self:clear_assigned_target()
   end
 
-  if regular_target and regular_target.dead then
-    self.clear_my_target()
-  end
-
   local cast_target = nil
-  if self:in_range('assigned')() then
+  if assigned_target then
     cast_target = assigned_target
-  elseif self:in_range('regular')() then
-    cast_target = regular_target
   end
   
 
@@ -272,12 +266,13 @@ function Troop:update_ai_logic()
       --find target if not already found
       -- pick random in attack range
       -- or closest in aggro range
-      if self:has_potential_target_in_range() then
-        self:set_target(Helper.Target:get_random_enemy(self))
-        cast_target = self.target
+      if not self.infinite_range and self.attack_sensor then
+        local max_range = self.attack_sensor.rs
+        self:set_target(Helper.Target:get_close_enemy(self, nil, max_range))
       else
-        self:set_target(Helper.Target:get_closest_enemy(self))
+        self:set_target(Helper.Target:get_random_enemy(self))
       end
+      cast_target = self.target
   end
 
   -- 3. ACT BASED ON TARGET STATUS

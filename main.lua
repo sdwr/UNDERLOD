@@ -1405,6 +1405,7 @@ function init()
   special_enemy_by_tier_melee = {
     [1] = {
       'cleaver',
+      'selfburst',
     },
     [1.5] = {
       'cleaver',
