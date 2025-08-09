@@ -1780,9 +1780,7 @@ function Unit:update_cast_cooldown(dt)
     return
   end
 
-  if self.attack_cooldown_timer > 0 then
-    self:set_attack_cooldown_timer(self.attack_cooldown_timer - dt)
-  end
+  self:set_attack_cooldown_timer(self.attack_cooldown_timer - dt)
 end
 
 function Unit:cast(castData)
@@ -1806,8 +1804,8 @@ function Unit:should_freeze_rotation()
     or (self.castObject and self.castObject.freeze_rotation)
 end
 
-function Unit:end_cast(attack_cooldown_distance_multiplier)
-  self:put_attack_on_cooldown(attack_cooldown_distance_multiplier)
+function Unit:end_cast()
+  self:put_attack_on_cooldown()
   self.spelldata = nil
   self.freezerotation = false
 
@@ -1967,12 +1965,8 @@ function Unit:die()
 
 end
 
-function Unit:put_attack_on_cooldown(attack_cooldown_distance_multiplier)
+function Unit:put_attack_on_cooldown()
   local attack_cooldown = self.attack_cooldown or 1
-  if attack_cooldown_distance_multiplier then
-    print('attack_cooldown_distance_multiplier', attack_cooldown_distance_multiplier)
-    attack_cooldown = attack_cooldown * attack_cooldown_distance_multiplier
-  end
   self.attack_cooldown_timer = attack_cooldown
 end
 
