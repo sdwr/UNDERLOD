@@ -60,6 +60,18 @@ function Troop:follow_mouse()
   end
 end
 
+function Troop:follow_movement_direction()
+  if self.being_knocked_back then return end
+  if not self.movement_direction then return end
+  if not table.contains(unit_states_can_move, self.state) then return end
+
+  local x = self.x + self.movement_direction.x * 100
+  local y = self.y + self.movement_direction.y * 100
+  self:seek_point(x, y, SEEK_DECELERATION, SEEK_WEIGHT * 3)
+  self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
+  self:rotate_towards_velocity(1)
+end
+
 function Troop:rally_to_point()
   -- If not, continue moving towards the rally point.
   if self.being_knocked_back then return end
@@ -124,6 +136,10 @@ function Troop:update_survivor_effect(dt)
   self.hfx:animate('survivor_scale', survivor_boost)
 end
 
+function Troop:set_movement_direction(direction)
+  self.movement_direction = direction
+end
+
 function Troop:update(dt)
   -- ===================================================================
   -- 1. ESSENTIAL HOUSEKEEPING (These should always run)
@@ -159,6 +175,9 @@ function Troop:update(dt)
   end
 
   if table.contains(unit_states_can_move, self.state) then
+    if self.movement_direction then
+      self:follow_movement_direction()
+    end
     self:do_automatic_movement()
   end
 
@@ -175,17 +194,11 @@ function Troop:update(dt)
   -- If the unit is actively following the mouse.
   elseif self.state == unit_states['following'] then
 
-      -- self:cancel_cast()
-      -- self:clear_my_target()
-      -- self:clear_assigned_target()
-
-      -- Check if we should STOP following.
-      if input['m1'].released then
-          Helper.Unit:set_state(self, unit_states['idle'])
-      else
-        self:follow_mouse()
-
-      end
+    if input['m1'].released then
+      Helper.Unit:set_state(self, unit_states['idle'])
+    else
+      self:follow_mouse()
+    end
 
   -- PRIORITY 3: Action States (Busy States)
   -- If the unit is in the middle of casting an ability.

@@ -49,8 +49,31 @@ function init()
   math.randomseed(os.time())
 
 
-  input:bind('move_left', { 'a', 'left', 'dpleft', 'm1' })
-  input:bind('move_right', { 'd', 'e', 's', 'right', 'dpright', 'm2' })
+  input:bind('move_left', { 'a', 'left'})
+  input:bind('move_right', { 'd', 'right'})
+  input:bind('move_up', { 'w', 'up'})
+  input:bind('move_down', { 's', 'down'})
+
+  get_movement_direction = function()
+    local direction = {x = 0, y = 0}
+    if input['move_left'].down then
+      direction.x = -1
+    end
+    if input['move_right'].down then
+      direction.x = 1
+    end
+    if input['move_up'].down then
+      direction.y = -1
+    end
+    if input['move_down'].down then
+      direction.y = 1
+    end
+    if direction.x ~= 0 or direction.y ~= 0 then
+      return direction
+    end
+    return nil
+  end
+
   input:bind('enter', { 'space', 'return', 'fleft', 'fdown', 'fright' })
 
   local s = { tags = { sfx } }

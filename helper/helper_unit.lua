@@ -414,44 +414,28 @@ function Helper.Unit:enable_unit_controls()
     Helper.disable_unit_controls = false
 end
 
+function Helper.Unit:set_all_troops_movement_direction(direction)
+    for i, team in ipairs(Helper.Unit.teams) do
+        for j, troop in ipairs(team.troops) do
+            troop:set_movement_direction(direction)
+        end
+    end
+end
+
 --select + target from input
 function Helper.Unit:select()
     if not Helper.disable_unit_controls then
         local flag = false
         --should be on key release, not press? or at least only check the first press
 
-        if input['m2'].pressed then
-
-            for i, enemy in ipairs(self:get_list(false)) do
-                if Helper.Geometry:distance(Helper.mousex, Helper.mousey, enemy.x, enemy.y) < ((enemy.shape.w / 2) + 5) then 
-                    flag = true
-                    break
-                end
-            end
-            --target the flagged enemy with the selected troop
-            if flag then
-                local flagged_enemy = Helper.Spell:get_nearest_target_from_point(Helper.mousex, Helper.mousey, false)
-                    --make all units target the flagged enemy
-                Helper.Unit:all_teams_target_flagged_enemy(flagged_enemy)
-
-            else
-                local x, y = Helper.mousex, Helper.mousey
-                    --make all units untarget the flagged enemy
-                Helper.Unit:all_teams_set_rally_point(x, y)
-            end
-        --bug with not moving if you start holding m1 while a unit is casting
-        --it will not move until you release m1 and press it again
-        --switched to down, but need a longer term solution? same thing will happen with m2 prob
+        if get_movement_direction() then
+            Helper.Unit:set_all_troops_movement_direction(get_movement_direction())
         elseif input['m1'].down then
-            --clear rally point for all teams
             for i, team in ipairs(Helper.Unit.teams) do
-                team:clear_rally_point()
                 team:set_troop_state_to_following()
             end
-        elseif input['space'].down then
-            --scatter all units
-
         end
+        
     end
 
         --dont need box selection
