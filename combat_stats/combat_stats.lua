@@ -381,6 +381,41 @@ ZONE_SCALING = function(level)
   return 1
 end
 
+DISTANCE_TO_COOLDOWN_MULTIPLIER = function(distance)
+  local mult_values = {
+    [0] = 0.24,
+    [20] = 0.27,
+    [50] = 0.4,
+    [75] = 0.6,
+    [100] = 0.9,
+    [150] = 1.1,
+    [200] = 1.3,
+    [250] = 1.4,
+  }
+
+  if distance < 0 then
+    return 0.5
+  end
+
+  local p1, p2
+  local prev
+  for dist, mult in pairs(mult_values) do
+    if distance <= dist then
+      p1 = prev
+      p2 = dist
+      break
+    end
+    prev = dist
+  end
+
+  if not p2 then
+    return 1.1
+  end
+
+  local scale = (distance - p1) / (p2 - p1)
+  return mult_values[p1] + (mult_values[p2] - mult_values[p1]) * scale
+end
+
 
 -- unit stats
 unit_classes = {

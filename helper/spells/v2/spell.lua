@@ -72,6 +72,11 @@ function Cast:init(args)
   self.x = self.x or self.unit.x
   self.y = self.y or self.unit.y
 
+  if self.unit and self.unit.is_troop and self.target and self.target.x and self.target.y then
+    local distance = self.unit:distance_to_point(self.target.x, self.target.y)
+    self.attack_cooldown_distance_multiplier = DISTANCE_TO_COOLDOWN_MULTIPLIER(distance)
+  end
+
   self.name = self.name or 'cast'
   self.spellclass = self.spellclass
   self.spelldata = self.spelldata
@@ -163,7 +168,7 @@ function Cast:cast()
   else 
     Helper.Unit:set_state(self.unit, unit_states['channeling'])
   end
-  self.unit:end_cast()
+  self.unit:end_cast(self.attack_cooldown_distance_multiplier)
   self:die()
 end
 
@@ -364,7 +369,7 @@ function Spell:try_end_cast()
       self.unit:onAttackCallbacks(self.target)
     end
 
-    self.unit:end_cast()
+    self.unit:end_cast(self.attack_cooldown_distance_multiplier)
     
     if self.unit_dies_at_end then
       self.unit:die()
