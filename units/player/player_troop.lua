@@ -376,7 +376,7 @@ function Troop:draw_cooldown_timer()
       
   elseif is_cooling then
       -- PHASE 2: SHRINKING during cooldown (shrinks inward)  
-      local cooldown_progress = self.attack_cooldown_timer / self.total_attack_cooldown_timer
+      local cooldown_progress = self.attack_cooldown_timer / self.attack_cooldown
       current_radius = (min_radius_mod * bodySize) + (max_radius_mod * bodySize - min_radius_mod * bodySize) * cooldown_progress
   end
   
