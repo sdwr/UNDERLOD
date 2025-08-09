@@ -557,7 +557,7 @@ function Burst:init(args)
 
   self.duration = self.duration or 12
   self.elapsed = 0
-  cannoneer1:play{volume=0.7}
+  cannoneer1:play{volume=0.4}
   self.t:after(self.duration, function() self:die() end)
 
   -- Create the data for our internal swirling blobs

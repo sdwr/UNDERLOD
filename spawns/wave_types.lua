@@ -107,8 +107,8 @@ function Wave_Types:Get_Waves(level)
   for i = 1, WAVES_PER_LEVEL(level) do
     local wave_type = random:table({
       'Create_Swarmer_Wave',
-      'Create_Close_Wave',
-      'Create_Kicker_Wave',
+      -- 'Create_Close_Wave',
+      -- 'Create_Kicker_Wave',
     })
 
     local wave = self[wave_type](self, level)

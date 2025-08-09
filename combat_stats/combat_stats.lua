@@ -400,7 +400,7 @@ unit_stat_multipliers = {
 }
 
 enemy_type_to_stats = {
-    ['swarmer'] = { dmg = 0.5, hp = 0.6},
+    ['swarmer'] = { dmg = 0.5, hp = 0.6, mvspd = 0.7},
 
     ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
     ['chaser'] = { dmg = 1, mvspd = 1 },

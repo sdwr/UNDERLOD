@@ -336,7 +336,7 @@ enemy_movement_types = {
   ['default'] = MOVEMENT_TYPE_SEEK,
   -- Aggressive seekers - chase players directly
   ['slowcharger'] = MOVEMENT_TYPE_SEEK,
-  ['swarmer'] = MOVEMENT_TYPE_SEEK,
+  ['swarmer'] = MOVEMENT_TYPE_LOOSE_SEEK,
   ['chaser'] = MOVEMENT_TYPE_SEEK,
   ['cleaver'] = MOVEMENT_TYPE_SEEK,
   

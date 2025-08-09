@@ -1357,7 +1357,7 @@ function init()
       'goblin_archer',
       'archer',
       -- 'selfburst',
-      -- 'burst',
+      'burst',
       'snakearrow',
       -- 'turret',
       -- 'cleaver',
