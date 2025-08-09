@@ -260,33 +260,100 @@ function Enemy:acquire_target_loose_seek()
 end
 
 function Enemy:acquire_target_seek_to_range()
-  self.target_location = nil 
-  -- Step 1: Validate the current target. If it's dead or out of range, find a new one.
-  if not self.target or self.target.dead or not self:in_range_of(self.target) then
-    self.target = Helper.Target:get_closest_enemy(self)
-    -- When we get a new target, we must clear the old target_location
-    -- so we calculate a fresh one in the next step.
+  self.target_location = nil
+  
+  local player_location = Helper.Unit:get_player_location()
+  if not player_location then
+    return false
   end
-
-  -- Step 2: If we have a valid target...
-  if self.target then
-        
-    -- This is the key change for orbiting behavior:
-    -- 1. Get the current angle from the target to us.
-    local angle_to_self = self.target:angle_to_object(self)
-    -- 2. Add a random offset to that angle to pick a new point on the circle.
-    local angle_offset = random:float(math.pi/3, math.pi/2) * random:table({-1, 1})-- 60-90 degrees left or right
-    local new_angle = angle_to_self + angle_offset
-
-    -- 3. Calculate the new location on the edge of the attack range.
-    local distance_from_target = self.attack_sensor.rs - 10 -- Stay just inside the max range
-    self.target_location = {
-        x = self.target.x + distance_from_target * math.cos(new_angle),
-        y = self.target.y + distance_from_target * math.sin(new_angle)
-    }
+  
+  -- Calculate distance between enemy and player
+  local distance_to_player = math.distance(self.x, self.y, player_location.x, player_location.y)
+  local desired_range = SEEK_TO_RANGE_DISTANCE
+  
+  -- Create circle around enemy with radius = distance to player
+  local enemy_radius = distance_to_player
+  -- Create circle around player with desired range
+  local player_radius = desired_range
+  
+  -- Find intersection points between the two circles
+  local dx = player_location.x - self.x
+  local dy = player_location.y - self.y
+  local d = math.distance(self.x, self.y, player_location.x, player_location.y)
+  
+  -- Check if circles intersect
+  if d > enemy_radius + player_radius or d < math.abs(enemy_radius - player_radius) or d == 0 then
+    -- No intersection, pick a point on the line between enemy and player
+    local angle_to_player = math.atan2(dy, dx)
+    local target_x, target_y
+    
+    if distance_to_player > desired_range then
+      -- Move closer to player
+      target_x = self.x + (desired_range * 0.8) * math.cos(angle_to_player)
+      target_y = self.y + (desired_range * 0.8) * math.sin(angle_to_player)
+    else
+      -- Move away from player
+      target_x = self.x - (desired_range * 0.2) * math.cos(angle_to_player)
+      target_y = self.y - (desired_range * 0.2) * math.sin(angle_to_player)
+    end
+    
+    self.target_location = {x = target_x, y = target_y}
+  else
+    -- Calculate intersection points
+    local a = (enemy_radius^2 - player_radius^2 + d^2) / (2*d)
+    local h = math.sqrt(enemy_radius^2 - a^2)
+    
+    local px = self.x + a * dx/d
+    local py = self.y + a * dy/d
+    
+    -- Two intersection points
+    local x1 = px + h * (-dy/d)
+    local y1 = py + h * (dx/d)
+    local x2 = px - h * (-dy/d)
+    local y2 = py - h * (dx/d)
+    
+    -- Pick one intersection point randomly
+    local chosen_point = random:table({{x = x1, y = y1}, {x = x2, y = y2}})
+    
+    -- Add random angle offset
+    local offset_angle = random:float(-math.pi/6, math.pi/6) -- ±30 degrees
+    local offset_distance = random:float(10, 30)
+    
+    chosen_point.x = chosen_point.x + offset_distance * math.cos(offset_angle)
+    chosen_point.y = chosen_point.y + offset_distance * math.sin(offset_angle)
+    
+    self.target_location = chosen_point
   end
-
-  return self.target ~= nil
+  
+  -- Validate arena bounds and adjust if needed
+  local max_attempts = 5
+  for attempt = 1, max_attempts do
+    if not Helper.Target:is_fully_in_camera_bounds(self.target_location.x, self.target_location.y) then
+      
+      -- Rotate towards arena center
+      local center_x, center_y = gw/2, gh/2
+      local angle_to_center = math.atan2(center_y - self.y, center_x - self.x)
+      local angle_to_player = math.atan2(player_location.y - self.y, player_location.x - self.x)
+      local rotation_amount = math.pi/6 * attempt -- Increase rotation each attempt
+      
+      local new_angle = angle_to_player + rotation_amount * (random:table({-1, 1}))
+      -- Bias towards center
+      new_angle = new_angle + (angle_to_center - new_angle) * 0.3
+      
+      self.target_location.x = self.x + desired_range * math.cos(new_angle)
+      self.target_location.y = self.y + desired_range * math.sin(new_angle)
+    else
+      break -- Valid location found
+    end
+  end
+  
+  -- Final fallback: move towards arena center if still invalid
+  if not Helper.Target:is_fully_in_camera_bounds(self.target_location.x, self.target_location.y) then
+    print('cant find target location in camera bounds')
+    return false
+  end
+  
+  return true
 end
 
 function Enemy:acquire_target_random()

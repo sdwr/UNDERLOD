@@ -124,16 +124,37 @@ function Helper:update(dt)
                 x = Helper.Unit.player_location.x,
                 y = Helper.Unit.player_location.y,
                 r = ARENA_RADIUS,
+                duration = 1000,
                 color = Helper.Color.red,
                 is_troop = false
             }
         end
+        if not Helper.seek_to_range_circle then
+            Helper.seek_to_range_circle = Area{
+                group = main.current.effects,
+                pick_shape = 'circle',
+                x = Helper.Unit.player_location.x,
+                y = Helper.Unit.player_location.y,
+                r = SEEK_TO_RANGE_DISTANCE,
+                duration = 1000,
+                color = Helper.Color.blue,
+                is_troop = false
+            }
+        end
+
         Helper.arena_radius_circle.x = Helper.Unit.player_location.x
         Helper.arena_radius_circle.y = Helper.Unit.player_location.y
+
+        Helper.seek_to_range_circle.x = Helper.Unit.player_location.x
+        Helper.seek_to_range_circle.y = Helper.Unit.player_location.y
     else
         if Helper.arena_radius_circle then
             Helper.arena_radius_circle.dead = true
             Helper.arena_radius_circle = nil
+        end
+        if Helper.seek_to_range_circle then
+            Helper.seek_to_range_circle.dead = true
+            Helper.seek_to_range_circle = nil
         end
     end
 
