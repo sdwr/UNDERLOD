@@ -10,7 +10,7 @@ fns['init_enemy'] = function(self)
   self.color = grey[0]:clone()
   Set_Enemy_Shape(self, self.size)
 
-  self.movementStyle = MOVEMENT_TYPE_SEEK
+
 
   self.stopChasingInRange = false
   self.haltOnPlayerContact = true
@@ -23,9 +23,6 @@ fns['init_enemy'] = function(self)
 
   self.move_option_weight = 0.4
 
-  self.movement_options = {
-    MOVEMENT_TYPE_SEEK,
-  }
 
   --set attacks
   self.attack_options = {}

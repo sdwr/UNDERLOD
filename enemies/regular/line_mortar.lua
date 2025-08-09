@@ -10,7 +10,7 @@ fns['init_enemy'] = function(self)
 
   self.class = 'special_enemy'
   self.icon = 'plant1'
-  self.movementStyle = MOVEMENT_TYPE_RANDOM  -- Stationary enemy
+
 
   -- Attack speed now handled by base class
 

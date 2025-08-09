@@ -16,7 +16,7 @@ fns['init_enemy'] = function(self)
   self.class = 'special_enemy'
   self.single_animation = true
   self.icon = 'mech1'
-  self.movementStyle = MOVEMENT_TYPE_RANDOM
+
 
   --set special attrs
   -- Attack speed now handled by base class

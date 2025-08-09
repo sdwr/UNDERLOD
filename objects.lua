@@ -1715,7 +1715,7 @@ function Unit:pick_action()
     
   
   local attack_options = self.attack_options or {}
-  local movement_options = self.movement_options or {}
+  local movement_options = self.movement_options or {get_movement_type_by_enemy_type(self.type)}
 
   local viable_attacks = {}
   local viable_movements = {}

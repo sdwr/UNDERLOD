@@ -24,7 +24,7 @@ fns['init_enemy'] = function(self)
   self.color = grey[0]:clone()
   Set_Enemy_Shape(self, self.size)
 
-  self.movementStyle = MOVEMENT_TYPE_RANDOM
+
 
   self.stopChasingInRange = false
   self.haltOnPlayerContact = true
@@ -35,11 +35,6 @@ fns['init_enemy'] = function(self)
   self.attack_sensor = Circle(self.x, self.y, 500)
 
   self.move_option_weight = 0.4
-
-  self.movement_options = {
-    MOVEMENT_TYPE_RANDOM,
-  }
-
   --set attacks
   self.attack_options = {}
 

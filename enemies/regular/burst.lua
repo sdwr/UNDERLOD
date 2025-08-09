@@ -10,7 +10,7 @@ fns['init_enemy'] = function(self)
 
   self.class = 'special_enemy'
   self.icon = 'lich'
-  self.movementStyle = MOVEMENT_TYPE_RANDOM
+
 
   -- Attack speed now handled by base class
 

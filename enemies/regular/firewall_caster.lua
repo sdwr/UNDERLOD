@@ -17,7 +17,7 @@ fns['init_enemy'] = function(self)
 
     self.class = 'special_enemy'
     self.icon = 'dragon'
-    self.movementStyle = MOVEMENT_TYPE_RANDOM -- Moves around randomly
+  
 
     -- Set stats and cooldowns
       -- Attack speed now handled by base class

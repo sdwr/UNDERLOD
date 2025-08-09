@@ -27,7 +27,7 @@ function Enemy:init(args)
   self.baseActionTimer = self.baseActionTimer or 1
   self.actionTimer = 0
 
-  self.movementStyle = self.movementStyle or MOVEMENT_TYPE_SEEK
+
   self.currentMovementAction = nil
   self.stopChasingInRange = not not self.stopChasingInRange
   self.haltOnPlayerContact = not not self.haltOnPlayerContact

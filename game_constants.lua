@@ -324,6 +324,47 @@ MOVEMENT_TYPE_WANDER = 'wander'
 MOVEMENT_TYPE_NONE = 'none'
 MOVEMENT_TYPES = {MOVEMENT_TYPE_SEEK, MOVEMENT_TYPE_LOOSE_SEEK, MOVEMENT_TYPE_SEEK_TO_RANGE, MOVEMENT_TYPE_RANDOM, MOVEMENT_TYPE_FLEE, MOVEMENT_TYPE_NONE}
 
+get_movement_type_by_enemy_type = function(enemy_type)
+  return enemy_movement_types[enemy_type] or enemy_movement_types['default']
+end
+
+-- Enemy movement styles organized by enemy type
+enemy_movement_types = {
+  ['default'] = MOVEMENT_TYPE_SEEK,
+  -- Aggressive seekers - chase players directly
+  ['slowcharger'] = MOVEMENT_TYPE_SEEK,
+  ['swarmer'] = MOVEMENT_TYPE_SEEK,
+  ['chaser'] = MOVEMENT_TYPE_SEEK,
+  ['cleaver'] = MOVEMENT_TYPE_SEEK,
+  
+  -- Ranged units that maintain distance
+  ['big_goblin_archer'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  
+  -- Random movement units - typically ranged/casters
+  ['goblin_archer'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['archer'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['seeker'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['mortar'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['singlemortar'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['line_mortar'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['burst'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['selfburst'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['arcspread'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['aim_spread'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['plasma'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['laser'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['snakearrow'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['summoner'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['spawner'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['firewall_caster'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  
+  -- Stationary units
+  ['turret'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  
+  -- Bosses
+  ['heigan'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+}
+
 -- Spell constants
 LASER_FIRE_TYPES = {'target', 'fixed_angle', 'rotating'}
 

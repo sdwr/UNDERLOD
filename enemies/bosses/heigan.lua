@@ -15,7 +15,7 @@ fns['init_enemy'] = function(self)
   --set sensors
   self.attack_sensor = Circle(self.x, self.y, 80)
 
-  self.movementStyle = MOVEMENT_TYPE_RANDOM
+
 
   -- Attack speed now handled by base class
 
