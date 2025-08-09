@@ -16,7 +16,8 @@ function SpawnGlobals.Init()
 
   SpawnGlobals.offscreen_spawn_offset = 15
   SpawnGlobals.CAMERA_BOUNDS_OFFSET = 15
-  
+  SpawnGlobals.ENEMY_MOVE_BOUNDS_OFFSET = 45
+
   SpawnGlobals.wall_width = 0
   SpawnGlobals.wall_height = 0
 

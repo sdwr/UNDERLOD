@@ -1368,6 +1368,39 @@ function Corpse:draw()
   graphics.pop()
 end
 
+-- Create a debug line object that can be added to effects group
+DebugLine = Object:extend()
+DebugLine:implement(GameObject)
+
+function DebugLine:init(args)
+  self:init_game_object(args)
+  self.x1 = args.x1 or self.x
+  self.y1 = args.y1 or self.y
+  self.x2 = args.x2 or self.x
+  self.y2 = args.y2 or self.y
+  self.color = args.color or yellow[0]
+  self.line_width = args.line_width or 2
+  self.duration = args.duration or 1 -- How long the line should last
+  
+  -- Auto-remove after duration
+  if self.duration > 0 then
+    self.t:after(self.duration, function() self.dead = true end)
+  end
+end
+
+function DebugLine:update(dt)
+  self:update_game_object(dt)
+  -- Update line positions if needed
+  if self.update_func then
+    self:update_func(dt)
+  end
+end
+
+function DebugLine:draw()
+  graphics.push(self.x1, self.y1, 0, 1, 1)
+    graphics.line(self.x1, self.y1, self.x2, self.y2, self.color, self.line_width)
+  graphics.pop()
+end
 
 
 Critter = Unit:extend()

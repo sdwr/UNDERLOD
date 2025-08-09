@@ -66,3 +66,10 @@ function Helper.Target:is_fully_in_camera_bounds(x, y)
   and y > SpawnGlobals.CAMERA_BOUNDS_OFFSET 
   and y < gh - SpawnGlobals.CAMERA_BOUNDS_OFFSET
 end
+
+function Helper.Target:way_inside_camera_bounds(x, y)
+  return x > SpawnGlobals.ENEMY_MOVE_BOUNDS_OFFSET 
+  and x < gw - SpawnGlobals.ENEMY_MOVE_BOUNDS_OFFSET 
+  and y > SpawnGlobals.ENEMY_MOVE_BOUNDS_OFFSET 
+  and y < gh - SpawnGlobals.ENEMY_MOVE_BOUNDS_OFFSET
+end

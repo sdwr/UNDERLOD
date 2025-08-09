@@ -269,10 +269,10 @@ function Enemy:acquire_target_seek_to_range()
   
   -- Calculate distance between enemy and player
   local distance_to_player = math.distance(self.x, self.y, player_location.x, player_location.y)
-  local desired_range = SEEK_TO_RANGE_DISTANCE
+  local desired_range = SEEK_TO_RANGE_PLAYER_RADIUS
   
   -- Create circle around enemy with radius = distance to player
-  local enemy_radius = distance_to_player
+  local enemy_radius = SEEK_TO_RANGE_ENEMY_RADIUS
   -- Create circle around player with desired range
   local player_radius = desired_range
   
@@ -314,6 +314,17 @@ function Enemy:acquire_target_seek_to_range()
     
     -- Pick one intersection point randomly
     local chosen_point = random:table({{x = x1, y = y1}, {x = x2, y = y2}})
+
+    if DEBUG_ENEMY_SEEK_TO_RANGE then
+      DebugLine{
+        group = main.current.effects,
+        x1 = self.x,
+        y1 = self.y,
+        x2 = chosen_point.x,
+        y2 = chosen_point.y,
+        line_width = 2,
+      }
+    end
     
     -- Add random angle offset
     local offset_angle = random:float(-math.pi/6, math.pi/6) -- ±30 degrees
@@ -328,7 +339,7 @@ function Enemy:acquire_target_seek_to_range()
   -- Validate arena bounds and adjust if needed
   local max_attempts = 5
   for attempt = 1, max_attempts do
-    if not Helper.Target:is_fully_in_camera_bounds(self.target_location.x, self.target_location.y) then
+    if not Helper.Target:way_inside_camera_bounds(self.target_location.x, self.target_location.y) then
       
       -- Rotate towards arena center
       local center_x, center_y = gw/2, gh/2
@@ -342,13 +353,25 @@ function Enemy:acquire_target_seek_to_range()
       
       self.target_location.x = self.x + desired_range * math.cos(new_angle)
       self.target_location.y = self.y + desired_range * math.sin(new_angle)
+
+      if DEBUG_ENEMY_SEEK_TO_RANGE then
+        DebugLine{
+          main.current.effects,
+          x1 = self.x,
+          y1 = self.y,
+          x2 = self.target_location.x,
+          y2 = self.target_location.y,
+          color = Helper.Color.red,
+          line_width = 2,
+        }
+      end
     else
       break -- Valid location found
     end
   end
   
   -- Final fallback: move towards arena center if still invalid
-  if not Helper.Target:is_fully_in_camera_bounds(self.target_location.x, self.target_location.y) then
+  if not Helper.Target:way_inside_camera_bounds(self.target_location.x, self.target_location.y) then
     print('cant find target location in camera bounds')
     return false
   end
