@@ -552,12 +552,17 @@ function Helper.Unit:update_player_location()
         player_location.x = gw / 2
         player_location.y = gh / 2
     end
-    
+
     self.player_location = player_location
 end
 
 function Helper.Unit:get_player_location()
     return self.player_location
+end
+
+function Helper.Unit:in_range_of_player_location(unit, range)
+    range = range or ARENA_RADIUS
+    return math.distance(unit.x, unit.y, self.player_location.x, self.player_location.y) < range
 end
 
 function Helper.Unit:draw_points()

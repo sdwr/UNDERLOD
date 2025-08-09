@@ -22,34 +22,42 @@ function Wave_Types:Create_Swarmer_Wave(level)
   table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'distant'})
   table.insert(wave, {'DELAY', 2})
   local enemy = Get_Random_Ranged_Enemy(tier)
-  table.insert(wave, {'GROUP', enemy, 1, 'last'})
+  table.insert(wave, {'GROUP', enemy, 2, 'last'})
+  table.insert(wave, {'DELAY', 4})
+  table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'distant'})
+  table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'distant'})
+  table.insert(wave, {'DELAY', 4})
+  table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'distant'})
+  table.insert(wave, {'DELAY', 2})
+  local enemy = Get_Random_Ranged_Enemy(tier)
+  table.insert(wave, {'GROUP', enemy, 3, 'last'})
   table.insert(wave, {'DELAY', 4})
   table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'distant'})
 
   return wave
 end
 
-function Wave_Types:Create_Ranged_Wave(level)
-  local tier = LEVEL_TO_TIER(level)
+-- function Wave_Types:Create_Ranged_Wave(level)
+--   local tier = LEVEL_TO_TIER(level)
 
-  local RANGED_SPAWN_OFFSET = 50
-  local ranged_spawn_locations = {
-    {x = RANGED_SPAWN_OFFSET, y = RANGED_SPAWN_OFFSET},
-    {x = gw - RANGED_SPAWN_OFFSET, y = RANGED_SPAWN_OFFSET},
-    {x = RANGED_SPAWN_OFFSET, y = gh - RANGED_SPAWN_OFFSET},
-    {x = gw - RANGED_SPAWN_OFFSET, y = gh - RANGED_SPAWN_OFFSET},
-  }
+--   local RANGED_SPAWN_OFFSET = 50
+--   local ranged_spawn_locations = {
+--     {x = RANGED_SPAWN_OFFSET, y = RANGED_SPAWN_OFFSET},
+--     {x = gw - RANGED_SPAWN_OFFSET, y = RANGED_SPAWN_OFFSET},
+--     {x = RANGED_SPAWN_OFFSET, y = gh - RANGED_SPAWN_OFFSET},
+--     {x = gw - RANGED_SPAWN_OFFSET, y = gh - RANGED_SPAWN_OFFSET},
+--   }
 
-  local wave = {}
-  local enemy = Get_Random_Ranged_Enemy(tier)
+--   local wave = {}
+--   local enemy = Get_Random_Ranged_Enemy(tier)
 
-  table.insert(wave, {'GROUP', enemy, 1, 'location', ranged_spawn_locations[1]})
-  table.insert(wave, {'GROUP', enemy, 1, 'location', ranged_spawn_locations[2]})
-  table.insert(wave, {'GROUP', enemy, 1, 'location', ranged_spawn_locations[3]})
-  table.insert(wave, {'GROUP', enemy, 1, 'location', ranged_spawn_locations[4]})
+--   table.insert(wave, {'GROUP', enemy, 1, 'location', ranged_spawn_locations[1]})
+--   table.insert(wave, {'GROUP', enemy, 1, 'location', ranged_spawn_locations[2]})
+--   table.insert(wave, {'GROUP', enemy, 1, 'location', ranged_spawn_locations[3]})
+--   table.insert(wave, {'GROUP', enemy, 1, 'location', ranged_spawn_locations[4]})
 
-  return wave
-end
+--   return wave
+-- end
 
 function Wave_Types:Create_Close_Wave(level)
   local tier = LEVEL_TO_TIER(level)
@@ -57,10 +65,20 @@ function Wave_Types:Create_Close_Wave(level)
   local wave = {}
   local enemy = random:table(special_enemy_by_tier[tier])
 
-  table.insert(wave, {'GROUP', enemy, 1, 'nil'})
+  table.insert(wave, {'GROUP', enemy, 2, 'nil'})
   table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
   table.insert(wave, {'DELAY', 5})
-  table.insert(wave, {'GROUP', enemy, 1, 'nil'})
+  table.insert(wave, {'GROUP', enemy, 2, 'nil'})
+  table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
+  table.insert(wave, {'GROUP', enemy, 2, 'nil'})
+  table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
+  table.insert(wave, {'DELAY', 5})
+  table.insert(wave, {'GROUP', enemy, 3, 'nil'})
+  table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
+  table.insert(wave, {'GROUP', enemy, 3, 'nil'})
+  table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
+  table.insert(wave, {'DELAY', 5})
+  table.insert(wave, {'GROUP', enemy, 3, 'nil'})
   table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
   return wave
 end
@@ -71,10 +89,16 @@ function Wave_Types:Create_Kicker_Wave(level)
   local enemy = random:table(special_enemy_by_tier[tier])
   local enemy2 = random:table(special_enemy_by_tier[tier])
 
-  table.insert(wave, {'GROUP', enemy, 1, 'scatter'})
-  table.insert(wave, {'GROUP', enemy, 1, 'scatter'})
+  table.insert(wave, {'GROUP', enemy, 2, 'scatter'})
+  table.insert(wave, {'GROUP', enemy, 2, 'scatter'})
   table.insert(wave, {'GROUP', enemy2, 1, 'scatter'})
   table.insert(wave, {'GROUP', enemy2, 1, 'scatter'})
+  table.insert(wave, {'DELAY', 5})
+  table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
+  table.insert(wave, {'GROUP', enemy, 3, 'scatter'})
+  table.insert(wave, {'GROUP', enemy, 3, 'scatter'})
+  table.insert(wave, {'GROUP', enemy2, 2, 'scatter'})
+  table.insert(wave, {'GROUP', enemy2, 2, 'scatter'})
   table.insert(wave, {'DELAY', 5})
   table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
 
@@ -96,7 +120,6 @@ function Wave_Types:Get_Waves(level)
   for i = 1, WAVES_PER_LEVEL(level) do
     local wave_type = random:table({
       'Create_Swarmer_Wave',
-      'Create_Ranged_Wave',
       'Create_Close_Wave',
       'Create_Kicker_Wave',
     })

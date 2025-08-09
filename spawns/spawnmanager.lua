@@ -14,8 +14,10 @@ function SpawnGlobals.Init()
   
   local y_corner_offset = 50
 
-  SpawnGlobals.wall_width = 0.2*gw/2
-  SpawnGlobals.wall_height = 0.2*gh/2
+  SpawnGlobals.offscreen_spawn_offset = 15
+
+  SpawnGlobals.wall_width = 0
+  SpawnGlobals.wall_height = 0
 
   SpawnGlobals.TROOP_0_SPAWN_X = gw/2
   SpawnGlobals.TROOP_0_SPAWN_Y = gh - 50
@@ -171,6 +173,28 @@ function Get_Spawn_Point(rs, location)
   return nil
 end
 
+function Get_Offscreen_Spawn_Point()
+  local x, y
+
+  -- Choose which edge to spawn from (top, bottom, left, right)
+  local edge = random:int(1, 4)
+
+  if edge == 1 then -- Top edge
+    x = random:int(-SpawnGlobals.offscreen_spawn_offset, gw + SpawnGlobals.offscreen_spawn_offset)
+    y = -SpawnGlobals.offscreen_spawn_offset -- Just off the top edge
+  elseif edge == 2 then -- Bottom edge
+    x = random:int(-SpawnGlobals.offscreen_spawn_offset, gw + SpawnGlobals.offscreen_spawn_offset)
+    y = gh + SpawnGlobals.offscreen_spawn_offset -- Just off the bottom edge
+  elseif edge == 3 then -- Left edge
+    x = -SpawnGlobals.offscreen_spawn_offset -- Just off the left edge
+    y = random:int(-SpawnGlobals.offscreen_spawn_offset, gh + SpawnGlobals.offscreen_spawn_offset)
+  else -- Right edge
+    x = gw + SpawnGlobals.offscreen_spawn_offset -- Just off the right edge
+    y = random:int(-SpawnGlobals.offscreen_spawn_offset, gh + SpawnGlobals.offscreen_spawn_offset)
+  end
+
+  return {x = x, y = y}
+end
 
 function Outside_Arena(location)
   if location.x < SpawnGlobals.wall_width or 
@@ -670,7 +694,7 @@ function SpawnManager:process_next_instruction()
   self.wave_spawn_delay = 0
   
   -- Get single spawn location for this entire wave (around screen edges, 1/3 toward center)
-  local wave_spawn_location = Get_Edge_Spawn_Point()
+  local wave_spawn_location = Get_Offscreen_Spawn_Point()
   
   --play spawn sound only once for the wave
   Spawn_Enemy_Sound(self.arena, false)
@@ -783,7 +807,7 @@ function Spawn_Group_Scattered(arena, group_data)
   amount = amount or 1
 
   for i = 1, amount do
-    local location = Get_Random_Spawn_Point_Scatter()
+    local location = Get_Offscreen_Spawn_Point()
     local create_enemy_action = function()
       Spawn_Enemy(arena, type, location)
       arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns - 1

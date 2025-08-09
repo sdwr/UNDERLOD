@@ -1706,6 +1706,11 @@ function Unit:pick_action()
   if self.transition_active == false then
     return false
   end
+
+  if self.offscreen or not self.in_arena_radius then
+    self:set_movement_action(MOVEMENT_TYPE_SEEK, 1)
+    return true
+  end
   
     
   

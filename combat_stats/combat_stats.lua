@@ -37,7 +37,7 @@ troop_attack_cooldowns = {
 -- Enemy type to cooldown mapping (replaces magic numbers)
 enemy_attack_cooldowns = {
   -- Regular enemies
-  ['goblin_archer'] = 0.5,
+  ['goblin_archer'] = attack_cooldowns['fast'],
   ['stomper'] = attack_cooldowns['fast'],
   ['plasma'] = attack_cooldowns['fast'], 
   ['spread'] = attack_cooldowns['fast'],
@@ -325,7 +325,7 @@ SCALED_ENEMY_MS = function(level, base_ms)
 end
 
 function SWARMERS_PER_LEVEL(level)
-  return 5 + math.floor(level / 3)
+  return 15 + math.floor(level / 3)
 end
 
 function SPECIAL_ENEMIES_PER_LEVEL(level)

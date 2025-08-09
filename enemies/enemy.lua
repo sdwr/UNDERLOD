@@ -97,6 +97,14 @@ function Enemy:update(dt)
 
     self:update_animation(dt)
 
+    self.offscreen = not Helper.Target:is_in_camera_bounds(self.x, self.y)
+
+    if self.offscreen then
+      self.in_arena_radius = false
+    else
+      self.in_arena_radius = Helper.Unit:in_range_of_player_location(self, ARENA_RADIUS)
+    end
+
     if self.being_knocked_back then
       if math.length(self:get_velocity()) < ENEMY_KNOCKBACK_VELOCITY_REGAIN_CONTROL_THRESHOLD then
         Helper.Unit:reset_knockback_variables(self)
@@ -172,9 +180,13 @@ function Enemy:set_idle_retry()
   Helper.Unit:set_state(self, unit_states['idle'])
 end
 
-function Enemy:set_movement_action(action)
+function Enemy:set_movement_action(action, actionTimer)
   self.currentMovementAction = action
-  self.actionTimer = self.baseActionTimer * random:float(0.8, 1.2)
+  if actionTimer then
+    self.actionTimer = actionTimer
+  else
+    self.actionTimer = self.baseActionTimer * random:float(0.8, 1.2)
+  end
 
   Helper.Unit:set_state(self, unit_states['moving'])
   local chose_target_success = self:choose_movement_target()
