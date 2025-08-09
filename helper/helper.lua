@@ -60,6 +60,7 @@ function Helper:update(dt)
 
     --update timers, run state functions, update hitbox points
     Helper.Unit:update_hitbox_points()
+    Helper.Unit:update_player_location()
     Helper.Time:run_intervals()
     Helper.Time:run_waits()
     Helper.Unit:run_state_always_run_functions()

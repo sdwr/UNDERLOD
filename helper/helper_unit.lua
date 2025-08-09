@@ -532,6 +532,34 @@ function Helper.Unit:update_hitbox_points()
     end
 end
 
+function Helper.Unit:update_player_location()
+
+    local player_location = {x = 0, y = 0}
+    local number_of_alive_troops = 0
+    for i, team in ipairs(Helper.Unit.teams) do
+        for j, troop in ipairs(team.troops) do
+            if not troop.dead then
+                player_location.x = player_location.x + troop.x
+                player_location.y = player_location.y + troop.y
+                number_of_alive_troops = number_of_alive_troops + 1
+            end
+        end
+    end
+    if number_of_alive_troops > 0 then
+        player_location.x = player_location.x / number_of_alive_troops
+        player_location.y = player_location.y / number_of_alive_troops
+    else
+        player_location.x = gw / 2
+        player_location.y = gh / 2
+    end
+    
+    self.player_location = player_location
+end
+
+function Helper.Unit:get_player_location()
+    return self.player_location
+end
+
 function Helper.Unit:draw_points()
     if self.do_draw_points then
         for i, unit in ipairs(self:get_list(true)) do
