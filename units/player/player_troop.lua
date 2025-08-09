@@ -38,6 +38,9 @@ function Troop:init(args)
   self:set_character()
 
   Helper.Unit:set_state(self, unit_states['idle'])
+
+  self.offscreen = false
+  self.fully_onscreen = true
 end
 
 

@@ -14,6 +14,25 @@ function Get_Random_Ranged_Enemy(tier)
   return enemy
 end
 
+function Wave_Types:Create_Normal_Wave(level)
+  local tier = LEVEL_TO_TIER(level)
+  local wave = {}
+  table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
+  table.insert(wave, {'DELAY', 1})
+  table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
+  table.insert(wave, {'DELAY', 4})
+  local enemy = Get_Random_Ranged_Enemy(tier)
+  table.insert(wave, {'GROUP', enemy, 1, 'nil'})
+  table.insert(wave, {'DELAY', 1})
+  table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
+  table.insert(wave, {'DELAY', 4})
+  local enemy = Get_Random_Ranged_Enemy(tier)
+  table.insert(wave, {'GROUP', enemy, 2, 'nil'})
+  table.insert(wave, {'DELAY', 0})
+  table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
+  return wave
+end
+
 function Wave_Types:Create_Swarmer_Wave(level)
   local tier = LEVEL_TO_TIER(level)
   local wave = {}
@@ -106,7 +125,8 @@ function Wave_Types:Get_Waves(level)
 
   for i = 1, WAVES_PER_LEVEL(level) do
     local wave_type = random:table({
-      'Create_Swarmer_Wave',
+      'Create_Normal_Wave',
+      -- 'Create_Swarmer_Wave',
       -- 'Create_Close_Wave',
       -- 'Create_Kicker_Wave',
     })

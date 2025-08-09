@@ -17,6 +17,7 @@ function Helper.Damage:primary_hit(unit, damage, from, damageType, playHitEffect
   -- Early returns for invalid states
   if unit.invulnerable then return end
   if unit.dead then return end
+  if unit.offscreen then return end
   
   -- Default parameters
   playHitEffects = playHitEffects or true
@@ -77,6 +78,7 @@ function Helper.Damage:indirect_hit(unit, damage, from, damageType, playHitEffec
   -- Early returns for invalid states
   if unit.invulnerable then return end
   if unit.dead then return end
+  if unit.offscreen then return end
   
   -- Default parameters
   playHitEffects = playHitEffects or true
@@ -117,6 +119,7 @@ function Helper.Damage:chained_hit(unit, damage, from, damageType, playHitEffect
   -- Early returns for invalid states
   if unit.invulnerable then return end
   if unit.dead then return end
+  if unit.offscreen then return end
   
   -- Default parameters
   playHitEffects = playHitEffects or true
