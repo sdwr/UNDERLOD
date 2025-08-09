@@ -325,7 +325,7 @@ SCALED_ENEMY_MS = function(level, base_ms)
 end
 
 function SWARMERS_PER_LEVEL(level)
-  return 15 + math.floor(level / 3)
+  return 8 + math.floor(level / 3)
 end
 
 function SPECIAL_ENEMIES_PER_LEVEL(level)
@@ -340,20 +340,7 @@ function SPECIAL_ENEMIES_PER_LEVEL(level)
 end
 
 function WAVES_PER_LEVEL(level)
-  if level == 1 then return 2 end
-  if level == 2 then return 2 end
-
-  if level <= 6 then
-    return 3
-  elseif level <= 11 then
-    return 4
-  elseif level <= 16 then
-    return 4
-  elseif level <= 21 then
-    return 5
-  end
-
-  return 5
+  return 1
 end
 
 function IS_SPECIAL_WAVE(level, wave)

@@ -98,8 +98,9 @@ function Enemy:update(dt)
     self:update_animation(dt)
 
     self.offscreen = not Helper.Target:is_in_camera_bounds(self.x, self.y)
+    self.kinda_offscreen = not Helper.Target:is_fully_in_camera_bounds(self.x, self.y)
 
-    if self.offscreen then
+    if self.offscreen or self.kinda_offscreen then
       self.in_arena_radius = false
     else
       self.in_arena_radius = Helper.Unit:in_range_of_player_location(self, ARENA_RADIUS)

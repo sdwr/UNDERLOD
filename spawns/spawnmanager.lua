@@ -15,7 +15,8 @@ function SpawnGlobals.Init()
   local y_corner_offset = 50
 
   SpawnGlobals.offscreen_spawn_offset = 15
-
+  SpawnGlobals.CAMERA_BOUNDS_OFFSET = 15
+  
   SpawnGlobals.wall_width = 0
   SpawnGlobals.wall_height = 0
 

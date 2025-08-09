@@ -59,3 +59,10 @@ end
 function Helper.Target:is_in_camera_bounds(x, y)
   return x > 5 and x < gw - 5 and y > 5 and y < gh - 5
 end
+
+function Helper.Target:is_fully_in_camera_bounds(x, y)
+  return x > SpawnGlobals.CAMERA_BOUNDS_OFFSET 
+  and x < gw - SpawnGlobals.CAMERA_BOUNDS_OFFSET 
+  and y > SpawnGlobals.CAMERA_BOUNDS_OFFSET 
+  and y < gh - SpawnGlobals.CAMERA_BOUNDS_OFFSET
+end
