@@ -14,6 +14,7 @@ function Archer_Troop:create_spelldata()
     spell_duration = 10,
     bullet_size = 3,
     pierce = false,
+    homing = true,
     speed = 210,
     is_troop = true,
     color = blue[0],
@@ -52,7 +53,6 @@ function Archer_Troop:instant_attack_at_angle(angle, damage_multi)
   local spelldata = self:create_spelldata()
   spelldata.on_attack_callbacks = false
   spelldata.unit = self
-  spelldata.target = cast_target
   spelldata.angle = angle
   spelldata.damage = function() return self.dmg * damage_multi end
   ArrowProjectile(spelldata)

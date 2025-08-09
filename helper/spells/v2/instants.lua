@@ -127,6 +127,11 @@ function ArrowProjectile:update(dt)
     return
   end
 
+  if self.homing and self.target and not self.target.dead then
+    self.angle = math.atan2(self.target.y - self.y, self.target.x - self.x)
+    self.r = self.angle
+  end
+
   -- Move the arrow forward
   self.x = self.x + math.cos(self.angle) * self.speed * dt
   self.y = self.y + math.sin(self.angle) * self.speed * dt
