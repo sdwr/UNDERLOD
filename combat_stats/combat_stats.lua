@@ -37,6 +37,7 @@ troop_attack_cooldowns = {
 -- Enemy type to cooldown mapping (replaces magic numbers)
 enemy_attack_cooldowns = {
   -- Regular enemies
+  ['goblin_archer'] = 0.5,
   ['stomper'] = attack_cooldowns['fast'],
   ['plasma'] = attack_cooldowns['fast'], 
   ['spread'] = attack_cooldowns['fast'],
@@ -420,7 +421,7 @@ enemy_type_to_stats = {
     
     ['cleaver'] = {  },
     ['big_goblin_archer'] = {  },
-    ['goblin_archer'] = {  },
+    ['goblin_archer'] = {mvspd = 2.25 },
     ['archer'] = {  },
     ['turret'] = {  },
 

@@ -119,8 +119,13 @@ function Enemy:update(dt)
     
     if self.state == unit_states['idle'] then
       self.idleTimer = self.idleTimer - dt
+      self:add_idle_deceleration()
       if self.idleTimer <= 0 then
-        self:pick_action()
+        local success = self:pick_action()
+        if not success then
+          self:set_idle_retry()
+        end
+        
       end
     end
 
@@ -162,6 +167,11 @@ function Enemy:set_idle()
   Helper.Unit:set_state(self, unit_states['idle'])
 end
 
+function Enemy:set_idle_retry()
+  self.idleTimer = 0.1
+  Helper.Unit:set_state(self, unit_states['idle'])
+end
+
 function Enemy:set_movement_action(action)
   self.currentMovementAction = action
   self.actionTimer = self.baseActionTimer * random:float(0.8, 1.2)
@@ -170,6 +180,16 @@ function Enemy:set_movement_action(action)
   local chose_target_success = self:choose_movement_target()
   if not chose_target_success then
     self:set_idle()
+  end
+end
+
+function Enemy:add_idle_deceleration()
+  if self.being_knocked_back then return end
+  self:add_deceleration(DECELERATION_WEIGHT)
+  local vx, vy = self:get_velocity()
+  local speed = math.length(vx, vy)
+  if speed < 0.1 then
+    self:set_velocity(0,0)
   end
 end
 
@@ -280,7 +300,7 @@ function Enemy:update_move_seek()
   else
       -- We are OUT of range, OR we are not supposed to stop.
       -- In either case, we must seek the target.
-      self:seek_point(self.target.x, self.target.y, SEEK_DECELERATION, SEEK_WEIGHT)
+      self:seek_point(self.target.x, self.target.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
       self:wander(50, 100, 20) -- Add a little variation to the seek.
   end
 
@@ -298,7 +318,7 @@ function Enemy:update_move_loose_seek()
     if self:distance_to_point(self.target_location.x, self.target_location.y) < DISTANCE_TO_TARGET_FOR_IDLE then
       return false
     else
-      self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, SEEK_WEIGHT)
+      self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
       self:wander(50, 100, 20)
       self:rotate_towards_velocity(0.5)
       self:steering_separate(4, {Enemy}, 1)
@@ -313,7 +333,7 @@ function Enemy:update_move_seek_to_range()
     if self:distance_to_point(self.target_location.x, self.target_location.y) < DISTANCE_TO_TARGET_FOR_IDLE then
       return false
     else
-      self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, SEEK_WEIGHT)
+      self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type) or SEEK_WEIGHT)
       self:wander(50, 100, 20)
       self:rotate_towards_velocity(0.5)
       self:steering_separate(4, {Enemy}, 1)
@@ -328,9 +348,8 @@ function Enemy:update_move_random()
     if self:distance_to_point(self.target_location.x, self.target_location.y) < DISTANCE_TO_TARGET_FOR_IDLE then
       return false
     else
-      self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, SEEK_WEIGHT)
-      self:wander(50, 100, 20)
-      self:rotate_towards_velocity(0.5)
+      self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
+      self:rotate_towards_velocity(1)
       self:steering_separate(4, {Enemy}, 1)
       return true
     end

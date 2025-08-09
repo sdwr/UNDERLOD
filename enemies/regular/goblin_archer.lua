@@ -26,12 +26,20 @@ fns['init_enemy'] = function(self)
   self.attack_sensor = Circle(self.x, self.y, self.attack_range)
 
   self.last_action = 'attack'
+  self.attacks_left = 0
+  
   self.custom_action_selector = function(self, viable_attacks, viable_movements)
-    if self.last_action == 'attack' then
+    if self.attack_cooldown_timer > 0 then 
+      return 'retry', nil
+    end
+    
+    if #viable_attacks == 0 or self.attacks_left <= 0 then
       self.last_action = 'movement'
+      self.attacks_left = 3
       return 'movement', MOVEMENT_TYPE_RANDOM
     else
       self.last_action = 'attack'
+      self.attacks_left = self.attacks_left - 1
       return 'attack', random:table(viable_attacks)
     end
   end

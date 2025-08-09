@@ -1754,7 +1754,10 @@ function Unit:pick_action()
   end
 
   if action then
-    if type == 'attack' then
+    if type == 'retry' then
+      --return false and retry in 0.1 seconds
+      return false
+    elseif type == 'attack' then
       self:cast(action)
       self.last_cast = action.name
     elseif type == 'movement' then

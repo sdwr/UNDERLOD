@@ -27,6 +27,7 @@ function Physics:set_as_steerable(max_v, max_f, max_turn_rate, turn_multiplier)
   self.separation_f = Vector()
   self.alignment_f = Vector()
   self.cohesion_f = Vector()
+  self.deceleration_f = Vector()
   self.apply_force_f = Vector()
   self.apply_impulse_f = Vector()
 end
@@ -50,7 +51,8 @@ function Physics:steering_update(dt)
   end
 end
 
-
+GLOBAL_ENEMY = nil
+GLOBAL_COUNT = 0
 function Physics:calculate_steering_force(dt)
   self.steering_force:set(0, 0)
   if self.seeking then self.steering_force:add(self.seek_f) end
@@ -62,10 +64,17 @@ function Physics:calculate_steering_force(dt)
   if self.separating then self.steering_force:add(self.separation_f) end
   if self.aligning then self.steering_force:add(self.alignment_f) end
   if self.cohesing then self.steering_force:add(self.cohesion_f) end
+  if self.deceleration then self.steering_force:add(self.deceleration_f) end
 
   --using :add() instead of :set()
   --for multiple calls to steering separate
   --so have to reset it
+
+  if DEBUG_STEERING_FORCES then
+    local condition = function(unit) return unit.type == 'goblin_archer' end
+    Debug_Steering_Forces(condition, self)
+  end
+
   self.separation_f:set(0, 0)
 
 
@@ -78,6 +87,7 @@ function Physics:calculate_steering_force(dt)
   self.separating = false
   self.aligning = false
   self.cohesing = false
+  self.deceleration = false
   return self.steering_force:truncate(self.max_f)
 end
 
@@ -200,6 +210,27 @@ function Physics:add_cohesion(location, min_distance, weight)
   self.cohesion_f:set(fx*(weight or 1), fy*(weight or 1))
 end
 
+function Physics:add_deceleration(weight)
+  self.deceleration = true
+  -- Get the current velocity
+  local vx, vy = self:get_velocity()
+  local speed = math.length(vx, vy)
+  
+  -- Only apply a force if the object is moving
+  if speed > 0.1 then -- Use a small threshold to prevent jittering when almost stopped
+    -- Calculate a normalized vector in the opposite direction of the velocity
+    local nx, ny = -vx / speed, -vy / speed
+    
+    -- Calculate the deceleration force, scaling it by current speed
+    local decel_force_mag = IDLE_DECEL_FORCE * (speed / (self.max_move_v or self.max_v))
+    
+    -- Set the deceleration force vector, applying the weight
+    self.deceleration_f:set(nx * decel_force_mag * (weight or 1), ny * decel_force_mag * (weight or 1))
+  else
+    -- If the object is stopped, set the force to zero to prevent any movement
+    self.deceleration_f:set(0, 0)
+  end
+end
 
 -- Wander steering behavior
 -- Makes the object move in a jittery manner, adding some randomness to its movement while keeping the overall direction

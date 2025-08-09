@@ -239,3 +239,36 @@ function format_stat_display(stat_name, stat_value)
     return '+', math.floor(stat_value * 100), '% ', display_name
   end
 end
+
+GLOBAL_DEBUG_ENEMY = nil
+GLOBAL_DEBUG_COUNT = 0
+Debug_Steering_Forces = function(condition, unit)
+  if condition(unit) then
+    if not GLOBAL_DEBUG_ENEMY then
+      GLOBAL_DEBUG_ENEMY = unit
+      GLOBAL_DEBUG_COUNT = 0
+    end
+    if GLOBAL_DEBUG_ENEMY == unit then
+      GLOBAL_DEBUG_COUNT = GLOBAL_DEBUG_COUNT + 1
+    end
+    if GLOBAL_DEBUG_COUNT % 30 == 0 then
+      Print_Steering_Forces(unit)
+    end
+  end
+end
+
+Print_Steering_Forces = function(unit)
+  print('debug forces')
+  print(unit.type, unit.character,unit.state)
+  print(unit.steering_force, 'steering_force')
+  print(unit.applied_force, 'applied_force')
+  print(unit.applied_impulse, 'applied_impulse')
+  print(unit.deceleration_f, 'deceleration_f')
+  print(unit.separation_f, 'separation_f')
+  print(unit.alignment_f, 'alignment_f')
+  print(unit.cohesion_f, 'cohesion_f')
+  print(unit.wander_f, 'wander_f')
+  print(unit.path_follow_f, 'path_follow_f')
+  print(unit.evade_f, 'evade_f')
+  print(unit.pursuit_f, 'pursuit_f')
+end

@@ -74,7 +74,7 @@ end
 
 DAMPING_BY_UNIT_CLASS = {
   ['boss'] = 6,
-  ['special_enemy'] = 1,
+  ['special_enemy'] = 2,
   ['regular_enemy'] = 1,
   ['critter'] = 1,
   ['troop'] = 2,
@@ -197,6 +197,15 @@ AGGRO_RANGE_BOOST = 100
 SEEK_DECELERATION = 1.1
 SEEK_WEIGHT = 1
 
+get_seek_weight_by_enemy_type = function(enemy_type)
+  return seek_weight_by_enemy_type[enemy_type] or seek_weight_by_enemy_type['default']
+end
+
+seek_weight_by_enemy_type = {
+  ['goblin_archer'] = 3,
+  ['default'] = SEEK_WEIGHT,
+}
+
 TROOP_SEPARATION_RADIUS = 8
 TROOP_SEPARATION_WEIGHT = 1
 
@@ -213,8 +222,10 @@ WANDER_DISTANCE = 50
 WANDER_JITTER = 5
 
 LOOSE_SEEK_OFFSET = 30
-DISTANCE_TO_TARGET_FOR_IDLE = 10
+DISTANCE_TO_TARGET_FOR_IDLE = 7
 
+IDLE_DECEL_FORCE = 100
+DECELERATION_WEIGHT = 5
 
 MAX_BOSS_FORCE = 1000
 MAX_ENEMY_FORCE = 1000
