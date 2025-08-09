@@ -9,7 +9,7 @@ fns['init_enemy'] = function(self)
 
   self.class = 'special_enemy'
   self.icon = 'iceslime'
-  self.movementStyle = MOVEMENT_TYPE_RANDOM
+
 
   --set attacks
   self.attack_options = {}

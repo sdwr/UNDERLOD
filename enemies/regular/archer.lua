@@ -10,7 +10,7 @@ fns['init_enemy'] = function(self)
 
   self.class = 'special_enemy'
   self.icon = 'archer'  -- Using goblin2 icon for now
-  self.movementStyle = MOVEMENT_TYPE_RANDOM  -- Moves randomly
+
 
   --set stats and cooldowns - fast attack speed for short action timer
   -- Attack speed and cast time now handled by base class
@@ -43,7 +43,7 @@ fns['init_enemy'] = function(self)
       width = 20,
       height = 4,
       damage = function() return self.dmg end,
-      v = 120,  -- Speed for physics-based movement
+      v = 80,  -- Speed for physics-based movement
       unit = self,
       source = 'archer',
     },

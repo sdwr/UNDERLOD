@@ -14,8 +14,12 @@ function SpawnGlobals.Init()
   
   local y_corner_offset = 50
 
-  SpawnGlobals.wall_width = 0.2*gw/2
-  SpawnGlobals.wall_height = 0.2*gh/2
+  SpawnGlobals.offscreen_spawn_offset = 15
+  SpawnGlobals.CAMERA_BOUNDS_OFFSET = 15
+  SpawnGlobals.ENEMY_MOVE_BOUNDS_OFFSET = 45
+
+  SpawnGlobals.wall_width = 0
+  SpawnGlobals.wall_height = 0
 
   SpawnGlobals.TROOP_0_SPAWN_X = gw/2
   SpawnGlobals.TROOP_0_SPAWN_Y = gh - 50
@@ -171,6 +175,28 @@ function Get_Spawn_Point(rs, location)
   return nil
 end
 
+function Get_Offscreen_Spawn_Point()
+  local x, y
+
+  -- Choose which edge to spawn from (top, bottom, left, right)
+  local edge = random:int(1, 4)
+
+  if edge == 1 then -- Top edge
+    x = random:int(-SpawnGlobals.offscreen_spawn_offset, gw + SpawnGlobals.offscreen_spawn_offset)
+    y = -SpawnGlobals.offscreen_spawn_offset -- Just off the top edge
+  elseif edge == 2 then -- Bottom edge
+    x = random:int(-SpawnGlobals.offscreen_spawn_offset, gw + SpawnGlobals.offscreen_spawn_offset)
+    y = gh + SpawnGlobals.offscreen_spawn_offset -- Just off the bottom edge
+  elseif edge == 3 then -- Left edge
+    x = -SpawnGlobals.offscreen_spawn_offset -- Just off the left edge
+    y = random:int(-SpawnGlobals.offscreen_spawn_offset, gh + SpawnGlobals.offscreen_spawn_offset)
+  else -- Right edge
+    x = gw + SpawnGlobals.offscreen_spawn_offset -- Just off the right edge
+    y = random:int(-SpawnGlobals.offscreen_spawn_offset, gh + SpawnGlobals.offscreen_spawn_offset)
+  end
+
+  return {x = x, y = y}
+end
 
 function Outside_Arena(location)
   if location.x < SpawnGlobals.wall_width or 
@@ -545,7 +571,7 @@ function SpawnManager:init(arena)
     -- 'boss_fight':            A special state for boss levels.
 
     -- Timers and Trackers
-    self.timer = arena.entry_delay or 2
+    self.timer = arena.entry_delay or 1
     self.current_wave_index = 1
     self.current_instruction_index = 1
 
@@ -670,10 +696,10 @@ function SpawnManager:process_next_instruction()
   self.wave_spawn_delay = 0
   
   -- Get single spawn location for this entire wave (around screen edges, 1/3 toward center)
-  local wave_spawn_location = Get_Edge_Spawn_Point()
+  local wave_spawn_location = Get_Offscreen_Spawn_Point()
   
   --play spawn sound only once for the wave
-  Spawn_Enemy_Sound(self.arena, false)
+  -- Spawn_Enemy_Sound(self.arena, false)
   
   -- Loop until we explicitly break out (due to a delay or end of wave).
   while true do
@@ -750,11 +776,11 @@ function Spawn_Group_With_Location(arena, group_data, wave_spawn_location, on_fi
     local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
     amount = amount or 1
 
-    AnimatedSpawnCircle{
-      group = arena.floor, x = wave_spawn_location.x, y = wave_spawn_location.y,
-      duration = WAVE_SPAWN_WARNING_TIME,
-      expected_spawn_time = WAVE_SPAWN_WARNING_TIME,
-    }
+    -- AnimatedSpawnCircle{
+    --   group = arena.floor, x = wave_spawn_location.x, y = wave_spawn_location.y,
+    --   duration = WAVE_SPAWN_WARNING_TIME,
+    --   expected_spawn_time = WAVE_SPAWN_WARNING_TIME,
+    -- }
 
     -- This loop initiates all spawn processes with 0.1 second spacing using SpawnManager's delay counter
     local spawn_offsets = {{x = -12, y = -12}, {x = 12, y = -12}, {x = 12, y = 12}, {x = -12, y = 12}, {x = 0, y = 0}}
@@ -783,7 +809,7 @@ function Spawn_Group_Scattered(arena, group_data)
   amount = amount or 1
 
   for i = 1, amount do
-    local location = Get_Random_Spawn_Point_Scatter()
+    local location = Get_Offscreen_Spawn_Point()
     local create_enemy_action = function()
       Spawn_Enemy(arena, type, location)
       arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns - 1
@@ -792,14 +818,14 @@ function Spawn_Group_Scattered(arena, group_data)
 
     local spawn_delay = WAVE_SPAWN_WARNING_TIME + arena.spawn_manager.wave_spawn_delay
 
-    arena.t:after(arena.spawn_manager.wave_spawn_delay, function()
-      local warning_marker = AnimatedSpawnCircle{
-        group = arena.floor, x = location.x, y = location.y,
-        duration = spawn_delay,
-        expected_spawn_time = spawn_delay,
-        enemy_type = type
-      }
-    end)
+    -- arena.t:after(arena.spawn_manager.wave_spawn_delay, function()
+    --   local warning_marker = AnimatedSpawnCircle{
+    --     group = arena.floor, x = location.x, y = location.y,
+    --     duration = spawn_delay,
+    --     expected_spawn_time = spawn_delay,
+    --     enemy_type = type
+    --   }
+    -- end)
 
     arena.t:after(spawn_delay, create_enemy_action)
 
@@ -1028,7 +1054,7 @@ function SpawnManager:spawn_waves_with_timing()
     self.current_wave_index = 1
     self.current_instruction_index = 1
     self:change_state('entry_delay')
-    self.timer = self.arena.entry_delay or 2
+    self.timer = self.arena.entry_delay or 1
   end
 end
 

@@ -81,12 +81,6 @@ function Cast:init(args)
     return
   end
   self.spelldata.unit = self.unit
-  
-  -- Store the cooldown to apply when cast completes, don't set it yet
-  if self.unit then
-    local base_cooldown = self.attack_cooldown or self.unit.attack_cooldown or 1
-    self.final_cooldown = self.unit:get_random_cooldown(base_cooldown)
-  end
 
   --vars from data
   self.rotation_lock = self.rotation_lock or false
@@ -169,7 +163,7 @@ function Cast:cast()
   else 
     Helper.Unit:set_state(self.unit, unit_states['channeling'])
   end
-  self.unit:end_cast(self.final_cooldown or self.unit.attack_cooldown or 1)
+  self.unit:end_cast()
   self:die()
 end
 
@@ -369,7 +363,9 @@ function Spell:try_end_cast()
     if self.on_attack_callbacks and self.unit.onAttackCallbacks then
       self.unit:onAttackCallbacks(self.target)
     end
-    self.unit:end_cast(self.final_cooldown or self.unit.attack_cooldown or 1)
+
+    self.unit:end_cast()
+    
     if self.unit_dies_at_end then
       self.unit:die()
     end
@@ -393,9 +389,7 @@ function Spell:die()
     print('destroying spell: ', self.name)
   end
   if self.unit and self.unit.state == unit_states['channeling'] and self.unit.end_channel then
-    local base_cooldown = self.unit.attack_cooldown or 1
-    local random_cooldown = self.unit:get_random_cooldown(base_cooldown)
-    self.unit:end_channel(random_cooldown)
+    self.unit:end_channel()
   end
   --reset the unit's rotation lock
   if self.freeze_rotation or self.rotation_lock then

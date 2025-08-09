@@ -13,7 +13,7 @@ fns['init_enemy'] = function(self)
   self.name = 'turret'
 
   -- Stationary enemy - doesn't move
-  self.movementStyle = MOVEMENT_TYPE_NONE
+
 
   --set attacks
   self.attack_options = {}

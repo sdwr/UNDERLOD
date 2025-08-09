@@ -175,12 +175,37 @@ function Helper.Unit:cast_off_cooldown(unit)
     return unit.attack_cooldown_timer <= 0
 end
 
+function Helper.Unit:cast_off_cooldown_distance_multiplier(unit, target)
+    if unit.is_troop and target and target.x and target.y then
+        local distance = unit:distance_to_point(target.x, target.y)
+        local distance_multiplier = DISTANCE_TO_COOLDOWN_MULTIPLIER(distance)
+        local adjusted_cooldown = unit.attack_cooldown * distance_multiplier
+
+        local elapsed_cooldown
+        if unit.attack_cooldown_timer > 0 then
+            elapsed_cooldown = unit.attack_cooldown - unit.attack_cooldown_timer
+        else
+            elapsed_cooldown = math.abs(unit.attack_cooldown * -1 + unit.attack_cooldown_timer)
+        end
+
+        return elapsed_cooldown >= adjusted_cooldown
+    end
+    return Helper.Unit:cast_off_cooldown(unit)
+end
+
 function Helper.Unit:can_cast(unit, target)
     -- We can only cast if we have a valid target in the first place.
     if unit and not unit.castObject and target then
-        return table.any(unit_states_can_cast, function(v) return unit.state == v end)
-            and unit:in_range_of(target)  -- The key change: Use the same logic as the movement check.
-            and Helper.Unit:cast_off_cooldown(unit)
+        if not table.any(unit_states_can_cast, function(v) return unit.state == v end) then
+            return false
+        end
+        if not unit:in_range_of(target) then
+            return false
+        end
+        if not Helper.Unit:cast_off_cooldown_distance_multiplier(unit, target) then
+            return false
+        end
+        return true
     end
     return false
 end
@@ -552,12 +577,17 @@ function Helper.Unit:update_player_location()
         player_location.x = gw / 2
         player_location.y = gh / 2
     end
-    
+
     self.player_location = player_location
 end
 
 function Helper.Unit:get_player_location()
     return self.player_location
+end
+
+function Helper.Unit:in_range_of_player_location(unit, range)
+    range = range or ARENA_RADIUS
+    return math.distance(unit.x, unit.y, self.player_location.x, self.player_location.y) < range
 end
 
 function Helper.Unit:draw_points()

@@ -10,7 +10,7 @@ fns['init_enemy'] = function(self)
 
   self.class = 'special_enemy'
   self.icon = 'goblin2'
-  self.movementStyle = MOVEMENT_TYPE_SEEK_TO_RANGE
+
 
   --set stats and cooldowns
   -- Attack speed now handled by base class

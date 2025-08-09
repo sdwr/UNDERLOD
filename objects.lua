@@ -267,7 +267,7 @@ function Unit:init_unit()
   self:config_physics_object()
 
   --also set in child classes
-  self:reset_attack_cooldown_timer(0)
+  self:set_attack_cooldown_timer(0)
 
   self.target = nil
   self.assigned_target = nil
@@ -848,7 +848,6 @@ function Unit:calculate_stats(first_run)
     -- Initialize attack cooldown timer
     if not self.attack_cooldown_timer then
       self.attack_cooldown_timer = 0
-      self.total_attack_cooldown_timer = 0
     end
   end
 
@@ -1706,11 +1705,16 @@ function Unit:pick_action()
   if self.transition_active == false then
     return false
   end
+
+  if self.offscreen or not self.in_arena_radius then
+    self:set_movement_action(MOVEMENT_TYPE_SEEK, 1)
+    return true
+  end
   
     
   
   local attack_options = self.attack_options or {}
-  local movement_options = self.movement_options or {}
+  local movement_options = self.movement_options or {get_movement_type_by_enemy_type(self.type)}
 
   local viable_attacks = {}
   local viable_movements = {}
@@ -1776,9 +1780,7 @@ function Unit:update_cast_cooldown(dt)
     return
   end
 
-  if self.attack_cooldown_timer > 0 then
-    self:set_attack_cooldown_timer(self.attack_cooldown_timer - dt)
-  end
+  self:set_attack_cooldown_timer(self.attack_cooldown_timer - dt)
 end
 
 function Unit:cast(castData)
@@ -1802,9 +1804,8 @@ function Unit:should_freeze_rotation()
     or (self.castObject and self.castObject.freeze_rotation)
 end
 
-function Unit:end_cast(cooldown)
-  
-  self:reset_attack_cooldown_timer(cooldown)
+function Unit:end_cast()
+  self:put_attack_on_cooldown()
   self.spelldata = nil
   self.freezerotation = false
 
@@ -1834,15 +1835,9 @@ function Unit:try_backswing()
   return false
 end
 
-function Unit:get_random_cooldown(cooldown)
-  return cooldown * random:float(0.8, 1.2)
-end
-
-function Unit:end_channel(cooldown)
+function Unit:end_channel()
   if self.state == unit_states['channeling'] then
-    local base_cooldown = cooldown or self.base_attack_cooldown or 1
-    local random_cooldown = self:get_random_cooldown(base_cooldown)
-    self:reset_attack_cooldown_timer(random_cooldown)
+    self:put_attack_on_cooldown()
     self.spelldata = nil
     self.freezerotation = false
     Helper.Unit:set_state(self, unit_states['idle'])
@@ -1868,7 +1863,7 @@ function Unit:cancel_cast()
 
   if self.state == unit_states['casting'] or self.state == unit_states['channeling'] then
     Helper.Unit:set_state(self, unit_states['idle'])
-    self:reset_attack_cooldown_timer(0)
+    self:set_attack_cooldown_timer(0)
     self.spelldata = nil
   end
 
@@ -1877,7 +1872,7 @@ end
 
 function Unit:interrupt_cast()
   if self.castObject then
-    self:reset_attack_cooldown_timer(self.base_cast_time or 0.5)
+    self:put_attack_on_cooldown()
     self.spelldata = nil
     Cancel_Cast(self)
   end
@@ -1885,7 +1880,7 @@ end
 
 function Unit:interrupt_channel()
   if self.state == unit_states['channeling'] then
-    self:reset_attack_cooldown_timer(self.base_cast_time or 0.5)
+    self:put_attack_on_cooldown()
     self.spelldata = nil
     Cancel_Cast(self)
   end
@@ -1905,9 +1900,7 @@ function Unit:launch_at_facing(force_magnitude, duration)
   if self.state == unit_states['casting'] then
     self:end_cast()
   elseif self.state == unit_states['channeling'] then
-    local base_cooldown = self.attack_cooldown or 1
-    local random_cooldown = self:get_random_cooldown(base_cooldown)
-    self:end_channel(random_cooldown)
+    self:end_channel()
   end
 
   duration = duration or 0.7
@@ -1972,14 +1965,14 @@ function Unit:die()
 
 end
 
+function Unit:put_attack_on_cooldown()
+  local attack_cooldown = self.attack_cooldown or 1
+  self.attack_cooldown_timer = attack_cooldown
+end
+
 -- New simplified functions
 function Unit:set_attack_cooldown_timer(value)
   self.attack_cooldown_timer = value
-end
-
-function Unit:reset_attack_cooldown_timer(value)
-  self.attack_cooldown_timer = value
-  self.total_attack_cooldown_timer = value
 end
 
 

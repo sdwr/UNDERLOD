@@ -1356,11 +1356,11 @@ function init()
     [1] = {
       'goblin_archer',
       'archer',
-      'selfburst',
+      -- 'selfburst',
       'burst',
       'snakearrow',
-      'turret',
-      'cleaver',
+      -- 'turret',
+      -- 'cleaver',
       -- 'slowcharger',
     },
     [1.5] = {

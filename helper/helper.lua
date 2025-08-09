@@ -112,11 +112,57 @@ function Helper:update(dt)
         }
     end
 
-    if input['s'].pressed then
-        if not s_just_pressed then
-            Helper.Spell.Sweep:create(Helper.Color.blue, true, 100, 50, Helper.mousey - 50, Helper.window_width - 50, Helper.mousey + 50)
+    if input['q'].pressed then
+        show_debug_arena_radius = not show_debug_arena_radius
+    end
+
+    if show_debug_arena_radius then
+        if not Helper.arena_radius_circle then
+            Helper.arena_radius_circle = Area{
+                group = main.current.effects,
+                pick_shape = 'circle',
+                x = Helper.Unit.player_location.x,
+                y = Helper.Unit.player_location.y,
+                r = ARENA_RADIUS,
+                duration = 1000,
+                color = Helper.Color.red,
+                is_troop = false
+            }
+        end
+        if not Helper.seek_to_range_circle then
+            Helper.seek_to_range_circle = Area{
+                group = main.current.effects,
+                pick_shape = 'circle',
+                x = Helper.Unit.player_location.x,
+                y = Helper.Unit.player_location.y,
+                r = SEEK_TO_RANGE_PLAYER_RADIUS,
+                duration = 1000,
+                color = Helper.Color.blue,
+                is_troop = false
+            }
+        end
+
+        Helper.arena_radius_circle.x = Helper.Unit.player_location.x
+        Helper.arena_radius_circle.y = Helper.Unit.player_location.y
+
+        Helper.seek_to_range_circle.x = Helper.Unit.player_location.x
+        Helper.seek_to_range_circle.y = Helper.Unit.player_location.y
+    else
+        if Helper.arena_radius_circle then
+            Helper.arena_radius_circle.dead = true
+            Helper.arena_radius_circle = nil
+        end
+        if Helper.seek_to_range_circle then
+            Helper.seek_to_range_circle.dead = true
+            Helper.seek_to_range_circle = nil
         end
     end
+
+    -- if input['s'].pressed then
+    --     if not s_just_pressed then
+    --         Helper.Spell.Sweep:create(Helper.Color.blue, true, 100, 50, Helper.mousey - 50, Helper.window_width - 50, Helper.mousey + 50)
+    --     end
+    -- end
     if input['p'].pressed then
         Helper.Unit.do_draw_points = not Helper.Unit.do_draw_points 
     end

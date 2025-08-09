@@ -10,7 +10,7 @@ fns['init_enemy'] = function(self)
 
   self.class = 'special_enemy'
   self.icon = 'goblin2'
-  self.movementStyle = MOVEMENT_TYPE_RANDOM
+
 
   --set stats and cooldowns
   -- Attack speed now handled by base class
@@ -25,21 +25,28 @@ fns['init_enemy'] = function(self)
   self.attack_range = attack_ranges['ranged']
   self.attack_sensor = Circle(self.x, self.y, self.attack_range)
 
-  self.last_action = 'attack'
+  self.NUM_ATTACKS = 3
+  self.NUM_MOVES = 3
+
   self.attacks_left = 0
+  self.moves_left = self.NUM_MOVES
 
   self.custom_action_selector = function(self, viable_attacks, viable_movements)
     if self.attack_cooldown_timer > 0 then 
       return 'retry', nil
     end
     
-    if #viable_attacks == 0 or self.attacks_left <= 0 then
-      self.last_action = 'movement'
-      self.attacks_left = 3
-      return 'movement', MOVEMENT_TYPE_RANDOM
+    if self.moves_left > 0 then
+      self.moves_left = self.moves_left - 1
+      if self.moves_left == 0 then
+        self.attacks_left = self.NUM_ATTACKS
+      end
+      return 'movement', MOVEMENT_TYPE_SEEK_TO_RANGE
     else
-      self.last_action = 'attack'
       self.attacks_left = self.attacks_left - 1
+      if self.attacks_left == 0 then
+        self.moves_left = self.NUM_MOVES
+      end
       return 'attack', random:table(viable_attacks)
     end
   end

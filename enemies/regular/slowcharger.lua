@@ -10,7 +10,7 @@ fns['init_enemy'] = function(self)
 
   self.class = 'special_enemy'
   self.icon = 'golem'
-  self.movementStyle = MOVEMENT_TYPE_SEEK
+
 
   --set stats and cooldowns
   -- Attack speed now handled by base class
@@ -21,7 +21,6 @@ fns['init_enemy'] = function(self)
   -- Set unlimited attack range
 
   -- No movement options - only attacks
-  self.movement_options = {}
   self.move_option_weight = 0.0  -- Always attack when viable
 
   --set attacks

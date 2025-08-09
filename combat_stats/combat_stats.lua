@@ -37,7 +37,7 @@ troop_attack_cooldowns = {
 -- Enemy type to cooldown mapping (replaces magic numbers)
 enemy_attack_cooldowns = {
   -- Regular enemies
-  ['goblin_archer'] = 0.5,
+  ['goblin_archer'] = attack_cooldowns['fast'],
   ['stomper'] = attack_cooldowns['fast'],
   ['plasma'] = attack_cooldowns['fast'], 
   ['spread'] = attack_cooldowns['fast'],
@@ -325,7 +325,7 @@ SCALED_ENEMY_MS = function(level, base_ms)
 end
 
 function SWARMERS_PER_LEVEL(level)
-  return 5 + math.floor(level / 3)
+  return 6 + math.floor(level / 3)
 end
 
 function SPECIAL_ENEMIES_PER_LEVEL(level)
@@ -340,20 +340,7 @@ function SPECIAL_ENEMIES_PER_LEVEL(level)
 end
 
 function WAVES_PER_LEVEL(level)
-  if level == 1 then return 2 end
-  if level == 2 then return 2 end
-
-  if level <= 6 then
-    return 3
-  elseif level <= 11 then
-    return 4
-  elseif level <= 16 then
-    return 4
-  elseif level <= 21 then
-    return 5
-  end
-
-  return 5
+  return 1
 end
 
 function IS_SPECIAL_WAVE(level, wave)
@@ -394,6 +381,41 @@ ZONE_SCALING = function(level)
   return 1
 end
 
+DISTANCE_TO_COOLDOWN_MULTIPLIER = function(distance)
+  local mult_values = {
+    [0] = 0.24,
+    [20] = 0.27,
+    [50] = 0.4,
+    [75] = 0.6,
+    [100] = 0.85,
+    [150] = 1.05,
+    [200] = 1.25,
+    [250] = 1.4,
+  }
+
+  if distance < 0 then
+    return 0.5
+  end
+
+  local p1, p2
+  local prev
+  for dist, mult in pairs(mult_values) do
+    if distance <= dist then
+      p1 = prev
+      p2 = dist
+      break
+    end
+    prev = dist
+  end
+
+  if not p2 then
+    return 1.1
+  end
+
+  local scale = (distance - p1) / (p2 - p1)
+  return mult_values[p1] + (mult_values[p2] - mult_values[p1]) * scale
+end
+
 
 -- unit stats
 unit_classes = {
@@ -413,7 +435,7 @@ unit_stat_multipliers = {
 }
 
 enemy_type_to_stats = {
-    ['swarmer'] = { dmg = 0.5, hp = 0.6},
+    ['swarmer'] = { dmg = 0.5, hp = 0.6, mvspd = 0.7},
 
     ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
     ['chaser'] = { dmg = 1, mvspd = 1 },

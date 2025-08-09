@@ -15,7 +15,7 @@ fns['init_enemy'] = function(self)
   self.haltOnPlayerContact = true
 
   self.class = 'special_enemy'
-  self.movementStyle = MOVEMENT_TYPE_SEEK
+
 
   self.attack_options = {}
 
