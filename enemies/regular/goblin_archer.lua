@@ -15,7 +15,7 @@ fns['init_enemy'] = function(self)
   --set stats and cooldowns
   -- Attack speed now handled by base class
 
-  self.baseActionTimer = 2
+  self.baseActionTimer = 1.25
 
   self.move_option_weight = 0
 
@@ -27,7 +27,7 @@ fns['init_enemy'] = function(self)
 
   self.last_action = 'attack'
   self.attacks_left = 0
-  
+
   self.custom_action_selector = function(self, viable_attacks, viable_movements)
     if self.attack_cooldown_timer > 0 then 
       return 'retry', nil

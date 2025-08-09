@@ -183,11 +183,29 @@ function Outside_Arena(location)
   end
 end
 
-function Get_Point_In_Arena()
+function Get_Point_In_Arena(unit, min_distance)
   local avoid_edge_distance = 10
-  local x = random:int(SpawnGlobals.wall_width + avoid_edge_distance, gw - SpawnGlobals.wall_width - avoid_edge_distance)
-  local y = random:int(SpawnGlobals.wall_height + avoid_edge_distance, gh - SpawnGlobals.wall_height - avoid_edge_distance)
-  return {x = x, y = y}
+  local x, y
+  
+  if unit and min_distance then
+    --find a point at least min_distance away from the unit
+    local max_attempts = 50
+    local attempts = 0
+    while attempts < max_attempts do
+      x = random:int(SpawnGlobals.wall_width + avoid_edge_distance, gw - SpawnGlobals.wall_width - avoid_edge_distance)
+      y = random:int(SpawnGlobals.wall_height + avoid_edge_distance, gh - SpawnGlobals.wall_height - avoid_edge_distance)
+      if math.distance(x, y, unit.x, unit.y) > min_distance then
+        return {x = x, y = y}
+      end
+      attempts = attempts + 1
+    end
+    --return the last attempt anyway
+    return {x = x, y = y}
+  else
+    local x = random:int(SpawnGlobals.wall_width + avoid_edge_distance, gw - SpawnGlobals.wall_width - avoid_edge_distance)
+    local y = random:int(SpawnGlobals.wall_height + avoid_edge_distance, gh - SpawnGlobals.wall_height - avoid_edge_distance)
+    return {x = x, y = y}
+  end
 end
 
 function Get_Point_In_Right_Half(arena)

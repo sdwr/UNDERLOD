@@ -421,7 +421,7 @@ enemy_type_to_stats = {
     
     ['cleaver'] = {  },
     ['big_goblin_archer'] = {  },
-    ['goblin_archer'] = {mvspd = 2.25 },
+    ['goblin_archer'] = {mvspd = 2.5 },
     ['archer'] = {  },
     ['turret'] = {  },
 

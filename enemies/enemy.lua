@@ -277,7 +277,7 @@ function Enemy:acquire_target_seek_to_range()
 end
 
 function Enemy:acquire_target_random()
-  self.target_location = Get_Point_In_Arena()
+  self.target_location = Get_Point_In_Arena(self, MIN_DISTANCE_FOR_RANDOM_MOVEMENT)
   return true
 end
 
