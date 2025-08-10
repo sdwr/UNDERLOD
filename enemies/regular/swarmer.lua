@@ -76,6 +76,10 @@ fns['explode'] = function(self)
 end
 
 fns['poison'] = function(self)
+  local effect_color_outline = self.color:clone()
+  effect_color_outline.a = 0.5
+  local effect_color_opacity = 0.3
+
   wizard1:play{pitch = random:float(0.9, 1.1), volume = 0.2}
   Area_Spell{
     group = main.current.effects,
@@ -86,15 +90,16 @@ fns['poison'] = function(self)
     damage = function() return self.dmg * self.damage_multi end,
     damage_ticks = true,
     hit_only_once = false,
-    r = self.radius,
-    color = self.color,
-    opacity = 0.3,
+    radius = self.radius,
+    color = effect_color_outline,
+    opacity = effect_color_opacity,
     line_width = 0,
     tick_rate = self.tick_rate,
     duration = self.duration,
     pick_shape = 'circle',
     on_tick_hit_sound = wizard1,
     parent = self,
+    floor_effect = 'poison',
   }
 end
 

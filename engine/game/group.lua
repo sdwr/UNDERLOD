@@ -125,30 +125,52 @@ function Group:draw(scroll_factor_x, scroll_factor_y)
   if self.camera then self.camera:detach() end
 end
 
-function Group:draw_custom()
-  local ghosts = {}
-  local under_units = {}
-  local regular = {}
+function Group:draw_floor_effects()
+  if #self.objects == 0 then return end
+    
+  -- Collect all floor effects
+  local floor_effects = {}
+  local fill_stencils = {}
+  local outline_stencils = {}
 
   for _, object in ipairs(self.objects) do
-    if not object.hidden then
-      if object.ghost == true then
-        table.insert(ghosts, object)
-      elseif object.draw_under_units then
-        table.insert(under_units, object)
-      else
-        table.insert(regular, object)
+    if object.floor_effect and not object.dead then
+      if not floor_effects[object.floor_effect] then 
+        floor_effects[object.floor_effect] = {}
       end
+      table.insert(floor_effects[object.floor_effect], object)
     end
   end
-  for i, object in ipairs(under_units) do
-    object:draw()
+
+  if next(floor_effects) == nil then return end
+
+  for k, floor_effect_list in pairs(floor_effects) do
+    local outline_color = floor_effect_list[1].color
+    local color = floor_effect_list[1].color_transparent
+    love.graphics.stencil(function() floorEffectStencil(floor_effect_list, 0) end, 'replace', 1)
+    love.graphics.setStencilTest('equal', 0)
+
+    love.graphics.setColor(outline_color.r, outline_color.g, outline_color.b, outline_color.a)
+    floorEffectStencil(floor_effect_list, 0.5)
+    love.graphics.setStencilTest()
+
+    love.graphics.setStencilTest('greater', 0)
+    
+    love.graphics.setColor(color.r, color.g, color.b, color.a)
+    love.graphics.rectangle('fill', 0, 0, gw, gh)
+
+    love.graphics.setStencilTest()
+    love.graphics.setColor(1, 1, 1, 1)
   end
-  for i, object in ipairs(regular) do
-    object:draw()
-  end
-  for i, object in ipairs(ghosts) do
-    object:draw()
+  
+end
+
+function floorEffectStencil(floor_effect_list, radius_increase)
+  -- Draw the fills of all effects to create the stencil mask
+  for _, effect in ipairs(floor_effect_list) do
+    if effect.pick_shape == 'circle' then
+        love.graphics.circle("fill", effect.x, effect.y, effect.radius + radius_increase)
+    end
   end
 end
 

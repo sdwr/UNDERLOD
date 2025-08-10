@@ -145,6 +145,7 @@ end
 function Area_Spell:draw()
     if self.hidden then return end
 
+    if self.floor_effect then return end
 
     -- Draw with shimmery outline effect (like Area class)
     graphics.push(self.x, self.y, self.r)
