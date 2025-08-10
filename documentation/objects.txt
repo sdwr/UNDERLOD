@@ -4,7 +4,8 @@ Object creation
 
 Objects are the core building block of the game, a new object type is defined with 
 
-Troop = Object:extend(),
+Troop = Object:extend()
+Troop.__class_name = 'Troop',
 
 and whatever :init() function is defined will be called on object creation
 the core object code is in engine/game/object.lua

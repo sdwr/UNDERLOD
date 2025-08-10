@@ -3,6 +3,7 @@
 --so they are drawn under the player
 --and get cleaned up when the floor is cleared
 Laser_Hazard = Object:extend()
+Laser_Hazard.__class_name = 'Laser_Hazard'
 Laser_Hazard:implement(GameObject)
 Laser_Hazard:implement(Physics)
 function Laser_Hazard:init(args)

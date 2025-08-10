@@ -1,4 +1,5 @@
 ProgressBar = Object:extend()
+ProgressBar.__class_name = 'ProgressBar'
 ProgressBar:implement(GameObject)
 function ProgressBar:init(args)
   self:init_game_object(args)
@@ -85,6 +86,7 @@ function ProgressBar:die()
 end
 
 ProgressBarSegment = Object:extend()
+ProgressBarSegment.__class_name = 'ProgressBarSegment'
 ProgressBarSegment:implement(GameObject)
 function ProgressBarSegment:init(args)
   self:init_game_object(args)

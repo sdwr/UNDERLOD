@@ -1,6 +1,7 @@
 -- A chain class. If loop is true then this is the same as a polygon, otherwise its a collection of connected lines (an open polygon).
 -- Implements every function that Polygon does.
 Chain = Object:extend()
+Chain.__class_name = 'Chain'
 Chain:implement(Polygon)
 function Chain:init(loop, vertices)
   self.loop = loop

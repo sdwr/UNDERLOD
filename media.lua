@@ -1,4 +1,5 @@
 Media = Object:extend()
+Media.__class_name = 'Media'
 Media:implement(State)
 function Media:init(name)
   self:init_state(name)

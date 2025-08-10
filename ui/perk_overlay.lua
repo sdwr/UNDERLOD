@@ -1,5 +1,6 @@
 -- Perk selection overlay
 PerkOverlay = Object:extend()
+PerkOverlay.__class_name = 'PerkOverlay'
 PerkOverlay:implement(GameObject)
 
 function PerkOverlay:init(args)
@@ -65,7 +66,7 @@ function PerkOverlay:on_perk_selected(perk_key)
   ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
 
   self:destroy_unbought_perks()
-  
+
   Helper.Unit:enable_unit_controls()
 
   self.t:after(1, function()

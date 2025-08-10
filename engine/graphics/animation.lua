@@ -9,6 +9,7 @@
 -- Each animation comes from different rows in the same spritesheet, and that's reflected by the last argument in each call.
 -- If your animation comes from a single spritesheet that doesn't have multiple animations, then you can omit the last argument and it will automatically go through it.
 AnimationFrames = Object:extend()
+AnimationFrames.__class_name = 'AnimationFrames'
 function AnimationFrames:init(image, frame_w, frame_h, frames_list)
   self.source = image
   self.frame_w, self.frame_h = frame_w, frame_h
@@ -77,6 +78,7 @@ self.animation = AnimationLogic(0.04, 6, 'loop', {
 -- The index 0 can be used to perform an action once the animation reaches its end:
 -- self.animation = AnimationLogic(0.04, self.player_dead_frames.size, 'once', {[0] = function() self.dead = true end})
 AnimationLogic = Object:extend()
+AnimationLogic.__class_name = 'AnimationLogic'
 function AnimationLogic:init(delay, frames, loop_mode, actions)
   self.delay = delay
   self.frames = frames
@@ -121,6 +123,7 @@ end
 -- Takes in a delay, an AnimationFrames object, the loop mode and a table of actions.
 -- Read more about the AnimationFrames and AnimationLogic classes as everything there applies here.
 Animation = Object:extend()
+Animation.__class_name = 'Animation'
 function Animation:init(delay, animation_frames, loop_mode, actions)
   self.delay = delay
   self.animation_frames = animation_frames

@@ -32,6 +32,7 @@ table.extend(all_unit_classes, enemy_classes)
 --2. buffs that charge per unit but proc on control group (like static, bloodlust, etc)
 
 Team = Object:extend()
+Team.__class_name = 'Team'
 function Team:init(i, unit)
   self.troops = {}
   self.procs = {}

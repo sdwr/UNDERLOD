@@ -1,6 +1,7 @@
 -- An isosceles triangle class. This is a triangle with size w, h centered on x, y pointed to the right (angle 0).
 -- Implements every function that Polygon does.
 Triangle = Object:extend()
+Triangle.__class_name = 'Triangle'
 Triangle:implement(Polygon)
 function Triangle:init(x, y, w, h)
   self.x, self.y, self.w, self.h = x, y, w, h
@@ -17,6 +18,7 @@ end
 -- An equilateral triangle class. This is a tringle with size w centered on x, y pointed to the right (angle 0).
 -- Implements every function that Polygon does.
 EquilateralTriangle = Object:extend()
+EquilateralTriangle.__class_name = 'EquilateralTriangle'
 EquilateralTriangle:implement(Polygon)
 function EquilateralTriangle:init(x, y, w)
   self.x, self.y, self.w = x, y, w

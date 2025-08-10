@@ -1,4 +1,5 @@
 PerksPanel = Object:extend()
+PerksPanel.__class_name = 'PerksPanel'
 PerksPanel:implement(GameObject)
 
 function PerksPanel:init(args)
@@ -94,6 +95,7 @@ end
 
 -- PerkSlot object
 PerkSlot = Object:extend()
+PerkSlot.__class_name = 'PerkSlot'
 PerkSlot:implement(GameObject)
 
 function PerkSlot:init(args)

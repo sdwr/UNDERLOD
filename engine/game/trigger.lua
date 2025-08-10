@@ -1,6 +1,7 @@
 -- The base Trigger class.
 -- A global instance of this called "trigger" is available by default.
 Trigger = Object:extend()
+Trigger.__class_name = 'Trigger'
 function Trigger:init()
   self.triggers = {}
   self.time = love.timer.getTime()

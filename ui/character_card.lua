@@ -52,6 +52,7 @@ function Kill_All_Cards()
 end
 
 CharacterCard = Object:extend()
+CharacterCard.__class_name = 'CharacterCard'
 CharacterCard:implement(GameObject)
 function CharacterCard:init(args)
     Refresh_All_Cards_Text()
@@ -456,6 +457,7 @@ function CharacterCard:die()
 end
 
 ItemPart = Object:extend()
+ItemPart.__class_name = 'ItemPart'
 ItemPart:implement(GameObject)
 function ItemPart:init(args)
   self:init_game_object(args)
@@ -801,6 +803,7 @@ end
 
 -- Custom Level Up Button Class
 LevelUpButton = Object:extend()
+LevelUpButton.__class_name = 'LevelUpButton'
 LevelUpButton:implement(GameObject)
 function LevelUpButton:init(args)
   self:init_game_object(args)

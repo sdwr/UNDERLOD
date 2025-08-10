@@ -13,6 +13,7 @@ function Create_Item(name)
 end
 
 Item = Object:extend()
+Item.__class_name = 'Item'
 function Item:init(data)
   self.name = data.name
   --unit will be nil, because the unit doesn't exist yet (is created in arena)

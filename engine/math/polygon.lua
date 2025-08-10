@@ -1,5 +1,6 @@
 -- A polygon class.
 Polygon = Object:extend()
+Polygon.__class_name = 'Polygon'
 function Polygon:init(vertices)
   self.vertices = vertices
   self:get_size()

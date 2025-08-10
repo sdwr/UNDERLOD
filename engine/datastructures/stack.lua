@@ -1,4 +1,5 @@
 Stack = Object:extend()
+Stack.__class_name = 'Stack'
 function Stack:init(maxSize)
     self.out = {}
     self.maxSize = maxSize or 0

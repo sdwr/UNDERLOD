@@ -6,6 +6,7 @@
 -- Can be launched with custom starting angles or angle offsets
 
 HomingMissile = Object:extend()
+HomingMissile.__class_name = 'HomingMissile'
 HomingMissile:implement(GameObject)
 HomingMissile:implement(Physics)
 

@@ -3,6 +3,7 @@
 -- Starts a new grid with 3 width, 2 height and values 1, 2, 3 in the first row and 3, 4, 5 in the second row.
 -- grid = Grid(3, 2, {1, 2, 3, 4, 5, 6})
 Grid = Object:extend()
+Grid.__class_name = 'Grid'
 function Grid:init(w, h, v)
   self.grid = {}
   self.w, self.h = w, h

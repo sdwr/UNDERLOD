@@ -13,6 +13,7 @@
   'on_hit' and 'on_bounce' effects in the constructor arguments.
 --]]
 ChainSpell = Object:extend()
+ChainSpell.__class_name = 'ChainSpell'
 ChainSpell:implement(GameObject)
 ChainSpell:implement(Physics)
 
@@ -343,6 +344,7 @@ end
 --line effects
 
 LightningLine = Object:extend()
+LightningLine.__class_name = 'LightningLine'
 LightningLine:implement(GameObject)
 function LightningLine:init(args)
   self:init_game_object(args)
@@ -422,6 +424,7 @@ end
   Similar to LightningLine, but with a distinct visual style for healing.
 --]]
 HealLine = Object:extend()
+HealLine.__class_name = 'HealLine'
 HealLine:implement(GameObject)
 
 function HealLine:init(args)
@@ -557,6 +560,7 @@ end
   A gentle healing circle effect for the endpoints of healing chains.
 --]]
 HealCircle = Object:extend()
+HealCircle.__class_name = 'HealCircle'
 HealCircle:implement(GameObject)
 
 function HealCircle:init(args)
@@ -583,6 +587,7 @@ end
   A gentle particle effect for healing spells.
 --]]
 HealingParticle = Object:extend()
+HealingParticle.__class_name = 'HealingParticle'
 HealingParticle:implement(GameObject)
 
 function HealingParticle:init(args)
@@ -622,6 +627,7 @@ end
   Creates a sinister black and purple line with dark particles.
 --]]
 CurseLine = Object:extend()
+CurseLine.__class_name = 'CurseLine'
 CurseLine:implement(GameObject)
 
 function CurseLine:init(args)
@@ -758,6 +764,7 @@ end
   A dark circle effect for the endpoints of curse lines.
 --]]
 CurseCircle = Object:extend()
+CurseCircle.__class_name = 'CurseCircle'
 CurseCircle:implement(GameObject)
 
 function CurseCircle:init(args)
@@ -785,6 +792,7 @@ end
   A dark particle effect for curse spells.
 --]]
 CurseParticle = Object:extend()
+CurseParticle.__class_name = 'CurseParticle'
 CurseParticle:implement(GameObject)
 
 function CurseParticle:init(args)

@@ -2,6 +2,7 @@
 -- The general way of creating an object that implements these functions goes like this:
 --[[
 MyGameObject = Object:extend()
+MyGameObject.__class_name = 'MyGameObject'
 MyGameObject:implement(GameObject)
 function MyGameObject:init(args)
   self:init_game_object(args)
@@ -23,6 +24,7 @@ end
 -- One of the nice patterns I've found was a passing arguments as a key + value table.
 -- So in the case above, the object would automatically have its .x, .y and .v attributes set to 100 and its .r attribute set to math.pi/4.
 GameObject = Object:extend()
+GameObject.__class_name = 'GameObject'
 function GameObject:init_game_object(args)
   for k, v in pairs(args or {}) do self[k] = v end
 

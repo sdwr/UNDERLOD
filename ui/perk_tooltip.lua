@@ -1,4 +1,5 @@
 PerkTooltip = Object:extend()
+PerkTooltip.__class_name = 'PerkTooltip'
 PerkTooltip:implement(GameObject)
 
 -- Constants for layout

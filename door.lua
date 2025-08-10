@@ -1,4 +1,5 @@
 Door = Object:extend()
+Door.__class_name = 'Door'
 Door:implement(GameObject)
 Door:implement(Physics)
 function Door:init(args)

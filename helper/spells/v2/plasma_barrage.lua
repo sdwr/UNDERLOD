@@ -73,6 +73,7 @@ end
 --but need to resolve where the unit state /cooldown is handled first
 -- in the unit? in the spell? different solutions
 PlasmaBall = Object:extend()
+PlasmaBall.__class_name = 'PlasmaBall'
 PlasmaBall:implement(GameObject)
 PlasmaBall:implement(Physics)
 function PlasmaBall:init(args)

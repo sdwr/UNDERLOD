@@ -25,6 +25,7 @@ function Get_Distance_To_Target(self)
 end
 
 Arrow = Object:extend()
+Arrow.__class_name = 'Arrow'
 Arrow:implement(GameObject)
 Arrow:implement(Physics)
 function Arrow:init(args)
@@ -80,6 +81,7 @@ function Arrow:die()
 end
 
 ArrowProjectile = Object:extend()
+ArrowProjectile.__class_name = 'ArrowProjectile'
 ArrowProjectile:implement(GameObject)
 ArrowProjectile:implement(Physics)
 function ArrowProjectile:init(args)
@@ -199,6 +201,7 @@ end
 
 
 Arcspread = Object:extend()
+Arcspread.__class_name = 'Arcspread'
 Arcspread:implement(GameObject)
 Arcspread:implement(Physics)
 function Arcspread:init(args)
@@ -261,6 +264,7 @@ function Arcspread:die()
 end
 
 DamageArc = Object:extend()
+DamageArc.__class_name = 'DamageArc'
 DamageArc:implement(GameObject)
 DamageArc:implement(Physics)
 function DamageArc:init(args)
@@ -370,6 +374,7 @@ function DamageArc:die()
 end
 
 Avalanche = Object:extend()
+Avalanche.__class_name = 'Avalanche'
 Avalanche:implement(GameObject)
 Avalanche:implement(Physics)
 function Avalanche:init(args)
@@ -410,6 +415,7 @@ end
 
 --need to tweak so it returns to unit, not to original position
 Boomerang = Object:extend()
+Boomerang.__class_name = 'Boomerang'
 Boomerang:implement(GameObject)
 Boomerang:implement(Physics)
 function Boomerang:init(args)
@@ -515,6 +521,7 @@ end
 ----------------------------------------------
 
 Burst = Object:extend()
+Burst.__class_name = 'Burst'
 Burst:implement(GameObject)
 Burst:implement(Physics)
 function Burst:init(args)
@@ -717,6 +724,7 @@ function Burst:die()
 end
 
 BurstBullet = Object:extend()
+BurstBullet.__class_name = 'BurstBullet'
 BurstBullet:implement(GameObject)
 BurstBullet:implement(Physics)
 function BurstBullet:init(args)
@@ -787,6 +795,7 @@ end
 --------------------------
 
 FireWall = Object:extend()
+FireWall.__class_name = 'FireWall'
 FireWall:implement(GameObject)
 FireWall:implement(Physics)
 function FireWall:init(args)
@@ -933,6 +942,7 @@ function FireWall:die()
 end
 
 FireSegment = Object:extend()
+FireSegment.__class_name = 'FireSegment'
 FireSegment:implement(GameObject)
 FireSegment:implement(Physics)
 function FireSegment:init(args)
@@ -1026,6 +1036,7 @@ end
 ------------------------------------------------
 
 LaserBall = Object:extend()
+LaserBall.__class_name = 'LaserBall'
 LaserBall:implement(GameObject)
 LaserBall:implement(Physics)
 function LaserBall:init(args)
@@ -1154,6 +1165,7 @@ end
 -- ====================================================================
 
 LightningBall = Object:extend()
+LightningBall.__class_name = 'LightningBall'
 LightningBall:implement(GameObject)
 LightningBall:implement(Physics)
 
@@ -1293,6 +1305,7 @@ end
 
 
 GoldItem = Object:extend()
+GoldItem.__class_name = 'GoldItem'
 GoldItem:implement(GameObject)
 GoldItem:implement(Physics)
 function GoldItem:init(args)

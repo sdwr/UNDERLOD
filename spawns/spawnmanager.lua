@@ -552,6 +552,7 @@ end
 -- ===================================================================
 
 SpawnManager = Object:extend()
+SpawnManager.__class_name = 'SpawnManager'
 
 function SpawnManager:init(arena)
     self.arena = arena

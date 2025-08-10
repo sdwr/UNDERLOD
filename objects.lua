@@ -3,6 +3,7 @@
 -- Draws a circle outline that flashes twice before disappearing.
 -- ===================================================================
 AnimatedSpawnCircle = Object:extend()
+AnimatedSpawnCircle.__class_name = 'AnimatedSpawnCircle'
 AnimatedSpawnCircle:implement(GameObject)
 
 function AnimatedSpawnCircle:init(args)
@@ -88,6 +89,7 @@ end
 
 --team spawn marker that gets brighter as the team gets closer to spawning
 SpawnMarker = Object:extend()
+SpawnMarker.__class_name = 'SpawnMarker'
 SpawnMarker:implement(GameObject)
 
 function SpawnMarker:init(args)
@@ -194,6 +196,7 @@ function SpawnMarker:die()
 end
 
 WallKnife = Object:extend()
+WallKnife.__class_name = 'WallKnife'
 WallKnife:implement(GameObject)
 WallKnife:implement(Physics)
 function WallKnife:init(args)
@@ -230,6 +233,7 @@ end
 
 
 WallArrow = Object:extend()
+WallArrow.__class_name = 'WallArrow'
 WallArrow:implement(GameObject)
 function WallArrow:init(args)
   self:init_game_object(args)
@@ -259,6 +263,7 @@ end
 
 
 Unit = Object:extend()
+Unit.__class_name = 'Unit'
 function Unit:init_unit()
   self.level = self.level or 1
 
@@ -1986,6 +1991,7 @@ end
 
 
 EffectBar = Object:extend()
+EffectBar.__class_name = 'EffectBar'
 EffectBar:implement(GameObject)
 EffectBar:implement(Parent)
 function EffectBar:init(args)
@@ -2015,6 +2021,7 @@ end
 
 
 HPBar = Object:extend()
+HPBar.__class_name = 'HPBar'
 HPBar:implement(GameObject)
 HPBar:implement(Parent)
 function HPBar:init(args)
@@ -2084,6 +2091,7 @@ function HPBar:draw()
 end
 
 HPBar_Damage_Chunk = Object:extend()
+HPBar_Damage_Chunk.__class_name = 'HPBar_Damage_Chunk'
 HPBar_Damage_Chunk:implement(GameObject)
 function HPBar_Damage_Chunk:init(args)
   self:init_game_object(args)

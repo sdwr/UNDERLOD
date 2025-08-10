@@ -152,6 +152,7 @@ end
 
 --name is passed in from the item data
 Proc = Object:extend()
+Proc.__class_name = 'Proc'
 function Proc:init(args)
   if not args or not args.data then
     print('error: proc needs and data to init')

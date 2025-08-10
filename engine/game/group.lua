@@ -2,6 +2,7 @@
 -- A common usage is to create different groups for different "layers" of behavior in the game:
 --[[
 Game = Object:extend()
+Game.__class_name = 'Game'
 Game:implement(State)
 function Game:on_enter()
   self.main = Group():set_as_physics_world(192)
@@ -37,6 +38,7 @@ end
 -- Finally, the UI group is the one that doesn't have a camera attached to it because we want its objects to be drawn in fixed locations on the screen.
 -- And this group is also drawn last because generally UI elements go on top of literally everything else.
 Group = Object:extend()
+Group.__class_name = 'Group'
 function Group:init()
   self.t = Trigger()
   self.camera = camera

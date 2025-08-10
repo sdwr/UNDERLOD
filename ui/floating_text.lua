@@ -1,5 +1,6 @@
 
 FloatingText = Object:extend()
+FloatingText.__class_name = 'FloatingText'
 FloatingText:implement(GameObject)
 function FloatingText:init(args)
   self:init_game_object(args)

@@ -1,4 +1,5 @@
 MainMenu = Object:extend()
+MainMenu.__class_name = 'MainMenu'
 MainMenu:implement(State)
 MainMenu:implement(GameObject)
 function MainMenu:init(name)

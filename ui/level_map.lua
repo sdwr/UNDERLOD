@@ -12,6 +12,7 @@ LEVEL_MAP_Y_POSITION = 13
 GOLD_COUNTER_X_OFFSET = 48
 
 LevelMap = Object:extend()
+LevelMap.__class_name = 'LevelMap'
 LevelMap:implement(GameObject)
 function LevelMap:init(args)
   self:init_game_object(args)
@@ -234,6 +235,7 @@ function LevelMap:die()
 end
 
 LevelMapLevel = Object:extend()
+LevelMapLevel.__class_name = 'LevelMapLevel'
 LevelMapLevel:implement(GameObject)
 function LevelMapLevel:init(args)
   self:init_game_object(args)
@@ -292,6 +294,7 @@ end
 
 
 LevelMapConnection = Object:extend()
+LevelMapConnection.__class_name = 'LevelMapConnection'
 LevelMapConnection:implement(GameObject)
 function LevelMapConnection:init(args)
   self:init_game_object(args)

@@ -1,5 +1,6 @@
 -- The base Font class.
 Font = Object:extend()
+Font.__class_name = 'Font'
 function Font:init(asset_name, font_size)
   self.font = love.graphics.newFont("assets/fonts/" .. asset_name .. ".ttf", font_size)
   self.h = self.font:getHeight()

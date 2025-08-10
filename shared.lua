@@ -160,6 +160,7 @@ end
 
 
 Star = Object:extend()
+Star.__class_name = 'Star'
 Star:implement(GameObject)
 Star:implement(Physics)
 function Star:init(args)
@@ -187,6 +188,7 @@ end
 
 -- Mixin to be added to a state so it can have nodemap creation, saving and manipulating capabilities.
 Nodemap = Object:extend()
+Nodemap.__class_name = 'Nodemap'
 -- nodemap is a table that contains the definition of the skill tree or overmap.
 -- Each node in it should have the following attributes defined:
 -- .x, .y, .neighbors or .links. Optionally: .rs, .color, .visited, .can_be_visited, .on_visit, .on_draw, .data
@@ -222,6 +224,7 @@ end
 
 
 Node = Object:extend()
+Node.__class_name = 'Node'
 Node:implement(GameObject)
 function Node:init(args)
   self:init_game_object(args)
@@ -351,6 +354,7 @@ end
 
 
 Edge = Object:extend()
+Edge.__class_name = 'Edge'
 Edge:implement(GameObject)
 function Edge:init(args)
   self:init_game_object(args)
@@ -396,6 +400,7 @@ end
 
 
 SpawnEffect = Object:extend()
+SpawnEffect.__class_name = 'SpawnEffect'
 SpawnEffect:implement(GameObject)
 function SpawnEffect:init(args)
   self:init_game_object(args)
@@ -426,6 +431,7 @@ end
 
 
 HoverCrosshair = Object:extend()
+HoverCrosshair.__class_name = 'HoverCrosshair'
 HoverCrosshair:implement(GameObject)
 function HoverCrosshair:init(args)
   self:init_game_object(args)
@@ -483,6 +489,7 @@ end
 
 
 TransitionEffect = Object:extend()
+TransitionEffect.__class_name = 'TransitionEffect'
 TransitionEffect:implement(GameObject)
 function TransitionEffect:init(args)
   self:init_game_object(args)
@@ -627,6 +634,7 @@ global_text_tags = {
 
 
 Text2 = Object:extend()
+Text2.__class_name = 'Text2'
 Text2:implement(GameObject)
 function Text2:init(args)
   self:init_game_object(args)
@@ -653,6 +661,7 @@ function Text2:pull(...)
 end
 
 InfoText = Object:extend()
+InfoText.__class_name = 'InfoText'
 InfoText:implement(GameObject)
 function InfoText:init(args)
     self:init_game_object(args)
@@ -753,6 +762,7 @@ end
 
 
 TutorialPopup = Object:extend()
+TutorialPopup.__class_name = 'TutorialPopup'
 TutorialPopup:implement(GameObject)
 
 function TutorialPopup:init(args)
@@ -875,6 +885,7 @@ function TutorialPopup:delete_text()
 end
 
 ToggleButton = Object:extend()
+ToggleButton.__class_name = 'ToggleButton'
 ToggleButton:implement(GameObject)
 
 function ToggleButton:init(args)
@@ -955,6 +966,7 @@ end
 
 
 ColorRamp = Object:extend()
+ColorRamp.__class_name = 'ColorRamp'
 function ColorRamp:init(color, step)
   self.color = color
   self.step = step
@@ -970,6 +982,7 @@ function ColorRamp:init(color, step)
 end
 
 ColorFade = Object:extend()
+ColorFade.__class_name = 'ColorFade'
 function ColorFade:init(color)
   self.color = color
   for i = 1, 10 do
@@ -982,6 +995,7 @@ end
 
 
 RefreshEffect = Object:extend()
+RefreshEffect.__class_name = 'RefreshEffect'
 RefreshEffect:implement(GameObject)
 RefreshEffect:implement(Parent)
 function RefreshEffect:init(args)
@@ -1025,6 +1039,7 @@ end
 
 
 HitCircle = Object:extend()
+HitCircle.__class_name = 'HitCircle'
 HitCircle:implement(GameObject)
 function HitCircle:init(args)
   self:init_game_object(args)
@@ -1064,6 +1079,7 @@ end
 
 
 HitParticle = Object:extend()
+HitParticle.__class_name = 'HitParticle'
 HitParticle:implement(GameObject)
 function HitParticle:init(args)
   self:init_game_object(args)
@@ -1102,6 +1118,7 @@ function HitParticle:change_color(delay_multiplier, target_color)
 end
 
 ProgressParticle  = Object:extend()
+ProgressParticle.__class_name = 'ProgressParticle'
 ProgressParticle:implement(GameObject)
 ProgressParticle:implement(Physics)
 function ProgressParticle:init(args)
@@ -1149,6 +1166,7 @@ function ProgressParticle:finish()
 end
 
 AnimationEffect = Object:extend()
+AnimationEffect.__class_name = 'AnimationEffect'
 AnimationEffect:implement(GameObject)
 function AnimationEffect:init(args)
   self:init_game_object(args)
@@ -1184,6 +1202,7 @@ end
 
 
 Wall = Object:extend()
+Wall.__class_name = 'Wall'
 Wall:implement(GameObject)
 Wall:implement(Physics)
 function Wall:init(args)
@@ -1206,6 +1225,7 @@ end
 
 
 WallCover = Object:extend()
+WallCover.__class_name = 'WallCover'
 WallCover:implement(GameObject)
 function WallCover:init(args)
   self:init_game_object(args)

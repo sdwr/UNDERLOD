@@ -2,6 +2,7 @@
 -- The general way of creating an object that implements these functions goes like this:
 --[[
 MyState = Object:extend()
+MyState.__class_name = 'MyState'
 MyState:implement(State)
 function MyState:init(name)
   self:init_state(name)
@@ -34,6 +35,7 @@ end
 -- main:go_to automatically calls on_exit for the currently active state and on_enter for the new one.
 -- You can access the currently active state with main.current.
 State = Object:extend()
+State.__class_name = 'State'
 function State:init_state(name)
   self.name = name or random:uid()
   self.active = false
@@ -60,6 +62,7 @@ end
 
 -- The main state. This is a global state that is always active and contains all other states.
 Main = Object:extend()
+Main.__class_name = 'Main'
 Main:implement(State)
 function Main:init(name)
   self:init_state(name)

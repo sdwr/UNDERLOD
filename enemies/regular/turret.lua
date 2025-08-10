@@ -61,6 +61,7 @@ enemy_to_class['turret'] = fns
 
 -- Multi-projectile spell class
 MultiProjectile = Object:extend()
+MultiProjectile.__class_name = 'MultiProjectile'
 MultiProjectile:implement(GameObject)
 MultiProjectile:implement(Physics)
 function MultiProjectile:init(args)
@@ -134,6 +135,7 @@ end
 -- SingleProjectile wrapper class for EnemyProjectile
 -- Converts target-based spells to angle-based EnemyProjectile
 SingleProjectile = Object:extend()
+SingleProjectile.__class_name = 'SingleProjectile'
 SingleProjectile:implement(GameObject)
 function SingleProjectile:init(args)
   self:init_game_object(args)

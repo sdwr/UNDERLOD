@@ -66,6 +66,7 @@ function SnakeArrows:die()
 end
 
 SnakeArrow = Object:extend()
+SnakeArrow.__class_name = 'SnakeArrow'
 SnakeArrow:implement(GameObject)
 SnakeArrow:implement(Physics)
 

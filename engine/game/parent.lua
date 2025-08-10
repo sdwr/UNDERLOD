@@ -2,6 +2,7 @@
 -- Call the appropriate function in the object's update function every frame.
 -- The game object must have a .parent attribute defined and pointing to another game object.
 Parent = Object:extend()
+Parent.__class_name = 'Parent'
 
 
 -- Follows the parent's transform exclusively.

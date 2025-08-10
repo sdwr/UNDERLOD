@@ -1,4 +1,5 @@
 GoldCounter = Object:extend()
+GoldCounter.__class_name = 'GoldCounter'
 GoldCounter:implement(GameObject)
 function GoldCounter:init(args)
   self:init_game_object(args)
@@ -129,6 +130,7 @@ end
 
 
 GoldParticle = Object:extend()
+GoldParticle.__class_name = 'GoldParticle'
 GoldParticle:implement(GameObject)
 GoldParticle:implement(Physics)
 function GoldParticle:init(args)

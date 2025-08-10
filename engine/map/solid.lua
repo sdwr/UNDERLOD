@@ -1,4 +1,5 @@
 Solid = Object:extend()
+Solid.__class_name = 'Solid'
 Solid:implement(GameObject)
 Solid:implement(Physics)
 

@@ -2,6 +2,7 @@
 -- See this article https://github.com/a327ex/blog/issues/60 for more details.
 -- The argument passed in are: the initial value of the spring, its stiffness and damping.
 Spring = Object:extend()
+Spring.__class_name = 'Spring'
 function Spring:init(x, k, d)
   self.x = x or 0
   self.k = k or 100
@@ -39,6 +40,7 @@ end
 
 --[[
 NSpring = Object:extend()
+NSpring.__class_name = 'NSpring'
 
 
 function NSpring:new(x, z, o)

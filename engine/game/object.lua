@@ -1,6 +1,6 @@
 Object = {}
 Object.__index = Object
-Object.__name = 'Object'
+Object.__class_name = "Object"
 function Object:init()
 end
 
@@ -15,10 +15,6 @@ function Object:extend()
   cls.__index = cls
   cls.super = self
   setmetatable(cls, self)
-  
-  -- Automatically set class name from the global variable name when it's assigned
-  -- This will be set when the class is created like: Enemy = Object:extend()
-  cls.__name = "UnknownClass"
   
   return cls
 end

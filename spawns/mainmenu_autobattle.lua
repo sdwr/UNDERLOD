@@ -2,6 +2,7 @@
 -- Manages the autobattle system in the main menu background
 
 MainMenuAutoBattle = Object:extend()
+MainMenuAutoBattle.__class_name = 'MainMenuAutoBattle'
 MainMenuAutoBattle:implement(GameObject)
 
 function MainMenuAutoBattle:init(args)

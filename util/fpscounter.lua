@@ -1,4 +1,5 @@
 FPSCounter = Object:extend()
+FPSCounter.__class_name = 'FPSCounter'
 function FPSCounter:init()
     self.show = false
     self.stack = Stack(120)

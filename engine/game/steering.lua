@@ -264,6 +264,7 @@ end
 
 -- Steering behavior specific auxiliary functions, shouldn't really be used elsewhere
 C2DMatrix = Object:extend()
+C2DMatrix.__class_name = 'C2DMatrix'
 function C2DMatrix:init()
   self._11, self._12, self._13 = 0, 0, 0
   self._21, self._22, self._23 = 0, 0, 0

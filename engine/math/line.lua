@@ -1,6 +1,7 @@
 -- A line class.
 -- Implements every function that Polygon does.
 Line = Object:extend()
+Line.__class_name = 'Line'
 Line:implement(Polygon)
 function Line:init(x1, y1, x2, y2)
   self.x1, self.y1, self.x2, self.y2 = x1, y1, x2, y2

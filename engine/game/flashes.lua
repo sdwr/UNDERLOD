@@ -7,6 +7,7 @@
 -- self.flashes.hit.f -- a boolean that says if it's currently flashing or not
 -- Every GameObject has a .flashes attribute with a Flashes instance attached to it.
 Flashes = Object:extend()
+Flashes.__class_name = 'Flashes'
 function Flashes:init()
   self.trigger = Trigger()
 end

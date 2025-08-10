@@ -53,6 +53,7 @@ enemy_to_class['shooter'] = fns
 
 
 EnemyProjectile = Object:extend()
+EnemyProjectile.__class_name = 'EnemyProjectile'
 EnemyProjectile:implement(GameObject)
 EnemyProjectile:implement(Physics)
 function EnemyProjectile:init(args)

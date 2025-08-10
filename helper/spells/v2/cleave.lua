@@ -1,4 +1,5 @@
 Cleave = Object:extend()
+Cleave.__class_name = 'Cleave'
 Cleave:implement(GameObject)
 
 function Cleave:init(args)

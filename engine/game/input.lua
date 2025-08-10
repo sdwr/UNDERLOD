@@ -1,4 +1,5 @@
 Input = Object:extend()
+Input.__class_name = 'Input'
 function Input:init(joystick_index)
   self.mouse_buttons = {"m1", "m2", "m3", "m4", "m5", "wheel_up", "wheel_down"}
   self.gamepad_buttons = {"fdown", "fup", "fleft", "fright", "dpdown", "dpup", "dpleft", "dpright", "start", "back", "guide", "leftstick", "rightstick", "rb", "lb"}

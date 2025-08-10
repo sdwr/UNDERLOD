@@ -52,6 +52,7 @@ end
 -- REFACTORED to use manual point-in-polygon collision detection.
 -- ====================================================================
 EnemyFirewall = Object:extend()
+EnemyFirewall.__class_name = 'EnemyFirewall'
 EnemyFirewall:implement(GameObject)
 EnemyFirewall:implement(Physics)
 function EnemyFirewall:init(args)

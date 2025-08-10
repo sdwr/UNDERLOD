@@ -1,5 +1,6 @@
 -- The base Image class.
 Image = Object:extend()
+Image.__class_name = 'Image'
 function Image:init(asset_name, filter)
   self.image = love.graphics.newImage("assets/images/" .. asset_name .. ".png")
   if filter then
@@ -47,6 +48,7 @@ end
 
 -- The base Quad class. Useful for loading pieces of images as independent Image objects. Every function that takes in an Image also takes in a Quad.
 Quad = Object:extend()
+Quad.__class_name = 'Quad'
 function Quad:init(image, tile_w, tile_h, tile_coordinates)
   self.image = image
   self.quad = love.graphics.newQuad((tile_coordinates[1]-1)*tile_w, (tile_coordinates[2]-1)*tile_h, tile_w, tile_h, self.image.w, self.image.h)
@@ -65,6 +67,7 @@ end
 -- A linear gradient image.
 -- The first argument is the direction of the gradient and can be either 'horizontal' or 'vertical'.
 GradientImage = Object:extend()
+GradientImage.__class_name = 'GradientImage'
 function GradientImage:init(direction, ...)
   local colors = {...}
   local mesh_data = {}

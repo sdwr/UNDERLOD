@@ -1,6 +1,7 @@
 -- A rectangle class.
 -- Implements every function that Polygon does.
 Rectangle = Object:extend()
+Rectangle.__class_name = 'Rectangle'
 Rectangle:implement(Polygon)
 function Rectangle:init(x, y, w, h, r)
   self.x, self.y, self.w, self.h, self.r = x, y, w, h, r
@@ -20,6 +21,7 @@ end
 -- An emerald rectangle class. This is a rectangle with its corners cut by the given rx, ry amount.
 -- Implements every function that Polygon does.
 EmeraldRectangle = Object:extend()
+EmeraldRectangle.__class_name = 'EmeraldRectangle'
 EmeraldRectangle:implement(Polygon)
 function EmeraldRectangle:init(x, y, w, h, rx, ry, r)
   self.x, self.y, self.w, self.h, self.r = x, y, w, h, r

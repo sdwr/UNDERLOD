@@ -1,4 +1,5 @@
 Shake = Object:extend()
+Shake.__class_name = 'Shake'
 function Shake:init(amplitude, duration, frequency)
   self.amplitude = amplitude or 0
   self.duration = duration or 0
@@ -90,6 +91,7 @@ end
 -- x, y - the camera's position in world coordinates, the camera is always centered around its x, y coordinates
 -- w, h - the camera's size, generally this should be the same as game_width and game_height (or gw and gh) passed in engine_run
 Camera = Object:extend()
+Camera.__class_name = 'Camera'
 function Camera:init(x, y, w, h)
   self.x, self.y = x, y
   self.w, self.h = w or gw, h or gh
