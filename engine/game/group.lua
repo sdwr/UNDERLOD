@@ -65,43 +65,20 @@ function Group:update(dt)
     local metatable = getmetatable(object)
     local class_name = "Unknown"
     
-    if metatable then
-      if metatable.__name then
-        class_name = metatable.__name
-      elseif metatable.__index and metatable.__index.__name then
-        class_name = metatable.__index.__name
-      elseif object.class_name then
-        class_name = object.class_name
-      elseif object.type then
-        class_name = object.type
-      elseif object.character then
-        class_name = "Troop_" .. object.character
-      else
-        -- Identify common object patterns
-        if object.steerable and object.type then class_name = "Enemy_" .. object.type
-        elseif object.steerable and object.character then class_name = "Troop_" .. object.character
-        elseif object.current_hp then class_name = "HPBar"
-        elseif object.animation then class_name = "AnimatedObject"
-        elseif object.spell_name then class_name = "Spell_" .. object.spell_name
-        elseif object.area_spell then class_name = "AreaSpell_" .. (object.spell_type or "unknown")
-        elseif object.projectile then class_name = "Projectile_" .. (object.projectile_type or "unknown")
-        elseif object.effect then class_name = "Effect_" .. (object.effect_type or "unknown")
-        elseif object.buff or object.debuff then class_name = "StatusEffect"
-        elseif object.damage_instance then class_name = "DamageInstance"
-        elseif object.visual_effect then class_name = "VisualEffect"
-        elseif object.shape and object.body then class_name = "PhysicsObject"
-        elseif object.shape then class_name = "ShapeObject"
-        elseif object.t then class_name = "GameObject"
-        else 
-          -- Track unknown for debugging
-          table.insert(unknown_objects, {
-            props = {steerable = object.steerable, character = object.character, type = object.type, 
-                    current_hp = object.current_hp, animation = object.animation, spell_name = object.spell_name,
-                    shape = object.shape and true, body = object.body and true, t = object.t and true},
-            metatable = tostring(metatable):sub(-8)
-          })
-        end
-      end
+    if metatable and metatable.__class_name then
+      class_name = metatable.__class_name
+    elseif object.type then
+      class_name = "Enemy_" .. object.type
+    elseif object.character then
+      class_name = "Troop_" .. object.character
+    else
+      -- Track unknown for debugging
+      table.insert(unknown_objects, {
+        props = {steerable = object.steerable, character = object.character, type = object.type, 
+                current_hp = object.current_hp, animation = object.animation, spell_name = object.spell_name,
+                shape = object.shape and true, body = object.body and true, t = object.t and true},
+        metatable = tostring(metatable):sub(-8)
+      })
     end
     
     object_counts[class_name] = (object_counts[class_name] or 0) + 1
@@ -130,26 +107,14 @@ function Group:update(dt)
     local class_name = "Unknown"
     local metatable = getmetatable(object)
     
-    if metatable then
-      if metatable.__name then
-        class_name = metatable.__name
-      elseif metatable.__index and metatable.__index.__name then
-        class_name = metatable.__index.__name
-      elseif object.class_name then
-        class_name = object.class_name
-      elseif object.type then
-        class_name = object.type
-      elseif object.character then
-        class_name = "Troop_" .. object.character
-      else
-        -- Try to identify by properties
-        if object.steerable then class_name = "Steerable" end
-        if object.physics then class_name = class_name .. "Physics" end
-        if object.shape then class_name = class_name .. "Shape" end
-        if class_name == "Unknown" then
-          class_name = "Unknown_" .. tostring(metatable):sub(-6) -- Last 6 chars of metatable address
-        end
-      end
+    if metatable and metatable.__class_name then
+      class_name = metatable.__class_name
+    elseif object.type then
+      class_name = "Enemy_" .. object.type
+    elseif object.character then
+      class_name = "Troop_" .. object.character
+    else
+      class_name = "Unknown_" .. tostring(metatable):sub(-6) -- Last 6 chars of metatable address
     end
     
     local profile_name = "update_" .. class_name
