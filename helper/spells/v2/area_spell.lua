@@ -68,6 +68,9 @@ function Area_Spell:update(dt)
 
     if self.current_duration > self.duration_minus_fade then
       self:fade_out()
+    elseif self.expand_duration and self.current_duration <= self.expand_duration then
+        self.radius = self.max_radius * (self.current_duration / self.expand_duration)
+        self.shape.rs = self.radius
     end
 
     if self.current_duration > self.duration then
