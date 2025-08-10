@@ -103,10 +103,7 @@ fns['draw_enemy'] = function(self)
     local animation_success = self:draw_animation()
 
     if not animation_success then
-      graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
-      local points = self:make_regular_polygon(3, (self.shape.w / 2) / 60 * 70, self:get_angle())
-      graphics.polygon(points, self.color)
-      graphics.pop()
+      self:draw_fallback_animation()
     end
 end
 

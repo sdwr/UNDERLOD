@@ -13,7 +13,7 @@ ROUND_POWER_TO_GOLD = 100
 
 --stat constants
 TROOP_HP = 100
-TROOP_DAMAGE = 13
+TROOP_DAMAGE = 9
 TROOP_MS = 45
 -- Legacy constants (will be replaced)
 TROOP_BASE_COOLDOWN = 1.1
@@ -418,7 +418,7 @@ SCALED_ENEMY_MS = function(level, base_ms)
 end
 
 function SWARMERS_PER_LEVEL(level)
-  return 6 + math.floor(level / 3)
+  return math.min(15, 8 + level)
 end
 
 function SPECIAL_ENEMIES_PER_LEVEL(level)

@@ -331,6 +331,26 @@ get_movement_type_by_enemy_type = function(enemy_type)
   return enemy_movement_types[enemy_type] or enemy_movement_types['default']
 end
 
+-- Enemy fallback animation corner radius by size category
+enemy_corner_radius_by_size = {
+  ['critter'] = 2,
+  ['small'] = 2,
+  ['regular'] = 3,
+  ['swarmer'] = 3,
+  ['regular_big'] = 3,
+  ['special'] = 3,
+  ['huge'] = 3,
+  ['stompy'] = 10,
+  ['heigan'] = 10,
+  ['boss'] = 10,
+}
+
+-- Get corner radius for enemy fallback animation
+get_enemy_corner_radius = function(enemy)
+  local size_category = enemy.size or 'regular'
+  return enemy_corner_radius_by_size[size_category] or 3
+end
+
 -- Enemy movement styles organized by enemy type
 enemy_movement_types = {
 
