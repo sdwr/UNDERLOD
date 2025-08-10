@@ -1385,7 +1385,6 @@ function Proc_Radiance:create_damage_aura()
     duration = 1000, 
     color = self.color,
     opacity = 0.08,
-    line_width = 0,
     tick_rate = 0.1,
     is_troop = self.unit.is_troop,
     on_hit_callback = on_hit_callback,
@@ -2033,14 +2032,19 @@ function Proc_Frostnova:create_proc_display_area()
     -- If an old one somehow exists, destroy it first.
     self:destroy_proc_display_area()
 
-    self.proc_display_area = Area{
+    self.proc_display_area = Area_Spell{
         group = main.current.effects,
+        unit = self.unit,
+        follow_unit = true,
         x = self.unit.x, y = self.unit.y,
         pick_shape = 'circle',
-        r = 0, -- Start with a radius of 0
+        radius = 0, -- Start with a radius of 0
         duration = self.procDelay, -- Give it a lifetime just longer than the wind-up
         color = self.color,
+        opacity = 0.08,
         damage = 0,
+        damage_ticks = false,
+        floor_effect = 'frostnova',
     }
 end
 
@@ -2049,9 +2053,8 @@ function Proc_Frostnova:update_proc_display()
         local progress = 1 - (self.windup_timer / self.procDelay) -- Progress from 0 to 1
         progress = math.max(0, math.min(1, progress)) -- Clamp progress to prevent errors
         
-        self.proc_display_area.r = (self.radius + self.radius_boost) * progress
-        self.proc_display_area.x = self.unit.x
-        self.proc_display_area.y = self.unit.y
+        self.proc_display_area.radius = (self.radius + self.radius_boost) * progress
+
     end
 end
 
@@ -2070,7 +2073,7 @@ function Proc_Frostnova:cast()
     self:destroy_proc_display_area()
     glass_shatter:play{pitch = random:float(0.8, 1.2), volume = 0.8}
 
-    Area{
+    Area_Spell{
         group = main.current.effects,
         unit = self.unit,
         x = self.unit.x, y = self.unit.y,
@@ -2081,6 +2084,7 @@ function Proc_Frostnova:cast()
         duration = self.duration, 
         color = self.color,
         is_troop = self.unit.is_troop,
+        floor_effect = 'frostnova',
     }
 end
 
