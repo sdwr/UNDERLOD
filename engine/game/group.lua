@@ -58,9 +58,58 @@ function Group:update(dt)
   
   -- Count objects by type for better analysis
   local object_counts = {}
+  local unknown_objects = {}
   for _, object in ipairs(self.objects) do
-    local class_name = getmetatable(object).__name or "Unknown"
+    local metatable = getmetatable(object)
+    local class_name = "Unknown"
+    
+    if metatable then
+      if metatable.__name then
+        class_name = metatable.__name
+      elseif metatable.__index and metatable.__index.__name then
+        class_name = metatable.__index.__name
+      elseif object.class_name then
+        class_name = object.class_name
+      elseif object.type then
+        class_name = object.type
+      elseif object.character then
+        class_name = "Troop_" .. object.character
+      else
+        -- Identify common object patterns
+        if object.steerable and object.type then class_name = "Enemy_" .. object.type
+        elseif object.steerable and object.character then class_name = "Troop_" .. object.character
+        elseif object.current_hp then class_name = "HPBar"
+        elseif object.animation then class_name = "AnimatedObject"
+        elseif object.spell_name then class_name = "Spell_" .. object.spell_name
+        elseif object.area_spell then class_name = "AreaSpell_" .. (object.spell_type or "unknown")
+        elseif object.projectile then class_name = "Projectile_" .. (object.projectile_type or "unknown")
+        elseif object.effect then class_name = "Effect_" .. (object.effect_type or "unknown")
+        elseif object.buff or object.debuff then class_name = "StatusEffect"
+        elseif object.damage_instance then class_name = "DamageInstance"
+        elseif object.visual_effect then class_name = "VisualEffect"
+        elseif object.shape and object.body then class_name = "PhysicsObject"
+        elseif object.shape then class_name = "ShapeObject"
+        elseif object.t then class_name = "GameObject"
+        else 
+          -- Track unknown for debugging
+          table.insert(unknown_objects, {
+            props = {steerable = object.steerable, character = object.character, type = object.type, 
+                    current_hp = object.current_hp, animation = object.animation, spell_name = object.spell_name,
+                    shape = object.shape and true, body = object.body and true, t = object.t and true},
+            metatable = tostring(metatable):sub(-8)
+          })
+        end
+      end
+    end
+    
     object_counts[class_name] = (object_counts[class_name] or 0) + 1
+  end
+  
+  -- Debug unknown objects (only first few)
+  if #unknown_objects > 0 and #unknown_objects <= 3 then
+    for i, obj in ipairs(unknown_objects) do
+      print("Unknown object " .. i .. " metatable:" .. obj.metatable .. " props:", table.tostring(obj.props, 1))
+    end
   end
   
   -- Log object counts for major types (only when there are many)
@@ -76,7 +125,31 @@ function Group:update(dt)
   
   for _, object in ipairs(self.objects) do
     -- Profile by object class for detailed breakdown
-    local class_name = getmetatable(object).__name or "Unknown"
+    local class_name = "Unknown"
+    local metatable = getmetatable(object)
+    
+    if metatable then
+      if metatable.__name then
+        class_name = metatable.__name
+      elseif metatable.__index and metatable.__index.__name then
+        class_name = metatable.__index.__name
+      elseif object.class_name then
+        class_name = object.class_name
+      elseif object.type then
+        class_name = object.type
+      elseif object.character then
+        class_name = "Troop_" .. object.character
+      else
+        -- Try to identify by properties
+        if object.steerable then class_name = "Steerable" end
+        if object.physics then class_name = class_name .. "Physics" end
+        if object.shape then class_name = class_name .. "Shape" end
+        if class_name == "Unknown" then
+          class_name = "Unknown_" .. tostring(metatable):sub(-6) -- Last 6 chars of metatable address
+        end
+      end
+    end
+    
     local profile_name = "update_" .. class_name
     Profiler:start(profile_name)
     
@@ -370,6 +443,9 @@ function Group:get_objects_in_shape(shape, object_types, exclude_list)
   Profiler:finish("find_spatial_cell_lookup")
   
   Profiler:start("find_collision_detection")
+  local collision_checks = 0
+  local shape_type = type(shape) == "table" and (shape.type or "unknown_shape") or "primitive_shape"
+  
   for i = cx1, cx2 do
     for j = cy1, cy2 do
       local cx, cy = i, j
@@ -380,13 +456,23 @@ function Group:get_objects_in_shape(shape, object_types, exclude_list)
             if object.fully_onscreen then
               if object_types then
                 if not table.any(exclude_list, function(v) return v.id == object.id end) then
-                  if table.any(object_types, function(v) return object:is(v) end) and object.shape and object.shape:is_colliding_with_shape(shape) then
-                    table.insert(out, object)
+                  if table.any(object_types, function(v) return object:is(v) end) and object.shape then
+                    collision_checks = collision_checks + 1
+                    Profiler:start("collision_shape_check_" .. shape_type)
+                    if object.shape:is_colliding_with_shape(shape) then
+                      table.insert(out, object)
+                    end
+                    Profiler:finish("collision_shape_check_" .. shape_type)
                   end
                 end
               else
-                if object.shape and object:is_colliding_with_shape(shape) then
-                  table.insert(out, object)
+                if object.shape then
+                  collision_checks = collision_checks + 1
+                  Profiler:start("collision_shape_check_" .. shape_type)
+                  if object:is_colliding_with_shape(shape) then
+                    table.insert(out, object)
+                  end
+                  Profiler:finish("collision_shape_check_" .. shape_type)
                 end
               end
             end
@@ -395,6 +481,16 @@ function Group:get_objects_in_shape(shape, object_types, exclude_list)
       end
     end
   end
+  
+  -- Track collision check intensity
+  if collision_checks > 50 then
+    local profile_name = "high_collision_checks_" .. shape_type
+    if not Profiler.system_totals[profile_name] then
+      Profiler.system_totals[profile_name] = {total_time = 0, calls = 0, max_time = 0, collision_checks = 0}
+    end
+    Profiler.system_totals[profile_name].collision_checks = collision_checks
+  end
+  
   Profiler:finish("find_collision_detection")
   
   Profiler:finish("find_get_objects_in_shape")
