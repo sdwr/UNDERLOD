@@ -7,9 +7,6 @@
 
 # UNDERLOD
 
-UNDERLOD is an arcade RTS roguelite. Control your units and optimize their builds to victory!
-
-
 
 https://github.com/user-attachments/assets/c212c69d-0a9b-45ef-93de-4ba5ca17bd11
 
