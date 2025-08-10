@@ -50,20 +50,53 @@ end
 
 
 function Group:update(dt)
+  Profiler:start("group_trigger_update")
   self.t:update(dt)
+  Profiler:finish("group_trigger_update")
+  
+  Profiler:start("group_object_updates")
+  
+  -- Count objects by type for better analysis
+  local object_counts = {}
   for _, object in ipairs(self.objects) do
+    local class_name = getmetatable(object).__name or "Unknown"
+    object_counts[class_name] = (object_counts[class_name] or 0) + 1
+  end
+  
+  -- Log object counts for major types (only when there are many)
+  for class_name, count in pairs(object_counts) do
+    if count > 20 then  -- Only log if there are many objects of this type
+      local profile_name = "count_" .. class_name
+      if not Profiler.system_totals[profile_name] then
+        Profiler.system_totals[profile_name] = {total_time = 0, calls = 0, max_time = 0, object_count = 0}
+      end
+      Profiler.system_totals[profile_name].object_count = count
+    end
+  end
+  
+  for _, object in ipairs(self.objects) do
+    -- Profile by object class for detailed breakdown
+    local class_name = getmetatable(object).__name or "Unknown"
+    local profile_name = "update_" .. class_name
+    Profiler:start(profile_name)
+    
     if object.force_update then
       object:update(1/refresh_rate)
     else
       object:update(dt)
     end
+    
+    Profiler:finish(profile_name)
   end
+  Profiler:finish("group_object_updates")
+  
   if self.world then 
     Profiler:start("physics")
     self.world:update(dt) 
     Profiler:finish("physics")
   end
 
+  Profiler:start("group_spatial_indexing")
   self.cells = {}
   for _, object in ipairs(self.objects) do
     local cx, cy = math.floor(object.x/self.cell_size), math.floor(object.y/self.cell_size)
@@ -74,7 +107,9 @@ function Group:update(dt)
       table.insert(self.cells[cx][cy], object)
     end
   end
+  Profiler:finish("group_spatial_indexing")
 
+  Profiler:start("group_dead_object_cleanup")
   for i = #self.objects, 1, -1 do
     if self.objects[i].dead then
       if self.objects[i].onDeath then self.objects[i]:onDeath() end
@@ -84,6 +119,7 @@ function Group:update(dt)
       table.remove(self.objects, i)
     end
   end
+  Profiler:finish("group_dead_object_cleanup")
 end
 
 
@@ -297,8 +333,15 @@ end
 -- Returns all objects of a specific class
 -- group:get_objects_by_class(Star) -> all objects of class Star in a table
 function Group:get_objects_by_class(class)
-  if not self.objects.by_class[class] then return {}
-  else return table.shallow_copy(self.objects.by_class[class]) end
+  Profiler:start("find_get_objects_by_class")
+  local result
+  if not self.objects.by_class[class] then 
+    result = {}
+  else 
+    result = table.shallow_copy(self.objects.by_class[class]) 
+  end
+  Profiler:finish("find_get_objects_by_class")
+  return result
 end
 
 
@@ -317,10 +360,16 @@ end
 -- group:get_objects_in_shape(Rectangle(player.x, player.y, 100, 100, player.r), {Enemy1, Enemy2}) -> all Enemy1 and Enemy2 instances in a 100x100 rotated rectangle around the player
 -- group:get_objects_in_shape(Rectangle(player.x, player.y, 100, 100, player.r), {Enemy1, Enemy2}, {object_1, object_2}) -> same as above except excluding object instances object_1 and object_2
 function Group:get_objects_in_shape(shape, object_types, exclude_list)
+  Profiler:start("find_get_objects_in_shape")
   local out = {}
   local exclude_list = exclude_list or {}
+  
+  Profiler:start("find_spatial_cell_lookup")
   local cx1, cy1 = math.floor((shape.x-shape.w)/self.cell_size), math.floor((shape.y-shape.h)/self.cell_size)
   local cx2, cy2 = math.floor((shape.x+shape.w)/self.cell_size), math.floor((shape.y+shape.h)/self.cell_size)
+  Profiler:finish("find_spatial_cell_lookup")
+  
+  Profiler:start("find_collision_detection")
   for i = cx1, cx2 do
     for j = cy1, cy2 do
       local cx, cy = i, j
@@ -346,6 +395,9 @@ function Group:get_objects_in_shape(shape, object_types, exclude_list)
       end
     end
   end
+  Profiler:finish("find_collision_detection")
+  
+  Profiler:finish("find_get_objects_in_shape")
   return out
 end
 
@@ -369,6 +421,7 @@ end
 -- group:get_closest_object(player) -> closest object to the player, if the player is in this group then this object will be the player itself
 -- group:get_closest_object(player, function(o) return o.id ~= player.id end) -> closest object to the player that isn't the player
 function Group:get_closest_object(object, select_function)
+  Profiler:start("find_get_closest_object")
   if not select_function then select_function = function(o) return true end end
   local min_distance, min_index = 100000, 0
   for i, o in ipairs(self.objects) do
@@ -380,10 +433,12 @@ function Group:get_closest_object(object, select_function)
       end
     end
   end
+  Profiler:finish("find_get_closest_object")
   return self.objects[min_index]
 end
 
 function Group:get_random_close_object(object, object_types, exclude_list, max_range_from_self, distance_tolerance, percentage_tolerance)
+  Profiler:start("find_get_random_close_object")
   exclude_list = exclude_list or {}
   distance_tolerance = distance_tolerance or 20
   percentage_tolerance = percentage_tolerance or 20
@@ -401,6 +456,7 @@ function Group:get_random_close_object(object, object_types, exclude_list, max_r
   
   -- If there are no candidates after initial filtering, return nil.
   if #candidates == 0 then
+      Profiler:finish("find_get_random_close_object")
       return nil
   end
 
@@ -433,11 +489,13 @@ function Group:get_random_close_object(object, object_types, exclude_list, max_r
   end
 
   -- Randomly select and return a target from the final candidates list
+  local result = nil
   if #final_candidates > 0 then
-      return table.random(final_candidates)
+      result = table.random(final_candidates)
   end
-
-  return nil
+  
+  Profiler:finish("find_get_random_close_object")
+  return result
 end
   
 
@@ -549,7 +607,8 @@ end
 -- Where ... just stands for some number.
 function Group:raycast(x1, y1, x2, y2)
   if not self.world then return end
-
+  
+  Profiler:start("physics_raycast")
   self.raycast_hitlist = {}
   self.world:rayCast(x1, y1, x2, y2, function(fixture, x, y, nx, ny, fraction)
     local hit = {}
@@ -568,6 +627,7 @@ function Group:raycast(x1, y1, x2, y2)
     hit.other = obj
     table.insert(hits, hit)
   end
+  Profiler:finish("physics_raycast")
 
   return hits
 end

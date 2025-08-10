@@ -35,6 +35,7 @@ end
 
 function Physics:steering_update(dt)
   if self.steerable and self.steering_enabled then
+    Profiler:start("steering_update")
     local steering_force = self:calculate_steering_force(dt):div(self.mass)
     local applied_force = self:calculate_applied_force(dt):div(self.mass)
     local applied_impulse = self:calculate_applied_impulse(dt):div(self.mass)
@@ -48,6 +49,7 @@ function Physics:steering_update(dt)
     end
     self.apply_force_f:set(0, 0)
     -- self.apply_impulse_f:set(0, 0)
+    Profiler:finish("steering_update")
   end
 end
 
@@ -179,10 +181,15 @@ end
 -- What this function does is simply look at all nearby objects and apply forces to this object such that it remains separated from them
 -- self:separate(40, {Enemy}) -> when this is called every frame, this applies forces to this object to keep it separated from other Enemy instances by 40 units at all times
 function Physics:steering_separate(rs, class_avoid_list, weight, comparator)
+  Profiler:start("steering_separate")
   self.separating = true
   local fx, fy = 0, 0
+  
+  Profiler:start("steering_separate_get_objects")
   local objects = table.flatten(table.foreachn(class_avoid_list, function(v) return self.group:get_objects_by_class(v) end), true)
+  Profiler:finish("steering_separate_get_objects")
 
+  Profiler:start("steering_separate_calculations")
   for _, object in ipairs(objects) do
     if object.id ~= self.id and math.distance(object.x, object.y, self.x, self.y) < 2*rs then
       if comparator and comparator(object) then
@@ -194,7 +201,10 @@ function Physics:steering_separate(rs, class_avoid_list, weight, comparator)
       end
     end
   end
+  Profiler:finish("steering_separate_calculations")
+  
   self.separation_f:add(fx*(weight or 1), fy*(weight or 1))
+  Profiler:finish("steering_separate")
 end
 
 function Physics:add_cohesion(location, min_distance, weight)

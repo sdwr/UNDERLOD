@@ -271,8 +271,45 @@ function Profiler:report_summary()
       max_memory_usage / 1024, total_memory_delta / #recent_frames, avg_gc_time))
   end
   
+  -- Group related systems for better analysis
+  local system_groups = {
+    ["Object Finding"] = {"find_get_objects_by_class", "find_get_objects_in_shape", "find_get_closest_object", "find_get_random_close_object", "find_spatial_cell_lookup", "find_collision_detection"},
+    ["Physics"] = {"physics", "physics_raycast", "steering_update"},
+    ["Steering Separation"] = {"steering_separate", "steering_separate_get_objects", "steering_separate_calculations"},
+    ["Group Operations"] = {"group_trigger_update", "group_object_updates", "group_spatial_indexing", "group_dead_object_cleanup"}
+  }
+  
+  -- Calculate group totals
+  local grouped_totals = {}
+  for group_name, system_names in pairs(system_groups) do
+    grouped_totals[group_name] = {total_time = 0, calls = 0, max_time = 0}
+    for _, sys_name in ipairs(system_names) do
+      if self.system_totals[sys_name] then
+        grouped_totals[group_name].total_time = grouped_totals[group_name].total_time + self.system_totals[sys_name].total_time
+        grouped_totals[group_name].calls = grouped_totals[group_name].calls + self.system_totals[sys_name].calls
+        grouped_totals[group_name].max_time = math.max(grouped_totals[group_name].max_time, self.system_totals[sys_name].max_time)
+      end
+    end
+  end
+  
+  -- Show grouped breakdown first
+  print("\nSystem groups breakdown:")
+  local sorted_groups = {}
+  for name, data in pairs(grouped_totals) do
+    if data.calls > 0 then
+      table.insert(sorted_groups, {name = name, data = data})
+    end
+  end
+  table.sort(sorted_groups, function(a, b) return a.data.total_time > b.data.total_time end)
+  
+  for _, group in ipairs(sorted_groups) do
+    local avg_time = (group.data.total_time / group.data.calls) * 1000
+    print(string.format("  %s: %.1fms total, %.2fms avg, %.2fms max (%d calls)", 
+      group.name, group.data.total_time * 1000, avg_time, group.data.max_time * 1000, group.data.calls))
+  end
+  
   -- System breakdown
-  print("\nSystem breakdown (total time):")
+  print("\nDetailed system breakdown (total time):")
   local sorted_systems = {}
   for name, data in pairs(self.system_totals) do
     if data.calls > 0 then
@@ -284,8 +321,12 @@ function Profiler:report_summary()
   for i, system in ipairs(sorted_systems) do
     if i <= 10 then -- Top 10 systems
       local avg_time = (system.data.total_time / system.data.calls) * 1000
-      print(string.format("  %s: %.1fms total, %.2fms avg, %.2fms max (%d calls)", 
-        system.name, system.data.total_time * 1000, avg_time, system.data.max_time * 1000, system.data.calls))
+      local count_info = ""
+      if system.data.object_count then
+        count_info = string.format(", %d objects", system.data.object_count)
+      end
+      print(string.format("  %s: %.1fms total, %.2fms avg, %.2fms max (%d calls%s)", 
+        system.name, system.data.total_time * 1000, avg_time, system.data.max_time * 1000, system.data.calls, count_info))
     end
   end
   
