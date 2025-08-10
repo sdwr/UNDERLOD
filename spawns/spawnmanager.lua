@@ -15,7 +15,7 @@ function SpawnGlobals.Init()
   local y_corner_offset = 50
 
   SpawnGlobals.offscreen_spawn_offset = 15
-  SpawnGlobals.CAMERA_BOUNDS_OFFSET = 10
+  SpawnGlobals.CAMERA_BOUNDS_OFFSET = 3
   SpawnGlobals.ENEMY_MOVE_BOUNDS_OFFSET = 45
 
   SpawnGlobals.wall_width = 0

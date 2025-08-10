@@ -13,10 +13,10 @@ ROUND_POWER_TO_GOLD = 100
 
 --stat constants
 TROOP_HP = 100
-TROOP_DAMAGE = 9
+TROOP_DAMAGE = 11
 TROOP_MS = 45
 -- Legacy constants (will be replaced)
-TROOP_BASE_COOLDOWN = 1.1
+TROOP_BASE_COOLDOWN = 1.25
 TROOP_SWORDSMAN_BASE_COOLDOWN = 0.8
 
 -- New troop cooldown system
@@ -129,7 +129,7 @@ TROOP_SWORDSMAN_RANGE = 80
 
 REGULAR_ENEMY_HP = 20
 REGULAR_ENEMY_DAMAGE = 15
-REGULAR_ENEMY_MS = 32
+REGULAR_ENEMY_MS = 25
 
 SPECIAL_ENEMY_HP = 70
 SPECIAL_ENEMY_DAMAGE = 20
@@ -286,30 +286,30 @@ SPECIAL_SWARMER_DATA = {
 
 SPECIAL_SWARMER_WEIGHT_BY_TYPE = {
   [1] = {0},
-  [2] = {4, 2},
-  [3] = {5},
-  [4] = {4, 4},
-  [5] = {4, 3, 2},
-  [6] = {12},
-  [7] = {5, 3, 2},
-  [8] = {6, 3, 3, 3},
-  [9] = {14},
-  [10] = {8, 4},
-  [11] = {8, 6, 2},
-  [12] = {16},
-  [13] = {8, 8},
-  [14] = {12, 6},
-  [15] = {18},
-  [16] = {10, 6, 4},
-  [17] = {6, 5, 4, 3},
-  [18] = {18},
-  [19] = {10, 6},
-  [20] = {8, 6, 2},
-  [21] = {22},
-  [22] = {10, 8, 4},
-  [23] = {20, 5, 5},
-  [24] = {30},
-  [25] = {5, 5, 5, 5, 5, 5},
+  [2] = {0},
+  [3] = {0},
+  [4] = {0, 5},
+  [5] = {0, 5},
+  [6] = {0},
+  [7] = {0},
+  [8] = {0},
+  [9] = {5},
+  [10] = {5},
+  [11] = {0},
+  [12] = {0},
+  [13] = {0},
+  [14] = {0},
+  [15] = {0},
+  [16] = {0},
+  [17] = {0},
+  [18] = {0},
+  [19] = {0},
+  [20] = {0},
+  [21] = {0},
+  [22] = {0},
+  [23] = {0},
+  [24] = {0},
+  [25] = {0},
 }
 
 
@@ -392,10 +392,10 @@ MAX_SPECIAL_ENEMY_GROUP_SIZE_BY_TIER = {
 }
 
 ENEMY_SCALE_BY_LEVEL = 
-{0, 1, 2, 2, 3, 4, 
- 5, 6, 7, 8, 9, 10, 
- 11, 12, 13, 14, 15, 16, 17, 
- 18, 19, 20, 21, 22, 23, 24}
+{0, 0, 0, 1, 1, 1, 
+ 2, 2, 2, 3, 3, 3, 
+ 4, 4, 4, 5, 5, 5, 6, 
+ 7, 7, 7, 8, 8, 8, 8}
 
 ENEMY_LEVEL_SCALING = function(level)
   local scale = ENEMY_SCALE_BY_LEVEL[level] or 0
@@ -418,7 +418,7 @@ SCALED_ENEMY_MS = function(level, base_ms)
 end
 
 function SWARMERS_PER_LEVEL(level)
-  return math.min(15, 8 + level)
+  return math.min(30, 8 + (level * 2))
 end
 
 function SPECIAL_ENEMIES_PER_LEVEL(level)
@@ -488,8 +488,6 @@ DISTANCE_TO_COOLDOWN_MULTIPLIER = function(distance)
 
   local first_key = table.smallest_key(mult_values)
   local last_key = table.largest_key(mult_values)
-
-  print(first_key, last_key)
 
   if distance < first_key then
     return mult_values[first_key]

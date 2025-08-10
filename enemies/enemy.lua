@@ -160,6 +160,7 @@ function Enemy:update(dt)
     self:update_animation(dt)
 
     self.offscreen = not Helper.Target:is_in_camera_bounds(self.x, self.y)
+    self.fully_onscreen = Helper.Target:is_fully_in_camera_bounds(self.x, self.y)
     self.way_onscreen = Helper.Target:way_inside_camera_bounds(self.x, self.y)
 
     if self.offscreen or not self.way_onscreen then
