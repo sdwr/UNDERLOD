@@ -316,7 +316,7 @@ end
 MOVEMENT_RANDOM_TIMER = 5
 LOOSE_SEEK_RETARGET_TIME = 10
 SEEK_TO_RANGE_PLAYER_RADIUS = 130
-SEEK_TO_RANGE_ENEMY_RADIUS = 100
+SEEK_TO_RANGE_ENEMY_MOVEMENT_RADIUS = 100
 
 MOVEMENT_TYPE_SEEK = 'seek'
 MOVEMENT_TYPE_LOOSE_SEEK = 'loose_seek'
@@ -333,6 +333,7 @@ end
 
 -- Enemy movement styles organized by enemy type
 enemy_movement_types = {
+
   ['default'] = MOVEMENT_TYPE_SEEK,
   -- Aggressive seekers - chase players directly
   ['slowcharger'] = MOVEMENT_TYPE_SEEK,
@@ -342,8 +343,6 @@ enemy_movement_types = {
   
   -- Ranged units that maintain distance
   ['big_goblin_archer'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
-  
-  -- Random movement units - typically ranged/casters
   ['goblin_archer'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
   ['archer'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
   ['seeker'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
@@ -365,6 +364,8 @@ enemy_movement_types = {
   ['turret'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
   
   -- Bosses
+  ['stompy'] = MOVEMENT_TYPE_LOOSE_SEEK,
+  ['dragon'] = MOVEMENT_TYPE_LOOSE_SEEK,
   ['heigan'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
 }
 

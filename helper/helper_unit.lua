@@ -176,9 +176,9 @@ function Helper.Unit:cast_off_cooldown(unit)
 end
 
 function Helper.Unit:cast_off_cooldown_distance_multiplier(unit, target)
-    if unit.is_troop and target and target.x and target.y then
-        local distance = unit:distance_to_point(target.x, target.y)
-        local distance_multiplier = DISTANCE_TO_COOLDOWN_MULTIPLIER(distance)
+    if target.x and target.y then
+        local distance_multiplier = Helper.Target:get_distance_multiplier(unit, target)
+
         local adjusted_cooldown = unit.attack_cooldown * distance_multiplier
 
         local elapsed_cooldown
@@ -188,9 +188,10 @@ function Helper.Unit:cast_off_cooldown_distance_multiplier(unit, target)
             elapsed_cooldown = math.abs(unit.attack_cooldown * -1 + unit.attack_cooldown_timer)
         end
 
-        return elapsed_cooldown >= adjusted_cooldown
+        return adjusted_cooldown <= elapsed_cooldown
+    else
+        return Helper.Unit:cast_off_cooldown(unit)
     end
-    return Helper.Unit:cast_off_cooldown(unit)
 end
 
 function Helper.Unit:can_cast(unit, target)
@@ -202,10 +203,11 @@ function Helper.Unit:can_cast(unit, target)
         if not unit:in_range_of(target) then
             return false
         end
-        if not Helper.Unit:cast_off_cooldown_distance_multiplier(unit, target) then
-            return false
+        if unit.is_troop then
+            return Helper.Unit:cast_off_cooldown_distance_multiplier(unit, target)
+        else
+            return Helper.Unit:cast_off_cooldown(unit)
         end
-        return true
     end
     return false
 end
