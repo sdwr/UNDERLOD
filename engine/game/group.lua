@@ -342,7 +342,7 @@ function Group:get_objects_in_shape(shape, object_types, exclude_list)
         local cell_objects = self.cells[cx][cy]
         if cell_objects then
           for _, object in ipairs(cell_objects) do
-            if object.fully_onscreen then
+            if not object.offscreen then
               if object_types then
                 if not table.any(exclude_list, function(v) return v.id == object.id end) then
                   if table.any(object_types, function(v) return object:is(v) end) and object.shape and object.shape:is_colliding_with_shape(shape) then
@@ -367,8 +367,8 @@ function Group:get_closest_object_by_class(object, object_types, exclude_list)
   return self:get_closest_object(object, function(o) 
     local is_valid_type = table.any(object_types, function(v) return o:is(v) end)
     local is_not_excluded = not exclude_list or not table.any(exclude_list, function(v) return v.id == o.id end)
-    local is_fully_onscreen = o.fully_onscreen
-    return is_valid_type and is_not_excluded and is_fully_onscreen
+    local offscreen = o.offscreen
+    return is_valid_type and is_not_excluded and not offscreen
   end)
 end
 

@@ -63,7 +63,7 @@ function Helper.Target:get_distance_multiplier(unit, target)
 end
 
 function Helper.Target:is_in_camera_bounds(x, y)
-  return x > 5 and x < gw - 5 and y > 5 and y < gh - 5
+  return x > 0 and x < gw and y > 0 and y < gh
 end
 
 function Helper.Target:is_fully_in_camera_bounds(x, y)

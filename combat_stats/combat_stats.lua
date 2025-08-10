@@ -486,8 +486,17 @@ DISTANCE_TO_COOLDOWN_MULTIPLIER = function(distance)
     [250] = 1.4,
   }
 
-  if distance < 0 then
-    return mult_values[0]
+  local first_key = table.smallest_key(mult_values)
+  local last_key = table.largest_key(mult_values)
+
+  print(first_key, last_key)
+
+  if distance < first_key then
+    return mult_values[first_key]
+  end
+
+  if distance > last_key then
+    return mult_values[last_key]
   end
 
   local p1, p2
@@ -499,10 +508,6 @@ DISTANCE_TO_COOLDOWN_MULTIPLIER = function(distance)
       break
     end
     prev = dist
-  end
-
-  if not p2 then
-    return mult_values[#mult_values]
   end
 
   local scale = (distance - p1) / (p2 - p1)

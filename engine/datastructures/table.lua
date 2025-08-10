@@ -242,6 +242,33 @@ function table.count(t, v)
   return n
 end
 
+function table.length(t)
+  local count = 0
+  for _, _ in pairs(t) do
+    count = count + 1
+  end
+  return count
+end
+
+function table.largest_key(t)
+  local largest_key = nil
+  for k, _ in pairs(t) do
+    if not largest_key or k > largest_key then
+      largest_key = k
+    end
+  end
+  return largest_key
+end
+
+function table.smallest_key(t)
+  local smallest_key = nil
+  for k, _ in pairs(t) do
+    if not smallest_key or k < smallest_key then
+      smallest_key = k
+    end
+  end 
+  return smallest_key
+end
 
 -- Applies function f to all table elements and replaces each element for the value returned by f
 function table.map(t, f, ...)
