@@ -614,6 +614,10 @@ function Unit:draw_buffs()
   for _ , buff in pairs(self.buffs) do
     if buff.name == 'chill' and self:get_buff('freeze') then
       --dont draw chill if freeze is present
+
+    elseif buff.stacks == 0 then
+      --dont draw buff if stacks is 0
+
     elseif buff.color then
       graphics.circle(self.x, self.y, ((self.shape.w) / 2) + (i), buff.color, 1)
       i = i + 1
@@ -767,7 +771,7 @@ function Unit:update_buffs(dt)
         self.invulnerable = false
       end
       --this is where buff stacks tick down
-      if v.stacks and v.stacks > 1 and not v.stacks_expire_together then
+      if v.stacks and v.stacks > 1 then
         v.stacks = v.stacks - 1
         v.duration = v.maxDuration
       else
@@ -1130,6 +1134,9 @@ function Unit:onDeathCallbacks(from)
   --some global procs here, could maybe be moved into onDeathProcs
   self:burn_explode_or_fizzle()
 
+  if self.on_death then
+    self:on_death()
+  end
 end
 
 function Unit:onMoveCallbacks(distance)

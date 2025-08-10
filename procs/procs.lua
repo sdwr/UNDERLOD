@@ -991,7 +991,7 @@ function Proc_Vulncharge:init(args)
   self.maxStacks = self.data.maxStacks or 10
 
   self.buff = {name = self.buffname, color = purple[5], duration = self.buffDuration,
-    stats = {percent_def = -0.1}, stacks = 1, stacks_expire_together = true
+    stats = {percent_def = -0.1}, stacks = 1,
   }
 
   --memory
@@ -1786,13 +1786,14 @@ function Proc_Blazin:init(args)
 
   --define the proc's vars
   self.buff = 'blazin'
-  self.buff_duration = self.data.buff_duration or 1
+  self.buff_duration = self.data.buff_duration or 1000
+
   self.aspd_per_enemy = self.data.aspd_per_enemy or 0.1
-  self.max_aspd = self.data.max_aspd or 1
+  self.max_stacks = self.data.max_stacks or 10
 
   --dont use stacks, because we don't want it to decay over time
   self.buffdata = {name = 'blazin', color = red[5], duration = self.buff_duration,
-    stats = {aspd = 0}
+    stats = {aspd = self.aspd_per_enemy}, stacks = 0
   }
 
 end
@@ -1810,7 +1811,7 @@ function Proc_Blazin:onTick(dt)
   end
 
   --change stats based on # of enemies burning
-  self.buffdata.stats.aspd = math.min(count * self.aspd_per_enemy, self.max_aspd)
+  self.buffdata.stats.stacks = math.min(count, self.max_stacks)
   
   --remove buff before reapplying (otherwise will not change stats)
   if not self.unit then return end

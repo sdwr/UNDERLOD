@@ -4,7 +4,16 @@ fns['init_enemy'] = function(self)
   self.data = self.data or {}
   self.icon = 'swarmer'
 
-  self.color = grey[0]:clone()
+  load_special_swarmer_data(self)
+
+  if self.special_swarmer_type == 'exploder' then
+    self.color = red[0]:clone()
+  elseif self.special_swarmer_type == 'poison' then
+    self.color = purple[0]:clone()
+  else
+    self.color = grey[0]:clone()
+  end
+
   Set_Enemy_Shape(self, self.size)
 
 
@@ -30,5 +39,73 @@ fns['draw_enemy'] = function(self)
   end
 
 end
+
+fns['explode'] = function(self)
+  explosion_new:play{pitch = random:float(0.95, 1.05), volume = 0.3}
+  Area{
+    group = main.current.effects,
+    unit = self,
+    is_troop = false,
+    x = self.x,
+    y = self.y,
+    r = self.radius * 2,
+    duration = self.duration,
+    pick_shape = 'circle',
+    damage = function() return self.dmg * 2 end,
+    color = red[0],
+    parent = self,
+  }
+
+  local angle_between = 2*math.pi / self.num_pieces
+  local angle = 0
+
+  for i = 1, self.num_pieces do
+    angle = angle + angle_between
+    BurstBullet{
+      group = self.group,
+      color = self.color,
+      x = self.x,
+      y = self.y,
+      r = angle,
+      speed = self.secondary_speed,
+      distance = self.secondary_distance,
+      damage = function() return self.dmg end,
+      unit = self.unit,
+    }
+  end
+end
+
+fns['poison'] = function(self)
+  wizard1:play{pitch = random:float(0.9, 1.1), volume = 0.2}
+  Area_Spell{
+    group = main.current.effects,
+    unit = self,
+    is_troop = false,
+    x = self.x,
+    y = self.y,
+    damage = function() return self.dmg * self.damage_multi end,
+    damage_ticks = true,
+    hit_only_once = false,
+    r = self.radius,
+    color = self.color,
+    opacity = 0.3,
+    line_width = 0,
+    tick_rate = self.tick_rate,
+    duration = self.duration,
+    pick_shape = 'circle',
+    on_tick_hit_sound = wizard1,
+    parent = self,
+  }
+end
+
+fns['on_death'] = function(self)
+  if self.special_swarmer_type == 'exploder' then
+    self:explode()
+  elseif self.special_swarmer_type == 'poison' then
+    self:poison()
+  end
+end
+
+
 
 enemy_to_class['swarmer'] = fns

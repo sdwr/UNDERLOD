@@ -32,15 +32,16 @@ function Area_Spell:init(args)
     end
 
     if self.pick_shape == 'circle' then
-      local w = 1.2*self.radius
+      local w = self.radius
       self.shape = Circle(self.x, self.y, w)
     else
-      local w = 1.5*self.radius
-      local h = 1.5*self.radius
+      local w = self.radius
+      local h = self.radius
       self.shape = Rectangle(self.x, self.y, w, h, self.r)
     end
 
     self.color = self.color or fg[0]
+    self.color = self.color:clone()
     self.opacity = self.opacity or 0.08
     self.color_transparent = Color(self.color.r, self.color.g, self.color.b, self.opacity)
     self.line_width = self.line_width or 1
@@ -77,7 +78,12 @@ function Area_Spell:update(dt)
     if self.damage_ticks then
         self.next_tick_time = self.next_tick_time - dt
         if self.next_tick_time <= 0 then
-            self:apply_damage()
+            local _, hit_success = self:apply_damage()
+            if hit_success then
+                if self.on_tick_hit_sound then
+                    self.on_tick_hit_sound:play{pitch = random:float(0.9, 1.1), volume = 0.2}
+                end
+            end
             self.next_tick_time = self.tick_rate -- Reset the timer for the next tick
         end
     end
@@ -96,6 +102,7 @@ function Area_Spell:apply_damage()
     local targets_in_area = main.current.main:get_objects_in_shape(self.shape, target_group)
 
     local actual_targets_hit = {}
+    local hit_success = false
     
 
     for _, target in ipairs(targets_in_area) do
@@ -119,7 +126,9 @@ function Area_Spell:apply_damage()
                     self.on_hit_callback(self, target, self.unit)
                 end)
             end
-            
+
+            hit_success = true
+
             table.insert(actual_targets_hit, target)
             -- If it's not a DoT, mark as hit so it can't be hit again.
             -- For DoTs, we could clear this list each tick if we wanted to allow multiple hits.
@@ -129,7 +138,7 @@ function Area_Spell:apply_damage()
         end
     end
     
-    return actual_targets_hit
+    return actual_targets_hit, hit_success
 end
 
 

@@ -869,9 +869,19 @@ end
 -- This function is now just a simple unit factory.
 function Spawn_Enemy(arena, type, location)
   local data = {}
+
+  local special_swarmer_type = nil
+  if type == 'swarmer' then
+    --reduce into 1 value
+    local special_swarmer_chance = table.reduce(SPECIAL_SWARMER_WEIGHT_BY_TYPE[arena.level], function(acc, weight) return acc + weight end, 0)
+    if random:bool(special_swarmer_chance) then
+      special_swarmer_type = SPECIAL_SWARMER_TYPES[random:weighted_pick(unpack(SPECIAL_SWARMER_WEIGHT_BY_TYPE[arena.level]))]
+    end
+  end
   
   local enemy = Enemy{type = type, group = arena.main,
                       x = location.x, y = location.y,
+                      special_swarmer_type = special_swarmer_type,
                       level = arena.level, data = data}
 
   Spawn_Enemy_Sound(arena, false)

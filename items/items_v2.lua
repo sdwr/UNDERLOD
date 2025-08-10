@@ -404,38 +404,22 @@ end
 -- Helper function to get random rarity
 function get_random_rarity(level, exclude_rarity)
   local tier = LEVEL_TO_TIER(level)
+
   local rarities = {ITEM_RARITY.COMMON, ITEM_RARITY.RARE, ITEM_RARITY.EPIC, ITEM_RARITY.LEGENDARY}
-
-  if exclude_rarity and table.contains(rarities, exclude_rarity) then
-    local rarity_index = table.find(rarities, exclude_rarity)
-    table.remove(rarities, rarity_index)
-  end
-
   local weights = TIER_TO_ITEM_RARITY_WEIGHTS[tier] or {1, 0, 0, 0}
+
+  if exclude_rarity then
+   local rarity_index = table.find(rarities, exclude_rarity)
+    weights = weights:copy()
+    weights[rarity_index] = 0
+  end
 
   if not weights then
     print("ERROR: weights is nil for tier:", tier)
     return nil
   end
-
-  -- Simple weighted random selection
-  local total_weight = 0
-  for _, weight in ipairs(weights) do
-    total_weight = total_weight + weight
-  end
   
-  local roll = math.random() * total_weight
-  
-  local current_weight = 0
-  
-  for i, weight in ipairs(weights) do
-    current_weight = current_weight + weight
-    if roll <= current_weight then
-      return rarities[i]
-    end
-  end
-  
-  return rarities[1] -- Fallback to common
+  return rarities[random:weighted_pick(unpack(weights))] or rarities[1]
 end
 
 -- Helper function to get random set

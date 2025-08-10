@@ -246,6 +246,72 @@ get_num_special_enemies_by_level = function(level)
   or num_special_enemies_by_level['default']
 end
 
+load_special_swarmer_data = function(swarmer)
+  local data = SPECIAL_SWARMER_DATA[swarmer.special_swarmer_type]
+  if not data then
+    return
+  end
+
+  for k, v in pairs(data) do
+    swarmer[k] = v
+  end
+
+end
+
+SPECIAL_SWARMER_TYPES = {
+  'exploder',
+  'poison',
+  'exploder',
+  'poison',
+  'exploder',
+  'poison',
+}
+
+SPECIAL_SWARMER_DATA = {
+  ['exploder'] = {
+    radius = 25,
+    duration = 0.1,
+    num_pieces = 10,
+    secondary_speed = 70,
+    secondary_distance = 200,
+  },
+  ['poison'] = {
+    radius = 30,
+    duration = 8,
+    tick_rate = 0.5,
+    damage_multi = 0.25,
+  },
+}
+
+
+SPECIAL_SWARMER_WEIGHT_BY_TYPE = {
+  [1] = {0},
+  [2] = {4, 2},
+  [3] = {6},
+  [4] = {4, 4},
+  [5] = {4, 3, 2},
+  [6] = {12},
+  [7] = {5, 3, 2},
+  [8] = {6, 3, 3, 3},
+  [9] = {14},
+  [10] = {8, 4},
+  [11] = {8, 6, 2},
+  [12] = {16},
+  [13] = {8, 8},
+  [14] = {12, 6},
+  [15] = {18},
+  [16] = {10, 6, 4},
+  [17] = {6, 5, 4, 3},
+  [18] = {18},
+  [19] = {10, 6},
+  [20] = {8, 6, 2},
+  [21] = {22},
+  [22] = {10, 8, 4},
+  [23] = {20, 5, 5},
+  [24] = {30},
+  [25] = {5, 5, 5, 5, 5, 5},
+}
+
 
 
 ROUND_POWER_BY_LEVEL = {
