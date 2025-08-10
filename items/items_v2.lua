@@ -410,7 +410,7 @@ function get_random_rarity(level, exclude_rarity)
 
   if exclude_rarity then
    local rarity_index = table.find(rarities, exclude_rarity)
-    weights = weights:copy()
+    weights = table.copy(weights)
     weights[rarity_index] = 0
   end
 
@@ -418,7 +418,7 @@ function get_random_rarity(level, exclude_rarity)
     print("ERROR: weights is nil for tier:", tier)
     return nil
   end
-  
+
   return rarities[random:weighted_pick(unpack(weights))] or rarities[1]
 end
 

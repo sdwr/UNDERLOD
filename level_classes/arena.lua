@@ -94,6 +94,8 @@ function Arena:create_progress_bar()
       x = gw/2, y = LEVEL_MAP_Y_POSITION, offset_x = self.offset_x, offset_y = self.offset_y,
       progress = 0,
       waves_power = waves_power,
+      fade_in = true,
+      fade_in_duration = 2,
     }
   end
 end

@@ -8,7 +8,12 @@ function ProgressBar:init(args)
   self.max_progress = args.max_progress or 1
   self.number_of_waves = #args.waves_power
   self.waves_power = args.waves_power or {self.max_progress}
-  self.bgcolor = args.bgcolor or bg[-1]
+  self.bgcolor = args.bgcolor or bg[-1]:clone()
+
+  self.fade_in_duration = args.fade_in_duration or 1
+  if self.fade_in then
+    self.bgcolor.a = 0
+  end
   
   self.segments = {}
   local spacing = 4 -- Spacing between segments in pixels
@@ -24,6 +29,7 @@ function ProgressBar:init(args)
       y = self.y,
       w = self.shape.w / self.number_of_waves,
       h = self.shape.h,
+      fade_in = self.fade_in,
     }
   end
 
@@ -32,6 +38,13 @@ end
 
 function ProgressBar:update(dt)
   self:update_game_object(dt)
+end
+
+function ProgressBar:begin_fade_in()
+  self.t:tween(self.fade_in_duration, self.bgcolor, {a = 1}, math.linear)
+  for i = 1, #self.segments do
+    self.segments[i]:begin_fade_in(self.fade_in_duration)
+  end
 end
 
 function ProgressBar:draw()
@@ -78,14 +91,26 @@ function ProgressBarSegment:init(args)
   self.parent = args.parent
   self.segment_index = args.segment_index
   self.max_segment_index = args.max_segment_index
-  self.segment_color = args.segment_color or yellow[-4]
-  self.segment_bgcolor = args.segment_bgcolor or fg[-10]
+
+  self.segment_color = args.segment_color or yellow[-4]:clone()
+  self.segment_bgcolor = args.segment_bgcolor or fg[-10]:clone()
+
+  if self.fade_in then
+    self.segment_color.a = 0
+    self.segment_bgcolor.a = 0
+  end
+
   self.wave_power = args.wave_power or 100
   self.progress = args.progress or 0
   self.max_progress = args.max_progress or self.wave_power
 
   self.shape = Rectangle(self.x, self.y, self.w, self.h)
   self.interact_with_mouse = false
+end
+
+function ProgressBarSegment:begin_fade_in(duration)
+  self.t:tween(duration, self.segment_bgcolor, {a = 1}, math.linear)
+  self.t:tween(duration, self.segment_color, {a = 1}, math.linear)
 end
 
 function ProgressBarSegment:update(dt)

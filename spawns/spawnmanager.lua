@@ -356,6 +356,9 @@ function End_Suction(arena)
     ui_switch1:play{pitch = random:float(1.1, 1.3), volume = 1}
     arena.spawn_manager.timer = TIME_BETWEEN_WAVES
     arena.spawn_manager:change_state('entry_delay')
+    if arena.progress_bar then
+      arena.progress_bar:begin_fade_in()
+    end
   end
 
 end
