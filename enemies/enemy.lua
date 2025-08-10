@@ -272,7 +272,7 @@ function Enemy:acquire_target_seek_to_range()
   local desired_range = SEEK_TO_RANGE_PLAYER_RADIUS
   
   -- Create circle around enemy with radius = distance to player
-  local enemy_radius = SEEK_TO_RANGE_ENEMY_RADIUS
+  local enemy_radius = SEEK_TO_RANGE_ENEMY_MOVEMENT_RADIUS
   -- Create circle around player with desired range
   local player_radius = desired_range
   
@@ -372,11 +372,13 @@ function Enemy:acquire_target_seek_to_range()
   
   -- Final fallback: move towards arena center if still invalid
   if not Helper.Target:way_inside_camera_bounds(self.target_location.x, self.target_location.y) then
-    print('cant find target location in camera bounds')
-    return false
+    self.target_location = {x = gw/2, y = gh/2}
   end
   
-  return true
+  if self.target_location then
+    return true
+  end
+  return false
 end
 
 function Enemy:acquire_target_random()

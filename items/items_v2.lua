@@ -94,6 +94,8 @@ ITEM_STATS_THAT_CAN_ROLL_ON_ITEMS = {
   
   --advanced stats
   ['crit_chance'] = { name = 'crit_chance', min = 1, max = 5, increment = 0.1 },
+  -- ['crit_damage'] = { name = 'crit_damage', min = 1, max = 5, increment = 0.1 },
+  ['cooldown_reduction'] = { name = 'cooldown_reduction', min = 1, max = 5, increment = 0.1 },
 }
 
 ITEM_STATS_DAMAGE_STATS = {
@@ -101,6 +103,7 @@ ITEM_STATS_DAMAGE_STATS = {
   ['aspd'] = { name = 'aspd', min = 1, max = 5, increment = 0.1 },
   ['range'] = { name = 'range', min = 1, max = 5, increment = 0.05 },
   ['crit_chance'] = { name = 'crit_chance', min = 1, max = 5, increment = 0.1 },
+  -- ['crit_damage'] = { name = 'crit_damage', min = 1, max = 5, increment = 0.1 },
   ['repeat_attack_chance'] = { name = 'repeat_attack_chance', min = 1, max = 5, increment = 0.2 },
 }
 
@@ -180,7 +183,7 @@ ITEM_SETS = {
     },
     descriptions = {
       [1] = 'Adds lightning damage to attacks',
-      [2] = 'Lightning shocks enemies, increasing damaage taken',
+      [2] = 'Lightning shocks enemies, increasing damage taken',
       [4] = 'Adds more lightning damage to attacks'
     }
   },

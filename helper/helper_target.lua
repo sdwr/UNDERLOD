@@ -56,6 +56,12 @@ function Helper.Target:get_random_friendly(object)
   return main.current.main:get_random_object_by_class(class_list)
 end
 
+function Helper.Target:get_distance_multiplier(unit, target)
+  local distance = unit:distance_to_point(target.x, target.y)
+  local distance_multiplier = DISTANCE_TO_COOLDOWN_MULTIPLIER(distance)
+  return distance_multiplier
+end
+
 function Helper.Target:is_in_camera_bounds(x, y)
   return x > 5 and x < gw - 5 and y > 5 and y < gh - 5
 end
