@@ -1945,7 +1945,6 @@ function love.run()
     game_name = 'UNDERLOD',
     window_width = 'max',
     window_height = 'max',
-    vsync = 0,
   })
 end
 
