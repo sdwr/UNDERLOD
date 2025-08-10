@@ -23,6 +23,7 @@ Profiler.total_frames = 0
 Profiler.slow_frames = 0
 Profiler.system_totals = {}
 Profiler.last_report_time = 0
+Profiler.worst_frames = {} -- Store detailed breakdown of worst frames
 
 -- Initialize profiler
 function Profiler:init()
@@ -34,6 +35,7 @@ function Profiler:init()
   self.slow_frames = 0
   self.system_totals = {}
   self.last_report_time = love.timer.getTime()
+  self.worst_frames = {}
   
   -- Initialize system totals
   for _, system in ipairs(PROFILER_CONFIG.detailed_systems) do
@@ -181,6 +183,29 @@ function Profiler:end_real_frame()
     table.remove(self.frame_history, 1)
   end
   
+  -- Track worst frames for detailed analysis
+  if self.current_frame.is_slow_frame then
+    local frame_copy = {}
+    for k, v in pairs(self.current_frame) do
+      if k == "systems" or k == "custom_sections" then
+        frame_copy[k] = {}
+        for sys_k, sys_v in pairs(v) do
+          frame_copy[k][sys_k] = {total_time = sys_v.total_time, calls = sys_v.calls}
+        end
+      else
+        frame_copy[k] = v
+      end
+    end
+    
+    table.insert(self.worst_frames, frame_copy)
+    table.sort(self.worst_frames, function(a, b) return a.real_duration > b.real_duration end)
+    
+    -- Keep only top 5 worst frames
+    while #self.worst_frames > 5 do
+      table.remove(self.worst_frames)
+    end
+  end
+  
   -- Check if we should generate a report
   local current_time = love.timer.getTime()
   if current_time - self.last_report_time > PROFILER_CONFIG.report_interval then
@@ -264,6 +289,42 @@ function Profiler:report_summary()
     end
   end
   
+  -- Worst frames breakdown
+  if #self.worst_frames > 0 then
+    print("\nWorst " .. #self.worst_frames .. " frame breakdowns:")
+    for i, frame in ipairs(self.worst_frames) do
+      print(string.format("  Frame #%d: %.1fms total, %d updates", 
+        i, frame.real_duration * 1000, frame.update_iterations))
+      
+      -- Collect all systems for this frame
+      local frame_systems = {}
+      if frame.systems then
+        for name, data in pairs(frame.systems) do
+          if data.total_time > 0 then
+            table.insert(frame_systems, {name = name, time = data.total_time, calls = data.calls})
+          end
+        end
+      end
+      if frame.custom_sections then
+        for name, data in pairs(frame.custom_sections) do
+          if data.total_time > 0 then
+            table.insert(frame_systems, {name = name, time = data.total_time, calls = data.calls})
+          end
+        end
+      end
+      
+      -- Sort by time and show top contributors
+      table.sort(frame_systems, function(a, b) return a.time > b.time end)
+      for j, sys in ipairs(frame_systems) do
+        if j <= 8 then -- Top 8 systems for this frame
+          print(string.format("    %s: %.2fms (%d calls)", 
+            sys.name, sys.time * 1000, sys.calls))
+        end
+      end
+      print("")
+    end
+  end
+  
   print("========================\n")
 end
 
@@ -276,6 +337,7 @@ function Profiler:reset()
   self.slow_frames = 0
   self.system_totals = {}
   self.last_report_time = love.timer.getTime()
+  self.worst_frames = {}
   
   for _, system in ipairs(PROFILER_CONFIG.detailed_systems) do
     self.system_totals[system] = {total_time = 0, calls = 0, max_time = 0}
