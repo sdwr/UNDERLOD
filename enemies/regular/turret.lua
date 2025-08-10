@@ -53,11 +53,7 @@ fns['draw_enemy'] = function(self)
   local animation_success = self:draw_animation()
 
   if not animation_success then
-    graphics.push(self.x, self.y, self.r, self.spring.x, self.spring.y)
-    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 3, 3, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
-    -- Draw a small indicator showing the direction it's facing
-    graphics.line(self.x, self.y, self.x + math.cos(self.r) * 15, self.y + math.sin(self.r) * 15, 2, fg[0])
-    graphics.pop()
+    self:draw_fallback_animation()
   end
 end
 

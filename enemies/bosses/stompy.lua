@@ -165,9 +165,7 @@ fns['draw_enemy'] = function(self)
   local animation_success = self:draw_animation(self.state, self.x, self.y, 0, 1, 1)
 
   if not animation_success then
-    graphics.push(self.x, self.y, 0, self.hfx.hit.x, self.hfx.hit.x)
-    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 10, 10, self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color)
-    graphics.pop()
+    self:draw_fallback_animation()
   end
 end
 

@@ -11,8 +11,9 @@ function create_animation(grid, rowNumber, numberPerRow, w, h, speed)
 end
 
 --status effects
-FREEZE_MASK_COLOR = nil
+CHILL_MASK_COLOR = nil
 
+FREEZE_MASK_COLOR = nil
 STUN_MASK_COLOR = nil
 
 KNOCKBACK_MASK_COLOR = nil
@@ -20,12 +21,14 @@ KNOCKBACK_MASK_COLOR = nil
 BURN_MASK_COLOR = nil
 
 function set_status_effect_mask_colors()
+  CHILL_MASK_COLOR = blue[0]:clone()
+  CHILL_MASK_COLOR.a = 0.6
   FREEZE_MASK_COLOR = blue[0]:clone()
   FREEZE_MASK_COLOR.a = 0.8
   STUN_MASK_COLOR = black[0]:clone()
   STUN_MASK_COLOR.a = 0.8
   BURN_MASK_COLOR = red[0]:clone()
-  BURN_MASK_COLOR.a = 0.4
+  BURN_MASK_COLOR.a = 0.5
   KNOCKBACK_MASK_COLOR = red[0]:clone()
   KNOCKBACK_MASK_COLOR.a = 0.9
 end

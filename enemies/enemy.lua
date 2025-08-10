@@ -86,6 +86,68 @@ function Enemy:draw_animation()
   return DrawAnimations.draw_enemy_animation(self, self.state, self.x, self.y, 0)
 end
 
+-- Draw fallback animation when spritesheet animation fails
+-- Uses mask-based approach like sprite animations
+function Enemy:draw_fallback_animation()
+  -- First draw the base shape with base color
+  self:draw_fallback_base_shape()
+  
+  -- Then apply status effect overlays
+  self:draw_fallback_status_effects()
+end
+
+-- Draw the base shape (triangle for dragon, rounded rectangle for others)
+function Enemy:draw_fallback_base_shape()
+  -- Determine base color (hit flash, silenced, or normal color)
+  local base_color = self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color
+  
+  graphics.push(self.x, self.y, self.r or 0, self.hfx.hit.x, self.hfx.hit.x)
+  
+  if self.type == 'dragon' then
+    -- Special case: Dragon uses triangle polygon
+    local points = self:make_regular_polygon(3, (self.shape.w / 2) / 60 * 70, self:get_angle())
+    graphics.polygon(points, base_color)
+  else
+    -- Default case: Rounded rectangle with size-appropriate corner radius
+    local corner_radius = get_enemy_corner_radius(self)
+    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, corner_radius, corner_radius, base_color)
+  end
+  
+  graphics.pop()
+end
+
+-- Draw status effect overlays using the same mask-based approach as sprite animations
+function Enemy:draw_fallback_status_effects()
+  -- Determine status effect mask color (same priority order as in DrawAnimations.draw_enemy_animation)
+  local mask_color = nil
+  if self.buffs['chill'] then
+    mask_color = CHILL_MASK_COLOR
+  elseif self.buffs['freeze'] then
+    mask_color = FREEZE_MASK_COLOR
+  elseif self.buffs['stunned'] then
+    mask_color = STUN_MASK_COLOR
+  elseif self.buffs['burn'] then
+    mask_color = BURN_MASK_COLOR
+  end
+  
+  -- Apply status effect overlay if present
+  if mask_color ~= nil then
+    graphics.push(self.x, self.y, self.r or 0, self.hfx.hit.x, self.hfx.hit.x)
+    
+    if self.type == 'dragon' then
+      -- Dragon triangle with status effect overlay
+      local points = self:make_regular_polygon(3, (self.shape.w / 2) / 60 * 70, self:get_angle())
+      graphics.polygon(points, mask_color)
+    else
+      -- Rectangle with status effect overlay
+      local corner_radius = get_enemy_corner_radius(self)
+      graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, corner_radius, corner_radius, mask_color)
+    end
+    
+    graphics.pop()
+  end
+end
+
 
 --set castcooldown and in the enemy file (init)
 function Enemy:update(dt)
@@ -411,7 +473,7 @@ function Enemy:update_move_seek()
 
   -- 3. Apply final steering adjustments in all active cases.
   self:rotate_towards_velocity(0.5)
-  self:steering_separate(4, {Enemy}, 1)
+  self:steering_separate(4, {Enemy}, 3)
 
   -- 4. Return true because the movement action is successfully ongoing.
   return true
@@ -426,7 +488,7 @@ function Enemy:update_move_loose_seek()
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
       self:wander(50, 100, 20)
       self:rotate_towards_velocity(0.5)
-      self:steering_separate(4, {Enemy}, 1)
+      self:steering_separate(4, {Enemy}, 3)
       return true
     end
   end
@@ -441,7 +503,7 @@ function Enemy:update_move_seek_to_range()
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type) or SEEK_WEIGHT)
       self:wander(50, 100, 20)
       self:rotate_towards_velocity(0.5)
-      self:steering_separate(4, {Enemy}, 1)
+      self:steering_separate(4, {Enemy}, 3)
       return true
     end
   end
@@ -455,7 +517,7 @@ function Enemy:update_move_random()
     else
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
       self:rotate_towards_velocity(1)
-      self:steering_separate(4, {Enemy}, 1)
+      self:steering_separate(4, {Enemy}, 3)
       return true
     end
   end
