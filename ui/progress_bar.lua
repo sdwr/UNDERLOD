@@ -158,14 +158,15 @@ function ProgressBarSegment:get_progress_location()
 end
 
 function ProgressBarSegment:create_progress_particle(roundPower, x, y)
-  ProgressParticle{
-    group = main.current.main,
-    x = x,
-    y = y,
-    roundPower = roundPower,
-    parent = self, 
-  }
-
+  self.t:after(0, function()
+    ProgressParticle{
+      group = main.current.main,
+      x = x,
+      y = y,
+      roundPower = roundPower,
+      parent = self, 
+    }
+  end)
 end
 
 function ProgressBarSegment:complete_wave()

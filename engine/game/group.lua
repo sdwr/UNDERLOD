@@ -188,6 +188,30 @@ function Group:draw_all_except(classes, scroll_factor_x, scroll_factor_y)
   if self.camera then self.camera:detach() end
 end
 
+-- Draws objects that have specific physics tags
+-- group:draw_objects_by_tags({'projectile', 'enemy_projectile'}) -> draws all projectile objects
+function Group:draw_objects_by_tags(tags, scroll_factor_x, scroll_factor_y)
+  if self.camera then self.camera:attach(scroll_factor_x, scroll_factor_y) end
+    for _, object in ipairs(self.objects) do
+      if not object.hidden and object.tag and table.any(tags, function(tag) return object.tag == tag end) then
+        object:draw()
+      end
+    end
+  if self.camera then self.camera:detach() end
+end
+
+
+-- Draws all objects except those with specific physics tags
+-- group:draw_all_except_tags({'projectile', 'enemy_projectile'}) -> draws all objects except projectiles
+function Group:draw_all_except_tags(tags, scroll_factor_x, scroll_factor_y)
+  if self.camera then self.camera:attach(scroll_factor_x, scroll_factor_y) end
+    for _, object in ipairs(self.objects) do
+      if not object.hidden and (not object.tag or not table.any(tags, function(tag) return object.tag == tag end)) then
+        object:draw()
+      end
+    end
+  if self.camera then self.camera:detach() end
+end
 
 -- Sets this group as one without a camera, useful for things like UIs
 function Group:no_camera()
