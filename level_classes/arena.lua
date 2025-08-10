@@ -250,19 +250,32 @@ function Arena:update(dt)
   
   if not self.paused then
     -- Update arena groups
+    Profiler:start("floor_objects")
     star_group:update(dt)
     self.floor:update(dt)
+    Profiler:finish("floor_objects")
     
+    Profiler:start("main_objects")
     self.main:update(dt)
+    Profiler:finish("main_objects")
     
+    Profiler:start("post_main_objects")
     self.post_main:update(dt)
+    Profiler:finish("post_main_objects")
+    
+    Profiler:start("effects")
     self.effects:update(dt)
+    Profiler:finish("effects")
 
+    Profiler:start("ui")
     self.ui:update(dt)
+    Profiler:finish("ui")
     
     -- Update spawn manager
     if self.spawn_manager then
+      Profiler:start("ai")
       self.spawn_manager:update(dt)
+      Profiler:finish("ai")
     end
   end
 end
@@ -353,12 +366,29 @@ function Arena:draw()
   self:draw_game_object()
   
   -- Draw arena groups
+  Profiler:start("floor_draw")
   self.floor:draw()
+  Profiler:finish("floor_draw")
+  
+  Profiler:start("floor_effects_draw")
   self.effects:draw_floor_effects()
+  Profiler:finish("floor_effects_draw")
+  
+  Profiler:start("main_draw")
   self.main:draw()
+  Profiler:finish("main_draw")
+  
+  Profiler:start("post_main_draw")
   self.post_main:draw()
-  self.effects:draw()  
+  Profiler:finish("post_main_draw")
+  
+  Profiler:start("effects_draw")
+  self.effects:draw()
+  Profiler:finish("effects_draw")
+  
+  Profiler:start("ui_draw")
   self.ui:draw()
+  Profiler:finish("ui_draw")
 end
 
 function Arena:die()

@@ -58,7 +58,11 @@ function Group:update(dt)
       object:update(dt)
     end
   end
-  if self.world then self.world:update(dt) end
+  if self.world then 
+    Profiler:start("physics")
+    self.world:update(dt) 
+    Profiler:finish("physics")
+  end
 
   self.cells = {}
   for _, object in ipairs(self.objects) do
@@ -90,28 +94,15 @@ function Group:draw(scroll_factor_x, scroll_factor_y)
   if self.camera then self.camera:attach(scroll_factor_x, scroll_factor_y) end
   local z_indexed_objects = {}
 
-    for _, object in ipairs(self.objects) do
-      if not object.hidden then
-        if object.z_index then
-          --separate z_indexed objects
-          if not z_indexed_objects[object.z_index] then z_indexed_objects[object.z_index] = {} end
-          table.insert(z_indexed_objects[object.z_index], object)
-        else
-          --draw normal objects
-          if self.custom_draw_list then
-            table.insert(self.custom_draw_list, function()
-              object:draw()
-            end)
-          else
-            object:draw()
-          end
-        end
-      end
-    end
-    
-    for k, objects in pairs(z_indexed_objects) do
-      for _, object in ipairs(objects) do
-        --draw z_indexed objects after the normal objects
+  Profiler:start("group_normal_objects")
+  for _, object in ipairs(self.objects) do
+    if not object.hidden then
+      if object.z_index then
+        --separate z_indexed objects
+        if not z_indexed_objects[object.z_index] then z_indexed_objects[object.z_index] = {} end
+        table.insert(z_indexed_objects[object.z_index], object)
+      else
+        --draw normal objects
         if self.custom_draw_list then
           table.insert(self.custom_draw_list, function()
             object:draw()
@@ -121,13 +112,31 @@ function Group:draw(scroll_factor_x, scroll_factor_y)
         end
       end
     end
+  end
+  Profiler:finish("group_normal_objects")
+  
+  Profiler:start("group_z_indexed_objects")
+  for k, objects in pairs(z_indexed_objects) do
+    for _, object in ipairs(objects) do
+      --draw z_indexed objects after the normal objects
+      if self.custom_draw_list then
+        table.insert(self.custom_draw_list, function()
+          object:draw()
+        end)
+      else
+        object:draw()
+      end
+    end
+  end
+  Profiler:finish("group_z_indexed_objects")
 
   if self.camera then self.camera:detach() end
 end
 
 function Group:draw_floor_effects()
   if #self.objects == 0 then return end
-    
+  
+  Profiler:start("floor_effects_collect")
   -- Collect all floor effects
   local floor_effects = {}
 
@@ -139,8 +148,11 @@ function Group:draw_floor_effects()
       table.insert(floor_effects[object.floor_effect], object)
     end
   end
+  Profiler:finish("floor_effects_collect")
 
+  Profiler:start("floor_effects_render")
   DrawUtils.draw_floor_effects(floor_effects)
+  Profiler:finish("floor_effects_render")
 end
 
 function Group:set_custom_draw_list(draw_list)

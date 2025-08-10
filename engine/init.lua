@@ -42,6 +42,7 @@ if not path:find("init") then
   require(path .. ".game.springs")
   require(path .. ".game.flashes")
   require(path .. ".game.hitfx")
+  require(path .. ".profiler")
 end
 
 function engine_run(config)
@@ -103,6 +104,10 @@ function engine_run(config)
   mouse = Vector(0, 0)
   last_mouse = Vector(0, 0)
   mouse_dt = Vector(0, 0)
+  
+  -- Initialize profiler
+  Profiler:init()
+  
   init()
 
   if love.timer then love.timer.step() end
@@ -120,6 +125,9 @@ function engine_run(config)
   else refresh_rate = 60 end
 
   return function()
+    -- Start profiling the real frame
+    Profiler:start_real_frame()
+    
     if love.event then
       love.event.pump()
       for name, a, b, c, d, e, f in love.event.poll() do
@@ -136,7 +144,18 @@ function engine_run(config)
             else close_options(main.current) end
           end
           ]]--
-        elseif name == "keypressed" then input.keyboard_state[a] = true; input.last_key_pressed = a
+        elseif name == "keypressed" then 
+          input.keyboard_state[a] = true; input.last_key_pressed = a
+          -- Profiler key bindings
+          if a == "f3" then
+            Profiler:toggle()
+          elseif a == "f4" then
+            Profiler:report_summary()
+          elseif a == "f5" then
+            Profiler:reset()
+          elseif a == "f6" then
+            Profiler:force_gc()
+          end
         elseif name == "keyreleased" then input.keyboard_state[a] = false
         elseif name == "mousepressed" then input.mouse_state[input.mouse_buttons[c]] = true; input.last_key_pressed = input.mouse_buttons[c]
         elseif name == "mousereleased" then input.mouse_state[input.mouse_buttons[c]] = false
@@ -153,6 +172,10 @@ function engine_run(config)
     --steam.runCallbacks()
     accumulator = accumulator + dt
     while accumulator >= fixed_dt do
+      -- Mark start of update iteration for profiling
+      Profiler:start_update_iteration()
+      Profiler:start("update")
+      
       frame = frame + 1
       input:update(fixed_dt)
       trigger:update(fixed_dt)
@@ -166,14 +189,31 @@ function engine_run(config)
       last_mouse:set(mouse.x, mouse.y)
       accumulator = accumulator - fixed_dt
       time = time + fixed_dt
+      
+      Profiler:finish("update")
     end
 
     if love.graphics and love.graphics.isActive() then
+      Profiler:start("draw")
+      
+      Profiler:start("graphics_setup")
       love.graphics.origin()
       love.graphics.clear(love.graphics.getBackgroundColor())
+      Profiler:finish("graphics_setup")
+      
+      Profiler:start("game_draw")
       draw()
+      Profiler:finish("game_draw")
+      
+      Profiler:start("graphics_present")
       love.graphics.present()
+      Profiler:finish("graphics_present")
+      
+      Profiler:finish("draw")
     end
+
+    -- End profiling for this real frame
+    Profiler:end_real_frame()
 
     if love.timer then love.timer.sleep(0.001) end
   end
