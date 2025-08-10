@@ -14,22 +14,66 @@ function Get_Random_Ranged_Enemy(tier)
   return enemy
 end
 
+function Get_Random_Special_Enemy(tier)
+  local enemy = random:table(special_enemy_by_tier[tier])
+  while table.contains(special_enemy_by_tier_melee[tier], enemy) do
+    enemy = random:table(special_enemy_by_tier[tier])
+  end
+  return enemy
+end
+
 function Wave_Types:Create_Normal_Wave(level)
   local tier = LEVEL_TO_TIER(level)
+  local num_special_enemies_left = get_num_special_enemies_by_level(level)
   local wave = {}
   table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
+  --if only 1 speical enemy, save for round 2
+  if num_special_enemies_left > 1 then
+    table.insert(wave, {'GROUP', Get_Random_Special_Enemy(tier), 1, 'nil'})
+    num_special_enemies_left = num_special_enemies_left - 1
+  end
   table.insert(wave, {'DELAY', 1})
   table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
-  table.insert(wave, {'DELAY', 4})
-  local enemy = Get_Random_Ranged_Enemy(tier)
-  table.insert(wave, {'GROUP', enemy, 1, 'nil'})
+
+  table.insert(wave, {'DELAY', 3})
+
+  table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
+  if num_special_enemies_left > 0 then
+    table.insert(wave, {'GROUP', Get_Random_Special_Enemy(tier), 1, 'close'})
+    num_special_enemies_left = num_special_enemies_left - 1
+  end
   table.insert(wave, {'DELAY', 1})
   table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
-  table.insert(wave, {'DELAY', 4})
-  local enemy = Get_Random_Ranged_Enemy(tier)
-  table.insert(wave, {'GROUP', enemy, 2, 'nil'})
-  table.insert(wave, {'DELAY', 0})
+
+  table.insert(wave, {'DELAY', 3})
+
   table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
+  if num_special_enemies_left > 0 then
+    table.insert(wave, {'GROUP', Get_Random_Special_Enemy(tier), 1, 'nil'})
+    num_special_enemies_left = num_special_enemies_left - 1
+  end
+  table.insert(wave, {'DELAY', 1})
+  table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
+
+
+  if num_special_enemies_left > 0 then
+    table.insert(wave, {'GROUP', Get_Random_Special_Enemy(tier), 1, 'nil'})
+    num_special_enemies_left = num_special_enemies_left - 1
+  end
+
+  if num_special_enemies_left > 0 then
+    table.insert(wave, {'DELAY', 3})
+  end
+  
+  while num_special_enemies_left > 0 do
+    table.insert(wave, {'DELAY', 2})
+    table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
+    if num_special_enemies_left > 0 then
+      table.insert(wave, {'GROUP', Get_Random_Special_Enemy(tier), 1, 'nil'})
+      num_special_enemies_left = num_special_enemies_left - 1
+    end
+  end
+
   return wave
 end
 

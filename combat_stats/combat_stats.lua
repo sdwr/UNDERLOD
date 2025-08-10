@@ -184,6 +184,10 @@ REPEAT_ATTACK_DELAY = 0.15
 
 BOSS_LEVELS = {6, 11, 16, 21}
 
+LEVELS_AFTER_BOSS_LEVEL = function(level)
+  local last_boss_level = GET_LAST_BOSS_LEVEL(level)
+  return level - last_boss_level
+end
 
 GET_LAST_BOSS_LEVEL = function(level)
   --find the boss level before this one
@@ -214,12 +218,31 @@ end
 
 TIER_TO_ITEM_RARITY_WEIGHTS = {
   [1] = {0.7, 0.3, 0, 0},
-  [1.5] = {0.47, 0.33, 0.2},
+  [1.5] = {0.35, 0.5, 0.15},
   [2] = {0.2, 0.4, 0.3, 0.1},
   [2.5] = {0, 0.25, 0.5, 0.25},
 }
 
 CHANCE_OF_SPECIAL_VS_NORMAL_ENEMY = 0.7
+
+get_num_special_enemies_by_level = function(level)
+  if level == 1 then return 0 end
+
+  local num_special_enemies_by_level = {
+    [1] = 2,
+    [2] = 3,
+    [3] = 3,
+    [4] = 4,
+    [5] = 4,
+    ['default'] = 4,
+  }
+
+  local adjusted_level = LEVELS_AFTER_BOSS_LEVEL(level)
+  return num_special_enemies_by_level[adjusted_level] 
+  or num_special_enemies_by_level['default']
+end
+
+
 
 ROUND_POWER_BY_LEVEL = {
   [1] = 400,

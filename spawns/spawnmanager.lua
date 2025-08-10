@@ -724,6 +724,8 @@ function SpawnManager:process_next_instruction()
           elseif spawn_type == 'location' then
             local location = instruction[5]
             Spawn_Group_With_Location(self.arena, group_data, location)
+          elseif spawn_type == 'close' and self.arena.last_spawn_point then
+            Spawn_Group_With_Location(self.arena, group_data, self.arena.last_spawn_point)
           else
             Spawn_Group_With_Location(self.arena, group_data, wave_spawn_location)
           end
@@ -776,6 +778,8 @@ function Spawn_Group_With_Location(arena, group_data, wave_spawn_location, on_fi
     local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
     amount = amount or 1
 
+    arena.last_spawn_point = wave_spawn_location
+
     -- AnimatedSpawnCircle{
     --   group = arena.floor, x = wave_spawn_location.x, y = wave_spawn_location.y,
     --   duration = WAVE_SPAWN_WARNING_TIME,
@@ -807,6 +811,8 @@ end
 function Spawn_Group_Scattered(arena, group_data)
   local type, amount = group_data[1], group_data[2]
   amount = amount or 1
+
+  arena.last_spawn_point = nil
 
   for i = 1, amount do
     local location = Get_Offscreen_Spawn_Point()
