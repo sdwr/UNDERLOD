@@ -442,53 +442,24 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   local item_1
   local item_2
   local item_3
-  local all_items = {nil, nil, nil}
-  local shop_already_rolled = false
 
   if self.first_shop then
     return
   end
 
   if not self.shop_item_data then
-    self.shop_item_data = {}
+    self.shop_item_data = {nil, nil, nil}
   end
 
-  if self.shop_item_data[1] or self.shop_item_data[2] or self.shop_item_data[3] then
-    shop_already_rolled = true
+  if not locked_state and self.reroll_shop then
+    self.shop_item_data = create_random_items(self.level)
+  elseif locked_state and self.reroll_shop then
+    for i = 1, 3 do
+      if not self.shop_item_data[i] then
+        self.shop_item_data[i] = create_random_item(self.level)
+      end
+    end
   end
-
-  local tier = LEVEL_TO_TIER(self.level)
-  local rarity = self.level <= 2 and 'common' or nil
-  
-  if self.shop_item_data[1] and locked_state then
-    item_1 = self.shop_item_data[1]
-  elseif not self.reroll_shop then
-    item_1 = self.shop_item_data[1]
-  else
-    item_1 = create_random_item(tier, rarity)
-  end
-
-  all_items[1] = item_1
-
-  if self.shop_item_data[2] and locked_state then
-    item_2 = self.shop_item_data[2]
-  elseif not self.reroll_shop then
-    item_2 = self.shop_item_data[2]
-  else
-    item_2 = create_random_item(tier, rarity)
-  end
-
-  all_items[2] = item_2
-
-  if self.shop_item_data[3] and locked_state then
-    item_3 = self.shop_item_data[3]
-  elseif not self.reroll_shop then
-    item_3 = self.shop_item_data[3]
-  else
-    item_3 = create_random_item(tier, rarity)
-  end
-
-  all_items[3] = item_3
 
   --only reroll once (so, main menu and back in won't reroll again)
   self.reroll_shop = false
@@ -501,8 +472,6 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   self.reroll_button.selected = false
   self.lock_button.selected = false
 
-  all_items = {item_1, item_2, item_3}
-  self.shop_item_data = all_items
 
   local item_h = 50
   local item_w = 40
@@ -548,7 +517,7 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   local item_count = 0
   for i = 1, 3 do
     local item_number = i
-    if all_items[i] then
+    if self.shop_item_data[i] then
       item_count = item_count + 1
       self.t:after((0.3 * (item_count-1)) + transition_duration, function()
         local item = ItemCard{
@@ -557,7 +526,7 @@ function BuyScreen:set_items(shop_level, is_shop_start)
           y = y, 
           w = 60,
           h = 80,
-          item = all_items[i], 
+          item = self.shop_item_data[i], 
           parent = self, 
           i = i,
           is_perk_selection = self.is_perk_selection

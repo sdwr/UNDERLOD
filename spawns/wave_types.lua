@@ -26,6 +26,8 @@ function Wave_Types:Create_Normal_Wave(level)
   local tier = LEVEL_TO_TIER(level)
   local num_special_enemies_left = get_num_special_enemies_by_level(level)
   local wave = {}
+
+  --first set
   table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
   --if only 1 speical enemy, save for round 2
   if num_special_enemies_left > 1 then
@@ -37,6 +39,7 @@ function Wave_Types:Create_Normal_Wave(level)
 
   table.insert(wave, {'DELAY', 3})
 
+  --second set
   table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
   if num_special_enemies_left > 0 then
     table.insert(wave, {'GROUP', Get_Random_Special_Enemy(tier), 1, 'close'})
@@ -45,21 +48,17 @@ function Wave_Types:Create_Normal_Wave(level)
   table.insert(wave, {'DELAY', 1})
   table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
 
+  if level <=3 then return wave end
+
   table.insert(wave, {'DELAY', 3})
 
-  table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
+  --third set
+  table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'scatter'})
   if num_special_enemies_left > 0 then
     table.insert(wave, {'GROUP', Get_Random_Special_Enemy(tier), 1, 'nil'})
     num_special_enemies_left = num_special_enemies_left - 1
   end
-  table.insert(wave, {'DELAY', 1})
-  table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
 
-
-  if num_special_enemies_left > 0 then
-    table.insert(wave, {'GROUP', Get_Random_Special_Enemy(tier), 1, 'nil'})
-    num_special_enemies_left = num_special_enemies_left - 1
-  end
 
   if num_special_enemies_left > 0 then
     table.insert(wave, {'DELAY', 3})
@@ -69,7 +68,7 @@ function Wave_Types:Create_Normal_Wave(level)
     table.insert(wave, {'DELAY', 2})
     table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
     if num_special_enemies_left > 0 then
-      table.insert(wave, {'GROUP', Get_Random_Special_Enemy(tier), 1, 'nil'})
+      table.insert(wave, {'GROUP', Get_Random_Special_Enemy(tier), 1, 'close'})
       num_special_enemies_left = num_special_enemies_left - 1
     end
   end

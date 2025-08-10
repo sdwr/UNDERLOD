@@ -369,13 +369,13 @@ ITEM_RARITIES = {
     name = 'Rare',
     cost = 4,
     min_stat_value = 0,
-    max_stat_value = 2,
+    max_stat_value = 0,
     set_chance = 1,
     color = 'blue'
   },
   [ITEM_RARITY.EPIC] = {
     name = 'Epic',
-    cost = 8,
+    cost = 6,
     min_stat_value = 2,
     max_stat_value = 4,
     set_chance = 1,
@@ -384,7 +384,7 @@ ITEM_RARITIES = {
   },
   [ITEM_RARITY.LEGENDARY] = {
     name = 'Legendary',
-    cost = 12,
+    cost = 10,
     min_stat_value = 3,
     max_stat_value = 4,
     set_chance = 1,
@@ -402,8 +402,15 @@ function get_random_item_slot()
 end
 
 -- Helper function to get random rarity
-function get_random_rarity(tier)
+function get_random_rarity(level, exclude_rarity)
+  local tier = LEVEL_TO_TIER(level)
   local rarities = {ITEM_RARITY.COMMON, ITEM_RARITY.RARE, ITEM_RARITY.EPIC, ITEM_RARITY.LEGENDARY}
+
+  if exclude_rarity and table.contains(rarities, exclude_rarity) then
+    local rarity_index = table.find(rarities, exclude_rarity)
+    table.remove(rarities, rarity_index)
+  end
+
   local weights = TIER_TO_ITEM_RARITY_WEIGHTS[tier] or {1, 0, 0, 0}
 
   if not weights then
@@ -458,13 +465,24 @@ function roll_stat_for_type(item_type)
   end
 end
 
--- Main function to create a random item
-function create_random_item(tier, rarity)
-  -- Debug: Check if random is available
-  if not random then
-    print("ERROR: random object is not available!")
-    return nil
+function create_random_items(level)
+  local items = {}
+  for i = 1, 3 do
+    table.insert(items, create_random_item(level))
   end
+
+  --pity roll
+  if table.all(items, function(item) return item.rarity == ITEM_RARITY.COMMON end) then
+    local item_index = random:int(1, 3)
+    items[item_index] = create_random_item(level, ITEM_RARITY.COMMON)
+  end
+
+  return items
+end
+
+
+-- Main function to create a random item
+function create_random_item(level, exclude_rarity)
   
   local item_slot = get_random_item_slot()
   if not item_slot then
@@ -472,7 +490,7 @@ function create_random_item(tier, rarity)
     return nil
   end
   
-  local rarity = rarity or get_random_rarity(tier)
+  local rarity =  get_random_rarity(level, exclude_rarity)
   if not rarity then
     print("ERROR: Failed to get random rarity!")
     return nil
@@ -514,7 +532,8 @@ function create_random_item(tier, rarity)
     end
   end
   
-  if rarity_def.max_stat_value > 0 and #item.sets < 2 then
+  if rarity_def.max_stat_value > 0 and #item.sets < 2 
+  and not (rarity == ITEM_RARITY.RARE and level <= 3) then
     local stat_name = roll_stat_for_type(item_slot)
     
     -- Generate stat

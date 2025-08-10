@@ -127,7 +127,7 @@ enemy_cast_times = {
 TROOP_RANGE = 500
 TROOP_SWORDSMAN_RANGE = 80
 
-REGULAR_ENEMY_HP = 25
+REGULAR_ENEMY_HP = 20
 REGULAR_ENEMY_DAMAGE = 15
 REGULAR_ENEMY_MS = 32
 
@@ -139,7 +139,7 @@ MINIBOSS_HP = 400
 MINIBOSS_DAMAGE = 20
 MINIBOSS_MS = 50
 
-BOSS_HP = 700
+BOSS_HP = 1400
 BOSS_DAMAGE = 20
 BOSS_MS = 70
 
@@ -218,7 +218,7 @@ end
 
 TIER_TO_ITEM_RARITY_WEIGHTS = {
   [1] = {0.7, 0.3, 0, 0},
-  [1.5] = {0.35, 0.5, 0.15},
+  [1.5] = {0.35, 0.5, 0.15, 0},
   [2] = {0.2, 0.4, 0.3, 0.1},
   [2.5] = {0, 0.25, 0.5, 0.25},
 }
@@ -227,14 +227,18 @@ CHANCE_OF_SPECIAL_VS_NORMAL_ENEMY = 0.7
 
 get_num_special_enemies_by_level = function(level)
   if level == 1 then return 0 end
+  if level == 2 then return 1 end
+  if level == 3 then return 2 end
+  if level == 4 then return 2 end
+  if level == 5 then return 3 end
 
   local num_special_enemies_by_level = {
-    [1] = 2,
-    [2] = 3,
-    [3] = 3,
-    [4] = 4,
-    [5] = 4,
-    ['default'] = 4,
+    [1] = 4,
+    [2] = 4,
+    [3] = 5,
+    [4] = 5,
+    [5] = 5,
+    ['default'] = 5,
   }
 
   local adjusted_level = LEVELS_AFTER_BOSS_LEVEL(level)

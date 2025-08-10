@@ -122,7 +122,7 @@ MULTISHOT_ANGLE_OFFSET = math.pi / 8
 ENEMY_HIT_SCALE = 0.3
 
 DELAY_BEFORE_SUCTION = 1
-TIME_BETWEEN_WAVES = 1.75
+TIME_BETWEEN_WAVES = 0.5
 WAVE_SPAWN_WARNING_TIME = 1.25
 
 ITEM_SPAWN_DELAY_INITAL = 0.8
@@ -134,11 +134,11 @@ ARENA_END_DELAY = 3
 
 
 LEVEL_TO_TIER = function(level)
-  if level < 6 then
+  if level <= 6 then
     return 1
-  elseif level < 11 then
+  elseif level <= 11 then
     return 2
-  elseif level < 16 then
+  elseif level <= 16 then
     return 3
   else
     return 4

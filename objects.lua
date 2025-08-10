@@ -97,6 +97,8 @@ function SpawnMarker:init(args)
     self.num_troops = self.team:get_alive_troop_count()
     self.num_troops_suctioned = 0
 
+    self.draw_marker = default_to(args.draw_marker, false)
+
 
     self.min_distance = args.min_distance or 15
     self.max_distance = args.max_distance or 150
@@ -161,7 +163,7 @@ end
 
 function SpawnMarker:draw()
   -- Only draw if the radius is greater than 0
-  if self.radius > 0 then
+  if self.radius > 0 and self.draw_marker then
     -- Draw a filled circle that represents the glow
     graphics.circle(self.x, self.y, self.radius, self.color)
   end
