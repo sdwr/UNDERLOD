@@ -5,6 +5,8 @@ Object.__class_name = "Object"
 local WRAPPER_KEY = {}
 
 Object._profiled_methods = {}
+Object._original_methods = {}
+
 function Object:init()
 end
 
@@ -17,6 +19,10 @@ function Object:profile(...)
         --already wrapped in a parent class, skip
         return
       end
+      
+      -- Store original method for restoration
+      if not self._original_methods then self._original_methods = {} end
+      self._original_methods[method_name] = original_method
       
       --wrap the method
       local wrapped_method = function(self_ref, ...)
