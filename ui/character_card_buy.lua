@@ -11,6 +11,7 @@ Character_Cards = {}
 ALL_CARD_TEXTS = {}
 
 CharacterCardBuy = Object:extend()
+CharacterCardBuy.__class_name = 'CharacterCardBuy'
 CharacterCardBuy:implement(GameObject)
 function CharacterCardBuy:init(args)
   self:init_game_object(args)

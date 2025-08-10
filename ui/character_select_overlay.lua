@@ -1,6 +1,7 @@
 
 --character select overlay
 CharacterSelectOverlay = Object:extend()
+CharacterSelectOverlay.__class_name = 'CharacterSelectOverlay'
 CharacterSelectOverlay:implement(GameObject)
 function CharacterSelectOverlay:init(args)
   self:init_game_object(args)
@@ -74,6 +75,7 @@ function CharacterSelectOverlay:die(index_selected)
 end
 
 Overlay = Object:extend()
+Overlay.__class_name = 'Overlay'
 Overlay:implement(GameObject)
 function Overlay:init(args)
   self:init_game_object(args)
@@ -99,6 +101,7 @@ end
 
 
 ShopCard = Object:extend()
+ShopCard.__class_name = 'ShopCard'
 ShopCard:implement(GameObject)
 function ShopCard:init(args)
   self:init_game_object(args)

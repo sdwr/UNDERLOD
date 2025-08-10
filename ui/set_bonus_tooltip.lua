@@ -1,4 +1,5 @@
 SetBonusTooltip = Object:extend()
+SetBonusTooltip.__class_name = 'SetBonusTooltip'
 SetBonusTooltip:implement(GameObject)
 
 -- Constants for layout

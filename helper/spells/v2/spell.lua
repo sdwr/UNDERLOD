@@ -60,6 +60,7 @@ Deep_Copy_Cast = function(castdata)
 end
 
 Cast = Object:extend()
+Cast.__class_name = 'Cast'
 Cast:implement(GameObject)
 function Cast:init(args)
   args.group = args.group or main.current.main
@@ -263,6 +264,7 @@ function Cast:get_cast_percentage()
 end
 
 Spell = Object:extend()
+Spell.__class_name = 'Spell'
 Spell:implement(GameObject)
 function Spell:init(args)
   args.group = args.group or main.current.effects

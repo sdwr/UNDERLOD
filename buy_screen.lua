@@ -1,6 +1,7 @@
 buyScreen = nil
 
 BuyScreen = Object:extend()
+BuyScreen.__class_name = 'BuyScreen'
 BuyScreen:implement(State)
 BuyScreen:implement(GameObject)
 function BuyScreen:init(name)
@@ -546,6 +547,7 @@ end
 
 
 SteamFollowButton = Object:extend()
+SteamFollowButton.__class_name = 'SteamFollowButton'
 SteamFollowButton:implement(GameObject)
 function SteamFollowButton:init(args)
   self:init_game_object(args)
@@ -599,6 +601,7 @@ end
 
 
 WishlistButton = Object:extend()
+WishlistButton.__class_name = 'WishlistButton'
 WishlistButton:implement(GameObject)
 function WishlistButton:init(args)
   self:init_game_object(args)
@@ -657,6 +660,7 @@ function WishlistButton:on_mouse_exit()
 end
 
 ArenaLevelButton = Object:extend()
+ArenaLevelButton.__class_name = 'ArenaLevelButton'
 ArenaLevelButton:implement(GameObject)
 function ArenaLevelButton:init(args)
   self:init_game_object(args)
@@ -726,6 +730,7 @@ end
 
 
 RestartButton = Object:extend()
+RestartButton.__class_name = 'RestartButton'
 RestartButton:implement(GameObject)
 function RestartButton:init(args)
   self:init_game_object(args)
@@ -782,6 +787,7 @@ end
 
 
 Button = Object:extend()
+Button.__class_name = 'Button'
 Button:implement(GameObject)
 function Button:init(args)
   self:init_game_object(args)
@@ -877,6 +883,7 @@ end
 
 
 GoButton = Object:extend()
+GoButton.__class_name = 'GoButton'
 GoButton:implement(GameObject)
 function GoButton:init(args)
   self:init_game_object(args)
@@ -947,6 +954,7 @@ end
 
 
 LockButton = Object:extend()
+LockButton.__class_name = 'LockButton'
 LockButton:implement(GameObject)
 function LockButton:init(args)
   self:init_game_object(args)
@@ -1008,6 +1016,7 @@ function LockButton:on_mouse_exit()
 end
 
 RerollButton = Object:extend()
+RerollButton.__class_name = 'RerollButton'
 RerollButton:implement(GameObject)
 function RerollButton:init(args)
   self:init_game_object(args)
@@ -1141,6 +1150,7 @@ function RerollButton:on_mouse_exit()
 end
 
 LooseItem = Object:extend()
+LooseItem.__class_name = 'LooseItem'
 LooseItem:implement(GameObject)
 function LooseItem:init(args)
   self:init_game_object(args)
@@ -1248,6 +1258,7 @@ function LooseItem:die()
 end
 
 PassiveCard = Object:extend()
+PassiveCard.__class_name = 'PassiveCard'
 PassiveCard:implement(GameObject)
 function PassiveCard:init(args)
   self:init_game_object(args)
@@ -1301,6 +1312,7 @@ end
 
 
 CharacterIcon = Object:extend()
+CharacterIcon.__class_name = 'CharacterIcon'
 CharacterIcon:implement(GameObject)
 function CharacterIcon:init(args)
   self:init_game_object(args)
@@ -1360,6 +1372,7 @@ end
 
 
 TutorialClassIcon = Object:extend()
+TutorialClassIcon.__class_name = 'TutorialClassIcon'
 TutorialClassIcon:implement(GameObject)
 function TutorialClassIcon:init(args)
   self:init_game_object(args)
@@ -1398,6 +1411,7 @@ end
 
 
 TypeIcon = Object:extend()
+TypeIcon.__class_name = 'TypeIcon'
 TypeIcon:implement(GameObject)
 function TypeIcon:init(args)
   self:init_game_object(args)

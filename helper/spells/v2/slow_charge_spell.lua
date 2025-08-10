@@ -1,4 +1,5 @@
 SlowChargeSpell = Object:extend()
+SlowChargeSpell.__class_name = 'SlowChargeSpell'
 SlowChargeSpell:implement(GameObject)
 
 function SlowChargeSpell:init(args)

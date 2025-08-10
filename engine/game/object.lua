@@ -1,5 +1,6 @@
 Object = {}
 Object.__index = Object
+Object.__class_name = "Object"
 function Object:init()
 end
 

@@ -1,4 +1,5 @@
 Area = Object:extend()
+Area.__class_name = 'Area'
 Area:implement(GameObject)
 function Area:init(args)
   self:init_game_object(args)
@@ -221,6 +222,7 @@ end
 
 
 DotArea = Object:extend()
+DotArea.__class_name = 'DotArea'
 DotArea:implement(GameObject)
 DotArea:implement(Physics)
 function DotArea:init(args)
@@ -349,6 +351,7 @@ end
 
 --leave as reference for future items
 ForceArea = Object:extend()
+ForceArea.__class_name = 'ForceArea'
 ForceArea:implement(GameObject)
 ForceArea:implement(Physics)
 function ForceArea:init(args)
@@ -424,6 +427,7 @@ end
 
 --leave as reference for future items
 ForceField = Object:extend()
+ForceField.__class_name = 'ForceField'
 ForceField:implement(GameObject)
 ForceField:implement(Physics)
 function ForceField:init(args)
@@ -476,6 +480,7 @@ function ForceField:on_collision_enter(other, contact)
 end
 
 BreatheFire = Object:extend()
+BreatheFire.__class_name = 'BreatheFire'
 BreatheFire:implement(GameObject)
 BreatheFire:implement(Physics)
 function BreatheFire:init(args)
@@ -512,6 +517,7 @@ end
 
 
 Charge = Object:extend()
+Charge.__class_name = 'Charge'
 Charge:implement(GameObject)
 Charge:implement(Physics)
 function Charge:init(args)
@@ -589,6 +595,7 @@ function Charge:draw()
   end
 end
 Stomp = Object:extend()
+Stomp.__class_name = 'Stomp'
 Stomp:implement(GameObject)
 Stomp:implement(Physics)
 
@@ -761,6 +768,7 @@ end
 
 
 Mortar = Object:extend()
+Mortar.__class_name = 'Mortar'
 Mortar:implement(GameObject)
 Mortar:implement(Physics)
 function Mortar:init(args)
@@ -801,6 +809,7 @@ end
 
 --might keep if new laser is too tricky
 Laser = Object:extend()
+Laser.__class_name = 'Laser'
 Laser:implement(GameObject)
 function Laser:init(args)
   self:init_game_object(args)
@@ -887,6 +896,7 @@ function Laser:die()
 end
 
 Vanish = Object:extend()
+Vanish.__class_name = 'Vanish'
 Vanish:implement(GameObject)
 Vanish:implement(Physics)
 function Vanish:init(args)
@@ -938,6 +948,7 @@ function Vanish:draw()
 end
 
 TroopDeathAnimation = Object:extend()
+TroopDeathAnimation.__class_name = 'TroopDeathAnimation'
 TroopDeathAnimation:implement(GameObject)
 
 function TroopDeathAnimation:init(args)
@@ -997,6 +1008,7 @@ function TroopDeathAnimation:draw()
 end
 
 EnemyDeathAnimation = Object:extend()
+EnemyDeathAnimation.__class_name = 'EnemyDeathAnimation'
 EnemyDeathAnimation:implement(GameObject)
 
 function EnemyDeathAnimation:init(args)
@@ -1109,6 +1121,7 @@ function EnemyDeathAnimation:draw()
 end
 
 RallyCircle = Object:extend()
+RallyCircle.__class_name = 'RallyCircle'
 RallyCircle:implement(GameObject)
 function RallyCircle:init(args)
   self:init_game_object(args)
@@ -1192,6 +1205,7 @@ end
 -- ====================================================================
 
 CustomCursor = Object:extend()
+CustomCursor.__class_name = 'CustomCursor'
 CustomCursor:implement(GameObject)
 
 function CustomCursor:init(args)
@@ -1342,6 +1356,7 @@ end
 
 
 Corpse = Object:extend()
+Corpse.__class_name = 'Corpse'
 Corpse:implement(GameObject)
 Corpse:implement(Physics)
 function Corpse:init(args)
@@ -1370,6 +1385,7 @@ end
 
 -- Create a debug line object that can be added to effects group
 DebugLine = Object:extend()
+DebugLine.__class_name = 'DebugLine'
 DebugLine:implement(GameObject)
 
 function DebugLine:init(args)

@@ -8,6 +8,7 @@
 -- Every GameObject has a .springs attribute with a Springs instance attached to it.
 -- See engine/game/hit
 Springs = Object:extend()
+Springs.__class_name = 'Springs'
 function Springs:init()
   self.names = {}
 end

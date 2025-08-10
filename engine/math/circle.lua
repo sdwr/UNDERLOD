@@ -1,5 +1,6 @@
 -- A circle class.
 Circle = Object:extend()
+Circle.__class_name = 'Circle'
 function Circle:init(x, y, rs)
   self.x, self.y = x, y
   self.rs = rs

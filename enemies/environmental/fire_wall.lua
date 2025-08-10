@@ -3,6 +3,7 @@
 --so they are drawn under the player
 --and get cleaned up when the floor is cleared
 Fire_Wall = Object:extend()
+Fire_Wall.__class_name = 'Fire_Wall'
 Fire_Wall:implement(GameObject)
 Fire_Wall:implement(Physics)
 function Fire_Wall:init(args)

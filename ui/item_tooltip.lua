@@ -1,4 +1,5 @@
 ItemTooltip = Object:extend()
+ItemTooltip.__class_name = 'ItemTooltip'
 ItemTooltip:implement(GameObject)
 
 -- Constants for layout

@@ -1,4 +1,5 @@
 CharacterTooltip = Object:extend()
+CharacterTooltip.__class_name = 'CharacterTooltip'
 CharacterTooltip:implement(GameObject)
 
 -- Constants for layout

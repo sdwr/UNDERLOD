@@ -1,4 +1,5 @@
 Graph = Object:extend()
+Graph.__class_name = 'Graph'
 function Graph:init()
   self.adjacency_list = {}
   self.nodes = {}

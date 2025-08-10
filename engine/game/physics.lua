@@ -3,6 +3,7 @@
 -- In the future I want to create a way that doesn't make use of box2d for simpler games, but that also uses roughly the same API so that gameplay code doesn't have to be different regardless of which one you're using.
 -- Using any of the "set_as" init functions requires the game object to have a group attached to it.
 Physics = Object:extend()
+Physics.__class_name = 'Physics'
 
 
 -- Sets this object as a physics rectangle.

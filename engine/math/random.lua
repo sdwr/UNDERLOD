@@ -2,6 +2,7 @@
 -- You can create a new Random object with its own seed by passing it in on the constructor.
 -- A global instance of this called "random" is available by default.
 Random = Object:extend()
+Random.__class_name = 'Random'
 function Random:init(seed)
   seed = seed or os.time()
   self.generator = love.math.newRandomGenerator(seed)

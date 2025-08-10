@@ -1,4 +1,5 @@
 FloorInteractable = Object:extend()
+FloorInteractable.__class_name = 'FloorInteractable'
 FloorInteractable:implement(GameObject)
 
 function FloorInteractable:init(args)

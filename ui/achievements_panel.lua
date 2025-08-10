@@ -2,6 +2,7 @@
 -- A self-contained UI panel for displaying achievements, driven by the existing achievement data files.
 
 AchievementsPanel = Object:extend()
+AchievementsPanel.__class_name = 'AchievementsPanel'
 AchievementsPanel:implement(GameObject)
 function AchievementsPanel:init(args)
     self:init_game_object(args)

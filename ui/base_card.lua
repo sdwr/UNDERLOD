@@ -1,5 +1,6 @@
 -- Base class for all card UI elements (ItemCard, PerkCard, etc.)
 BaseCard = Object:extend()
+BaseCard.__class_name = 'BaseCard'
 BaseCard:implement(GameObject)
 
 function BaseCard:init(args)

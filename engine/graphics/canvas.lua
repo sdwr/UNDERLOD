@@ -1,5 +1,6 @@
 -- A canvas object for offscreen rendering.
 Canvas = Object:extend()
+Canvas.__class_name = 'Canvas'
 function Canvas:init(w, h, opts)
   local opts = opts or {}
   self.w, self.h = w, h

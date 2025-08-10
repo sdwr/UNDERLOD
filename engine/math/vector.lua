@@ -2,6 +2,7 @@
 local EPSILON = 0.0001
 local EPSILON_SQUARED = EPSILON*EPSILON
 Vector = Object:extend()
+Vector.__class_name = 'Vector'
 function Vector:init(x, y)
   self.x = x or 0
   self.y = y or x or 0

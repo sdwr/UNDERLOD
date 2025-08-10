@@ -1,4 +1,5 @@
 WorldManager = Object:extend()
+WorldManager.__class_name = 'WorldManager'
 WorldManager:implement(State)
 WorldManager:implement(GameObject)
 

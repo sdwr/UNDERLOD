@@ -14,6 +14,7 @@
 -- self.hfx.hit.x -- the spring value
 -- self.hfx.hit.f -- the flash boolean
 HitFX = Object:extend()
+HitFX.__class_name = 'HitFX'
 function HitFX:init(parent)
   self.parent = parent
   self.names = {}

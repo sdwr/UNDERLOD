@@ -1,4 +1,5 @@
 Arena = Object:extend()
+Arena.__class_name = 'Arena'
 Arena:implement(GameObject)
 function Arena:init(args)
   self:init_game_object(args)

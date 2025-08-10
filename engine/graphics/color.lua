@@ -6,6 +6,7 @@
 -- You can access the colors values via .r, .g, .b and .a.
 -- You can create a copy of a color by calling color:clone().
 Color = Object:extend()
+Color.__class_name = 'Color'
 function Color:init(r, g, b, a)
   if type(r) == "string" then
     local hex = r:gsub("#", "")

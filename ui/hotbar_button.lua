@@ -2,6 +2,7 @@
 
 --hotbar helper functions
 HotbarGlobals = Object:extend()
+HotbarGlobals.__class_name = 'HotbarGlobals'
 function HotbarGlobals:init(args)
   self.hotbar_by_index = {}
   self.selected_character = nil
@@ -71,6 +72,7 @@ end
 
 --Hotbar button class
 HotbarButton = Object:extend()
+HotbarButton.__class_name = 'HotbarButton'
 HotbarButton:implement(GameObject)
 function HotbarButton:init(args)
   self:init_game_object(args)
