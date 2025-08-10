@@ -1,7 +1,36 @@
 Object = {}
 Object.__index = Object
 Object.__class_name = "Object"
+
+local WRAPPER_KEY = {}
+
+Object._profiled_methods = {}
 function Object:init()
+end
+
+function Object:profile(...)
+  for _, method_name in pairs({...}) do
+    local original_method = self[method_name]
+
+    if original_method and type(original_method) == "function" then
+      if original_method[WRAPPER_KEY] then
+        --already wrapped in a parent class, skip
+        return
+      end
+      
+      --wrap the method
+      local wrapped_method = function(self_ref, ...)
+        local timer_name = self_ref.__class_name .. "." .. method_name
+        Profiler:start(timer_name)
+        local result = {original_method(self_ref, ...)}
+        Profiler:finish(timer_name)
+        return unpack(result)
+      end
+
+      wrapped_method[WRAPPER_KEY] = true
+      self[method_name] = wrapped_method
+    end
+  end
 end
 
 
@@ -15,7 +44,7 @@ function Object:extend()
   cls.__index = cls
   cls.super = self
   setmetatable(cls, self)
-  
+
   return cls
 end
 
