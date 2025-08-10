@@ -90,15 +90,17 @@ function ArrowProjectile:init(args)
   -- Create a rectangular hitbox for the arrow
   self.height = self.bullet_size or 3
   self.width = self.height * 2
-  self.shape = Rectangle(self.x, self.y, self.width, self.height)
+  local shape_type = self.is_troop and 'projectile' or 'enemy_projectile'
+  self.x = self.unit.x
+  self.y = self.unit.y
+  self:set_as_rectangle(self.width, self.height, 'dynamic', shape_type)
   
   self.damage = get_dmg_value(self.damage)
+  self.pierce = self.pierce or 0
   self.speed = self.speed or 140
   self.color = self.color or blue[0]
   self.unit = self.unit
   self.target = self.target
-  self.x = self.unit.x
-  self.y = self.unit.y
   
   -- Calculate max distance as 1.2x attack range
   self.max_distance = self.max_distance or 999
@@ -117,6 +119,11 @@ function ArrowProjectile:init(args)
   -- Set the arrow's rotation to match its direction
   self.r = self.angle
   
+  -- Set physics velocity instead of manual movement
+  local vx = math.cos(self.angle) * self.speed
+  local vy = math.sin(self.angle) * self.speed
+  self:set_velocity(vx, vy)
+  
   table.random({arrow_release1, arrow_release2, arrow_release3}):play{volume=2}
 
   self.already_hit_targets = {}
@@ -132,14 +139,11 @@ function ArrowProjectile:update(dt)
   if self.homing and self.target and not self.target.dead then
     self.angle = math.atan2(self.target.y - self.y, self.target.x - self.x)
     self.r = self.angle
+    -- Update velocity for homing
+    local vx = math.cos(self.angle) * self.speed
+    local vy = math.sin(self.angle) * self.speed
+    self:set_velocity(vx, vy)
   end
-
-  -- Move the arrow forward
-  self.x = self.x + math.cos(self.angle) * self.speed * dt
-  self.y = self.y + math.sin(self.angle) * self.speed * dt
-
-  -- Update the hitbox position
-  self.shape:move_to(self.x, self.y)
 
   -- Check if we've traveled the max distance
   local distance_traveled = math.distance(self.start_x, self.start_y, self.x, self.y)
@@ -148,30 +152,41 @@ function ArrowProjectile:update(dt)
     return
   end
 
-  -- Check for collisions with enemies
-  local target_classes = self.is_troop and main.current.enemies or main.current.friendlies
-  local targets = main.current.main:get_objects_in_shape(self.shape, target_classes)
+end
+
+function ArrowProjectile:on_collision_enter(other, contact)
+  if other:is(Wall) then
+    self:die()
+  end
+  if other:is(Enemy) and self.is_troop then
+    self:hit_target(other)
+  end
+  if other:is(Troop) and not self.is_troop then
+    self:hit_target(other)
+  end
+end
+
+function ArrowProjectile:hit_target(target)
+  if self.dead then return end
+  if table.contains(self.already_hit_targets, target) then return end
+
   local hit_target = false
-  if #targets > 0 then
-    for _, target in ipairs(targets) do
-      if #self.already_hit_targets == 0 then
-        Helper.Damage:primary_hit(target, self.damage, self.unit, nil, true)
-        self.damage = self.damage * 0.8
-        table.insert(self.already_hit_targets, target)
-        -- hit2:play{volume=0.5}
-        hit_target = true
-      else
-        if self.pierce and not table.contains(self.already_hit_targets, target) then
-          Helper.Damage:indirect_hit(target, self.damage, self.unit, nil, true)
-          self.damage = self.damage * 0.8
-          table.insert(self.already_hit_targets, target)
-          hit_target = true
-        end
-      end
+  if #self.already_hit_targets == 0 then
+    Helper.Damage:primary_hit(target, self.damage, self.unit, nil, true)
+    self.damage = self.damage * 0.8
+    table.insert(self.already_hit_targets, target)
+    hit_target = true
+  else
+    if self.pierce > 0 then
+      Helper.Damage:indirect_hit(target, self.damage, self.unit, nil, true)
+      self.damage = self.damage * 0.8
+      table.insert(self.already_hit_targets, target)
+      hit_target = true
+      self.pierce = self.pierce - 1
     end
-    if hit_target and not self.pierce then
-      self:die()
-    end
+  end
+  if hit_target and self.pierce <= 0 then
+    self:die()
   end
 end
 
