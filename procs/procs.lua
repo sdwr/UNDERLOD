@@ -1384,7 +1384,7 @@ function Proc_Radiance:create_damage_aura()
     radius = self.radius, 
     duration = 1000, 
     color = self.color,
-    opacity = 0.08,
+    opacity = 0.04,
     tick_rate = 0.1,
     is_troop = self.unit.is_troop,
     on_hit_callback = on_hit_callback,

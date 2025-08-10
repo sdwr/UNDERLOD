@@ -49,3 +49,34 @@ function DrawUtils.build_set_bonus_tooltip_text(set_info, number_of_pieces)
     return text_lines
 end
 
+function DrawUtils.draw_floor_effects(floor_effects)
+  if next(floor_effects) == nil then return end
+
+  for k, floor_effect_list in pairs(floor_effects) do
+    local outline_color = floor_effect_list[1].color
+    local color = floor_effect_list[1].color_transparent
+    love.graphics.stencil(function() DrawUtils.draw_floor_effect(floor_effect_list, 0) end, 'replace', 1)
+    love.graphics.setStencilTest('equal', 0)
+
+    love.graphics.setColor(outline_color.r, outline_color.g, outline_color.b, outline_color.a)
+    DrawUtils.draw_floor_effect(floor_effect_list, 0.5)
+    love.graphics.setStencilTest()
+
+    love.graphics.setStencilTest('greater', 0)
+    
+    love.graphics.setColor(color.r, color.g, color.b, color.a)
+    love.graphics.rectangle('fill', 0, 0, gw, gh)
+
+    love.graphics.setStencilTest()
+    love.graphics.setColor(1, 1, 1, 1)
+  end
+end
+
+function DrawUtils.draw_floor_effect(floor_effect_list, radius_increase)
+  -- Draw the fills of all effects to create the stencil mask
+  for _, effect in ipairs(floor_effect_list) do
+    if effect.pick_shape == 'circle' then
+        love.graphics.circle("fill", effect.x, effect.y, effect.radius + radius_increase)
+    end
+  end
+end

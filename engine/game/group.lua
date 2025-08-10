@@ -130,8 +130,6 @@ function Group:draw_floor_effects()
     
   -- Collect all floor effects
   local floor_effects = {}
-  local fill_stencils = {}
-  local outline_stencils = {}
 
   for _, object in ipairs(self.objects) do
     if object.floor_effect and not object.dead then
@@ -142,36 +140,7 @@ function Group:draw_floor_effects()
     end
   end
 
-  if next(floor_effects) == nil then return end
-
-  for k, floor_effect_list in pairs(floor_effects) do
-    local outline_color = floor_effect_list[1].color
-    local color = floor_effect_list[1].color_transparent
-    love.graphics.stencil(function() floorEffectStencil(floor_effect_list, 0) end, 'replace', 1)
-    love.graphics.setStencilTest('equal', 0)
-
-    love.graphics.setColor(outline_color.r, outline_color.g, outline_color.b, outline_color.a)
-    floorEffectStencil(floor_effect_list, 0.5)
-    love.graphics.setStencilTest()
-
-    love.graphics.setStencilTest('greater', 0)
-    
-    love.graphics.setColor(color.r, color.g, color.b, color.a)
-    love.graphics.rectangle('fill', 0, 0, gw, gh)
-
-    love.graphics.setStencilTest()
-    love.graphics.setColor(1, 1, 1, 1)
-  end
-  
-end
-
-function floorEffectStencil(floor_effect_list, radius_increase)
-  -- Draw the fills of all effects to create the stencil mask
-  for _, effect in ipairs(floor_effect_list) do
-    if effect.pick_shape == 'circle' then
-        love.graphics.circle("fill", effect.x, effect.y, effect.radius + radius_increase)
-    end
-  end
+  DrawUtils.draw_floor_effects(floor_effects)
 end
 
 function Group:set_custom_draw_list(draw_list)
