@@ -625,7 +625,7 @@ function SpawnManager:update(dt)
           spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.5}
         else
           self:change_state('processing_wave')
-          spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
+          --spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
         end
       end
     elseif self.state == 'between_waves_delay' then
@@ -635,7 +635,7 @@ function SpawnManager:update(dt)
         if self.timer <= 0 then
           self.pending_spawns = 0
             self:change_state('processing_wave')
-            spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
+            --spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
         end
     end
 
@@ -671,7 +671,7 @@ function SpawnManager:update(dt)
               -- Suction_Troops_To_Spawn_Locations(self.arena)
               
               self.t:after(0.5, function()
-                spawn_mark2:play{pitch = 1, volume = 1.2}
+                -- spawn_mark2:play{pitch = 1, volume = 1.2}
               end)
               -- Ensure wave progress is complete before advancing
               self:complete_wave(self.current_wave_index)

@@ -394,7 +394,7 @@ DISTANCE_TO_COOLDOWN_MULTIPLIER = function(distance)
   }
 
   if distance < 0 then
-    return 0.5
+    return mult_values[0]
   end
 
   local p1, p2
@@ -409,7 +409,7 @@ DISTANCE_TO_COOLDOWN_MULTIPLIER = function(distance)
   end
 
   if not p2 then
-    return 1.1
+    return mult_values[#mult_values]
   end
 
   local scale = (distance - p1) / (p2 - p1)

@@ -54,27 +54,27 @@ ITEM_SLOTS_BY_INDEX = {
 -- Item type definitions with preferred stats
 ITEM_SLOTS_PREFERRED_STATS = {
   [ITEM_SLOT.HEAD] = {
-    preferred_stats = {'hp', 'flat_def', 'crit_chance'},
-    preferred_chance = 0.5 -- 70% chance to roll preferred stats
+    preferred_stats = {'aspd', 'hp'},
+    preferred_chance = 1
   },
   [ITEM_SLOT.BODY] = {
-    preferred_stats = {'hp', 'flat_def', 'area_size'},
-    preferred_chance = 0.5
+    preferred_stats = {'hp', 'aspd'},
+    preferred_chance = 1
   },
   [ITEM_SLOT.WEAPON] = {
-    preferred_stats = {'dmg', 'aspd', 'range', 'crit_chance'},
-    preferred_chance = 0.5
+    preferred_stats = {'dmg'},
+    preferred_chance = 1
   },
   [ITEM_SLOT.OFFHAND] = {
-    preferred_stats = {'flat_def', 'hp', 'crit_chance'},
-    preferred_chance = 0.5
+    preferred_stats = {'dmg', 'aspd'},
+    preferred_chance = 1
   },
   [ITEM_SLOT.FEET] = {
     preferred_stats = {'mvspd', 'aspd'},
-    preferred_chance = 0.5
+    preferred_chance = 1
   },
   [ITEM_SLOT.AMULET] = {
-    preferred_stats = {'crit_chance'},
-    preferred_chance = 0.5
+    preferred_stats = {'crit_chance', 'cooldown_reduction', 'repeat_attack_chance'},
+    preferred_chance = 1
   }
 }
