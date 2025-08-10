@@ -613,7 +613,7 @@ function Stomp:init(args)
     orb1:play({volume = self.sound_volume})
 
     -- Main effect colors
-    self.color = self.color or red[0]
+    self.color = (self.color or red[0]):clone()
     self.color.a = 0.5
     self.white_color = fg[0]:clone()
     self.white_color.a = 0.8

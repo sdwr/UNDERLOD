@@ -398,7 +398,7 @@ function FloorItem:draw()
   if self.interaction_is_hovered then
     local alpha = math.min(self.interaction_hover_timer / 2, 1)
     local radius = ((self.interaction_hover_timer / 2) * 20) + 10
-    local color = white[0]
+    local color = white[0]:clone()
     color.a = alpha * 0.3
     graphics.rectangle(self.x + shake_x, self.y + shake_y, width, height, 6, 6, color)
     graphics.circle(self.x + shake_x, self.y + shake_y, radius, color)
