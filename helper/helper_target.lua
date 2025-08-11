@@ -60,7 +60,7 @@ function Helper.Target:get_distance_multiplier(unit, target)
   if not target or not target.x or not target.y then
     return 1
   end
-  local distance = unit:distance_to_point(target.x, target.y)
+  local distance = math.distance(unit.x, unit.y, target.x, target.y)
   local distance_multiplier = DISTANCE_TO_COOLDOWN_MULTIPLIER(distance)
   return distance_multiplier
 end

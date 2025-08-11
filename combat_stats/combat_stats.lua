@@ -489,10 +489,10 @@ ZONE_SCALING = function(level)
 end
 
 DISTANCE_TO_COOLDOWN_MULTIPLIER_VALUES = {
-  [20] = 0.27,
-  [50] = 0.4,
+  [20] = 0.25,
+  [50] = 0.3,
   [75] = 0.5,
-  [100] = 0.85,
+  [100] = 0.8,
   [150] = 1.05,
   [200] = 1.25,
   [250] = 1.4,

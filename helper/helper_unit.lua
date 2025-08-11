@@ -170,7 +170,7 @@ function Helper.Unit:in_range_of_rally_point(unit)
     end
     return math.distance(unit.x, unit.y, unit.target_pos.x, unit.target_pos.y) < RALLY_CIRCLE_STOP_DISTANCE
 end
-    
+
 function Helper.Unit:cast_off_cooldown(unit)
     return unit.attack_cooldown_timer <= 0
 end
@@ -590,6 +590,27 @@ end
 function Helper.Unit:in_range_of_player_location(unit, range)
     range = range or ARENA_RADIUS
     return math.distance(unit.x, unit.y, self.player_location.x, self.player_location.y) < range
+end
+
+function Helper.Unit:update_closest_enemy()
+    local closest_enemy = nil
+    local closest_distance = 999999
+    for i, enemy in ipairs(self:get_list(false)) do
+        local distance = math.distance(enemy.x, enemy.y, self.player_location.x, self.player_location.y)
+        if distance < closest_distance then
+            closest_enemy = enemy
+            closest_distance = distance
+        end
+    end
+    if closest_enemy then
+        self.closest_enemy = closest_enemy
+        self.closest_enemy_distance = closest_distance
+        self.closest_enemy_distance_multiplier = Helper.Target:get_distance_multiplier(self.player_location, closest_enemy)
+    else
+        self.closest_enemy = nil
+        self.closest_enemy_distance = nil
+        self.closest_enemy_distance_multiplier = nil
+    end
 end
 
 function Helper.Unit:draw_points()
