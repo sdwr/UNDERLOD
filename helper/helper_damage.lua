@@ -46,7 +46,7 @@ function Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects,
   
   --Elemental or physical damage application
   if table.contains(ELEMENTAL_DAMAGE_TYPES, damageType) then
-    Helper.Damage:apply_elemental_effects(unit, actual_damage, damageType, from)
+    Helper.Damage:apply_elemental_effects(unit, actual_damage, damageType, from, hitOptions)
   else
     if isChained then
       Helper.Damage:deal_damage_chained(unit, actual_damage)
@@ -312,7 +312,7 @@ end
 -- Enemy-specific elemental damage handling
 -- ===================================================================
 
-function Helper.Damage:apply_elemental_effects(unit, actual_damage, damageType, from)
+function Helper.Damage:apply_elemental_effects(unit, actual_damage, damageType, from, hitOptions)
   if not from then return end
 
   if damageType == DAMAGE_TYPE_FIRE then
@@ -320,15 +320,26 @@ function Helper.Damage:apply_elemental_effects(unit, actual_damage, damageType, 
   end
 
   if damageType == DAMAGE_TYPE_LIGHTNING then
-    ChainLightning{
-      group = main.current.main, 
-      target = unit, range = 50, 
-      damage = actual_damage, 
-      damageType = DAMAGE_TYPE_SHOCK,  -- Chain lightning deals shock damage, not lightning damage
-      color = yellow[0], 
-      parent = from,
-      is_troop = from and from.is_troop,
-    }
+    local lightning_chance = 0
+    if hitOptions.isPrimary then
+      lightning_chance = 0.3
+    elseif hitOptions.isChained then
+      lightning_chance = 0.1
+    elseif hitOptions.isElementalConversion then
+      lightning_chance = 0.05
+    end
+
+    if random:float(0, 1) < lightning_chance then
+      ChainLightning{
+        group = main.current.main, 
+        target = unit, range = 50, 
+        damage = LIGHTNING_FLAT_DAMAGE, 
+        damageType = DAMAGE_TYPE_SHOCK,  -- Chain lightning deals shock damage, not lightning damage
+        color = yellow[0], 
+        parent = from,
+        is_troop = from and from.is_troop,
+      }
+    end
   end
 
   if damageType == DAMAGE_TYPE_SHOCK then
@@ -383,7 +394,7 @@ function Helper.Damage:process_elemental_conversions(unit, actual_damage, from, 
     end
   end
   
-  if damageType == DAMAGE_TYPE_LIGHTNING then
+  if damageType == DAMAGE_TYPE_SHOCK then
     if Has_Static_Proc(from, 'lightningToCold') then
       local converted_damage = actual_damage * ELEMENTAL_CONVERSION_PERCENT
       unit:chill(converted_damage, from)
