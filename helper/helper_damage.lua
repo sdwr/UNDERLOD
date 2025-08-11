@@ -64,6 +64,7 @@ function Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects,
     Helper.Damage:process_physical_to_elemental(unit, actual_damage, from)
   end
   
+
   -- For direct elemental hits (not conversions), apply conversions from static procs
   if table.contains(ELEMENTAL_EFFECT_TYPES, damageType) then
     Helper.Damage:process_elemental_conversions(unit, actual_damage, from, damageType)
@@ -322,11 +323,11 @@ function Helper.Damage:apply_elemental_effects(unit, actual_damage, damageType, 
   if damageType == DAMAGE_TYPE_LIGHTNING then
     local lightning_chance = 0
     if hitOptions.isPrimary then
-      lightning_chance = 0.3
+      lightning_chance = 0.5
     elseif hitOptions.isChained then
-      lightning_chance = 0.1
+      lightning_chance = 0.2
     elseif hitOptions.isElementalConversion then
-      lightning_chance = 0.05
+      lightning_chance = 0.1
     end
 
     if random:float(0, 1) < lightning_chance then
