@@ -47,9 +47,18 @@ function Helper.Damage:primary_hit(unit, damage, from, damageType, playHitEffect
   
   -- TODO: Apply critical hit multiplier here if critical
   -- TODO: Apply chain attack effects here
-  
-  -- Apply damage
-  Helper.Damage:deal_damage(unit, actual_damage)
+
+  --Elemental or physical
+  if table.contains({DAMAGE_TYPE_FIRE, DAMAGE_TYPE_LIGHTNING, DAMAGE_TYPE_COLD}, damageType) then
+    Helper.Damage:apply_elemental_effects(unit, actual_damage, damageType, from)
+  else
+    Helper.Damage:deal_damage(unit, actual_damage)
+  end
+
+  --Enemy specific: elemental damage reactions
+  if unit.isEnemy then
+    Helper.Damage:process_elemental_reactions(unit, actual_damage, damageType, from)
+  end
   
   -- Unit-specific post-damage processing
   Helper.Damage:process_post_damage(unit, actual_damage, damageType, from)
@@ -82,6 +91,9 @@ function Helper.Damage:indirect_hit(unit, damage, from, damageType, playHitEffec
   
   -- Default parameters
   playHitEffects = playHitEffects or true
+
+  --see if we need to add additional elemental modifiers
+
   
   -- Unit-specific pre-hit processing
   if not Helper.Damage:process_pre_hit(unit, damage, from, damageType, playHitEffects) then
@@ -96,6 +108,11 @@ function Helper.Damage:indirect_hit(unit, damage, from, damageType, playHitEffec
   
   -- Unit-specific post-damage processing
   Helper.Damage:process_post_damage(unit, actual_damage, damageType, from)
+
+  --Enemy specific: elemental damage reactions
+  if unit.isEnemy then
+    Helper.Damage:process_elemental_reactions(unit, actual_damage, damageType, from)
+  end
   
   -- Track damage for teams
   Helper.Damage:track_team_damage(from, actual_damage)
@@ -314,11 +331,6 @@ function Helper.Damage:calculate_final_damage(unit, damage, damageType)
     final_damage = unit:calculate_damage(damage)
   end
   
-  -- Enemy specific: stun damage multiplier
-  if unit.stun_dmg_m then
-    final_damage = final_damage * unit.stun_dmg_m
-  end
-  
   -- Ensure damage is non-negative
   return math.max(final_damage, 0)
 end
@@ -331,11 +343,6 @@ function Helper.Damage:process_post_damage(unit, actual_damage, damageType, from
   -- Show damage number
   unit:show_damage_number(actual_damage, damageType)
   
-  -- Enemy specific: elemental damage reactions
-  if unit.isEnemy then
-    Helper.Damage:process_elemental_reactions(unit, actual_damage, damageType, from)
-  end
-  
   -- Update global damage tracking
   if unit.isEnemy then
     main.current.damage_dealt = main.current.damage_dealt + actual_damage
@@ -346,27 +353,51 @@ end
 -- ELEMENTAL DAMAGE REACTIONS
 -- Enemy-specific elemental damage handling
 -- ===================================================================
-function Helper.Damage:process_elemental_reactions(unit, actual_damage, damageType, from)
+
+function Helper.Damage:apply_elemental_effects(unit, actual_damage, damageType, from)
+  if not from then return end
+
   if damageType == DAMAGE_TYPE_FIRE then
     unit:burn(actual_damage, from)
   end
 
   if damageType == DAMAGE_TYPE_LIGHTNING then
-    ChainLightning{
-      group = main.current.main, 
-      target = unit, range = 50, 
-      damage = actual_damage, color = yellow[0], 
-      parent = from,
-      is_troop = from and from.is_troop,
-    }
-  end
-
-  if damageType == DAMAGE_TYPE_SHOCK then
     unit:shock()
   end
 
   if damageType == DAMAGE_TYPE_COLD then
     unit:chill(actual_damage, from)
+  end
+end
+
+
+function Helper.Damage:process_elemental_reactions(unit, actual_damage, damageType, from)
+  if not from or not from.get_elemental_damage_multis then return end
+
+
+  local elemental_damage_stats = from:get_elemental_damage_stats(damageType)
+
+  if elemental_damage_stats[DAMAGE_TYPE_FIRE] > 0 then
+    local fire_damage = actual_damage * elemental_damage_stats[DAMAGE_TYPE_FIRE]
+    Helper.Damage:chained_hit(unit, fire_damage, from, DAMAGE_TYPE_FIRE, false)
+  end
+
+  if elemental_damage_stats[DAMAGE_TYPE_LIGHTNING] > 0 then
+    local lightning_damage = actual_damage * elemental_damage_stats[DAMAGE_TYPE_LIGHTNING]
+    ChainLightning{
+      group = main.current.main, 
+      target = unit, range = 50, 
+      damage = lightning_damage, 
+      damage_type = DAMAGE_TYPE_LIGHTNING,
+      color = yellow[0], 
+      parent = from,
+      is_troop = from and from.is_troop,
+    }
+  end
+
+  if elemental_damage_stats[DAMAGE_TYPE_COLD] > 0 then
+    local cold_damage = actual_damage * elemental_damage_stats[DAMAGE_TYPE_COLD]
+    Helper.Damage:chained_hit(unit, cold_damage, from, DAMAGE_TYPE_COLD, false)
   end
 end
 

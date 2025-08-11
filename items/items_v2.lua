@@ -40,9 +40,9 @@ ITEM_SET = {
   STUN = 'stun',
   MULTI_SHOT = 'multi_shot',
   --elemental transformation
-  FROST_JOLT = 'frost_jolt',
-  FROSTFIRE = 'frostfire',
-  FIREBOLT = 'firebolt',
+  FIRE_TO_LIGHTNING = 'fire_to_lightning',
+  COLD_TO_FIRE = 'cold_to_fire',
+  LIGHTNING_TO_COLD = 'lightning_to_cold',
   --elemental boosts
   STONE_COLD = 'stone_cold',
   BLAZIN = 'blazin',
@@ -142,14 +142,14 @@ ITEM_SETS = {
       [1] = 'Creates a frost nova when enemies get close'
     }
   },
-  [ITEM_SET.FROSTFIRE] = {
+  [ITEM_SET.COLD_TO_FIRE] = {
     name = 'Frostfire',
     color = 'blue',
     bonuses = {
-      [1] = { stats = {}, procs = {'frostfire'} }
+      [1] = { stats = {}, procs = {'coldToFire'} }
     },
     descriptions = {
-      [1] = 'Your cold damage burns enemies'
+      [1] = 'Your cold damage also burns enemies'
     }
   },
   [ITEM_SET.FIRE] = {
@@ -186,14 +186,14 @@ ITEM_SETS = {
       [1] = 'You deal more damage to chilled enemies'
     }
   },
-  [ITEM_SET.FIREBOLT] = {
+  [ITEM_SET.FIRE_TO_LIGHTNING] = {
     name = 'Fire Bolt',
     color = 'red',
     bonuses = {
-      [1] = { procs = {'firebolt'} }
+      [1] = { procs = {'fireToLightning'} }
     },
     descriptions = {
-      [1] = 'Your fire damage spreads lightning'
+      [1] = 'Your fire damage also shocks enemies'
     }
   },
   [ITEM_SET.METEOR] = {
@@ -234,14 +234,14 @@ ITEM_SETS = {
       [1] = 'Chance to create a lightning ball on attack'
     }
   },
-  [ITEM_SET.FROST_JOLT] = {
+  [ITEM_SET.LIGHTNING_TO_COLD] = {
     name = 'Frost Jolt',
     color = 'yellow',
     bonuses = {
-      [1] = { procs = {'frostjolt'} }
+      [1] = { procs = {'lightningToCold'} }
     },
     descriptions = {
-      [1] = 'Your lightning damage chills enemies'
+      [1] = 'Your lightning damage also chills enemies'
     }
   },
   [ITEM_SET.CURSE] = {

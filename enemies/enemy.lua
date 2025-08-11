@@ -7,6 +7,7 @@ function Enemy:init(args)
   self:init_game_object(args)
 
   self.faction = 'enemy'
+  self.isEnemy = true
   self.transition_active = true
 
   self:setExtraFunctions()
@@ -584,8 +585,6 @@ function Enemy:on_collision_enter(other, contact)
 end
 
 function Enemy:hit(damage, from, damageType, playHitEffects, cannotProcOnHit)
-  -- Mark this unit as an enemy for the damage helper
-  self.isEnemy = true
   -- Use the indirect hit function (current behavior)
   Helper.Damage:indirect_hit(self, damage, from, damageType, playHitEffects)
 end

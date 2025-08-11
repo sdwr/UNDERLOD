@@ -1368,7 +1368,7 @@ function Proc_Radiance:create_damage_aura()
   local on_hit_callback = function(area_spell, target, unit)
     if not target:has_buff('radianceburn') then
       target:add_buff({name = 'radianceburn', damage = self.damage, duration = 1})
-      target:hit(self.damage, unit, self.damageType, false, true)
+      target:chained_hit(self.damage, unit, self.damageType, false, true)
     end
   end
   local aura = Area_Spell{
@@ -1513,29 +1513,28 @@ function Proc_Shock:init(args)
 end
 
 --elemental transformation
-Proc_FrostJolt = Proc:extend()
-function Proc_FrostJolt:init(args)
+Proc_FireToLightning = Proc:extend()
+function Proc_FireToLightning:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'troop'
+
+  Proc_FireToLightning.super.init(self, args)
+end
+
+Proc_ColdToFire = Proc:extend()
+function Proc_ColdToFire:init(args)
   self.triggers = {PROC_STATIC}
   self.scope = 'troop'
   
-  Proc_FrostJolt.super.init(self, args)
+  Proc_ColdToFire.super.init(self, args)
 end
 
-
-Proc_Frostfire = Proc:extend()
-function Proc_Frostfire:init(args)
-  self.triggers = {PROC_STATIC}
-  self.scope = 'troop'
-
-  Proc_Frostfire.super.init(self, args)
-end
-
-Proc_Firebolt = Proc:extend()
-function Proc_Firebolt:init(args)
+Proc_LightningToCold = Proc:extend()
+function Proc_LightningToCold:init(args)
   self.triggers = {PROC_STATIC}
   self.scope = 'troop'
   
-  Proc_Firebolt.super.init(self, args)
+  Proc_LightningToCold.super.init(self, args)
 end
 
 Proc_BurnExplode = Proc:extend()
@@ -2355,9 +2354,9 @@ proc_name_to_class = {
   ['multishotRepeat'] = Proc_MultishotRepeat,
 
   --elemental transformation
-  ['frostjolt'] = Proc_FrostJolt,
-  ['frostfire'] = Proc_Frostfire,
-  ['firebolt'] = Proc_Firebolt,
+  ['fireToLightning'] = Proc_FireToLightning,
+  ['coldToFire'] = Proc_ColdToFire,
+  ['lightningToCold'] = Proc_LightningToCold,
 
   --elemental boosts
   ['stonecold'] = Proc_StoneCold,

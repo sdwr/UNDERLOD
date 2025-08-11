@@ -741,7 +741,7 @@ function Unit:update_buffs(dt)
           -- 2. Deal the damage
           if damage_this_tick > 0 then
               -- Burn damage should not be attributed to anyone (environmental damage)
-              self:hit(damage_this_tick, nil, DAMAGE_TYPE_BURN, false, true)
+              self:hit(damage_this_tick, nil, DAMAGE_TYPE_FIRE, false, true)
           end
 
           v.total_damage = v.total_damage - damage_this_tick
@@ -1053,26 +1053,37 @@ function Unit:onAttackCallbacks(target)
   end
 end
 
-function Unit:handle_elemental_damage_on_primary_hit(target)
-  -- Only apply elemental damage if target is a valid unit
-  if not target or not target.hit then return end
-  -- Fire damage
-  if self.fire_damage and self.fire_damage > 0 then
-    local fire_damage = self.dmg * self.fire_damage
-    target:hit(fire_damage, self, DAMAGE_TYPE_FIRE, false, true)
+
+function Unit:get_elemental_damage_stats()
+  local elemental_stats = {}
+  
+  -- First pass: Get base elemental damage stats
+  elemental_stats[DAMAGE_TYPE_FIRE] = self.fire_damage or 0
+  elemental_stats[DAMAGE_TYPE_LIGHTNING] = self.lightning_damage or 0
+  elemental_stats[DAMAGE_TYPE_COLD] = self.cold_damage or 0
+  
+  -- Second pass: Apply elemental conversions based on static procs
+  local fire_to_cold_damage = 0
+  local lightning_to_cold_damage = 0
+  local cold_to_fire_damage = 0
+
+  if Has_Static_Proc(self, 'fireToLightning') then
+    local fire_to_lightning_damage = elemental_stats[DAMAGE_TYPE_FIRE] * ELEMENTAL_CONVERSION_PERCENT
   end
   
-  -- Lightning damage
-  if self.lightning_damage and self.lightning_damage > 0 then
-    local lightning_damage = self.dmg * self.lightning_damage
-    target:hit(lightning_damage, self, DAMAGE_TYPE_LIGHTNING, false, true)
+  if Has_Static_Proc(self, 'lightningToCold') then
+    local lightning_to_cold_damage = elemental_stats[DAMAGE_TYPE_LIGHTNING] * ELEMENTAL_CONVERSION_PERCENT
   end
   
-  -- Cold damage
-  if self.cold_damage and self.cold_damage > 0 then
-    local cold_damage = self.dmg * self.cold_damage
-    target:hit(cold_damage, self, DAMAGE_TYPE_COLD, false, true)
+  if Has_Static_Proc(self, 'coldToFire') then
+    local cold_to_fire_damage = elemental_stats[DAMAGE_TYPE_COLD] * ELEMENTAL_CONVERSION_PERCENT
   end
+  
+  elemental_stats[DAMAGE_TYPE_FIRE] = elemental_stats[DAMAGE_TYPE_FIRE] + cold_to_fire_damage 
+  elemental_stats[DAMAGE_TYPE_COLD] = elemental_stats[DAMAGE_TYPE_COLD] + lightning_to_cold_damage
+  elemental_stats[DAMAGE_TYPE_LIGHTNING] = elemental_stats[DAMAGE_TYPE_LIGHTNING] + fire_to_lightning_damage
+  
+  return elemental_stats
 end
 
 function Unit:onHitCallbacks(target, damage, damageType)
@@ -1097,9 +1108,6 @@ function Unit:onPrimaryHitCallbacks(target, damage, damageType)
   for k, proc in ipairs(self.onPrimaryHitProcs) do
     proc:onPrimaryHit(target, damage, damageType)
   end
-
-  -- Handle elemental damage on primary hit
-  self:handle_elemental_damage_on_primary_hit(target)
 end
 
 function Unit:onGotHitCallbacks(from, damage)
@@ -1275,7 +1283,7 @@ function Unit:burn_explode(from)
     color = red[0],
     knockback_force = explosion_knockback,
     knockback_duration = explosion_knockback_duration,
-    damage_type = DAMAGE_TYPE_BURN,
+    damage_type = DAMAGE_TYPE_FIRE,
   }
   
   -- Play fire explosion sound
