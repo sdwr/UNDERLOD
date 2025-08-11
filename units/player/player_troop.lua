@@ -203,6 +203,12 @@ function Troop:update(dt)
   -- ===================================================================
   -- 3. FINAL PHYSICS AND POSITIONING (These also always run)
   -- ===================================================================
+  
+  -- Mark current target for circle drawing
+  if self:my_target() then
+    self:my_target():add_buff({name = 'targeted', duration = 0.25, color = Helper.Color.yellow})
+  end
+  
   self.r = self:get_angle()
   self.attack_sensor:move_to(self.x, self.y)
 end
@@ -362,9 +368,9 @@ function Troop:draw_distance_glow()
 
   if tier then
     local glow_multipliers = {
-      [1] = 0.3,
-      [2] = 0.2,
-      [3] = 0.1,
+      [1] = 0.1,
+      [2] = 0.07,
+      [3] = 0.04,
     }
 
     local glow_intensity = glow_multipliers[tier]
@@ -378,7 +384,7 @@ function Troop:draw_distance_glow()
     -- Draw glow rings
     local body_size = self.shape.w / 2
     graphics.circle(self.x, self.y, body_size, glow_color, 2)
-    graphics.circle(self.x, self.y, body_size + 1, glow_color_2, 2)
+    graphics.circle(self.x, self.y, body_size + 2, glow_color_2, 2)
   end
 end
 
@@ -388,11 +394,20 @@ end
 
 function Troop:get_attack_pitch_multiplier()
   if self:my_target() then
-    local distance_multiplier = Helper.Target:get_distance_multiplier(self, self:my_target())
+    local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier
     -- Lower distance multiplier (closer) = higher pitch
     -- Higher distance multiplier (farther) = lower pitch
-    local pitch_multiplier = math.max(0.8, 1.6 - distance_multiplier)
-    return pitch_multiplier
+    local pitch_multiplier = 1 - distance_multiplier
+    return pitch_multiplier + 1
+  end
+  return 1.0
+end
+
+function Troop:get_attack_volume_multiplier()
+  if self:my_target() then
+    local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier
+    local volume_multiplier = 1 - distance_multiplier
+    return 1 + (volume_multiplier * 2)
   end
   return 1.0
 end

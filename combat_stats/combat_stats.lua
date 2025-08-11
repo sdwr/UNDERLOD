@@ -495,9 +495,9 @@ DISTANCE_TIER_TO_COOLDOWN_MULTIPLIER = {
 }
 
 TIER_TO_DISTANCE = {
-  [1] = 35,
-  [2] = 70,
-  [3] = 115,
+  [1] = 60,
+  [2] = 90,
+  [3] = 130,
 }
 
 get_distance_effect_multiplier = function(distance)

@@ -5,8 +5,6 @@ Helper.Sound.radiance_fade_after = 1
 Helper.Sound.radiance_last_played = 0
 
 Helper.Sound.distance_multiplier_sound = nil
-Helper.Sound.distance_multiplier_sound_last_played = 0
-Helper.Sound.distance_multiplier_sound_last_played_tier = 999
 
 function Helper.Sound:update()
   if Helper.Time.time - self.radiance_last_played >  Helper.Sound.radiance_fade_after then
@@ -31,17 +29,15 @@ function Helper.Sound:play_distance_multiplier_sound(distance_tier)
     [3] = 0.9,
   }
   local tier_to_volume = {
-    [1] = 0.7,
-    [2] = 0.7,
-    [3] = 0.7,
+    [1] = 0.5,
+    [2] = 0.4,
+    [3] = 0.3,
   }
 
   local pitch = tier_to_pitch[distance_tier]
   local volume = tier_to_volume[distance_tier]
 
   local sound = ui_switch1:play{volume = volume, pitch = pitch}
-  self.distance_multiplier_sound_last_played = Helper.Time.time
-  self.distance_multiplier_sound_last_played_tier = distance_tier
 end
 
 function Helper.Sound:play_constant_distance_multiplier_sound()

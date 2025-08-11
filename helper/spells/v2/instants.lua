@@ -125,11 +125,15 @@ function ArrowProjectile:init(args)
   local vy = math.sin(self.angle) * self.speed
   self:set_velocity(vx, vy)
   
-  local pitch = 1
+  local pitch = self.pitch or 1
+  local volume = self.volume or 1
   if self.unit and self.unit.get_attack_pitch_multiplier then
-    pitch = self.unit:get_attack_pitch_multiplier()
+    pitch = pitch * self.unit:get_attack_pitch_multiplier()
   end
-  table.random({arrow_release1, arrow_release2, arrow_release3}):play{volume=2, pitch=pitch}
+  if self.unit and self.unit.get_attack_volume_multiplier then
+    volume = volume * self.unit:get_attack_volume_multiplier()
+  end 
+  table.random({arrow_release1, arrow_release2, arrow_release3}):play{volume=volume, pitch=pitch}
 
   self.already_hit_targets = {}
 end

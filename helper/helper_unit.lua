@@ -3,6 +3,14 @@ Helper.Unit = {}
 Helper.Unit.cast_flash_duration = 0.08
 Helper.Unit.do_draw_points = false
 
+function Helper.Unit:clear_all_target_flags()
+    -- Clear target flags from all enemies
+    local enemies = self:get_list(false) -- false = get enemies
+    for _, enemy in ipairs(enemies) do
+        enemy.is_targeted = false
+    end
+end
+
 function Helper.Unit:get_list(troop_list)
     if troop_list == nil then
         return {}
@@ -177,7 +185,7 @@ end
 
 function Helper.Unit:cast_off_cooldown_distance_multiplier(unit, target)
     if target.x and target.y then
-        local distance_multiplier = Helper.Target:get_distance_multiplier(unit, target)
+        local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier
 
         local adjusted_cooldown = unit.attack_cooldown * distance_multiplier
 
@@ -601,25 +609,23 @@ end
     
 
 function Helper.Unit:update_enemy_distance_tier()
+    self.last_closest_enemy_distance_tier = self.closest_enemy_distance_tier or 999
     self.closest_enemy_distance_tier = get_distance_effect_tier(self.closest_enemy_distance)
-    self.last_closest_enemy_distance_tier = self.closest_enemy_distance_tier
 
-    if self.closest_enemy_distance_tier then
-
-        
-        if not self.highest_enemy_distance_tier or self.closest_enemy_distance_tier < self.highest_enemy_distance_tier then
-            --play tier effects
-            self.last_tier_effect_time = Helper.Time.time
+    if self.closest_enemy_distance_tier and self.closest_enemy_distance_tier < self.last_closest_enemy_distance_tier then            --play tier effects
+        if not self.tier_effect_debounce then
+            self.tier_effect_debounce = {
+                [1] = 0,
+                [2] = 0,
+                [3] = 0,
+            }
+        end
+        --debounce to prevent spamming
+        if self.tier_effect_debounce[self.closest_enemy_distance_tier] < Helper.Time.time then
             Helper.Sound:play_distance_multiplier_sound(self.closest_enemy_distance_tier)
             Helper.Unit:create_distance_tier_effects(self.closest_enemy_distance_tier)
+            self.tier_effect_debounce[self.closest_enemy_distance_tier] = Helper.Time.time + 0.5
         end
-        if self.last_tier_effect_time and Helper.Time.time - self.last_tier_effect_time > 1 then
-            if self.highest_enemy_distance_tier then
-                self.highest_enemy_distance_tier = nil
-            end
-        end
-        
-        self.highest_enemy_distance_tier = math.min(self.highest_enemy_distance_tier or 999, self.closest_enemy_distance_tier)
     end
 
 end
@@ -629,6 +635,10 @@ function Helper.Unit:update_closest_enemy()
     local closest_distance = 999999
     for i, enemy in ipairs(self:get_list(false)) do
         local distance = math.distance(enemy.x, enemy.y, self.player_location.x, self.player_location.y)
+        local enemy_size = math.max(enemy.shape and enemy.shape.w or 0, enemy.shape and enemy.shape.h or 0)
+
+        distance = distance - enemy_size / 2
+
         if distance < closest_distance then
             closest_enemy = enemy
             closest_distance = distance

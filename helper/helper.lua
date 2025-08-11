@@ -83,6 +83,7 @@ function Helper:update(dt)
     Helper.time_elapsed = Helper.time_elapsed + dt
 
     --update timers, run state functions, update hitbox points
+    Helper.Unit:clear_all_target_flags()
     Helper.Unit:update_hitbox_points()
     Helper.Unit:update_player_location()
     Helper.Unit:update_closest_enemy()
