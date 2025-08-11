@@ -724,31 +724,24 @@ function Unit:update_buffs(dt)
       v.duration = v.duration - dt
     end
 
-    -- In your buff update loop, where 'v' is the burn buff table
+    -- Simplified burn buff processing
     if k == 'burn' then
       v.elapsed_time = v.elapsed_time + dt
       
-      -- Check if it's time for a tick (e.g., every 1 second)
-      if v.elapsed_time >= 1 then
-          v.elapsed_time = v.elapsed_time - 1 -- Reset timer for the next tick
+      -- Check if it's time for a tick
+      if v.elapsed_time >= BURN_TICK_INTERVAL then
+        v.elapsed_time = v.elapsed_time - BURN_TICK_INTERVAL -- Reset timer for the next tick
+        v.tick_count = (v.tick_count or 0) + 1
 
-          -- Play a subtle sound for the tick
-          
-          -- 1. Calculate the damage and decay amount for this tick
-          local damage_this_tick = v.total_damage * BURN_DPS_DECAY_RATE
-          fire3:play{pitch = random:float(0.8, 1.2), volume = 0.15}
-          
-          -- 2. Deal the damage
-          if damage_this_tick > 0 then
-              -- Pass the original caster for elemental conversions
-              Helper.Damage:indirect_hit(self, damage_this_tick, v.from, DAMAGE_TYPE_BURN, false)
-          end
-
-          v.total_damage = v.total_damage - damage_this_tick
-
-          
-          self:try_trigger_burn_explosion()
-      end
+        -- Calculate damage as % of max HP
+        local damage_this_tick = self.max_hp * BURN_DAMAGE_PER_TICK_PERCENT
+        fire3:play{pitch = random:float(0.8, 1.2), volume = 0.15}
+        
+        -- Deal the damage
+        Helper.Damage:indirect_hit(self, damage_this_tick, v.from, DAMAGE_TYPE_BURN, false)
+        
+        self:try_burn_explode()
+      end 
     end
 
     if k == 'chill' then
@@ -1058,7 +1051,7 @@ function Unit:get_elemental_damage_stats()
   local elemental_stats = {}
   
   -- First pass: Get base elemental damage stats
-  elemental_stats[DAMAGE_TYPE_FIRE] = self.fire_damage or 0
+  elemental_stats[DAMAGE_TYPE_BURN] = self.fire_damage or 0
   elemental_stats[DAMAGE_TYPE_LIGHTNING] = self.lightning_damage or 0
   elemental_stats[DAMAGE_TYPE_COLD] = self.cold_damage or 0
   
@@ -1068,7 +1061,7 @@ function Unit:get_elemental_damage_stats()
   local cold_to_fire_damage = 0
 
   if Has_Static_Proc(self, 'fireToLightning') then
-    fire_to_lightning_damage = elemental_stats[DAMAGE_TYPE_FIRE] * ELEMENTAL_CONVERSION_PERCENT
+    fire_to_lightning_damage = elemental_stats[DAMAGE_TYPE_BURN] * ELEMENTAL_CONVERSION_PERCENT
   end
   
   if Has_Static_Proc(self, 'lightningToCold') then
@@ -1079,7 +1072,7 @@ function Unit:get_elemental_damage_stats()
     cold_to_fire_damage = elemental_stats[DAMAGE_TYPE_COLD] * ELEMENTAL_CONVERSION_PERCENT
   end
   
-  elemental_stats[DAMAGE_TYPE_FIRE] = elemental_stats[DAMAGE_TYPE_FIRE] + cold_to_fire_damage 
+  elemental_stats[DAMAGE_TYPE_BURN] = elemental_stats[DAMAGE_TYPE_BURN] + cold_to_fire_damage 
   elemental_stats[DAMAGE_TYPE_COLD] = elemental_stats[DAMAGE_TYPE_COLD] + lightning_to_cold_damage
   elemental_stats[DAMAGE_TYPE_LIGHTNING] = elemental_stats[DAMAGE_TYPE_LIGHTNING] + fire_to_lightning_damage
   
@@ -1144,9 +1137,6 @@ function Unit:onDeathCallbacks(from)
     proc:onDeath(from)
   end
 
-  --some global procs here, could maybe be moved into onDeathProcs
-  self:burn_explode_or_fizzle()
-
   if self.on_death then
     self:on_death()
   end
@@ -1176,23 +1166,23 @@ end
 
 function Unit:burn(damage, from)
   local existing_buff = self.buffs['burn']
-  
+
   if existing_buff then
-    -- Add damage to existing burn buff
+    -- Refresh duration but don't reset tick timer or tick count
+    existing_buff.duration = BURN_DURATION
+    existing_buff.maxDuration = BURN_DURATION
     existing_buff.from = from
-    existing_buff.total_damage = existing_buff.total_damage + damage
-    existing_buff.peak_damage = math.max(existing_buff.peak_damage, existing_buff.total_damage)
-
-
+    existing_buff.can_explode = existing_buff.can_explode or (from and Has_Static_Proc(from, 'burnexplode'))
   else
     -- Create new burn buff
     local burnBuff = {
       name = 'burn',
       from = from,
-      total_damage = damage, 
-      peak_damage = damage,
-      nextTick = 1.0, -- Tick every second
+      duration = BURN_DURATION,
+      maxDuration = BURN_DURATION,
       elapsed_time = 0,
+      tick_count = 0,
+      can_explode = from and Has_Static_Proc(from, 'burnexplode') or false
     }
     self:add_buff(burnBuff)
 
@@ -1208,86 +1198,48 @@ function Unit:burn(damage, from)
   end
 end
 
-function Unit:try_trigger_burn_explosion()
+function Unit:try_burn_explode()
+  if not self.buffs then return end
+
   local burn_buff = self.buffs['burn']
-  if not burn_buff then return end
-
-  -- 4. Check the end conditions
-  local cancel_threshold = self.max_hp * BURN_CANCEL_IF_DPS_BELOW_PERCENT_OF_HP * BURN_DPS_DECAY_RATE
-
-  local damage_required_to_explode_instantly = self.max_hp * BURN_THRESHOLD_FOR_INSTANT_EXPLOSION_PERCENT_OF_HP
-  
-  if burn_buff.total_damage >= damage_required_to_explode_instantly then
-    self:burn_explode_or_fizzle()
-    return
-  elseif burn_buff.total_damage < cancel_threshold then
-      -- The burn has fizzled. Now we decide if it explodes or just disappears.
-      local min_explosion_threshold = self.max_hp * BURN_MIN_EXPLOSION_THRESHOLD_PERCENT_OF_HP
-      
-      if burn_buff.peak_damage >= min_explosion_threshold then
-          -- Condition Met: Fizzle with Explosion
-          -- The burn was powerful enough at its peak to warrant a final boom.
-          self:burn_explode_or_fizzle()
-      end
-      -- else: Condition Met: Fizzle without Explosion.
-      -- The peak was never high enough, so it just disappears silently.
-      
-      -- In both fizzle cases, we remove the buff.
-      self:remove_buff('burn')
-  end
-end
-
-function Unit:burn_explode_or_fizzle()
-  local burn_buff = self.buffs['burn']
-  if not burn_buff then return end
-
-  if burn_buff.total_damage >= BURN_MIN_EXPLOSION_THRESHOLD_PERCENT_OF_HP 
-  and Does_Static_Proc_Exist('burnexplode') then
-    self:burn_explode()
-  else
-    self:remove_buff('burn')
+  if burn_buff and burn_buff.can_explode then
+    local explosion_chance = BURN_EXPLOSION_BASE_CHANCE
+    if random:float(0, 1) < explosion_chance then
+      self:burn_explode(burn_buff.from)
+    end
   end
 end
 
 function Unit:burn_explode(from)
   -- Remove the burn buff
   if not self.buffs['burn'] then return end
-
-  local peak_damage = self.buffs['burn'].peak_damage
-  local from = self.buffs['burn'].from
+  
   self:remove_buff('burn')
   
-  -- Calculate explosion damage based on max HP
-  local explosion_damage = peak_damage / 2
-
-  local total_power = CALCULATE_BURN_EFFORT_FACTOR(peak_damage, self.max_hp) + CALCULATE_BURN_QUALITY_FACTOR(self.baseline_hp)
-
-  local explosion_radius = BURN_EXPLOSION_BASE_RADIUS * (1 + total_power)
-  local explosion_knockback = BURN_EXPLOSION_BASE_KNOCKBACK * (1 + total_power)
-  local explosion_knockback_duration = BURN_EXPLOSION_BASE_KNOCKBACK_DURATION * (0.6 + total_power)
-  
-  local explosion_volume = 0.3 * (1 + total_power)
+  -- Simple explosion: % of max HP damage in area
+  local explosion_damage = self.max_hp * BURN_EXPLOSION_DAMAGE_PERCENT
 
   Knockback_Area_Spell{
     group = main.current.effects,
-    is_troop = true,
+    is_troop = from and from.is_troop or false,
     unit = from,
     x = self.x,
     y = self.y,
-    opacity = 0.3,
-    radius = explosion_radius,
+    opacity = 0.4,
+    radius = 25,
     damage = explosion_damage,
-    duration = 0.3,
+    duration = 0.15,
     area_type = 'area',
     pick_shape = 'circle',
     color = red[0],
-    knockback_force = explosion_knockback,
-    knockback_duration = explosion_knockback_duration,
-    damage_type = DAMAGE_TYPE_FIRE,
+    knockback_force = 80,
+    knockback_duration = 0.15,
+    damage_type = DAMAGE_TYPE_PHYSICAL,
+    is_chained = true,
   }
   
   -- Play fire explosion sound
-  fire1:play{pitch = random:float(0.8, 1.2), volume = explosion_volume}
+  fire1:play{pitch = random:float(0.8, 1.2), volume = 0.4}
 end
 
 --SHOCK SYSTEM
@@ -2204,7 +2156,7 @@ function Unit:add_stats(stats_list)
     elseif stat_name == buff_types['slow_per_element'] then
       self.slow_per_element = (self.slow_per_element or 0) + amount
     else
-      -- print("unknown stat: " .. stat_name, amount)
+      -- Unknown stat type
     end
   end
 end

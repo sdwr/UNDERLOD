@@ -9,7 +9,7 @@ function Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects,
   if not unit or unit.invulnerable or unit.dead or unit.offscreen then return end
 
   -- Default parameters and options
-  playHitEffects = playHitEffects or true
+  playHitEffects = default_to(playHitEffects, true)
   hitOptions = hitOptions or {}
   local isPrimary = hitOptions.isPrimary or false
   local isChained = hitOptions.isChained or false
@@ -60,7 +60,7 @@ function Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects,
   -- ===================================================================
   
   -- For physical hits, apply attacker's elemental damage
-  if damageType == DAMAGE_TYPE_PHYSICAL and not isElementalConversion then
+  if damageType == DAMAGE_TYPE_PHYSICAL and not isChained then
     Helper.Damage:process_physical_to_elemental(unit, actual_damage, from)
   end
   
@@ -323,11 +323,9 @@ function Helper.Damage:apply_elemental_effects(unit, actual_damage, damageType, 
   if damageType == DAMAGE_TYPE_LIGHTNING then
     local lightning_chance = 0
     if hitOptions.isPrimary then
-      lightning_chance = 0.5
-    elseif hitOptions.isChained then
-      lightning_chance = 0.2
+      lightning_chance = 0.3
     elseif hitOptions.isElementalConversion then
-      lightning_chance = 0.1
+      lightning_chance = 0.05
     end
 
     if random:float(0, 1) < lightning_chance then

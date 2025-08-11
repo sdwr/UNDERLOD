@@ -1507,7 +1507,7 @@ end
 Proc_Shock = Proc:extend()
 function Proc_Shock:init(args)
   self.triggers = {PROC_STATIC}
-  self.scope = 'global'
+  self.scope = 'troop'
 
   Proc_Shock.super.init(self, args)
   
@@ -1541,7 +1541,7 @@ end
 Proc_BurnExplode = Proc:extend()
 function Proc_BurnExplode:init(args)
   self.triggers = {PROC_STATIC}
-  self.scope = 'global'
+  self.scope = 'troop'
 
   Proc_BurnExplode.super.init(self, args)
 

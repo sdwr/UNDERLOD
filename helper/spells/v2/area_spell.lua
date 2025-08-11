@@ -19,6 +19,7 @@ function Area_Spell:init(args)
     self.hit_only_once = default_to(self.hit_only_once, not self.damage_ticks)
     self.tick_rate = self.tick_rate or 0.2
     self.is_troop = default_to(self.is_troop, false)
+    self.is_chained = default_to(self.is_chained, true)
 
     self.targets_to_exclude = self.targets_to_exclude or {}
 
@@ -114,8 +115,10 @@ function Area_Spell:apply_damage()
             if self.damage > 0 then
                 if self.apply_primary_hit_to_target and target == self.target then
                     Helper.Damage:primary_hit(target, self.damage, self.unit, self.damage_type, true)
-                else
+                elseif not self.is_chained then
                     Helper.Damage:indirect_hit(target, self.damage, self.unit, self.damage_type, true)
+                else
+                    Helper.Damage:chained_hit(target, self.damage, self.unit, self.damage_type, true)
                 end
             end
             
