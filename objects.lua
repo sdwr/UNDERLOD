@@ -1790,10 +1790,16 @@ function Unit:get_cooldown_nudge()
 
   local my_last_attack_time = self.my_last_attack_time
   local my_last_attack_time_duration = Helper.Time.time - my_last_attack_time
-  local nudge_window = self.attack_cooldown / 3
-  if last_troop_attack_time_ago < nudge_window and my_last_attack_time_duration < nudge_window then
-    nudge = random:float(-nudge_window, nudge_window)
+  local attack_spread_percent = last_troop_attack_time_ago / my_last_attack_time_duration
+  local attack_spread_percent_difference = math.abs(attack_spread_percent - 0.5)
+
+  local nudge_window = my_last_attack_time_duration * attack_spread_percent_difference / 2
+  if attack_spread_percent > 0.5 then
+    nudge = random:float(-nudge_window, nudge_window/2)
+  else
+    nudge = random:float(-nudge_window/2, nudge_window)
   end
+
   return nudge
 end
 
