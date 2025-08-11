@@ -741,7 +741,7 @@ function Unit:update_buffs(dt)
           -- 2. Deal the damage
           if damage_this_tick > 0 then
               -- Burn damage should not be attributed to anyone (environmental damage)
-              self:hit(damage_this_tick, nil, DAMAGE_TYPE_FIRE, false, true)
+              Damage.Helper:indirect_hit(self, damage_this_tick, nil, DAMAGE_TYPE_FIRE, false)
           end
 
           v.total_damage = v.total_damage - damage_this_tick
@@ -1063,20 +1063,20 @@ function Unit:get_elemental_damage_stats()
   elemental_stats[DAMAGE_TYPE_COLD] = self.cold_damage or 0
   
   -- Second pass: Apply elemental conversions based on static procs
-  local fire_to_cold_damage = 0
+  local fire_to_lightning_damage = 0
   local lightning_to_cold_damage = 0
   local cold_to_fire_damage = 0
 
   if Has_Static_Proc(self, 'fireToLightning') then
-    local fire_to_lightning_damage = elemental_stats[DAMAGE_TYPE_FIRE] * ELEMENTAL_CONVERSION_PERCENT
+    fire_to_lightning_damage = elemental_stats[DAMAGE_TYPE_FIRE] * ELEMENTAL_CONVERSION_PERCENT
   end
   
   if Has_Static_Proc(self, 'lightningToCold') then
-    local lightning_to_cold_damage = elemental_stats[DAMAGE_TYPE_LIGHTNING] * ELEMENTAL_CONVERSION_PERCENT
+    lightning_to_cold_damage = elemental_stats[DAMAGE_TYPE_LIGHTNING] * ELEMENTAL_CONVERSION_PERCENT
   end
   
   if Has_Static_Proc(self, 'coldToFire') then
-    local cold_to_fire_damage = elemental_stats[DAMAGE_TYPE_COLD] * ELEMENTAL_CONVERSION_PERCENT
+    cold_to_fire_damage = elemental_stats[DAMAGE_TYPE_COLD] * ELEMENTAL_CONVERSION_PERCENT
   end
   
   elemental_stats[DAMAGE_TYPE_FIRE] = elemental_stats[DAMAGE_TYPE_FIRE] + cold_to_fire_damage 
@@ -1291,7 +1291,8 @@ function Unit:burn_explode(from)
 end
 
 --SHOCK SYSTEM
-function Unit:shock()
+function Unit:shock(damage, from)
+  self
   if not Does_Static_Proc_Exist('shock') then
     return
   end

@@ -177,7 +177,7 @@ function ChainLightning:init(args)
     -- on_hit: This function is called on each target in the chain.
     on_hit = function(spell, target)
       -- 'spell' is the ChainLightning instance. 'self' would also work here.
-      Damage.Helper:chained_hit(target, self.damage, self.caster, self.damageType, false)
+      Helper.Damage:chained_hit(target, self.damage, self.caster, self.damageType, false)
     end,
 
     -- on_bounce: This function creates the visual and audio effects between targets.

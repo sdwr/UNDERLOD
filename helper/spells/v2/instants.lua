@@ -1261,7 +1261,7 @@ function LightningBall:find_and_shock_targets()
         end
 
         -- Shock the target
-        target:hit(self.damage, self, DAMAGE_TYPE_LIGHTNING, true, true) -- Assuming units have an apply_shock method
+        Damage.Helper:indirect_hit(target, self.damage, self.unit, DAMAGE_TYPE_SHOCK, true) -- Assuming units have an apply_shock method
 
         -- Create the lightning visual effect
         LightningLine{
