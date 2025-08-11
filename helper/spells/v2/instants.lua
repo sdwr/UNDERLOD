@@ -125,7 +125,15 @@ function ArrowProjectile:init(args)
   local vy = math.sin(self.angle) * self.speed
   self:set_velocity(vx, vy)
   
-  table.random({arrow_release1, arrow_release2, arrow_release3}):play{volume=2}
+  local pitch = self.pitch or 1
+  local volume = self.volume or 2
+  if self.unit and self.unit.get_attack_pitch_multiplier then
+    pitch = pitch * self.unit:get_attack_pitch_multiplier()
+  end
+  if self.unit and self.unit.get_attack_volume_multiplier then
+    volume = volume * self.unit:get_attack_volume_multiplier()
+  end 
+  table.random({arrow_release1, arrow_release2, arrow_release3}):play{volume= volume, pitch=pitch}
 
   self.already_hit_targets = {}
 end
@@ -169,13 +177,13 @@ function ArrowProjectile:hit_target(target)
 
   local hit_target = false
   if #self.already_hit_targets == 0 then
-    Helper.Damage:primary_hit(target, self.damage, self.unit, nil, true)
+    Helper.Damage:primary_hit(target, self.damage, self.unit, DAMAGE_TYPE_PHYSICAL, true)
     self.damage = self.damage * 0.8
     table.insert(self.already_hit_targets, target)
     hit_target = true
   else
     if self.pierce and self.pierce > 0 then
-      Helper.Damage:indirect_hit(target, self.damage, self.unit, nil, true)
+      Helper.Damage:indirect_hit(target, self.damage, self.unit, DAMAGE_TYPE_PHYSICAL, true)
       self.damage = self.damage * 0.8
       table.insert(self.already_hit_targets, target)
       hit_target = true
@@ -1261,7 +1269,7 @@ function LightningBall:find_and_shock_targets()
         end
 
         -- Shock the target
-        target:hit(self.damage, self, DAMAGE_TYPE_LIGHTNING, true, true) -- Assuming units have an apply_shock method
+        Damage.Helper:indirect_hit(target, self.damage, self.unit, DAMAGE_TYPE_SHOCK, true) -- Assuming units have an apply_shock method
 
         -- Create the lightning visual effect
         LightningLine{

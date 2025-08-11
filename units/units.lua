@@ -86,7 +86,7 @@ function Team:set_team_target(target)
   for i, troop in ipairs(self.troops) do
     troop:set_assigned_target(target)
     troop:cancel_cast()
-      Helper.Unit:set_state(troop, unit_states['idle'])
+    Helper.Unit:set_state(troop, unit_states['idle'])
   end
   Helper.Unit:set_target_ring(target)
 end

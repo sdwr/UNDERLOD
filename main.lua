@@ -184,7 +184,8 @@ function init()
   arcspread_sound = Sound('arcspread.wav', s)
   arcspread_full_sound = Sound('arcspread_full.wav', s)
   new_spark = Sound('new_spark.wav', s)
-
+  choir1 = Sound('choir1.wav', s)
+  choir1_loop = Sound('choir1.wav', s_loop)
   title_music = Sound('Debussy - Reverie.mp3', { tags = { music } })
 
 
@@ -1574,6 +1575,17 @@ function update(dt)
 
   if input.f10.pressed then
     Unlock_Achievement('heatingup')
+  end
+
+  if input['f6'].pressed then
+    DEBUG_STEERING_VECTORS = not DEBUG_STEERING_VECTORS
+    print('DEBUG_STEERING_VECTORS:', DEBUG_STEERING_VECTORS)
+    print('DEBUG_STEERING_ENEMY_TYPE:', DEBUG_STEERING_ENEMY_TYPE)
+  end
+
+  if input['f7'].pressed then
+    DEBUG_DISTANCE_MULTI = not DEBUG_DISTANCE_MULTI
+    print('DEBUG_DISTANCE_MULTI:', DEBUG_DISTANCE_MULTI)
   end
 end
 

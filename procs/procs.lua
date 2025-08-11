@@ -784,9 +784,8 @@ function Proc_Multishot:init(args)
 
   Proc_Multishot.super.init(self, args)
 
-  self.damageMulti = 0.5
+  self.damageMulti = 0.25
 
-  self.damageMulti = 0.5
 end
 
 function Proc_Multishot:get_damage_multi()
@@ -805,7 +804,7 @@ function Proc_MultishotFullDamage:init(args)
 
   Proc_MultishotFullDamage.super.init(self, args)
 
-  self.damageMulti = 1
+  self.damageMulti = 0.5
 end
 
 --proc overkill
@@ -1348,7 +1347,7 @@ function Proc_Radiance:init(args)
 
   --define the proc's vars
   self.color = self.data.color or red[0]:clone()
-  self.color.a = 0.4
+  self.color.a = 0.0
   self.radius = self.data.radius or 70
   self.damage = self.data.damage or 8
   self.damageType = DAMAGE_TYPE_FIRE
@@ -1369,7 +1368,7 @@ function Proc_Radiance:create_damage_aura()
   local on_hit_callback = function(area_spell, target, unit)
     if not target:has_buff('radianceburn') then
       target:add_buff({name = 'radianceburn', damage = self.damage, duration = 1})
-      target:hit(self.damage, unit, self.damageType, false, true)
+      Helper.Damage:indirect_hit(target, self.damage, unit, self.damageType, false)
     end
   end
   local aura = Area_Spell{
@@ -1384,7 +1383,7 @@ function Proc_Radiance:create_damage_aura()
     radius = self.radius, 
     duration = 1000, 
     color = self.color,
-    opacity = 0.04,
+    opacity = 0.00,
     tick_rate = 0.1,
     is_troop = self.unit.is_troop,
     on_hit_callback = on_hit_callback,
@@ -1497,6 +1496,7 @@ function Proc_LightningBall:create_lightning_ball(target)
     x = spawn_location.x, y = spawn_location.y,
     r = travel_direction_angle,
     is_troop = self.unit.is_troop,
+    unit = self.unit,
     duration = 4,
     damage = self.damage,
     num_targets = 3,
@@ -1507,22 +1507,102 @@ end
 Proc_Shock = Proc:extend()
 function Proc_Shock:init(args)
   self.triggers = {PROC_STATIC}
-  self.scope = 'global'
+  self.scope = 'troop'
 
   Proc_Shock.super.init(self, args)
   
 end
 
+--elemental transformation
+Proc_FireToCold = Proc:extend()
+function Proc_FireToCold:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'troop'
+  
+  Proc_FireToCold.super.init(self, args)
+end
+
+Proc_FireToLightning = Proc:extend()
+function Proc_FireToLightning:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'troop'
+
+  Proc_FireToLightning.super.init(self, args)
+end
+
+Proc_LightningToCold = Proc:extend()
+function Proc_LightningToCold:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'troop'
+  
+  Proc_LightningToCold.super.init(self, args)
+end
+
 Proc_BurnExplode = Proc:extend()
 function Proc_BurnExplode:init(args)
   self.triggers = {PROC_STATIC}
-  self.scope = 'global'
+  self.scope = 'troop'
 
   Proc_BurnExplode.super.init(self, args)
 
   --define the proc's vars
   self.radius = self.data.radius or 35
   self.color = self.data.color or red[0]
+end
+
+--elemental boosts
+Proc_StoneCold = Proc:extend()
+function Proc_StoneCold:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'troop'
+
+  Proc_StoneCold.super.init(self, args)
+
+  self.damage_multi = self.data.damage_multi or 1.3
+end
+
+Proc_Blazin = Proc:extend()
+function Proc_Blazin:init(args)
+  self.triggers = {PROC_ON_TICK}
+  self.scope = 'troop'
+
+  Proc_Blazin.super.init(self, args)
+  
+  
+
+  --define the proc's vars
+  self.buff = 'blazin'
+  self.buff_duration = self.data.buff_duration or 1000
+
+  self.aspd_per_enemy = self.data.aspd_per_enemy or 0.1
+  self.max_stacks = self.data.max_stacks or 10
+
+  --dont use stacks, because we don't want it to decay over time
+  self.buffdata = {name = 'blazin', color = red[5], duration = self.buff_duration,
+    stats = {aspd = self.aspd_per_enemy}, stacks = 0
+  }
+
+end
+
+function Proc_Blazin:onTick(dt)
+  Proc_Blazin.super.onTick(self, dt)
+
+  --find how many enemies are burning
+  local enemies = main.current.main:get_objects_by_classes(enemy_classes)
+  local count = 0
+  for i, enemy in ipairs(enemies) do
+    if enemy:has_buff('burn') then
+      count = count + 1
+    end
+  end
+
+  --change stats based on # of enemies burning
+  self.buffdata.stats.stacks = math.min(count, self.max_stacks)
+  
+  --remove buff before reapplying (otherwise will not change stats)
+  if not self.unit then return end
+  self.unit:remove_buff(self.buff)
+  self.unit:add_buff(self.buffdata)
 end
 
 
@@ -1776,49 +1856,6 @@ end
 --   }
 -- end
 
-Proc_Blazin = Proc:extend()
-function Proc_Blazin:init(args)
-  self.triggers = {PROC_ON_TICK}
-  self.scope = 'troop'
-
-  Proc_Blazin.super.init(self, args)
-  
-  
-
-  --define the proc's vars
-  self.buff = 'blazin'
-  self.buff_duration = self.data.buff_duration or 1000
-
-  self.aspd_per_enemy = self.data.aspd_per_enemy or 0.1
-  self.max_stacks = self.data.max_stacks or 10
-
-  --dont use stacks, because we don't want it to decay over time
-  self.buffdata = {name = 'blazin', color = red[5], duration = self.buff_duration,
-    stats = {aspd = self.aspd_per_enemy}, stacks = 0
-  }
-
-end
-
-function Proc_Blazin:onTick(dt)
-  Proc_Blazin.super.onTick(self, dt)
-
-  --find how many enemies are burning
-  local enemies = main.current.main:get_objects_by_classes(enemy_classes)
-  local count = 0
-  for i, enemy in ipairs(enemies) do
-    if enemy:has_buff('burn') then
-      count = count + 1
-    end
-  end
-
-  --change stats based on # of enemies burning
-  self.buffdata.stats.stacks = math.min(count, self.max_stacks)
-  
-  --remove buff before reapplying (otherwise will not change stats)
-  if not self.unit then return end
-  self.unit:remove_buff(self.buff)
-  self.unit:add_buff(self.buffdata)
-end
 Proc_Phoenix = Proc:extend()
 function Proc_Phoenix:init(args)
   self.triggers = {PROC_ON_DEATH}
@@ -2317,6 +2354,15 @@ proc_name_to_class = {
   ['multishotFullDamage'] = Proc_MultishotFullDamage,
   ['multishotRepeat'] = Proc_MultishotRepeat,
 
+  --elemental transformation
+  ['fireToLightning'] = Proc_FireToLightning,
+  ['coldToFire'] = Proc_ColdToFire,
+  ['lightningToCold'] = Proc_LightningToCold,
+
+  --elemental boosts
+  ['stonecold'] = Proc_StoneCold,
+  ['blazin'] = Proc_Blazin,
+  
   --yellow procs
   ['radiance'] = Proc_Radiance,
   ['shield'] = Proc_Shield,
@@ -2332,7 +2378,6 @@ proc_name_to_class = {
   ['firenova'] = Proc_Firenova,
   ['lavaman'] = Proc_Lavaman,
   -- ['fireexplode'] = Proc_FireExplode,
-  ['blazin'] = Proc_Blazin,
   ['phoenix'] = Proc_Phoenix,
   --blue procs
   ['frostfield'] = Proc_Frostfield,

@@ -1,6 +1,90 @@
 Helper.Damage = {}
 
 -- ===================================================================
+-- UNIFIED DAMAGE HIT FUNCTION
+-- A single function to handle all hit types
+-- ===================================================================
+function Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects, hitOptions)
+  -- Early returns for invalid states
+  if not unit or unit.invulnerable or unit.dead or unit.offscreen then return end
+
+  -- Default parameters and options
+  playHitEffects = default_to(playHitEffects, true)
+  hitOptions = hitOptions or {}
+  local isPrimary = hitOptions.isPrimary or false
+  local isChained = hitOptions.isChained or false
+  local canProcOnHit = default_to(hitOptions.canProcOnHit, not isChained) -- Chained hits can't proc by default
+  local applyKnockback = default_to(hitOptions.applyKnockback, isPrimary) -- Primary hits knockback by default
+  local isElementalConversion = default_to(hitOptions.isElementalConversion, false)
+  
+  -- Unit-specific pre-hit processing
+  if not Helper.Damage:process_pre_hit(unit, damage, from, damageType, playHitEffects) then
+    return
+  end
+
+  -- ===================================================================
+  -- CONDITIONAL LOGIC BASED ON HIT TYPE FLAGS
+  -- ===================================================================
+  if isPrimary then
+    -- Only primary hits can crit and stun
+    damage = Helper.Damage:roll_crit(from, damage)
+    if Helper.Damage:roll_stun(from) then
+      unit:stun()
+    end
+    -- Trigger onPrimaryHit callbacks for primary hits
+    if from and from.onPrimaryHitCallbacks then
+      from:onPrimaryHitCallbacks(unit, damage, damageType)
+    end
+    -- Apply knockback if enabled
+    if applyKnockback then
+      Helper.Damage:apply_knockback(unit, from)
+    end
+  end
+  
+  -- Calculate final damage
+  local actual_damage = Helper.Damage:calculate_final_damage(unit, damage, damageType)
+  
+  --Elemental or physical damage application
+  if table.contains(ELEMENTAL_HIT_DAMAGE_TYPES, damageType) then
+    Helper.Damage:apply_elemental_effects(unit, actual_damage, damageType, from, hitOptions)
+  else
+    if isChained then
+      Helper.Damage:deal_damage_chained(unit, actual_damage)
+    else
+      Helper.Damage:deal_damage(unit, actual_damage)
+    end
+  end
+
+  -- ===================================================================
+  -- ELEMENTAL DAMAGE PROCESSING
+  -- ===================================================================
+  
+  -- For physical hits, apply attacker's elemental damage
+  if damageType == DAMAGE_TYPE_PHYSICAL and not isChained then
+    Helper.Damage:process_physical_to_elemental(unit, actual_damage, from)
+  end
+  
+
+  -- For direct elemental hits (not conversions), apply conversions from static procs
+  if table.contains(ELEMENTAL_EFFECT_TYPES, damageType) then
+    Helper.Damage:process_elemental_conversions(unit, actual_damage, from, damageType)
+  end
+  
+  -- Unit-specific post-damage processing
+  Helper.Damage:process_post_damage(unit, actual_damage, damageType, from)
+  
+  -- Track damage for teams
+  Helper.Damage:track_team_damage(from, actual_damage)
+  
+  -- Handle callbacks
+  Helper.Damage:process_callbacks(unit, from, actual_damage, damageType, not canProcOnHit)
+  
+  -- Handle death
+  if unit.hp <= 0 then
+    Helper.Damage:handle_death(unit, from, actual_damage)
+  end
+end
+-- ===================================================================
 -- THREE HIT TYPES FOR THE NEW DAMAGE SYSTEM
 -- ===================================================================
 
@@ -9,61 +93,11 @@ Helper.Damage = {}
 -- Direct attacks that can trigger full onHit effects including chains and criticals
 -- ===================================================================
 function Helper.Damage:primary_hit(unit, damage, from, damageType, playHitEffects)
-  
-  -- Primary hits can trigger full onHit effects
-  -- TODO: Add critical hit check here before applying damage
-  -- TODO: Add chain attack potential here
-  
-  -- Early returns for invalid states
-  if unit.invulnerable then return end
-  if unit.dead then return end
-  if unit.offscreen then return end
-  
-  -- Default parameters
-  playHitEffects = playHitEffects or true
-
-  --only direct attacks can crit
-  damage = Helper.Damage:roll_crit(from, damage)
-
-  local stun = Helper.Damage:roll_stun(from)
-  if stun then
-    unit:stun()
-  end
-  
-  -- Trigger onPrimaryHit callbacks right before processing the hit
-  if from and from.onPrimaryHitCallbacks then
-    from:onPrimaryHitCallbacks(unit, damage, damageType)
-  end
-
-  -- Helper.Damage:apply_knockback(unit, from)
-  
-  -- Unit-specific pre-hit processing
-  if not Helper.Damage:process_pre_hit(unit, damage, from, damageType, playHitEffects) then
-    return
-  end
-  
-  -- Calculate final damage
-  local actual_damage = Helper.Damage:calculate_final_damage(unit, damage, damageType)
-  
-  -- TODO: Apply critical hit multiplier here if critical
-  -- TODO: Apply chain attack effects here
-  
-  -- Apply damage
-  Helper.Damage:deal_damage(unit, actual_damage)
-  
-  -- Unit-specific post-damage processing
-  Helper.Damage:process_post_damage(unit, actual_damage, damageType, from)
-  
-  -- Track damage for teams
-  Helper.Damage:track_team_damage(from, actual_damage)
-  
-  -- Handle callbacks with full onHit effects
-  Helper.Damage:process_callbacks(unit, from, actual_damage, damageType, false)
-  
-  -- Handle death
-  if unit.hp <= 0 then
-    Helper.Damage:handle_death(unit, from, actual_damage)
-  end
+  Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects, {
+    isPrimary = true,
+    canProcOnHit = true,
+    applyKnockback = true,
+  })
 end
 
 -- ===================================================================
@@ -71,42 +105,12 @@ end
 -- Area effects, explosions, environmental damage that can't chain
 -- ===================================================================
 function Helper.Damage:indirect_hit(unit, damage, from, damageType, playHitEffects)
-  
-  -- Indirect hits have limited onHit effects (no chain effects, no critical hits)
-  -- This is the current apply_hit function renamed
-  
-  -- Early returns for invalid states
-  if unit.invulnerable then return end
-  if unit.dead then return end
-  if unit.offscreen then return end
-  
-  -- Default parameters
-  playHitEffects = playHitEffects or true
-  
-  -- Unit-specific pre-hit processing
-  if not Helper.Damage:process_pre_hit(unit, damage, from, damageType, playHitEffects) then
-    return
-  end
-  
-  -- Calculate final damage
-  local actual_damage = Helper.Damage:calculate_final_damage(unit, damage, damageType)
-  
-  -- Apply damage
-  Helper.Damage:deal_damage(unit, actual_damage)
-  
-  -- Unit-specific post-damage processing
-  Helper.Damage:process_post_damage(unit, actual_damage, damageType, from)
-  
-  -- Track damage for teams
-  Helper.Damage:track_team_damage(from, actual_damage)
-  
-  -- Handle callbacks with limited onHit effects
-  Helper.Damage:process_callbacks(unit, from, actual_damage, damageType, false)
-  
-  -- Handle death
-  if unit.hp <= 0 then
-    Helper.Damage:handle_death(unit, from, actual_damage)
-  end
+  Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects, {
+    isPrimary = false,
+    isChained = false,
+    canProcOnHit = false,
+    applyKnockback = false,
+  })
 end
 
 -- ===================================================================
@@ -114,40 +118,12 @@ end
 -- Elemental damage, chain lightning, or any effect that originates from a primary hit
 -- ===================================================================
 function Helper.Damage:chained_hit(unit, damage, from, damageType, playHitEffects)
-  -- Chained hits cannot trigger onHit effects (prevents infinite loops)
-  
-  -- Early returns for invalid states
-  if unit.invulnerable then return end
-  if unit.dead then return end
-  if unit.offscreen then return end
-  
-  -- Default parameters
-  playHitEffects = playHitEffects or true
-  
-  -- Unit-specific pre-hit processing
-  if not Helper.Damage:process_pre_hit(unit, damage, from, damageType, playHitEffects) then
-    return
-  end
-  
-  -- Calculate final damage
-  local actual_damage = Helper.Damage:calculate_final_damage(unit, damage, damageType)
-  
-  -- Apply damage
-  Helper.Damage:deal_damage_chained(unit, actual_damage)
-  
-  -- Unit-specific post-damage processing
-  Helper.Damage:process_post_damage(unit, actual_damage, damageType, from)
-  
-  -- Track damage for teams
-  Helper.Damage:track_team_damage(from, actual_damage)
-  
-  -- Handle callbacks with NO onHit effects (prevents infinite loops)
-  Helper.Damage:process_callbacks(unit, from, actual_damage, damageType, true)
-  
-  -- Handle death
-  if unit.hp <= 0 then
-    Helper.Damage:handle_death(unit, from, actual_damage)
-  end
+  Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects, {
+    isPrimary = false,
+    isChained = true,
+    canProcOnHit = false,
+    applyKnockback = false,
+  })
 end 
 
 function Helper.Damage:apply_knockback(unit, from)
@@ -314,11 +290,6 @@ function Helper.Damage:calculate_final_damage(unit, damage, damageType)
     final_damage = unit:calculate_damage(damage)
   end
   
-  -- Enemy specific: stun damage multiplier
-  if unit.stun_dmg_m then
-    final_damage = final_damage * unit.stun_dmg_m
-  end
-  
   -- Ensure damage is non-negative
   return math.max(final_damage, 0)
 end
@@ -331,11 +302,6 @@ function Helper.Damage:process_post_damage(unit, actual_damage, damageType, from
   -- Show damage number
   unit:show_damage_number(actual_damage, damageType)
   
-  -- Enemy specific: elemental damage reactions
-  if unit.isEnemy then
-    Helper.Damage:process_elemental_reactions(unit, actual_damage, damageType, from)
-  end
-  
   -- Update global damage tracking
   if unit.isEnemy then
     main.current.damage_dealt = main.current.damage_dealt + actual_damage
@@ -346,27 +312,99 @@ end
 -- ELEMENTAL DAMAGE REACTIONS
 -- Enemy-specific elemental damage handling
 -- ===================================================================
-function Helper.Damage:process_elemental_reactions(unit, actual_damage, damageType, from)
+
+function Helper.Damage:apply_elemental_effects(unit, actual_damage, damageType, from, hitOptions)
+  if not from then return end
+
   if damageType == DAMAGE_TYPE_FIRE then
     unit:burn(actual_damage, from)
   end
 
   if damageType == DAMAGE_TYPE_LIGHTNING then
-    ChainLightning{
-      group = main.current.main, 
-      target = unit, range = 50, 
-      damage = actual_damage, color = yellow[0], 
-      parent = from,
-      is_troop = from and from.is_troop,
-    }
+    local lightning_chance = 0
+    if hitOptions.isPrimary then
+      lightning_chance = 0.3
+    elseif hitOptions.isElementalConversion then
+      lightning_chance = 0.05
+    end
+
+    if random:float(0, 1) < lightning_chance then
+      ChainLightning{
+        group = main.current.main, 
+        target = unit, range = 50, 
+        damage = LIGHTNING_FLAT_DAMAGE, 
+        damageType = DAMAGE_TYPE_SHOCK,  -- Chain lightning deals shock damage, not lightning damage
+        color = yellow[0], 
+        parent = from,
+        is_troop = from and from.is_troop,
+      }
+    end
   end
 
   if damageType == DAMAGE_TYPE_SHOCK then
-    unit:shock()
+    unit:shock(from)
+
   end
 
   if damageType == DAMAGE_TYPE_COLD then
     unit:chill(actual_damage, from)
+  end
+end
+
+
+-- ===================================================================
+-- PHYSICAL TO ELEMENTAL DAMAGE PROCESSING
+-- Applies attacker's elemental damage stats to physical hits
+-- ===================================================================
+function Helper.Damage:process_physical_to_elemental(unit, actual_damage, from)
+  if not from or not from.get_elemental_damage_stats then return end
+  
+  local elemental_stats = from:get_elemental_damage_stats()
+  
+  -- Apply each elemental type as separate converted hits
+  for _, elementalType in ipairs(ELEMENTAL_EFFECT_TYPES) do
+    if elemental_stats[elementalType] > 0 then
+      local elemental_damage = actual_damage * elemental_stats[elementalType]
+      Helper.Damage:apply_hit(unit, elemental_damage, from, elementalType, false, {
+        isChained = true,
+        isElementalConversion = true,
+        canProcOnHit = false,
+      })
+    end
+  end
+end
+
+-- ===================================================================
+-- ELEMENTAL CONVERSIONS PROCESSING
+-- Applies elemental conversions based on static procs
+-- ===================================================================
+function Helper.Damage:process_elemental_conversions(unit, actual_damage, from, damageType)
+  if not from then return end
+  
+  -- Apply conversions based on static procs
+  if damageType == DAMAGE_TYPE_BURN then
+    if Has_Static_Proc(from, 'fireToLightning') then
+      local converted_damage = actual_damage * ELEMENTAL_CONVERSION_PERCENT
+      Helper.Damage:apply_hit(unit, converted_damage, from, DAMAGE_TYPE_LIGHTNING, false, {
+        isChained = true,
+        isElementalConversion = true,
+        canProcOnHit = false,
+      })
+    end
+  end
+  
+  if damageType == DAMAGE_TYPE_SHOCK then
+    if Has_Static_Proc(from, 'lightningToCold') then
+      local converted_damage = actual_damage * ELEMENTAL_CONVERSION_PERCENT
+      unit:chill(converted_damage, from)
+    end
+  end
+  
+  if damageType == DAMAGE_TYPE_COLD then
+    if Has_Static_Proc(from, 'coldToFire') then
+      local converted_damage = actual_damage * ELEMENTAL_CONVERSION_PERCENT
+      unit:burn(converted_damage, from)
+    end
   end
 end
 

@@ -55,7 +55,7 @@ function Troop:follow_mouse()
   if self.being_knocked_back then return end
   if self:distance_to_mouse() > 10 then
     self:seek_mouse(SEEK_DECELERATION, SEEK_WEIGHT * 3)
-    self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
+    self:wander(TROOP_WANDER_RADIUS, TROOP_WANDER_DISTANCE, TROOP_WANDER_JITTER)
     self:rotate_towards_velocity(1)
   else
       --self:set_velocity(0, 0) -- Stop when we reach the cursor
@@ -78,7 +78,7 @@ function Troop:rally_to_point()
   end
 
   self:seek_point(self.target_pos.x, self.target_pos.y, SEEK_DECELERATION, SEEK_WEIGHT)
-  self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
+  self:wander(TROOP_WANDER_RADIUS, TROOP_WANDER_DISTANCE, TROOP_WANDER_JITTER)
   self:rotate_towards_velocity(1)
 end
 
@@ -203,16 +203,22 @@ function Troop:update(dt)
   -- ===================================================================
   -- 3. FINAL PHYSICS AND POSITIONING (These also always run)
   -- ===================================================================
+  
+  -- Mark current target for circle drawing
+  if self:my_target() then
+    self:my_target():add_buff({name = 'targeted', duration = 0.1, color = Helper.Color.yellow})
+  end
+  
   self.r = self:get_angle()
   self.attack_sensor:move_to(self.x, self.y)
 end
 
 --unused right now
 function Troop:move_towards_target()
-  local movement_target = Helper.Target:get_closest_enemy(self)
+  local movement_target = Helper.Target:get_close_enemy(self)
   if movement_target then
     self:seek_point(movement_target.x, movement_target.y, SEEK_DECELERATION, SEEK_WEIGHT)
-    self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
+    self:wander(TROOP_WANDER_RADIUS, TROOP_WANDER_DISTANCE, TROOP_WANDER_JITTER)
   end
 end
 
@@ -252,12 +258,18 @@ function Troop:update_ai_logic()
   if assigned_target and assigned_target.dead then
     self:clear_assigned_target()
   end
+  if regular_target and regular_target.dead then
+    self:clear_my_target()
+  end
 
   local cast_target = nil
-  if assigned_target then
-    cast_target = assigned_target
+  if self.assigned_target then
+    cast_target = self.assigned_target
+  elseif regular_target then
+    --should also check if the target is too far away compared to other enemies
+    cast_target = regular_target
   end
-  
+
 
   -- 2. ACQUIRE NEW TARGET
   -- If we don't have a target, try to find the closest one within our aggro range.
@@ -265,7 +277,7 @@ function Troop:update_ai_logic()
       --find target if not already found
       -- pick random in attack range
       -- or closest in aggro range
-      self:set_target(Helper.Target:get_closest_enemy(self))
+      self:set_target(Helper.Target:get_close_enemy(self))
       cast_target = self.target
   end
 
@@ -317,6 +329,9 @@ function Troop:draw()
   graphics.push(self.x, self.y, self.r, final_scale_x, final_scale_y)
   self:draw_buffs()
 
+  -- Distance multiplier glow effect
+  self:draw_distance_glow()
+
   -- -- darken the non-selected units
   -- local color = self.color:clone()
   -- color = color:lighten(SELECTED_PLAYER_LIGHTEN)
@@ -352,6 +367,55 @@ function Troop:draw()
   -- graphics.circle(self.x, self.y, self.aggro_sensor.rs, yellow[5], 2)
 
   graphics.pop()
+end
+
+function Troop:draw_distance_glow()
+  local tier = Helper.Unit.closest_enemy_distance_tier
+
+  if tier then
+    local glow_multipliers = {
+      [1] = 0.1,
+      [2] = 0.07,
+      [3] = 0.04,
+    }
+
+    local glow_intensity = glow_multipliers[tier]
+    
+    local glow_color = green[0]:clone()
+    glow_color.a = glow_intensity
+
+    local glow_color_2 = green[0]:clone()
+    glow_color_2.a = glow_intensity * 0.5
+    
+    -- Draw glow rings
+    local body_size = self.shape.w / 2
+    graphics.circle(self.x, self.y, body_size, glow_color, 2)
+    graphics.circle(self.x, self.y, body_size + 2, glow_color_2, 2)
+  end
+end
+
+function Troop:create_distance_tier_effect(tier)
+--pass
+end
+
+function Troop:get_attack_pitch_multiplier()
+  if self:my_target() then
+    local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier or 1
+    -- Lower distance multiplier (closer) = higher pitch
+    -- Higher distance multiplier (farther) = lower pitch
+    local pitch_multiplier = 1 - distance_multiplier
+    return pitch_multiplier + 1
+  end
+  return 1.0
+end
+
+function Troop:get_attack_volume_multiplier()
+  if self:my_target() then
+    local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier or 1
+    local volume_multiplier = 1 - distance_multiplier
+    return 1 + (volume_multiplier * 2)
+  end
+  return 1.0
 end
 
 function Troop:draw_cooldown_timer()

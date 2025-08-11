@@ -127,11 +127,11 @@ enemy_cast_times = {
 TROOP_RANGE = 500
 TROOP_SWORDSMAN_RANGE = 80
 
-REGULAR_ENEMY_HP = 20
+REGULAR_ENEMY_HP = 45
 REGULAR_ENEMY_DAMAGE = 15
-REGULAR_ENEMY_MS = 25
+REGULAR_ENEMY_MS = 20
 
-SPECIAL_ENEMY_HP = 70
+SPECIAL_ENEMY_HP = 280
 SPECIAL_ENEMY_DAMAGE = 20
 SPECIAL_ENEMY_MS = 20
 
@@ -163,6 +163,20 @@ MAX_STACKS_FIRE = 5
 MAX_STACKS_SLOW = 5
 MAX_STACKS_SHOCK = 10
 MAX_STACKS_REDSHIELD = 20
+
+ELEMENTAL_CONVERSION_PERCENT = 0.5
+
+ELEMENTAL_HIT_DAMAGE_TYPES = {DAMAGE_TYPE_FIRE, DAMAGE_TYPE_LIGHTNING, DAMAGE_TYPE_COLD}
+ELEMENTAL_EFFECT_TYPES = {DAMAGE_TYPE_BURN, DAMAGE_TYPE_LIGHTNING, DAMAGE_TYPE_COLD}
+
+LIGHTNING_FLAT_DAMAGE = 20
+
+-- Burn system constants
+BURN_DURATION = 5.0
+BURN_TICK_INTERVAL = 0.5
+BURN_DAMAGE_PER_TICK_PERCENT = 0.02  -- 2% of max HP per tick
+BURN_EXPLOSION_BASE_CHANCE = 0.05    -- 5% base chance per tick
+BURN_EXPLOSION_DAMAGE_PERCENT = 0.1  -- 15% of max HP explosion damage
 
 SHIELD_EXPLOSION_RADIUS = 50
 SHIELD_EXPLOSION_DURATION = 0.25
@@ -227,7 +241,7 @@ CHANCE_OF_SPECIAL_VS_NORMAL_ENEMY = 0.7
 
 get_num_special_enemies_by_level = function(level)
   if level == 1 then return 0 end
-  if level == 2 then return 1 end
+  if level == 2 then return 0 end
   if level == 3 then return 2 end
   if level == 4 then return 2 end
   if level == 5 then return 3 end
@@ -474,42 +488,32 @@ ZONE_SCALING = function(level)
   return 1
 end
 
-DISTANCE_TO_COOLDOWN_MULTIPLIER = function(distance)
-  local mult_values = {
-    [0] = 0.24,
-    [20] = 0.27,
-    [50] = 0.4,
-    [75] = 0.6,
-    [100] = 0.85,
-    [150] = 1.05,
-    [200] = 1.25,
-    [250] = 1.4,
-  }
+DISTANCE_TIER_TO_COOLDOWN_MULTIPLIER = {
+  [1] = 0.25,
+  [2] = 0.5,
+  [3] = 0.75,
+}
 
-  local first_key = table.smallest_key(mult_values)
-  local last_key = table.largest_key(mult_values)
+TIER_TO_DISTANCE = {
+  [1] = 60,
+  [2] = 100,
+  [3] = 130,
+}
 
-  if distance < first_key then
-    return mult_values[first_key]
-  end
+get_distance_effect_multiplier = function(distance)
+  local tier = get_distance_effect_tier(distance)
+  return DISTANCE_TIER_TO_COOLDOWN_MULTIPLIER[tier] or 1
+end
 
-  if distance > last_key then
-    return mult_values[last_key]
-  end
+get_distance_effect_tier = function(distance)
+  if not distance then return nil end
 
-  local p1, p2
-  local prev
-  for dist, mult in pairs(mult_values) do
-    if distance <= dist then
-      p1 = prev
-      p2 = dist
-      break
+  for i, tier_distance in ipairs(TIER_TO_DISTANCE) do
+    if distance <= tier_distance then
+      return i
     end
-    prev = dist
   end
-
-  local scale = (distance - p1) / (p2 - p1)
-  return mult_values[p1] + (mult_values[p2] - mult_values[p1]) * scale
+  return nil
 end
 
 

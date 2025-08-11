@@ -275,8 +275,8 @@ function WorldManager:update(dt)
   if not self.paused then
   -- Update Helper system for input handling and troop movement
     Helper:update(dt*slow_amount)
+    
     LevelManager.update(dt)
-
     
     if self.current_arena then
       self.current_arena:update(dt*slow_amount)

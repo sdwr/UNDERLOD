@@ -7,6 +7,7 @@ function Enemy:init(args)
   self:init_game_object(args)
 
   self.faction = 'enemy'
+  self.isEnemy = true
   self.transition_active = true
 
   self:setExtraFunctions()
@@ -450,7 +451,7 @@ function Enemy:acquire_target_random()
 end
 
 function Enemy:update_move_wander()
-  self:wander(50, 100, 20)
+  self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER)
   return true
 end
 
@@ -463,18 +464,18 @@ function Enemy:update_move_seek()
   -- 2. Check if we are in range.
   if self:in_range_of(self.target) and self.stopChasingInRange then
       -- We are in range and should stop, so just mill about.
-      self:wander(50, 100, 20)
+      self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER)
 
   else
       -- We are OUT of range, OR we are not supposed to stop.
       -- In either case, we must seek the target.
       self:seek_point(self.target.x, self.target.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
-      self:wander(50, 100, 20) -- Add a little variation to the seek.
+      self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER) -- Add a little variation to the seek.
   end
 
   -- 3. Apply final steering adjustments in all active cases.
   self:rotate_towards_velocity(0.5)
-  self:steering_separate(4, {Enemy}, 3)
+  self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
 
   -- 4. Return true because the movement action is successfully ongoing.
   return true
@@ -487,9 +488,9 @@ function Enemy:update_move_loose_seek()
       return false
     else
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
-      self:wander(50, 100, 20)
+      self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER)
       self:rotate_towards_velocity(0.5)
-      self:steering_separate(4, {Enemy}, 3)
+      self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
       return true
     end
   end
@@ -502,9 +503,9 @@ function Enemy:update_move_seek_to_range()
       return false
     else
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type) or SEEK_WEIGHT)
-      self:wander(50, 100, 20)
+      self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER)
       self:rotate_towards_velocity(0.5)
-      self:steering_separate(4, {Enemy}, 3)
+      self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
       return true
     end
   end
@@ -518,7 +519,7 @@ function Enemy:update_move_random()
     else
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
       self:rotate_towards_velocity(1)
-      self:steering_separate(4, {Enemy}, 3)
+      self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
       return true
     end
   end
@@ -529,7 +530,6 @@ function Enemy:draw()
   if DEBUG_ENEMY_MOVEMENT then
     self:draw_debug_info()
   end
-  self:draw_targeted()
   self:draw_buffs()
   self.draw_enemy(self)
   self:draw_launching()
@@ -540,6 +540,7 @@ function Enemy:draw()
     self:draw_knockback()
   end
   self:draw_cast_timer()
+  self:draw_targeted()
 end
 
 function Enemy:on_collision_enter(other, contact)
@@ -584,8 +585,6 @@ function Enemy:on_collision_enter(other, contact)
 end
 
 function Enemy:hit(damage, from, damageType, playHitEffects, cannotProcOnHit)
-  -- Mark this unit as an enemy for the damage helper
-  self.isEnemy = true
   -- Use the indirect hit function (current behavior)
   Helper.Damage:indirect_hit(self, damage, from, damageType, playHitEffects)
 end

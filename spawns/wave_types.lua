@@ -45,6 +45,12 @@ function Wave_Types:Create_Normal_Wave(level)
     table.insert(wave, {'GROUP', Get_Random_Special_Enemy(tier), 1, 'close'})
     num_special_enemies_left = num_special_enemies_left - 1
   end
+  if level <= 2 then
+    table.insert(wave, {'GROUP', 'archer', 1, 'close'})
+  end
+
+  if level <= 3 then return wave end
+
   table.insert(wave, {'DELAY', 1})
   table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
 

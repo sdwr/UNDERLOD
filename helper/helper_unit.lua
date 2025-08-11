@@ -3,6 +3,14 @@ Helper.Unit = {}
 Helper.Unit.cast_flash_duration = 0.08
 Helper.Unit.do_draw_points = false
 
+function Helper.Unit:clear_all_target_flags()
+    -- Clear target flags from all enemies
+    local enemies = self:get_list(false) -- false = get enemies
+    for _, enemy in ipairs(enemies) do
+        enemy.is_targeted = false
+    end
+end
+
 function Helper.Unit:get_list(troop_list)
     if troop_list == nil then
         return {}
@@ -170,14 +178,14 @@ function Helper.Unit:in_range_of_rally_point(unit)
     end
     return math.distance(unit.x, unit.y, unit.target_pos.x, unit.target_pos.y) < RALLY_CIRCLE_STOP_DISTANCE
 end
-    
+
 function Helper.Unit:cast_off_cooldown(unit)
     return unit.attack_cooldown_timer <= 0
 end
 
 function Helper.Unit:cast_off_cooldown_distance_multiplier(unit, target)
     if target.x and target.y then
-        local distance_multiplier = Helper.Target:get_distance_multiplier(unit, target)
+        local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier or 1
 
         local adjusted_cooldown = unit.attack_cooldown * distance_multiplier
 
@@ -378,7 +386,7 @@ end
 --target ring fns
 function Helper.Unit:set_target_ring(target)
     if target then
-        local targetBuff = {name = 'targeted', duration = 9999, color = Helper.Color.yellow}
+        local targetBuff = {name = 'player_target', duration = 9999, color = Helper.Color.yellow}
         target:add_buff(targetBuff)
     end
 end
@@ -387,7 +395,7 @@ function Helper.Unit:clear_target_ring(target)
     --clear the targeting ring around the target, if no other team is targeting it
     if not Helper.Unit:is_a_team_target(target) then
         if target then
-            target:remove_buff('targeted')
+            target:remove_buff('player_target')
         end
     end
 end
@@ -590,6 +598,62 @@ end
 function Helper.Unit:in_range_of_player_location(unit, range)
     range = range or ARENA_RADIUS
     return math.distance(unit.x, unit.y, self.player_location.x, self.player_location.y) < range
+end
+
+function Helper.Unit:create_distance_tier_effects(tier)
+    local troops = self:get_all_troops()
+    for _, troop in ipairs(troops) do
+        troop:create_distance_tier_effect(tier)
+    end
+end
+    
+
+function Helper.Unit:update_enemy_distance_tier()
+    self.last_closest_enemy_distance_tier = self.closest_enemy_distance_tier or 999
+    self.closest_enemy_distance_tier = get_distance_effect_tier(self.closest_enemy_distance)
+
+    if self.closest_enemy_distance_tier and self.closest_enemy_distance_tier < self.last_closest_enemy_distance_tier then            --play tier effects
+        if not self.tier_effect_debounce then
+            self.tier_effect_debounce = {
+                [1] = 0,
+                [2] = 0,
+                [3] = 0,
+            }
+        end
+        --debounce to prevent spamming
+        if self.tier_effect_debounce[self.closest_enemy_distance_tier] < Helper.Time.time then
+            Helper.Sound:play_distance_multiplier_sound(self.closest_enemy_distance_tier)
+            Helper.Unit:create_distance_tier_effects(self.closest_enemy_distance_tier)
+            self.tier_effect_debounce[self.closest_enemy_distance_tier] = Helper.Time.time + 0.5
+        end
+    end
+
+end
+
+function Helper.Unit:update_closest_enemy()
+    local closest_enemy = nil
+    local closest_distance = 999999
+    for i, enemy in ipairs(self:get_list(false)) do
+        local distance = math.distance(enemy.x, enemy.y, self.player_location.x, self.player_location.y)
+        local enemy_size = math.max(enemy.shape and enemy.shape.w or 0, enemy.shape and enemy.shape.h or 0)
+
+        distance = distance - enemy_size / 2
+
+        if distance < closest_distance then
+            closest_enemy = enemy
+            closest_distance = distance
+        end
+    end
+
+    if closest_enemy then
+        self.closest_enemy = closest_enemy
+        self.closest_enemy_distance = closest_distance
+        self.closest_enemy_distance_multiplier = Helper.Target:get_distance_multiplier(self.player_location, closest_enemy)
+    else
+        self.closest_enemy = nil
+        self.closest_enemy_distance = nil
+        self.closest_enemy_distance_multiplier = nil
+    end
 end
 
 function Helper.Unit:draw_points()

@@ -43,11 +43,11 @@ function EnemyCritter:update(dt)
     if not self.target or self:distance_to_object(self.target) < self.attack_sensor.rs then
       self:set_velocity(0,0)
       self:rotate_towards_velocity(1)
-      self:steering_separate(8, {EnemyCritter})
+      self:steering_separate(ENEMY_CRITTER_SEPARATION_RADIUS, {EnemyCritter})
     elseif self.target then
       self:seek_point(self.target.x, self.target.y)
       self:rotate_towards_velocity(1)
-      self:steering_separate(8, {EnemyCritter})
+      self:steering_separate(ENEMY_CRITTER_SEPARATION_RADIUS, {EnemyCritter})
     end
   end
   self.r = self:get_angle()

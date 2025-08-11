@@ -23,7 +23,7 @@ function Helper.Target:get_closest_friendly(object, exclude_list)
 end
 
 -----------------------------------------
-function Helper.Target:get_close_enemy(object, exclude_list, max_range_from_self)
+function Helper.Target:get_close_enemy(object, exclude_list)
   local class_list
   if object.faction == 'friendly' then
     class_list = main.current.enemies
@@ -31,7 +31,7 @@ function Helper.Target:get_close_enemy(object, exclude_list, max_range_from_self
     class_list = main.current.friendlies
   end
 
-  return main.current.main:get_random_close_object(object, class_list, exclude_list, max_range_from_self)
+  return main.current.main:get_random_close_object(object, class_list, exclude_list)
 end
 
 function Helper.Target:get_random_enemy(object)
@@ -57,8 +57,11 @@ function Helper.Target:get_random_friendly(object)
 end
 
 function Helper.Target:get_distance_multiplier(unit, target)
-  local distance = unit:distance_to_point(target.x, target.y)
-  local distance_multiplier = DISTANCE_TO_COOLDOWN_MULTIPLIER(distance)
+  if not target or not target.x or not target.y then
+    return 1
+  end
+  local distance = math.distance(unit.x, unit.y, target.x, target.y)
+  local distance_multiplier = get_distance_effect_multiplier(distance)
   return distance_multiplier
 end
 

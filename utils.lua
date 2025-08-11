@@ -1,3 +1,57 @@
+-- Execute function every x calls using a tag
+-- Usage: every_x(50, "my_action", function() print("Every 50th call") end)
+every_x = function(count, tag, func)
+  if not Helper.call_counters then
+    Helper.call_counters = {}
+  end
+  
+  if not Helper.call_counters[tag] then
+    Helper.call_counters[tag] = 0
+  end
+  
+  Helper.call_counters[tag] = Helper.call_counters[tag] + 1
+  
+  if Helper.call_counters[tag] % count == 0 then
+    func()
+  end
+end
+
+-- Execute function every x ticks
+-- Usage: every_x_ticks(60, function() print("Every 60 ticks") end)
+every_x_ticks = function(ticks, func)
+  if Helper.tick_count % ticks == 0 then
+    func()
+  end
+end
+
+-- Execute function every x seconds
+-- Usage: every_x_seconds(1.0, function() print("Every second") end)  
+every_x_seconds = function(seconds, func)
+  local tick_interval = math.floor(seconds * 60) -- Assuming 60fps
+  if Helper.tick_count % tick_interval == 0 then
+    func()
+  end
+end
+
+-- Execute function every x seconds using actual time (more precise)
+-- Usage: every_x_seconds_precise(1.0, "my_timer", function() print("Every second") end)
+every_x_seconds_precise = function(seconds, timer_id, func)
+  if not Helper.timers then
+    Helper.timers = {}
+  end
+  
+  if not Helper.timers[timer_id] then
+    Helper.timers[timer_id] = 0
+  end
+  
+  Helper.timers[timer_id] = Helper.timers[timer_id] + love.timer.getDelta()
+  
+  if Helper.timers[timer_id] >= seconds then
+    Helper.timers[timer_id] = Helper.timers[timer_id] - seconds
+    func()
+  end
+end
+
 get_random_from_table = function(t)
   local keys = {}
   for key in pairs(t) do

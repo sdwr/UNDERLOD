@@ -19,6 +19,12 @@ Helper.window_width = 0
 Helper.window_height = 0
 Helper.disable_unit_controls = false
 
+-- Timing state variables
+Helper.tick_count = 0
+Helper.time_elapsed = 0
+Helper.call_counters = {}
+Helper.timers = {}
+
 --helper fns only work in arena, not in buy screen
 function Helper:init()
     Helper.Time.time = love.timer.getTime()
@@ -45,6 +51,20 @@ function Helper:draw()
     Helper.Unit:draw_selection()
 
     Helper.Unit:draw_points()
+    
+    -- Debug distance circles around player center
+    if DEBUG_DISTANCE_MULTI then
+        local player_center = Helper.Unit:get_player_location()
+        if player_center then
+            local distances = TIER_TO_DISTANCE
+            for i, distance in ipairs(distances) do
+                -- Draw circle
+                graphics.circle(player_center.x, player_center.y, distance, yellow[0], 2)
+                -- Draw distance text
+                graphics.print(tostring(distance), fat_font, player_center.x + distance - 15, player_center.y - 5, 0, 1, 1, 0, 0, white[0])
+            end
+        end
+    end
 end
 
 
@@ -57,16 +77,24 @@ function Helper:update(dt)
 
     Helper.Time.time = Helper.Time.time + dt
     Helper.Time.delta_time = dt
+    
+    -- Increment timing counters for timing utilities
+    Helper.tick_count = Helper.tick_count + 1
+    Helper.time_elapsed = Helper.time_elapsed + dt
 
     --update timers, run state functions, update hitbox points
+    Helper.Unit:clear_all_target_flags()
     Helper.Unit:update_hitbox_points()
     Helper.Unit:update_player_location()
+    Helper.Unit:update_closest_enemy()
+    Helper.Unit:update_enemy_distance_tier()
     Helper.Time:run_intervals()
     Helper.Time:run_waits()
     Helper.Unit:run_state_always_run_functions()
     Helper.Unit:select()
 
     Helper.Sound:update()
+
 
     --update spells
 
