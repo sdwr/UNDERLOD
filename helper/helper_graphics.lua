@@ -134,6 +134,8 @@ function Helper.Graphics:draw_dashed_line(color, line_width, dash_length, dash_m
     end
 
     love.graphics.setLineWidth(1)
+    -- Reset color to white after drawing dashed line
+    love.graphics.setColor(1, 1, 1, 1)
 end
 
 function Helper.Graphics:draw_dashed_rectangle(color, line_width, dash_length, dash_margin, dash_offset_percentage, x1, y1, x2, y2)
@@ -222,4 +224,6 @@ function Helper.Graphics:draw_particles()
         love.graphics.setColor(particle.color.r, particle.color.g, particle.color.b, particle.color.a)
         love.graphics.circle('fill', particle.x, particle.y, particle.size)
     end
+    -- Reset color to white after drawing particles
+    love.graphics.setColor(1, 1, 1, 1)
 end

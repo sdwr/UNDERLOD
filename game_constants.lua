@@ -220,6 +220,8 @@ seek_weight_by_enemy_type = {
   ['default'] = SEEK_WEIGHT,
 }
 
+TROOP_SEEK_WEIGHT = 5
+
 TROOP_SEPARATION_RADIUS = 8
 TROOP_SEPARATION_WEIGHT = 1
 
