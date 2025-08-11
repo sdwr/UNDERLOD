@@ -61,7 +61,7 @@ function Helper.Target:get_distance_multiplier(unit, target)
     return 1
   end
   local distance = math.distance(unit.x, unit.y, target.x, target.y)
-  local distance_multiplier = DISTANCE_TO_COOLDOWN_MULTIPLIER(distance)
+  local distance_multiplier = get_distance_effect_multiplier(distance)
   return distance_multiplier
 end
 

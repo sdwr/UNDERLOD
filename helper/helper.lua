@@ -56,12 +56,12 @@ function Helper:draw()
     if DEBUG_DISTANCE_MULTI then
         local player_center = Helper.Unit:get_player_location()
         if player_center then
-            local distances = DISTANCE_TO_COOLDOWN_MULTIPLIER_VALUES
-            for i, distance in pairs(distances) do
+            local distances = TIER_TO_DISTANCE
+            for i, distance in ipairs(distances) do
                 -- Draw circle
-                graphics.circle(player_center.x, player_center.y, i, yellow[0], 2)
+                graphics.circle(player_center.x, player_center.y, distance, yellow[0], 2)
                 -- Draw distance text
-                graphics.print(tostring(distance), fat_font, player_center.x + i - 15, player_center.y - 5, 0, 1, 1, 0, 0, white[0])
+                graphics.print(tostring(distance), fat_font, player_center.x + distance - 15, player_center.y - 5, 0, 1, 1, 0, 0, white[0])
             end
         end
     end
@@ -86,12 +86,14 @@ function Helper:update(dt)
     Helper.Unit:update_hitbox_points()
     Helper.Unit:update_player_location()
     Helper.Unit:update_closest_enemy()
+    Helper.Unit:update_enemy_distance_tier()
     Helper.Time:run_intervals()
     Helper.Time:run_waits()
     Helper.Unit:run_state_always_run_functions()
     Helper.Unit:select()
 
     Helper.Sound:update()
+
 
     --update spells
 

@@ -358,27 +358,32 @@ function Troop:draw()
 end
 
 function Troop:draw_distance_glow()
-  if self:my_target() then
-    local distance_multiplier = Helper.Target:get_distance_multiplier(self, self:my_target())
-    
-    -- Glow intensity based on distance multiplier
-    -- Lower multiplier = closer = more intense glow
-    -- Higher multiplier = farther = less intense glow
-    local glow_intensity = math.max(0, (1.4 - distance_multiplier) / 0.8) -- Normalize to 0-1 range
-    
-    if glow_intensity > 0.1 then
-      local glow_color = green[0]:clone()
-      glow_color.a = glow_intensity * 0.6
+  local tier = Helper.Unit.closest_enemy_distance_tier
 
-      local glow_color_2 = green[0]:clone()
-      glow_color_2.a = glow_intensity * 0.3
-      
-      -- Draw glow rings
-      local body_size = self.shape.w / 2
-      graphics.circle(self.x, self.y, body_size, glow_color, 2)
-      graphics.circle(self.x, self.y, body_size + 1, glow_color_2, 2)
-    end
+  if tier then
+    local glow_multipliers = {
+      [1] = 0.3,
+      [2] = 0.2,
+      [3] = 0.1,
+    }
+
+    local glow_intensity = glow_multipliers[tier]
+    
+    local glow_color = green[0]:clone()
+    glow_color.a = glow_intensity
+
+    local glow_color_2 = green[0]:clone()
+    glow_color_2.a = glow_intensity * 0.5
+    
+    -- Draw glow rings
+    local body_size = self.shape.w / 2
+    graphics.circle(self.x, self.y, body_size, glow_color, 2)
+    graphics.circle(self.x, self.y, body_size + 1, glow_color_2, 2)
   end
+end
+
+function Troop:create_distance_tier_effect(tier)
+--pass
 end
 
 function Troop:get_attack_pitch_multiplier()

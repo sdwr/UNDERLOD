@@ -592,6 +592,38 @@ function Helper.Unit:in_range_of_player_location(unit, range)
     return math.distance(unit.x, unit.y, self.player_location.x, self.player_location.y) < range
 end
 
+function Helper.Unit:create_distance_tier_effects(tier)
+    local troops = self:get_all_troops()
+    for _, troop in ipairs(troops) do
+        troop:create_distance_tier_effect(tier)
+    end
+end
+    
+
+function Helper.Unit:update_enemy_distance_tier()
+    self.closest_enemy_distance_tier = get_distance_effect_tier(self.closest_enemy_distance)
+    self.last_closest_enemy_distance_tier = self.closest_enemy_distance_tier
+
+    if self.closest_enemy_distance_tier then
+
+        
+        if not self.highest_enemy_distance_tier or self.closest_enemy_distance_tier < self.highest_enemy_distance_tier then
+            --play tier effects
+            self.last_tier_effect_time = Helper.Time.time
+            Helper.Sound:play_distance_multiplier_sound(self.closest_enemy_distance_tier)
+            Helper.Unit:create_distance_tier_effects(self.closest_enemy_distance_tier)
+        end
+        if self.last_tier_effect_time and Helper.Time.time - self.last_tier_effect_time > 1 then
+            if self.highest_enemy_distance_tier then
+                self.highest_enemy_distance_tier = nil
+            end
+        end
+        
+        self.highest_enemy_distance_tier = math.min(self.highest_enemy_distance_tier or 999, self.closest_enemy_distance_tier)
+    end
+
+end
+
 function Helper.Unit:update_closest_enemy()
     local closest_enemy = nil
     local closest_distance = 999999
@@ -602,6 +634,7 @@ function Helper.Unit:update_closest_enemy()
             closest_distance = distance
         end
     end
+
     if closest_enemy then
         self.closest_enemy = closest_enemy
         self.closest_enemy_distance = closest_distance

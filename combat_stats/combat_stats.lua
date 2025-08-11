@@ -488,45 +488,32 @@ ZONE_SCALING = function(level)
   return 1
 end
 
-DISTANCE_TO_COOLDOWN_MULTIPLIER_VALUES = {
-  [20] = 0.25,
-  [50] = 0.3,
-  [75] = 0.5,
-  [100] = 0.8,
-  [150] = 1.05,
-  [200] = 1.25,
-  [250] = 1.4,
+DISTANCE_TIER_TO_COOLDOWN_MULTIPLIER = {
+  [1] = 0.25,
+  [2] = 0.6,
+  [3] = 0.8,
 }
 
-DISTANCE_TO_COOLDOWN_MULTIPLIER = function(distance)
-  local mult_values = DISTANCE_TO_COOLDOWN_MULTIPLIER_VALUES
+TIER_TO_DISTANCE = {
+  [1] = 35,
+  [2] = 70,
+  [3] = 115,
+}
 
-  local get_sorted_keys = function(t)
-    local keys = {}
-    for k, v in pairs(t) do
-      table.insert(keys, k)
-    end
-    table.sort(keys)
-    return keys
-  end
+get_distance_effect_multiplier = function(distance)
+  local tier = get_distance_effect_tier(distance)
+  return DISTANCE_TIER_TO_COOLDOWN_MULTIPLIER[tier] or 1
+end
 
-  local keys = get_sorted_keys(mult_values)
+get_distance_effect_tier = function(distance)
+  if not distance then return nil end
 
-  if distance <= keys[1] then
-    return mult_values[keys[1]]
-  end
-
-  if distance >= keys[#keys] then
-    return mult_values[keys[#keys]]
-  end
-
-  for i = 1, #keys - 1 do
-    if distance >= keys[i] and distance <= keys[i + 1] then
-      return mult_values[keys[i]] + (mult_values[keys[i + 1]] - mult_values[keys[i]]) * (distance - keys[i]) / (keys[i + 1] - keys[i])
+  for i, tier_distance in ipairs(TIER_TO_DISTANCE) do
+    if distance <= tier_distance then
+      return i
     end
   end
-
-  return 1
+  return nil
 end
 
 
