@@ -3,11 +3,44 @@ Helper.Unit = {}
 Helper.Unit.cast_flash_duration = 0.08
 Helper.Unit.do_draw_points = false
 
+-- Enemy tracking counters
+Helper.Unit.total_enemy_count = 0
+Helper.Unit.total_round_power = 0
+
 function Helper.Unit:clear_all_target_flags()
     -- Clear target flags from all enemies
     local enemies = self:get_list(false) -- false = get enemies
     for _, enemy in ipairs(enemies) do
         enemy.is_targeted = false
+    end
+end
+
+function Helper.Unit:increment_enemy_count(round_power)
+    Helper.Unit.total_enemy_count = Helper.Unit.total_enemy_count + 1
+    Helper.Unit.total_round_power = Helper.Unit.total_round_power + (round_power or 100)
+end
+
+function Helper.Unit:decrement_enemy_count(round_power)
+    Helper.Unit.total_enemy_count = Helper.Unit.total_enemy_count - 1
+    Helper.Unit.total_round_power = Helper.Unit.total_round_power - (round_power or 100)
+end
+
+function Helper.Unit:validate_enemy_counts()
+    local enemies = self:get_list(false) -- false = get enemies
+    local actual_count = #enemies
+    
+    local actual_round_power = 0
+    for _, enemy in ipairs(enemies) do
+        local round_power = enemy_to_round_power[enemy.type] or 100
+        actual_round_power = actual_round_power + round_power
+    end
+    
+    if actual_count ~= Helper.Unit.total_enemy_count then
+        print("ERROR: Enemy count mismatch! Tracked:", Helper.Unit.total_enemy_count, "Actual:", actual_count)
+    end
+    
+    if actual_round_power ~= Helper.Unit.total_round_power then
+        print("ERROR: Round power mismatch! Tracked:", Helper.Unit.total_round_power, "Actual:", actual_round_power)
     end
 end
 

@@ -158,7 +158,7 @@ function ProgressBarSegment:get_progress_location()
 end
 
 function ProgressBarSegment:create_progress_particle(roundPower, x, y)
-  self.t:after(0.3, function()
+  self.t:after(0, function()
     ProgressParticle{
       group = main.current.main,
       x = x,
@@ -190,4 +190,53 @@ function ProgressBarSegment:die()
       self.parent.segments[i]:die()
     end
   end
+end
+
+
+Essence = Object:extend()
+Essence.__class_name = 'Essence'
+Essence:implement(GameObject)
+Essence:implement(Physics)
+function Essence:init(args)
+  self:init_game_object(args)
+
+  self.radius = self.radius or 8
+  self.visible_radius = 3
+  self:set_as_circle(self.radius, 'dynamic', 'enemy_projectile')
+
+  self.color = args.color or yellow[0]
+  self.color = self.color:clone()
+  self.color.a = 0
+  self.round_power = args.round_power or 100
+
+  self.t:tween(0.3, self.color, {a = 1}, math.linear)
+  self.t:after(0.3, function()
+    for i = 1, 3 do
+      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color}
+    end
+  end)
+end
+
+function Essence:update(dt)
+  self:update_game_object(dt)
+end
+
+function Essence:on_collision_enter(other)
+  if other:is(Troop) then
+    self:collect()
+  end
+end
+
+function Essence:collect()
+  alert1:play{volume = 0.6, pitch = 1.1}
+  main.current.current_arena.progress_bar:increase_with_particles(self.round_power, self.x, self.y)
+  self:die()
+end
+
+function Essence:draw()
+  graphics.circle(self.x, self.y, self.visible_radius, self.color)
+end
+
+function Essence:die()
+  self.dead = true
 end

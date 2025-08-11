@@ -42,6 +42,9 @@ function Enemy:init(args)
   self.random_dest = {x = self.x, y = self.y}
   self.random_dest_timer = 0
 
+  -- Track enemy count and round power
+  local round_power = enemy_to_round_power[self.type] or 100
+  Helper.Unit:increment_enemy_count(round_power)
 
 end
 
@@ -621,12 +624,16 @@ function Enemy:die()
   -- Add progress to wave progress bar
   if main.current and main.current.current_arena and main.current.current_arena.progress_bar then
     local round_power = enemy_to_round_power[self.type] or 100
-    main.current.current_arena.progress_bar:increase_with_particles(round_power, self.x, self.y)
+    main.current.current_arena:spawn_essence(self.x, self.y, round_power)
   end
 
   if self.parent and self.parent.summons and self.parent.summons > 0 then
     self.parent.summons = self.parent.summons - 1
   end
+
+  -- Track enemy count and round power
+  local round_power = enemy_to_round_power[self.type] or 100
+  Helper.Unit:decrement_enemy_count(round_power)
 end
 
 -- ===================================================================

@@ -477,6 +477,18 @@ function Arena:create_credits()
     open_url(b, 'https://twitter.com/yongminparks') end}
 end
 
+function Arena:spawn_essence(x, y, round_power)
+  self.t:after(0.1, function()
+  local essence = Essence{
+    group = self.main, 
+    x = x, 
+    y = y, 
+    round_power = round_power,
+      color = yellow[0],
+    }
+  end)
+end
+
 
 --gold is the global gold variable
 --need to sum the gold gained, then display it visually in 2 seconds

@@ -88,6 +88,12 @@ function Helper:update(dt)
     Helper.Unit:update_player_location()
     Helper.Unit:update_closest_enemy()
     Helper.Unit:update_enemy_distance_tier()
+    
+    -- Validate enemy counts every 100 frames
+    every_x_ticks(100, function()
+        Helper.Unit:validate_enemy_counts()
+    end)
+    
     Helper.Time:run_intervals()
     Helper.Time:run_waits()
     Helper.Unit:run_state_always_run_functions()
