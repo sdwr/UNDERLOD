@@ -490,13 +490,13 @@ end
 
 DISTANCE_TIER_TO_COOLDOWN_MULTIPLIER = {
   [1] = 0.25,
-  [2] = 0.6,
-  [3] = 0.8,
+  [2] = 0.5,
+  [3] = 0.75,
 }
 
 TIER_TO_DISTANCE = {
   [1] = 60,
-  [2] = 90,
+  [2] = 100,
   [3] = 130,
 }
 

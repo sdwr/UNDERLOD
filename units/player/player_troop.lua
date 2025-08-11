@@ -258,12 +258,18 @@ function Troop:update_ai_logic()
   if assigned_target and assigned_target.dead then
     self:clear_assigned_target()
   end
+  if regular_target and regular_target.dead then
+    self:clear_my_target()
+  end
 
   local cast_target = nil
-  if assigned_target then
-    cast_target = assigned_target
+  if self.assigned_target then
+    cast_target = self.assigned_target
+  elseif regular_target then
+    --should also check if the target is too far away compared to other enemies
+    cast_target = regular_target
   end
-  
+
 
   -- 2. ACQUIRE NEW TARGET
   -- If we don't have a target, try to find the closest one within our aggro range.

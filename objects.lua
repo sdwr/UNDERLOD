@@ -638,7 +638,7 @@ end
 
 function Unit:draw_targeted()
   if self:has_buff('targeted') then
-    graphics.circle(self.x, self.y, 1.5, yellow[0])
+    graphics.circle(self.x, self.y, 2.5, yellow[0])
   end
 end
 
@@ -1784,6 +1784,8 @@ function Unit:end_cast()
   self:put_attack_on_cooldown()
   self.spelldata = nil
   self.freezerotation = false
+
+  self:clear_my_target()
 
   if self.state == unit_states['casting']then
     if self:try_backswing() then
