@@ -530,7 +530,6 @@ function Enemy:draw()
   if DEBUG_ENEMY_MOVEMENT then
     self:draw_debug_info()
   end
-  self:draw_targeted()
   self:draw_buffs()
   self.draw_enemy(self)
   self:draw_launching()
@@ -541,6 +540,7 @@ function Enemy:draw()
     self:draw_knockback()
   end
   self:draw_cast_timer()
+  self:draw_targeted()
 end
 
 function Enemy:on_collision_enter(other, contact)

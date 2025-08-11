@@ -638,7 +638,7 @@ end
 
 function Unit:draw_targeted()
   if self:has_buff('targeted') then
-    graphics.circle(self.x, self.y, ((self.shape.w) / 2) + 3, yellow[0], 1)
+    graphics.circle(self.x, self.y, 1.5, yellow[0])
   end
 end
 
