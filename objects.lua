@@ -1785,10 +1785,13 @@ end
 
 function Unit:get_cooldown_nudge()
   local nudge = 0
-  local last_attack_time = Helper.Unit.last_troop_attack_time
-  local last_attack_time_ago = Helper.Time.time - last_attack_time
+  local last_troop_attack_time = Helper.Unit.last_troop_attack_time
+  local last_troop_attack_time_ago = Helper.Time.time - last_troop_attack_time
+
+  local my_last_attack_time = self.my_last_attack_time
+  local my_last_attack_time_duration = Helper.Time.time - my_last_attack_time
   local nudge_window = self.attack_cooldown / 3
-  if last_attack_time_ago < nudge_window then
+  if last_troop_attack_time_ago < nudge_window and my_last_attack_time_duration < nudge_window then
     nudge = random:float(-nudge_window, nudge_window)
   end
   return nudge
@@ -1796,7 +1799,7 @@ end
 
 function Unit:end_cast()
   local nudge = 0
-  if self.is_troop then
+  if self.is_troop and self.my_last_attack_time then
     nudge = self:get_cooldown_nudge()
     Helper.Unit.last_troop_attack_time = Helper.Time.time
   end
@@ -1970,8 +1973,11 @@ function Unit:die()
 end
 
 function Unit:put_attack_on_cooldown(nudge)
+  self.my_last_attack_time = Helper.Time.time
   local attack_cooldown = self.attack_cooldown or 1
-  self.attack_cooldown_timer = attack_cooldown + nudge
+  attack_cooldown = attack_cooldown + random:float(-attack_cooldown * 0.1, attack_cooldown * 0.1)
+  attack_cooldown = attack_cooldown + nudge
+  self.attack_cooldown_timer = attack_cooldown
 end
 
 -- New simplified functions
