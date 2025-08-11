@@ -156,13 +156,13 @@ ITEM_SETS = {
     name = 'Inferno',
     color = 'red',
     bonuses = {
-        [1] = { stats = {['fire_damage'] = 1} },
-        [2] = { stats = {['fire_damage'] = 1}, procs = {'burnexplode'} },
+        [1] = { stats = {['fire_damage'] = 1}, procs = {'burnexplode'} },
+        [2] = { stats = {['fire_damage'] = 1} },
         [3] = { stats = {['fire_damage'] = 2}, procs = {'volcano'} }
     },
     descriptions = {
-      [1] = 'Adds fire damage to attacks',
-      [2] = 'Burning enemies explode',
+      [1] = 'Adds fire damage to attacks - burning enemies explode',
+      [2] = 'Adds more fire damage to attacks',
       [3] = 'Burning enemies create a volcano on death'
     }
   },

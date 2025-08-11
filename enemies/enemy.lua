@@ -451,7 +451,7 @@ function Enemy:acquire_target_random()
 end
 
 function Enemy:update_move_wander()
-  self:wander(50, 100, 20)
+  self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER)
   return true
 end
 
@@ -464,18 +464,18 @@ function Enemy:update_move_seek()
   -- 2. Check if we are in range.
   if self:in_range_of(self.target) and self.stopChasingInRange then
       -- We are in range and should stop, so just mill about.
-      self:wander(50, 100, 20)
+      self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER)
 
   else
       -- We are OUT of range, OR we are not supposed to stop.
       -- In either case, we must seek the target.
       self:seek_point(self.target.x, self.target.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
-      self:wander(50, 100, 20) -- Add a little variation to the seek.
+      self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER) -- Add a little variation to the seek.
   end
 
   -- 3. Apply final steering adjustments in all active cases.
   self:rotate_towards_velocity(0.5)
-  self:steering_separate(4, {Enemy}, 3)
+  self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
 
   -- 4. Return true because the movement action is successfully ongoing.
   return true
@@ -488,9 +488,9 @@ function Enemy:update_move_loose_seek()
       return false
     else
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
-      self:wander(50, 100, 20)
+      self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER)
       self:rotate_towards_velocity(0.5)
-      self:steering_separate(4, {Enemy}, 3)
+      self:steering_separate(ENEMY_SEPARATION_RADIUS_SEEKING, {Enemy}, ENEMY_SEPARATION_WEIGHT_SEEKING)
       return true
     end
   end
@@ -503,9 +503,9 @@ function Enemy:update_move_seek_to_range()
       return false
     else
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type) or SEEK_WEIGHT)
-      self:wander(50, 100, 20)
+      self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER)
       self:rotate_towards_velocity(0.5)
-      self:steering_separate(4, {Enemy}, 3)
+      self:steering_separate(ENEMY_SEPARATION_RADIUS_SEEKING, {Enemy}, ENEMY_SEPARATION_WEIGHT_SEEKING)
       return true
     end
   end
@@ -519,7 +519,7 @@ function Enemy:update_move_random()
     else
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
       self:rotate_towards_velocity(1)
-      self:steering_separate(4, {Enemy}, 3)
+      self:steering_separate(ENEMY_SEPARATION_RADIUS_SEEKING, {Enemy}, ENEMY_SEPARATION_WEIGHT_SEEKING)
       return true
     end
   end
