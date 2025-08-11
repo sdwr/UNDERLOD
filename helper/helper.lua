@@ -51,6 +51,20 @@ function Helper:draw()
     Helper.Unit:draw_selection()
 
     Helper.Unit:draw_points()
+    
+    -- Debug distance circles around player center
+    if DEBUG_DISTANCE_MULTI then
+        local player_center = Helper.Unit:get_player_location()
+        if player_center then
+            local distances = DISTANCE_TO_COOLDOWN_MULTIPLIER_VALUES
+            for i, distance in pairs(distances) do
+                -- Draw circle
+                graphics.circle(player_center.x, player_center.y, i, yellow[0], 2)
+                -- Draw distance text
+                graphics.print(tostring(distance), fat_font, player_center.x + i - 15, player_center.y - 5, 0, 1, 1, 0, 0, white[0])
+            end
+        end
+    end
 end
 
 

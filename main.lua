@@ -1581,6 +1581,11 @@ function update(dt)
     print('DEBUG_STEERING_VECTORS:', DEBUG_STEERING_VECTORS)
     print('DEBUG_STEERING_ENEMY_TYPE:', DEBUG_STEERING_ENEMY_TYPE)
   end
+
+  if input['f7'].pressed then
+    DEBUG_DISTANCE_MULTI = not DEBUG_DISTANCE_MULTI
+    print('DEBUG_DISTANCE_MULTI:', DEBUG_DISTANCE_MULTI)
+  end
 end
 
 function draw()

@@ -488,42 +488,45 @@ ZONE_SCALING = function(level)
   return 1
 end
 
+DISTANCE_TO_COOLDOWN_MULTIPLIER_VALUES = {
+  [20] = 0.27,
+  [50] = 0.4,
+  [75] = 0.5,
+  [100] = 0.85,
+  [150] = 1.05,
+  [200] = 1.25,
+  [250] = 1.4,
+}
+
 DISTANCE_TO_COOLDOWN_MULTIPLIER = function(distance)
-  local mult_values = {
-    [0] = 0.24,
-    [20] = 0.27,
-    [50] = 0.4,
-    [75] = 0.5,
-    [100] = 0.85,
-    [150] = 1.05,
-    [200] = 1.25,
-    [250] = 1.4,
-  }
+  local mult_values = DISTANCE_TO_COOLDOWN_MULTIPLIER_VALUES
 
-  local first_key = table.smallest_key(mult_values)
-  local last_key = table.largest_key(mult_values)
-
-  if distance < first_key then
-    return mult_values[first_key]
-  end
-
-  if distance > last_key then
-    return mult_values[last_key]
-  end
-
-  local p1, p2
-  local prev
-  for dist, mult in pairs(mult_values) do
-    if distance <= dist then
-      p1 = prev
-      p2 = dist
-      break
+  local get_sorted_keys = function(t)
+    local keys = {}
+    for k, v in pairs(t) do
+      table.insert(keys, k)
     end
-    prev = dist
+    table.sort(keys)
+    return keys
   end
 
-  local scale = (distance - p1) / (p2 - p1)
-  return mult_values[p1] + (mult_values[p2] - mult_values[p1]) * scale
+  local keys = get_sorted_keys(mult_values)
+
+  if distance <= keys[1] then
+    return mult_values[keys[1]]
+  end
+
+  if distance >= keys[#keys] then
+    return mult_values[keys[#keys]]
+  end
+
+  for i = 1, #keys - 1 do
+    if distance >= keys[i] and distance <= keys[i + 1] then
+      return mult_values[keys[i]] + (mult_values[keys[i + 1]] - mult_values[keys[i]]) * (distance - keys[i]) / (keys[i + 1] - keys[i])
+    end
+  end
+
+  return 1
 end
 
 

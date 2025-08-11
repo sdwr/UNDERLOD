@@ -317,6 +317,9 @@ function Troop:draw()
   graphics.push(self.x, self.y, self.r, final_scale_x, final_scale_y)
   self:draw_buffs()
 
+  -- Distance multiplier glow effect
+  self:draw_distance_glow()
+
   -- -- darken the non-selected units
   -- local color = self.color:clone()
   -- color = color:lighten(SELECTED_PLAYER_LIGHTEN)
@@ -352,6 +355,41 @@ function Troop:draw()
   -- graphics.circle(self.x, self.y, self.aggro_sensor.rs, yellow[5], 2)
 
   graphics.pop()
+end
+
+function Troop:draw_distance_glow()
+  if self:my_target() then
+    local distance_multiplier = Helper.Target:get_distance_multiplier(self, self:my_target())
+    
+    -- Glow intensity based on distance multiplier
+    -- Lower multiplier = closer = more intense glow
+    -- Higher multiplier = farther = less intense glow
+    local glow_intensity = math.max(0, (1.4 - distance_multiplier) / 0.8) -- Normalize to 0-1 range
+    
+    if glow_intensity > 0.1 then
+      local glow_color = green[0]:clone()
+      glow_color.a = glow_intensity * 0.6
+
+      local glow_color_2 = green[0]:clone()
+      glow_color_2.a = glow_intensity * 0.3
+      
+      -- Draw glow rings
+      local body_size = self.shape.w / 2
+      graphics.circle(self.x, self.y, body_size, glow_color, 2)
+      graphics.circle(self.x, self.y, body_size + 1, glow_color_2, 2)
+    end
+  end
+end
+
+function Troop:get_attack_pitch_multiplier()
+  if self:my_target() then
+    local distance_multiplier = Helper.Target:get_distance_multiplier(self, self:my_target())
+    -- Lower distance multiplier (closer) = higher pitch
+    -- Higher distance multiplier (farther) = lower pitch
+    local pitch_multiplier = math.max(0.8, 1.6 - distance_multiplier)
+    return pitch_multiplier
+  end
+  return 1.0
 end
 
 function Troop:draw_cooldown_timer()
