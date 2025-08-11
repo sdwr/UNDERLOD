@@ -1137,6 +1137,8 @@ function Unit:onDeathCallbacks(from)
     proc:onDeath(from)
   end
 
+  self:try_burn_explode(3)
+
   if self.on_death then
     self:on_death()
   end
@@ -1198,12 +1200,12 @@ function Unit:burn(damage, from)
   end
 end
 
-function Unit:try_burn_explode()
+function Unit:try_burn_explode(chance_multiplier)
   if not self.buffs then return end
 
   local burn_buff = self.buffs['burn']
   if burn_buff and burn_buff.can_explode then
-    local explosion_chance = BURN_EXPLOSION_BASE_CHANCE
+    local explosion_chance = BURN_EXPLOSION_BASE_CHANCE * (chance_multiplier or 1)
     if random:float(0, 1) < explosion_chance then
       self:burn_explode(burn_buff.from)
     end

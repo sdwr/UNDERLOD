@@ -169,13 +169,13 @@ function ArrowProjectile:hit_target(target)
 
   local hit_target = false
   if #self.already_hit_targets == 0 then
-    Helper.Damage:primary_hit(target, self.damage, self.unit, nil, true)
+    Helper.Damage:primary_hit(target, self.damage, self.unit, DAMAGE_TYPE_PHYSICAL, true)
     self.damage = self.damage * 0.8
     table.insert(self.already_hit_targets, target)
     hit_target = true
   else
     if self.pierce and self.pierce > 0 then
-      Helper.Damage:indirect_hit(target, self.damage, self.unit, nil, true)
+      Helper.Damage:indirect_hit(target, self.damage, self.unit, DAMAGE_TYPE_PHYSICAL, true)
       self.damage = self.damage * 0.8
       table.insert(self.already_hit_targets, target)
       hit_target = true

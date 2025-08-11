@@ -1347,7 +1347,7 @@ function Proc_Radiance:init(args)
 
   --define the proc's vars
   self.color = self.data.color or red[0]:clone()
-  self.color.a = 0.4
+  self.color.a = 0.0
   self.radius = self.data.radius or 70
   self.damage = self.data.damage or 8
   self.damageType = DAMAGE_TYPE_FIRE
@@ -1383,7 +1383,7 @@ function Proc_Radiance:create_damage_aura()
     radius = self.radius, 
     duration = 1000, 
     color = self.color,
-    opacity = 0.04,
+    opacity = 0.00,
     tick_rate = 0.1,
     is_troop = self.unit.is_troop,
     on_hit_callback = on_hit_callback,
