@@ -90,7 +90,7 @@ function Area:try_damage()
   elseif self.shockDuration then
     for _, target in ipairs(targets) do
       if self:can_hit_with_effect(target, 'shocked') then
-        target:shock(self.shockDuration, self.unit)
+        target:shock(self.unit)
         target:hit(self.damage, self.unit, self.damage_type, true, true)
         self:apply_hit_effect(target)
       end

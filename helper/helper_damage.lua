@@ -332,7 +332,8 @@ function Helper.Damage:apply_elemental_effects(unit, actual_damage, damageType, 
   end
 
   if damageType == DAMAGE_TYPE_SHOCK then
-    unit:shock(actual_damage, from)
+    unit:shock(from)
+
   end
 
   if damageType == DAMAGE_TYPE_COLD then
@@ -385,22 +386,14 @@ function Helper.Damage:process_elemental_conversions(unit, actual_damage, from, 
   if damageType == DAMAGE_TYPE_LIGHTNING then
     if Has_Static_Proc(from, 'lightningToCold') then
       local converted_damage = actual_damage * ELEMENTAL_CONVERSION_PERCENT
-      Helper.Damage:apply_hit(unit, converted_damage, from, DAMAGE_TYPE_COLD, false, {
-        isChained = true,
-        isElementalConversion = true,
-        canProcOnHit = false,
-      })
+      unit:chill(converted_damage, from)
     end
   end
   
   if damageType == DAMAGE_TYPE_COLD then
     if Has_Static_Proc(from, 'coldToFire') then
       local converted_damage = actual_damage * ELEMENTAL_CONVERSION_PERCENT
-      Helper.Damage:apply_hit(unit, converted_damage, from, DAMAGE_TYPE_FIRE, false, {
-        isChained = true,
-        isElementalConversion = true,
-        canProcOnHit = false,
-      })
+      unit:burn(converted_damage, from)
     end
   end
 end

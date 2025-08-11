@@ -1291,8 +1291,7 @@ function Unit:burn_explode(from)
 end
 
 --SHOCK SYSTEM
-function Unit:shock(damage, from)
-  self
+function Unit:shock(from)
   if not Does_Static_Proc_Exist('shock') then
     return
   end
