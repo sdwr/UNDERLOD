@@ -1783,8 +1783,25 @@ function Unit:should_freeze_rotation()
     or (self.castObject and self.castObject.freeze_rotation)
 end
 
+function Unit:get_cooldown_nudge()
+  local nudge = 0
+  local last_attack_time = Helper.Unit.last_troop_attack_time
+  local last_attack_time_ago = Helper.Time.time - last_attack_time
+  local nudge_window = self.attack_cooldown / 3
+  if last_attack_time_ago < nudge_window then
+    nudge = random:float(-nudge_window, nudge_window)
+  end
+  return nudge
+end
+
 function Unit:end_cast()
-  self:put_attack_on_cooldown()
+  local nudge = 0
+  if self.is_troop then
+    nudge = self:get_cooldown_nudge()
+    Helper.Unit.last_troop_attack_time = Helper.Time.time
+  end
+  self:put_attack_on_cooldown(nudge)
+
   self.spelldata = nil
   self.freezerotation = false
 
@@ -1952,9 +1969,9 @@ function Unit:die()
 
 end
 
-function Unit:put_attack_on_cooldown()
+function Unit:put_attack_on_cooldown(nudge)
   local attack_cooldown = self.attack_cooldown or 1
-  self.attack_cooldown_timer = attack_cooldown
+  self.attack_cooldown_timer = attack_cooldown + nudge
 end
 
 -- New simplified functions

@@ -3,6 +3,8 @@ Helper.Unit = {}
 Helper.Unit.cast_flash_duration = 0.08
 Helper.Unit.do_draw_points = false
 
+Helper.Unit.last_troop_attack_time = 0
+
 function Helper.Unit:clear_all_target_flags()
     -- Clear target flags from all enemies
     local enemies = self:get_list(false) -- false = get enemies
@@ -183,7 +185,7 @@ function Helper.Unit:cast_off_cooldown(unit)
     return unit.attack_cooldown_timer <= 0
 end
 
-function Helper.Unit:cast_off_cooldown_distance_multiplier(unit, target)
+function Helper.Unit:can_cast_troop_modifiers(unit, target)
     if target.x and target.y then
         local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier or 1
 
@@ -212,7 +214,8 @@ function Helper.Unit:can_cast(unit, target)
             return false
         end
         if unit.is_troop then
-            return Helper.Unit:cast_off_cooldown_distance_multiplier(unit, target)
+            local can_cast = Helper.Unit:can_cast_troop_modifiers(unit, target)
+            return can_cast
         else
             return Helper.Unit:cast_off_cooldown(unit)
         end
