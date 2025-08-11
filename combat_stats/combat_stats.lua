@@ -127,11 +127,11 @@ enemy_cast_times = {
 TROOP_RANGE = 500
 TROOP_SWORDSMAN_RANGE = 80
 
-REGULAR_ENEMY_HP = 30
+REGULAR_ENEMY_HP = 45
 REGULAR_ENEMY_DAMAGE = 15
-REGULAR_ENEMY_MS = 25
+REGULAR_ENEMY_MS = 20
 
-SPECIAL_ENEMY_HP = 70
+SPECIAL_ENEMY_HP = 280
 SPECIAL_ENEMY_DAMAGE = 20
 SPECIAL_ENEMY_MS = 20
 
@@ -196,18 +196,6 @@ SHOCK_DEF_REDUCTION = -0.2
 
 REPEAT_ATTACK_DELAY = 0.15
 
--- Enemy steering behavior constants
-ENEMY_SEPARATION_RADIUS = 6
-ENEMY_SEPARATION_WEIGHT = 6
-ENEMY_SEPARATION_RADIUS_SEEKING = 6
-ENEMY_SEPARATION_WEIGHT_SEEKING = 10
-ENEMY_CRITTER_SEPARATION_RADIUS = 8
-
--- Enemy wander behavior constants  
-ENEMY_WANDER_RADIUS = 50
-ENEMY_WANDER_DISTANCE = 100
-ENEMY_WANDER_JITTER = 3
-
 BOSS_LEVELS = {6, 11, 16, 21}
 
 LEVELS_AFTER_BOSS_LEVEL = function(level)
@@ -253,7 +241,7 @@ CHANCE_OF_SPECIAL_VS_NORMAL_ENEMY = 0.7
 
 get_num_special_enemies_by_level = function(level)
   if level == 1 then return 0 end
-  if level == 2 then return 1 end
+  if level == 2 then return 0 end
   if level == 3 then return 2 end
   if level == 4 then return 2 end
   if level == 5 then return 3 end
@@ -505,7 +493,7 @@ DISTANCE_TO_COOLDOWN_MULTIPLIER = function(distance)
     [0] = 0.24,
     [20] = 0.27,
     [50] = 0.4,
-    [75] = 0.6,
+    [75] = 0.5,
     [100] = 0.85,
     [150] = 1.05,
     [200] = 1.25,

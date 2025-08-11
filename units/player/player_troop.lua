@@ -55,7 +55,7 @@ function Troop:follow_mouse()
   if self.being_knocked_back then return end
   if self:distance_to_mouse() > 10 then
     self:seek_mouse(SEEK_DECELERATION, SEEK_WEIGHT * 3)
-    self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
+    self:wander(TROOP_WANDER_RADIUS, TROOP_WANDER_DISTANCE, TROOP_WANDER_JITTER)
     self:rotate_towards_velocity(1)
   else
       --self:set_velocity(0, 0) -- Stop when we reach the cursor
@@ -78,7 +78,7 @@ function Troop:rally_to_point()
   end
 
   self:seek_point(self.target_pos.x, self.target_pos.y, SEEK_DECELERATION, SEEK_WEIGHT)
-  self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
+  self:wander(TROOP_WANDER_RADIUS, TROOP_WANDER_DISTANCE, TROOP_WANDER_JITTER)
   self:rotate_towards_velocity(1)
 end
 
@@ -212,7 +212,7 @@ function Troop:move_towards_target()
   local movement_target = Helper.Target:get_closest_enemy(self)
   if movement_target then
     self:seek_point(movement_target.x, movement_target.y, SEEK_DECELERATION, SEEK_WEIGHT)
-    self:wander(WANDER_RADIUS, WANDER_DISTANCE, WANDER_JITTER)
+    self:wander(TROOP_WANDER_RADIUS, TROOP_WANDER_DISTANCE, TROOP_WANDER_JITTER)
   end
 end
 

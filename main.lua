@@ -1575,6 +1575,12 @@ function update(dt)
   if input.f10.pressed then
     Unlock_Achievement('heatingup')
   end
+
+  if input['f6'].pressed then
+    DEBUG_STEERING_VECTORS = not DEBUG_STEERING_VECTORS
+    print('DEBUG_STEERING_VECTORS:', DEBUG_STEERING_VECTORS)
+    print('DEBUG_STEERING_ENEMY_TYPE:', DEBUG_STEERING_ENEMY_TYPE)
+  end
 end
 
 function draw()

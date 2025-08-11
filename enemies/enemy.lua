@@ -490,7 +490,7 @@ function Enemy:update_move_loose_seek()
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
       self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER)
       self:rotate_towards_velocity(0.5)
-      self:steering_separate(ENEMY_SEPARATION_RADIUS_SEEKING, {Enemy}, ENEMY_SEPARATION_WEIGHT_SEEKING)
+      self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
       return true
     end
   end
@@ -505,7 +505,7 @@ function Enemy:update_move_seek_to_range()
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type) or SEEK_WEIGHT)
       self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER)
       self:rotate_towards_velocity(0.5)
-      self:steering_separate(ENEMY_SEPARATION_RADIUS_SEEKING, {Enemy}, ENEMY_SEPARATION_WEIGHT_SEEKING)
+      self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
       return true
     end
   end
@@ -519,7 +519,7 @@ function Enemy:update_move_random()
     else
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
       self:rotate_towards_velocity(1)
-      self:steering_separate(ENEMY_SEPARATION_RADIUS_SEEKING, {Enemy}, ENEMY_SEPARATION_WEIGHT_SEEKING)
+      self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
       return true
     end
   end

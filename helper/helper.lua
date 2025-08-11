@@ -19,6 +19,12 @@ Helper.window_width = 0
 Helper.window_height = 0
 Helper.disable_unit_controls = false
 
+-- Timing state variables
+Helper.tick_count = 0
+Helper.time_elapsed = 0
+Helper.call_counters = {}
+Helper.timers = {}
+
 --helper fns only work in arena, not in buy screen
 function Helper:init()
     Helper.Time.time = love.timer.getTime()
@@ -57,6 +63,10 @@ function Helper:update(dt)
 
     Helper.Time.time = Helper.Time.time + dt
     Helper.Time.delta_time = dt
+    
+    -- Increment timing counters for timing utilities
+    Helper.tick_count = Helper.tick_count + 1
+    Helper.time_elapsed = Helper.time_elapsed + dt
 
     --update timers, run state functions, update hitbox points
     Helper.Unit:update_hitbox_points()

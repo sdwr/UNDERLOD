@@ -75,6 +75,13 @@ function Physics:calculate_steering_force(dt)
     Debug_Steering_Forces(condition, self)
   end
 
+  -- Store forces for debug drawing before resetting
+  if DEBUG_STEERING_VECTORS and self.type == DEBUG_STEERING_ENEMY_TYPE then
+    self.debug_separation_f = self.separation_f:clone()
+    self.debug_seek_f = self.seek_f:clone()  
+    self.debug_wander_f = self.wander_f:clone()
+  end
+
   self.separation_f:set(0, 0)
 
 
@@ -185,6 +192,7 @@ function Physics:steering_separate(rs, class_avoid_list, weight, comparator)
 
   for _, object in ipairs(objects) do
     if object.id ~= self.id and math.distance(object.x, object.y, self.x, self.y) < 2*rs then
+      comparator = comparator or function() return true end
       if comparator and comparator(object) then
         local tx, ty = self.x - object.x, self.y - object.y
         local nx, ny = math.normalize(tx, ty)
@@ -194,6 +202,7 @@ function Physics:steering_separate(rs, class_avoid_list, weight, comparator)
       end
     end
   end
+
   self.separation_f:add(fx*(weight or 1), fy*(weight or 1))
 end
 
@@ -369,4 +378,33 @@ function steering.rotate_vector_around_origin(v, r)
   mat:rotater(r)
   mat:transform_vector(v)
   return v
+end
+
+
+-- Debug drawing function for steering forces
+function Physics:draw_steering_debug()
+  if DEBUG_STEERING_VECTORS and self.type == DEBUG_STEERING_ENEMY_TYPE then
+    local scale = 0.5
+    
+    -- Draw separation force (red)
+    if self.debug_separation_f and (self.debug_separation_f.x ~= 0 or self.debug_separation_f.y ~= 0) then
+      graphics.line(self.x, self.y, self.x + self.debug_separation_f.x * scale, self.y + self.debug_separation_f.y * scale, red[5])
+    end
+    
+    -- Draw seek force (blue)
+    if self.debug_seek_f and (self.debug_seek_f.x ~= 0 or self.debug_seek_f.y ~= 0) then
+      graphics.line(self.x, self.y, self.x + self.debug_seek_f.x * scale, self.y + self.debug_seek_f.y * scale, blue[5])
+    end
+    
+    -- Draw wander force (green)
+    if self.debug_wander_f and (self.debug_wander_f.x ~= 0 or self.debug_wander_f.y ~= 0) then
+      graphics.line(self.x, self.y, self.x + self.debug_wander_f.x * scale, self.y + self.debug_wander_f.y * scale, green[5])
+    end
+    
+    -- Draw target location (yellow circle)
+    if self.target_location then
+      graphics.circle(self.target_location.x, self.target_location.y, 3, yellow[5])
+      graphics.line(self.x, self.y, self.target_location.x, self.target_location.y, yellow[0])
+    end
+  end
 end
