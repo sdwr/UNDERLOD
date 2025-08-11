@@ -741,7 +741,7 @@ function Unit:update_buffs(dt)
           -- 2. Deal the damage
           if damage_this_tick > 0 then
               -- Burn damage should not be attributed to anyone (environmental damage)
-              Damage.Helper:indirect_hit(self, damage_this_tick, nil, DAMAGE_TYPE_FIRE, false)
+              Helper.Damage:indirect_hit(self, damage_this_tick, nil, DAMAGE_TYPE_BURN, false)
           end
 
           v.total_damage = v.total_damage - damage_this_tick

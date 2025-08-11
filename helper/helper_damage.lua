@@ -45,7 +45,7 @@ function Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects,
   local actual_damage = Helper.Damage:calculate_final_damage(unit, damage, damageType)
   
   --Elemental or physical damage application
-  if table.contains(ELEMENTAL_DAMAGE_TYPES, damageType) then
+  if table.contains(ELEMENTAL_HIT_DAMAGE_TYPES, damageType) then
     Helper.Damage:apply_elemental_effects(unit, actual_damage, damageType, from, hitOptions)
   else
     if isChained then
@@ -65,7 +65,7 @@ function Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects,
   end
   
   -- For direct elemental hits (not conversions), apply conversions from static procs
-  if table.contains(ELEMENTAL_DAMAGE_TYPES, damageType) and not isElementalConversion then
+  if table.contains(ELEMENTAL_EFFECT_TYPES, damageType) then
     Helper.Damage:process_elemental_conversions(unit, actual_damage, from, damageType)
   end
   
@@ -363,7 +363,7 @@ function Helper.Damage:process_physical_to_elemental(unit, actual_damage, from)
   local elemental_stats = from:get_elemental_damage_stats()
   
   -- Apply each elemental type as separate converted hits
-  for _, elementalType in ipairs(ELEMENTAL_DAMAGE_TYPES) do
+  for _, elementalType in ipairs(ELEMENTAL_EFFECT_TYPES) do
     if elemental_stats[elementalType] > 0 then
       local elemental_damage = actual_damage * elemental_stats[elementalType]
       Helper.Damage:apply_hit(unit, elemental_damage, from, elementalType, false, {
@@ -383,7 +383,7 @@ function Helper.Damage:process_elemental_conversions(unit, actual_damage, from, 
   if not from then return end
   
   -- Apply conversions based on static procs
-  if damageType == DAMAGE_TYPE_FIRE then
+  if damageType == DAMAGE_TYPE_BURN then
     if Has_Static_Proc(from, 'fireToLightning') then
       local converted_damage = actual_damage * ELEMENTAL_CONVERSION_PERCENT
       Helper.Damage:apply_hit(unit, converted_damage, from, DAMAGE_TYPE_LIGHTNING, false, {

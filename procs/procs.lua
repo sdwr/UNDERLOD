@@ -2355,9 +2355,9 @@ proc_name_to_class = {
   ['multishotRepeat'] = Proc_MultishotRepeat,
 
   --elemental transformation
-  ['frostjolt'] = Proc_FrostJolt,
-  ['frostfire'] = Proc_Frostfire,
-  ['firebolt'] = Proc_Firebolt,
+  ['fireToLightning'] = Proc_FireToLightning,
+  ['coldToFire'] = Proc_ColdToFire,
+  ['lightningToCold'] = Proc_LightningToCold,
 
   --elemental boosts
   ['stonecold'] = Proc_StoneCold,
