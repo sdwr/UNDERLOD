@@ -1125,7 +1125,7 @@ function ProgressParticle:init(args)
   self:init_game_object(args)
   self.roundPower = self.roundPower or 0
   
-  self.v = self.v or 400
+  self.v = self.v or 250
   self.r = args.r or random:float(0, 2*math.pi)
   self.duration = self.duration or 3
   self.rs = self.rs or random:float(1.5, 3)

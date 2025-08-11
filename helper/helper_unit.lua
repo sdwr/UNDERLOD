@@ -384,21 +384,21 @@ end
 
 
 --target ring fns
--- function Helper.Unit:set_target_ring(target)
---     if target then
---         local targetBuff = {name = 'targeted', duration = 9999, color = Helper.Color.yellow}
---         target:add_buff(targetBuff)
---     end
--- end
+function Helper.Unit:set_target_ring(target)
+    if target then
+        local targetBuff = {name = 'player_target', duration = 9999, color = Helper.Color.yellow}
+        target:add_buff(targetBuff)
+    end
+end
 
--- function Helper.Unit:clear_target_ring(target)
---     --clear the targeting ring around the target, if no other team is targeting it
---     if not Helper.Unit:is_a_team_target(target) then
---         if target then
---             target:remove_buff('targeted')
---         end
---     end
--- end
+function Helper.Unit:clear_target_ring(target)
+    --clear the targeting ring around the target, if no other team is targeting it
+    if not Helper.Unit:is_a_team_target(target) then
+        if target then
+            target:remove_buff('player_target')
+        end
+    end
+end
 
 function Helper.Unit:is_a_team_target(target)
     if target == nil then

@@ -16,7 +16,7 @@ function Helper.Sound:update()
 
   if Helper.Unit.closest_enemy_distance_tier 
   and Helper.Unit.closest_enemy_distance_tier < (Helper.Unit.last_closest_enemy_distance_tier or 4) then
-      Helper.Sound:play_distance_multiplier_sound(Helper.Unit.closest_enemy_distance_tier)
+      --Helper.Sound:play_distance_multiplier_sound(Helper.Unit.closest_enemy_distance_tier)
   end
 end
 
@@ -29,9 +29,9 @@ function Helper.Sound:play_distance_multiplier_sound(distance_tier)
     [3] = 0.9,
   }
   local tier_to_volume = {
-    [1] = 0.5,
-    [2] = 0.4,
-    [3] = 0.3,
+    [1] = 0.3,
+    [2] = 0.2,
+    [3] = 0.15,
   }
 
   local pitch = tier_to_pitch[distance_tier]
