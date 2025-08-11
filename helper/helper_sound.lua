@@ -41,7 +41,7 @@ function Helper.Sound:play_distance_multiplier_sound(distance_tier)
 end
 
 function Helper.Sound:play_constant_distance_multiplier_sound()
-  local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier
+  local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier or 1
   local threshold = DISTANCE_MULTIPLIER_THRESHOLD_SOUND
   if not distance_multiplier or distance_multiplier > threshold then
     if self.distance_multiplier_sound then

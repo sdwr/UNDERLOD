@@ -418,8 +418,8 @@ function Group:get_random_close_object(object, object_types, exclude_list, max_r
       return nil
   end
 
-  local min_distance = math.huge
-
+  local min_distance = 999999
+  
   -- PASS 1: Find the absolute closest object and its distance
   for _, o in ipairs(candidates) do
       local d = math.distance(o.x, o.y, object.x, object.y)
@@ -430,7 +430,7 @@ function Group:get_random_close_object(object, object_types, exclude_list, max_r
 
   -- Determine the tolerance threshold
   local max_distance_option = min_distance + distance_tolerance
-  local max_percentage_option = min_distance * (percentage_tolerance / 100)
+  local max_percentage_option = min_distance *  (1 + (percentage_tolerance / 100))
 
   local max_distance_for_candidates = math.min(max_distance_option, max_percentage_option)
   if max_range_from_self then
@@ -446,6 +446,7 @@ function Group:get_random_close_object(object, object_types, exclude_list, max_r
       end
   end
 
+  
   -- Randomly select and return a target from the final candidates list
   if #final_candidates > 0 then
       return table.random(final_candidates)

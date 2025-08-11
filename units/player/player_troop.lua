@@ -206,7 +206,7 @@ function Troop:update(dt)
   
   -- Mark current target for circle drawing
   if self:my_target() then
-    self:my_target():add_buff({name = 'targeted', duration = 0.25, color = Helper.Color.yellow})
+    self:my_target():add_buff({name = 'targeted', duration = 0.1, color = Helper.Color.yellow})
   end
   
   self.r = self:get_angle()
@@ -215,7 +215,7 @@ end
 
 --unused right now
 function Troop:move_towards_target()
-  local movement_target = Helper.Target:get_closest_enemy(self)
+  local movement_target = Helper.Target:get_close_enemy(self)
   if movement_target then
     self:seek_point(movement_target.x, movement_target.y, SEEK_DECELERATION, SEEK_WEIGHT)
     self:wander(TROOP_WANDER_RADIUS, TROOP_WANDER_DISTANCE, TROOP_WANDER_JITTER)
@@ -271,7 +271,7 @@ function Troop:update_ai_logic()
       --find target if not already found
       -- pick random in attack range
       -- or closest in aggro range
-      self:set_target(Helper.Target:get_closest_enemy(self))
+      self:set_target(Helper.Target:get_close_enemy(self))
       cast_target = self.target
   end
 
@@ -394,7 +394,7 @@ end
 
 function Troop:get_attack_pitch_multiplier()
   if self:my_target() then
-    local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier
+    local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier or 1
     -- Lower distance multiplier (closer) = higher pitch
     -- Higher distance multiplier (farther) = lower pitch
     local pitch_multiplier = 1 - distance_multiplier
@@ -405,7 +405,7 @@ end
 
 function Troop:get_attack_volume_multiplier()
   if self:my_target() then
-    local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier
+    local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier or 1
     local volume_multiplier = 1 - distance_multiplier
     return 1 + (volume_multiplier * 2)
   end

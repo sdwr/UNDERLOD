@@ -185,7 +185,7 @@ end
 
 function Helper.Unit:cast_off_cooldown_distance_multiplier(unit, target)
     if target.x and target.y then
-        local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier
+        local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier or 1
 
         local adjusted_cooldown = unit.attack_cooldown * distance_multiplier
 
@@ -384,21 +384,21 @@ end
 
 
 --target ring fns
-function Helper.Unit:set_target_ring(target)
-    if target then
-        local targetBuff = {name = 'targeted', duration = 9999, color = Helper.Color.yellow}
-        target:add_buff(targetBuff)
-    end
-end
+-- function Helper.Unit:set_target_ring(target)
+--     if target then
+--         local targetBuff = {name = 'targeted', duration = 9999, color = Helper.Color.yellow}
+--         target:add_buff(targetBuff)
+--     end
+-- end
 
-function Helper.Unit:clear_target_ring(target)
-    --clear the targeting ring around the target, if no other team is targeting it
-    if not Helper.Unit:is_a_team_target(target) then
-        if target then
-            target:remove_buff('targeted')
-        end
-    end
-end
+-- function Helper.Unit:clear_target_ring(target)
+--     --clear the targeting ring around the target, if no other team is targeting it
+--     if not Helper.Unit:is_a_team_target(target) then
+--         if target then
+--             target:remove_buff('targeted')
+--         end
+--     end
+-- end
 
 function Helper.Unit:is_a_team_target(target)
     if target == nil then
