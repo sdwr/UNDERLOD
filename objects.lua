@@ -1788,7 +1788,13 @@ function Unit:end_cast()
   self.spelldata = nil
   self.freezerotation = false
 
-  self:clear_my_target()
+  if not self.hits_before_retargeting then self.hits_before_retargeting = HITS_BEFORE_RETARGETING end
+  self.hits_before_retargeting = self.hits_before_retargeting - 1
+
+  if self.hits_before_retargeting <= 0 then
+    self.hits_before_retargeting = HITS_BEFORE_RETARGETING
+    self:clear_my_target()
+  end
 
   if self.state == unit_states['casting']then
     if self:try_backswing() then
