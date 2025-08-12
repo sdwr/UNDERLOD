@@ -30,6 +30,10 @@ function Arena:init(args)
   self.last_spawn_enemy_time = love.timer.getTime()
   
   -- Initialize arena components
+  current_power_onscreen = 0
+  round_power_killed = 0
+  is_boss_dead = false
+
   self:init_physics()
   self:init_spawn_manager()
   
@@ -52,6 +56,23 @@ function Arena:init(args)
 
   
   -- Start the level
+end
+
+function Arena:wipe_level()
+  local total_duration = ARENA_WIPE_DURATION
+  local charge_duration = 2
+  local wipe_duration = 4
+  --charge up the orb
+  self.level_orb:charge_up(charge_duration)
+
+  -- Create expanding ring that kills all enemies
+  WipeRing{
+    group = self.main,
+    x = gw/2,
+    y = gh/2,
+    max_radius = math.max(gw, gh),
+    expand_duration = wipe_duration
+  }
 end
 
 function Arena:delete_walls() 
@@ -95,7 +116,7 @@ function Arena:create_progress_bar()
   
   local level_data = self.level_list and self.level_list[self.level]
   if level_data and level_data.waves then
-    local waves_power = Wave_Types:Get_Waves_Power(level_data.waves)
+    local waves_power = level_data.waves_power
     
     self.progress_bar = ProgressBar{
       group = self.ui, parent = self, w = 300, h = 5,

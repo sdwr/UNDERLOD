@@ -113,6 +113,10 @@ function LevelOrb:get_hp_percentage()
   return math.clamp(self.hp / self.max_hp, 0, 1)
 end
 
+function LevelOrb:charge_up(duration)
+  self.t:tween(duration, self, {visible_radius = self.radius * 2}, math.ease_in_out_cubic)
+end
+
 function LevelOrb:draw()
   if self.dead then return end
   

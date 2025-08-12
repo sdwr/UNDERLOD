@@ -22,6 +22,26 @@ function Get_Random_Special_Enemy(tier)
   return enemy
 end
 
+_last_group_type = 1
+
+function Get_Next_Group(level)
+  local tier = LEVEL_TO_TIER(level) or 1
+
+  local chances = {20, 40, 40}
+  chances[_last_group_type] = chances[_last_group_type] / 2
+
+  local options = {
+    [1] = {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'},
+    [2] = {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'scatter'},
+    [3] = {'GROUP', Get_Random_Special_Enemy(tier), 1, 'nil'},
+  }
+
+  local choice = random:weighted_pick(unpack(chances))
+  _last_group_type = choice
+  return options[choice]
+end
+
+
 function Wave_Types:Create_Normal_Wave(level)
   local tier = LEVEL_TO_TIER(level)
   local num_special_enemies_left = get_num_special_enemies_by_level(level)
@@ -217,6 +237,14 @@ function Wave_Types:Get_Wave_Power(wave)
       power = power + 0
     end
   end
+  return power
+end
+
+function Wave_Types:Get_Group_Power(group)
+  local enemy = group[2]
+  local number = group[3]
+  local power = enemy_to_round_power[enemy] * number
+
   return power
 end
 

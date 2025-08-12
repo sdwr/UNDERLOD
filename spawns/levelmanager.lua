@@ -24,8 +24,8 @@ function Build_Level_List(max_level)
       level_list[i].round_power = BOSS_ROUND_POWER
 
     else
-      local waves = Wave_Types:Get_Waves(i)
-      level_list[i].waves = waves
+      --local waves = Wave_Types:Get_Waves(i)
+      --level_list[i].waves = waves
 
       if LEVEL_TO_PERKS[i] then
         level_list[i].color = orange[5]
@@ -35,8 +35,8 @@ function Build_Level_List(max_level)
       level_list[i].environmental_hazards = environmental_hazards
 
       --calculate the round power for the level
-      level_list[i].round_power = Wave_Types:Get_Round_Power(waves)
-      level_list[i].waves_power = Wave_Types:Get_Waves_Power(waves)
+      level_list[i].round_power = ROUND_POWER_BY_LEVEL[i]
+      level_list[i].waves_power = {level_list[i].round_power}
     end
   end
 

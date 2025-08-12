@@ -22,7 +22,7 @@ function CombatLevel:on_character_selected(character)
   end)
 end
 
-function CombatLevel:level_clear()
+function CombatLevel:level_clear(full_wipe)
   spawn_mark2:play{pitch = 1, volume = 0.8}
   Helper.Unit:update_units_with_combat_data(self)
     
@@ -32,14 +32,24 @@ function CombatLevel:level_clear()
   --   end)
   
   -- Only create perk selection on perk levels
-  if LEVEL_TO_PERKS[self.level] then
-    self.t:after(1, function()
-      self.perk_overlay = PerkOverlay{
-        group = self.ui,
-      }
+
+  if full_wipe then
+    self:wipe_level()
+
+    self.t:after(ARENA_WIPE_DURATION, function()
+      self:finish_level()
     end)
   else
-    -- Auto-transition to buy screen without door opening or character selection
+    self:finish_level()
+  end
+end
+
+function CombatLevel:finish_level()
+  if LEVEL_TO_PERKS[self.level] then
+    self.perk_overlay = PerkOverlay{
+      group = self.ui,
+    }
+  else
     main.current:transition_to_next_level_buy_screen()
   end
 end

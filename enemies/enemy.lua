@@ -641,6 +641,13 @@ end
 
 function Enemy:die()
   if self.dead then return end
+
+  if self.class == 'boss' then
+    is_boss_dead = true
+  else
+    current_power_onscreen = current_power_onscreen - enemy_to_round_power[self.type]
+    round_power_killed = round_power_killed + enemy_to_round_power[self.type]
+  end
   
   self.super.die(self)
   self.dead = true
