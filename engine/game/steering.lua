@@ -76,7 +76,7 @@ function Physics:calculate_steering_force(dt)
   end
 
   -- Store forces for debug drawing before resetting
-  if DEBUG_STEERING_VECTORS and self.type == DEBUG_STEERING_ENEMY_TYPE then
+  if DEBUG_STEERING_VECTORS and (self.type == DEBUG_STEERING_ENEMY_TYPE or DEBUG_STEERING_ENEMY_TYPE == nil) then
     self.debug_separation_f = self.separation_f:clone()
     self.debug_seek_f = self.seek_f:clone()  
     self.debug_wander_f = self.wander_f:clone()
@@ -84,7 +84,7 @@ function Physics:calculate_steering_force(dt)
   end
   
   -- Store forces for debug drawing player troops
-  if DEBUG_PLAYER_TROOPS and self.character == DEBUG_PLAYER_CHARACTER_TYPE then
+  if DEBUG_PLAYER_TROOPS and (self.character == DEBUG_PLAYER_CHARACTER_TYPE or DEBUG_PLAYER_CHARACTER_TYPE == nil) then
     self.debug_separation_f = self.separation_f:clone()
     self.debug_seek_f = self.seek_f:clone()  
     self.debug_wander_f = self.wander_f:clone()
@@ -423,9 +423,9 @@ function Physics:draw_steering_debug()
   local should_debug = false
   
   -- Check if we should debug this unit
-  if DEBUG_STEERING_VECTORS and self.type == DEBUG_STEERING_ENEMY_TYPE then
+  if DEBUG_STEERING_VECTORS and (self.type == DEBUG_STEERING_ENEMY_TYPE or DEBUG_STEERING_ENEMY_TYPE == nil) then
     should_debug = true
-  elseif DEBUG_PLAYER_TROOPS and self.character == DEBUG_PLAYER_CHARACTER_TYPE then
+  elseif DEBUG_PLAYER_TROOPS and (self.character == DEBUG_PLAYER_CHARACTER_TYPE or DEBUG_PLAYER_CHARACTER_TYPE == nil) then
     should_debug = true
   end
   

@@ -36,9 +36,6 @@ fns['draw_enemy'] = function(self)
     self:draw_fallback_animation()
   end
 
-  -- Draw steering debug vectors
-  self:draw_steering_debug()
-
 end
 
 fns['explode'] = function(self)

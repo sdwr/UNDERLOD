@@ -30,8 +30,8 @@ function Enemy:init(args)
 
 
   self.currentMovementAction = nil
-  self.stopChasingInRange = not not self.stopChasingInRange
-  self.haltOnPlayerContact = not not self.haltOnPlayerContact
+  self.stopChasingInRange = default_to(self.stopChasingInRange, false)
+  self.haltOnPlayerContact = default_to(self.haltOnPlayerContact, true)
 
   self:set_attack_cooldown_timer(0)
   
@@ -271,7 +271,8 @@ function Enemy:add_idle_deceleration()
 end
 
 function Enemy:choose_movement_target()
-  if self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB then
+  if self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB 
+  or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL then
     return self:acquire_target_seek_orb()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK then
     return self:acquire_target_seek()
@@ -292,6 +293,9 @@ function Enemy:update_movement()
   
   if self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB then
     return self:update_move_seek()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL then
+    local speed_multiplier = self:get_orb_stall_speed_multiplier()
+    return self:update_move_seek(speed_multiplier)
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK then
     return self:update_move_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
@@ -306,6 +310,24 @@ function Enemy:update_movement()
     return false -- Stationary enemies don't move
   end
   return false
+end
+
+function Enemy:get_orb_stall_speed_multiplier()
+  if not main.current.current_arena or not main.current.current_arena.level_orb then
+    return 1
+  end
+
+  local orb = main.current.current_arena.level_orb
+
+  --slow down as you get closer to the orb
+  local distance_to_orb = math.distance(self.x, self.y, main.current.current_arena.level_orb.x, main.current.current_arena.level_orb.y)
+  if distance_to_orb > 100 then
+    return 1
+  end
+
+  local percent_to_orb = 1 - (distance_to_orb / 100)
+  local multiplier = math.remap(percent_to_orb, 0, 1, 1, 0.5)
+  return multiplier
 end
 
 function Enemy:acquire_target_seek_orb()
@@ -464,7 +486,7 @@ function Enemy:update_move_wander()
   return true
 end
 
-function Enemy:update_move_seek()
+function Enemy:update_move_seek(speed_multiplier)
   -- 1. Guard clause: If there's no target, this action can't continue.
   if not self.target then
       return false -- Indicates the movement action failed/is complete.
@@ -478,7 +500,8 @@ function Enemy:update_move_seek()
   else
       -- We are OUT of range, OR we are not supposed to stop.
       -- In either case, we must seek the target.
-      self:seek_point(self.target.x, self.target.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
+      local seek_weight = get_seek_weight_by_enemy_type(self.type) * (speed_multiplier or 1)
+      self:seek_point(self.target.x, self.target.y, SEEK_DECELERATION, seek_weight)
       self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER) -- Add a little variation to the seek.
   end
 
@@ -549,7 +572,8 @@ function Enemy:draw()
     self:draw_knockback()
   end
   self:draw_cast_timer()
-  self:draw_targeted()
+  
+  self:draw_steering_debug()
 end
 
 function Enemy:on_collision_enter(other, contact)
