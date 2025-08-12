@@ -397,6 +397,7 @@ end
 
 function Troop:draw_distance_glow()
   local tier = Helper.Unit.closest_enemy_distance_tier
+  if not tier or tier > 3 then return end
 
   if tier then
     local glow_multipliers = {

@@ -614,11 +614,10 @@ function Helper.Unit:update_enemy_distance_tier()
 
     if self.closest_enemy_distance_tier and self.closest_enemy_distance_tier < self.last_closest_enemy_distance_tier then            --play tier effects
         if not self.tier_effect_debounce then
-            self.tier_effect_debounce = {
-                [1] = 0,
-                [2] = 0,
-                [3] = 0,
-            }
+            self.tier_effect_debounce = {}
+            for i = 1, #TIER_TO_DISTANCE do
+                self.tier_effect_debounce[i] = 0
+            end
         end
         --debounce to prevent spamming
         if self.tier_effect_debounce[self.closest_enemy_distance_tier] < Helper.Time.time then

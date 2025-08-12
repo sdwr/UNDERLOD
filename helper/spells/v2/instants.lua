@@ -148,6 +148,7 @@ function ArrowProjectile:update(dt)
   if self.homing and self.target and not self.target.dead then
     self.angle = math.atan2(self.target.y - self.y, self.target.x - self.x)
     self.r = self.angle
+    self:set_angle(self.angle)
   end
 
 

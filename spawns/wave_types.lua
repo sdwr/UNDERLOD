@@ -45,7 +45,7 @@ function Wave_Types:Create_Normal_Wave(level)
     table.insert(wave, {'GROUP', Get_Random_Special_Enemy(tier), 1, 'close'})
     num_special_enemies_left = num_special_enemies_left - 1
   end
-  if level <= 2 then
+  if level == 2 then
     table.insert(wave, {'GROUP', 'archer', 1, 'close'})
   end
 
