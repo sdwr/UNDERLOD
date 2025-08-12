@@ -39,7 +39,7 @@ function Arena:init(args)
   
   self:create_level_orb()
 
-  self:create_gold_counter()
+  -- self:create_gold_counter()
   self:create_progress_bar()
   -- self:create_walls()
 
@@ -61,7 +61,7 @@ end
 function Arena:wipe_level(on_finish)
   local charge_duration = 3.5
   local wipe_duration = 2
-  local rest_duration = 0.5
+  local rest_duration = -0.5
   local total_duration = charge_duration + wipe_duration + rest_duration
 
   self.in_wipe = true
@@ -116,10 +116,10 @@ function Arena:create_level_orb()
   self.level_orb = LevelOrb{group = self.main, parent = self, x = gw/2, y = gh/2}
 end
 
-function Arena:create_gold_counter()
-  -- Create gold counter in top left
-  self.gold_counter = GoldCounter{group = self.ui, parent = self,x = GOLD_COUNTER_X_OFFSET, y = LEVEL_MAP_Y_POSITION + 1, offset_x = self.offset_x, offset_y = self.offset_y}
-end
+-- function Arena:create_gold_counter()
+--   -- Create gold counter in top left
+--   self.gold_counter = GoldCounter{group = self.ui, parent = self,x = GOLD_COUNTER_X_OFFSET, y = LEVEL_MAP_Y_POSITION + 1, offset_x = self.offset_x, offset_y = self.offset_y}
+-- end
 
 function Arena:create_progress_bar()
   if Is_Boss_Level(self.level) then

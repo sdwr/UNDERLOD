@@ -43,6 +43,9 @@ function CombatLevel:level_clear(full_wipe)
 end
 
 function CombatLevel:finish_level()
+
+  gold = GOLD_GAINED_BY_LEVEL[self.level]
+  
   if LEVEL_TO_PERKS[self.level] then
     self.perk_overlay = PerkOverlay{
       group = self.ui,

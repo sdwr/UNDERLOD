@@ -648,16 +648,16 @@ function Enemy:die()
     current_power_onscreen = current_power_onscreen - enemy_to_round_power[self.type]
     round_power_killed = round_power_killed + enemy_to_round_power[self.type]
   end
-  
+
   self.super.die(self)
   self.dead = true
   _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.5}
   
   -- Drop gold when enemy dies
-  if main.current and main.current.gold_counter then
-    local round_power = enemy_to_round_power[self.type] or 100
-    main.current.gold_counter:add_round_power(round_power, self.x, self.y)
-  end
+  -- if main.current and main.current.gold_counter then
+  --   local round_power = enemy_to_round_power[self.type] or 100
+  --   main.current.gold_counter:add_round_power(round_power, self.x, self.y)
+  -- end
 
   -- Add progress to wave progress bar
   if main.current and main.current.current_arena and main.current.current_arena.progress_bar then

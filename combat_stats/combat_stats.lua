@@ -329,36 +329,41 @@ SPECIAL_SWARMER_WEIGHT_BY_TYPE = {
 
 
 ROUND_POWER_BY_LEVEL = {
-  [1] = 750,
-  [2] = 1000,
-  [3] = 1250,
-  [4] = 1500,
-  [5] = 1750,
-  [6] = 2000,
-  [7] = 2250,
-  [8] = 2500,
-  [9] = 2750,
-  [10] = 3000,
-  [11] = 3250,
-  [12] = 3500,
-  [13] = 3750,
-  [14] = 4000,
-  [15] = 4250,
-  [16] = 4500,
-  [17] = 4750,
-  [18] = 5000,
-  [19] = 5250,
-  [20] = 5500,
-  [21] = 5750,
-  [22] = 6000,
-  [23] = 6250,
-  [24] = 6500,
-  [25] = 6750,
+  [1] = 600,
+  [2] = 800,
+  [3] = 1000,
+  [4] = 1200,
+  [5] = 1400,
+  [6] = 1600,
+  [7] = 1800,
+  [8] = 2000,
+  [9] = 2200,
+  [10] = 2400,
+  [11] = 2600,
+  [12] = 2800,
+  [13] = 3000,
+  [14] = 3200,
+  [15] = 3400,
+  [16] = 3600,
+  [17] = 3800,
+  [18] = 4000,
+  [19] = 4200,
+  [20] = 4400,
+  [21] = 4600,
+  [22] = 4800,
+  [23] = 5000,
+  [24] = 5200,
+  [25] = 5400,
 }
 
 MAX_ONSCREEN_ROUND_POWER = function(level)
-  local base_round_power = 350
-  return base_round_power + ROUND_POWER_BY_LEVEL[level] / 2
+  local base_round_power = ROUND_POWER_BY_LEVEL[level]
+  return base_round_power + base_round_power * 0.4
+end
+
+LEVEL_ORB_HEALTH = function(level)
+  local base_round_power = ROUND_POWER_BY_LEVEL[level]
+  return (base_round_power / 10) + 200
 end
 
 GOLD_GAINED_BY_LEVEL = {

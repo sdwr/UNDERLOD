@@ -18,7 +18,7 @@ function LevelOrb:init(args)
   self:set_as_circle(self.radius, 'static', 'projectile')
   
   -- Health properties
-  self.max_hp = args.max_hp or 100
+  self.max_hp = args.max_hp or LEVEL_ORB_HEALTH(main.current.level)
   self.hp = self.max_hp
   
   -- Visual properties
@@ -40,6 +40,7 @@ function LevelOrb:init(args)
     
   -- Damage resistance
   self.damage_reduction = 0 -- Percentage of damage to reduce (0 = no reduction)
+  self.invulnerable = false
 
 end
 
@@ -120,10 +121,11 @@ function LevelOrb:on_collision_enter(other)
 
   local enemy_round_power = enemy_to_round_power[other.type] or 10
 
-  self:hit(enemy_round_power / 50, other, DAMAGE_TYPE_PHYSICAL)
-  local duration = KNOCKBACK_DURATION_ENEMY
-  local push_force = LAUNCH_PUSH_FORCE_ENEMY
-  other:die(1000, nil, DAMAGE_TYPE_PHYSICAL, true, true)
+  if not self.invulnerable then
+    self:hit(enemy_round_power, other, DAMAGE_TYPE_PHYSICAL)
+  end
+  
+  other:die()
 end
 
 function LevelOrb:hit(damage, from, damage_type)
@@ -158,6 +160,7 @@ function LevelOrb:get_hp_percentage()
 end
 
 function LevelOrb:charge_up(duration)
+  self.invulnerable = true
   -- Visual effects
   self.charging = true
   self.charge_timer = 0

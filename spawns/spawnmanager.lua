@@ -684,7 +684,10 @@ function SpawnManager:process_infinite_wave()
   else
     local wave_spawn_location = Get_Offscreen_Spawn_Point()
     self:process_instruction(group_data, wave_spawn_location)
-    self:process_instruction({'DELAY', 1}, wave_spawn_location)
+    --increase delay based on distance to the max onscreen power
+    local percent_to_max = (current_power_onscreen + group_power) / MAX_ONSCREEN_ROUND_POWER(self.arena.level)
+    local delay = math.remap(math.max(percent_to_max, 0.5), 0.5, 1, 1, 5)
+    self:process_instruction({'DELAY', delay}, wave_spawn_location)
     self.next_group = nil
   end
 
