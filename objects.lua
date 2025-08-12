@@ -1013,6 +1013,9 @@ function Unit:calculate_stats(first_run)
   end
 
   self.mvspd = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m*elemental_slow_m
+  if self:is(Enemy) then
+    self.mvspd = self.mvspd * self:get_orb_stall_speed_multiplier()
+  end
   self.max_v = self.mvspd
 
 

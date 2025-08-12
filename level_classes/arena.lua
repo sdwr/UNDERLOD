@@ -80,7 +80,6 @@ function Arena:wipe_level(on_finish)
     }
   end)
   self.t:after(total_duration, function()
-    self.in_wipe = false
     if on_finish then
       on_finish()
     end

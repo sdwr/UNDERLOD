@@ -294,8 +294,7 @@ function Enemy:update_movement()
   if self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB then
     return self:update_move_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL then
-    local speed_multiplier = self:get_orb_stall_speed_multiplier()
-    return self:update_move_seek(speed_multiplier)
+    return self:update_move_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK then
     return self:update_move_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
@@ -326,7 +325,8 @@ function Enemy:get_orb_stall_speed_multiplier()
   end
 
   local percent_to_orb = 1 - (distance_to_orb / 100)
-  local multiplier = math.remap(percent_to_orb, 0, 1, 1, 0.5)
+  local multiplier = math.remap(percent_to_orb, 0, 1, 1, 0.2)
+
   return multiplier
 end
 
@@ -486,7 +486,7 @@ function Enemy:update_move_wander()
   return true
 end
 
-function Enemy:update_move_seek(speed_multiplier)
+function Enemy:update_move_seek()
   -- 1. Guard clause: If there's no target, this action can't continue.
   if not self.target then
       return false -- Indicates the movement action failed/is complete.
@@ -500,7 +500,7 @@ function Enemy:update_move_seek(speed_multiplier)
   else
       -- We are OUT of range, OR we are not supposed to stop.
       -- In either case, we must seek the target.
-      local seek_weight = get_seek_weight_by_enemy_type(self.type) * (speed_multiplier or 1)
+      local seek_weight = get_seek_weight_by_enemy_type(self.type)
       self:seek_point(self.target.x, self.target.y, SEEK_DECELERATION, seek_weight)
       self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER) -- Add a little variation to the seek.
   end
