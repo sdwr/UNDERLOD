@@ -49,6 +49,7 @@ function Arena:init(args)
 
   self.start_time = 3
   self.last_spawn_enemy_time = love.timer.getTime()
+
   
   -- Start the level
 end
@@ -102,7 +103,6 @@ function Arena:create_progress_bar()
       progress = 0,
       waves_power = waves_power,
       fade_in = true,
-      fade_in_duration = 2,
     }
   end
 end
@@ -252,6 +252,10 @@ function Arena:update(dt)
   self:update_game_object(dt)
 
   if self.spawn_manager.state ~= 'arena_start' and Helper.Unit:all_troops_are_dead() and self.level ~= 0 then
+    self:die()
+  end
+
+  if self.level_orb and (self.level_orb.dead or self.level_orb.hp <= 0) then
     self:die()
   end
   

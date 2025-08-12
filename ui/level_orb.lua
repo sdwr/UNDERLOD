@@ -13,6 +13,8 @@ function LevelOrb:init(args)
   
   -- Physical properties
   self.radius = args.radius or 25
+  self.visible_radius = 0
+
   self:set_as_circle(self.radius, 'static', 'projectile')
   
   -- Health properties
@@ -23,6 +25,7 @@ function LevelOrb:init(args)
   self.color = args.color or blue[0]:clone()
   self.base_color = self.color:clone()
   self.hurt_color = red[0]:clone()
+  self.hurt_flash_color = red[5]:clone()
   
   -- Animation properties
   self.pulse_timer = 0
@@ -37,6 +40,14 @@ function LevelOrb:init(args)
     
   -- Damage resistance
   self.damage_reduction = 0 -- Percentage of damage to reduce (0 = no reduction)
+
+end
+
+function LevelOrb:spawn()
+  self.t:tween(0.5, self, {visible_radius = self.radius}, math.ease_in_out_cubic)
+  self.t:after(0.5, function()
+    level_up1:play{pitch = random:float(0.9, 1.1), volume = 1}
+  end)
 end
 
 function LevelOrb:update(dt)
@@ -84,7 +95,7 @@ function LevelOrb:hit(damage, from, damage_type)
   self:flash_hurt()
   
   -- Play hit sound
-  player_hit1:play{pitch = random:float(0.9, 1.1), volume = 0.3}
+  hit1:play{pitch = random:float(0.9, 1.1), volume = 1}
   
   -- Check if destroyed
   if self.hp <= 0 then
@@ -107,35 +118,38 @@ function LevelOrb:draw()
   
   graphics.push(self.x, self.y, 0, self.scale, self.scale)
   
-  -- Draw main orb
-  graphics.circle(self.x, self.y, self.radius, self.color)
+  -- Draw main orb background (grey)
+  graphics.circle(self.x, self.y, self.visible_radius, bg[5]:clone())
+  
+  -- Draw health portion (colored from bottom)
+  local hp_percentage = self:get_hp_percentage()
+  if hp_percentage > 0 then
+    local fill_height = self.visible_radius * 2 * hp_percentage
+    local fill_y = self.y + self.visible_radius - (fill_height /2) 
+    
+    -- Create a clipping mask for the health portion
+    love.graphics.stencil(function()
+      graphics.rectangle(self.x, fill_y, self.visible_radius * 2, fill_height, 0, 0, white[0])
+    end, "replace", 1)
+    
+    love.graphics.setStencilTest("greater", 0)
+    
+    -- Draw the colored health portion
+    local health_color = self.color
+    if self.hurt_flash_timer > 0 then
+      health_color = self.hurt_flash_color
+    end
+    graphics.circle(self.x, self.y, self.visible_radius, health_color)
+    
+    love.graphics.setStencilTest()
+  end
   
   -- Draw border
   local border_color = white[0]
   if self.hurt_flash_timer > 0 then
     border_color = red[5]
   end
-  graphics.circle(self.x, self.y, self.radius, border_color, 2)
-  
-  -- Draw health indicator
-  local hp_percentage = self:get_hp_percentage()
-  if hp_percentage < 1.0 then
-    -- Draw health bar background
-    local bar_width = self.radius * 2
-    local bar_height = 6
-    local bar_y = self.y - self.radius - 10
-    
-    graphics.rectangle(self.x, bar_y, bar_width, bar_height, 0, 0, bg[5]:clone())
-    
-    -- Draw health bar fill
-    local fill_width = bar_width * hp_percentage
-    local health_color = hp_percentage > 0.5 and green[0]:clone() or (hp_percentage > 0.25 and yellow[0]:clone() or red[0]:clone())
-    graphics.rectangle(self.x - (bar_width - fill_width) / 2, bar_y, fill_width, bar_height, 0, 0, health_color)
-    
-    -- Draw health text
-    local hp_text = math.ceil(self.hp) .. "/" .. self.max_hp
-    graphics.print(hp_text, fat_font, self.x, bar_y - 15, 0, 1, 1, 0, 0, white[0]:clone())
-  end
+  graphics.circle(self.x, self.y, self.visible_radius, border_color, 2)
   
   graphics.pop()
 end

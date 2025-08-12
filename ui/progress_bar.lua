@@ -11,7 +11,7 @@ function ProgressBar:init(args)
   self.waves_power = args.waves_power or {self.max_progress}
   self.bgcolor = args.bgcolor or bg[-1]:clone()
 
-  self.fade_in_duration = args.fade_in_duration or 1
+  self.fade_in_duration = args.fade_in_duration or 4
   if self.fade_in then
     self.bgcolor.a = 0
   end

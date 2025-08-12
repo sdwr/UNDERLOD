@@ -356,9 +356,13 @@ function End_Suction(arena)
     ui_switch1:play{pitch = random:float(1.1, 1.3), volume = 1}
     arena.spawn_manager.timer = TIME_BETWEEN_WAVES
     arena.spawn_manager:change_state('entry_delay')
-    if arena.progress_bar then
-      arena.progress_bar:begin_fade_in()
-    end
+
+    arena.t:after(1.5, function()
+      if arena.progress_bar then
+        arena.progress_bar:begin_fade_in()
+      end
+    end)
+
   end
 
 end
@@ -575,7 +579,7 @@ function SpawnManager:init(arena)
     -- 'boss_fight':            A special state for boss levels.
 
     -- Timers and Trackers
-    self.timer = arena.entry_delay or 1
+    self.timer = TIME_BETWEEN_WAVES
     self.current_wave_index = 1
     self.current_instruction_index = 1
 
@@ -1074,7 +1078,7 @@ function SpawnManager:spawn_waves_with_timing()
     self.current_wave_index = 1
     self.current_instruction_index = 1
     self:change_state('entry_delay')
-    self.timer = self.arena.entry_delay or 1
+    self.timer = TIME_BETWEEN_WAVES
   end
 end
 
