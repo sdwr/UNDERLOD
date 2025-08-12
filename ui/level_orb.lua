@@ -165,8 +165,8 @@ function LevelOrb:charge_up(duration)
   self.original_color = self.color:clone()
 
   --Sound effects
-  self.chargeup_sound = chargeup:play{pitch = 1, volume = 1.2}
-  self.t:tween(duration, self.chargeup_sound, {pitch = 2}, math.linear)
+  self.chargeup_sound = chargeuprising:play{pitch = 1, volume = 1.2}
+  self.t:tween(duration, self.chargeup_sound, {volume = 1.5}, math.linear)
   self.t:after(duration, function()
     self.chargeup_sound:stop()
   end)

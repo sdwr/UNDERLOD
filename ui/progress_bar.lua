@@ -152,7 +152,7 @@ function ProgressBarSegment:increase_progress(amount)
 end
 
 function ProgressBarSegment:get_progress_location()
-  if self.parent.in_wipe then
+  if self.parent.parent.in_wipe then
     return {x = gw/2, y = gh/2}
   end
 

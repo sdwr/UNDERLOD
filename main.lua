@@ -187,6 +187,7 @@ function init()
   choir1 = Sound('choir1.wav', s)
   choir1_loop = Sound('choir1.wav', s_loop)
   chargeup = Sound('chargeup.wav', s)
+  chargeuprising = Sound('chargeuprising.wav', s)
   title_music = Sound('Debussy - Reverie.mp3', { tags = { music } })
 
 
