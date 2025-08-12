@@ -152,6 +152,10 @@ function ProgressBarSegment:increase_progress(amount)
 end
 
 function ProgressBarSegment:get_progress_location()
+  if self.parent.in_wipe then
+    return {x = gw/2, y = gh/2}
+  end
+
   local progress_location = {x = self.x, y = self.y}
   progress_location.x = progress_location.x - self.shape.w/2 + self.shape.w*self.progress/self.max_progress
   return progress_location

@@ -58,21 +58,33 @@ function Arena:init(args)
   -- Start the level
 end
 
-function Arena:wipe_level()
-  local total_duration = ARENA_WIPE_DURATION
-  local charge_duration = 2
-  local wipe_duration = 4
+function Arena:wipe_level(on_finish)
+  local charge_duration = 3.5
+  local wipe_duration = 2
+  local rest_duration = 0.5
+  local total_duration = charge_duration + wipe_duration + rest_duration
+
+  self.in_wipe = true
+
   --charge up the orb
   self.level_orb:charge_up(charge_duration)
 
   -- Create expanding ring that kills all enemies
-  WipeRing{
-    group = self.main,
-    x = gw/2,
-    y = gh/2,
-    max_radius = math.max(gw, gh),
-    expand_duration = wipe_duration
-  }
+  self.t:after(charge_duration, function()
+    WipeRing{
+      group = self.main,
+      x = gw/2,
+      y = gh/2,
+      max_radius = math.max(gw, gh),
+      expand_duration = wipe_duration
+    }
+  end)
+  self.t:after(total_duration, function()
+    self.in_wipe = false
+    if on_finish then
+      on_finish()
+    end
+  end)
 end
 
 function Arena:delete_walls() 

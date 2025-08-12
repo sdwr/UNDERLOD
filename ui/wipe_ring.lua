@@ -27,7 +27,7 @@ function WipeRing:init(args)
   self.glow_color.a = 0.4
   
   -- Play initial sound effect
-  level_up1:play{pitch = random:float(1.2, 1.4), volume = 0.8}
+  explosion1:play{pitch = random:float(1.2, 1.4), volume = 0.8}
 end
 
 function WipeRing:update_radius(radius)

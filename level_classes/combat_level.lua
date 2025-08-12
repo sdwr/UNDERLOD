@@ -34,9 +34,7 @@ function CombatLevel:level_clear(full_wipe)
   -- Only create perk selection on perk levels
 
   if full_wipe then
-    self:wipe_level()
-
-    self.t:after(ARENA_WIPE_DURATION, function()
+    self:wipe_level(function() 
       self:finish_level()
     end)
   else

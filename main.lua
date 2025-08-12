@@ -186,6 +186,7 @@ function init()
   new_spark = Sound('new_spark.wav', s)
   choir1 = Sound('choir1.wav', s)
   choir1_loop = Sound('choir1.wav', s_loop)
+  chargeup = Sound('chargeup.wav', s)
   title_music = Sound('Debussy - Reverie.mp3', { tags = { music } })
 
 
