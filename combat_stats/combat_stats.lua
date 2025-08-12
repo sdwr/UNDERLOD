@@ -22,7 +22,7 @@ TROOP_SWORDSMAN_BASE_COOLDOWN = 0.8
 -- New troop cooldown system
 attack_cooldowns = {
   ['very-fast'] = 0.8,
-  ['fast'] = 1.1,
+  ['fast'] = 0.9,
   ['medium'] = 1.5,
   ['slow'] = 2.5,
   ['very-slow'] = 4.0
@@ -490,8 +490,8 @@ end
 
 DISTANCE_TIER_TO_COOLDOWN_MULTIPLIER = {
   [1] = 0.25,
-  [2] = 0.5,
-  [3] = 0.75,
+  [2] = 0.45,
+  [3] = 0.68,
 }
 
 TIER_TO_DISTANCE = {

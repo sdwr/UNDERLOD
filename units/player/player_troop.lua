@@ -265,7 +265,7 @@ function Troop:try_decelerate()
     self:add_deceleration(deceleration_weight)
     return true
   end
-  
+
   return false
 end
 
