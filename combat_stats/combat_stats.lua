@@ -129,11 +129,11 @@ TROOP_SWORDSMAN_RANGE = 80
 
 REGULAR_ENEMY_HP = 45
 REGULAR_ENEMY_DAMAGE = 15
-REGULAR_ENEMY_MS = 20
+REGULAR_ENEMY_MS = 9.5
 
-SPECIAL_ENEMY_HP = 280
+SPECIAL_ENEMY_HP = 200
 SPECIAL_ENEMY_DAMAGE = 20
-SPECIAL_ENEMY_MS = 20
+SPECIAL_ENEMY_MS = 15
 
 MINIBOSS_HP = 400
 MINIBOSS_DAMAGE = 20
@@ -329,32 +329,42 @@ SPECIAL_SWARMER_WEIGHT_BY_TYPE = {
 
 
 ROUND_POWER_BY_LEVEL = {
-  [1] = 400,
-  [2] = 600,
-  [3] = 800,
-  [4] = 1100,
-  [5] = 1300,
-  [6] = 1500,
-  [7] = 1700,
-  [8] = 1900,
-  [9] = 2100,
-  [10] = 2300,
-  [11] = 2500,
-  [12] = 2700,
-  [13] = 1500,
-  [14] = 1600,
-  [15] = 1700,
-  [16] = 1800,
-  [17] = 1900,
-  [18] = 2000,
-  [19] = 2100,
-  [20] = 2200,
-  [21] = 2300,
-  [22] = 2400,
-  [23] = 2800,
-  [24] = 2900,
-  [25] = 3000,
+  [1] = 600,
+  [2] = 800,
+  [3] = 1000,
+  [4] = 1200,
+  [5] = 1400,
+  [6] = 1600,
+  [7] = 1800,
+  [8] = 2000,
+  [9] = 2200,
+  [10] = 2400,
+  [11] = 2600,
+  [12] = 2800,
+  [13] = 3000,
+  [14] = 3200,
+  [15] = 3400,
+  [16] = 3600,
+  [17] = 3800,
+  [18] = 4000,
+  [19] = 4200,
+  [20] = 4400,
+  [21] = 4600,
+  [22] = 4800,
+  [23] = 5000,
+  [24] = 5200,
+  [25] = 5400,
 }
+
+MAX_ONSCREEN_ROUND_POWER = function(level)
+  local base_round_power = ROUND_POWER_BY_LEVEL[level]
+  return base_round_power + base_round_power * 0.4
+end
+
+LEVEL_ORB_HEALTH = function(level)
+  local base_round_power = ROUND_POWER_BY_LEVEL[level]
+  return (base_round_power / 10) + 200
+end
 
 GOLD_GAINED_BY_LEVEL = {
   [1] = 4,

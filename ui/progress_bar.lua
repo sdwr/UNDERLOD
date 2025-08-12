@@ -11,7 +11,7 @@ function ProgressBar:init(args)
   self.waves_power = args.waves_power or {self.max_progress}
   self.bgcolor = args.bgcolor or bg[-1]:clone()
 
-  self.fade_in_duration = args.fade_in_duration or 1
+  self.fade_in_duration = args.fade_in_duration or 4
   if self.fade_in then
     self.bgcolor.a = 0
   end
@@ -152,9 +152,7 @@ function ProgressBarSegment:increase_progress(amount)
 end
 
 function ProgressBarSegment:get_progress_location()
-  local progress_location = {x = self.x, y = self.y}
-  progress_location.x = progress_location.x - self.shape.w/2 + self.shape.w*self.progress/self.max_progress
-  return progress_location
+  return {x = gw/2, y = gh/2}
 end
 
 function ProgressBarSegment:create_progress_particle(roundPower, x, y)

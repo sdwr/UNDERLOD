@@ -30,8 +30,8 @@ function Enemy:init(args)
 
 
   self.currentMovementAction = nil
-  self.stopChasingInRange = not not self.stopChasingInRange
-  self.haltOnPlayerContact = not not self.haltOnPlayerContact
+  self.stopChasingInRange = default_to(self.stopChasingInRange, false)
+  self.haltOnPlayerContact = default_to(self.haltOnPlayerContact, true)
 
   self:set_attack_cooldown_timer(0)
   
@@ -271,7 +271,10 @@ function Enemy:add_idle_deceleration()
 end
 
 function Enemy:choose_movement_target()
-  if self.currentMovementAction == MOVEMENT_TYPE_SEEK then
+  if self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB 
+  or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL then
+    return self:acquire_target_seek_orb()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK then
     return self:acquire_target_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
     return self:acquire_target_loose_seek()
@@ -288,7 +291,11 @@ function Enemy:update_movement()
   if self.being_knocked_back then return end
   if not self.transition_active then return end
   
-  if self.currentMovementAction == MOVEMENT_TYPE_SEEK then
+  if self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB then
+    return self:update_move_seek()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL then
+    return self:update_move_seek()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK then
     return self:update_move_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
     return self:update_move_loose_seek()
@@ -302,6 +309,30 @@ function Enemy:update_movement()
     return false -- Stationary enemies don't move
   end
   return false
+end
+
+function Enemy:get_orb_stall_speed_multiplier()
+  if not main.current.current_arena or not main.current.current_arena.level_orb then
+    return 1
+  end
+
+  local orb = main.current.current_arena.level_orb
+
+  --slow down as you get closer to the orb
+  local distance_to_orb = math.distance(self.x, self.y, main.current.current_arena.level_orb.x, main.current.current_arena.level_orb.y)
+  if distance_to_orb > 100 then
+    return 1
+  end
+
+  local percent_to_orb = 1 - (distance_to_orb / 100)
+  local multiplier = math.remap(percent_to_orb, 0, 1, 1, 0.2)
+
+  return multiplier
+end
+
+function Enemy:acquire_target_seek_orb()
+  self.target = {x = gw/2, y = gh/2}
+  return true
 end
 
 function Enemy:acquire_target_seek()
@@ -469,7 +500,8 @@ function Enemy:update_move_seek()
   else
       -- We are OUT of range, OR we are not supposed to stop.
       -- In either case, we must seek the target.
-      self:seek_point(self.target.x, self.target.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
+      local seek_weight = get_seek_weight_by_enemy_type(self.type)
+      self:seek_point(self.target.x, self.target.y, SEEK_DECELERATION, seek_weight)
       self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER) -- Add a little variation to the seek.
   end
 
@@ -540,7 +572,8 @@ function Enemy:draw()
     self:draw_knockback()
   end
   self:draw_cast_timer()
-  self:draw_targeted()
+  
+  self:draw_steering_debug()
 end
 
 function Enemy:on_collision_enter(other, contact)
@@ -608,22 +641,29 @@ end
 
 function Enemy:die()
   if self.dead then return end
+
+  if self.class == 'boss' then
+    is_boss_dead = true
+  else
+    current_power_onscreen = current_power_onscreen - enemy_to_round_power[self.type]
+    round_power_killed = round_power_killed + enemy_to_round_power[self.type]
+  end
+
   self.super.die(self)
   self.dead = true
   _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.5}
   
   -- Drop gold when enemy dies
-  if main.current and main.current.gold_counter then
-    local round_power = enemy_to_round_power[self.type] or 100
-    main.current.gold_counter:add_round_power(round_power, self.x, self.y)
-  end
+  -- if main.current and main.current.gold_counter then
+  --   local round_power = enemy_to_round_power[self.type] or 100
+  --   main.current.gold_counter:add_round_power(round_power, self.x, self.y)
+  -- end
 
   -- Add progress to wave progress bar
   if main.current and main.current.current_arena and main.current.current_arena.progress_bar then
     local round_power = enemy_to_round_power[self.type] or 100
     main.current.current_arena.progress_bar:increase_with_particles(round_power, self.x, self.y)
   end
-
   if self.parent and self.parent.summons and self.parent.summons > 0 then
     self.parent.summons = self.parent.summons - 1
   end

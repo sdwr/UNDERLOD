@@ -186,6 +186,8 @@ function init()
   new_spark = Sound('new_spark.wav', s)
   choir1 = Sound('choir1.wav', s)
   choir1_loop = Sound('choir1.wav', s_loop)
+  chargeup = Sound('chargeup.wav', s)
+  chargeuprising = Sound('chargeuprising.wav', s)
   title_music = Sound('Debussy - Reverie.mp3', { tags = { music } })
 
 
@@ -1418,38 +1420,38 @@ function init()
     ['chaser'] = 50,
 
     --special enemies t1
-    ['goblin_archer'] = 150,
-    ['archer'] = 150,
-    ['burst'] = 150,
-    ['turret'] = 150,
-    ['cleaver'] = 150,
-    ['selfburst'] = 150,
-    ['snakearrow'] = 150,
+    ['goblin_archer'] = 75,
+    ['archer'] = 75,
+    ['burst'] = 75,
+    ['turret'] = 75,
+    ['cleaver'] = 75,
+    ['selfburst'] = 75,
+    ['snakearrow'] = 75,
 
     --special enemies t1.5
-    ['mortar'] = 300,
-    ['singlemortar'] = 300,
-    ['line_mortar'] = 300,
-    ['aim_spread'] = 300,
-    ['charger'] = 300,
+    ['mortar'] = 75,
+    ['singlemortar'] = 75,
+    ['line_mortar'] = 75,
+    ['aim_spread'] = 75,
+    ['charger'] = 75,
 
     --special enemies t2
-    ['laser'] = 200,
-    ['rager'] = 200,
-    ['stomper'] = 200,
-    ['bomb'] = 200,
-    ['boomerang'] = 200,
-    ['plasma'] = 200,
-    ['big_goblin_archer'] = 200,
-    ['slowcharger'] = 200,
+    ['laser'] = 75,
+    ['rager'] = 75,
+    ['stomper'] = 75,
+    ['bomb'] = 75,
+    ['boomerang'] = 75,
+    ['plasma'] = 75,
+    ['big_goblin_archer'] = 75,
+    ['slowcharger'] = 75,
     --special enemies t2
-    ['firewall_caster'] = 250,
-    ['spread'] = 250,
-    ['spawner'] = 250,
-    ['arcspread'] = 250,
+    ['firewall_caster'] = 75,
+    ['spread'] = 75,
+    ['spawner'] = 75,
+    ['arcspread'] = 75,
     --special enemies t3
-    ['summoner'] = 300,
-    ['assassin'] = 300,
+    ['summoner'] = 75,
+    ['assassin'] = 75,
 
     --bosses
     ['stompy'] = BOSS_ROUND_POWER,

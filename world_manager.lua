@@ -136,12 +136,16 @@ function WorldManager:create_arena(level, offset_x)
     Helper.Unit:update_unit_colors()
     Helper.Unit:all_troops_begin_suction(arena)
 
+    self.t:after(1.5, function()
+      arena.level_orb:spawn()
+    end)
+
     self.t:after(DELAY_BEFORE_SUCTION, function()
       arena.spawn_manager:change_state('suction_to_targets')
     end)
 
     --cancel suction after 5 seconds
-    self.t:after(5, function()
+    self.t:after(6, function()
       End_Suction(arena)
     end)
 
