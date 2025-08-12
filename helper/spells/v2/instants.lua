@@ -149,6 +149,9 @@ function ArrowProjectile:update(dt)
     self.angle = math.atan2(self.target.y - self.y, self.target.x - self.x)
     self.r = self.angle
     self:set_angle(self.angle)
+    local vx = math.cos(self.angle) * self.speed
+    local vy = math.sin(self.angle) * self.speed
+    self:set_velocity(vx, vy)
   end
 
 
