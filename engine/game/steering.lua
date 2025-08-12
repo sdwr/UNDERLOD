@@ -80,6 +80,15 @@ function Physics:calculate_steering_force(dt)
     self.debug_separation_f = self.separation_f:clone()
     self.debug_seek_f = self.seek_f:clone()  
     self.debug_wander_f = self.wander_f:clone()
+    self.debug_deceleration_f = self.deceleration_f:clone()
+  end
+  
+  -- Store forces for debug drawing player troops
+  if DEBUG_PLAYER_TROOPS and self.character == DEBUG_PLAYER_CHARACTER_TYPE then
+    self.debug_separation_f = self.separation_f:clone()
+    self.debug_seek_f = self.seek_f:clone()  
+    self.debug_wander_f = self.wander_f:clone()
+    self.debug_deceleration_f = self.deceleration_f:clone()
   end
 
   self.separation_f:set(0, 0)
@@ -241,6 +250,33 @@ function Physics:add_deceleration(weight)
   end
 end
 
+function Physics:add_deceleration_exponential(weight)
+  self.deceleration = true
+  -- Get the current velocity
+  local vx, vy = self:get_velocity()
+  local speed = math.length(vx, vy)
+  
+    if speed > 0.1 then
+      local nx, ny = -vx / speed, -vy / speed
+      local max_speed = self.max_move_v or self.max_v
+      
+      -- ### MODIFIED FORMULA ###
+      -- This scales the deceleration force based on the *inverse* of the speed.
+      -- When speed is high, the fraction is close to 1.
+      -- When speed is low, the fraction is much larger, creating a stronger force.
+      -- We clamp it to prevent a force that's too strong at extremely low speeds.
+      local speed_ratio = math.clamp(speed / max_speed, 0, 1)
+      local inverse_speed_ratio = 1 - speed_ratio
+      local decel_force_mag = IDLE_DECEL_FORCE + (IDLE_DECEL_FORCE * 2 * inverse_speed_ratio)
+      local max_decel_force = max_speed * 2
+      decel_force_mag = math.clamp(decel_force_mag, 0, max_decel_force)
+      
+      self.deceleration_f:set(nx * decel_force_mag * (weight or 1), ny * decel_force_mag * (weight or 1))
+  else
+      self.deceleration_f:set(0, 0)
+  end
+end
+
 -- Wander steering behavior
 -- Makes the object move in a jittery manner, adding some randomness to its movement while keeping the overall direction
 -- What this function does is project a circle in front of the entity and then choose a point randomly inside that circle for the entity to move towards and it does that every frame
@@ -383,7 +419,16 @@ end
 
 -- Debug drawing function for steering forces
 function Physics:draw_steering_debug()
+  local should_debug = false
+  
+  -- Check if we should debug this unit
   if DEBUG_STEERING_VECTORS and self.type == DEBUG_STEERING_ENEMY_TYPE then
+    should_debug = true
+  elseif DEBUG_PLAYER_TROOPS and self.character == DEBUG_PLAYER_CHARACTER_TYPE then
+    should_debug = true
+  end
+  
+  if should_debug then
     local scale = 0.5
     
     -- Draw separation force (red)
@@ -400,8 +445,13 @@ function Physics:draw_steering_debug()
     if self.debug_wander_f and (self.debug_wander_f.x ~= 0 or self.debug_wander_f.y ~= 0) then
       graphics.line(self.x, self.y, self.x + self.debug_wander_f.x * scale, self.y + self.debug_wander_f.y * scale, green[5])
     end
-    
-    -- Draw target location (yellow circle)
+
+    -- Draw deceleration force (purple)
+    if self.debug_deceleration_f and (self.debug_deceleration_f.x ~= 0 or self.debug_deceleration_f.y ~= 0) then
+      graphics.line(self.x, self.y, self.x + self.debug_deceleration_f.x * scale, self.y + self.debug_deceleration_f.y * scale, purple[5])
+    end
+
+    -- Draw target location (yellow circle) - for enemies
     if self.target_location then
       graphics.circle(self.target_location.x, self.target_location.y, 3, yellow[5])
       graphics.line(self.x, self.y, self.target_location.x, self.target_location.y, yellow[0])

@@ -235,6 +235,10 @@ function Troop:do_automatic_movement()
     self:add_cohesion(team:get_center(), TROOP_COHESION_MIN_DISTANCE, TROOP_COHESION_WEIGHT)
   end
 
+  if self.state ~= unit_states['following'] then
+    self:try_decelerate()
+  end
+
   --rotate towards target or velocity
   if self:in_range('assigned')() then
     self:rotate_towards_object(self.assigned_target, 1)
@@ -243,6 +247,26 @@ function Troop:do_automatic_movement()
   else
     self:rotate_towards_velocity(1)
   end
+end
+
+function Troop:try_decelerate()
+  local is_separating = false
+  local speed = math.length(self:get_velocity())
+
+  local separation_f = math.length(self.separation_f.x, self.separation_f.y)
+  if separation_f > 5 then
+    is_separating = true
+  end
+
+  if speed < 5 and is_separating then
+    --pass
+  else
+    local deceleration_weight = 0.5
+    self:add_deceleration(deceleration_weight)
+    return true
+  end
+  
+  return false
 end
 
 function Troop:update_ai_logic()
@@ -366,6 +390,9 @@ function Troop:draw()
   -- graphics.circle(self.x, self.y, self.aggro_sensor.rs, yellow[5], 2)
 
   graphics.pop()
+  
+  -- Debug steering forces
+  self:draw_steering_debug()
 end
 
 function Troop:draw_distance_glow()

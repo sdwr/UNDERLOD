@@ -14,7 +14,7 @@ ROUND_POWER_TO_GOLD = 100
 --stat constants
 TROOP_HP = 100
 TROOP_DAMAGE = 11
-TROOP_MS = 45
+TROOP_MS = 60
 -- Legacy constants (will be replaced)
 TROOP_BASE_COOLDOWN = 1.25
 TROOP_SWORDSMAN_BASE_COOLDOWN = 0.8
