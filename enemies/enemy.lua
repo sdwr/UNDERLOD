@@ -271,7 +271,9 @@ function Enemy:add_idle_deceleration()
 end
 
 function Enemy:choose_movement_target()
-  if self.currentMovementAction == MOVEMENT_TYPE_SEEK then
+  if self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB then
+    return self:acquire_target_seek_orb()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK then
     return self:acquire_target_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
     return self:acquire_target_loose_seek()
@@ -288,7 +290,9 @@ function Enemy:update_movement()
   if self.being_knocked_back then return end
   if not self.transition_active then return end
   
-  if self.currentMovementAction == MOVEMENT_TYPE_SEEK then
+  if self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB then
+    return self:update_move_seek()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK then
     return self:update_move_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
     return self:update_move_loose_seek()
@@ -302,6 +306,11 @@ function Enemy:update_movement()
     return false -- Stationary enemies don't move
   end
   return false
+end
+
+function Enemy:acquire_target_seek_orb()
+  self.target = {x = gw/2, y = gh/2}
+  return true
 end
 
 function Enemy:acquire_target_seek()
@@ -608,6 +617,7 @@ end
 
 function Enemy:die()
   if self.dead then return end
+  
   self.super.die(self)
   self.dead = true
   _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.5}
@@ -623,7 +633,6 @@ function Enemy:die()
     local round_power = enemy_to_round_power[self.type] or 100
     main.current.current_arena.progress_bar:increase_with_particles(round_power, self.x, self.y)
   end
-
   if self.parent and self.parent.summons and self.parent.summons > 0 then
     self.parent.summons = self.parent.summons - 1
   end

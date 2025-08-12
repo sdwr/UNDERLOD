@@ -54,7 +54,7 @@ function SpawnGlobals.Init()
     local center = {x = gw/2, y = gh/2}
 
     if num_teams == 1 then
-      return {center}
+      base_angle = random:float(-math.pi, math.pi)
     end
     
     local base_angle = 0

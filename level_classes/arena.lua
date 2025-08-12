@@ -33,6 +33,8 @@ function Arena:init(args)
   self:init_physics()
   self:init_spawn_manager()
   
+  self:create_level_orb()
+
   self:create_gold_counter()
   self:create_progress_bar()
   -- self:create_walls()
@@ -74,6 +76,10 @@ function Arena:create_walls()
   self.walls[6] = WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x2, self.offset_y - 40, self.offset_x + gw + 40, self.offset_y + gh + 40), color = bg[-1]}
   self.walls[7] = WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x1, self.offset_y - 40, self.x2, self.y1), color = bg[-1]}
   self.walls[8] = WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x1, self.y2, self.x2, self.offset_y + gh + 40), color = bg[-1]}
+end
+
+function Arena:create_level_orb()
+  self.level_orb = LevelOrb{group = self.main, parent = self, x = gw/2, y = gh/2}
 end
 
 function Arena:create_gold_counter()

@@ -126,8 +126,6 @@ MULTISHOT_ANGLE_OFFSET = math.pi / 8
 
 ENEMY_HIT_SCALE = 0.3
 
-HITS_BEFORE_RETARGETING = 3
-
 DISTANCE_MULTIPLIER_THRESHOLD_GLOW = 0.8
 DISTANCE_MULTIPLIER_THRESHOLD_SOUND = 0.7
 
@@ -345,6 +343,7 @@ LOOSE_SEEK_RETARGET_TIME = 10
 SEEK_TO_RANGE_PLAYER_RADIUS = 130
 SEEK_TO_RANGE_ENEMY_MOVEMENT_RADIUS = 100
 
+MOVEMENT_TYPE_SEEK_ORB = 'seek_orb'
 MOVEMENT_TYPE_SEEK = 'seek'
 MOVEMENT_TYPE_LOOSE_SEEK = 'loose_seek'
 MOVEMENT_TYPE_SEEK_TO_RANGE = 'seek_to_range'
@@ -352,7 +351,7 @@ MOVEMENT_TYPE_RANDOM = 'random'
 MOVEMENT_TYPE_FLEE = 'flee'
 MOVEMENT_TYPE_WANDER = 'wander'
 MOVEMENT_TYPE_NONE = 'none'
-MOVEMENT_TYPES = {MOVEMENT_TYPE_SEEK, MOVEMENT_TYPE_LOOSE_SEEK, MOVEMENT_TYPE_SEEK_TO_RANGE, MOVEMENT_TYPE_RANDOM, MOVEMENT_TYPE_FLEE, MOVEMENT_TYPE_NONE}
+MOVEMENT_TYPES = {MOVEMENT_TYPE_SEEK_ORB, MOVEMENT_TYPE_SEEK, MOVEMENT_TYPE_LOOSE_SEEK, MOVEMENT_TYPE_SEEK_TO_RANGE, MOVEMENT_TYPE_RANDOM, MOVEMENT_TYPE_FLEE, MOVEMENT_TYPE_NONE}
 
 get_movement_type_by_enemy_type = function(enemy_type)
   return enemy_movement_types[enemy_type] or enemy_movement_types['default']
@@ -381,34 +380,34 @@ end
 -- Enemy movement styles organized by enemy type
 enemy_movement_types = {
 
-  ['default'] = MOVEMENT_TYPE_SEEK,
+  ['default'] = MOVEMENT_TYPE_SEEK_ORB,
   -- Aggressive seekers - chase players directly
-  ['slowcharger'] = MOVEMENT_TYPE_SEEK,
-  ['swarmer'] = MOVEMENT_TYPE_LOOSE_SEEK,
-  ['chaser'] = MOVEMENT_TYPE_SEEK,
-  ['cleaver'] = MOVEMENT_TYPE_SEEK,
+  ['slowcharger'] = MOVEMENT_TYPE_SEEK_ORB,
+  ['swarmer'] = MOVEMENT_TYPE_SEEK_ORB,
+  ['chaser'] = MOVEMENT_TYPE_SEEK_ORB,
+  ['cleaver'] = MOVEMENT_TYPE_SEEK_ORB,
   
   -- Ranged units that maintain distance
-  ['big_goblin_archer'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
-  ['goblin_archer'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
-  ['archer'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
-  ['seeker'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
-  ['mortar'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
-  ['singlemortar'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
-  ['line_mortar'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
-  ['burst'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
-  ['selfburst'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
-  ['arcspread'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
-  ['aim_spread'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
-  ['plasma'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
-  ['laser'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['big_goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB,
+  ['goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB,
+  ['archer'] = MOVEMENT_TYPE_SEEK_ORB,
+  ['seeker'] = MOVEMENT_TYPE_SEEK_ORB,
+  ['mortar'] = MOVEMENT_TYPE_SEEK_ORB,
+  ['singlemortar'] = MOVEMENT_TYPE_SEEK_ORB,
+  ['line_mortar'] = MOVEMENT_TYPE_SEEK_ORB,
+  ['burst'] = MOVEMENT_TYPE_SEEK_ORB,
+  ['selfburst'] = MOVEMENT_TYPE_SEEK_ORB,
+  ['arcspread'] = MOVEMENT_TYPE_SEEK_ORB,
+  ['aim_spread'] = MOVEMENT_TYPE_SEEK_ORB,
+  ['plasma'] = MOVEMENT_TYPE_SEEK_ORB,
+  ['laser'] = MOVEMENT_TYPE_SEEK_ORB,
   ['snakearrow'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
-  ['summoner'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
-  ['spawner'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
-  ['firewall_caster'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['summoner'] = MOVEMENT_TYPE_SEEK_ORB,
+  ['spawner'] = MOVEMENT_TYPE_SEEK_ORB,
+  ['firewall_caster'] = MOVEMENT_TYPE_SEEK_ORB,
   
   -- Stationary units
-  ['turret'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['turret'] = MOVEMENT_TYPE_SEEK_ORB,
   
   -- Bosses
   ['stompy'] = MOVEMENT_TYPE_LOOSE_SEEK,

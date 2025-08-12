@@ -174,6 +174,9 @@ function Wave_Types:Get_Waves(level)
 
   for i = 1, WAVES_PER_LEVEL(level) do
     local wave_type = 'Create_Swarmer_Wave'
+    if level == 1 or level ==3 then
+      wave_type = 'Create_Normal_Wave'
+    end
 
     local wave = self[wave_type](self, level)
 

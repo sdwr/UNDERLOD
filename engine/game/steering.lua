@@ -92,6 +92,7 @@ function Physics:calculate_steering_force(dt)
   end
 
   self.separation_f:set(0, 0)
+  self.deceleration_f:set(0, 0)
 
 
   self.seeking = false
