@@ -39,10 +39,6 @@ function Enemy:init(args)
   
   self.last_attack_started = 0
 
-  self.random_dest = {x = self.x, y = self.y}
-  self.random_dest_timer = 0
-
-
 end
 
 --load enemy type specific functions from global table
@@ -163,6 +159,12 @@ function Enemy:update(dt)
     self.offscreen = not Helper.Target:is_in_camera_bounds(self.x, self.y)
     self.fully_onscreen = Helper.Target:is_fully_in_camera_bounds(self.x, self.y)
     self.way_onscreen = Helper.Target:way_inside_camera_bounds(self.x, self.y)
+    self.way_offscreen = Helper.Target:way_outside_camera_bounds(self.x, self.y)
+    
+    if self.way_offscreen then
+      self:despawn()
+      return
+    end
 
     if self.offscreen or not self.way_onscreen then
       self.in_arena_radius = false
@@ -180,8 +182,6 @@ function Enemy:update(dt)
 
     self:calculate_stats()
     
-    self.random_dest_timer = self.random_dest_timer - dt
-
     -- Don't take actions if transition is not complete
     if not self.transition_active then
       return
@@ -271,7 +271,9 @@ function Enemy:add_idle_deceleration()
 end
 
 function Enemy:choose_movement_target()
-  if self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB 
+  if self.currentMovementAction == MOVEMENT_TYPE_CROSS_SCREEN then
+    return self:acquire_target_cross_screen(false)
+  elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB 
   or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL then
     return self:acquire_target_seek_orb()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK then
@@ -291,18 +293,20 @@ function Enemy:update_movement()
   if self.being_knocked_back then return end
   if not self.transition_active then return end
   
-  if self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB then
-    return self:update_move_seek()
+  if self.currentMovementAction == MOVEMENT_TYPE_CROSS_SCREEN then
+    return self:update_move_seek_location()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB then
+    return self:update_move_seek_location_no_wander()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL then
-    return self:update_move_seek()
+    return self:update_move_seek_location_no_wander()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK then
     return self:update_move_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
-    return self:update_move_loose_seek()
+    return self:update_move_seek_location()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_TO_RANGE then
     return self:update_move_seek_to_range()
   elseif self.currentMovementAction == MOVEMENT_TYPE_RANDOM then
-    return self:update_move_random()
+    return self:update_move_seek_location()
   elseif self.currentMovementAction == MOVEMENT_TYPE_WANDER then
     return self:update_move_wander()
   elseif self.currentMovementAction == MOVEMENT_TYPE_NONE then
@@ -330,8 +334,17 @@ function Enemy:get_orb_stall_speed_multiplier()
   return multiplier
 end
 
+function Enemy:acquire_target_cross_screen(get_new_target)
+  if not self.target_location or get_new_target then
+    local current_location = {x = self.x, y = self.y}
+    self.target_location = Get_Cross_Screen_Destination(current_location)
+  end
+
+  return self.target_location ~= nil
+end
+
 function Enemy:acquire_target_seek_orb()
-  self.target = {x = gw/2, y = gh/2}
+  self.target_location = {x = gw/2, y = gh/2}
   return true
 end
 
@@ -513,8 +526,7 @@ function Enemy:update_move_seek()
   return true
 end
 
-function Enemy:update_move_loose_seek()
-  
+function Enemy:update_move_seek_location() 
   if self.target_location then
     if self:distance_to_point(self.target_location.x, self.target_location.y) < DISTANCE_TO_TARGET_FOR_IDLE then
       return false
@@ -526,32 +538,17 @@ function Enemy:update_move_loose_seek()
       return true
     end
   end
+
   return false
 end
 
-function Enemy:update_move_seek_to_range()
-  if self.target_location then
-    if self:distance_to_point(self.target_location.x, self.target_location.y) < DISTANCE_TO_TARGET_FOR_IDLE then
-      return false
-    else
-      self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type) or SEEK_WEIGHT)
-      self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER)
-      self:rotate_towards_velocity(0.5)
-      self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
-      return true
-    end
-  end
-  return false
-end
-
-function Enemy:update_move_random()
+function Enemy:update_move_seek_location_no_wander()
   if self.target_location then
     if self:distance_to_point(self.target_location.x, self.target_location.y) < DISTANCE_TO_TARGET_FOR_IDLE then
       return false
     else
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
-      self:rotate_towards_velocity(1)
-      self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
+      self:rotate_towards_velocity(0.5)
       return true
     end
   end
@@ -637,6 +634,17 @@ function Enemy:onDeath()
   
   self.state_change_functions['death'](self)
   self.death_function()
+end
+
+--despawn doesn't add to the round power or stats
+function Enemy:despawn()
+  self.dead = true
+  if self.parent and self.parent.summons then
+    self.parent.summons = self.parent.summons - 1
+  end
+  self.t:after(0.1, function()
+    self:remove()
+  end)
 end
 
 function Enemy:die()

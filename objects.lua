@@ -1013,9 +1013,6 @@ function Unit:calculate_stats(first_run)
   end
 
   self.mvspd = (self.base_mvspd + self.class_mvspd_a + self.buff_mvspd_a)*self.class_mvspd_m*self.buff_mvspd_m*self.slow_mvspd_m*elemental_slow_m
-  if self:is(Enemy) then
-    self.mvspd = self.mvspd * self:get_orb_stall_speed_multiplier()
-  end
   self.max_v = self.mvspd
 
 
@@ -1693,16 +1690,11 @@ function Unit:pick_action()
   if self.transition_active == false then
     return false
   end
-
-  if self.offscreen or not self.in_arena_radius then
-    self:set_movement_action(MOVEMENT_TYPE_SEEK_ORB, 1)
-    return true
-  end
   
     
   
   local attack_options = self.attack_options or {}
-  local movement_options = self.movement_options or {get_movement_type_by_enemy_type(self.type)}
+  local movement_options = self.movement_options or {get_movement_type_by_enemy(self)}
 
   local viable_attacks = {}
   local viable_movements = {}

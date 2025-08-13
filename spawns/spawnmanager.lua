@@ -17,6 +17,7 @@ function SpawnGlobals.Init()
   SpawnGlobals.offscreen_spawn_offset = 15
   SpawnGlobals.CAMERA_BOUNDS_OFFSET = 3
   SpawnGlobals.ENEMY_MOVE_BOUNDS_OFFSET = 45
+  SpawnGlobals.ENEMY_MOVE_BOUNDS_OFFSET_WAY_OUTSIDE = -50
 
   SpawnGlobals.wall_width = 0
   SpawnGlobals.wall_height = 0
@@ -279,6 +280,36 @@ function Get_Random_Spawn_Point_Scatter()
   local x = math.random(gw * SpawnGlobals.FURTHEST_SPAWN_POINT_SCATTER, gw * (1 - SpawnGlobals.FURTHEST_SPAWN_POINT_SCATTER))
   local y = math.random(gh * SpawnGlobals.FURTHEST_SPAWN_POINT_SCATTER, gh * (1 - SpawnGlobals.FURTHEST_SPAWN_POINT_SCATTER))
   return {x = x, y = y}
+end
+
+function Get_Cross_Screen_Destination(current_location)
+  if not current_location then
+    return nil
+  end
+
+  -- Calculate the opposite side of the screen from current position
+  local center_x = gw / 2
+  local center_y = gh / 2
+  
+  -- Get vector from center to current location
+  local dx = current_location.x - center_x
+  local dy = current_location.y - center_y
+  
+  -- Calculate destination on opposite side of center, with some randomness
+  local target_distance = gw * 2 
+  local angle_offset = random:float(-math.pi/6, math.pi/6)  -- ±30 degrees variation
+  
+  -- Get the opposite direction (add π to reverse direction)
+  local opposite_angle = math.atan2(dy, dx) + math.pi + angle_offset
+  
+  local destination = {
+    x = center_x + math.cos(opposite_angle) * target_distance,
+    y = center_y + math.sin(opposite_angle) * target_distance
+  }
+
+
+  return destination
+
 end
 
 function Suction_Troops_To_Spawn_Locations(arena, apply_angular_force)
@@ -682,34 +713,23 @@ function SpawnManager:process_infinite_wave()
     self:change_state('waiting_for_clear')
     return
   else
-    local wave_spawn_location = Get_Offscreen_Spawn_Point()
-    self:process_instruction(group_data, wave_spawn_location)
+    self:process_instruction(group_data)
     --increase delay based on distance to the max onscreen power
     local percent_to_max = (current_power_onscreen + group_power) / MAX_ONSCREEN_ROUND_POWER(self.arena.level)
     local delay = math.remap(math.max(percent_to_max, 0.5), 0.5, 1, 1, 5)
-    self:process_instruction({'DELAY', delay}, wave_spawn_location)
+    self:process_instruction({'DELAY', delay})
     self.next_group = nil
   end
 
 end
 
-function SpawnManager:process_instruction(instruction, wave_spawn_location)
+function SpawnManager:process_instruction(instruction)
   local type = instruction[1]
   local spawn_type = instruction[4]
 
   if type == 'GROUP' then
       local group_data = {instruction[2], instruction[3], instruction[4]}
-      -- Call Spawn_Group with the wave's spawn location
-      if spawn_type == 'scatter' then
-        Spawn_Group_Scattered(self.arena, group_data)
-      elseif spawn_type == 'location' then
-        local location = instruction[5]
-        Spawn_Group_With_Location(self.arena, group_data, location)
-      elseif spawn_type == 'close' and self.arena.last_spawn_point then
-        Spawn_Group_With_Location(self.arena, group_data, self.arena.last_spawn_point)
-      else
-        Spawn_Group_With_Location(self.arena, group_data, wave_spawn_location)
-      end
+      Spawn_Group(self.arena, group_data)
 
   elseif type == 'DELAY' then
       -- Add delay time to wave spawn delay so enemies after the delay spawn later
@@ -726,26 +746,20 @@ end
 -- Spawn_Group now just determines the spawn location index.
 -- Spawn_Group_Internal handles the actual spawning logic.
 -- ===================================================================
-function Spawn_Group(arena, group_data, on_finished)
+function Spawn_Group(arena, group_data)
     local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
     
-    -- Determine the spawn marker index based on the spawn type
-    local spawn_marker_index
-    if spawn_type == 'far' then
-        spawn_marker_index = Get_Far_Spawn(SpawnGlobals.last_spawn_point)
-    elseif spawn_type == 'close' then
-        spawn_marker_index = Get_Close_Spawn(SpawnGlobals.last_spawn_point)
-    elseif spawn_type == 'scatter' then
-        -- Scatter doesn't use a single marker, so we pass nil
-        spawn_marker_index = nil
-    else -- 'random' or nil defaults to a random marker
-        spawn_marker_index = random:int(1, #SpawnGlobals.spawn_markers)
+    local wave_spawn_location = Get_Offscreen_Spawn_Point()
+
+    if spawn_type == 'scatter' then
+      Spawn_Group_Scattered(arena, group_data)
+    elseif spawn_type == 'location' then
+      Spawn_Group_With_Location(arena, group_data, wave_spawn_location)
+    elseif spawn_type == 'close' and arena.last_spawn_point then
+      Spawn_Group_With_Location(arena, group_data, arena.last_spawn_point)
+    else
+        Spawn_Group_With_Location(arena, group_data, wave_spawn_location)
     end
-    
-    SpawnGlobals.last_spawn_point = spawn_marker_index
-    
-    -- Call the internal function that does the real work
-    Spawn_Group_Internal(arena, spawn_marker_index, group_data, on_finished)
 end
 
 function Spawn_Group_With_Location(arena, group_data, wave_spawn_location, on_finished)
@@ -753,6 +767,10 @@ function Spawn_Group_With_Location(arena, group_data, wave_spawn_location, on_fi
     amount = amount or 1
 
     arena.last_spawn_point = wave_spawn_location
+
+    --set the same target destination for all enemies in the group
+    --it will be overwritten by acquire target if necessary
+    local target_location = Get_Cross_Screen_Destination(wave_spawn_location)
 
     -- AnimatedSpawnCircle{
     --   group = arena.floor, x = wave_spawn_location.x, y = wave_spawn_location.y,
@@ -768,7 +786,7 @@ function Spawn_Group_With_Location(arena, group_data, wave_spawn_location, on_fi
         local location = {x = wave_spawn_location.x + offset.x, y = wave_spawn_location.y + offset.y}
 
         local create_enemy_action = function()
-            Spawn_Enemy(arena, type, location, offset)
+            Spawn_Enemy(arena, type, location, target_location)
             arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns - 1
         end
         arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns + 1
@@ -841,7 +859,7 @@ end
 
 
 -- This function is now just a simple unit factory.
-function Spawn_Enemy(arena, type, location)
+function Spawn_Enemy(arena, type, location, target_location)
   local data = {}
 
   local special_swarmer_type = nil
@@ -852,10 +870,16 @@ function Spawn_Enemy(arena, type, location)
       special_swarmer_type = SPECIAL_SWARMER_TYPES[random:weighted_pick(unpack(SPECIAL_SWARMER_WEIGHT_BY_TYPE[arena.level]))]
     end
   end
+
+  if special_swarmer_type == 'orbkiller' then
+    metal_click:play{pitch = random:float(0.8, 1.2), volume = 1}
+  end
+
   
   local enemy = Enemy{type = type, group = arena.main,
                       x = location.x, y = location.y,
                       special_swarmer_type = special_swarmer_type,
+                      target_location = target_location,
                       level = arena.level, data = data}
 
   current_power_onscreen = current_power_onscreen + enemy_to_round_power[type]

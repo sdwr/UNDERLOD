@@ -7,19 +7,21 @@
 Wave_Types = {}
 
 function Get_Random_Ranged_Enemy(tier)
-  local enemy = random:table(special_enemy_by_tier[tier])
-  while table.contains(special_enemy_by_tier_melee[tier], enemy) do
-    enemy = random:table(special_enemy_by_tier[tier])
-  end
-  return enemy
+  return 'burst'
+  -- local enemy = random:table(special_enemy_by_tier[tier])
+  -- while table.contains(special_enemy_by_tier_melee[tier], enemy) do
+  --   enemy = random:table(special_enemy_by_tier[tier])
+  -- end
+  -- return enemy
 end
 
 function Get_Random_Special_Enemy(tier)
-  local enemy = random:table(special_enemy_by_tier[tier])
-  while table.contains(special_enemy_by_tier_melee[tier], enemy) do
-    enemy = random:table(special_enemy_by_tier[tier])
-  end
-  return enemy
+  return 'burst'
+  -- local enemy = random:table(special_enemy_by_tier[tier])
+  -- while table.contains(special_enemy_by_tier_melee[tier], enemy) do
+  --   enemy = random:table(special_enemy_by_tier[tier])
+  -- end
+  -- return enemy
 end
 
 _last_group_type = 1

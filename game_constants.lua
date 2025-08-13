@@ -350,14 +350,18 @@ MOVEMENT_TYPE_APPROACH_ORB = 'approach_orb'
 MOVEMENT_TYPE_SEEK = 'seek'
 MOVEMENT_TYPE_LOOSE_SEEK = 'loose_seek'
 MOVEMENT_TYPE_SEEK_TO_RANGE = 'seek_to_range'
+MOVEMENT_TYPE_CROSS_SCREEN = 'cross_screen'
 MOVEMENT_TYPE_RANDOM = 'random'
 MOVEMENT_TYPE_FLEE = 'flee'
 MOVEMENT_TYPE_WANDER = 'wander'
 MOVEMENT_TYPE_NONE = 'none'
-MOVEMENT_TYPES = {MOVEMENT_TYPE_SEEK_ORB, MOVEMENT_TYPE_SEEK, MOVEMENT_TYPE_LOOSE_SEEK, MOVEMENT_TYPE_SEEK_TO_RANGE, MOVEMENT_TYPE_RANDOM, MOVEMENT_TYPE_FLEE, MOVEMENT_TYPE_NONE, MOVEMENT_TYPE_SEEK_ORB_STALL, MOVEMENT_TYPE_APPROACH_ORB}
 
-get_movement_type_by_enemy_type = function(enemy_type)
-  return enemy_movement_types[enemy_type] or enemy_movement_types['default']
+get_movement_type_by_enemy = function(enemy)
+  if enemy.special_swarmer_type == 'orbkiller' then
+    return MOVEMENT_TYPE_SEEK_ORB
+  end
+
+  return enemy_movement_types[enemy.type] or enemy_movement_types['default']
 end
 
 -- Enemy fallback animation corner radius by size category
@@ -383,9 +387,9 @@ end
 -- Enemy movement styles organized by enemy type
 enemy_movement_types = {
 
-  ['default'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
+  ['default'] = MOVEMENT_TYPE_CROSS_SCREEN,
   -- Aggressive seekers - chase players directly
-  ['swarmer'] = MOVEMENT_TYPE_SEEK_ORB,
+  ['swarmer'] = MOVEMENT_TYPE_CROSS_SCREEN,
   
   -- Ranged units that maintain distance
   -- ['big_goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB,

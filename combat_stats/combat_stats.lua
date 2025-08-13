@@ -129,7 +129,7 @@ TROOP_SWORDSMAN_RANGE = 80
 
 REGULAR_ENEMY_HP = 45
 REGULAR_ENEMY_DAMAGE = 15
-REGULAR_ENEMY_MS = 9.5
+REGULAR_ENEMY_MS = 13
 
 SPECIAL_ENEMY_HP = 200
 SPECIAL_ENEMY_DAMAGE = 20
@@ -273,15 +273,17 @@ load_special_swarmer_data = function(swarmer)
 end
 
 SPECIAL_SWARMER_TYPES = {
-  'exploder',
-  'poison',
-  'exploder',
-  'poison',
+  'orbkiller',
   'exploder',
   'poison',
 }
 
 SPECIAL_SWARMER_DATA = {
+  ['orbkiller'] = {
+    can_damage_orb = true,
+    speed_multiplier = 1,
+    damage_multiplier = 1,
+  },
   ['exploder'] = {
     radius = 25,
     duration = 0.1,
@@ -300,15 +302,15 @@ SPECIAL_SWARMER_DATA = {
 
 SPECIAL_SWARMER_WEIGHT_BY_TYPE = {
   [1] = {0},
-  [2] = {0},
-  [3] = {0},
-  [4] = {0, 5},
-  [5] = {0, 5},
-  [6] = {0},
-  [7] = {0},
-  [8] = {0},
-  [9] = {5},
-  [10] = {5},
+  [2] = {5},
+  [3] = {5},
+  [4] = {5, 5},
+  [5] = {5, 5, 5},
+  [6] = {5, 5, 5},
+  [7] = {5, 5, 5},
+  [8] = {5, 5, 5},
+  [9] = {5, 5, 5},
+  [10] = {5, 5, 5},
   [11] = {0},
   [12] = {0},
   [13] = {0},

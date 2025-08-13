@@ -593,7 +593,7 @@ function Burst:init(args)
 
   self.duration = self.duration or 12
   self.elapsed = 0
-  cannoneer1:play{volume=0.4}
+  cannoneer1:play{volume=0.2}
   self.t:after(self.duration, function() self:die() end)
 
   -- Create the data for our internal swirling blobs
@@ -675,7 +675,7 @@ end
 
 function Burst:explode()
   if not self.dead then
-    explosion_new:play{pitch = random:float(0.95, 1.05), volume = 0.3}
+    explosion_new:play{pitch = random:float(0.95, 1.05), volume = 0.13}
     
     if self.primary_explosion then
       Area{
