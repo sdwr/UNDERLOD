@@ -44,7 +44,7 @@ end
 
 function CombatLevel:finish_level()
 
-  gold = GOLD_GAINED_BY_LEVEL[self.level]
+  gold = gold +GOLD_GAINED_BY_LEVEL[self.level]
   
   if LEVEL_TO_PERKS[self.level] then
     self.perk_overlay = PerkOverlay{
