@@ -35,7 +35,7 @@ function Build_Level_List(max_level)
       level_list[i].environmental_hazards = environmental_hazards
 
       --calculate the round power for the level
-      level_list[i].round_power = ROUND_POWER_BY_LEVEL[i]
+      level_list[i].round_power = ROUND_POWER_BY_LEVEL(i)
       level_list[i].waves_power = {level_list[i].round_power}
     end
   end

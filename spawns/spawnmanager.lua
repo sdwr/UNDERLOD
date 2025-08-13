@@ -649,7 +649,7 @@ function SpawnManager:update(dt)
     --don't do anything until triggered by world manager
     if self.state == 'arena_start' then return end
 
-    if round_power_killed >= ROUND_POWER_BY_LEVEL[self.arena.level] then
+    if round_power_killed >= ROUND_POWER_BY_LEVEL(self.arena.level) then
       self:change_state('finished')
       self.arena:level_clear(true)
     end
@@ -708,7 +708,7 @@ function SpawnManager:process_infinite_wave()
 
   local group_data = self.next_group
   local group_power = Wave_Types:Get_Group_Power(group_data)
-  
+
   if current_power_onscreen + group_power > MAX_ONSCREEN_ROUND_POWER(self.arena.level) then
     self:change_state('waiting_for_clear')
     return

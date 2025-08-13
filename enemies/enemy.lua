@@ -636,15 +636,21 @@ function Enemy:onDeath()
   self.death_function()
 end
 
---despawn doesn't add to the round power or stats
+--despawn decrements the onscreen round power
+--but doesn't add to the kill count or stats
 function Enemy:despawn()
   self.dead = true
+
+  --for safety, should never happen
+  if self.class == 'boss' then
+    is_boss_dead = true
+  end
+
+  current_power_onscreen = current_power_onscreen - enemy_to_round_power[self.type]
+
   if self.parent and self.parent.summons then
     self.parent.summons = self.parent.summons - 1
   end
-  self.t:after(0.1, function()
-    self:remove()
-  end)
 end
 
 function Enemy:die()

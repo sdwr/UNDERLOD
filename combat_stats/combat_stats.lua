@@ -330,42 +330,56 @@ SPECIAL_SWARMER_WEIGHT_BY_TYPE = {
 
 
 
-ROUND_POWER_BY_LEVEL = {
-  [1] = 600,
-  [2] = 800,
-  [3] = 1000,
-  [4] = 1200,
-  [5] = 1400,
-  [6] = 1600,
-  [7] = 1800,
-  [8] = 2000,
-  [9] = 2200,
-  [10] = 2400,
-  [11] = 2600,
-  [12] = 2800,
-  [13] = 3000,
-  [14] = 3200,
-  [15] = 3400,
-  [16] = 3600,
-  [17] = 3800,
-  [18] = 4000,
-  [19] = 4200,
-  [20] = 4400,
-  [21] = 4600,
-  [22] = 4800,
-  [23] = 5000,
-  [24] = 5200,
-  [25] = 5400,
+ROUND_POWER_AND_MAX_ONSCREEN_POWER = {
+  [1] = {800, 500},
+  [2] = {1000, 550},
+  [3] = {1200, 600},
+  [4] = {1400, 800},
+  [5] = {1600, 800},
+  [6] = {1800, 800},
+  [7] = {2000, 800},
+  [8] = {2200, 800},
+  [9] = {2400, 800},
+  [10] = {2600, 800},
+  [11] = {2800, 800},
+  [12] = {3000, 800},
+  [13] = {3200, 800},
+  [14] = {3400, 800},
+  [15] = {3600, 800},
+  [16] = {3800, 1000},
+  [17] = {4000, 1050},
+  [18] = {4200, 1100},
+  [19] = {4400, 1150},
+  [20] = {4600, 1200},
+  [21] = {4800, 1250},
+  [22] = {5000, 1300},
+  [23] = {5200, 1350},
+  [24] = {5400, 1400},
+  [25] = {5600, 1450},
 }
 
+ROUND_POWER_BY_LEVEL = function(level)
+  local level_info = ROUND_POWER_AND_MAX_ONSCREEN_POWER[level]
+  if not level_info then
+    return 600
+  end
+  return level_info[1]
+end
+
 MAX_ONSCREEN_ROUND_POWER = function(level)
-  local base_round_power = ROUND_POWER_BY_LEVEL[level]
-  return base_round_power + base_round_power * 0.4
+  local level_info = ROUND_POWER_AND_MAX_ONSCREEN_POWER[level]
+  if not level_info then
+    return 600
+  end
+  return level_info[2]
 end
 
 LEVEL_ORB_HEALTH = function(level)
-  local base_round_power = ROUND_POWER_BY_LEVEL[level]
-  return (base_round_power / 10) + 200
+  local level_info = ROUND_POWER_AND_MAX_ONSCREEN_POWER[level]
+  if not level_info then
+    return 200
+  end
+  return (level_info[1] / 10) + 200
 end
 
 GOLD_GAINED_BY_LEVEL = {

@@ -187,7 +187,7 @@ function Wave_Types:Get_Waves(level)
   local wave = {}
   
   -- Calculate target power for this level
-  local target_power = ROUND_POWER_BY_LEVEL[level] or 3000
+  local target_power = ROUND_POWER_BY_LEVEL(level) or 3000
   local current_power = 0
   local power_budget = target_power - current_power
   
