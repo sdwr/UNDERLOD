@@ -732,8 +732,8 @@ function SpawnManager:process_instruction(instruction)
       Spawn_Group(self.arena, group_data)
 
   elseif type == 'DELAY' then
-      -- Add delay time to wave spawn delay so enemies after the delay spawn later
-      self.wave_spawn_delay = self.wave_spawn_delay + (instruction[2] or 1)
+      -- Reset delay timer so the next wave spawns immediately after delay
+      self.wave_spawn_delay = 0
       -- Pause for the specified duration.
       self.timer = instruction[2] or 1
       self:change_state('waiting_for_delay')
