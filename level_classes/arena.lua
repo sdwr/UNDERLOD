@@ -30,10 +30,16 @@ function Arena:init(args)
   self.last_spawn_enemy_time = love.timer.getTime()
   
   -- Initialize arena components
+  current_power_onscreen = 0
+  round_power_killed = 0
+  is_boss_dead = false
+
   self:init_physics()
   self:init_spawn_manager()
   
-  self:create_gold_counter()
+  self:create_level_orb()
+
+  -- self:create_gold_counter()
   self:create_progress_bar()
   -- self:create_walls()
 
@@ -47,8 +53,37 @@ function Arena:init(args)
 
   self.start_time = 3
   self.last_spawn_enemy_time = love.timer.getTime()
+
   
   -- Start the level
+end
+
+function Arena:wipe_level(on_finish)
+  local charge_duration = 3.5
+  local wipe_duration = 2
+  local rest_duration = -0.5
+  local total_duration = charge_duration + wipe_duration + rest_duration
+
+  self.in_wipe = true
+
+  --charge up the orb
+  self.level_orb:charge_up(charge_duration)
+
+  -- Create expanding ring that kills all enemies
+  self.t:after(charge_duration, function()
+    WipeRing{
+      group = self.main,
+      x = gw/2,
+      y = gh/2,
+      max_radius = math.max(gw, gh),
+      expand_duration = wipe_duration
+    }
+  end)
+  self.t:after(total_duration, function()
+    if on_finish then
+      on_finish()
+    end
+  end)
 end
 
 function Arena:delete_walls() 
@@ -76,10 +111,14 @@ function Arena:create_walls()
   self.walls[8] = WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x1, self.y2, self.x2, self.offset_y + gh + 40), color = bg[-1]}
 end
 
-function Arena:create_gold_counter()
-  -- Create gold counter in top left
-  self.gold_counter = GoldCounter{group = self.ui, parent = self,x = GOLD_COUNTER_X_OFFSET, y = LEVEL_MAP_Y_POSITION + 1, offset_x = self.offset_x, offset_y = self.offset_y}
+function Arena:create_level_orb()
+  self.level_orb = LevelOrb{group = self.main, parent = self, x = gw/2, y = gh/2}
 end
+
+-- function Arena:create_gold_counter()
+--   -- Create gold counter in top left
+--   self.gold_counter = GoldCounter{group = self.ui, parent = self,x = GOLD_COUNTER_X_OFFSET, y = LEVEL_MAP_Y_POSITION + 1, offset_x = self.offset_x, offset_y = self.offset_y}
+-- end
 
 function Arena:create_progress_bar()
   if Is_Boss_Level(self.level) then
@@ -88,7 +127,7 @@ function Arena:create_progress_bar()
   
   local level_data = self.level_list and self.level_list[self.level]
   if level_data and level_data.waves then
-    local waves_power = Wave_Types:Get_Waves_Power(level_data.waves)
+    local waves_power = level_data.waves_power
     
     self.progress_bar = ProgressBar{
       group = self.ui, parent = self, w = 300, h = 5,
@@ -96,7 +135,6 @@ function Arena:create_progress_bar()
       progress = 0,
       waves_power = waves_power,
       fade_in = true,
-      fade_in_duration = 2,
     }
   end
 end
@@ -246,6 +284,10 @@ function Arena:update(dt)
   self:update_game_object(dt)
 
   if self.spawn_manager.state ~= 'arena_start' and Helper.Unit:all_troops_are_dead() and self.level ~= 0 then
+    self:die()
+  end
+
+  if self.level_orb and (self.level_orb.dead or self.level_orb.hp <= 0) then
     self:die()
   end
   

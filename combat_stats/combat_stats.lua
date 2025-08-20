@@ -129,11 +129,11 @@ TROOP_SWORDSMAN_RANGE = 80
 
 REGULAR_ENEMY_HP = 45
 REGULAR_ENEMY_DAMAGE = 15
-REGULAR_ENEMY_MS = 20
+REGULAR_ENEMY_MS = 13
 
-SPECIAL_ENEMY_HP = 280
+SPECIAL_ENEMY_HP = 200
 SPECIAL_ENEMY_DAMAGE = 20
-SPECIAL_ENEMY_MS = 20
+SPECIAL_ENEMY_MS = 15
 
 MINIBOSS_HP = 400
 MINIBOSS_DAMAGE = 20
@@ -273,15 +273,17 @@ load_special_swarmer_data = function(swarmer)
 end
 
 SPECIAL_SWARMER_TYPES = {
-  'exploder',
-  'poison',
-  'exploder',
-  'poison',
+  'orbkiller',
   'exploder',
   'poison',
 }
 
 SPECIAL_SWARMER_DATA = {
+  ['orbkiller'] = {
+    can_damage_orb = true,
+    speed_multiplier = 1,
+    damage_multiplier = 1,
+  },
   ['exploder'] = {
     radius = 25,
     duration = 0.1,
@@ -300,15 +302,15 @@ SPECIAL_SWARMER_DATA = {
 
 SPECIAL_SWARMER_WEIGHT_BY_TYPE = {
   [1] = {0},
-  [2] = {0},
-  [3] = {0},
-  [4] = {0, 5},
-  [5] = {0, 5},
-  [6] = {0},
-  [7] = {0},
-  [8] = {0},
-  [9] = {5},
-  [10] = {5},
+  [2] = {5},
+  [3] = {5},
+  [4] = {5, 5},
+  [5] = {5, 5, 5},
+  [6] = {5, 5, 5},
+  [7] = {5, 5, 5},
+  [8] = {5, 5, 5},
+  [9] = {5, 5, 5},
+  [10] = {5, 5, 5},
   [11] = {0},
   [12] = {0},
   [13] = {0},
@@ -328,33 +330,57 @@ SPECIAL_SWARMER_WEIGHT_BY_TYPE = {
 
 
 
-ROUND_POWER_BY_LEVEL = {
-  [1] = 400,
-  [2] = 600,
-  [3] = 800,
-  [4] = 1100,
-  [5] = 1300,
-  [6] = 1500,
-  [7] = 1700,
-  [8] = 1900,
-  [9] = 2100,
-  [10] = 2300,
-  [11] = 2500,
-  [12] = 2700,
-  [13] = 1500,
-  [14] = 1600,
-  [15] = 1700,
-  [16] = 1800,
-  [17] = 1900,
-  [18] = 2000,
-  [19] = 2100,
-  [20] = 2200,
-  [21] = 2300,
-  [22] = 2400,
-  [23] = 2800,
-  [24] = 2900,
-  [25] = 3000,
+ROUND_POWER_AND_MAX_ONSCREEN_POWER = {
+  [1] = {800, 500},
+  [2] = {1000, 550},
+  [3] = {1200, 600},
+  [4] = {1400, 800},
+  [5] = {1600, 800},
+  [6] = {1800, 800},
+  [7] = {2000, 800},
+  [8] = {2200, 800},
+  [9] = {2400, 800},
+  [10] = {2600, 800},
+  [11] = {2800, 800},
+  [12] = {3000, 800},
+  [13] = {3200, 800},
+  [14] = {3400, 800},
+  [15] = {3600, 800},
+  [16] = {3800, 1000},
+  [17] = {4000, 1050},
+  [18] = {4200, 1100},
+  [19] = {4400, 1150},
+  [20] = {4600, 1200},
+  [21] = {4800, 1250},
+  [22] = {5000, 1300},
+  [23] = {5200, 1350},
+  [24] = {5400, 1400},
+  [25] = {5600, 1450},
 }
+
+ROUND_POWER_BY_LEVEL = function(level)
+  local level_info = ROUND_POWER_AND_MAX_ONSCREEN_POWER[level]
+  if not level_info then
+    return 600
+  end
+  return level_info[1]
+end
+
+MAX_ONSCREEN_ROUND_POWER = function(level)
+  local level_info = ROUND_POWER_AND_MAX_ONSCREEN_POWER[level]
+  if not level_info then
+    return 600
+  end
+  return level_info[2]
+end
+
+LEVEL_ORB_HEALTH = function(level)
+  local level_info = ROUND_POWER_AND_MAX_ONSCREEN_POWER[level]
+  if not level_info then
+    return 200
+  end
+  return (level_info[1] / 10) + 200
+end
 
 GOLD_GAINED_BY_LEVEL = {
   [1] = 4,

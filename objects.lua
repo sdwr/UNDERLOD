@@ -1,3 +1,6 @@
+
+
+
 -- ===================================================================
 -- NEW Animated Spawn Circle Class
 -- Draws a circle outline that flashes twice before disappearing.
@@ -1638,7 +1641,10 @@ end
 function Unit:in_range_of(target)
   local target_size_offset = 0
   if self.attack_range and self.attack_range < MELEE_ATTACK_RANGE and target and not target.dead then
-    target_size_offset = target.shape.w/2
+    target_size_offset = 0
+    if target.shape and target.shape.w then
+      target_size_offset = target.shape.w/2
+    end
   end
   return target and 
     not target.dead and 
@@ -1684,16 +1690,11 @@ function Unit:pick_action()
   if self.transition_active == false then
     return false
   end
-
-  if self.offscreen or not self.in_arena_radius then
-    self:set_movement_action(MOVEMENT_TYPE_SEEK, 1)
-    return true
-  end
   
     
   
   local attack_options = self.attack_options or {}
-  local movement_options = self.movement_options or {get_movement_type_by_enemy_type(self.type)}
+  local movement_options = self.movement_options or {get_movement_type_by_enemy(self)}
 
   local viable_attacks = {}
   local viable_movements = {}
@@ -1788,13 +1789,7 @@ function Unit:end_cast()
   self.spelldata = nil
   self.freezerotation = false
 
-  if not self.hits_before_retargeting then self.hits_before_retargeting = HITS_BEFORE_RETARGETING end
-  self.hits_before_retargeting = self.hits_before_retargeting - 1
-
-  if self.hits_before_retargeting <= 0 then
-    self.hits_before_retargeting = HITS_BEFORE_RETARGETING
-    self:clear_my_target()
-  end
+  self:clear_my_target()
 
   if self.state == unit_states['casting']then
     if self:try_backswing() then

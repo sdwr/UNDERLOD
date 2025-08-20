@@ -82,3 +82,10 @@ function Helper.Target:way_inside_camera_bounds(x, y)
   and y > SpawnGlobals.ENEMY_MOVE_BOUNDS_OFFSET 
   and y < gh - SpawnGlobals.ENEMY_MOVE_BOUNDS_OFFSET
 end
+
+function Helper.Target:way_outside_camera_bounds(x, y)
+  return x < SpawnGlobals.ENEMY_MOVE_BOUNDS_OFFSET_WAY_OUTSIDE 
+  or x > gw - SpawnGlobals.ENEMY_MOVE_BOUNDS_OFFSET_WAY_OUTSIDE 
+  or y < SpawnGlobals.ENEMY_MOVE_BOUNDS_OFFSET_WAY_OUTSIDE 
+  or y > gh - SpawnGlobals.ENEMY_MOVE_BOUNDS_OFFSET_WAY_OUTSIDE
+end

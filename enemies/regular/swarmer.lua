@@ -6,8 +6,10 @@ fns['init_enemy'] = function(self)
 
   load_special_swarmer_data(self)
 
-  if self.special_swarmer_type == 'exploder' then
+  if self.special_swarmer_type == 'orbkiller' then
     self.color = red[0]:clone()
+  elseif self.special_swarmer_type == 'exploder' then
+    self.color = orange[0]:clone()
   elseif self.special_swarmer_type == 'poison' then
     self.color = purple[0]:clone()
   else
@@ -35,9 +37,6 @@ fns['draw_enemy'] = function(self)
   if not animation_success then
     self:draw_fallback_animation()
   end
-
-  -- Draw steering debug vectors
-  self:draw_steering_debug()
 
 end
 

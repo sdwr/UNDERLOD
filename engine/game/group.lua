@@ -342,7 +342,7 @@ function Group:get_objects_in_shape(shape, object_types, exclude_list)
         local cell_objects = self.cells[cx][cy]
         if cell_objects then
           for _, object in ipairs(cell_objects) do
-            if object.fully_onscreen then
+            if not object.offscreen then
               if object_types then
                 if not table.any(exclude_list, function(v) return v.id == object.id end) then
                   if table.any(object_types, function(v) return object:is(v) end) and object.shape and object.shape:is_colliding_with_shape(shape) then

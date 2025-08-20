@@ -17,6 +17,7 @@ function SpawnGlobals.Init()
   SpawnGlobals.offscreen_spawn_offset = 15
   SpawnGlobals.CAMERA_BOUNDS_OFFSET = 3
   SpawnGlobals.ENEMY_MOVE_BOUNDS_OFFSET = 45
+  SpawnGlobals.ENEMY_MOVE_BOUNDS_OFFSET_WAY_OUTSIDE = -50
 
   SpawnGlobals.wall_width = 0
   SpawnGlobals.wall_height = 0
@@ -54,7 +55,7 @@ function SpawnGlobals.Init()
     local center = {x = gw/2, y = gh/2}
 
     if num_teams == 1 then
-      return {center}
+      base_angle = random:float(-math.pi, math.pi)
     end
     
     local base_angle = 0
@@ -281,6 +282,36 @@ function Get_Random_Spawn_Point_Scatter()
   return {x = x, y = y}
 end
 
+function Get_Cross_Screen_Destination(current_location)
+  if not current_location then
+    return nil
+  end
+
+  -- Calculate the opposite side of the screen from current position
+  local center_x = gw / 2
+  local center_y = gh / 2
+  
+  -- Get vector from center to current location
+  local dx = current_location.x - center_x
+  local dy = current_location.y - center_y
+  
+  -- Calculate destination on opposite side of center, with some randomness
+  local target_distance = gw * 2 
+  local angle_offset = random:float(-math.pi/6, math.pi/6)  -- ±30 degrees variation
+  
+  -- Get the opposite direction (add π to reverse direction)
+  local opposite_angle = math.atan2(dy, dx) + math.pi + angle_offset
+  
+  local destination = {
+    x = center_x + math.cos(opposite_angle) * target_distance,
+    y = center_y + math.sin(opposite_angle) * target_distance
+  }
+
+
+  return destination
+
+end
+
 function Suction_Troops_To_Spawn_Locations(arena, apply_angular_force)
   
 
@@ -356,9 +387,13 @@ function End_Suction(arena)
     ui_switch1:play{pitch = random:float(1.1, 1.3), volume = 1}
     arena.spawn_manager.timer = TIME_BETWEEN_WAVES
     arena.spawn_manager:change_state('entry_delay')
-    if arena.progress_bar then
-      arena.progress_bar:begin_fade_in()
-    end
+
+    arena.t:after(1.5, function()
+      if arena.progress_bar then
+        arena.progress_bar:begin_fade_in()
+      end
+    end)
+
   end
 
 end
@@ -575,7 +610,7 @@ function SpawnManager:init(arena)
     -- 'boss_fight':            A special state for boss levels.
 
     -- Timers and Trackers
-    self.timer = arena.entry_delay or 1
+    self.timer = TIME_BETWEEN_WAVES
     self.current_wave_index = 1
     self.current_instruction_index = 1
 
@@ -614,6 +649,11 @@ function SpawnManager:update(dt)
     --don't do anything until triggered by world manager
     if self.state == 'arena_start' then return end
 
+    if round_power_killed >= ROUND_POWER_BY_LEVEL(self.arena.level) then
+      self:change_state('finished')
+      self.arena:level_clear(true)
+    end
+
     if self.state == 'suction_to_targets' then 
       Suction_Troops_To_Spawn_Locations(self.arena, true)
       return
@@ -632,24 +672,10 @@ function SpawnManager:update(dt)
           --spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
         end
       end
-    elseif self.state == 'between_waves_delay' then
-        -- Apply continuous suction effect during between-waves delay
-        -- Suction_Troops_To_Spawn_Locations(self.arena)
-        self.timer = self.timer - dt
-        if self.timer <= 0 then
-          self.pending_spawns = 0
-            self:change_state('processing_wave')
-            --spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
-        end
     end
-
     -- If we are ready to process the next instruction in a wave, do so.
     if self.state == 'processing_wave' then
-        self:process_next_instruction()
-        -- Only change to waiting_for_clear if we're not in a delay state
-        if self.state == 'processing_wave' then
-            self:change_state('waiting_for_clear')
-        end
+        self:process_infinite_wave()
     end
 
     if self.state == 'spawning_boss' then
@@ -659,94 +685,58 @@ function SpawnManager:update(dt)
     
     -- If all instructions are done, wait for the arena to be clear.
     if self.state == 'waiting_for_clear' then
-      local enemies = self.arena.main:get_objects_by_classes(main.current.enemies)
-      if #enemies <= 0 and self.pending_spawns <= 0 then
-          -- Check if this was the final wave
-          if self.current_wave_index >= #self.level_data.waves then
-              -- For the final wave, we just need all enemies dead
-              self:change_state('finished')
-              self.arena:level_clear()
-          else
-              -- ===================================================================
-              -- FIX: For intermediate waves, the only condition to advance is that
-              -- all enemies are dead. We no longer check the progress bar here.
-              -- ===================================================================
-              -- Trigger suction effect to pull troops back to spawn locations
-              -- Suction_Troops_To_Spawn_Locations(self.arena)
-              
-              self.t:after(0.5, function()
-                -- spawn_mark2:play{pitch = 1, volume = 1.2}
-              end)
-              -- Ensure wave progress is complete before advancing
-              self:complete_wave(self.current_wave_index)
-              
-              self.current_wave_index = self.current_wave_index + 1
-              self.current_instruction_index = 1
-              self:change_state('between_waves_delay')
-              self.timer = TIME_BETWEEN_WAVES
-              -- self:show_wave_complete_text()
-          end
+      if Is_Boss_Level(self.arena.level) then
+        if is_boss_dead then
+          self:change_state('finished')
+          self.arena:level_clear()
+        end
+      elseif self.next_group then
+        local group_power = Wave_Types:Get_Group_Power(self.next_group)
+        if current_power_onscreen + group_power <= MAX_ONSCREEN_ROUND_POWER(self.arena.level) then
+          self:change_state('processing_wave')
         end
       end
+    end
 
 end
 
+function SpawnManager:process_infinite_wave()
 
+  if not self.next_group then
+    self.next_group = Get_Next_Group(self.arena.level)
+  end
 
--- This function processes all instructions for a wave segment at once.
-function SpawnManager:process_next_instruction()
-  
-  -- Reset wave spawn delay for this wave
-  self.wave_spawn_delay = 0
-  
-  -- Get single spawn location for this entire wave (around screen edges, 1/3 toward center)
-  local wave_spawn_location = Get_Offscreen_Spawn_Point()
-  
-  --play spawn sound only once for the wave
-  -- Spawn_Enemy_Sound(self.arena, false)
-  
-  -- Loop until we explicitly break out (due to a delay or end of wave).
-  while true do
-      local wave_instructions = self.level_data.waves[self.current_wave_index]
+  local group_data = self.next_group
+  local group_power = Wave_Types:Get_Group_Power(group_data)
 
-      -- Check if we've finished all instructions for this wave.
-      if self.current_instruction_index > #wave_instructions then
-          -- All instructions for the wave are queued. Now we just wait for clear.
-          self:change_state('waiting_for_clear')
-          break
-      end
+  if current_power_onscreen + group_power > MAX_ONSCREEN_ROUND_POWER(self.arena.level) then
+    self:change_state('waiting_for_clear')
+    return
+  else
+    self:process_instruction(group_data)
+    --increase delay based on distance to the max onscreen power
+    local percent_to_max = (current_power_onscreen + group_power) / MAX_ONSCREEN_ROUND_POWER(self.arena.level)
+    local delay = math.remap(math.max(percent_to_max, 0.5), 0.5, 1, 1, 5)
+    self:process_instruction({'DELAY', delay})
+    self.next_group = nil
+  end
 
-      local instruction = wave_instructions[self.current_instruction_index]
-      local type = instruction[1]
-      local spawn_type = instruction[4]
+end
 
-      if type == 'GROUP' then
-          local group_data = {instruction[2], instruction[3], instruction[4]}
-          -- Call Spawn_Group with the wave's spawn location
-          if spawn_type == 'scatter' then
-            Spawn_Group_Scattered(self.arena, group_data)
-          elseif spawn_type == 'location' then
-            local location = instruction[5]
-            Spawn_Group_With_Location(self.arena, group_data, location)
-          elseif spawn_type == 'close' and self.arena.last_spawn_point then
-            Spawn_Group_With_Location(self.arena, group_data, self.arena.last_spawn_point)
-          else
-            Spawn_Group_With_Location(self.arena, group_data, wave_spawn_location)
-          end
+function SpawnManager:process_instruction(instruction)
+  local type = instruction[1]
+  local spawn_type = instruction[4]
 
-      elseif type == 'DELAY' then
-          -- Add delay time to wave spawn delay so enemies after the delay spawn later
-          self.wave_spawn_delay = self.wave_spawn_delay + (instruction[2] or 1)
-          -- Pause for the specified duration.
-          self:change_state('waiting_for_delay')
-          self.timer = instruction[2] or 1
-          -- IMPORTANT: Increment the index so we don't re-process the DELAY.
-          self.current_instruction_index = self.current_instruction_index + 1
-          break -- Exit the loop to honor the delay.
-      end
+  if type == 'GROUP' then
+      local group_data = {instruction[2], instruction[3], instruction[4]}
+      Spawn_Group(self.arena, group_data)
 
-      -- Move to the next instruction.
-      self.current_instruction_index = self.current_instruction_index + 1
+  elseif type == 'DELAY' then
+      -- Reset delay timer so the next wave spawns immediately after delay
+      self.wave_spawn_delay = 0
+      -- Pause for the specified duration.
+      self.timer = instruction[2] or 1
+      self:change_state('waiting_for_delay')
   end
 end
 
@@ -756,26 +746,20 @@ end
 -- Spawn_Group now just determines the spawn location index.
 -- Spawn_Group_Internal handles the actual spawning logic.
 -- ===================================================================
-function Spawn_Group(arena, group_data, on_finished)
+function Spawn_Group(arena, group_data)
     local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
     
-    -- Determine the spawn marker index based on the spawn type
-    local spawn_marker_index
-    if spawn_type == 'far' then
-        spawn_marker_index = Get_Far_Spawn(SpawnGlobals.last_spawn_point)
-    elseif spawn_type == 'close' then
-        spawn_marker_index = Get_Close_Spawn(SpawnGlobals.last_spawn_point)
-    elseif spawn_type == 'scatter' then
-        -- Scatter doesn't use a single marker, so we pass nil
-        spawn_marker_index = nil
-    else -- 'random' or nil defaults to a random marker
-        spawn_marker_index = random:int(1, #SpawnGlobals.spawn_markers)
+    local wave_spawn_location = Get_Offscreen_Spawn_Point()
+
+    if spawn_type == 'scatter' then
+      Spawn_Group_Scattered(arena, group_data)
+    elseif spawn_type == 'location' then
+      Spawn_Group_With_Location(arena, group_data, wave_spawn_location)
+    elseif spawn_type == 'close' and arena.last_spawn_point then
+      Spawn_Group_With_Location(arena, group_data, arena.last_spawn_point)
+    else
+        Spawn_Group_With_Location(arena, group_data, wave_spawn_location)
     end
-    
-    SpawnGlobals.last_spawn_point = spawn_marker_index
-    
-    -- Call the internal function that does the real work
-    Spawn_Group_Internal(arena, spawn_marker_index, group_data, on_finished)
 end
 
 function Spawn_Group_With_Location(arena, group_data, wave_spawn_location, on_finished)
@@ -783,6 +767,10 @@ function Spawn_Group_With_Location(arena, group_data, wave_spawn_location, on_fi
     amount = amount or 1
 
     arena.last_spawn_point = wave_spawn_location
+
+    --set the same target destination for all enemies in the group
+    --it will be overwritten by acquire target if necessary
+    local target_location = Get_Cross_Screen_Destination(wave_spawn_location)
 
     -- AnimatedSpawnCircle{
     --   group = arena.floor, x = wave_spawn_location.x, y = wave_spawn_location.y,
@@ -798,7 +786,7 @@ function Spawn_Group_With_Location(arena, group_data, wave_spawn_location, on_fi
         local location = {x = wave_spawn_location.x + offset.x, y = wave_spawn_location.y + offset.y}
 
         local create_enemy_action = function()
-            Spawn_Enemy(arena, type, location, offset)
+            Spawn_Enemy(arena, type, location, target_location)
             arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns - 1
         end
         arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns + 1
@@ -871,7 +859,7 @@ end
 
 
 -- This function is now just a simple unit factory.
-function Spawn_Enemy(arena, type, location)
+function Spawn_Enemy(arena, type, location, target_location)
   local data = {}
 
   local special_swarmer_type = nil
@@ -882,11 +870,19 @@ function Spawn_Enemy(arena, type, location)
       special_swarmer_type = SPECIAL_SWARMER_TYPES[random:weighted_pick(unpack(SPECIAL_SWARMER_WEIGHT_BY_TYPE[arena.level]))]
     end
   end
+
+  if special_swarmer_type == 'orbkiller' then
+    metal_click:play{pitch = random:float(0.8, 1.2), volume = 1}
+  end
+
   
   local enemy = Enemy{type = type, group = arena.main,
                       x = location.x, y = location.y,
                       special_swarmer_type = special_swarmer_type,
+                      target_location = target_location,
                       level = arena.level, data = data}
+
+  current_power_onscreen = current_power_onscreen + enemy_to_round_power[type]
 
   Spawn_Enemy_Sound(arena, false)
   Spawn_Enemy_Effect(arena, enemy)
@@ -1074,7 +1070,7 @@ function SpawnManager:spawn_waves_with_timing()
     self.current_wave_index = 1
     self.current_instruction_index = 1
     self:change_state('entry_delay')
-    self.timer = self.arena.entry_delay or 1
+    self.timer = TIME_BETWEEN_WAVES
   end
 end
 
