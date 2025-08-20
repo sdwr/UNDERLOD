@@ -6,5 +6,5 @@ if not path:find("init") then
   ripple = require(path .. ".ripple")
   anim8 = require(path .. ".anim8")
   
-  steam = require 'luasteam'
+  -- steam = require 'luasteam'
 end
