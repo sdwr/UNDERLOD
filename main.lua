@@ -1546,6 +1546,22 @@ function init()
   ]] --
 end
 
+-- Snap scale value to valid 0.5 increments
+function snap_scale(scale)
+  return math.max(1.0, math.floor(scale * 2 + 0.5) / 2)
+end
+
+-- Unified scaling function to ensure consistent behavior
+function set_window_scale(new_scale)
+  local scale = snap_scale(new_scale)
+  sx, sy = scale, scale
+  state.sx, state.sy = scale, scale
+  state.fullscreen = false
+  love.window.setMode(480 * scale, 270 * scale)
+  create_full_res_canvases()
+  return scale
+end
+
 love.frame = 0
 function update(dt)
   main:update(dt)
@@ -1555,19 +1571,13 @@ function update(dt)
   end
 
   if input.k.pressed then
-    if sx > 1 and sy > 1 then
-      sx, sy = sx - 0.5, sy - 0.5
-      love.window.setMode(480 * sx, 270 * sy)
-      state.sx, state.sy = sx, sy
-      state.fullscreen = false
+    if sx > 1 then
+      set_window_scale(sx - 0.5)
     end
   end
 
   if input.l.pressed then
-    sx, sy = sx + 0.5, sy + 0.5
-    love.window.setMode(480 * sx, 270 * sy)
-    state.sx, state.sy = sx, sy
-    state.fullscreen = false
+    set_window_scale(sx + 0.5)
   end
 
   if input.f11.pressed then
@@ -1762,23 +1772,15 @@ function open_options(self)
       end }
 
     self.video_button_1 = Button { group = self.options_ui, x = gw / 2 - 136, y = gh - 125, force_update = true, button_text = 'window size-', fg_color = 'bg10', bg_color = 'bg', action = function()
-      if sx > 1 and sy > 1 then
+      if sx > 1 then
         ui_switch1:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
-        sx, sy = sx - 0.5, sy - 0.5
-        love.window.setMode(480 * sx, 270 * sy)
-        state.sx, state.sy = sx, sy
-        state.fullscreen = false
-        create_full_res_canvases()
+        set_window_scale(sx - 0.5)
       end
     end }
 
     self.video_button_2 = Button { group = self.options_ui, x = gw / 2 - 50, y = gh - 125, force_update = true, button_text = 'window size+', fg_color = 'bg10', bg_color = 'bg', action = function()
       ui_switch1:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
-      sx, sy = sx + 0.5, sy + 0.5
-      love.window.setMode(480 * sx, 270 * sy)
-      state.sx, state.sy = sx, sy
-      state.fullscreen = false
-      create_full_res_canvases()
+      set_window_scale(sx + 0.5)
     end }
 
     self.video_button_3 = Button { group = self.options_ui, x = gw / 2 + 29, y = gh - 125, force_update = true, button_text = 'fullscreen', fg_color = 'bg10', bg_color = 'bg', action = function()

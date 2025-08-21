@@ -67,8 +67,12 @@ function engine_run(config)
     SET_GAME_BOUNDS()
 
     if state.sx and state.sy then
-      sx, sy = state.sx, state.sy
-      love.window.setMode(state.sx*gw, state.sy*gh, {vsync = config.vsync, msaa = msaa or 0, display = config.display})
+      -- Use the smaller scale to maintain aspect ratio, snap to valid increments
+      local saved_scale = math.min(state.sx, state.sy)
+      local scale = snap_scale(saved_scale)
+      sx, sy = scale, scale
+      state.sx, state.sy = scale, scale
+      love.window.setMode(scale*gw, scale*gh, {vsync = config.vsync, msaa = msaa or 0, display = config.display})
     else
       state.sx, state.sy = sx, sy
       love.window.setMode(window_width, window_height, {vsync = config.vsync, msaa = msaa or 0, display = config.display})
