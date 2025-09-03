@@ -254,7 +254,12 @@ function Helper.Damage:apply_hit_effects(unit, damage, playHitEffects)
 
     -- Only create HitCircle for non-animated enemies (those without spritesheets)
     if not unit.spritesheet then
-      HitCircle{group = main.current.effects, x = unit.x, y = unit.y}:scale_down(0.3):change_color(0.5, unit.color)
+      local radius = 6
+      if unit.shape then
+        radius = unit.shape.w / 2
+        radius = radius * 0.4
+      end
+      HitCircle{group = main.current.effects, x = unit.x, y = unit.y, rs = radius}:scale_down(0.3):change_color(0.5, unit.color)
     end
     
     -- Player troop specific: camera shake
@@ -506,7 +511,12 @@ function Helper.Damage:apply_death_effects(unit, from)
     for i = 1, random:int(2, 3) do 
       HitParticle{group = main.current.effects, x = unit.x, y = unit.y, color = unit.color} 
     end
-    HitCircle{group = main.current.effects, x = unit.x, y = unit.y, rs = 12}:scale_down(0.3):change_color(0.5, unit.color)
+    local radius = 6
+    if unit.shape then
+      radius = unit.shape.w / 2
+      radius = radius * 0.6
+    end
+    HitCircle{group = main.current.effects, x = unit.x, y = unit.y, rs = radius}:scale_down(0.3):change_color(0.5, unit.color)
     
     if unit.isBoss then
       slow(0.25, 1)
