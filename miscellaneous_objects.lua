@@ -1558,3 +1558,61 @@ function Critter:on_trigger_enter(other, contact)
     other:hit(self.dmg, self)
   end]]--
 end
+
+
+OrbDangerLine = Object:extend()
+OrbDangerLine.__class_name = 'OrbDangerLine'
+OrbDangerLine:implement(GameObject)
+function OrbDangerLine:init(args)
+  self:init_game_object(args)
+  
+  self.parent = args.parent
+  self.orb = args.orb
+  
+  -- Line endpoints
+  self.x1 = self.parent.x
+  self.y1 = self.parent.y
+  self.x2 = self.orb.x
+  self.y2 = self.orb.y
+  
+  -- Visual properties
+  self.width = 2
+  self.base_alpha = 0.15
+  self.pulse_speed = 3
+  self.pulse_amplitude = 0.1
+  
+  -- Floor effect properties
+  self.floor_effect = 'orb_danger_targeting'
+  self.pick_shape = 'line'
+  self.color = args.color or red[5]
+  self.color_transparent = Color(self.color.r, self.color.g, self.color.b, self.base_alpha)
+  
+  self.timer = 0
+end
+
+function OrbDangerLine:update(dt)
+  self:update_game_object(dt)
+  
+  -- Check if parent or orb is dead
+  if not self.parent or self.parent.dead or not self.orb or self.orb.dead then
+    self.dead = true
+    return
+  end
+  
+  -- Update line endpoints to follow parent and orb
+  self.x1 = self.parent.x
+  self.y1 = self.parent.y
+  self.x2 = self.orb.x
+  self.y2 = self.orb.y
+  
+  -- Animate alpha with pulsing effect
+  self.timer = self.timer + dt
+  local pulse = math.sin(self.timer * self.pulse_speed) * self.pulse_amplitude
+  local current_alpha = math.max(0.05, self.base_alpha + pulse)
+  self.color_transparent = Color(self.color.r, self.color.g, self.color.b, current_alpha)
+end
+
+function OrbDangerLine:draw()
+  -- Floor effects handle the actual drawing through the stencil system
+  -- No need to draw here as it's handled by the floor_effect system
+end

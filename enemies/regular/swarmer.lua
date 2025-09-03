@@ -8,6 +8,14 @@ fns['init_enemy'] = function(self)
 
   if self.special_swarmer_type == 'orbkiller' then
     self.color = red[0]:clone()
+    -- Create targeting line to orb
+    if main.current and main.current.current_arena and main.current.current_arena.level_orb then
+      self.targeting_line = OrbDangerLine{
+        group = main.current.current_arena.effects,
+        parent = self,
+        orb = main.current.current_arena.level_orb
+      }
+    end
   elseif self.special_swarmer_type == 'exploder' then
     self.color = orange[0]:clone()
   elseif self.special_swarmer_type == 'poison' then
@@ -110,6 +118,11 @@ fns['on_death'] = function(self)
     self:explode()
   elseif self.special_swarmer_type == 'poison' then
     self:poison()
+  elseif self.special_swarmer_type == 'orbkiller' then
+    -- Clean up targeting line
+    if self.targeting_line then
+      self.targeting_line.dead = true
+    end
   end
 end
 

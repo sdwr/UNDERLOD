@@ -53,22 +53,34 @@ function DrawUtils.draw_floor_effects(floor_effects)
   if next(floor_effects) == nil then return end
 
   for k, floor_effect_list in pairs(floor_effects) do
-    local outline_color = floor_effect_list[1].color
-    local color = floor_effect_list[1].color_transparent
-    love.graphics.stencil(function() DrawUtils.draw_floor_effect(floor_effect_list, 0) end, 'replace', 1)
-    love.graphics.setStencilTest('equal', 0)
-
-    love.graphics.setColor(outline_color.r, outline_color.g, outline_color.b, outline_color.a)
-    DrawUtils.draw_floor_effect(floor_effect_list, 0.5)
-    love.graphics.setStencilTest()
-
-    love.graphics.setStencilTest('greater', 0)
+    -- Check if this is a line effect (no border needed for lines)
+    local is_line_effect = floor_effect_list[1].pick_shape == 'line'
     
-    love.graphics.setColor(color.r, color.g, color.b, color.a)
-    love.graphics.rectangle('fill', 0, 0, gw, gh)
+    if is_line_effect then
+      -- Draw lines directly without stencil border
+      local color = floor_effect_list[1].color_transparent
+      love.graphics.setColor(color.r, color.g, color.b, color.a)
+      DrawUtils.draw_floor_effect(floor_effect_list, 0)
+      love.graphics.setColor(1, 1, 1, 1)
+    else
+      -- Use stencil technique for circles and other shapes
+      local outline_color = floor_effect_list[1].color
+      local color = floor_effect_list[1].color_transparent
+      love.graphics.stencil(function() DrawUtils.draw_floor_effect(floor_effect_list, 0) end, 'replace', 1)
+      love.graphics.setStencilTest('equal', 0)
 
-    love.graphics.setStencilTest()
-    love.graphics.setColor(1, 1, 1, 1)
+      love.graphics.setColor(outline_color.r, outline_color.g, outline_color.b, outline_color.a)
+      DrawUtils.draw_floor_effect(floor_effect_list, 0.5)
+      love.graphics.setStencilTest()
+
+      love.graphics.setStencilTest('greater', 0)
+      
+      love.graphics.setColor(color.r, color.g, color.b, color.a)
+      love.graphics.rectangle('fill', 0, 0, gw, gh)
+
+      love.graphics.setStencilTest()
+      love.graphics.setColor(1, 1, 1, 1)
+    end
   end
 end
 
@@ -77,6 +89,27 @@ function DrawUtils.draw_floor_effect(floor_effect_list, radius_increase)
   for _, effect in ipairs(floor_effect_list) do
     if effect.pick_shape == 'circle' then
         love.graphics.circle("fill", effect.x, effect.y, effect.radius + radius_increase)
+    elseif effect.pick_shape == 'rectangle' or effect.pick_shape == 'line' then
+        -- For lines, we draw them as rectangles with a width
+        local width = effect.width or 2
+        local x1, y1, x2, y2 = effect.x1 or effect.x, effect.y1 or effect.y, effect.x2, effect.y2
+        
+        -- Calculate the perpendicular vector to create thickness
+        local dx = x2 - x1
+        local dy = y2 - y1
+        local length = math.sqrt(dx*dx + dy*dy)
+        if length > 0 then
+          local perp_x = -dy / length * (width/2 + radius_increase)
+          local perp_y = dx / length * (width/2 + radius_increase)
+          
+          -- Draw a quad for the line
+          love.graphics.polygon("fill",
+            x1 + perp_x, y1 + perp_y,
+            x1 - perp_x, y1 - perp_y,
+            x2 - perp_x, y2 - perp_y,
+            x2 + perp_x, y2 + perp_y
+          )
+        end
     end
   end
 end
