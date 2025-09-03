@@ -72,6 +72,7 @@ function Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects,
   
 
   -- For direct elemental hits (not conversions), apply conversions from static procs
+  -- But skip burn damage since it's already a damage-over-time effect
   if table.contains(ELEMENTAL_EFFECT_TYPES, damageType) then
     Helper.Damage:process_elemental_conversions(unit, actual_damage, from, damageType)
   end

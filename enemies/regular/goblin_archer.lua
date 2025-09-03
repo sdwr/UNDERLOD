@@ -41,7 +41,7 @@ fns['init_enemy'] = function(self)
       if self.moves_left == 0 then
         self.attacks_left = self.NUM_ATTACKS
       end
-      return 'movement', MOVEMENT_TYPE_SEEK_TO_RANGE
+      return 'movement', MOVEMENT_TYPE_SEEK_ORB
     else
       self.attacks_left = self.attacks_left - 1
       if self.attacks_left == 0 then
