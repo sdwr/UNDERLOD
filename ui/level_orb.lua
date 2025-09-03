@@ -16,6 +16,10 @@ function LevelOrb:init(args)
   self.visible_radius = 0
 
   self:set_as_circle(self.radius, 'static', 'projectile')
+  -- Make the orb a sensor so enemies can pass through it
+  if self.fixture then
+    self.fixture:setSensor(true)
+  end
   
   -- Health properties
   self.max_hp = args.max_hp or LEVEL_ORB_HEALTH(main.current.level)
@@ -141,7 +145,7 @@ function LevelOrb:update(dt)
   end
 end
 
-function LevelOrb:on_collision_enter(other)
+function LevelOrb:on_trigger_enter(other)
   if not other:is(Enemy) then return end
   if not other.can_damage_orb then return end
 
