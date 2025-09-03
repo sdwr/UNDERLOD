@@ -1163,7 +1163,11 @@ end
 function ProgressParticle:finish()
   self.dead = true
   self.parent:increase_progress(self.roundPower)
-
+  
+  -- Trigger ripple effect on the level orb
+  if main.current and main.current.current_arena and main.current.current_arena.level_orb then
+    main.current.current_arena.level_orb:on_progress_particle_hit()
+  end
 end
 
 AnimationEffect = Object:extend()

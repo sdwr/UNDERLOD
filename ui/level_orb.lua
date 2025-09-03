@@ -34,6 +34,16 @@ function LevelOrb:init(args)
   self.hurt_flash_timer = 0
   self.hurt_flash_duration = 0.2
   
+  -- Shimmer effect properties
+  self.shimmer_timer = 0
+  self.shimmer_speed = 0.8
+  
+  -- Ripple effects for progress particles
+  self.ripples = {}
+  self.progress_sound = nil
+  self.last_progress_sound_time = 0
+  self.progress_sound_pitch = 1
+  
   -- Faction - make it targetable by enemies
   self.faction = 'friendly'
   self.is_level_orb = true
@@ -58,6 +68,21 @@ function LevelOrb:update(dt)
   self.pulse_timer = self.pulse_timer + dt * self.pulse_speed
   local pulse_intensity = self.charging and 0.2 or 0.1
   self.scale = 1.0 + pulse_intensity * math.sin(self.pulse_timer)
+  
+  -- Update shimmer animation
+  self.shimmer_timer = self.shimmer_timer + dt * self.shimmer_speed
+  
+  -- Update ripples
+  for i = #self.ripples, 1, -1 do
+    local ripple = self.ripples[i]
+    ripple.timer = ripple.timer + dt
+    ripple.radius = ripple.start_radius + (ripple.max_radius - ripple.start_radius) * (ripple.timer / ripple.duration)
+    ripple.alpha = 1 - (ripple.timer / ripple.duration)
+    
+    if ripple.timer >= ripple.duration then
+      table.remove(self.ripples, i)
+    end
+  end
   
   -- Update charging state
   if self.charging then
@@ -219,16 +244,45 @@ function LevelOrb:draw()
   
   graphics.push(self.x, self.y, 0, self.scale, self.scale)
   
+  -- Draw soft outer glow (brighter than before)
+  local glow_color = white[5]:clone()  -- Brighter base
+  if self.hurt_flash_timer > 0 then
+    glow_color = red[3]:clone()
+  elseif self.charging then
+    glow_color = yellow[3]:clone()
+  else
+    glow_color = blue[0]:clone()  -- Brighter blue
+  end
+  
+  -- Multiple layers for soft glow
+  for i = 3, 1, -1 do
+    local glow_alpha = 0.08 * i  -- Increased from 0.05
+    local glow_scale = 1 + (0.08 * (4 - i))  -- Tighter glow
+    local outer_glow = glow_color:clone()
+    outer_glow.a = glow_alpha
+    graphics.circle(self.x, self.y, self.visible_radius * glow_scale, outer_glow, 2)
+  end
+  
   -- Draw charging glow effect
   if self.charging then
     local glow_intensity = math.sin(self.pulse_timer * 2) * 0.5 + 0.5
-    local glow_color = yellow[0]:clone()
-    glow_color.a = 0.3 * glow_intensity
-    graphics.circle(self.x, self.y, self.visible_radius * 1.5, glow_color)
+    local charge_glow = yellow[0]:clone()
+    charge_glow.a = 0.3 * glow_intensity
+    graphics.circle(self.x, self.y, self.visible_radius * 1.5, charge_glow)
   end
   
-  -- Draw main orb background (grey)
-  graphics.circle(self.x, self.y, self.visible_radius, bg[5]:clone())
+  -- Draw main orb background with lighter damaged area
+  local bg_color = bg[8]:clone()  -- Lighter grey for empty portion
+  graphics.circle(self.x, self.y, self.visible_radius, bg_color)
+  
+  -- Add inner shimmer gradient for empty portion
+  local shimmer_offset = math.sin(self.shimmer_timer) * 0.3 + 0.7
+  for i = 1, 3 do
+    local gradient_radius = self.visible_radius * (0.9 - i * 0.15)
+    local gradient_color = bg[10]:clone()  -- Even lighter shimmer
+    gradient_color.a = 0.15 * shimmer_offset * (4 - i) / 3
+    graphics.circle(self.x, self.y - (i * 2), gradient_radius, gradient_color)
+  end
   
   -- Draw health portion (colored from bottom)
   local hp_percentage = self:get_hp_percentage()
@@ -243,24 +297,42 @@ function LevelOrb:draw()
     
     love.graphics.setStencilTest("greater", 0)
     
-    -- Draw the colored health portion
+    -- Draw the colored health portion with subtle internal glow
     local health_color = self.color
     if self.hurt_flash_timer > 0 then
       health_color = self.hurt_flash_color
     end
     graphics.circle(self.x, self.y, self.visible_radius, health_color)
     
+    -- Add subtle internal shimmer to health portion
+    local health_shimmer = health_color:clone()
+    health_shimmer = health_shimmer:lighten(0.15)
+    health_shimmer.a = 0.3 * shimmer_offset
+    graphics.circle(self.x, self.y - 3, self.visible_radius * 0.85, health_shimmer)
+    
     love.graphics.setStencilTest()
   end
   
-  -- Draw border
-  local border_color = white[0]
-  if self.hurt_flash_timer > 0 then
-    border_color = red[5]
-  elseif self.charging then
-    border_color = yellow[5]
+  -- Draw ripple effects from progress particles
+  for _, ripple in ipairs(self.ripples) do
+    if ripple and ripple.radius and ripple.radius > 0 then
+      local ripple_color = yellow[5]:clone()
+      ripple_color.a = ripple.alpha * 0.6
+      graphics.circle(self.x, self.y, ripple.radius, ripple_color, 2)
+    end
   end
-  graphics.circle(self.x, self.y, self.visible_radius, border_color, 2)
+  
+  -- Draw very subtle border (brighter than before)
+  local border_color = white[0]:clone()  -- Brighter base
+  if self.hurt_flash_timer > 0 then
+    border_color = red[5]:clone()
+  elseif self.charging then
+    border_color = yellow[5]:clone()
+  else
+    border_color = blue[2]:clone()  -- Brighter blue
+  end
+  border_color.a = 0.5  -- Increased from 0.4
+  graphics.circle(self.x, self.y, self.visible_radius, border_color, 1)
   
   graphics.pop()
 end
@@ -287,8 +359,42 @@ function LevelOrb:heal(amount)
   self:flash_heal()
 end
 
+function LevelOrb:add_progress_sound()
+  if Helper.Time.time - self.last_progress_sound_time > 1 then
+    self.progress_sound_pitch = 1
+  else
+    self.progress_sound_pitch = self.progress_sound_pitch + 0.1
+    self.progress_sound_pitch = math.min(self.progress_sound_pitch, 1.5)
+  end
+
+  if self.progress_sound then
+    self.progress_sound:stop()
+  end
+  self.progress_sound = spawn_mark2:play{pitch = self.progress_sound_pitch, volume = 0.2}
+end
+
+function LevelOrb:add_progress_ripple()
+  -- Add a new ripple effect when progress particle hits
+  -- Use actual radius if visible_radius is not yet set
+  local current_radius = self.visible_radius > 0 and self.visible_radius or self.radius
+  table.insert(self.ripples, {
+    timer = 0,
+    duration = 0.5,
+    start_radius = 0,
+    max_radius = current_radius * 1.2,
+    alpha = 1
+  })
+end
+
 function LevelOrb:flash_heal()
   -- Flash green briefly
   self.hurt_flash_timer = self.hurt_flash_duration
   self.color = green[0]:clone()
+end
+
+function LevelOrb:on_progress_particle_hit()
+  -- Called when a progress particle reaches the orb
+  self:add_progress_sound()
+  self:add_progress_ripple()
+  self.last_progress_sound_time = Helper.Time.time
 end

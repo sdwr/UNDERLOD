@@ -212,15 +212,6 @@ function Troop:update(dt)
   self.attack_sensor:move_to(self.x, self.y)
 end
 
---unused right now
-function Troop:move_towards_target()
-  local movement_target = Helper.Target:get_close_enemy(self, nil, {fully_onscreen = true})
-  if movement_target then
-    self:seek_point(movement_target.x, movement_target.y, SEEK_DECELERATION, SEEK_WEIGHT)
-    self:wander(TROOP_WANDER_RADIUS, TROOP_WANDER_DISTANCE, TROOP_WANDER_JITTER)
-  end
-end
-
 function Troop:do_automatic_movement()
 
   --separate from other troops
