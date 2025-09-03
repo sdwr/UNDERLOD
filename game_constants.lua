@@ -390,6 +390,7 @@ enemy_movement_types = {
   ['default'] = MOVEMENT_TYPE_CROSS_SCREEN,
   -- Aggressive seekers - chase players directly
   ['swarmer'] = MOVEMENT_TYPE_CROSS_SCREEN,
+  ['boulder'] = MOVEMENT_TYPE_CROSS_SCREEN,
   
   -- Ranged units that maintain distance
   -- ['big_goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB,

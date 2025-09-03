@@ -581,10 +581,12 @@ function Enemy:on_collision_enter(other, contact)
 
     elseif table.any(main.current.friendlies, function(v) return other:is(v) end) then
       if self.class == 'regular_enemy' then
-        local duration = KNOCKBACK_DURATION_ENEMY
-        local push_force = ENEMY_KNOCKBACK_FORCE_TROOP_COLLISION
-        local dmg = REGULAR_PUSH_DAMAGE
-        self:push(push_force, self:angle_to_object(other) + math.pi, nil, duration)
+        if not self.ignoreKnockback then
+          local duration = KNOCKBACK_DURATION_ENEMY
+          local push_force = ENEMY_KNOCKBACK_FORCE_TROOP_COLLISION
+          local dmg = REGULAR_PUSH_DAMAGE
+          self:push(push_force, self:angle_to_object(other) + math.pi, nil, duration)
+        end
         --delay the damage to avoid box2d lock
         self.t:after(0, function()
           if self and not self.dead then
@@ -593,13 +595,15 @@ function Enemy:on_collision_enter(other, contact)
         end)
       else
         if self.haltOnPlayerContact then
-          self:set_velocity(0,0)
-          Helper.Unit:set_state(self, unit_states['frozen'])
-          self.t:after(0.8, function()
-            if self.state == unit_states['frozen'] then
-              Helper.Unit:set_state(self, unit_states['idle'])
-            end
-          end)
+          if not self.ignoreKnockback then
+            self:set_velocity(0,0)
+            Helper.Unit:set_state(self, unit_states['frozen'])
+            self.t:after(0.8, function()
+              if self.state == unit_states['frozen'] then
+                Helper.Unit:set_state(self, unit_states['idle'])
+              end
+            end)
+          end
         end
       end
     elseif table.any(main.current.enemies, function(v) return other:is(v) end) then

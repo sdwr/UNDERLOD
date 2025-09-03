@@ -34,6 +34,7 @@ require 'enemies/regular/line_mortar'
 require 'enemies/regular/aim_spread'
 require 'enemies/regular/archer'
 require 'enemies/regular/swarmer'
+require 'enemies/regular/boulder'
 
 require 'enemies/miniboss/bigstomper'
 

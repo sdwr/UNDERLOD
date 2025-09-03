@@ -118,7 +118,8 @@ end
 
 function LevelOrb:on_collision_enter(other)
   if not other:is(Enemy) then return end
-  if not other.can_damage_orb then return end
+  --let all enemies damage the orb for now
+  -- if not other.can_damage_orb then return end
 
   local enemy_round_power = enemy_to_round_power[other.type] or 10
 

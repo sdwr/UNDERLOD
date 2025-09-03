@@ -15,6 +15,10 @@ function Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects,
   local isChained = hitOptions.isChained or false
   local canProcOnHit = default_to(hitOptions.canProcOnHit, not isChained) -- Chained hits can't proc by default
   local applyKnockback = default_to(hitOptions.applyKnockback, isPrimary) -- Primary hits knockback by default
+  if unit.ignoreKnockback then
+    applyKnockback = false
+  end
+  
   local isElementalConversion = default_to(hitOptions.isElementalConversion, false)
   
   -- Unit-specific pre-hit processing

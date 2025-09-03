@@ -1452,6 +1452,7 @@ function init()
     --special enemies t3
     ['summoner'] = 75,
     ['assassin'] = 75,
+    ['boulder'] = 75,
 
     --bosses
     ['stompy'] = BOSS_ROUND_POWER,
@@ -1465,6 +1466,7 @@ function init()
     ['seeker'] = grey[0],
     ['chaser'] = grey[0],
     ['cleaver'] = grey[0],
+    ['boulder'] = grey[2],
 
     ['rager'] = red[3],
     ['stomper'] = red[3],
