@@ -330,7 +330,7 @@ end
 -- The bounding size is used to select objects quickly and roughly, and then more specific and expensive collision methods are run on the objects returned from that selection.
 -- group:get_objects_in_shape(Rectangle(player.x, player.y, 100, 100, player.r), {Enemy1, Enemy2}) -> all Enemy1 and Enemy2 instances in a 100x100 rotated rectangle around the player
 -- group:get_objects_in_shape(Rectangle(player.x, player.y, 100, 100, player.r), {Enemy1, Enemy2}, {object_1, object_2}) -> same as above except excluding object instances object_1 and object_2
-function Group:get_objects_in_shape(shape, object_types, exclude_list)
+function Group:get_objects_in_shape(shape, object_types, exclude_list, required_flags)
   local out = {}
   local exclude_list = exclude_list or {}
   local cx1, cy1 = math.floor((shape.x-shape.w)/self.cell_size), math.floor((shape.y-shape.h)/self.cell_size)
@@ -342,7 +342,17 @@ function Group:get_objects_in_shape(shape, object_types, exclude_list)
         local cell_objects = self.cells[cx][cy]
         if cell_objects then
           for _, object in ipairs(cell_objects) do
-            if not object.offscreen then
+            local passes_flags = true
+            if required_flags then
+              for flag, value in pairs(required_flags) do
+                if object[flag] ~= value then
+                  passes_flags = false
+                  break
+                end
+              end
+            end
+            
+            if passes_flags then
               if object_types then
                 if not table.any(exclude_list, function(v) return v.id == object.id end) then
                   if table.any(object_types, function(v) return object:is(v) end) and object.shape and object.shape:is_colliding_with_shape(shape) then
@@ -363,17 +373,39 @@ function Group:get_objects_in_shape(shape, object_types, exclude_list)
   return out
 end
 
-function Group:get_closest_object_by_class(object, object_types, exclude_list)
+function Group:get_closest_object_by_class(object, object_types, exclude_list, required_flags)
   return self:get_closest_object(object, function(o) 
     local is_valid_type = table.any(object_types, function(v) return o:is(v) end)
     local is_not_excluded = not exclude_list or not table.any(exclude_list, function(v) return v.id == o.id end)
-    local fully_onscreen = o.fully_onscreen
-    return is_valid_type and is_not_excluded and fully_onscreen
+    
+    local passes_flags = true
+    if required_flags then
+      for flag, value in pairs(required_flags) do
+        if o[flag] ~= value then
+          passes_flags = false
+          break
+        end
+      end
+    end
+    
+    return is_valid_type and is_not_excluded and passes_flags
   end)
 end
 
-function Group:get_random_object_by_class(object_types)
+function Group:get_random_object_by_class(object_types, required_flags)
   local objects = self:get_objects_by_classes(object_types)
+  
+  if required_flags then
+    objects = table.filter(objects, function(o)
+      for flag, value in pairs(required_flags) do
+        if o[flag] ~= value then
+          return false
+        end
+      end
+      return true
+    end)
+  end
+  
   return table.random(objects)
 end
 
@@ -397,7 +429,7 @@ function Group:get_closest_object(object, select_function)
   return self.objects[min_index]
 end
 
-function Group:get_random_close_object(object, object_types, exclude_list, max_range_from_self, distance_tolerance, percentage_tolerance)
+function Group:get_random_close_object(object, object_types, exclude_list, max_range_from_self, distance_tolerance, percentage_tolerance, required_flags)
   exclude_list = exclude_list or {}
   distance_tolerance = distance_tolerance or 20
   percentage_tolerance = percentage_tolerance or 20
@@ -410,6 +442,18 @@ function Group:get_random_close_object(object, object_types, exclude_list, max_r
   if #exclude_list > 0 then
     candidates = table.filter(candidates, function(o) 
       return not table.any(exclude_list, function(v) return v.id == o.id end)
+    end)
+  end
+  
+  -- Filter by required flags
+  if required_flags then
+    candidates = table.filter(candidates, function(o)
+      for flag, value in pairs(required_flags) do
+        if o[flag] ~= value then
+          return false
+        end
+      end
+      return true
     end)
   end
   

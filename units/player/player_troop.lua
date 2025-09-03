@@ -214,7 +214,7 @@ end
 
 --unused right now
 function Troop:move_towards_target()
-  local movement_target = Helper.Target:get_close_enemy(self)
+  local movement_target = Helper.Target:get_close_enemy(self, nil, {fully_onscreen = true})
   if movement_target then
     self:seek_point(movement_target.x, movement_target.y, SEEK_DECELERATION, SEEK_WEIGHT)
     self:wander(TROOP_WANDER_RADIUS, TROOP_WANDER_DISTANCE, TROOP_WANDER_JITTER)
@@ -300,7 +300,7 @@ function Troop:update_ai_logic()
       --find target if not already found
       -- pick random in attack range
       -- or closest in aggro range
-      self:set_target(Helper.Target:get_close_enemy(self))
+      self:set_target(Helper.Target:get_close_enemy(self, nil, {fully_onscreen = true}))
       cast_target = self.target
   end
 

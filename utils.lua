@@ -99,6 +99,15 @@ table.find = function(t, value)
   return nil
 end
 
+table.filter = function(t, func)
+  local filtered = {}
+  for k, v in pairs(t) do
+    if func(v) then
+      table.insert(filtered, v)
+    end
+  end
+  return filtered
+end
 
 
 

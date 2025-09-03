@@ -1,6 +1,6 @@
 Helper.Target = {}
 
-function Helper.Target:get_closest_enemy(object, exclude_list)
+function Helper.Target:get_closest_enemy(object, exclude_list, required_flags)
   local class_list
   if object.faction == 'friendly' then
     class_list = main.current.enemies
@@ -8,10 +8,10 @@ function Helper.Target:get_closest_enemy(object, exclude_list)
     class_list = main.current.friendlies
   end
 
-  return main.current.main:get_closest_object_by_class(object, class_list, exclude_list)
+  return main.current.main:get_closest_object_by_class(object, class_list, exclude_list, required_flags)
 end
 
-function Helper.Target:get_closest_friendly(object, exclude_list)
+function Helper.Target:get_closest_friendly(object, exclude_list, required_flags)
   local class_list
   if object.faction == 'friendly' then
     class_list = main.current.friendlies
@@ -19,11 +19,11 @@ function Helper.Target:get_closest_friendly(object, exclude_list)
     class_list = main.current.enemies
   end
 
-  return main.current.main:get_closest_object_by_class(object, class_list, exclude_list)
+  return main.current.main:get_closest_object_by_class(object, class_list, exclude_list, required_flags)
 end
 
 -----------------------------------------
-function Helper.Target:get_close_enemy(object, exclude_list)
+function Helper.Target:get_close_enemy(object, exclude_list, required_flags)
   local class_list
   if object.faction == 'friendly' then
     class_list = main.current.enemies
@@ -31,10 +31,10 @@ function Helper.Target:get_close_enemy(object, exclude_list)
     class_list = main.current.friendlies
   end
 
-  return main.current.main:get_random_close_object(object, class_list, exclude_list)
+  return main.current.main:get_random_close_object(object, class_list, exclude_list, nil, nil, nil, required_flags)
 end
 
-function Helper.Target:get_random_enemy(object)
+function Helper.Target:get_random_enemy(object, required_flags)
   local class_list
   if object.faction == 'friendly' then
     class_list = main.current.enemies
@@ -42,10 +42,10 @@ function Helper.Target:get_random_enemy(object)
     class_list = main.current.friendlies
   end
 
-  return main.current.main:get_random_object_by_class(class_list)
+  return main.current.main:get_random_object_by_class(class_list, required_flags)
 end
 
-function Helper.Target:get_random_friendly(object)
+function Helper.Target:get_random_friendly(object, required_flags)
   local class_list
   if object.faction == 'friendly' then
     class_list = main.current.friendlies
@@ -53,7 +53,7 @@ function Helper.Target:get_random_friendly(object)
     class_list = main.current.enemies
   end
 
-  return main.current.main:get_random_object_by_class(class_list)
+  return main.current.main:get_random_object_by_class(class_list, required_flags)
 end
 
 function Helper.Target:get_distance_multiplier(unit, target)
