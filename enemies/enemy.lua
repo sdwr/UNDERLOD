@@ -581,10 +581,10 @@ function Enemy:on_collision_enter(other, contact)
 
     elseif table.any(main.current.friendlies, function(v) return other:is(v) end) then
       if self.class == 'regular_enemy' then
+        local dmg = REGULAR_PUSH_DAMAGE
         if not self.ignoreKnockback then
           local duration = KNOCKBACK_DURATION_ENEMY
           local push_force = ENEMY_KNOCKBACK_FORCE_TROOP_COLLISION
-          local dmg = REGULAR_PUSH_DAMAGE
           self:push(push_force, self:angle_to_object(other) + math.pi, nil, duration)
         end
         --delay the damage to avoid box2d lock

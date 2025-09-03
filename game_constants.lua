@@ -69,10 +69,22 @@ RALLY_CIRCLE_STOP_DISTANCE = 5
 BOSS_MASS = 10
 SPECIAL_ENEMY_MASS = 1
 REGULAR_ENEMY_MASS = 1
+TROOP_MASS = 1
 CRITTER_MASS = 0.5
 
-TROOP_MASS = 1
-TROOP_KNOCKBACK_MASS = 50
+function get_mass_by_unit_class(unit_class)
+  return MASS_BY_UNIT_CLASS[unit_class] or 1
+end
+
+MASS_BY_UNIT_CLASS = {
+  ['boss'] = BOSS_MASS,
+  ['special_enemy'] = SPECIAL_ENEMY_MASS,
+  ['regular_enemy'] = REGULAR_ENEMY_MASS,
+  ['critter'] = CRITTER_MASS,
+  ['troop'] = TROOP_MASS,
+}
+
+TROOP_DECELERATION_DAMPING = 3
 
 function get_damping_by_unit_class(unit_class)
   return DAMPING_BY_UNIT_CLASS[unit_class] or 1
@@ -85,9 +97,6 @@ DAMPING_BY_UNIT_CLASS = {
   ['critter'] = 1,
   ['troop'] = 2,
 }
-
-LAUNCH_DAMPING = 0.1
-
 -- Friction constants
 BOSS_FRICTION = 1
 ENEMY_FRICTION = 1

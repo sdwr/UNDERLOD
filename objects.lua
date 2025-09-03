@@ -1894,37 +1894,48 @@ function Unit:launch_at_facing(force_magnitude, duration)
     mass = 1
   end
 
-  self.is_launching = true
-  self.t:after(duration, function() self.is_launching = false end, 'launch_end')
   local facing = self:get_angle()
   self.launch_force_x = math.cos(facing) * force_magnitude * mass
   self.launch_force_y = math.sin(facing) * force_magnitude * mass
   self:set_velocity(0, 0)
-  self.max_v = LAUNCH_MAX_V
+
   self:apply_impulse(self.launch_force_x, self.launch_force_y)
   
-
-  local orig_friction
-  if self.body then
-    orig_friction = self:get_friction()
-  else
-    orig_friction = 0
-  end
-
-  self:set_damping(0)
-  self:set_friction(0.4)
+  self:set_physics_properties({
+    damping = 0, 
+    friction = 0.4, 
+    max_v = LAUNCH_MAX_V, 
+    is_launching = true
+  })
 
   self.t:after(duration, function()
-    if self.is_launching then
-      self.is_launching = false
-      self.max_v = self.mvspd
-    end
-    self:set_damping(get_damping_by_unit_class(self.class))
-    self:set_friction(orig_friction)
-  end)
+    self:reset_physics_properties()
+  end, 'reset_physics_properties')
 
 
 
+end
+
+function Unit:reset_physics_properties()
+  self:set_physics_properties({})
+end
+
+function Unit:set_physics_properties(args)
+  local damping = args.damping or get_damping_by_unit_class(self.class)
+  local friction = args.friction or ENEMY_FRICTION
+  local mass = args.mass or self.body and self:get_mass() or 1
+
+  local max_v = args.max_v or self.mvspd
+  local is_launching = args.is_launching or false
+  
+  self.t:after(0, function()
+    self:set_damping(damping)
+    self:set_friction(friction)
+    self:set_mass(mass)
+  end, 'setting_physics_properties')
+  
+  self.max_v = max_v
+  self.is_launching = is_launching
 end
 
 function Unit:die()
