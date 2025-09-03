@@ -20,6 +20,8 @@ function Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects,
   end
   
   local isElementalConversion = default_to(hitOptions.isElementalConversion, false)
+
+  local damage = damage or 0
   
   -- Unit-specific pre-hit processing
   if not Helper.Damage:process_pre_hit(unit, damage, from, damageType, playHitEffects) then
