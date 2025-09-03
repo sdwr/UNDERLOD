@@ -421,12 +421,50 @@ end
 -- Debug drawing function for steering forces
 function Physics:draw_steering_debug()
   local should_debug = false
+  local should_log = false
   
   -- Check if we should debug this unit
   if DEBUG_STEERING_VECTORS and (self.type == DEBUG_STEERING_ENEMY_TYPE or DEBUG_STEERING_ENEMY_TYPE == nil) then
     should_debug = true
   elseif DEBUG_PLAYER_TROOPS and (self.character == DEBUG_PLAYER_CHARACTER_TYPE or DEBUG_PLAYER_CHARACTER_TYPE == nil) then
     should_debug = true
+    -- Only log velocity for one troop every 5 frames to reduce spam
+    if not self.debug_frame_counter then
+      self.debug_frame_counter = math.random(0, 4)  -- Randomize initial offset
+    end
+    if love.timer.getTime() then
+      local frame_count = math.floor(love.timer.getTime() * 60)  -- Assume 60 FPS
+      if frame_count % 5 == self.debug_frame_counter then
+        should_log = true
+      end
+    end
+  end
+  
+  -- Log velocity information
+  if should_log and self.is_troop then
+    local vx, vy = self:get_velocity()
+    local velocity_length = math.length(vx, vy)
+    local max_v = self.max_v or 0
+    local velocity_percentage = (velocity_length / max_v) * 100
+    
+    -- Only log if velocity is significant or concerning
+    if velocity_length > 1 then
+      local status = ""
+      if velocity_length > max_v * 1.1 then
+        status = " [EXCEEDING MAX!]"
+      elseif velocity_length > max_v * 0.9 then
+        status = " [NEAR MAX]"
+      end
+      
+      print(string.format("%s vel: %.1f/%.1f (%.0f%%)%s damping:%.1f",
+        self.character or "troop",
+        velocity_length,
+        max_v,
+        velocity_percentage,
+        status,
+        self.body and self.body:getLinearDamping() or 0
+      ))
+    end
   end
   
   if should_debug then
@@ -456,6 +494,23 @@ function Physics:draw_steering_debug()
     if self.target_location then
       graphics.circle(self.target_location.x, self.target_location.y, 3, yellow[5])
       graphics.line(self.x, self.y, self.target_location.x, self.target_location.y, yellow[0])
+    end
+    
+    -- Draw velocity vector (white) for visual debugging
+    if self.is_troop then
+      local vx, vy = self:get_velocity()
+      if vx ~= 0 or vy ~= 0 then
+        local velocity_scale = 0.3
+        graphics.line(self.x, self.y, self.x + vx * velocity_scale, self.y + vy * velocity_scale, white[5], 2)
+        
+        -- Draw max velocity circle (dimmed)
+        local max_v_radius = (self.max_v or 0) * velocity_scale
+        if max_v_radius > 0 then
+          local circle_color = white[0]:clone()
+          circle_color.a = 0.2
+          graphics.circle(self.x, self.y, max_v_radius, circle_color, 1)
+        end
+      end
     end
   end
 end

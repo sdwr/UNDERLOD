@@ -218,7 +218,7 @@ ARENA_RADIUS = 200
 
 
 -- Steering and Movement constants
-SEEK_DECELERATION = 1.1
+SEEK_DECELERATION = 5
 SEEK_WEIGHT = 1.75
 
 get_seek_weight_by_enemy_type = function(enemy_type)
