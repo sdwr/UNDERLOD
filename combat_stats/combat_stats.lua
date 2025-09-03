@@ -458,7 +458,7 @@ SCALED_ENEMY_MS = function(level, base_ms)
 end
 
 function SWARMERS_PER_LEVEL(level)
-  return math.min(30, 8 + (level * 2))
+  return math.min(20, 6 + (level * 2))
 end
 
 function SPECIAL_ENEMIES_PER_LEVEL(level)

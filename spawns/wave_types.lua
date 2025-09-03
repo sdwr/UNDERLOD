@@ -29,12 +29,12 @@ _last_group_type = 1
 function Get_Next_Group(level)
   local tier = LEVEL_TO_TIER(level) or 1
 
-  local chances = {20, 40, 100, 40}
+  local chances = {40, 10, 60, 10}
   chances[_last_group_type] = chances[_last_group_type] / 2
 
   local options = {
     [1] = {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'},
-    [2] = {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'scatter'},
+    [2] = {'GROUP', 'swarmer', math.floor(SWARMERS_PER_LEVEL(level) * 1.5), 'scatter'},
     [3] = {'GROUP', 'boulder', 1, 'nil'},
     [4] = {'GROUP', Get_Random_Special_Enemy(tier), 1, 'nil'},
   }
