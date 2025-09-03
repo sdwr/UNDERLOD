@@ -238,20 +238,23 @@ function Troop:do_automatic_movement()
 end
 
 
+--ugly!!
+--sets the progressive damping
+--using the same tag so it can be reset by another movement effect
+--should be able to do this with one tween
 function Troop:start_deceleration()
   self:reset_physics_properties()
   self:set_physics_properties({damping = 2.5})
   self.t:after(0.15, function()
-    self:set_physics_properties({damping = 5})
-  end, 'deceleration_2')
-
-  self.t:after(0.6, function()
-    self:reset_physics_properties()
+    self:set_physics_properties({damping = 3.5})
+    self.t:after(0.15, function()
+      self:set_physics_properties({damping = 5.5})
+      self.t:after(0.3, function()
+        self:reset_physics_properties()
+      end, 'reset_physics_properties')
+    end, 'reset_physics_properties')
   end, 'reset_physics_properties')
-end
 
-function Troop:end_deceleration()
-  self:reset_physics_properties()
 end
 
 function Troop:update_ai_logic()
