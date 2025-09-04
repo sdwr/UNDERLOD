@@ -23,7 +23,12 @@ function Enemy:init(args)
 
   self:calculate_stats(true)
 
-  self.baseIdleTimer = self.baseIdleTimer or 0.3
+  -- Special enemies get longer idle time
+  if self.class == 'special_enemy' then
+    self.baseIdleTimer = self.baseIdleTimer or 0.8
+  else
+    self.baseIdleTimer = self.baseIdleTimer or 0.3
+  end
   self.idleTimer = self.baseIdleTimer
   self.baseActionTimer = self.baseActionTimer or 1
   self.actionTimer = 0

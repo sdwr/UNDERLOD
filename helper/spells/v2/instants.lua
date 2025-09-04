@@ -164,7 +164,7 @@ function ArrowProjectile:update(dt)
 
 end
 
-function ArrowProjectile:on_collision_enter(other)
+function ArrowProjectile:on_trigger_enter(other)
   if other:is(Wall) then
     self:die()
   end
