@@ -674,3 +674,57 @@ function math.circle_intersections(cx1, cy1, r1, cx2, cy2, r2)
   
   return {x1 = x1, y1 = y1, x2 = x2, y2 = y2}
 end
+
+-- Find the closest point on an ellipse to a given point
+-- cx, cy: center of ellipse
+-- rx, ry: horizontal and vertical radii
+-- px, py: point to find closest to
+function math.closest_point_on_ellipse(cx, cy, rx, ry, px, py)
+  -- Translate point to ellipse-centered coordinates
+  local dx = px - cx
+  local dy = py - cy
+  
+  -- Handle edge cases
+  if math.abs(dx) < 0.001 and math.abs(dy) < 0.001 then
+    -- Point is at center, return point on right side
+    return cx + rx, cy
+  end
+  
+  -- Use parametric approach for finding closest point
+  local angle = math.atan2(dy / ry, dx / rx)
+  local cos_a = math.cos(angle)
+  local sin_a = math.sin(angle)
+  
+  -- Point on ellipse at this angle
+  local ex = rx * cos_a
+  local ey = ry * sin_a
+  
+  -- Check if we're inside or outside
+  local test = (dx*dx)/(rx*rx) + (dy*dy)/(ry*ry)
+  
+  if test <= 1 then
+    -- Inside ellipse - find point on perimeter
+    -- Scale the direction vector to reach the boundary
+    local scale = 1 / math.sqrt(test)
+    return cx + dx * scale, cy + dy * scale
+  else
+    -- Outside ellipse - use iterative refinement for accuracy
+    for i = 1, 3 do
+      local fx = ex - dx
+      local fy = ey - dy
+      local dfx = -rx * sin_a * (ry*ry) / (rx*rx)
+      local dfy = ry * cos_a
+      local denom = dfx*fx + dfy*fy
+      if math.abs(denom) > 0.001 then
+        local dt = -(fx*fx + fy*fy) / (2 * denom)
+        angle = angle + dt
+        cos_a = math.cos(angle)
+        sin_a = math.sin(angle)
+        ex = rx * cos_a
+        ey = ry * sin_a
+      end
+    end
+    
+    return cx + ex, cy + ey
+  end
+end

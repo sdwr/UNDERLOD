@@ -385,25 +385,17 @@ function Enemy:acquire_target_seek_to_range(target)
 
   self.target_location = nil
   
+  -- Use oval shape - stretched horizontally
   local desired_range = SEEK_TO_RANGE_RADIUS
+  local oval_rx = desired_range * SEEK_TO_RANGE_RADIUS_X_MULTIPLIER
+  local oval_ry = desired_range * SEEK_TO_RANGE_RADIUS_Y_MULTIPLIER
   local enemy_radius = SEEK_TO_RANGE_ENEMY_MOVEMENT_RADIUS
   
   local distance_to_target = math.distance(self.x, self.y, target.x, target.y)
   local angle_to_target = math.atan2(target.y - self.y, target.x - self.x)
   
-  -- Draw debug circles when enabled
+  -- Draw debug shapes when enabled
   if DEBUG_ENEMY_SEEK_TO_RANGE then
-    -- Draw target circle (desired range around target)
-    DebugCircle{
-      group = main.current.effects,
-      x = target.x,
-      y = target.y,
-      radius = desired_range,
-      color = green[0],
-      line_width = 1,
-      duration = 0.5
-    }
-    
     -- Draw enemy movement circle (possible positions from enemy)
     DebugCircle{
       group = main.current.effects,
@@ -416,41 +408,85 @@ function Enemy:acquire_target_seek_to_range(target)
     }
   end
   
-  -- Try to find intersection points between movement circle and desired range circle
-  local intersections = math.circle_intersections(self.x, self.y, enemy_radius, target.x, target.y, desired_range)
+  -- Find closest point on oval to enemy position
+  local oval_x, oval_y = math.closest_point_on_ellipse(target.x, target.y, oval_rx, oval_ry, self.x, self.y)
   
-  if intersections then
-    -- Circles intersect - pick a random intersection point
-    local chosen_point = random:table({{x = intersections.x1, y = intersections.y1}, 
-                                       {x = intersections.x2, y = intersections.y2}})
-    self.target_location = chosen_point
+  -- Calculate distance from enemy to closest point on oval
+  local dx = oval_x - self.x
+  local dy = oval_y - self.y
+  local distance_to_oval = math.sqrt(dx*dx + dy*dy)
+  
+  -- Check if we're already close to the oval perimeter
+  if distance_to_oval < DISTANCE_TO_TARGET_FOR_IDLE * 2 then
+    -- We're close to the oval - pick a point along the perimeter to move to
+    -- Calculate current angle on the oval
+    local current_dx = self.x - target.x
+    local current_dy = self.y - target.y
+    local current_angle = math.atan2(current_dy / oval_ry, current_dx / oval_rx)
+    
+    -- Pick movement direction if not set
+    if not self.oval_move_direction then
+      self.oval_move_direction = random:table({1, -1})
+    end
+    
+    -- Pick a point ahead on the oval to move towards (30-60 degrees)
+    local angle_offset = random:float(0.5, 1.0) * self.oval_move_direction
+    local new_angle = current_angle + angle_offset
+    
+    -- Calculate the new target position on the oval
+    local new_target_x = target.x + oval_rx * math.cos(new_angle)
+    local new_target_y = target.y + oval_ry * math.sin(new_angle)
+    
+    -- Check if we can reach this new position
+    local dist_to_new = math.distance(self.x, self.y, new_target_x, new_target_y)
+    if dist_to_new <= enemy_radius then
+      self.target_location = {x = new_target_x, y = new_target_y}
+    else
+      -- Can't reach that far, pick a closer point
+      local limited_angle_offset = angle_offset * (enemy_radius / dist_to_new) * 0.8
+      new_angle = current_angle + limited_angle_offset
+      new_target_x = target.x + oval_rx * math.cos(new_angle)
+      new_target_y = target.y + oval_ry * math.sin(new_angle)
+      self.target_location = {x = new_target_x, y = new_target_y}
+    end
+    
+    -- Occasionally reverse direction
+    if random:float() < 0.3 then -- 10% chance when acquiring new target
+      self.oval_move_direction = -self.oval_move_direction
+    end
     
     if DEBUG_ENEMY_SEEK_TO_RANGE then
       DebugLine{
         group = main.current.effects,
         x1 = self.x,
         y1 = self.y,
-        x2 = chosen_point.x,
-        y2 = chosen_point.y,
+        x2 = self.target_location.x,
+        y2 = self.target_location.y,
+        color = yellow[0],
+        line_width = 2,
+      }
+    end
+    
+  elseif distance_to_oval <= enemy_radius then
+    -- We can reach the oval but aren't close yet - move to the closest point
+    self.target_location = {x = oval_x, y = oval_y}
+    
+    if DEBUG_ENEMY_SEEK_TO_RANGE then
+      DebugLine{
+        group = main.current.effects,
+        x1 = self.x,
+        y1 = self.y,
+        x2 = oval_x,
+        y2 = oval_y,
         color = white[0],
         line_width = 2,
       }
     end
   else
-    -- No intersection - move directly towards or away from target
-    local target_x, target_y
-    
-    if distance_to_target > desired_range then
-      -- Too far - move closer to get within desired range
-      local move_distance = math.min(enemy_radius, distance_to_target - desired_range)
-      target_x = self.x + move_distance * math.cos(angle_to_target)
-      target_y = self.y + move_distance * math.sin(angle_to_target)
-    else
-      -- Too close - move away to get to desired range
-      local move_distance = math.min(enemy_radius, desired_range - distance_to_target)
-      target_x = self.x - move_distance * math.cos(angle_to_target)
-      target_y = self.y - move_distance * math.sin(angle_to_target)
-    end
+    -- Can't reach oval - move as close as possible
+    local move_ratio = enemy_radius / distance_to_oval
+    local target_x = self.x + dx * move_ratio
+    local target_y = self.y + dy * move_ratio
     
     self.target_location = {x = target_x, y = target_y}
     

@@ -1593,6 +1593,59 @@ function DebugCircle:draw()
 end
 
 
+DebugOval = Object:extend()
+DebugOval.__class_name = 'DebugOval'
+DebugOval:implement(GameObject)
+function DebugOval:init(args)
+  self:init_game_object(args)
+  
+  self.rx = args.rx or args.radius_x or 30  -- horizontal radius
+  self.ry = args.ry or args.radius_y or 15  -- vertical radius
+  self.color = args.color or white[0]
+  self.line_width = args.line_width or 1
+  self.duration = args.duration or 1
+  self.segments = args.segments or 32
+  self.start_time = love.timer.getTime()
+end
+
+function DebugOval:update(dt)
+  self:update_game_object(dt)
+  
+  local elapsed = love.timer.getTime() - self.start_time
+  if elapsed > self.duration then
+    self.dead = true
+  end
+end
+
+function DebugOval:draw()
+  local elapsed = love.timer.getTime() - self.start_time
+  local alpha = math.max(0, 1 - (elapsed / self.duration))
+  
+  local color = self.color:clone()
+  color.a = alpha * 0.5
+  
+  -- Draw ellipse as a series of lines
+  local points = {}
+  for i = 0, self.segments do
+    local angle = (i / self.segments) * 2 * math.pi
+    local px = self.x + self.rx * math.cos(angle)
+    local py = self.y + self.ry * math.sin(angle)
+    table.insert(points, px)
+    table.insert(points, py)
+  end
+  
+  -- Close the loop
+  table.insert(points, points[1])
+  table.insert(points, points[2])
+  
+  love.graphics.setLineWidth(self.line_width)
+  love.graphics.setColor(color.r, color.g, color.b, color.a)
+  love.graphics.line(points)
+  love.graphics.setColor(1, 1, 1, 1)
+  love.graphics.setLineWidth(1)
+end
+
+
 OrbDangerLine = Object:extend()
 OrbDangerLine.__class_name = 'OrbDangerLine'
 OrbDangerLine:implement(GameObject)

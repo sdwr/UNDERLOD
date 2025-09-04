@@ -235,6 +235,22 @@ end
 function LevelOrb:draw()
   if self.dead then return end
   
+  -- Draw debug oval for seek_to_range enemies when enabled
+  if DEBUG_ENEMY_SEEK_TO_RANGE then
+    -- Use oval shape - stretched horizontally (same as enemy targeting)
+    local desired_range = SEEK_TO_RANGE_RADIUS
+    local oval_rx = desired_range * SEEK_TO_RANGE_RADIUS_X_MULTIPLIER
+    local oval_ry = desired_range * SEEK_TO_RANGE_RADIUS_Y_MULTIPLIER
+    
+    -- Draw the oval outline
+    love.graphics.push()
+    love.graphics.translate(self.x, self.y)
+    love.graphics.setColor(green[0].r, green[0].g, green[0].b, 0.3)
+    love.graphics.setLineWidth(2)
+    love.graphics.ellipse("line", 0, 0, oval_rx, oval_ry)
+    love.graphics.pop()
+  end
+  
   -- Draw charge particles
   if self.charging and self.charge_particles then
     for _, particle in ipairs(self.charge_particles) do
