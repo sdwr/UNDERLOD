@@ -280,8 +280,8 @@ function Enemy:choose_movement_target()
     return self:acquire_target_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
     return self:acquire_target_loose_seek()
-  elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_TO_RANGE then
-    return self:acquire_target_seek_to_range()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_RANGE then
+    return self:acquire_target_seek_orb_range()
   elseif self.currentMovementAction == MOVEMENT_TYPE_RANDOM then
     return self:acquire_target_random()
   elseif self.currentMovementAction == MOVEMENT_TYPE_NONE then
@@ -303,7 +303,7 @@ function Enemy:update_movement()
     return self:update_move_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
     return self:update_move_seek_location()
-  elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_TO_RANGE then
+  elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_RANGE then
     return self:update_move_seek_to_range()
   elseif self.currentMovementAction == MOVEMENT_TYPE_RANDOM then
     return self:update_move_seek_location()
@@ -367,62 +367,64 @@ function Enemy:acquire_target_loose_seek()
   return self.target ~= nil
 end
 
-function Enemy:acquire_target_seek_to_range()
-  self.target_location = nil
-  
-  local player_location = Helper.Unit:get_player_location()
-  if not player_location then
+function Enemy:acquire_target_seek_orb_range()
+  local target = nil
+  if not main.current.current_arena or not main.current.current_arena.level_orb then
     return false
   end
-  
-  -- Calculate distance between enemy and player
-  local distance_to_player = math.distance(self.x, self.y, player_location.x, player_location.y)
-  local desired_range = SEEK_TO_RANGE_PLAYER_RADIUS
-  
-  -- Create circle around enemy with radius = distance to player
-  local enemy_radius = SEEK_TO_RANGE_ENEMY_MOVEMENT_RADIUS
-  -- Create circle around player with desired range
-  local player_radius = desired_range
-  
-  -- Find intersection points between the two circles
-  local dx = player_location.x - self.x
-  local dy = player_location.y - self.y
-  local d = math.distance(self.x, self.y, player_location.x, player_location.y)
-  
-  -- Check if circles intersect
-  if d > enemy_radius + player_radius or d < math.abs(enemy_radius - player_radius) or d == 0 then
-    -- No intersection, pick a point on the line between enemy and player
-    local angle_to_player = math.atan2(dy, dx)
-    local target_x, target_y
-    
-    if distance_to_player > desired_range then
-      -- Move closer to player
-      target_x = self.x + (desired_range * 0.8) * math.cos(angle_to_player)
-      target_y = self.y + (desired_range * 0.8) * math.sin(angle_to_player)
-    else
-      -- Move away from player
-      target_x = self.x - (desired_range * 0.2) * math.cos(angle_to_player)
-      target_y = self.y - (desired_range * 0.2) * math.sin(angle_to_player)
-    end
-    
-    self.target_location = {x = target_x, y = target_y}
-  else
-    -- Calculate intersection points
-    local a = (enemy_radius^2 - player_radius^2 + d^2) / (2*d)
-    local h = math.sqrt(enemy_radius^2 - a^2)
-    
-    local px = self.x + a * dx/d
-    local py = self.y + a * dy/d
-    
-    -- Two intersection points
-    local x1 = px + h * (-dy/d)
-    local y1 = py + h * (dx/d)
-    local x2 = px - h * (-dy/d)
-    local y2 = py - h * (dx/d)
-    
-    -- Pick one intersection point randomly
-    local chosen_point = random:table({{x = x1, y = y1}, {x = x2, y = y2}})
+  target = main.current.current_arena.level_orb
+  if not target or target.dead then
+    return false
+  end
 
+  return self:acquire_target_seek_to_range(target)
+end
+
+function Enemy:acquire_target_seek_to_range(target)
+  if not target or target.dead or not target.x or not target.y then return false end
+
+  self.target_location = nil
+  
+  local desired_range = SEEK_TO_RANGE_RADIUS
+  local enemy_radius = SEEK_TO_RANGE_ENEMY_MOVEMENT_RADIUS
+  
+  local distance_to_target = math.distance(self.x, self.y, target.x, target.y)
+  local angle_to_target = math.atan2(target.y - self.y, target.x - self.x)
+  
+  -- Draw debug circles when enabled
+  if DEBUG_ENEMY_SEEK_TO_RANGE then
+    -- Draw target circle (desired range around target)
+    DebugCircle{
+      group = main.current.effects,
+      x = target.x,
+      y = target.y,
+      radius = desired_range,
+      color = green[0],
+      line_width = 1,
+      duration = 0.5
+    }
+    
+    -- Draw enemy movement circle (possible positions from enemy)
+    DebugCircle{
+      group = main.current.effects,
+      x = self.x,
+      y = self.y,
+      radius = enemy_radius,
+      color = blue[0],
+      line_width = 1,
+      duration = 0.5
+    }
+  end
+  
+  -- Try to find intersection points between movement circle and desired range circle
+  local intersections = math.circle_intersections(self.x, self.y, enemy_radius, target.x, target.y, desired_range)
+  
+  if intersections then
+    -- Circles intersect - pick a random intersection point
+    local chosen_point = random:table({{x = intersections.x1, y = intersections.y1}, 
+                                       {x = intersections.x2, y = intersections.y2}})
+    self.target_location = chosen_point
+    
     if DEBUG_ENEMY_SEEK_TO_RANGE then
       DebugLine{
         group = main.current.effects,
@@ -430,63 +432,42 @@ function Enemy:acquire_target_seek_to_range()
         y1 = self.y,
         x2 = chosen_point.x,
         y2 = chosen_point.y,
+        color = white[0],
         line_width = 2,
       }
     end
+  else
+    -- No intersection - move directly towards or away from target
+    local target_x, target_y
     
-    -- Add random angle offset
-    local offset_angle = random:float(-math.pi/6, math.pi/6) -- ±30 degrees
-    local offset_distance = random:float(10, 30)
-    
-    chosen_point.x = chosen_point.x + offset_distance * math.cos(offset_angle)
-    chosen_point.y = chosen_point.y + offset_distance * math.sin(offset_angle)
-    
-    self.target_location = chosen_point
-  end
-  
-  -- Validate arena bounds and adjust if needed
-  local max_attempts = 5
-  for attempt = 1, max_attempts do
-    if not Helper.Target:way_inside_camera_bounds(self.target_location.x, self.target_location.y) then
-      
-      -- Rotate towards arena center
-      local center_x, center_y = gw/2, gh/2
-      local angle_to_center = math.atan2(center_y - self.y, center_x - self.x)
-      local angle_to_player = math.atan2(player_location.y - self.y, player_location.x - self.x)
-      local rotation_amount = math.pi/6 * attempt -- Increase rotation each attempt
-      
-      local new_angle = angle_to_player + rotation_amount * (random:table({-1, 1}))
-      -- Bias towards center
-      new_angle = new_angle + (angle_to_center - new_angle) * 0.3
-      
-      self.target_location.x = self.x + desired_range * math.cos(new_angle)
-      self.target_location.y = self.y + desired_range * math.sin(new_angle)
-
-      if DEBUG_ENEMY_SEEK_TO_RANGE then
-        DebugLine{
-          main.current.effects,
-          x1 = self.x,
-          y1 = self.y,
-          x2 = self.target_location.x,
-          y2 = self.target_location.y,
-          color = Helper.Color.red,
-          line_width = 2,
-        }
-      end
+    if distance_to_target > desired_range then
+      -- Too far - move closer to get within desired range
+      local move_distance = math.min(enemy_radius, distance_to_target - desired_range)
+      target_x = self.x + move_distance * math.cos(angle_to_target)
+      target_y = self.y + move_distance * math.sin(angle_to_target)
     else
-      break -- Valid location found
+      -- Too close - move away to get to desired range
+      local move_distance = math.min(enemy_radius, desired_range - distance_to_target)
+      target_x = self.x - move_distance * math.cos(angle_to_target)
+      target_y = self.y - move_distance * math.sin(angle_to_target)
+    end
+    
+    self.target_location = {x = target_x, y = target_y}
+    
+    if DEBUG_ENEMY_SEEK_TO_RANGE then
+      DebugLine{
+        group = main.current.effects,
+        x1 = self.x,
+        y1 = self.y,
+        x2 = self.target_location.x,
+        y2 = self.target_location.y,
+        color = red[0],
+        line_width = 2,
+      }
     end
   end
   
-  -- Final fallback: move towards arena center if still invalid
-  if not Helper.Target:way_inside_camera_bounds(self.target_location.x, self.target_location.y) then
-    self.target_location = {x = gw/2, y = gh/2}
-  end
-  
-  if self.target_location then
-    return true
-  end
-  return false
+  return self.target_location ~= nil
 end
 
 function Enemy:acquire_target_random()
@@ -552,6 +533,27 @@ function Enemy:update_move_seek_location_no_wander()
       return true
     end
   end
+  return false
+end
+
+function Enemy:update_move_seek_to_range()
+  if self.target_location then
+    local distance_to_target = self:distance_to_point(self.target_location.x, self.target_location.y)
+    
+    -- Check if we're close enough to our target position
+    if distance_to_target < DISTANCE_TO_TARGET_FOR_IDLE then
+      -- We're at the desired range, stop moving
+      return false
+    else
+      -- Continue moving to the target position
+      self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
+      self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER)
+      self:rotate_towards_velocity(0.5)
+      self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
+      return true
+    end
+  end
+  
   return false
 end
 

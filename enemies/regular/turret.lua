@@ -12,9 +12,6 @@ fns['init_enemy'] = function(self)
   self.icon = 'goblin'
   self.name = 'turret'
 
-  -- Stationary enemy - doesn't move
-
-
   --set attacks
   self.attack_options = {}
 

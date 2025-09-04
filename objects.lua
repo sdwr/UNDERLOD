@@ -1700,9 +1700,11 @@ function Unit:pick_action()
   local viable_movements = {}
 
   if not self.castObject and self.attack_cooldown_timer ~= nil and self.attack_cooldown_timer <= 0 then
-    for k, v in pairs(attack_options) do
-      if v.viable(self) then
-        table.insert(viable_attacks, v)
+    if self.way_onscreen then
+      for k, v in pairs(attack_options) do
+        if v.viable(self) then
+          table.insert(viable_attacks, v)
+        end
       end
     end
   end

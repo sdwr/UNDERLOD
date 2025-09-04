@@ -350,15 +350,15 @@ end
 
 MOVEMENT_RANDOM_TIMER = 5
 LOOSE_SEEK_RETARGET_TIME = 10
-SEEK_TO_RANGE_PLAYER_RADIUS = 130
-SEEK_TO_RANGE_ENEMY_MOVEMENT_RADIUS = 100
+SEEK_TO_RANGE_RADIUS = 130
+SEEK_TO_RANGE_ENEMY_MOVEMENT_RADIUS = 60
 
 MOVEMENT_TYPE_SEEK_ORB = 'seek_orb'
 MOVEMENT_TYPE_SEEK_ORB_STALL = 'seek_orb_stall'
 MOVEMENT_TYPE_APPROACH_ORB = 'approach_orb'
 MOVEMENT_TYPE_SEEK = 'seek'
 MOVEMENT_TYPE_LOOSE_SEEK = 'loose_seek'
-MOVEMENT_TYPE_SEEK_TO_RANGE = 'seek_to_range'
+MOVEMENT_TYPE_SEEK_ORB_RANGE = 'seek_orb_range'
 MOVEMENT_TYPE_CROSS_SCREEN = 'cross_screen'
 MOVEMENT_TYPE_RANDOM = 'random'
 MOVEMENT_TYPE_FLEE = 'flee'
@@ -401,32 +401,32 @@ enemy_movement_types = {
   ['swarmer'] = MOVEMENT_TYPE_CROSS_SCREEN,
   ['boulder'] = MOVEMENT_TYPE_CROSS_SCREEN,
   
-  -- Ranged units that maintain distance
-  -- ['big_goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB,
-  -- ['goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB,
-  -- ['archer'] = MOVEMENT_TYPE_SEEK_ORB,
   -- ['seeker'] = MOVEMENT_TYPE_SEEK_ORB,
-  -- ['mortar'] = MOVEMENT_TYPE_SEEK_ORB,
-  -- ['singlemortar'] = MOVEMENT_TYPE_SEEK_ORB,
-  -- ['line_mortar'] = MOVEMENT_TYPE_SEEK_ORB,
-  -- ['burst'] = MOVEMENT_TYPE_SEEK_ORB,
-  -- ['selfburst'] = MOVEMENT_TYPE_SEEK_ORB,
-  -- ['arcspread'] = MOVEMENT_TYPE_SEEK_ORB,
-  -- ['aim_spread'] = MOVEMENT_TYPE_SEEK_ORB,
-  -- ['plasma'] = MOVEMENT_TYPE_SEEK_ORB,
-  -- ['laser'] = MOVEMENT_TYPE_SEEK_ORB,
-  -- ['snakearrow'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
-  -- ['summoner'] = MOVEMENT_TYPE_SEEK_ORB,
-  -- ['spawner'] = MOVEMENT_TYPE_SEEK_ORB,
-  -- ['firewall_caster'] = MOVEMENT_TYPE_SEEK_ORB,
+
+  -- Ranged units that maintain distance
+  ['big_goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['archer'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['mortar'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['singlemortar'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['line_mortar'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['burst'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['selfburst'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['arcspread'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['aim_spread'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['plasma'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['laser'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['snakearrow'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['summoner'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['spawner'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['firewall_caster'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
   
-  -- Stationary units
-  -- ['turret'] = MOVEMENT_TYPE_SEEK_ORB,
+  ['turret'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
   
   -- Bosses
   ['stompy'] = MOVEMENT_TYPE_LOOSE_SEEK,
   ['dragon'] = MOVEMENT_TYPE_LOOSE_SEEK,
-  ['heigan'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['heigan'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
 }
 
 -- Spell constants

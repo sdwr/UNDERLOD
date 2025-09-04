@@ -31,26 +31,6 @@ fns['init_enemy'] = function(self)
   self.attacks_left = 0
   self.moves_left = self.NUM_MOVES
 
-  self.custom_action_selector = function(self, viable_attacks, viable_movements)
-    if self.attack_cooldown_timer > 0 then 
-      return 'retry', nil
-    end
-    
-    if self.moves_left > 0 then
-      self.moves_left = self.moves_left - 1
-      if self.moves_left == 0 then
-        self.attacks_left = self.NUM_ATTACKS
-      end
-      return 'movement', MOVEMENT_TYPE_SEEK_ORB
-    else
-      self.attacks_left = self.attacks_left - 1
-      if self.attacks_left == 0 then
-        self.moves_left = self.NUM_MOVES
-      end
-      return 'attack', random:table(viable_attacks)
-    end
-  end
-
   --set attacks
   self.attack_options = {}
 

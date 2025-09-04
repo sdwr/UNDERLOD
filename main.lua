@@ -1591,6 +1591,11 @@ function update(dt)
     Unlock_Achievement('heatingup')
   end
 
+  if input['f5'].pressed then
+    DEBUG_ENEMY_SEEK_TO_RANGE = not DEBUG_ENEMY_SEEK_TO_RANGE
+    print('DEBUG_ENEMY_SEEK_TO_RANGE:', DEBUG_ENEMY_SEEK_TO_RANGE)
+  end
+
   if input['f6'].pressed then
     DEBUG_STEERING_VECTORS = not DEBUG_STEERING_VECTORS
     print('DEBUG_STEERING_VECTORS:', DEBUG_STEERING_VECTORS)

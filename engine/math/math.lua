@@ -643,3 +643,34 @@ function math.elastic_out_in(t)
     end
   end
 end
+
+
+-- Find intersection points between two circles
+-- Returns nil if circles don't intersect, or a table with two intersection points {x1, y1, x2, y2}
+-- cx1, cy1: center of first circle, r1: radius of first circle
+-- cx2, cy2: center of second circle, r2: radius of second circle
+function math.circle_intersections(cx1, cy1, r1, cx2, cy2, r2)
+  local dx = cx2 - cx1
+  local dy = cy2 - cy1
+  local d = math.sqrt(dx*dx + dy*dy)
+  
+  -- Check if circles intersect
+  if d > r1 + r2 or d < math.abs(r1 - r2) or d == 0 then
+    return nil  -- No intersection
+  end
+  
+  -- Calculate intersection points
+  local a = (r1*r1 - r2*r2 + d*d) / (2*d)
+  local h = math.sqrt(r1*r1 - a*a)
+  
+  local px = cx1 + a * dx/d
+  local py = cy1 + a * dy/d
+  
+  -- Two intersection points
+  local x1 = px + h * (-dy/d)
+  local y1 = py + h * (dx/d)
+  local x2 = px - h * (-dy/d)
+  local y2 = py - h * (dx/d)
+  
+  return {x1 = x1, y1 = y1, x2 = x2, y2 = y2}
+end

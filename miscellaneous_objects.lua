@@ -1560,6 +1560,39 @@ function Critter:on_trigger_enter(other, contact)
 end
 
 
+DebugCircle = Object:extend()
+DebugCircle.__class_name = 'DebugCircle'
+DebugCircle:implement(GameObject)
+function DebugCircle:init(args)
+  self:init_game_object(args)
+  
+  self.radius = args.radius or 10
+  self.color = args.color or white[0]
+  self.line_width = args.line_width or 1
+  self.duration = args.duration or 1
+  self.start_time = love.timer.getTime()
+end
+
+function DebugCircle:update(dt)
+  self:update_game_object(dt)
+  
+  local elapsed = love.timer.getTime() - self.start_time
+  if elapsed > self.duration then
+    self.dead = true
+  end
+end
+
+function DebugCircle:draw()
+  local elapsed = love.timer.getTime() - self.start_time
+  local alpha = math.max(0, 1 - (elapsed / self.duration))
+  
+  local color = self.color:clone()
+  color.a = alpha * 0.5
+  
+  graphics.circle(self.x, self.y, self.radius, color, self.line_width)
+end
+
+
 OrbDangerLine = Object:extend()
 OrbDangerLine.__class_name = 'OrbDangerLine'
 OrbDangerLine:implement(GameObject)

@@ -163,7 +163,7 @@ function Helper:update(dt)
                 pick_shape = 'circle',
                 x = Helper.Unit.player_location.x,
                 y = Helper.Unit.player_location.y,
-                r = SEEK_TO_RANGE_PLAYER_RADIUS,
+                r = SEEK_TO_RANGE_RADIUS,
                 duration = 1000,
                 color = Helper.Color.blue,
                 is_troop = false

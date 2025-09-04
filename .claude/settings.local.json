@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__leann-server__leann_search"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
