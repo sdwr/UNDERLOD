@@ -148,6 +148,7 @@ function Cast:cast()
   self.spelldata.y = self.y
   self.spelldata.unit = self.unit
   self.spelldata.target = self.target
+  self.spelldata.cast_distance_multiplier = self.cast_distance_multiplier
 
   if self.cast_sound and not self.cast_sound_at_start then
     self.cast_volume = self.cast_volume or 1

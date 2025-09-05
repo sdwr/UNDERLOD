@@ -23,6 +23,9 @@ function Archer_Troop:create_spelldata()
 end
 
 function Archer_Troop:setup_cast(cast_target)
+  --calculate distance multiplier
+  Archer_Troop.super.setup_cast(self, cast_target)
+
   local data = {
     name = 'arrow',
     viable = function() return Helper.Spell:target_is_in_range(self, self.attack_sensor.rs, cast_target, false) end,
@@ -34,6 +37,7 @@ function Archer_Troop:setup_cast(cast_target)
     target = cast_target,
     backswing = self.backswing,
     instantspell = true,
+    cast_distance_multiplier = self.cast_distance_multiplier,
     spellclass = ArrowProjectile,
     spelldata = self:create_spelldata()
   }

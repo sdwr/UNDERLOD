@@ -31,6 +31,9 @@ function Swordsman_Troop:set_character()
 end
 
 function Swordsman_Troop:setup_cast(cast_target)
+  --calculate distance multiplier
+  Swordsman_Troop.super.setup_cast(self, cast_target)
+
   local cast_data = {
     name = 'attack',
     viable = function() return Helper.Spell:target_is_in_range(self, self.attack_sensor.rs, cast_target, false) end,
@@ -42,7 +45,7 @@ function Swordsman_Troop:setup_cast(cast_target)
     target = cast_target,
     backswing = self.backswing,
     instantspell = true,
-    
+    cast_distance_multiplier = self.cast_distance_multiplier,
     -- This is the data for the actual spell that gets created.
     spellclass = Area_Spell,
     spelldata = {

@@ -38,6 +38,9 @@ function Laser_Troop:set_character()
 end
 
 function Laser_Troop:setup_cast(cast_target)
+  --calculate distance multiplier
+  Laser_Troop.super.setup_cast(self, cast_target)
+
   local data = {
     name = 'laser',
     viable = function() return Helper.Spell:target_is_in_range(self, self.attack_sensor.rs, cast_target, false) end,
@@ -47,6 +50,7 @@ function Laser_Troop:setup_cast(cast_target)
     end,
     backswing = 0.1,
     target = cast_target,
+    cast_distance_multiplier = self.cast_distance_multiplier,
     spellclass = Laser_Spell,
     spelldata = {
       group = main.current.main,

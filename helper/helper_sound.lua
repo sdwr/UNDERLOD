@@ -40,31 +40,46 @@ function Helper.Sound:play_distance_multiplier_sound(distance_tier)
   local sound = ui_switch1:play{volume = volume, pitch = pitch}
 end
 
-function Helper.Sound:play_constant_distance_multiplier_sound()
-  local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier or 1
-  local threshold = DISTANCE_MULTIPLIER_THRESHOLD_SOUND
-  if not distance_multiplier or distance_multiplier > threshold then
-    if self.distance_multiplier_sound then
-      self.distance_multiplier_sound:stop()
-      self.distance_multiplier_sound = nil
-    end
-  else
-    local base_volume = 0.03
-    local base_pitch = 0.7
-    --scales from 0 as the lowest to 1 as the highest
-    local scaled_multiplier = 1 - math.remap(distance_multiplier, 0, threshold, 0, 1)
-
-    local scaled_volume = base_volume  + scaled_multiplier * base_volume
-    local scaled_pitch = base_pitch + scaled_multiplier * 0.5
-
-    if not self.distance_multiplier_sound then
-      self.distance_multiplier_sound = choir1:play{volume = scaled_volume, pitch = scaled_pitch}
-    else
-      self.distance_multiplier_sound.volume = scaled_volume
-      self.distance_multiplier_sound.pitch = scaled_pitch
-    end
-  end
+function Helper.Sound:get_attack_pitch_multiplier(distance_multiplier)
+  distance_multiplier = distance_multiplier or 1
+  -- Lower distance multiplier (closer) = higher pitch
+  -- Higher distance multiplier (farther) = lower pitch
+  local pitch_multiplier = 1 - distance_multiplier
+  return pitch_multiplier + 1
 end
+
+function Helper.Sound:get_attack_volume_multiplier(distance_multiplier)
+  distance_multiplier = distance_multiplier or 1
+  local volume_multiplier = 1 - distance_multiplier
+  return 1 + (volume_multiplier * 2)
+end
+
+--cant use if we are using distance to actual target, not closest enemy
+-- function Helper.Sound:play_constant_distance_multiplier_sound()
+--   local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier or 1
+--   local threshold = DISTANCE_MULTIPLIER_THRESHOLD_SOUND
+--   if not distance_multiplier or distance_multiplier > threshold then
+--     if self.distance_multiplier_sound then
+--       self.distance_multiplier_sound:stop()
+--       self.distance_multiplier_sound = nil
+--     end
+--   else
+--     local base_volume = 0.03
+--     local base_pitch = 0.7
+--     --scales from 0 as the lowest to 1 as the highest
+--     local scaled_multiplier = 1 - math.remap(distance_multiplier, 0, threshold, 0, 1)
+
+--     local scaled_volume = base_volume  + scaled_multiplier * base_volume
+--     local scaled_pitch = base_pitch + scaled_multiplier * 0.5
+
+--     if not self.distance_multiplier_sound then
+--       self.distance_multiplier_sound = choir1:play{volume = scaled_volume, pitch = scaled_pitch}
+--     else
+--       self.distance_multiplier_sound.volume = scaled_volume
+--       self.distance_multiplier_sound.pitch = scaled_pitch
+--     end
+--   end
+-- end
 
 function Helper.Sound:init_radiance()
   Helper.Sound.radiance = campfire

@@ -184,8 +184,9 @@ function Helper.Unit:cast_off_cooldown(unit)
 end
 
 function Helper.Unit:cast_off_cooldown_distance_multiplier(unit, target)
-    if target.x and target.y then
-        local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier or 1
+    if target and target.x and target.y and unit.x and unit.y then
+        -- Calculate distance multiplier based on actual target, not closest enemy
+        local distance_multiplier = Helper.Target:get_distance_multiplier(unit, target)
 
         local adjusted_cooldown = unit.attack_cooldown * distance_multiplier
 
@@ -641,6 +642,7 @@ function Helper.Unit:update_closest_enemy()
     if closest_enemy then
         self.closest_enemy = closest_enemy
         self.closest_enemy_distance = closest_distance
+        -- This global closest_enemy_distance_multiplier is now unused - cast_off_cooldown_distance_multiplier calculates per-target instead
         self.closest_enemy_distance_multiplier = Helper.Target:get_distance_multiplier(self.player_location, closest_enemy)
     else
         self.closest_enemy = nil

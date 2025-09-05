@@ -404,25 +404,6 @@ function Troop:create_distance_tier_effect(tier)
 --pass
 end
 
-function Troop:get_attack_pitch_multiplier()
-  if self:my_target() then
-    local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier or 1
-    -- Lower distance multiplier (closer) = higher pitch
-    -- Higher distance multiplier (farther) = lower pitch
-    local pitch_multiplier = 1 - distance_multiplier
-    return pitch_multiplier + 1
-  end
-  return 1.0
-end
-
-function Troop:get_attack_volume_multiplier()
-  if self:my_target() then
-    local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier or 1
-    local volume_multiplier = 1 - distance_multiplier
-    return 1 + (volume_multiplier * 2)
-  end
-  return 1.0
-end
 
 function Troop:draw_cooldown_timer()
   -- Show animation during both casting and cooldown
@@ -550,8 +531,8 @@ function Troop:on_collision_enter(other, contact)
   end
 end
 
-function Troop:setup_cast()
-  --overridden in subclasses
+function Troop:setup_cast(cast_target)
+  self.cast_distance_multiplier = Helper.Target:get_distance_multiplier(self, cast_target)
 end
 
 function Troop:removeHealFlag(duration)
