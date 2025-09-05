@@ -246,6 +246,9 @@ end
 function Arena:init_spawn_manager()
   -- Initialize the proper SpawnManager class
   self.spawn_manager = SpawnManager(self)
+  
+  -- Create round power visualizer (debug tool) - added to ui group for automatic drawing
+  self.round_power_visualizer = RoundPowerVisualizer{group = self.ui}
 end
 
 function Arena:destroy()

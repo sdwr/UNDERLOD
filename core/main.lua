@@ -1619,6 +1619,13 @@ function update(dt)
     DEBUG_DISTANCE_MULTI = not DEBUG_DISTANCE_MULTI
     print('DEBUG_DISTANCE_MULTI:', DEBUG_DISTANCE_MULTI)
   end
+  
+  if input['f9'].pressed then
+    -- Toggle round power visualizer
+    if main.current and main.current.current_arena and main.current.current_arena.round_power_visualizer then
+      main.current.current_arena.round_power_visualizer:toggle()
+    end
+  end
 end
 
 function draw()
