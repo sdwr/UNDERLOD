@@ -316,7 +316,7 @@ function LevelOrb:draw()
   end
   
   -- Draw health portion (colored from bottom)
-  if hp_percentage > 0 then
+  if hp_percentage >= 0 then
     local fill_height = self.visible_radius * 2 * hp_percentage
     local fill_y = self.y + self.visible_radius - (fill_height /2) 
     
@@ -387,12 +387,96 @@ function LevelOrb:die()
   if self.dead then return end
   self.dead = true
   
-  -- Play destruction sound
-  explosion1:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+  -- Play glass shatter sound
+  glass_shatter:play{pitch = random:float(0.9, 1.1), volume = 1.2}
   
-  -- Trigger level failure or other consequences
+  -- Create shatter animation with glass-like fragments
+  self:create_shatter_animation()
+  
+  -- Camera shake for impact
+  camera:shake(4, 0.5)
+  
+  -- Trigger level failure or other consequences  
   if self.parent and self.parent.on_level_orb_destroyed then
     self.parent:on_level_orb_destroyed()
+  end
+end
+
+function LevelOrb:create_shatter_animation()
+  -- Create glass shard particles flying outward
+  local num_shards = 16
+  for i = 1, num_shards do
+    local angle = (i - 1) * (2 * math.pi / num_shards) + random:float(-0.3, 0.3)
+    local speed = random:float(60, 100)
+    
+    -- Create elongated shards that look like glass fragments
+    HitParticle{
+      group = main.current.effects,
+      x = self.x,
+      y = self.y,
+      r = angle,
+      v = speed,
+      w = random:float(9, 15),
+      h = random:float(4, 6),
+      color = blue[random:int(2, 4)]:clone(),
+      duration = random:float(2, 3),
+      fade_out = true
+    }
+    
+    -- Create smaller secondary fragments
+    if i % 2 == 0 then
+      HitParticle{
+        group = main.current.effects,
+        x = self.x + random:float(-5, 5),
+        y = self.y + random:float(-5, 5),
+        r = angle + random:float(-0.5, 0.5),
+        v = speed,
+        w = random:float(4, 6),
+        h = random:float(2, 3),
+        color = bg[6]:clone(),
+        duration = random:float(1.5, 2.5),
+        fade_out = true
+      }
+    end
+  end
+  
+  -- Create a bright flash at the moment of shattering
+  HitCircle{
+    group = main.current.effects,
+    x = self.x, y = self.y,
+    rs = self.visible_radius * 0.5,
+    color = white[0]:clone(),
+    duration = 0.15,
+    fade_out = true
+  }
+  
+  -- Create an expanding shockwave ring
+  HitCircle{
+    group = main.current.effects,
+    x = self.x, y = self.y,
+    rs = self.visible_radius,
+    color = blue[5]:clone(),
+    duration = 0.5,
+    fade_out = true,
+    expand = true,
+    expand_scale = 2
+  }
+  
+  -- Create some falling glass dust particles
+  for i = 1, 8 do
+    main.current.t:after(random:float(0, 0.3), function()
+      HitParticle{
+        group = main.current.effects,
+        x = self.x + random:float(-self.visible_radius, self.visible_radius),
+        y = self.y + random:float(-self.visible_radius, self.visible_radius),
+        r = math.pi/2 + random:float(-0.3, 0.3), -- Mostly downward
+        v = random:float(20, 40),
+        w = random:float(2, 3),
+        h = random:float(2, 3),
+        color = bg[7]:clone(),
+        duration = random:float(1, 1.5)
+      }
+    end)
   end
 end
 
