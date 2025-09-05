@@ -385,10 +385,10 @@ function End_Suction(arena)
 
   if arena.spawn_manager.state == 'suction_to_targets' then
     ui_switch1:play{pitch = random:float(1.1, 1.3), volume = 1}
-    arena.spawn_manager.timer = TIME_BETWEEN_WAVES
+    arena.spawn_manager.timer = 0
     arena.spawn_manager:change_state('entry_delay')
 
-    arena.t:after(1.5, function()
+    arena.t:after(0.5, function()
       if arena.progress_bar then
         arena.progress_bar:begin_fade_in()
       end

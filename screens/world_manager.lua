@@ -146,7 +146,7 @@ function WorldManager:create_arena(level, offset_x)
     end)
 
     --cancel suction after 5 seconds
-    self.t:after(6, function()
+    self.t:after(5, function()
       End_Suction(arena)
     end)
 
