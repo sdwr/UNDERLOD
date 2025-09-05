@@ -457,8 +457,10 @@ function Helper.Unit:select()
 
         if input['m2'].pressed then
 
+            Helper.Unit:clear_all_rally_points()
+            Helper.Unit:clear_manual_target()
+
             local target_success = Helper.Unit:try_target_enemy_with_right_click()
-            print('target success', target_success)
 
             if not target_success then
                 --set rally point
@@ -1094,6 +1096,8 @@ end
 
 function Helper.Unit:clear_manual_target()
     if Helper.manually_targeted_enemy then
+        Helper.manually_targeted_enemy:remove_buff('manual_targeted')
+
         Helper.Unit:clear_automatic_target(Helper.manually_targeted_enemy)
         Helper.manually_targeted_enemy = nil
     end
@@ -1158,20 +1162,23 @@ function Helper.Unit:try_target_enemy_with_right_click()
   local mouse_x = Helper.mousex
   local mouse_y = Helper.mousey
   
-  -- Check if we clicked on an enemy
-  -- Use the sorted enemy list for efficiency
-  local clicked_enemy = nil
-  local click_threshold = 20  -- Radius for click detection
+  -- Create a small detection area at mouse position to find enemies
+  local detection_size = 20  -- Size of detection rectangle
+  local detection_shape = Rectangle(mouse_x, mouse_y, detection_size, detection_size)
   
-  for _, entry in ipairs(Helper.enemies_by_distance) do
-    local enemy = entry.enemy
+  -- Get all enemies in the detection area
+  local enemies_in_area = main.current.main:get_objects_in_shape(detection_shape, main.current.enemies)
+  
+  -- Find the closest enemy among those detected
+  local clicked_enemy = nil
+  local min_distance = math.huge
+  
+  for _, enemy in ipairs(enemies_in_area) do
     if not enemy.dead and enemy.x and enemy.y then
       local dist = math.distance(enemy.x, enemy.y, mouse_x, mouse_y)
-      local enemy_radius = (enemy.shape and math.max(enemy.shape.w, enemy.shape.h) or 16) / 2
-      
-      if dist <= enemy_radius + click_threshold then
+      if dist < min_distance then
+        min_distance = dist
         clicked_enemy = enemy
-        break  -- Take the first (closest) enemy that matches
       end
     end
   end
@@ -1181,9 +1188,7 @@ function Helper.Unit:try_target_enemy_with_right_click()
     Helper.Unit:set_manual_target(clicked_enemy)
     return true
   else
-    -- Clicked on empty space, clear target
-    Helper.Unit:clear_manual_target()
     return false
   end
-  return false
+
 end
