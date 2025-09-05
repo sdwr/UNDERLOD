@@ -242,7 +242,7 @@ function Troop:start_deceleration()
   self.t:every(0.08, function()
     local damping = self:get_damping() or 1
     self:set_physics_properties({damping = damping + 1.5})
-  end, 4, function()
+  end, 6, function()
     self:reset_physics_properties()
   end, 'reset_physics_properties')
 end
