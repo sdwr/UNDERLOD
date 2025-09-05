@@ -1081,3 +1081,77 @@ function Helper.Unit:count_unit_set_pieces(unit)
 
   return set_counts
 end
+
+function Helper.Unit:clear_manual_target()
+    if Helper.manually_targeted_enemy then
+        Helper.manually_targeted_enemy:remove_buff('manually_targeted')
+        Helper.manually_targeted_enemy = nil
+    end
+end
+
+function Helper.Unit:set_manual_target(target)
+    Helper.Unit:clear_manual_target()
+    Helper.manually_targeted_enemy = nil
+    if not target or target.dead then
+        return
+    end
+    
+    Helper.manually_targeted_enemy = target
+    target:add_buff({name = 'manually_targeted', color = yellow[0], duration = 9999})
+end
+
+-- Cycle through potential targets for manual targeting
+function Helper.Unit:cycle_target()
+    if not Helper.cycle_targets or #Helper.cycle_targets == 0 then
+        return
+    end
+
+    local current_index = 0
+    for i, target in ipairs(Helper.cycle_targets) do
+        if target == Helper.manually_targeted_enemy then
+            current_index = i
+            break
+        end
+    end
+  
+  -- Cycle to next target
+  local next_index = (current_index % #Helper.cycle_targets) + 1
+  local new_target = Helper.cycle_targets[next_index]
+  
+  -- Set the new target with visual feedback
+  Helper.Unit:set_manual_target(new_target)
+  
+  return new_target
+end
+
+-- Handle right-click for manual targeting
+function Helper.Unit:handle_right_click()
+  -- Get mouse position in world coordinates
+  local mouse_x = Helper.mousex
+  local mouse_y = Helper.mousey
+  
+  -- Check if we clicked on an enemy
+  -- Use the sorted enemy list for efficiency
+  local clicked_enemy = nil
+  local click_threshold = 20  -- Radius for click detection
+  
+  for _, enemy in ipairs(Helper.enemies_by_distance) do
+    if not enemy.dead and enemy.x and enemy.y then
+      local dist = math.distance(enemy.x, enemy.y, mouse_x, mouse_y)
+      local enemy_radius = (enemy.shape and math.max(enemy.shape.w, enemy.shape.h) or 16) / 2
+      
+      if dist <= enemy_radius + click_threshold then
+        clicked_enemy = enemy
+        break  -- Take the first (closest) enemy that matches
+      end
+    end
+  end
+  
+  -- Set or clear the target
+  if clicked_enemy then
+    Helper.Unit:set_target_circle(clicked_enemy)
+  else
+    -- Clicked on empty space, clear target
+    Helper.Unit:clear_manual_target()
+  end
+end

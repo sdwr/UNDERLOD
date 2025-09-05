@@ -229,7 +229,7 @@ function Troop:do_automatic_movement()
 
   --rotate towards target or velocity
   if self:in_range('assigned')() then
-    self:rotate_towards_object(self.assigned_target, 1)
+    self:rotate_towards_object(Helper.Unit.manually_targeted_enemy, 1)
   elseif self:in_range('regular')() then
     self:rotate_towards_object(self.target, 1)
   else
@@ -258,19 +258,15 @@ function Troop:update_ai_logic()
 
   -- 1. VALIDATE CURRENT TARGET
   -- First, check if our current target is dead or invalid. If so, clear it.
-  local assigned_target = self.assigned_target
   local regular_target = self.target
 
-  if assigned_target and assigned_target.dead then
-    self:clear_assigned_target()
-  end
   if regular_target and regular_target.dead then
     self:clear_my_target()
   end
 
   local cast_target = nil
-  if self.assigned_target then
-    cast_target = self.assigned_target
+  if Helper.Unit.manually_targeted_enemy then
+    cast_target = Helper.Unit.manually_targeted_enemy
   elseif regular_target then
     --should also check if the target is too far away compared to other enemies
     cast_target = regular_target

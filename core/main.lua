@@ -1595,6 +1595,11 @@ function update(dt)
     DEBUG_ENEMY_SEEK_TO_RANGE = not DEBUG_ENEMY_SEEK_TO_RANGE
     print('DEBUG_ENEMY_SEEK_TO_RANGE:', DEBUG_ENEMY_SEEK_TO_RANGE)
   end
+  
+  -- Manual targeting controls
+  if input['tab'].pressed then
+    Helper.Unit:cycle_target()
+  end
 
   if input['f6'].pressed then
     DEBUG_STEERING_VECTORS = not DEBUG_STEERING_VECTORS
