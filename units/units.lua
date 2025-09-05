@@ -104,8 +104,7 @@ function Team:set_rally_point(x, y)
     x = x,
     y = y,
     group = main.current.floor,
-    team = self,
-    color = self.color
+    team = self
   }
   for i, troop in ipairs(self.troops) do
     troop.rallying = true
