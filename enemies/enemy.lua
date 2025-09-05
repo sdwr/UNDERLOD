@@ -285,6 +285,8 @@ function Enemy:choose_movement_target()
     return self:acquire_target_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
     return self:acquire_target_loose_seek()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_APPROACH_ORB then
+    return self:acquire_target_approach_orb()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_RANGE then
     return self:acquire_target_seek_orb_range()
   elseif self.currentMovementAction == MOVEMENT_TYPE_RANDOM then
@@ -308,6 +310,8 @@ function Enemy:update_movement()
     return self:update_move_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
     return self:update_move_seek_location()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_APPROACH_ORB then
+    return self:update_move_seek_location_no_wander()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_RANGE then
     return self:update_move_seek_to_range()
   elseif self.currentMovementAction == MOVEMENT_TYPE_RANDOM then
@@ -370,6 +374,17 @@ function Enemy:acquire_target_loose_seek()
     self.target_location = {x = self.target.x + random:float(-LOOSE_SEEK_OFFSET, LOOSE_SEEK_OFFSET), y = self.target.y + random:float(-LOOSE_SEEK_OFFSET, LOOSE_SEEK_OFFSET)}
   end
   return self.target ~= nil
+end
+
+function Enemy:acquire_target_approach_orb()
+  local target = {x = gw/2, y = gh/2}
+  local desired_range = SEEK_TO_RANGE_RADIUS
+  local oval_rx = desired_range * SEEK_TO_RANGE_RADIUS_X_MULTIPLIER
+  local oval_ry = desired_range * SEEK_TO_RANGE_RADIUS_Y_MULTIPLIER
+  
+  local oval_x, oval_y = math.closest_point_on_ellipse(target.x, target.y, oval_rx, oval_ry, self.x, self.y)
+  self.target_location = {x = oval_x, y = oval_y}
+  return true
 end
 
 function Enemy:acquire_target_seek_orb_range()

@@ -1363,6 +1363,8 @@ function init()
       'burst',
       'snakearrow',
       'turret',
+      'mortar',
+      'singlemortar',
       -- 'cleaver',
       -- 'slowcharger',
     },

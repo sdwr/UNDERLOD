@@ -358,9 +358,9 @@ SEEK_TO_RANGE_ENEMY_MOVEMENT_RADIUS = 60
 MOVEMENT_TYPE_SEEK_ORB = 'seek_orb'
 MOVEMENT_TYPE_SEEK_ORB_STALL = 'seek_orb_stall'
 MOVEMENT_TYPE_APPROACH_ORB = 'approach_orb'
+MOVEMENT_TYPE_SEEK_ORB_RANGE = 'seek_orb_range'
 MOVEMENT_TYPE_SEEK = 'seek'
 MOVEMENT_TYPE_LOOSE_SEEK = 'loose_seek'
-MOVEMENT_TYPE_SEEK_ORB_RANGE = 'seek_orb_range'
 MOVEMENT_TYPE_CROSS_SCREEN = 'cross_screen'
 MOVEMENT_TYPE_RANDOM = 'random'
 MOVEMENT_TYPE_FLEE = 'flee'
@@ -409,9 +409,11 @@ enemy_movement_types = {
   ['big_goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
   ['goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
   ['archer'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['mortar'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['singlemortar'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['line_mortar'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+
+  ['mortar'] = MOVEMENT_TYPE_APPROACH_ORB,
+  ['singlemortar'] = MOVEMENT_TYPE_APPROACH_ORB,
+  ['line_mortar'] = MOVEMENT_TYPE_APPROACH_ORB,
+
   ['burst'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
   ['selfburst'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
   ['arcspread'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
