@@ -280,7 +280,6 @@ function Unit:init_unit()
   self:set_attack_cooldown_timer(0)
 
   self.target = nil
-  self.assigned_target = nil
   self.buffs = {}
   self.toggles = {}
   self.hfx:add('hit', 1)
@@ -627,7 +626,8 @@ function Unit:draw_buffs()
       --dont draw buff if stacks is 0
 
     elseif buff.color then
-      graphics.circle(self.x, self.y, ((self.shape.w) / 2) + (i), buff.color, 1)
+      local display_size = buff.display_size or 1
+      graphics.circle(self.x, self.y, ((self.shape.w) / 2) + (i), buff.color, display_size)
       i = i + 1
     end
   end
@@ -1585,31 +1585,22 @@ end
 --2 types of target, assigned target is set by the player (RMB)
 --the regular target is temporary and is set by the unit itself
 function Unit:my_target()
-  return self.assigned_target or self.target
+  return Helper.manually_targeted_enemy or self.target
 end
 
 function Unit:set_target(target)
   self.target = target
-end
-
-function Unit:set_assigned_target(target)
-  self.assigned_target = target
-end
-
-function Unit:clear_assigned_target()
-  self.assigned_target = nil
+  Helper.Unit:set_automatic_target(target)
 end
 
 function Unit:clear_my_target()
+  Helper.Unit:decrement_automatic_target(self.target)
   self.target = nil
 end
 
 function Unit:update_targets()
   if self.target and self.target.dead then
-    self.target = nil
-  end
-  if self.assigned_target and self.assigned_target.dead then
-    self.assigned_target = nil
+    self:clear_my_target()
   end
 end
 
@@ -1629,7 +1620,7 @@ function Unit:in_range(target_type)
   return function()
     local target = nil
     if target_type == 'assigned' then
-      target = self.assigned_target
+      target = Helper.manually_targeted_enemy
     elseif target_type == 'regular' then
       target = self.target
     end

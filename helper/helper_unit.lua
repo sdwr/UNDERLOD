@@ -457,19 +457,13 @@ function Helper.Unit:select()
 
         if input['m2'].pressed then
 
-            for i, enemy in ipairs(self:get_list(false)) do
-                if Helper.Geometry:distance(Helper.mousex, Helper.mousey, enemy.x, enemy.y) < ((enemy.shape.w / 2) + 5) then 
-                    flag = true
-                    break
-                end
-            end
-            --target the flagged enemy with the selected troop
-            if flag then
-                local flagged_enemy = Helper.Spell:get_nearest_target_from_point(Helper.mousex, Helper.mousey, false)
-                    --make all units target the flagged enemy
-                Helper.Unit:all_teams_target_flagged_enemy(flagged_enemy)
+            Helper.Unit:clear_all_rally_points()
+            Helper.Unit:clear_manual_target()
 
-            else
+            local target_success = Helper.Unit:try_target_enemy_with_right_click()
+
+            if not target_success then
+                --set rally point
                 local x, y = Helper.mousex, Helper.mousey
                     --make all units untarget the flagged enemy
                 Helper.Unit:all_teams_set_rally_point(x, y)
@@ -1080,4 +1074,121 @@ function Helper.Unit:count_unit_set_pieces(unit)
   end
 
   return set_counts
+end
+
+function Helper.Unit:clear_automatic_target(target)
+    if target then
+        target:remove_buff('automatic_targeted')
+    end
+end
+
+function Helper.Unit:decrement_automatic_target(target)
+    if target then
+        local buff = target:get_buff('automatic_targeted')
+        if buff then
+            buff.count = buff.count - 1
+            if buff.count <= 0 then
+                target:remove_buff('automatic_targeted')
+            end
+        end
+    end
+end
+
+function Helper.Unit:clear_manual_target()
+    if Helper.manually_targeted_enemy then
+        Helper.manually_targeted_enemy:remove_buff('manual_targeted')
+
+        Helper.Unit:clear_automatic_target(Helper.manually_targeted_enemy)
+        Helper.manually_targeted_enemy = nil
+    end
+end
+
+function Helper.Unit:set_manual_target(target)
+    Helper.Unit:clear_manual_target()
+    Helper.manually_targeted_enemy = nil
+    if not target or target.dead then
+        return
+    end
+
+    Helper.manually_targeted_enemy = target
+    --clear automatic target display (manual is bigger)
+    Helper.Unit:clear_automatic_target(target)
+    target:add_buff({name = 'manual_targeted', color = yellow[0], display_size = 2, duration = 9999})
+end
+
+function Helper.Unit:set_automatic_target(target)
+    if not target or target.dead then return end
+
+    if target:has_buff('manual_targeted') then
+        return
+    end
+
+    local buff = target:get_buff('automatic_targeted')
+    if buff then
+        buff.count = buff.count + 1
+    else
+        buff = {name = 'automatic_targeted', color = yellow[0], count = 1, duration = 2}
+        target:add_buff(buff)
+    end    
+end
+
+-- Cycle through potential targets for manual targeting
+function Helper.Unit:cycle_target()
+    if not Helper.cycle_targets or #Helper.cycle_targets == 0 then
+        return
+    end
+
+    local current_index = 0
+    for i, target in ipairs(Helper.cycle_targets) do
+        if target == Helper.manually_targeted_enemy then
+            current_index = i
+            break
+        end
+    end
+  
+  -- Cycle to next target
+  local next_index = (current_index % #Helper.cycle_targets) + 1
+  local new_target = Helper.cycle_targets[next_index]
+  
+  -- Set the new target with visual feedback
+  Helper.Unit:set_manual_target(new_target)
+  
+  return new_target
+end
+
+-- Handle right-click for manual targeting
+function Helper.Unit:try_target_enemy_with_right_click()
+  -- Get mouse position in world coordinates
+  local mouse_x = Helper.mousex
+  local mouse_y = Helper.mousey
+  
+  -- Create a small detection area at mouse position to find enemies
+  local detection_size = 20  -- Size of detection rectangle
+  local detection_shape = Rectangle(mouse_x, mouse_y, detection_size, detection_size)
+  
+  -- Get all enemies in the detection area
+  local enemies_in_area = main.current.main:get_objects_in_shape(detection_shape, main.current.enemies)
+  
+  -- Find the closest enemy among those detected
+  local clicked_enemy = nil
+  local min_distance = math.huge
+  
+  for _, enemy in ipairs(enemies_in_area) do
+    if not enemy.dead and enemy.x and enemy.y then
+      local dist = math.distance(enemy.x, enemy.y, mouse_x, mouse_y)
+      if dist < min_distance then
+        min_distance = dist
+        clicked_enemy = enemy
+      end
+    end
+  end
+  
+  -- Set or clear the target
+  if clicked_enemy then
+    Helper.Unit:set_manual_target(clicked_enemy)
+    return true
+  else
+    return false
+  end
+
 end

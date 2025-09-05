@@ -25,6 +25,13 @@ Helper.time_elapsed = 0
 Helper.call_counters = {}
 Helper.timers = {}
 
+-- Targeting system
+Helper.enemies_by_distance = {}  -- Sorted list of enemies by distance from player center
+Helper.cycle_targets = {}  -- List of enemies to cycle through
+Helper.manually_targeted_enemy = nil  -- Enemy manually targeted by player
+Helper.enemy_list_update_counter = 0  -- Counter for updating enemy list
+Helper.ENEMY_LIST_UPDATE_INTERVAL = 10  -- Update every 10 frames
+
 --helper fns only work in arena, not in buy screen
 function Helper:init()
     Helper.Time.time = love.timer.getTime()
@@ -88,6 +95,16 @@ function Helper:update(dt)
     Helper.Unit:update_player_location()
     Helper.Unit:update_closest_enemy()
     Helper.Unit:update_enemy_distance_tier()
+    
+    -- Update enemy distance list periodically
+    Helper.enemy_list_update_counter = Helper.enemy_list_update_counter + 1
+    if Helper.enemy_list_update_counter >= Helper.ENEMY_LIST_UPDATE_INTERVAL then
+        Helper:update_manual_target()
+        Helper:update_enemies_by_distance()
+        Helper:update_cycle_targets()
+        Helper.enemy_list_update_counter = 0
+    end
+    
     Helper.Time:run_intervals()
     Helper.Time:run_waits()
     Helper.Unit:run_state_always_run_functions()
@@ -210,6 +227,68 @@ function Helper:release()
     for i, spell in ipairs(Helper.Spell.spells) do
         if spell.clear_all ~= nil then
             spell.clear_all()
+        end
+    end
+end
+
+
+function Helper:update_manual_target()
+    if Helper.manually_targeted_enemy and Helper.manually_targeted_enemy.dead then
+        Helper.Unit:clear_manual_target()
+    end
+end
+
+
+-- Update the sorted list of enemies by distance from player center
+function Helper:update_enemies_by_distance()
+    if not Helper.Unit.player_location then
+        Helper.enemies_by_distance = {}
+        return
+    end
+    
+    local enemies = {}
+    if main.current and main.current.enemies then
+        for _, enemy in ipairs(main.current.enemies) do
+            for _, e in ipairs(main.current.main:get_objects_by_classes({enemy})) do
+                if not e.dead and e.x and e.y then
+                    local distance = math.distance(e.x, e.y, Helper.Unit.player_location.x, Helper.Unit.player_location.y)
+                    table.insert(enemies, {enemy = e, distance = distance})
+                end
+            end
+        end
+    end
+    
+    -- Sort by distance
+    table.sort(enemies, function(a, b) return a.distance < b.distance end)
+    
+    -- Store just the enemy references in sorted order
+    Helper.enemies_by_distance = {}
+    for _, entry in ipairs(enemies) do
+        table.insert(Helper.enemies_by_distance, entry)
+    end
+end
+
+function Helper:update_cycle_targets()
+    if not Helper.enemies_by_distance or #Helper.enemies_by_distance == 0 then
+        Helper.cycle_targets = {}
+        return
+    end
+
+    local CYCLE_RANGE_THRESHOLD = 50  -- Distance threshold for considering enemies "close" to the closest
+    local MIN_CYCLE_TARGETS = 5 
+
+    local closest_distance = Helper.enemies_by_distance[1].distance or 0
+    
+    Helper.cycle_targets = {}
+    for _, entry in ipairs(Helper.enemies_by_distance) do
+        if not entry.enemy.dead and entry.enemy.x and entry.enemy.y then
+            if #Helper.cycle_targets < MIN_CYCLE_TARGETS then
+                table.insert(Helper.cycle_targets, entry.enemy)
+            elseif entry.distance <= closest_distance + CYCLE_RANGE_THRESHOLD then
+                table.insert(Helper.cycle_targets, entry.enemy)
+            else
+                break
+            end
         end
     end
 end

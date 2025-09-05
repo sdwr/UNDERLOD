@@ -84,18 +84,16 @@ end
 function Team:set_team_target(target)
   self.target = target
   for i, troop in ipairs(self.troops) do
-    troop:set_assigned_target(target)
     troop:cancel_cast()
     Helper.Unit:set_state(troop, unit_states['idle'])
   end
-  Helper.Unit:set_target_ring(target)
 end
 
 function Team:clear_team_target()
   local target = self.target
   self.target = nil
   for i, troop in ipairs(self.troops) do
-    troop:clear_assigned_target()
+    -- troop:clear_assigned_target()
   end
   Helper.Unit:clear_target_ring(target)
 end
@@ -106,8 +104,7 @@ function Team:set_rally_point(x, y)
     x = x,
     y = y,
     group = main.current.floor,
-    team = self,
-    color = self.color
+    team = self
   }
   for i, troop in ipairs(self.troops) do
     troop.rallying = true
