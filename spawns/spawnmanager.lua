@@ -649,7 +649,7 @@ function SpawnManager:update(dt)
     --don't do anything until triggered by world manager
     if self.state == 'arena_start' then return end
 
-    if round_power_killed >= ROUND_POWER_BY_LEVEL(self.arena.level) then
+    if self.arena:percent_of_round_power_killed() >= 1 then
       self:change_state('finished')
       self.arena:level_clear(true)
     end

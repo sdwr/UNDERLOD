@@ -251,6 +251,11 @@ function Arena:init_spawn_manager()
   self.round_power_visualizer = RoundPowerVisualizer{group = self.ui}
 end
 
+function Arena:percent_of_round_power_killed()
+  local percent = math.clamp(round_power_killed / ROUND_POWER_BY_LEVEL(self.level), 0, 1)
+  return percent
+end
+
 function Arena:destroy()
   -- Clean up arena resources
   

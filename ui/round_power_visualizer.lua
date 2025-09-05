@@ -20,7 +20,7 @@ function RoundPowerVisualizer:init(args)
   self.max_data_points = 30  -- Keep last 30 data points (2.5 minutes at 5 second intervals)
   self.data_points = {}
   self.time_since_last_update = 0
-  self.update_interval = 5  -- Update every 5 seconds
+  self.update_interval = 3  -- Update every 3 seconds
   
   -- Current values
   self.current_onscreen = 0

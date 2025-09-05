@@ -12,7 +12,7 @@ function LevelOrb:init(args)
   self.group = args.group or main.current.main
   
   -- Physical properties
-  self.radius = args.radius or 25
+  self.radius = args.radius or 18
   self.visible_radius = 0
 
   self:set_as_circle(self.radius, 'static', 'projectile')
@@ -264,6 +264,7 @@ function LevelOrb:draw()
   graphics.push(self.x, self.y, 0, self.scale, self.scale)
   
   -- Get HP percentage for color interpolation
+  local completion_percentage = self.parent:percent_of_round_power_killed()
   local hp_percentage = self:get_hp_percentage()
   
   -- Calculate base color that transitions from grey to vibrant based on health
@@ -279,9 +280,9 @@ function LevelOrb:draw()
     local vibrant_blue = blue[3]:clone()
     
     base_orb_color = Color(
-      grey_blue.r + (vibrant_blue.r - grey_blue.r) * hp_percentage,
-      grey_blue.g + (vibrant_blue.g - grey_blue.g) * hp_percentage,
-      grey_blue.b + (vibrant_blue.b - grey_blue.b) * hp_percentage
+      grey_blue.r + (vibrant_blue.r - grey_blue.r) * completion_percentage,
+      grey_blue.g + (vibrant_blue.g - grey_blue.g) * completion_percentage,
+      grey_blue.b + (vibrant_blue.b - grey_blue.b) * completion_percentage
     )
   end
   
@@ -290,7 +291,7 @@ function LevelOrb:draw()
     local glow_alpha = 0.015 * (9 - i)  -- Smoother falloff
     local glow_scale = 1 + (0.05 * i)  -- More gradual scale increase
     local outer_glow = base_orb_color:clone()
-    outer_glow.a = glow_alpha * hp_percentage * 0.5 + glow_alpha * 0.3  -- Glow intensity based on health
+    outer_glow.a = glow_alpha * completion_percentage * 0.5 + glow_alpha * 0.3  -- Glow intensity based on health
     graphics.circle(self.x, self.y, self.visible_radius * glow_scale, outer_glow)
   end
   
@@ -302,10 +303,8 @@ function LevelOrb:draw()
     graphics.circle(self.x, self.y, self.visible_radius * 1.5, charge_glow)
   end
   
-  -- Draw main orb background (empty portion) - darker grey that gets lighter as health drops
-  local empty_darkness = 0.4 + (1 - hp_percentage) * 0.3  -- Darker when full, lighter when empty
-  local bg_color = bg[5]:clone()
-  bg_color = bg_color:lighten(empty_darkness)
+  -- Draw main orb background (empty portion)
+  local bg_color = bg[3]:clone()
   graphics.circle(self.x, self.y, self.visible_radius, bg_color)
   
   -- Add subtle inner shadow gradient for depth
@@ -329,7 +328,7 @@ function LevelOrb:draw()
     
     love.graphics.setStencilTest("greater", 0)
     
-    -- Draw the colored health portion with color that gets more vibrant with more health
+    -- Draw the colored health portion with color that gets more vibrant with more completion
     local health_color
     if self.hurt_flash_timer > 0 then
       health_color = self.hurt_flash_color
@@ -339,9 +338,9 @@ function LevelOrb:draw()
       local full_health_color = blue[5]:clone()  -- Vibrant blue
       
       health_color = Color(
-        low_health_color.r + (full_health_color.r - low_health_color.r) * hp_percentage,
-        low_health_color.g + (full_health_color.g - low_health_color.g) * hp_percentage,
-        low_health_color.b + (full_health_color.b - low_health_color.b) * hp_percentage
+        low_health_color.r + (full_health_color.r - low_health_color.r) * completion_percentage,
+        low_health_color.g + (full_health_color.g - low_health_color.g) * completion_percentage,
+        low_health_color.b + (full_health_color.b - low_health_color.b) * completion_percentage
       )
     end
     graphics.circle(self.x, self.y, self.visible_radius, health_color)
@@ -372,14 +371,14 @@ function LevelOrb:draw()
     local border_alpha = 0.1 * (4 - i) / 3
     local border_scale = 1 + (0.005 * i)
     local border_color = border_base:clone()
-    border_color.a = border_alpha * (0.5 + hp_percentage * 0.5)  -- Border opacity based on health
+    border_color.a = border_alpha * (0.5 + completion_percentage * 0.5)  -- Border opacity based on health
     graphics.circle(self.x, self.y, self.visible_radius * border_scale, border_color, 1)
   end
   
   -- Inner edge highlight (very subtle)
   local inner_highlight = base_orb_color:clone()
   inner_highlight = inner_highlight:lighten(0.4)
-  inner_highlight.a = 0.15 * hp_percentage
+  inner_highlight.a = 0.15 * completion_percentage
   graphics.circle(self.x, self.y, self.visible_radius * 0.98, inner_highlight, 1)
   
   graphics.pop()
