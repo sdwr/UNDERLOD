@@ -1925,9 +1925,8 @@ end
 function Unit:set_physics_properties(args)
   local damping = args.damping or get_damping_by_unit_class(self.class)
   local friction = args.friction or ENEMY_FRICTION
-  local mass = args.mass or self.body and self:get_mass() or 1
+  local mass = args.mass or get_mass_by_unit_class(self.class)
 
-  local max_v = args.max_v or self.mvspd
   local is_launching = args.is_launching or false
   
   self.t:after(0, function()
@@ -1936,7 +1935,6 @@ function Unit:set_physics_properties(args)
     self:set_mass(mass)
   end, 'setting_physics_properties')
   
-  self.max_v = max_v
   self.is_launching = is_launching
 end
 

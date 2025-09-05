@@ -243,11 +243,11 @@ end
 --using the same tag so it can be reset by another movement effect
 --should be able to do this with one tween
 function Troop:start_deceleration()
-  self:set_physics_properties({damping = 2.5})
-  self.t:every(0.15, function()
+  self:set_physics_properties({damping = 1.5})
+  self.t:every(0.08, function()
     local damping = self:get_damping() or 1
-    self:set_physics_properties({damping = damping + 0.75})
-  end, 3, function()
+    self:set_physics_properties({damping = damping + 1.5})
+  end, 4, function()
     self:reset_physics_properties()
   end, 'reset_physics_properties')
 end
