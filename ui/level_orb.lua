@@ -263,23 +263,35 @@ function LevelOrb:draw()
   
   graphics.push(self.x, self.y, 0, self.scale, self.scale)
   
-  -- Draw soft outer glow (brighter than before)
-  local glow_color = white[5]:clone()  -- Brighter base
+  -- Get HP percentage for color interpolation
+  local hp_percentage = self:get_hp_percentage()
+  
+  -- Calculate base color that transitions from grey to vibrant based on health
+  local base_orb_color
   if self.hurt_flash_timer > 0 then
-    glow_color = red[3]:clone()
+    base_orb_color = red[3]:clone()
   elseif self.charging then
-    glow_color = yellow[3]:clone()
+    base_orb_color = yellow[3]:clone()
   else
-    glow_color = blue[0]:clone()  -- Brighter blue
+    -- Interpolate from grey-blue to vibrant blue based on health
+    local grey_blue = bg[5]:clone()
+    grey_blue.b = grey_blue.b + 0.2  -- Add slight blue tint to grey
+    local vibrant_blue = blue[3]:clone()
+    
+    base_orb_color = Color(
+      grey_blue.r + (vibrant_blue.r - grey_blue.r) * hp_percentage,
+      grey_blue.g + (vibrant_blue.g - grey_blue.g) * hp_percentage,
+      grey_blue.b + (vibrant_blue.b - grey_blue.b) * hp_percentage
+    )
   end
   
-  -- Multiple layers for soft glow
-  for i = 3, 1, -1 do
-    local glow_alpha = 0.08 * i  -- Increased from 0.05
-    local glow_scale = 1 + (0.08 * (4 - i))  -- Tighter glow
-    local outer_glow = glow_color:clone()
-    outer_glow.a = glow_alpha
-    graphics.circle(self.x, self.y, self.visible_radius * glow_scale, outer_glow, 2)
+  -- Draw soft gradient glow (single smooth gradient instead of rings)
+  for i = 8, 1, -1 do
+    local glow_alpha = 0.015 * (9 - i)  -- Smoother falloff
+    local glow_scale = 1 + (0.05 * i)  -- More gradual scale increase
+    local outer_glow = base_orb_color:clone()
+    outer_glow.a = glow_alpha * hp_percentage * 0.5 + glow_alpha * 0.3  -- Glow intensity based on health
+    graphics.circle(self.x, self.y, self.visible_radius * glow_scale, outer_glow)
   end
   
   -- Draw charging glow effect
@@ -290,21 +302,22 @@ function LevelOrb:draw()
     graphics.circle(self.x, self.y, self.visible_radius * 1.5, charge_glow)
   end
   
-  -- Draw main orb background with lighter damaged area
-  local bg_color = bg[8]:clone()  -- Lighter grey for empty portion
+  -- Draw main orb background (empty portion) - darker grey that gets lighter as health drops
+  local empty_darkness = 0.4 + (1 - hp_percentage) * 0.3  -- Darker when full, lighter when empty
+  local bg_color = bg[5]:clone()
+  bg_color = bg_color:lighten(empty_darkness)
   graphics.circle(self.x, self.y, self.visible_radius, bg_color)
   
-  -- Add inner shimmer gradient for empty portion
-  local shimmer_offset = math.sin(self.shimmer_timer) * 0.3 + 0.7
-  for i = 1, 3 do
-    local gradient_radius = self.visible_radius * (0.9 - i * 0.15)
-    local gradient_color = bg[10]:clone()  -- Even lighter shimmer
-    gradient_color.a = 0.15 * shimmer_offset * (4 - i) / 3
-    graphics.circle(self.x, self.y - (i * 2), gradient_radius, gradient_color)
+  -- Add subtle inner shadow gradient for depth
+  local shimmer_offset = math.sin(self.shimmer_timer) * 0.2 + 0.8
+  for i = 1, 4 do
+    local gradient_radius = self.visible_radius * (1 - i * 0.08)
+    local gradient_color = bg[3]:clone()
+    gradient_color.a = 0.08 * (5 - i) / 4 * shimmer_offset
+    graphics.circle(self.x, self.y + (i * 1), gradient_radius, gradient_color)
   end
   
   -- Draw health portion (colored from bottom)
-  local hp_percentage = self:get_hp_percentage()
   if hp_percentage > 0 then
     local fill_height = self.visible_radius * 2 * hp_percentage
     local fill_y = self.y + self.visible_radius - (fill_height /2) 
@@ -316,18 +329,28 @@ function LevelOrb:draw()
     
     love.graphics.setStencilTest("greater", 0)
     
-    -- Draw the colored health portion with subtle internal glow
-    local health_color = self.color
+    -- Draw the colored health portion with color that gets more vibrant with more health
+    local health_color
     if self.hurt_flash_timer > 0 then
       health_color = self.hurt_flash_color
+    else
+      -- Interpolate color vibrancy based on health
+      local low_health_color = blue[-2]:clone()  -- Desaturated blue
+      local full_health_color = blue[5]:clone()  -- Vibrant blue
+      
+      health_color = Color(
+        low_health_color.r + (full_health_color.r - low_health_color.r) * hp_percentage,
+        low_health_color.g + (full_health_color.g - low_health_color.g) * hp_percentage,
+        low_health_color.b + (full_health_color.b - low_health_color.b) * hp_percentage
+      )
     end
     graphics.circle(self.x, self.y, self.visible_radius, health_color)
     
-    -- Add subtle internal shimmer to health portion
+    -- Add subtle internal highlight
     local health_shimmer = health_color:clone()
-    health_shimmer = health_shimmer:lighten(0.15)
-    health_shimmer.a = 0.3 * shimmer_offset
-    graphics.circle(self.x, self.y - 3, self.visible_radius * 0.85, health_shimmer)
+    health_shimmer = health_shimmer:lighten(0.2)
+    health_shimmer.a = 0.25 * shimmer_offset
+    graphics.circle(self.x, self.y - 4, self.visible_radius * 0.8, health_shimmer)
     
     love.graphics.setStencilTest()
   end
@@ -341,17 +364,23 @@ function LevelOrb:draw()
     end
   end
   
-  -- Draw very subtle border (brighter than before)
-  local border_color = white[0]:clone()  -- Brighter base
-  if self.hurt_flash_timer > 0 then
-    border_color = red[5]:clone()
-  elseif self.charging then
-    border_color = yellow[5]:clone()
-  else
-    border_color = blue[2]:clone()  -- Brighter blue
+  -- Draw soft border with gradient effect
+  -- Outer soft edge
+  local border_base = base_orb_color:clone()
+  border_base = border_base:darken(0.3)
+  for i = 1, 3 do
+    local border_alpha = 0.1 * (4 - i) / 3
+    local border_scale = 1 + (0.005 * i)
+    local border_color = border_base:clone()
+    border_color.a = border_alpha * (0.5 + hp_percentage * 0.5)  -- Border opacity based on health
+    graphics.circle(self.x, self.y, self.visible_radius * border_scale, border_color, 1)
   end
-  border_color.a = 0.5  -- Increased from 0.4
-  graphics.circle(self.x, self.y, self.visible_radius, border_color, 1)
+  
+  -- Inner edge highlight (very subtle)
+  local inner_highlight = base_orb_color:clone()
+  inner_highlight = inner_highlight:lighten(0.4)
+  inner_highlight.a = 0.15 * hp_percentage
+  graphics.circle(self.x, self.y, self.visible_radius * 0.98, inner_highlight, 1)
   
   graphics.pop()
 end
