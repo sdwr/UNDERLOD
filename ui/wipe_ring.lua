@@ -16,10 +16,7 @@ function WipeRing:init(args)
   self.max_radius = args.max_radius or math.max(gw, gh)
   self.expand_duration = args.expand_duration or 1.5
   self.timer = 0
-  
-  -- Physics properties - start with small circle, will grow
-  self:set_as_circle(1, 'kinematic', 'projectile')
-  
+    
   -- Visual properties
   self.ring_color = white[0]:clone()
   self.ring_color.a = 0.8
@@ -32,8 +29,6 @@ end
 
 function WipeRing:update_radius(radius)
   self.radius = radius
-  self:destroy()
-  self:set_as_circle(radius, 'kinematic', 'projectile')
 end
 
 function WipeRing:update(dt)
@@ -45,20 +40,41 @@ function WipeRing:update(dt)
   local progress = math.min(self.timer / self.expand_duration, 1)
   self:update_radius(progress * self.max_radius)  
   
+  -- Manually check for enemies and enemy projectiles within radius
+  if self.radius > 0 then
+    local shape = Circle(self.x, self.y, self.radius)
+    
+    -- Check for enemies
+    local enemies = main.current.main:get_objects_in_shape(shape, main.current.enemies)
+    for _, enemy in ipairs(enemies) do
+      if enemy and not enemy.dead then
+        local dist = math.distance(self.x, self.y, enemy.x, enemy.y)
+        if dist <= self.radius then
+          enemy:die()
+          explosion1:play{pitch = random:float(0.8, 1.2), volume = 0.1}
+        end
+      end
+    end
+    
+    -- Check for enemy projectiles
+    local enemy_projectiles = main.current.main:get_objects_in_shape(shape, main.current.enemy_projectile_classes)
+    for _, projectile in ipairs(enemy_projectiles) do
+      if projectile and not projectile.dead then
+        local dist = math.distance(self.x, self.y, projectile.x, projectile.y)
+        if dist <= self.radius then
+          projectile:die()
+          -- Add small visual effect
+          HitParticle{group = main.current.effects, x = projectile.x, y = projectile.y, color = self.ring_color}
+          explosion1:play{pitch = random:float(0.8, 1.2), volume = 0.1}
+        end
+      end
+    end
+  end
+  
   -- Remove ring when expansion is complete
   if progress >= 1 then
     self.dead = true
   end
-end
-
-function WipeRing:on_trigger_enter(other)
-  if not other:is(Enemy) then return end
-  
-  -- Kill the enemy
-  other:die()
-  
-  -- Add death effect/sound
-  explosion1:play{pitch = random:float(0.8, 1.2), volume = 0.1}
 end
 
 function WipeRing:draw()

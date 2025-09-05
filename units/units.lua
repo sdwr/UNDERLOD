@@ -22,6 +22,10 @@ enemy_classes = {
   EnemyCritter
 }
 
+enemy_projectile_classes = {
+  EnemyProjectile,
+}
+
 
 all_unit_classes = shallowcopy(troop_classes)
 table.extend(all_unit_classes, enemy_classes)

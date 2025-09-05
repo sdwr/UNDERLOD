@@ -101,6 +101,7 @@ end
 function WorldManager:create_class_lists()
   self.enemies = enemy_classes
   self.enemies_without_critters = enemy_classes_without_critters
+  self.enemy_projectile_classes = enemy_projectile_classes
   self.troops = troop_classes
   self.friendlies = friendly_classes
   self.friendlies_without_critters = friendly_classes_without_critters
