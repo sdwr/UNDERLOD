@@ -457,19 +457,11 @@ function Helper.Unit:select()
 
         if input['m2'].pressed then
 
-            for i, enemy in ipairs(self:get_list(false)) do
-                if Helper.Geometry:distance(Helper.mousex, Helper.mousey, enemy.x, enemy.y) < ((enemy.shape.w / 2) + 5) then 
-                    flag = true
-                    break
-                end
-            end
-            --target the flagged enemy with the selected troop
-            if flag then
-                local flagged_enemy = Helper.Spell:get_nearest_target_from_point(Helper.mousex, Helper.mousey, false)
-                    --make all units target the flagged enemy
-                Helper.Unit:all_teams_target_flagged_enemy(flagged_enemy)
+            local target_success = Helper.Unit:try_target_enemy_with_right_click()
+            print('target success', target_success)
 
-            else
+            if not target_success then
+                --set rally point
                 local x, y = Helper.mousex, Helper.mousey
                     --make all units untarget the flagged enemy
                 Helper.Unit:all_teams_set_rally_point(x, y)
@@ -1082,9 +1074,27 @@ function Helper.Unit:count_unit_set_pieces(unit)
   return set_counts
 end
 
+function Helper.Unit:clear_automatic_target(target)
+    if target then
+        target:remove_buff('automatic_targeted')
+    end
+end
+
+function Helper.Unit:decrement_automatic_target(target)
+    if target then
+        local buff = target:get_buff('automatic_targeted')
+        if buff then
+            buff.count = buff.count - 1
+            if buff.count <= 0 then
+                target:remove_buff('automatic_targeted')
+            end
+        end
+    end
+end
+
 function Helper.Unit:clear_manual_target()
     if Helper.manually_targeted_enemy then
-        Helper.manually_targeted_enemy:remove_buff('manually_targeted')
+        Helper.Unit:clear_automatic_target(Helper.manually_targeted_enemy)
         Helper.manually_targeted_enemy = nil
     end
 end
@@ -1095,9 +1105,27 @@ function Helper.Unit:set_manual_target(target)
     if not target or target.dead then
         return
     end
-    
+
     Helper.manually_targeted_enemy = target
-    target:add_buff({name = 'manually_targeted', color = yellow[0], duration = 9999})
+    --clear automatic target display (manual is bigger)
+    Helper.Unit:clear_automatic_target(target)
+    target:add_buff({name = 'manual_targeted', color = yellow[0], display_size = 2, duration = 9999})
+end
+
+function Helper.Unit:set_automatic_target(target)
+    if not target or target.dead then return end
+
+    if target:has_buff('manual_targeted') then
+        return
+    end
+
+    local buff = target:get_buff('automatic_targeted')
+    if buff then
+        buff.count = buff.count + 1
+    else
+        buff = {name = 'automatic_targeted', color = yellow[0], count = 1, duration = 2}
+        target:add_buff(buff)
+    end    
 end
 
 -- Cycle through potential targets for manual targeting
@@ -1125,7 +1153,7 @@ function Helper.Unit:cycle_target()
 end
 
 -- Handle right-click for manual targeting
-function Helper.Unit:handle_right_click()
+function Helper.Unit:try_target_enemy_with_right_click()
   -- Get mouse position in world coordinates
   local mouse_x = Helper.mousex
   local mouse_y = Helper.mousey
@@ -1135,7 +1163,8 @@ function Helper.Unit:handle_right_click()
   local clicked_enemy = nil
   local click_threshold = 20  -- Radius for click detection
   
-  for _, enemy in ipairs(Helper.enemies_by_distance) do
+  for _, entry in ipairs(Helper.enemies_by_distance) do
+    local enemy = entry.enemy
     if not enemy.dead and enemy.x and enemy.y then
       local dist = math.distance(enemy.x, enemy.y, mouse_x, mouse_y)
       local enemy_radius = (enemy.shape and math.max(enemy.shape.w, enemy.shape.h) or 16) / 2
@@ -1149,9 +1178,12 @@ function Helper.Unit:handle_right_click()
   
   -- Set or clear the target
   if clicked_enemy then
-    Helper.Unit:set_target_circle(clicked_enemy)
+    Helper.Unit:set_manual_target(clicked_enemy)
+    return true
   else
     -- Clicked on empty space, clear target
     Helper.Unit:clear_manual_target()
+    return false
   end
+  return false
 end

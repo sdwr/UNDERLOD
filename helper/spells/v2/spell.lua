@@ -135,6 +135,15 @@ function Cast:cast()
   if DEBUG_SPELLS then
     print('cast spell', self.unit, self.name)
   end
+
+  --if the unit is a troop, check for global manual target
+  if self.unit and self.unit:is(Troop) then
+    if Helper.manually_targeted_enemy and not Helper.manually_targeted_enemy.dead then
+      self.target = Helper.manually_targeted_enemy
+    end
+  end
+
+
   self.spelldata.x = self.x
   self.spelldata.y = self.y
   self.spelldata.unit = self.unit

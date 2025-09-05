@@ -204,11 +204,6 @@ function Troop:update(dt)
   -- 3. FINAL PHYSICS AND POSITIONING (These also always run)
   -- ===================================================================
   
-  -- Mark current target for circle drawing
-  if self:my_target() then
-    self:my_target():add_buff({name = 'targeted', duration = 0.1, color = Helper.Color.yellow})
-  end
-  
   self.r = self:get_angle()
   self.attack_sensor:move_to(self.x, self.y)
 end
@@ -229,7 +224,7 @@ function Troop:do_automatic_movement()
 
   --rotate towards target or velocity
   if self:in_range('assigned')() then
-    self:rotate_towards_object(Helper.Unit.manually_targeted_enemy, 1)
+    self:rotate_towards_object(Helper.manually_targeted_enemy, 1)
   elseif self:in_range('regular')() then
     self:rotate_towards_object(self.target, 1)
   else
@@ -264,9 +259,13 @@ function Troop:update_ai_logic()
     self:clear_my_target()
   end
 
+  if regular_target and Helper.manually_targeted_enemy and regular_target ~= Helper.manually_targeted_enemy then
+    self:clear_my_target()
+  end
+
   local cast_target = nil
-  if Helper.Unit.manually_targeted_enemy then
-    cast_target = Helper.Unit.manually_targeted_enemy
+  if Helper.manually_targeted_enemy then
+    cast_target = Helper.manually_targeted_enemy
   elseif regular_target then
     --should also check if the target is too far away compared to other enemies
     cast_target = regular_target
@@ -281,6 +280,7 @@ function Troop:update_ai_logic()
       -- or closest in aggro range
       self:set_target(Helper.Target:get_close_enemy(self, nil, {fully_onscreen = true}))
       cast_target = self.target
+
   end
 
   -- 3. ACT BASED ON TARGET STATUS

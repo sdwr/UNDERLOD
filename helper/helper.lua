@@ -212,11 +212,6 @@ function Helper:update(dt)
         Helper.Unit.do_draw_points = not Helper.Unit.do_draw_points 
     end
     
-    -- Manual targeting with right-click (m2)
-    if input['m2'].pressed then
-        Helper.Unit:handle_right_click()
-    end
-    
     Helper.window_width = love.graphics.getWidth() / sx
     Helper.window_height = love.graphics.getHeight() / sx
 end
