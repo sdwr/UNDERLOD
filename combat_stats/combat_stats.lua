@@ -375,11 +375,7 @@ MAX_ONSCREEN_ROUND_POWER = function(level)
 end
 
 LEVEL_ORB_HEALTH = function(level)
-  local level_info = ROUND_POWER_AND_MAX_ONSCREEN_POWER[level]
-  if not level_info then
-    return 200
-  end
-  return (level_info[1] / 10) + 200
+  return 200 + (level * 10)
 end
 
 GOLD_GAINED_BY_LEVEL = {

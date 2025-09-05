@@ -1493,6 +1493,7 @@ function Proc_LightningBall:create_lightning_ball(target)
   local travel_direction_angle = math.atan2(travel_direction_normalized.y, travel_direction_normalized.x)
 
   new_spark:play{pitch = random:float(0.8, 1.2), volume = 0.5}
+  self.unit.t:after(0.0, function()
   LightningBall{
     group = main.current.main,
     x = spawn_location.x, y = spawn_location.y,
@@ -1502,8 +1503,9 @@ function Proc_LightningBall:create_lightning_ball(target)
     duration = 4,
     damage = self.damage,
     num_targets = 3,
-    tick_rate = 1,
-  }
+      tick_rate = 1,
+    }
+  end)
 end
 
 Proc_Shock = Proc:extend()

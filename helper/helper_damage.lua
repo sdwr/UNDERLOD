@@ -147,7 +147,7 @@ function Helper.Damage:apply_knockback(unit, from)
 end
 
 function Helper.Damage:deal_damage(unit, damage)
-  unit.hp = unit.hp - damage
+  unit:take_damage(damage)
 
   if unit.buffs['curse'] then
     unit.buffs['curse'].damage_taken = unit.buffs['curse'].damage_taken + damage
@@ -198,7 +198,7 @@ function Helper.Damage:deal_damage(unit, damage)
 end
 
 function Helper.Damage:deal_damage_chained(unit, damage)
-  unit.hp = unit.hp - damage
+  unit:take_damage(damage)
 
   if unit.buffs['curse'] then
     unit.buffs['curse'].damage_taken = unit.buffs['curse'].damage_taken + damage

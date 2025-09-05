@@ -475,6 +475,18 @@ function Troop:hit(damage, from, damageType, playHitEffects, cannotProcOnHit)
   Helper.Damage:indirect_hit(self, damage, from, damageType, playHitEffects)
 end
 
+function Troop:take_damage(damage)
+  --self.hp = self.hp - damage
+
+  --have level orb take damage instead
+  if main.current.current_arena and main.current.current_arena.level_orb then
+    main.current.current_arena.level_orb:hit(damage, nil, DAMAGE_TYPE_PHYSICAL)
+  else
+    self.hp = self.hp - damage
+  end
+end
+
+
 function Troop:die()
   Troop.super.die(self)
   if self.dead then return end

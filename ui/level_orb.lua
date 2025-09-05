@@ -151,15 +151,14 @@ function LevelOrb:on_trigger_enter(other)
 
   local enemy_round_power = enemy_to_round_power[other.type] or 10
 
-  if not self.invulnerable then
-    self:hit(enemy_round_power, other, DAMAGE_TYPE_PHYSICAL)
-  end
+  self:hit(enemy_round_power, other, DAMAGE_TYPE_PHYSICAL)
   
   other:die()
 end
 
 function LevelOrb:hit(damage, from, damage_type)
   if self.dead then return end
+  if self.invulnerable then return end
   
   -- Apply damage reduction
   local actual_damage = damage * (1 - self.damage_reduction)
@@ -304,7 +303,7 @@ function LevelOrb:draw()
   end
   
   -- Draw main orb background (empty portion)
-  local bg_color = bg[3]:clone()
+  local bg_color = bg[4]:clone()
   graphics.circle(self.x, self.y, self.visible_radius, bg_color)
   
   -- Add subtle inner shadow gradient for depth

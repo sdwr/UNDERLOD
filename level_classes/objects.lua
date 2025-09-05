@@ -464,6 +464,10 @@ function Unit:bounce(nx, ny)
   return self.r
 end
 
+function Unit:take_damage(damage)
+  self.hp = self.hp - damage
+end
+
 --self is enemy, other is player
 function Unit:on_trigger_enter(other)
 end
