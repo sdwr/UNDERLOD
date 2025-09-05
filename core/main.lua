@@ -42,6 +42,28 @@ if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
   require("lldebugger").start()
 end
 
+-- Feather Debugger Setup
+local feather_debugger = nil
+
+if USE_FEATHER and feather then
+  feather_debugger = feather({
+    debug = true,  -- Enable in debug mode
+    wrapPrint = true,  -- Capture print statements
+    defaultObservers = true,  -- Register built-in variable watchers
+    autoRegisterErrorHandler = true,  -- Replace LÖVE's errorhandler
+    port = 4004,  -- Default port
+    host = "*",  -- Listen on all interfaces
+    whitelist = { "127.0.0.1" },  -- Only allow localhost connections
+    maxTempLogs = 200,
+    updateInterval = 0.1,
+    captureScreenshot = false,  -- Set to true if you want screenshots on error
+    baseDir = "",  -- Set this if you need VS Code deep linking
+  })
+  print("[Feather] Debugger initialized on port 4004 - Connect at http://localhost:4004")
+elseif USE_FEATHER then
+  print("[Feather] Failed to load - make sure feather.lua is in engine/external/")
+end
+
 function init()
   shared_init()
   SpawnGlobals.Init()
@@ -1569,6 +1591,11 @@ end
 love.frame = 0
 function update(dt)
   main:update(dt)
+  
+  -- Update Feather debugger if enabled
+  if feather_debugger then
+    feather_debugger:update(dt)
+  end
   
   if love.USE_PROFILER then
     Run_Profiler()
