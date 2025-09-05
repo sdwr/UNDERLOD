@@ -417,6 +417,7 @@ function Arena:die()
     -- input:set_mouse_visible(true)
     self.t:cancel('divine_punishment')
     self.died = true
+    Helper.Unit:kill_all_teams()
     locked_state = false
     system.save_run()
     self.t:tween(2, self, {main_slow_amount = 0}, math.linear, function() self.main_slow_amount = 0 end)

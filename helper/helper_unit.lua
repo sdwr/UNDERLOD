@@ -902,6 +902,12 @@ function Helper.Unit:heal_all_teams_to_full()
   end
 end
 
+function Helper.Unit:kill_all_teams()
+    for _, team in pairs(Helper.Unit.teams) do
+        team:die()
+    end
+end
+
 function Helper.Unit:resurrect_all_teams()
     local tries_remaining = 20
     

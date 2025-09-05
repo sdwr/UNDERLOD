@@ -274,14 +274,14 @@ function LevelOrb:draw()
     base_orb_color = yellow[3]:clone()
   else
     -- Interpolate from grey-blue to vibrant blue based on health
-    local grey_blue = bg[5]:clone()
-    grey_blue.b = grey_blue.b + 0.2  -- Add slight blue tint to grey
+    local dark_blue = blue[-2]:clone()
+    dark_blue.b = dark_blue.b + 0.2  -- Add slight blue tint to grey
     local vibrant_blue = blue[3]:clone()
     
     base_orb_color = Color(
-      grey_blue.r + (vibrant_blue.r - grey_blue.r) * completion_percentage,
-      grey_blue.g + (vibrant_blue.g - grey_blue.g) * completion_percentage,
-      grey_blue.b + (vibrant_blue.b - grey_blue.b) * completion_percentage
+      dark_blue.r + (vibrant_blue.r - dark_blue.r) * completion_percentage,
+      dark_blue.g + (vibrant_blue.g - dark_blue.g) * completion_percentage,
+      dark_blue.b + (vibrant_blue.b - dark_blue.b) * completion_percentage
     )
   end
   
@@ -316,7 +316,7 @@ function LevelOrb:draw()
   end
   
   -- Draw health portion (colored from bottom)
-  if hp_percentage >= 0 then
+  if hp_percentage > 0 then
     local fill_height = self.visible_radius * 2 * hp_percentage
     local fill_y = self.y + self.visible_radius - (fill_height /2) 
     
@@ -332,15 +332,7 @@ function LevelOrb:draw()
     if self.hurt_flash_timer > 0 then
       health_color = self.hurt_flash_color
     else
-      -- Interpolate color vibrancy based on health
-      local low_health_color = blue[-2]:clone()  -- Desaturated blue
-      local full_health_color = blue[5]:clone()  -- Vibrant blue
-      
-      health_color = Color(
-        low_health_color.r + (full_health_color.r - low_health_color.r) * completion_percentage,
-        low_health_color.g + (full_health_color.g - low_health_color.g) * completion_percentage,
-        low_health_color.b + (full_health_color.b - low_health_color.b) * completion_percentage
-      )
+      health_color = base_orb_color:clone()
     end
     graphics.circle(self.x, self.y, self.visible_radius, health_color)
     
@@ -448,18 +440,6 @@ function LevelOrb:create_shatter_animation()
     color = white[0]:clone(),
     duration = 0.15,
     fade_out = true
-  }
-  
-  -- Create an expanding shockwave ring
-  HitCircle{
-    group = main.current.effects,
-    x = self.x, y = self.y,
-    rs = self.visible_radius,
-    color = blue[5]:clone(),
-    duration = 0.5,
-    fade_out = true,
-    expand = true,
-    expand_scale = 2
   }
   
   -- Create some falling glass dust particles
