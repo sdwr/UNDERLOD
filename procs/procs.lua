@@ -627,7 +627,9 @@ function Proc_Retaliate:onGotHit(from, damage)
 
   self.cooldown = self.baseCooldown
   if self.unit.instant_attack then
-    self.unit:instant_attack(from)
+    self.unit.t:after(0.0, function()
+      self.unit:instant_attack(from)
+    end)
   else
     print('no instant attack', self.unit.character)
   end

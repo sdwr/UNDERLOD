@@ -51,7 +51,7 @@ function WipeRing:update(dt)
   end
 end
 
-function WipeRing:on_collision_enter(other)
+function WipeRing:on_trigger_enter(other)
   if not other:is(Enemy) then return end
   
   -- Kill the enemy
