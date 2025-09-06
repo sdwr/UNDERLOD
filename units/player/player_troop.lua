@@ -480,7 +480,7 @@ function Troop:take_damage(damage)
 
   --have level orb take damage instead
   if main.current.current_arena and main.current.current_arena.level_orb then
-    main.current.current_arena.level_orb:hit(damage, nil, DAMAGE_TYPE_PHYSICAL)
+    main.current.current_arena.level_orb:hit(damage, self, DAMAGE_TYPE_PHYSICAL)
   else
     self.hp = self.hp - damage
   end

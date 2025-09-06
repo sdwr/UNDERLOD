@@ -169,6 +169,15 @@ function LevelOrb:hit(damage, from, damage_type)
   -- Visual feedback
   self:flash_hurt()
   
+  -- Create hurt line from source to orb if source exists
+  if from and not from.dead then
+    HurtLine{
+      group = main.current.effects,
+      src = from,
+      dst = self
+    }
+  end
+  
   -- Play hit sound
   hit1:play{pitch = random:float(0.9, 1.1), volume = 1}
   
