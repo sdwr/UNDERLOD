@@ -694,24 +694,9 @@ function Helper.Unit:reset_knockback_variables(unit)
 end
 
 function Helper.Unit:apply_knockback_enemy(unit, force, angle)
-    if math.length(unit:get_velocity()) > ENEMY_KNOCKBACK_VELOCITY_THRESHOLD then
-        return
-    end
 
-    local force_multiplier = 1
-    if unit.class == 'miniboss' then
-        force_multiplier = 0.5
-    elseif unit.class == 'boss' then
-        force_multiplier = 0.2
-    end
-
-    local final_force = force * force_multiplier
-    unit.push_force = final_force
-
-    Helper.Unit:set_knockback_variables(unit)
-
-    unit:apply_impulse(final_force * math.cos(angle), final_force * math.sin(angle))
-    unit:apply_angular_impulse(random:table{random:float(-12*math.pi, -4*math.pi), random:float(4*math.pi, 12*math.pi)})
+    unit:apply_impulse(force * math.cos(angle), force * math.sin(angle))
+    unit:apply_angular_impulse(random:table{random:float(-2*math.pi, -0.5*math.pi), random:float(0.5*math.pi, 2*math.pi)})
 end
 
 function Helper.Unit:apply_knockback(unit, force, angle, duration, push_invulnerable)
