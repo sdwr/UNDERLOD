@@ -32,6 +32,7 @@ function Arena:init(args)
   -- Initialize arena components
   current_power_onscreen = 0
   round_power_killed = 0
+  total_power_spawned = 0
   is_boss_dead = false
 
   self:init_physics()

@@ -17,6 +17,9 @@ function Enemy:init(args)
   self.init_enemy(self)
 
   self:init_unit()
+  if self.type == 'swarmer' then
+    self:hide_hp()
+  end
   self:init_hitbox_points()
 
   self.spritesheet = find_enemy_spritesheet(self)

@@ -127,9 +127,9 @@ enemy_cast_times = {
 TROOP_RANGE = 500
 TROOP_SWORDSMAN_RANGE = 80
 
-REGULAR_ENEMY_HP = 45
+REGULAR_ENEMY_HP = 70
 REGULAR_ENEMY_DAMAGE = 15
-REGULAR_ENEMY_MS = 13
+REGULAR_ENEMY_MS = 10
 
 SPECIAL_ENEMY_HP = 200
 SPECIAL_ENEMY_DAMAGE = 20
@@ -367,6 +367,7 @@ ROUND_POWER_BY_LEVEL = function(level)
 end
 
 MAX_ONSCREEN_ROUND_POWER = function(level)
+  -- Allow entire level's worth of enemies onscreen at once
   local level_info = ROUND_POWER_DATA_BY_LEVEL[level]
   if not level_info then
     return 600
