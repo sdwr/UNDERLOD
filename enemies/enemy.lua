@@ -627,8 +627,8 @@ function Enemy:update_move_seek_stall()
     else
       --slow down as you get closer to the target
       local distance_to_target = self:distance_to_point(self.target_location.x, self.target_location.y)
-      distance_to_target = math.clamp(distance_to_target, 0, 150)
-      local speed_multiplier = math.remap(distance_to_target, 0, 150, 0.15, 1)
+      distance_to_target = math.clamp(distance_to_target, 65, 150)
+      local speed_multiplier = math.remap(distance_to_target, 65, 150, 0.15, 1)
       self:set_physics_properties({max_v = self.mvspd * speed_multiplier})
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
       return true

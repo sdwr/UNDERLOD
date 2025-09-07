@@ -129,11 +129,11 @@ enemy_cast_times = {
 TROOP_RANGE = 500
 TROOP_SWORDSMAN_RANGE = 80
 
-REGULAR_ENEMY_HP = 60
+REGULAR_ENEMY_HP = 30
 REGULAR_ENEMY_DAMAGE = 15
-REGULAR_ENEMY_MS = 15
+REGULAR_ENEMY_MS = 20
 
-SPECIAL_ENEMY_HP = 200
+SPECIAL_ENEMY_HP = 120
 SPECIAL_ENEMY_DAMAGE = 20
 SPECIAL_ENEMY_MS = 15
 
@@ -457,7 +457,7 @@ SCALED_ENEMY_MS = function(level, base_ms)
 end
 
 function SWARMERS_PER_LEVEL(level)
-  return math.min(20, 6 + math.floor(level / 2))
+  return math.min(20, 8)
 end
 
 function BOULDERS_PER_LEVEL(level)
