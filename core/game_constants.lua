@@ -414,6 +414,8 @@ enemy_movement_types = {
   ['singlemortar'] = MOVEMENT_TYPE_APPROACH_ORB,
   ['line_mortar'] = MOVEMENT_TYPE_APPROACH_ORB,
 
+  ['crossfire'] = MOVEMENT_TYPE_APPROACH_ORB,
+
   ['burst'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
   ['selfburst'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
   ['arcspread'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,

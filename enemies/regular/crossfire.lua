@@ -11,6 +11,12 @@ fns['init_enemy'] = function(self)
   self.class = 'special_enemy'
   self.icon = 'sorcerer'
 
+  self.baseIdleTimer = 0
+  
+  -- Initialize rotation
+  self.r = self.r or 0
+  self.rotation_speed = 0.5  -- Radians per second
+
   --set attacks
   self.attack_options = {}
 
@@ -29,6 +35,7 @@ fns['init_enemy'] = function(self)
       unit = self,
       x = self.x,
       y = self.y,
+      r = self.r,  -- Pass current rotation to attack
       color = blue[0]:clone(),
       damage = function() return self.dmg end,
       speed = 100,
@@ -38,6 +45,11 @@ fns['init_enemy'] = function(self)
 
   table.insert(self.attack_options, crossfire)
 
+end
+
+fns['update_enemy'] = function(self, dt)
+  -- Rotate continuously
+  self.r = self.r + self.rotation_speed * dt
 end
 
 fns['draw_enemy'] = function(self)
@@ -61,15 +73,19 @@ function CrossfireAttack:init(args)
   self.damage = get_dmg_value(self.damage)
   self.projectiles = {}
   
-  -- Create projectiles in all 4 cardinal directions
-  local directions = {
-    0,           -- Right
-    math.pi/2,   -- Down
-    math.pi,     -- Left
-    3*math.pi/2  -- Up
+  -- Get the base rotation from the enemy
+  local base_angle = self.r or 0
+  
+  -- Create projectiles in 4 directions relative to enemy's rotation
+  local angle_offsets = {
+    0,           -- Forward
+    math.pi/2,   -- Right
+    math.pi,     -- Back
+    3*math.pi/2  -- Left
   }
   
-  for _, angle in ipairs(directions) do
+  for _, offset in ipairs(angle_offsets) do
+    local angle = base_angle + offset
     local projectile = PlasmaBall{
       group = self.group,
       unit = self.unit,
