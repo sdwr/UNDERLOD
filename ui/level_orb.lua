@@ -12,7 +12,7 @@ function LevelOrb:init(args)
   self.group = args.group or main.current.main
   
   -- Physical properties
-  self.radius = args.radius or 18
+  self.radius = args.radius or 30
   self.visible_radius = 0
 
   self:set_as_circle(self.radius, 'static', 'projectile')
