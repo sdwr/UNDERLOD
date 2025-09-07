@@ -290,7 +290,8 @@ function Enemy:choose_movement_target()
   if self.currentMovementAction == MOVEMENT_TYPE_CROSS_SCREEN then
     return self:acquire_target_cross_screen(false)
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB 
-  or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL then
+  or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL 
+  or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_SPIRAL then
     return self:acquire_target_seek_orb()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK then
     return self:acquire_target_seek()
@@ -319,6 +320,8 @@ function Enemy:update_movement()
     return self:update_move_seek_location_no_wander()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL then
     return self:update_move_seek_stall()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_SPIRAL then
+    return self:update_move_seek_spiral()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK then
     return self:update_move_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
@@ -635,6 +638,12 @@ function Enemy:update_move_seek_stall()
     end
   end
   return false
+end
+
+function Enemy:update_move_seek_spiral()
+  --TODO: implement spiral movement
+  self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
+  return true
 end
 
 function Enemy:update_move_seek_location_no_wander()

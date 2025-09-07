@@ -21,7 +21,9 @@ function Troop:init(args)
   self:init_game_object(args)
   Helper.Unit:add_custom_variables_to_unit(self)
   -- Disable collision for troops
-  self.no_collision = true
+  if not self.is_player_cursor then
+    self.no_collision = true
+  end
   
   self:init_unit()
   local level = self.level or 1
@@ -148,10 +150,20 @@ function Troop:update(dt)
   -- self:update_movement_effect(dt)
   self:update_survivor_effect(dt)
   
-  -- Keep troops at center of screen
-  self.x = gw/2
-  self.y = gh/2
-  self:set_velocity(0, 0)
+  -- Keep troops at player cursor position (unless this IS the player cursor)
+  if not self.is_player_cursor then
+    -- Follow the player cursor if it exists
+    if main.current and main.current.current_arena and main.current.current_arena.player_cursor then
+      local cursor = main.current.current_arena.player_cursor
+      self.x = cursor.x
+      self.y = cursor.y
+    else
+      -- Fallback to center if no cursor
+      self.x = gw/2
+      self.y = gh/2
+    end
+    self:set_velocity(0, 0)
+  end
 
   -- ===================================================================
   -- 2. THE STATE MACHINE (Hierarchical and Predictable)

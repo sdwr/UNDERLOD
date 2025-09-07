@@ -903,6 +903,7 @@ enemy_type_to_size = {
   ['archer'] = 'special',
   ['spawner'] = 'special',
   ['spread'] = 'special',
+  ['spiral'] = 'special',
   ['stomper'] = 'special',
   ['summoner'] = 'special',
   ['bomb'] = 'special',

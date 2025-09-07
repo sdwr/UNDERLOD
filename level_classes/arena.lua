@@ -114,6 +114,16 @@ end
 
 function Arena:create_level_orb()
   self.level_orb = LevelOrb{group = self.main, parent = self, x = gw/2, y = gh/2}
+  
+  -- Create player cursor inside the orb
+  self.player_cursor = PlayerCursor{
+    group = self.main, 
+    parent = self, 
+    orb = self.level_orb,
+    x = gw/2, 
+    y = gh/2,
+    team = 1 -- Assign to first team so it's part of the troop system
+  }
 end
 
 -- function Arena:create_gold_counter()
