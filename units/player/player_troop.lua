@@ -224,9 +224,12 @@ end
 
 function Troop:follow_wasd()
   if self.being_knocked_back then return end
+  if Helper.Unit.wasd_pressed then 
+    self:set_velocity(0, 0)
+  end
   if Helper.Unit.wasd_released then
     self:start_deceleration()
-  elseif Helper.Unit.wasd_pressed then
+  elseif Helper.Unit.wasd_down then
     self:seek_point(Helper.Unit.movement_target.x, Helper.Unit.movement_target.y, SEEK_DECELERATION, SEEK_WEIGHT)
     self.t:after(0, function()
       self:reset_physics_properties()

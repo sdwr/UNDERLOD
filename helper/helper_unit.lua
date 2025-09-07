@@ -463,10 +463,11 @@ function Helper.Unit:select()
             Helper.Unit:reset_player_attack_location()
         end
         
-        local wasd_held = Helper.Unit.wasd_pressed
+        local wasd_held = Helper.Unit.wasd_down
 
         Helper.Unit.movement_target = Helper.Unit:get_player_location()
-        Helper.Unit.wasd_pressed = false
+        Helper.Unit.wasd_down = false
+        Helper.Unit.wasd_pressed = false --this is only set to true if the key is pressed, not held
         Helper.Unit.wasd_released = false
 
         local key_to_direction = {
@@ -477,13 +478,16 @@ function Helper.Unit:select()
         }
         for key, direction in pairs(key_to_direction) do
             if input[key].down then
-                Helper.Unit.wasd_pressed = true
+                Helper.Unit.wasd_down = true
                 Helper.Unit.movement_target.x = Helper.Unit.movement_target.x + direction.x * 50
                 Helper.Unit.movement_target.y = Helper.Unit.movement_target.y + direction.y * 50
             end
         end
+        if not wasd_held and Helper.Unit.wasd_down then
+            Helper.Unit.wasd_pressed = true
+        end
 
-        if wasd_held and not Helper.Unit.wasd_pressed then
+        if wasd_held and not Helper.Unit.wasd_down then
             Helper.Unit.wasd_released = true
         end
     end
