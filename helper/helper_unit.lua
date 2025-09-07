@@ -209,14 +209,7 @@ function Helper.Unit:can_cast(unit, target)
         if not table.any(unit_states_can_cast, function(v) return unit.state == v end) then
             return false
         end
-        if not unit:in_range_of(target) then
-            return false
-        end
-        if unit.is_troop then
-            return Helper.Unit:cast_off_cooldown_distance_multiplier(unit, target)
-        else
-            return Helper.Unit:cast_off_cooldown(unit)
-        end
+        return Helper.Unit:cast_off_cooldown(unit)
     end
     return false
 end
@@ -450,37 +443,40 @@ function Helper.Unit:enable_unit_controls()
     Helper.disable_unit_controls = false
 end
 
+function Helper.Unit:set_player_attack_location()
+    Helper.player_attack_location = {x = Helper.mousex, y = Helper.mousey}
+end
+
+function Helper.Unit:reset_player_attack_location()
+    Helper.player_attack_location = nil
+end
+
 --select + target from input
 function Helper.Unit:select()
     if not Helper.disable_unit_controls then
         local flag = false
         --should be on key release, not press? or at least only check the first press
 
-        if input['m2'].pressed then
+        if input['m1'].down then
+            Helper.Unit:set_player_attack_location()
+        else
+            Helper.Unit:reset_player_attack_location()
+        end
 
-            Helper.Unit:clear_all_rally_points()
-            Helper.Unit:clear_manual_target()
-
-            local target_success = Helper.Unit:try_target_enemy_with_right_click()
-
-            if not target_success then
-                --set rally point
-                local x, y = Helper.mousex, Helper.mousey
-                    --make all units untarget the flagged enemy
-                Helper.Unit:all_teams_set_rally_point(x, y)
+        Helper.Unit.movement_target = Helper.Unit:get_player_location()
+        Helper.Unit.wasd_pressed = false
+        local key_to_direction = {
+            ['w'] = {x = 0, y = -1},
+            ['a'] = {x = -1, y = 0},
+            ['s'] = {x = 0, y = 1},
+            ['d'] = {x = 1, y = 0},
+        }
+        for key, direction in pairs(key_to_direction) do
+            if input[key].down then
+                Helper.Unit.wasd_pressed = true
+                Helper.Unit.movement_target.x = Helper.Unit.movement_target.x + direction.x * 50
+                Helper.Unit.movement_target.y = Helper.Unit.movement_target.y + direction.y * 50
             end
-        --bug with not moving if you start holding m1 while a unit is casting
-        --it will not move until you release m1 and press it again
-        --switched to down, but need a longer term solution? same thing will happen with m2 prob
-        elseif input['m1'].down then
-            --clear rally point for all teams
-            for i, team in ipairs(Helper.Unit.teams) do
-                team:clear_rally_point()
-                team:set_troop_state_to_following()
-            end
-        elseif input['space'].down then
-            --scatter all units
-
         end
     end
 

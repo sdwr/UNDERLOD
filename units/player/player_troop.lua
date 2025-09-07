@@ -61,6 +61,22 @@ function Troop:follow_mouse()
   end
 end
 
+function Troop:follow_wasd_direction()
+  -- Move based on WASD input direction
+  if self.being_knocked_back then return end
+  
+  local dir = Helper.Unit.movement_direction
+  if dir.x == 0 and dir.y == 0 then
+    -- No movement input, decelerate
+    self:start_deceleration()
+  else
+    -- Apply movement force in the direction specified
+    local force_multiplier = 40  -- Adjust this for movement speed
+    self:apply_force(dir.x * force_multiplier, dir.y * force_multiplier)
+    self:rotate_towards_velocity(1)
+  end
+end
+
 function Troop:rally_to_point()
   -- If not, continue moving towards the rally point.
   if self.being_knocked_back then return end
@@ -145,22 +161,17 @@ function Troop:update(dt)
   -- This is one big if/elseif block. Only ONE of these can run per frame,
   -- which prevents state flickering. The order is based on priority.
 
-  if self.state == unit_states['normal']
-  or self.state == unit_states['idle'] then
-    self:update_ai_logic()
+  if table.contains(unit_states_can_move, self.state) then
+    self:follow_wasd()
+    self:do_automatic_movement()
   end
 
-  --dont need to check if following, because m1 cancels the rally point
-  if table.contains(unit_states_can_rally, self.state) then
-    if self.rallying and self.target_pos then
-      if not Helper.Unit:in_range_of_rally_point(self) then
-        self:rally_to_point()
+  if table.contains(unit_states_can_cast, self.state) then
+    if Helper.player_attack_location then
+      if Helper.Unit:can_cast(self, Helper.player_attack_location) then
+        self:setup_cast(Helper.player_attack_location)
       end
     end
-  end
-
-  if table.contains(unit_states_can_move, self.state) then
-    self:do_automatic_movement()
   end
 
 
@@ -176,28 +187,14 @@ function Troop:update(dt)
   -- If the unit is actively following the mouse.
   elseif self.state == unit_states['following'] then
 
-      self:cancel_cast()
+      -- self:cancel_cast()
       -- self:clear_my_target()
       -- self:clear_assigned_target()
-
-      -- Check if we should STOP following.
-      if input['m1'].released then
-        self:start_deceleration()
-        Helper.Unit:set_state(self, unit_states['idle'])
-      else
-        self:follow_mouse()
-
-      end
 
   -- PRIORITY 3: Action States (Busy States)
   -- If the unit is in the middle of casting an ability.
   elseif self.state == unit_states['casting'] then
 
-    if self.castObject then
-      if Helper.Unit:target_out_of_range(self, self.castObject.target) then
-        self:cancel_cast()
-      end
-    end
   end
 
   -- ===================================================================
@@ -206,6 +203,13 @@ function Troop:update(dt)
   
   self.r = self:get_angle()
   self.attack_sensor:move_to(self.x, self.y)
+end
+
+function Troop:follow_wasd()
+  if self.being_knocked_back then return end
+  if not Helper.Unit.wasd_pressed then return end
+
+  self:seek_point(Helper.Unit.movement_target.x, Helper.Unit.movement_target.y, SEEK_DECELERATION, SEEK_WEIGHT)
 end
 
 function Troop:do_automatic_movement()
@@ -222,14 +226,8 @@ function Troop:do_automatic_movement()
     self:add_cohesion(team:get_center(), TROOP_COHESION_MIN_DISTANCE, TROOP_COHESION_WEIGHT)
   end
 
-  --rotate towards target or velocity
-  if self:in_range('assigned')() then
-    self:rotate_towards_object(Helper.manually_targeted_enemy, 1)
-  elseif self:in_range('regular')() then
-    self:rotate_towards_object(self.target, 1)
-  else
-    self:rotate_towards_velocity(1)
-  end
+
+  self:rotate_towards_velocity(1)
 end
 
 
@@ -245,62 +243,6 @@ function Troop:start_deceleration()
   end, 6, function()
     self:reset_physics_properties()
   end, 'reset_physics_properties')
-end
-
-function Troop:update_ai_logic()
-  -- This function is only called when the unit is in the 'normal' state.
-  -- It represents the unit's autonomous decision-making process.
-
-  -- 1. VALIDATE CURRENT TARGET
-  -- First, check if our current target is dead or invalid. If so, clear it.
-  local regular_target = self.target
-
-  if regular_target and regular_target.dead then
-    self:clear_my_target()
-  end
-
-  if regular_target and Helper.manually_targeted_enemy and regular_target ~= Helper.manually_targeted_enemy then
-    self:clear_my_target()
-  end
-
-  local cast_target = nil
-  if Helper.manually_targeted_enemy then
-    cast_target = Helper.manually_targeted_enemy
-  elseif regular_target then
-    --should also check if the target is too far away compared to other enemies
-    cast_target = regular_target
-  end
-
-
-  -- 2. ACQUIRE NEW TARGET
-  -- If we don't have a target, try to find the closest one within our aggro range.
-  if not cast_target then
-      --find target if not already found
-      -- pick random in attack range
-      -- or closest in aggro range
-      self:set_target(Helper.Target:get_close_enemy(self, nil, {fully_onscreen = true}))
-      cast_target = self.target
-
-  end
-
-  -- 3. ACT BASED ON TARGET STATUS
-  -- If we have a valid target (either pre-existing or newly acquired)...
-  if cast_target then
-      -- 3a. CHECK IF WE CAN ATTACK.
-      -- We must be in range AND our cast must be off cooldown.
-      if Helper.Unit:can_cast(self, cast_target) then
-          -- If yes, commit to casting.
-          -- NOTE: Your can_cast helper might do both checks, which is fine!
-          self:setup_cast(cast_target)
-      end
-  end
-end
-
-
-function Troop:set_rally_position(i)
-  local team = Helper.Unit.teams[self.team]
-  self.target_pos = {x = team.rallyCircle.x + math.random(-i, i), y = team.rallyCircle.y + math.random(-i, i)}
-
 end
 
 -- ===================================================================
@@ -544,7 +486,7 @@ function Troop:on_collision_enter(other, contact)
 end
 
 function Troop:setup_cast(cast_target)
-  self.cast_distance_multiplier = Helper.Target:get_distance_multiplier(self, cast_target)
+  --override in subclasses
 end
 
 function Troop:removeHealFlag(duration)

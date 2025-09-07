@@ -37,7 +37,6 @@ function Archer_Troop:setup_cast(cast_target)
     target = cast_target,
     backswing = self.backswing,
     instantspell = true,
-    cast_distance_multiplier = self.cast_distance_multiplier,
     spellclass = ArrowProjectile,
     spelldata = self:create_spelldata()
   }

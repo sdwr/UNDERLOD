@@ -127,10 +127,6 @@ function ArrowProjectile:init(args)
   
   local pitch = self.pitch or 1
   local volume = self.volume or 2
-  if self.cast_distance_multiplier then
-    pitch = pitch * Helper.Sound:get_attack_pitch_multiplier(self.cast_distance_multiplier)
-    volume = volume * Helper.Sound:get_attack_volume_multiplier(self.cast_distance_multiplier)
-  end 
   table.random({arrow_release1, arrow_release2, arrow_release3}):play{volume= volume, pitch=pitch}
 
   self.already_hit_targets = {}
