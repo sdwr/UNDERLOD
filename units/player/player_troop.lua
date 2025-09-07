@@ -279,7 +279,7 @@ function Troop:push(f, r, push_invulnerable, duration)
   duration = duration or KNOCKBACK_DURATION_ENEMY
   
   -- Call the universal knockback function
-  Helper.Unit:apply_knockback(self, f, r, duration, push_invulnerable)
+  Helper.Unit:apply_knockback(self, f, r)
 end
 
 

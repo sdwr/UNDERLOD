@@ -1498,7 +1498,7 @@ end
 
 function Critter:push(f, r, push_invulnerable, duration)
   -- Apply damage impulse instead of state change
-  Helper.Unit:apply_knockback(self, f, r, duration or KNOCKBACK_DURATION_ENEMY, push_invulnerable)
+  Helper.Unit:apply_knockback(self, f, r)
   
   self.push_force = f
   self.being_pushed = true

@@ -822,5 +822,5 @@ function Enemy:push(f, r, push_invulnerable)
   end
 
   -- Call the universal knockback function with the modified force
-  Helper.Unit:apply_knockback_enemy(self, f, r)
+  Helper.Unit:apply_knockback(self, f, r)
 end
