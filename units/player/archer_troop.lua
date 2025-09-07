@@ -11,6 +11,7 @@ function Archer_Troop:create_spelldata()
   return {
     group = main.current.main,
     on_attack_callbacks = true,
+    volume = 1,
     spell_duration = 10,
     bullet_size = 3,
     pierce = false,

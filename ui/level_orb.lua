@@ -504,7 +504,7 @@ end
 
 function LevelOrb:on_progress_particle_hit()
   -- Called when a progress particle reaches the orb
-  self:add_progress_sound()
+  -- self:add_progress_sound()
   self:add_progress_ripple()
   self.last_progress_sound_time = Helper.Time.time
 end

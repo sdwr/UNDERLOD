@@ -13,16 +13,16 @@ ROUND_POWER_TO_GOLD = 100
 
 --stat constants
 TROOP_HP = 100
-TROOP_DAMAGE = 11
-TROOP_MS = 85
+TROOP_DAMAGE = 5
+TROOP_MS = 100
 -- Legacy constants (will be replaced)
 TROOP_BASE_COOLDOWN = 1.25
 TROOP_SWORDSMAN_BASE_COOLDOWN = 0.8
 
 -- New troop cooldown system
 attack_cooldowns = {
-  ['very-fast'] = 0.8,
-  ['fast'] = 0.9,
+  ['very-fast'] = 0.3,
+  ['fast'] = 0.4,
   ['medium'] = 1.5,
   ['medium-slow'] = 2,
   ['slow'] = 2.5,
@@ -131,7 +131,7 @@ TROOP_SWORDSMAN_RANGE = 80
 
 REGULAR_ENEMY_HP = 60
 REGULAR_ENEMY_DAMAGE = 15
-REGULAR_ENEMY_MS = 10
+REGULAR_ENEMY_MS = 15
 
 SPECIAL_ENEMY_HP = 200
 SPECIAL_ENEMY_DAMAGE = 20

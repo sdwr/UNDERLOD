@@ -693,9 +693,19 @@ function SpawnManager:update(dt)
       end
     end
     
-    -- Waiting for all enemies to be killed when we've spawned the max round power
+    -- Waiting for all enemies to be killed
     if self.state == 'waiting_for_end' then
-      if self.arena:percent_of_round_power_killed() >= 1 then
+      -- Check if all enemies are dead instead of round power
+      local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
+      local all_dead = true
+      for _, enemy in ipairs(enemies) do
+        if enemy and not enemy.dead then
+          all_dead = false
+          break
+        end
+      end
+      
+      if all_dead then
         self:change_state('finished')
         self.arena:level_clear(true)
       end
