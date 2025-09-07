@@ -330,36 +330,36 @@ SPECIAL_SWARMER_WEIGHT_BY_TYPE = {
 
 
 
-ROUND_POWER_AND_MAX_ONSCREEN_POWER = {
-  [1] = {800, 800},
-  [2] = {1000, 900},
-  [3] = {1200, 1000},
-  [4] = {1400, 1000},
-  [5] = {1600, 1200},
-  [6] = {1800, 1400},
-  [7] = {2000, 1600},
-  [8] = {2200, 1800},
-  [9] = {2400, 2000},
-  [10] = {2600, 2200},
-  [11] = {2800, 2400},
-  [12] = {3000, 2600},
-  [13] = {3200, 2800},
-  [14] = {3400, 3000},
-  [15] = {3600, 3200},
-  [16] = {3800, 3400},
-  [17] = {4000, 3500},
-  [18] = {4200, 3600},
-  [19] = {4400, 3700},
-  [20] = {4600, 3800},
-  [21] = {4800, 3900},
-  [22] = {5000, 4200},
-  [23] = {5200, 4400},
-  [24] = {5400, 4600},
-  [25] = {5600, 4800},
+ROUND_POWER_DATA_BY_LEVEL = {
+  [1] = {800},
+  [2] = {1000},
+  [3] = {1200},
+  [4] = {1400},
+  [5] = {1600},
+  [6] = {1800},
+  [7] = {2000},
+  [8] = {2200},
+  [9] = {2400},
+  [10] = {2600},
+  [11] = {2800},
+  [12] = {3000},
+  [13] = {3200},
+  [14] = {3400},
+  [15] = {3600},
+  [16] = {3800},
+  [17] = {4000},
+  [18] = {4200},
+  [19] = {4400},
+  [20] = {4600},
+  [21] = {4800},
+  [22] = {5000},
+  [23] = {5200},
+  [24] = {5400},
+  [25] = {5600},
 }
 
 ROUND_POWER_BY_LEVEL = function(level)
-  local level_info = ROUND_POWER_AND_MAX_ONSCREEN_POWER[level]
+  local level_info = ROUND_POWER_DATA_BY_LEVEL[level]
   if not level_info then
     return 600
   end
@@ -367,11 +367,11 @@ ROUND_POWER_BY_LEVEL = function(level)
 end
 
 MAX_ONSCREEN_ROUND_POWER = function(level)
-  local level_info = ROUND_POWER_AND_MAX_ONSCREEN_POWER[level]
+  local level_info = ROUND_POWER_DATA_BY_LEVEL[level]
   if not level_info then
     return 600
   end
-  return level_info[2]
+  return level_info[1]
 end
 
 LEVEL_ORB_HEALTH = function(level)
