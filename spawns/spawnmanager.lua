@@ -649,11 +649,6 @@ function SpawnManager:update(dt)
     --don't do anything until triggered by world manager
     if self.state == 'arena_start' then return end
 
-    if self.arena:percent_of_round_power_killed() >= 1 then
-      self:change_state('finished')
-      self.arena:level_clear(true)
-    end
-
     if self.state == 'suction_to_targets' then 
       Suction_Troops_To_Spawn_Locations(self.arena, true)
       return
@@ -697,6 +692,24 @@ function SpawnManager:update(dt)
         end
       end
     end
+    
+    -- Waiting for all enemies to be killed
+    if self.state == 'waiting_for_end' then
+      -- Check if all enemies are dead instead of round power
+      local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
+      local all_dead = true
+      for _, enemy in ipairs(enemies) do
+        if enemy and not enemy.dead then
+          all_dead = false
+          break
+        end
+      end
+      
+      if all_dead then
+        self:change_state('finished')
+        self.arena:level_clear(true)
+      end
+    end
 
 end
 
@@ -708,7 +721,15 @@ function SpawnManager:process_infinite_wave()
 
   local group_data = self.next_group
   local group_power = Wave_Types:Get_Group_Power(group_data)
+  local total_round_power = ROUND_POWER_BY_LEVEL(self.arena.level)
 
+  -- Check if spawning this group would exceed the total round power for the level
+  if total_power_spawned + group_power > total_round_power then
+    self:change_state('waiting_for_end')
+    return
+  end
+  
+  -- Check if too many enemies are already onscreen
   if current_power_onscreen + group_power > MAX_ONSCREEN_ROUND_POWER(self.arena.level) then
     self:change_state('waiting_for_clear')
     return
@@ -716,7 +737,7 @@ function SpawnManager:process_infinite_wave()
     self:process_instruction(group_data)
     --increase delay based on distance to the max onscreen power
     local percent_to_max = (current_power_onscreen + group_power) / MAX_ONSCREEN_ROUND_POWER(self.arena.level)
-    local delay = math.remap(math.max(percent_to_max, 0.5), 0.5, 1, 3, 6)
+    local delay = math.remap(math.max(percent_to_max, 0.5), 0.5, 1, 5, 8)
     self:process_instruction({'DELAY', delay})
     self.next_group = nil
   end
@@ -883,6 +904,7 @@ function Spawn_Enemy(arena, type, location, target_location)
                       level = arena.level, data = data}
 
   current_power_onscreen = current_power_onscreen + enemy_to_round_power[type]
+  total_power_spawned = total_power_spawned + enemy_to_round_power[type]
 
   Spawn_Enemy_Sound(arena, false)
   Spawn_Enemy_Effect(arena, enemy)

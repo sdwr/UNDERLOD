@@ -11,10 +11,11 @@ function Archer_Troop:create_spelldata()
   return {
     group = main.current.main,
     on_attack_callbacks = true,
+    volume = 1,
     spell_duration = 10,
     bullet_size = 3,
     pierce = false,
-    homing = true,
+    -- homing = true,
     speed = 210,
     is_troop = true,
     color = blue[0],
@@ -37,7 +38,6 @@ function Archer_Troop:setup_cast(cast_target)
     target = cast_target,
     backswing = self.backswing,
     instantspell = true,
-    cast_distance_multiplier = self.cast_distance_multiplier,
     spellclass = ArrowProjectile,
     spelldata = self:create_spelldata()
   }

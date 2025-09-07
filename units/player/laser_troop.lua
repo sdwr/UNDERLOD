@@ -50,7 +50,6 @@ function Laser_Troop:setup_cast(cast_target)
     end,
     backswing = 0.1,
     target = cast_target,
-    cast_distance_multiplier = self.cast_distance_multiplier,
     spellclass = Laser_Spell,
     spelldata = {
       group = main.current.main,

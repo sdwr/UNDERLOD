@@ -4,6 +4,7 @@ fns['init_enemy'] = function(self)
   self.data = self.data or {}
   self.icon = 'swarmer'
 
+  self.can_damage_orb = true
   load_special_swarmer_data(self)
 
   if self.special_swarmer_type == 'orbkiller' then

@@ -86,6 +86,9 @@ function Cast:init(args)
   --vars from data
   self.rotation_lock = self.rotation_lock or false
   self.cast_length = self.cast_length or (self.unit and self.unit.cast_time) or 0.5
+  if self.unit.is_troop then
+    self.cast_length = self.cast_length * math.random(0.8, 1.2)
+  end
   
   self.cancel_on_death = self.cancel_on_death or true
   self.cancel_on_range = self.cancel_on_range or false
@@ -138,8 +141,8 @@ function Cast:cast()
 
   --if the unit is a troop, check for global manual target
   if self.unit and self.unit:is(Troop) then
-    if Helper.manually_targeted_enemy and not Helper.manually_targeted_enemy.dead then
-      self.target = Helper.manually_targeted_enemy
+    if Helper.player_attack_location then
+      self.target = Helper.player_attack_location
     end
   end
 
@@ -148,7 +151,6 @@ function Cast:cast()
   self.spelldata.y = self.y
   self.spelldata.unit = self.unit
   self.spelldata.target = self.target
-  self.spelldata.cast_distance_multiplier = self.cast_distance_multiplier
 
   if self.cast_sound and not self.cast_sound_at_start then
     self.cast_volume = self.cast_volume or 1

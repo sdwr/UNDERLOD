@@ -114,8 +114,8 @@ ENEMY_KNOCKBACK_FORCE_CHAIN_MULTIPLIER = 0.8
 
 ENEMY_KNOCKBACK_VELOCITY_REGAIN_CONTROL_THRESHOLD = 30
 
-LAUNCH_PUSH_FORCE_TROOP_ATTACK = 10
-KNOCKBACK_DURATION_TROOP_ATTACK = 0.2
+LAUNCH_PUSH_FORCE_TROOP_ATTACK = 100
+KNOCKBACK_DURATION_TROOP_ATTACK = 0.15
 
 KNOCKBACK_DURATION_BOSS = 1
 KNOCKBACK_DURATION_ENEMY = 0.6
@@ -358,6 +358,7 @@ SEEK_TO_RANGE_ENEMY_MOVEMENT_RADIUS = 60
 MOVEMENT_TYPE_SEEK_ORB = 'seek_orb'
 MOVEMENT_TYPE_SEEK_ORB_STALL = 'seek_orb_stall'
 MOVEMENT_TYPE_APPROACH_ORB = 'approach_orb'
+MOVEMENT_TYPE_APPROACH_ORB_RANDOM = 'approach_orb_random'
 MOVEMENT_TYPE_SEEK_ORB_RANGE = 'seek_orb_range'
 MOVEMENT_TYPE_SEEK = 'seek'
 MOVEMENT_TYPE_LOOSE_SEEK = 'loose_seek'
@@ -366,6 +367,47 @@ MOVEMENT_TYPE_RANDOM = 'random'
 MOVEMENT_TYPE_FLEE = 'flee'
 MOVEMENT_TYPE_WANDER = 'wander'
 MOVEMENT_TYPE_NONE = 'none'
+MOVEMENT_TYPE_STATIONARY = 'stationary'
+
+MOVEMENT_TYPE_DATA = {
+  [MOVEMENT_TYPE_SEEK_ORB] = {
+    can_attack = false,
+    action_timer = nil,
+    after = MOVEMENT_TYPE_SEEK_ORB
+  },
+  [MOVEMENT_TYPE_SEEK_ORB_STALL] = {
+    can_attack = false,
+    action_timer = nil,
+    after = MOVEMENT_TYPE_SEEK_ORB_STALL
+  },
+  [MOVEMENT_TYPE_APPROACH_ORB] = {
+    can_attack = false,
+    action_timer = nil,
+    after = MOVEMENT_TYPE_STATIONARY
+  },
+  [MOVEMENT_TYPE_APPROACH_ORB_RANDOM] = {
+    can_attack = false,
+    action_timer = nil,
+    after_delay = 1,
+    after = MOVEMENT_TYPE_STATIONARY
+  },
+  [MOVEMENT_TYPE_SEEK_ORB_RANGE] = {
+    can_attack = false,
+    action_timer = nil,
+    after_delay = 1,
+    after = MOVEMENT_TYPE_STATIONARY
+  },
+  [MOVEMENT_TYPE_STATIONARY] = {
+    can_attack = true,
+    action_timer = 0.5,
+    after = MOVEMENT_TYPE_STATIONARY
+  },
+  ['default'] = {
+    can_attack = true,
+    action_timer = 0.5,
+    after = MOVEMENT_TYPE_STATIONARY
+  },
+}
 
 get_movement_type_by_enemy = function(enemy)
   if enemy.special_swarmer_type == 'orbkiller' then
@@ -400,7 +442,7 @@ enemy_movement_types = {
 
   ['default'] = MOVEMENT_TYPE_CROSS_SCREEN,
   -- Aggressive seekers - chase players directly
-  ['swarmer'] = MOVEMENT_TYPE_LOOSE_SEEK,
+  ['swarmer'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
   ['boulder'] = MOVEMENT_TYPE_CROSS_SCREEN,
   
   -- ['seeker'] = MOVEMENT_TYPE_SEEK_ORB,
@@ -413,6 +455,8 @@ enemy_movement_types = {
   ['mortar'] = MOVEMENT_TYPE_APPROACH_ORB,
   ['singlemortar'] = MOVEMENT_TYPE_APPROACH_ORB,
   ['line_mortar'] = MOVEMENT_TYPE_APPROACH_ORB,
+
+  ['crossfire'] = MOVEMENT_TYPE_APPROACH_ORB_RANDOM,
 
   ['burst'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
   ['selfburst'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,

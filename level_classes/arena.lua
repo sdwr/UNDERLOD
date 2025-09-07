@@ -32,6 +32,7 @@ function Arena:init(args)
   -- Initialize arena components
   current_power_onscreen = 0
   round_power_killed = 0
+  total_power_spawned = 0
   is_boss_dead = false
 
   self:init_physics()
@@ -59,8 +60,8 @@ function Arena:init(args)
 end
 
 function Arena:wipe_level(on_finish)
-  local charge_duration = 3.5
-  local wipe_duration = 2
+  local charge_duration = 1.5
+  local wipe_duration = 1.5
   local rest_duration = -0.5
   local total_duration = charge_duration + wipe_duration + rest_duration
 

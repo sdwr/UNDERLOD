@@ -13,17 +13,18 @@ ROUND_POWER_TO_GOLD = 100
 
 --stat constants
 TROOP_HP = 100
-TROOP_DAMAGE = 11
-TROOP_MS = 60
+TROOP_DAMAGE = 5
+TROOP_MS = 100
 -- Legacy constants (will be replaced)
 TROOP_BASE_COOLDOWN = 1.25
 TROOP_SWORDSMAN_BASE_COOLDOWN = 0.8
 
 -- New troop cooldown system
 attack_cooldowns = {
-  ['very-fast'] = 0.8,
-  ['fast'] = 0.9,
+  ['very-fast'] = 0.3,
+  ['fast'] = 0.4,
   ['medium'] = 1.5,
+  ['medium-slow'] = 2,
   ['slow'] = 2.5,
   ['very-slow'] = 4.0
 }
@@ -47,6 +48,7 @@ enemy_attack_cooldowns = {
   ['charger'] = attack_cooldowns['slow'],
   ['summoner'] = attack_cooldowns['slow'],
   ['seeker'] = attack_cooldowns['very-slow'],
+  ['crossfire'] = attack_cooldowns['medium-slow'],
   
   -- Bosses  
   ['stompy'] = attack_cooldowns['fast'],
@@ -64,8 +66,8 @@ enemy_attack_cooldowns = {
 -- Simplified cast/cooldown system
 cast_times = {
   ['instant'] = 0,
-  ['short'] = 0.15,
-  ['medium'] = 0.37,
+  ['short'] = 0.1,
+  ['medium'] = 0.1,
   ['long'] = 0.66,
   ['very-long'] = 1.0
 }
@@ -127,11 +129,11 @@ enemy_cast_times = {
 TROOP_RANGE = 500
 TROOP_SWORDSMAN_RANGE = 80
 
-REGULAR_ENEMY_HP = 45
+REGULAR_ENEMY_HP = 30
 REGULAR_ENEMY_DAMAGE = 15
-REGULAR_ENEMY_MS = 13
+REGULAR_ENEMY_MS = 20
 
-SPECIAL_ENEMY_HP = 200
+SPECIAL_ENEMY_HP = 120
 SPECIAL_ENEMY_DAMAGE = 20
 SPECIAL_ENEMY_MS = 15
 
@@ -231,10 +233,10 @@ LEVEL_TO_TIER = function(level)
 end
 
 TIER_TO_ITEM_RARITY_WEIGHTS = {
-  [1] = {0.7, 0.3, 0, 0},
-  [1.5] = {0.35, 0.5, 0.15, 0},
-  [2] = {0.2, 0.4, 0.3, 0.1},
-  [2.5] = {0, 0.25, 0.5, 0.25},
+  [1] = {0, 1, 0, 0},
+  [1.5] = {0, 0.7, 0.3, 0},
+  [2] = {0, 0.2, 0.6, 0.2},
+  [2.5] = {0, 0.2, 0.6, 0.2},
 }
 
 CHANCE_OF_SPECIAL_VS_NORMAL_ENEMY = 0.7
@@ -280,7 +282,7 @@ SPECIAL_SWARMER_TYPES = {
 
 SPECIAL_SWARMER_DATA = {
   ['orbkiller'] = {
-    can_damage_orb = true,
+    -- can_damage_orb = true,
     speed_multiplier = 1,
     damage_multiplier = 1,
   },
@@ -330,36 +332,36 @@ SPECIAL_SWARMER_WEIGHT_BY_TYPE = {
 
 
 
-ROUND_POWER_AND_MAX_ONSCREEN_POWER = {
-  [1] = {800, 800},
-  [2] = {1000, 900},
-  [3] = {1200, 1000},
-  [4] = {1400, 1000},
-  [5] = {1600, 1200},
-  [6] = {1800, 1400},
-  [7] = {2000, 1600},
-  [8] = {2200, 1800},
-  [9] = {2400, 2000},
-  [10] = {2600, 2200},
-  [11] = {2800, 2400},
-  [12] = {3000, 2600},
-  [13] = {3200, 2800},
-  [14] = {3400, 3000},
-  [15] = {3600, 3200},
-  [16] = {3800, 3400},
-  [17] = {4000, 3500},
-  [18] = {4200, 3600},
-  [19] = {4400, 3700},
-  [20] = {4600, 3800},
-  [21] = {4800, 3900},
-  [22] = {5000, 4200},
-  [23] = {5200, 4400},
-  [24] = {5400, 4600},
-  [25] = {5600, 4800},
+ROUND_POWER_DATA_BY_LEVEL = {
+  [1] = {800},
+  [2] = {1000},
+  [3] = {1200},
+  [4] = {1400},
+  [5] = {1600},
+  [6] = {1800},
+  [7] = {2000},
+  [8] = {2200},
+  [9] = {2400},
+  [10] = {2600},
+  [11] = {2800},
+  [12] = {3000},
+  [13] = {3200},
+  [14] = {3400},
+  [15] = {3600},
+  [16] = {3800},
+  [17] = {4000},
+  [18] = {4200},
+  [19] = {4400},
+  [20] = {4600},
+  [21] = {4800},
+  [22] = {5000},
+  [23] = {5200},
+  [24] = {5400},
+  [25] = {5600},
 }
 
 ROUND_POWER_BY_LEVEL = function(level)
-  local level_info = ROUND_POWER_AND_MAX_ONSCREEN_POWER[level]
+  local level_info = ROUND_POWER_DATA_BY_LEVEL[level]
   if not level_info then
     return 600
   end
@@ -367,15 +369,16 @@ ROUND_POWER_BY_LEVEL = function(level)
 end
 
 MAX_ONSCREEN_ROUND_POWER = function(level)
-  local level_info = ROUND_POWER_AND_MAX_ONSCREEN_POWER[level]
+  -- Allow entire level's worth of enemies onscreen at once
+  local level_info = ROUND_POWER_DATA_BY_LEVEL[level]
   if not level_info then
     return 600
   end
-  return level_info[2]
+  return level_info[1]
 end
 
 LEVEL_ORB_HEALTH = function(level)
-  return 200 + (level * 10)
+  return 400 + (level * 30)
 end
 
 GOLD_GAINED_BY_LEVEL = {
@@ -454,7 +457,7 @@ SCALED_ENEMY_MS = function(level, base_ms)
 end
 
 function SWARMERS_PER_LEVEL(level)
-  return math.min(20, 6 + math.floor(level / 2))
+  return math.min(20, 8)
 end
 
 function BOULDERS_PER_LEVEL(level)
@@ -575,6 +578,8 @@ enemy_type_to_stats = {
     ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
     ['chaser'] = { dmg = 1, mvspd = 1 },
     ['shooter'] = {},
+
+    ['crossfire'] = { mvspd = 2 },
     
     ['cleaver'] = {  },
     ['big_goblin_archer'] = {  },
@@ -707,7 +712,7 @@ _set_unit_base_stats = function(unit)
         unit.baseline_hp = unit.base_hp
         
         unit.base_dmg = 10
-        unit.base_mvspd = 50
+        unit.base_mvspd = 75
     elseif unit:is(EnemyCritter) or unit:is(Critter) then
         unit.base_hp = 25
         unit.baseline_hp = unit.base_hp
