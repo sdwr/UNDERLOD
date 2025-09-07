@@ -457,6 +457,15 @@ function SWARMERS_PER_LEVEL(level)
   return math.min(20, 6 + math.floor(level / 2))
 end
 
+function BOULDERS_PER_LEVEL(level)
+  if level < 4 then return 1 end
+  if level < 8 then return 2 end
+  if level < 12 then return 3 end
+  if level < 16 then return 4 end
+  if level < 20 then return 5 end
+  return 6
+end
+
 function SPECIAL_ENEMIES_PER_LEVEL(level)
   if level == 1 then return 1 end
   if level == 2 then return 1 end
@@ -627,8 +636,8 @@ move_speeds = {
 unit_size = {
     ['small'] = 4,
     ['medium'] = 8,
-    ['medium-plus'] = 10,
-    ['large'] = 14,
+    ['medium-plus'] = 15,
+    ['large'] = 20,
   }
 
 buff_types = {

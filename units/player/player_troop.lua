@@ -145,7 +145,7 @@ function Troop:update(dt)
   -- This is one big if/elseif block. Only ONE of these can run per frame,
   -- which prevents state flickering. The order is based on priority.
 
-  if self.state == unit_states['normal'] or self.state == unit_states['following'] 
+  if self.state == unit_states['normal']
   or self.state == unit_states['idle'] then
     self:update_ai_logic()
   end
@@ -176,7 +176,7 @@ function Troop:update(dt)
   -- If the unit is actively following the mouse.
   elseif self.state == unit_states['following'] then
 
-      -- self:cancel_cast()
+      self:cancel_cast()
       -- self:clear_my_target()
       -- self:clear_assigned_target()
 
@@ -238,7 +238,7 @@ end
 --using the same tag so it can be reset by another movement effect
 --should be able to do this with one tween
 function Troop:start_deceleration()
-  self:set_physics_properties({damping = 1.5})
+  self:set_physics_properties({damping = 3})
   self.t:every(0.08, function()
     local damping = self:get_damping() or 1
     self:set_physics_properties({damping = damping + 1.5})
