@@ -24,6 +24,7 @@ attack_cooldowns = {
   ['very-fast'] = 0.8,
   ['fast'] = 0.9,
   ['medium'] = 1.5,
+  ['medium-slow'] = 2,
   ['slow'] = 2.5,
   ['very-slow'] = 4.0
 }
@@ -47,6 +48,7 @@ enemy_attack_cooldowns = {
   ['charger'] = attack_cooldowns['slow'],
   ['summoner'] = attack_cooldowns['slow'],
   ['seeker'] = attack_cooldowns['very-slow'],
+  ['crossfire'] = attack_cooldowns['medium-slow'],
   
   -- Bosses  
   ['stompy'] = attack_cooldowns['fast'],
@@ -127,7 +129,7 @@ enemy_cast_times = {
 TROOP_RANGE = 500
 TROOP_SWORDSMAN_RANGE = 80
 
-REGULAR_ENEMY_HP = 70
+REGULAR_ENEMY_HP = 60
 REGULAR_ENEMY_DAMAGE = 15
 REGULAR_ENEMY_MS = 10
 
@@ -576,6 +578,8 @@ enemy_type_to_stats = {
     ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
     ['chaser'] = { dmg = 1, mvspd = 1 },
     ['shooter'] = {},
+
+    ['crossfire'] = { mvspd = 2 },
     
     ['cleaver'] = {  },
     ['big_goblin_archer'] = {  },

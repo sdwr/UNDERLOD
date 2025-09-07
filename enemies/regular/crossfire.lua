@@ -13,9 +13,7 @@ fns['init_enemy'] = function(self)
 
   self.baseIdleTimer = 0
   
-  -- Initialize rotation
-  self.r = self.r or 0
-  self.rotation_speed = 0.5  -- Radians per second
+  self.rotation_speed = 0.25  -- Radians per second
 
   --set attacks
   self.attack_options = {}
@@ -35,10 +33,9 @@ fns['init_enemy'] = function(self)
       unit = self,
       x = self.x,
       y = self.y,
-      r = self.r,  -- Pass current rotation to attack
       color = blue[0]:clone(),
       damage = function() return self.dmg end,
-      speed = 100,
+      speed = 80,
       parent = self
     }
   }
@@ -48,8 +45,7 @@ fns['init_enemy'] = function(self)
 end
 
 fns['update_enemy'] = function(self, dt)
-  -- Rotate continuously
-  self.r = self.r + self.rotation_speed * dt
+  self:set_angular_velocity(self.rotation_speed)
 end
 
 fns['draw_enemy'] = function(self)
@@ -74,7 +70,7 @@ function CrossfireAttack:init(args)
   self.projectiles = {}
   
   -- Get the base rotation from the enemy
-  local base_angle = self.r or 0
+  local base_angle = self.parent.r or 0
   
   -- Create projectiles in 4 directions relative to enemy's rotation
   local angle_offsets = {
