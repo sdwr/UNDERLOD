@@ -919,6 +919,7 @@ enemy_type_to_size = {
   ['line_mortar'] = 'special',
   ['aim_spread'] = 'special',
   ['boulder'] = 'boulder',
+  ['crossfire'] = 'special',
   
   ['swarmer'] = 'swarmer',
   

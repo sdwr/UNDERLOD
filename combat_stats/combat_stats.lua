@@ -280,7 +280,7 @@ SPECIAL_SWARMER_TYPES = {
 
 SPECIAL_SWARMER_DATA = {
   ['orbkiller'] = {
-    can_damage_orb = true,
+    -- can_damage_orb = true,
     speed_multiplier = 1,
     damage_multiplier = 1,
   },
