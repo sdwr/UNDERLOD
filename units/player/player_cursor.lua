@@ -51,10 +51,21 @@ function PlayerCursor:update(dt)
   self.scale = 1.0 + 0.2 * math.sin(self.pulse_timer)
   
   self:follow_wasd()
+  self:enforce_orb_boundary()
 
   -- Update attack sensor position
   if self.attack_sensor then
     self.attack_sensor:move_to(self.x, self.y)
+  end
+end
+
+function PlayerCursor:enforce_orb_boundary()
+  local dist_to_center = math.distance(self.x, self.y, self.orb.x, self.orb.y)
+  local max_distance = self.orb.boundary_radius - self.cursor_radius - 2 -- Leave a small buffer
+  if dist_to_center > max_distance then
+    local angle = math.angle(self.orb.x, self.orb.y, self.x, self.y)
+    self.x = self.orb.x + math.cos(angle) * max_distance
+    self.y = self.orb.y + math.sin(angle) * max_distance
   end
 end
 

@@ -12,7 +12,8 @@ function LevelOrb:init(args)
   self.group = args.group or main.current.main
   
   -- Physical properties
-  self.radius = args.radius or 30
+  self.radius = args.radius or 18
+  self.boundary_radius = args.boundary_radius or 40
   self.visible_radius = 0
 
   self:set_as_circle(self.radius, 'static', 'projectile')
@@ -248,6 +249,10 @@ function LevelOrb:draw()
     love.graphics.setLineWidth(2)
     love.graphics.ellipse("line", 0, 0, oval_rx, oval_ry)
     love.graphics.pop()
+  end
+
+  if self.boundary_radius then
+    graphics.circle(self.x, self.y, self.boundary_radius, fg[0], 1)
   end
   
   -- Draw charge particles
