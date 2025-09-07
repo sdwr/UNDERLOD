@@ -14,7 +14,7 @@ ROUND_POWER_TO_GOLD = 100
 --stat constants
 TROOP_HP = 100
 TROOP_DAMAGE = 11
-TROOP_MS = 60
+TROOP_MS = 85
 -- Legacy constants (will be replaced)
 TROOP_BASE_COOLDOWN = 1.25
 TROOP_SWORDSMAN_BASE_COOLDOWN = 0.8
@@ -64,8 +64,8 @@ enemy_attack_cooldowns = {
 -- Simplified cast/cooldown system
 cast_times = {
   ['instant'] = 0,
-  ['short'] = 0.15,
-  ['medium'] = 0.37,
+  ['short'] = 0.1,
+  ['medium'] = 0.1,
   ['long'] = 0.66,
   ['very-long'] = 1.0
 }
@@ -707,7 +707,7 @@ _set_unit_base_stats = function(unit)
         unit.baseline_hp = unit.base_hp
         
         unit.base_dmg = 10
-        unit.base_mvspd = 50
+        unit.base_mvspd = 75
     elseif unit:is(EnemyCritter) or unit:is(Critter) then
         unit.base_hp = 25
         unit.baseline_hp = unit.base_hp

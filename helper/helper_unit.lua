@@ -462,9 +462,13 @@ function Helper.Unit:select()
         else
             Helper.Unit:reset_player_attack_location()
         end
+        
+        local wasd_held = Helper.Unit.wasd_pressed
 
         Helper.Unit.movement_target = Helper.Unit:get_player_location()
         Helper.Unit.wasd_pressed = false
+        Helper.Unit.wasd_released = false
+
         local key_to_direction = {
             ['w'] = {x = 0, y = -1},
             ['a'] = {x = -1, y = 0},
@@ -477,6 +481,10 @@ function Helper.Unit:select()
                 Helper.Unit.movement_target.x = Helper.Unit.movement_target.x + direction.x * 50
                 Helper.Unit.movement_target.y = Helper.Unit.movement_target.y + direction.y * 50
             end
+        end
+
+        if wasd_held and not Helper.Unit.wasd_pressed then
+            Helper.Unit.wasd_released = true
         end
     end
 

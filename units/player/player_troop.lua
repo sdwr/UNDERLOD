@@ -61,22 +61,6 @@ function Troop:follow_mouse()
   end
 end
 
-function Troop:follow_wasd_direction()
-  -- Move based on WASD input direction
-  if self.being_knocked_back then return end
-  
-  local dir = Helper.Unit.movement_direction
-  if dir.x == 0 and dir.y == 0 then
-    -- No movement input, decelerate
-    self:start_deceleration()
-  else
-    -- Apply movement force in the direction specified
-    local force_multiplier = 40  -- Adjust this for movement speed
-    self:apply_force(dir.x * force_multiplier, dir.y * force_multiplier)
-    self:rotate_towards_velocity(1)
-  end
-end
-
 function Troop:rally_to_point()
   -- If not, continue moving towards the rally point.
   if self.being_knocked_back then return end
@@ -174,6 +158,12 @@ function Troop:update(dt)
     end
   end
 
+  if self.state == unit_states['casting'] then
+    if not Helper.player_attack_location then
+      self:cancel_cast()
+    end
+  end
+
 
 
   -- PRIORITY 1: Uninterruptible States
@@ -207,9 +197,14 @@ end
 
 function Troop:follow_wasd()
   if self.being_knocked_back then return end
-  if not Helper.Unit.wasd_pressed then return end
-
-  self:seek_point(Helper.Unit.movement_target.x, Helper.Unit.movement_target.y, SEEK_DECELERATION, SEEK_WEIGHT)
+  if Helper.Unit.wasd_released then
+    self:start_deceleration()
+  elseif Helper.Unit.wasd_pressed then
+    self:seek_point(Helper.Unit.movement_target.x, Helper.Unit.movement_target.y, SEEK_DECELERATION, SEEK_WEIGHT)
+    self.t:after(0, function()
+      self:reset_physics_properties()
+    end, 'reset_physics_properties')
+  end
 end
 
 function Troop:do_automatic_movement()

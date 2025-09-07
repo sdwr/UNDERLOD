@@ -103,14 +103,13 @@ function ArrowProjectile:init(args)
   self.target = self.target
 
   
-  -- Calculate max distance as 1.2x attack range
-  self.max_distance = self.max_distance or 999
+  -- Store starting position
   self.start_x = self.x
   self.start_y = self.y
   
-  -- Calculate direction to target
+  -- Calculate direction to target (but arrow will fly past target)
   if self.target then
-  local xdist = self.target.x - self.x
+    local xdist = self.target.x - self.x
     local ydist = self.target.y - self.y
     self.angle = math.atan2(ydist, xdist)
   else
@@ -149,9 +148,10 @@ function ArrowProjectile:update(dt)
   end
 
 
-  -- Check if we've traveled the max distance
-  local distance_traveled = math.distance(self.start_x, self.start_y, self.x, self.y)
-  if distance_traveled >= self.max_distance then
+  -- Check if arrow has gone out of bounds
+  local out_of_bounds_margin = 50  -- Extra margin beyond screen edges
+  if self.x < -out_of_bounds_margin or self.x > gw + out_of_bounds_margin or 
+     self.y < -out_of_bounds_margin or self.y > gh + out_of_bounds_margin then
     self:die()
     return
   end

@@ -14,7 +14,7 @@ function Archer_Troop:create_spelldata()
     spell_duration = 10,
     bullet_size = 3,
     pierce = false,
-    homing = true,
+    -- homing = true,
     speed = 210,
     is_troop = true,
     color = blue[0],
