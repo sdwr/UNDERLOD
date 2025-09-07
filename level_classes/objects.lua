@@ -349,6 +349,12 @@ function Unit:config_physics_object()
     self:set_as_steerable(self.max_v, MAX_ENEMY_FORCE, 4*math.pi, 4)
 
   elseif self.class == 'troop' then
+    -- Troops no longer have collision - they are invisible weapons at the orb
+    if self.no_collision then
+      -- Skip physics setup for troops
+      return
+    end
+    
     if self.ghost == true then
       self:set_as_rectangle(self.size, self.size,'dynamic', 'ghost')
     else

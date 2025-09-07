@@ -1362,6 +1362,7 @@ function init()
       -- -- 'selfburst',
       -- 'burst',
       'crossfire',
+      'tank',
       -- 'snakearrow',
       -- 'turret',
       -- 'mortar',
@@ -1432,6 +1433,7 @@ function init()
     ['selfburst'] = 75,
     ['snakearrow'] = 75,
     ['crossfire'] = 75,
+    ['tank'] = 75,
 
     --special enemies t1.5
     ['mortar'] = 75,

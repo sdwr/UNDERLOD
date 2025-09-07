@@ -133,21 +133,17 @@ function WorldManager:create_arena(level, offset_x)
     arena:create_door()
 
     -- Only spawn teams and enemies for non-tutorial levels
-    Spawn_Teams(arena, true)
+    Spawn_Teams(arena, false)  -- Changed to false to disable suction
     Helper.Unit:update_unit_colors()
-    Helper.Unit:all_troops_begin_suction(arena)
+    -- Removed suction effect - troops now spawn directly at center
 
     self.t:after(1.5, function()
       arena.level_orb:spawn()
     end)
 
-    self.t:after(DELAY_BEFORE_SUCTION, function()
-      arena.spawn_manager:change_state('suction_to_targets')
-    end)
-
-    --cancel suction after 5 seconds
-    self.t:after(5, function()
-      End_Suction(arena)
+    -- Start spawning enemies immediately instead of after suction
+    self.t:after(0.5, function()
+      arena.spawn_manager:change_state('processing_wave')
     end)
 
   else

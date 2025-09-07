@@ -13,8 +13,16 @@ function Troop:init(args)
   --self.buffs[1] = {name = buff_types['dmg'], amount = 0.2, color = red_transparent_weak}
   --self.buffs[2] = {name = buff_types['aspd'], amount = 0.2, color = green_transparent_weak}
   self.beingHealed = false
+  
+  -- Position troop at center of screen (orb location)
+  args.x = gw/2
+  args.y = gh/2
+  
   self:init_game_object(args)
   Helper.Unit:add_custom_variables_to_unit(self)
+  -- Disable collision for troops
+  self.no_collision = true
+  
   self:init_unit()
   local level = self.level or 1
 
@@ -136,8 +144,14 @@ function Troop:update(dt)
   self:calculate_stats()
   self:update_targets() -- Updates who the unit is targeting
 
-  self:update_movement_effect(dt)
+  -- Don't update movement effects since troops don't move
+  -- self:update_movement_effect(dt)
   self:update_survivor_effect(dt)
+  
+  -- Keep troops at center of screen
+  self.x = gw/2
+  self.y = gh/2
+  self:set_velocity(0, 0)
 
   -- ===================================================================
   -- 2. THE STATE MACHINE (Hierarchical and Predictable)
@@ -145,10 +159,11 @@ function Troop:update(dt)
   -- This is one big if/elseif block. Only ONE of these can run per frame,
   -- which prevents state flickering. The order is based on priority.
 
-  if table.contains(unit_states_can_move, self.state) then
-    self:follow_wasd()
-    self:do_automatic_movement()
-  end
+  -- Disable movement for troops
+  -- if table.contains(unit_states_can_move, self.state) then
+  --   self:follow_wasd()
+  --   self:do_automatic_movement()
+  -- end
 
   if table.contains(unit_states_can_cast, self.state) then
     if Helper.player_attack_location then
@@ -254,61 +269,40 @@ end
 
 
 function Troop:draw()
-  --graphics.circle(self.x, self.y, self.attack_sensor.rs, orange[0], 1)
-
-  local final_scale_x = self.hfx.attack_scale_x.x 
-    * self.hfx.move_scale_x.x 
-    * self.hfx.survivor_scale.x
-    * self.hfx.hit.x 
-  local final_scale_y = self.hfx.attack_scale_y.x 
-    * self.hfx.move_scale_y.x
-    * self.hfx.survivor_scale.x
-    * self.hfx.hit.x 
-
-  graphics.push(self.x, self.y, self.r, final_scale_x, final_scale_y)
-  self:draw_buffs()
-
-  -- Distance multiplier glow effect
-  self:draw_distance_glow()
-
-  -- -- darken the non-selected units
-  -- local color = self.color:clone()
-  -- color = color:lighten(SELECTED_PLAYER_LIGHTEN)
-
-  --draw unit model (rectangle not circle??)
-  graphics.rectangle(self.x, self.y, self.shape.w*.66, self.shape.h*.66, 3, 3, self.hfx.hit.f and fg[0] or self.color)
+  -- Troops are invisible - don't draw anything
+  return
 
   -- if not self.selected then
   --   graphics.rectangle(self.x, self.y, 3, 3, 1, 1, self.color)
   -- end
 
-  if self.state == unit_states['casting'] then
-    self:draw_cast_timer()
-  end
-  if self.state == unit_states['channeling'] then
-    self:draw_channeling()
-  end
+  -- if self.state == unit_states['casting'] then
+  --   self:draw_cast_timer()
+  -- end
+  -- if self.state == unit_states['channeling'] then
+  --   self:draw_channeling()
+  -- end
 
-  if not Helper.Unit:cast_off_cooldown(self) then
-    self:draw_cooldown_timer()
-  end
-  if self.bubbled then 
-    graphics.circle(self.x, self.y, self.shape.w, yellow_transparent_weak)
-  end
-  --not going very transparent
-  if self:isShielded() then
-    local color = yellow[5]:clone()
-    color.a = 0.3
-    graphics.circle(self.x, self.y, self.shape.w*0.6, color)
-  end
+  -- if not Helper.Unit:cast_off_cooldown(self) then
+  --   self:draw_cooldown_timer()
+  -- end
+  -- if self.bubbled then 
+  --   graphics.circle(self.x, self.y, self.shape.w, yellow_transparent_weak)
+  -- end
+  -- --not going very transparent
+  -- if self:isShielded() then
+  --   local color = yellow[5]:clone()
+  --   color.a = 0.3
+  --   graphics.circle(self.x, self.y, self.shape.w*0.6, color)
+  -- end
 
-  --draw aggro sensor
-  -- graphics.circle(self.x, self.y, self.aggro_sensor.rs, yellow[5], 2)
+  -- --draw aggro sensor
+  -- -- graphics.circle(self.x, self.y, self.aggro_sensor.rs, yellow[5], 2)
 
-  graphics.pop()
+  -- graphics.pop()
   
-  -- Debug steering forces
-  self:draw_steering_debug()
+  -- -- Debug steering forces
+  -- self:draw_steering_debug()
 end
 
 function Troop:draw_distance_glow()

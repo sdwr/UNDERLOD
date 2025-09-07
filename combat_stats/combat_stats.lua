@@ -21,8 +21,8 @@ TROOP_SWORDSMAN_BASE_COOLDOWN = 0.8
 
 -- New troop cooldown system
 attack_cooldowns = {
-  ['very-fast'] = 0.3,
-  ['fast'] = 0.4,
+  ['very-fast'] = 0.5,
+  ['fast'] = 0.65,
   ['medium'] = 1.5,
   ['medium-slow'] = 2,
   ['slow'] = 2.5,
@@ -580,6 +580,7 @@ enemy_type_to_stats = {
     ['shooter'] = {},
 
     ['crossfire'] = { mvspd = 2 },
+    ['tank'] = { mvspd = 0.5 },
     
     ['cleaver'] = {  },
     ['big_goblin_archer'] = {  },
