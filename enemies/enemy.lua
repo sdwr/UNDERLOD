@@ -318,7 +318,7 @@ function Enemy:update_movement()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB then
     return self:update_move_seek_location_no_wander()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL then
-    return self:update_move_seek_location_no_wander()
+    return self:update_move_seek_stall()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK then
     return self:update_move_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
@@ -617,6 +617,22 @@ function Enemy:update_move_seek_location()
     end
   end
 
+  return false
+end
+
+function Enemy:update_move_seek_stall()
+  if self.target_location then
+    if self:distance_to_point(self.target_location.x, self.target_location.y) < DISTANCE_TO_TARGET_FOR_IDLE then
+      return false
+    else
+      --slow down as you get closer to the target
+      local distance_to_target = self:distance_to_point(self.target_location.x, self.target_location.y)
+      distance_to_target = math.clamp(distance_to_target, 0, 75)
+      local deceleration = SEEK_DECELERATION * (75 / distance_to_target)
+      self:seek_point(self.target_location.x, self.target_location.y, deceleration, get_seek_weight_by_enemy_type(self.type))
+      return true
+    end
+  end
   return false
 end
 

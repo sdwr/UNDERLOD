@@ -375,6 +375,11 @@ MOVEMENT_TYPE_DATA = {
     action_timer = nil,
     after = MOVEMENT_TYPE_SEEK_ORB
   },
+  [MOVEMENT_TYPE_SEEK_ORB_STALL] = {
+    can_attack = false,
+    action_timer = nil,
+    after = MOVEMENT_TYPE_SEEK_ORB_STALL
+  },
   [MOVEMENT_TYPE_APPROACH_ORB] = {
     can_attack = false,
     action_timer = nil,
@@ -437,7 +442,7 @@ enemy_movement_types = {
 
   ['default'] = MOVEMENT_TYPE_CROSS_SCREEN,
   -- Aggressive seekers - chase players directly
-  ['swarmer'] = MOVEMENT_TYPE_SEEK_ORB,
+  ['swarmer'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
   ['boulder'] = MOVEMENT_TYPE_CROSS_SCREEN,
   
   -- ['seeker'] = MOVEMENT_TYPE_SEEK_ORB,
