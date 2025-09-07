@@ -378,7 +378,7 @@ MAX_ONSCREEN_ROUND_POWER = function(level)
 end
 
 LEVEL_ORB_HEALTH = function(level)
-  return 200 + (level * 10)
+  return 400 + (level * 30)
 end
 
 GOLD_GAINED_BY_LEVEL = {
