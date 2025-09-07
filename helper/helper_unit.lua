@@ -697,57 +697,10 @@ function Helper.Unit:reset_knockback_variables(unit)
     unit.steering_enabled = true
 end
 
-function Helper.Unit:apply_knockback_enemy(unit, force, angle)
+function Helper.Unit:apply_knockback(unit, force, angle)
 
     unit:apply_impulse(force * math.cos(angle), force * math.sin(angle))
     unit:apply_angular_impulse(random:table{random:float(-2*math.pi, -0.5*math.pi), random:float(0.5*math.pi, 2*math.pi)})
-end
-
-function Helper.Unit:apply_knockback(unit, force, angle, duration, push_invulnerable)
-    -- Prevent knockback stacking
-    if unit.being_knocked_back then
-        return
-    end
-
-    if unit.is_launching then
-        return
-    end
-
-    -- Apply knockback resistance
-    local resistance = unit.knockback_resistance or 0
-    local final_force = force * (1 - resistance)
-    local final_duration = duration * (1 - resistance)
-
-    -- Get the unit's mass, default to 1 if it has no physics body
-    local mass = get_mass_by_unit_class(unit.class)
-
-    -- Standardized values for a dramatic knockback effect
-    local knockback_mass = mass * 0.5 -- Make unit temporarily lighter
-
-    -- Calculate the final impulse force, amplified by mass
-    local impulse = final_force * mass
-
-    -- Apply the changes without changing state
-    unit.push_invulnerable = push_invulnerable
-    unit:set_physics_properties({mass = knockback_mass})
-    
-    -- Set knockback flag but DON'T disable steering completely
-    -- Instead, add a flag to prevent certain steering behaviors
-    Helper.Unit:set_knockback_variables(unit)
-
-    -- Reset velocity for a clean push
-    unit:set_velocity(0, 0)
-    unit:apply_impulse(impulse * math.cos(angle), impulse * math.sin(angle))
-    unit:apply_angular_impulse(random:table{random:float(-12*math.pi, -4*math.pi), random:float(4*math.pi, 12*math.pi)})
-
-    -- After the duration, restore the unit's original physics properties
-    unit.t:after(final_duration, function()
-        unit:reset_physics_properties()
-    end, 'reset_physics_properties')
-
-    unit.t:after(final_duration, function()
-        Helper.Unit:reset_knockback_variables(unit)
-    end, 'reset_knockback_variables')
 end
 
 function Helper.Unit:apply_area_size_multiplier(unit, base_size)

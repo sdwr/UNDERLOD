@@ -66,6 +66,24 @@ function PlayerCursor:enforce_orb_boundary()
     local angle = math.angle(self.orb.x, self.orb.y, self.x, self.y)
     self.x = self.orb.x + math.cos(angle) * max_distance
     self.y = self.orb.y + math.sin(angle) * max_distance
+    
+    -- Update physics body position to match
+    if self.body then
+      self.body:setPosition(self.x, self.y)
+      
+      -- Cancel outward velocity component to prevent sticking
+      local vx, vy = self.body:getLinearVelocity()
+      local radial_x = (self.x - self.orb.x) / dist_to_center
+      local radial_y = (self.y - self.orb.y) / dist_to_center
+      local radial_velocity = vx * radial_x + vy * radial_y
+      
+      if radial_velocity > 0 then
+        -- Remove only the outward component
+        vx = vx - radial_velocity * radial_x
+        vy = vy - radial_velocity * radial_y
+        self.body:setLinearVelocity(vx, vy)
+      end
+    end
   end
 end
 
@@ -85,6 +103,8 @@ function PlayerCursor:draw()
   graphics.circle(self.x, self.y, 1, self.color)
   
   graphics.pop()
+
+  self:draw_steering_debug()
 end
 
 function PlayerCursor:hit(damage, from, damageType, playHitEffects, cannotProcOnHit)

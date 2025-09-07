@@ -12,8 +12,8 @@ function LevelOrb:init(args)
   self.group = args.group or main.current.main
   
   -- Physical properties
-  self.radius = args.radius or 18
-  self.boundary_radius = args.boundary_radius or 40
+  self.radius = args.radius or 10
+  self.boundary_radius = args.boundary_radius or 55
   self.visible_radius = 0
 
   self:set_as_circle(self.radius, 'static', 'projectile')
@@ -148,7 +148,7 @@ end
 
 function LevelOrb:on_trigger_enter(other)
   if not other:is(Enemy) then return end
-  if not other.can_damage_orb then return end
+  -- if not other.can_damage_orb then return end
 
   local enemy_round_power = enemy_to_round_power[other.type] or 10
 
@@ -252,7 +252,10 @@ function LevelOrb:draw()
   end
 
   if self.boundary_radius then
-    graphics.circle(self.x, self.y, self.boundary_radius, fg[0], 1)
+    --make it light grey
+    local boundary_color = green[-3]:clone()
+    boundary_color.a = 0.07
+    graphics.circle(self.x, self.y, self.boundary_radius, boundary_color)
   end
   
   -- Draw charge particles
