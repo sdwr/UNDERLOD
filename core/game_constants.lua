@@ -358,6 +358,7 @@ SEEK_TO_RANGE_ENEMY_MOVEMENT_RADIUS = 60
 MOVEMENT_TYPE_SEEK_ORB = 'seek_orb'
 MOVEMENT_TYPE_SEEK_ORB_STALL = 'seek_orb_stall'
 MOVEMENT_TYPE_SEEK_ORB_SPIRAL = 'seek_orb_spiral'
+MOVEMENT_TYPE_SEEK_ORB_ATTACK = 'seek_orb_attack'
 MOVEMENT_TYPE_APPROACH_ORB = 'approach_orb'
 MOVEMENT_TYPE_APPROACH_ORB_RANDOM = 'approach_orb_random'
 MOVEMENT_TYPE_SEEK_ORB_RANGE = 'seek_orb_range'
@@ -385,6 +386,11 @@ MOVEMENT_TYPE_DATA = {
     can_attack = false,
     action_timer = nil,
     after = MOVEMENT_TYPE_SEEK_ORB_SPIRAL
+  },
+  [MOVEMENT_TYPE_SEEK_ORB_ATTACK] = {
+    can_attack = true,
+    action_timer = 1.5,
+    after = MOVEMENT_TYPE_SEEK_ORB_ATTACK
   },
   [MOVEMENT_TYPE_APPROACH_ORB] = {
     can_attack = false,
@@ -455,9 +461,9 @@ enemy_movement_types = {
   -- ['seeker'] = MOVEMENT_TYPE_SEEK_ORB,
 
   -- Ranged units that maintain distance
-  ['big_goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['archer'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['big_goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['archer'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
 
   ['mortar'] = MOVEMENT_TYPE_APPROACH_ORB,
   ['singlemortar'] = MOVEMENT_TYPE_APPROACH_ORB,

@@ -222,7 +222,6 @@ function Enemy:update(dt)
 
       if self.actionTimer and self.actionTimer <= 0 then
         self:pick_action()
-        self:set_movement_action(movementData.after)
       else
         local continue_movement = self:update_movement()
         if not continue_movement then
@@ -291,7 +290,8 @@ function Enemy:choose_movement_target()
     return self:acquire_target_cross_screen(false)
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB 
   or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL 
-  or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_SPIRAL then
+  or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_SPIRAL 
+  or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_ATTACK then
     return self:acquire_target_seek_orb()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK then
     return self:acquire_target_seek()
@@ -322,6 +322,8 @@ function Enemy:update_movement()
     return self:update_move_seek_stall()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_SPIRAL then
     return self:update_move_seek_spiral()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_ATTACK then
+    return self:update_move_seek_location_no_wander()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK then
     return self:update_move_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
@@ -631,7 +633,7 @@ function Enemy:update_move_seek_stall()
       --slow down as you get closer to the target
       local distance_to_target = self:distance_to_point(self.target_location.x, self.target_location.y)
       distance_to_target = math.clamp(distance_to_target, 65, 150)
-      local speed_multiplier = math.remap(distance_to_target, 65, 150, 0.15, 1)
+      local speed_multiplier = Helper.Target:approach_orb_stall_speed_multiplier(distance_to_target)
       self:set_physics_properties({max_v = self.mvspd * speed_multiplier})
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
       return true

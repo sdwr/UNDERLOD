@@ -382,6 +382,7 @@ function LevelOrb:draw()
   graphics.circle(self.x, self.y, self.visible_radius * 0.98, inner_highlight, 1)
   
   graphics.pop()
+
 end
 
 function LevelOrb:die()
