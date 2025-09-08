@@ -448,6 +448,12 @@ function Troop:die()
   self.death_function()
 end
 
+--override in subclasses
+function Troop:on_trigger_enter(other)
+  return
+end
+
+--no longer used
 function Troop:on_collision_enter(other, contact)
   local x, y = contact:getPositions()
 

@@ -50,13 +50,22 @@ function PlayerCursor:update(dt)
   self.pulse_timer = self.pulse_timer + dt * 3
   self.scale = 1.0 + 0.2 * math.sin(self.pulse_timer)
   
-  self:follow_wasd()
-  self:enforce_orb_boundary()
+  self:follow_mouse()
+  -- self:follow_wasd()
+  -- self:enforce_orb_boundary()
 
   -- Update attack sensor position
   if self.attack_sensor then
     self.attack_sensor:move_to(self.x, self.y)
   end
+end
+
+function PlayerCursor:follow_mouse()
+  local mouse_x, mouse_y = love.mouse.getPosition()
+  mouse_x = mouse_x / sx
+  mouse_y = mouse_y / sx
+  self.x = mouse_x
+  self.y = mouse_y
 end
 
 function PlayerCursor:enforce_orb_boundary()
