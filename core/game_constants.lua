@@ -422,9 +422,6 @@ MOVEMENT_TYPE_DATA = {
 }
 
 get_movement_type_by_enemy = function(enemy)
-  if enemy.special_swarmer_type == 'orbkiller' then
-    return MOVEMENT_TYPE_SEEK_ORB
-  end
 
   return enemy_movement_types[enemy.type] or enemy_movement_types['default']
 end
@@ -456,7 +453,7 @@ enemy_movement_types = {
   -- Aggressive seekers - chase players directly
   ['swarmer'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
   ['boulder'] = MOVEMENT_TYPE_CROSS_SCREEN,
-  ['tank'] = MOVEMENT_TYPE_SEEK_ORB,
+  ['tank'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
   
   -- ['seeker'] = MOVEMENT_TYPE_SEEK_ORB,
 
@@ -465,26 +462,26 @@ enemy_movement_types = {
   ['goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
   ['archer'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
 
-  ['mortar'] = MOVEMENT_TYPE_APPROACH_ORB,
-  ['singlemortar'] = MOVEMENT_TYPE_APPROACH_ORB,
-  ['line_mortar'] = MOVEMENT_TYPE_APPROACH_ORB,
+  ['mortar'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['singlemortar'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['line_mortar'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
 
-  ['crossfire'] = MOVEMENT_TYPE_APPROACH_ORB_RANDOM,
-  ['spiral'] = MOVEMENT_TYPE_SEEK_ORB_SPIRAL,
+  ['crossfire'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['spiral'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
 
   ['burst'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
   ['snakearrow'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+
+  ['selfburst'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['arcspread'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['aim_spread'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['plasma'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['laser'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['summoner'] = MOVEMENT_TYPE_APPROACH_ORB,
+  ['spawner'] = MOVEMENT_TYPE_APPROACH_ORB,
+  ['firewall_caster'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
   
-  ['selfburst'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['arcspread'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['aim_spread'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['plasma'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['laser'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['summoner'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['spawner'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['firewall_caster'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  
-  ['turret'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['turret'] = MOVEMENT_TYPE_APPROACH_ORB,
   
   -- Bosses
   ['stompy'] = MOVEMENT_TYPE_LOOSE_SEEK,

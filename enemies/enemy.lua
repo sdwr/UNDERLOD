@@ -221,7 +221,10 @@ function Enemy:update(dt)
       end
 
       if self.actionTimer and self.actionTimer <= 0 then
-        self:pick_action()
+        local success = self:pick_action()
+        if not success then
+          self:set_movement_action(movementData.after)
+        end
       else
         local continue_movement = self:update_movement()
         if not continue_movement then
@@ -323,7 +326,7 @@ function Enemy:update_movement()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_SPIRAL then
     return self:update_move_seek_spiral()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_ATTACK then
-    return self:update_move_seek_location_no_wander()
+    return self:update_move_seek_stall()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK then
     return self:update_move_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then

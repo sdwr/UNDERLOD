@@ -294,10 +294,10 @@ SPECIAL_SWARMER_DATA = {
     secondary_distance = 200,
   },
   ['poison'] = {
-    radius = 30,
+    radius = 50,
     duration = 8,
-    tick_rate = 0.5,
-    damage_multi = 0.25,
+    tick_rate = 1,
+    damage_multi = 1,
   },
 }
 
@@ -579,12 +579,12 @@ enemy_type_to_stats = {
     ['chaser'] = { dmg = 1, mvspd = 1 },
     ['shooter'] = {},
 
-    ['crossfire'] = { mvspd = 2 },
+    ['crossfire'] = {},
     ['tank'] = { mvspd = 0.5 },
     
     ['cleaver'] = {  },
     ['big_goblin_archer'] = {  },
-    ['goblin_archer'] = {mvspd = 2.5 },
+    ['goblin_archer'] = {},
     ['archer'] = {  },
     ['turret'] = {  },
 
