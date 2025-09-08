@@ -792,7 +792,7 @@ function Enemy:die()
 
   self.super.die(self)
   self.dead = true
-  _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.3}
+  _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.1}
   
   -- Drop gold when enemy dies
   -- if main.current and main.current.gold_counter then
@@ -803,7 +803,7 @@ function Enemy:die()
   -- Add progress to wave progress bar
   if main.current and main.current.current_arena and main.current.current_arena.progress_bar then
     local round_power = enemy_to_round_power[self.type] or 100
-    main.current.current_arena.progress_bar:increase_with_particles(round_power, self.x, self.y)
+    -- main.current.current_arena.progress_bar:increase_with_particles(round_power, self.x, self.y)
   end
   if self.parent and self.parent.summons and self.parent.summons > 0 then
     self.parent.summons = self.parent.summons - 1

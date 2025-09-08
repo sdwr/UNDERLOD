@@ -16,7 +16,7 @@ function Archer_Troop:create_spelldata()
     bullet_size = 3,
     pierce = false,
     -- homing = true,
-    speed = 210,
+    speed = 350,
     is_troop = true,
     color = blue[0],
     damage = function() return self.dmg end,

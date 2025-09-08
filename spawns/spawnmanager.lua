@@ -737,7 +737,7 @@ function SpawnManager:process_infinite_wave()
     self:process_instruction(group_data)
     --increase delay based on distance to the max onscreen power
     local percent_to_max = (current_power_onscreen + group_power) / MAX_ONSCREEN_ROUND_POWER(self.arena.level)
-    local delay = math.remap(math.max(percent_to_max, 0.5), 0.5, 1, 5, 8)
+    local delay = math.remap(math.max(percent_to_max, 0.5), 0.5, 1, 3, 6)
     self:process_instruction({'DELAY', delay})
     self.next_group = nil
   end

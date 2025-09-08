@@ -178,15 +178,16 @@ function Troop:update(dt)
   -- end
 
   if table.contains(unit_states_can_cast, self.state) then
-    if Helper.player_attack_location then
-      if Helper.Unit:can_cast(self, Helper.player_attack_location) then
-        self:setup_cast(Helper.player_attack_location)
+    self.target = Helper.Target:get_close_enemy(self)
+    if self.target then
+      if Helper.Unit:can_cast(self, self.target) then
+        self:setup_cast(self.target)
       end
     end
   end
 
   if self.state == unit_states['casting'] then
-    if not Helper.player_attack_location then
+    if not self.target or self.target.dead then
       self:cancel_cast()
     end
   end

@@ -22,7 +22,7 @@ TROOP_SWORDSMAN_BASE_COOLDOWN = 0.8
 -- New troop cooldown system
 attack_cooldowns = {
   ['very-fast'] = 0.5,
-  ['fast'] = 0.65,
+  ['fast'] = 0.8,
   ['medium'] = 1.5,
   ['medium-slow'] = 2,
   ['slow'] = 2.5,
@@ -131,11 +131,11 @@ TROOP_SWORDSMAN_RANGE = 80
 
 REGULAR_ENEMY_HP = 30
 REGULAR_ENEMY_DAMAGE = 15
-REGULAR_ENEMY_MS = 60
+REGULAR_ENEMY_MS = 70
 
 SPECIAL_ENEMY_HP = 100
 SPECIAL_ENEMY_DAMAGE = 20
-SPECIAL_ENEMY_MS = 55
+SPECIAL_ENEMY_MS = 50
 
 MINIBOSS_HP = 400
 MINIBOSS_DAMAGE = 20
