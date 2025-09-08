@@ -621,6 +621,13 @@ function SpawnManager:init(arena)
     self.wave_start_time = 0
     self.wave_timeout = 60 -- 60 seconds max per wave
     
+    -- Wave group scheduling
+    self.wave_groups = {}  -- All groups for current wave
+    self.current_group_index = 1
+    self.wave_spawn_window = 5  -- Spawn all groups within first 20 seconds of wave
+    self.next_group_spawn_time = 0
+    self.all_groups_spawned = false
+    
     -- Timers and Trackers
     self.timer = TIME_BETWEEN_WAVES
     self.pending_spawns = 0
@@ -676,9 +683,9 @@ function SpawnManager:update(dt)
         end
       end
     end
-    -- If we are spawning a wave, keep spawning groups
+    -- If we are spawning a wave, check for scheduled group spawns
     if self.state == 'spawning_wave' then
-        self:process_wave_spawning()
+        self:process_scheduled_spawns(dt)
     end
 
     if self.state == 'spawning_boss' then
@@ -686,7 +693,7 @@ function SpawnManager:update(dt)
       self:change_state('waiting_for_clear')
     end
     
-    -- Waiting for wave to clear (all enemies dead or timeout)
+    -- Waiting for wave to clear
     if self.state == 'waiting_for_wave_clear' then
       local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
       local all_dead = true
@@ -697,9 +704,18 @@ function SpawnManager:update(dt)
         end
       end
       
-      local time_since_wave_start = Helper.Time.time - self.wave_start_time
-      if all_dead or time_since_wave_start > self.wave_timeout then
-        -- Move to next wave or finish
+      -- Check if we should reduce wait time for next group
+      if not self.all_groups_spawned then
+        local time_since_wave = Helper.Time.time - self.wave_start_time
+        local time_to_next = self.next_group_spawn_time - time_since_wave
+        if time_to_next > 1 then
+          -- Accelerate next spawn if it's more than 1 second away
+          self.next_group_spawn_time = time_since_wave + 1
+        end
+        -- Continue spawning
+        self:change_state('spawning_wave')
+      elseif all_dead then
+        -- All groups spawned and all enemies dead - wave complete
         if self.current_wave < self.total_waves then
           self.current_wave = self.current_wave + 1
           self.timer = TIME_BETWEEN_WAVES
@@ -738,45 +754,120 @@ function SpawnManager:start_wave(wave_number)
   self.current_wave_power_spawned = 0
   self.wave_start_time = Helper.Time.time
   
-  -- Don't reset onscreen tracking between waves, only spawned tracking for this wave
+  -- Generate all groups for this wave
+  self:generate_wave_groups()
   
   self:change_state('spawning_wave')
 end
 
--- Process wave spawning - instantly spawn groups until power cap reached
-function SpawnManager:process_wave_spawning()
-  -- Check if we've reached the wave's power cap
-  if self.current_wave_power_spawned >= self.current_wave_power_target then
+-- Generate all groups for the wave at once
+function SpawnManager:generate_wave_groups()
+  self.wave_groups = {}
+  self.current_group_index = 1
+  self.all_groups_spawned = false
+  
+  local power_generated = 0
+  local target_power = self.current_wave_power_target
+  
+  -- Generate groups until we reach target power
+  while power_generated < target_power do
+    local group_data = Get_Next_Group(self.arena.level)
+    local group_power = Wave_Types:Get_Group_Power(group_data)
+    
+    -- Stop if this group would exceed target
+    if power_generated + group_power > target_power then
+      break
+    end
+    
+    -- Store the full group data
+    local group = {
+      type = group_data[2],
+      amount = group_data[3],
+      spawn_type = group_data[4],
+      power = group_power,
+      spawn_time = 0  -- Will be set when sorting
+    }
+    
+    table.insert(self.wave_groups, group)
+    power_generated = power_generated + group_power
+  end
+  
+  -- Sort groups into categories
+  local swarmer_groups = {}
+  local special_groups = {}
+  local boulder_groups = {}
+  
+  for _, group in ipairs(self.wave_groups) do
+    if group.type == 'swarmer' then
+      table.insert(swarmer_groups, group)
+    elseif group.type == 'boulder' then
+      table.insert(boulder_groups, group)
+    else
+      table.insert(special_groups, group)
+    end
+  end
+  
+  -- Assign random spawn times within the spawn window
+  for _, group in ipairs(swarmer_groups) do
+    group.spawn_time = random:float(0, self.wave_spawn_window)
+  end
+  for _, group in ipairs(special_groups) do
+    group.spawn_time = random:float(0, self.wave_spawn_window)
+  end
+  for _, group in ipairs(boulder_groups) do
+    group.spawn_time = random:float(0, self.wave_spawn_window)
+  end
+  
+  -- Recombine and sort by spawn time
+  self.wave_groups = {}
+  for _, group in ipairs(swarmer_groups) do table.insert(self.wave_groups, group) end
+  for _, group in ipairs(special_groups) do table.insert(self.wave_groups, group) end
+  for _, group in ipairs(boulder_groups) do table.insert(self.wave_groups, group) end
+  
+  table.sort(self.wave_groups, function(a, b) return a.spawn_time < b.spawn_time end)
+  
+  -- Set next spawn time
+  if #self.wave_groups > 0 then
+    self.next_group_spawn_time = self.wave_groups[1].spawn_time
+  else
+    self.all_groups_spawned = true
+  end
+end
+
+-- Process scheduled spawns
+function SpawnManager:process_scheduled_spawns(dt)
+  if self.all_groups_spawned then
     self:change_state('waiting_for_wave_clear')
     return
   end
   
-  -- Get next group to spawn
-  local group_data = Get_Next_Group(self.arena.level)
-  local group_power = Wave_Types:Get_Group_Power(group_data)
-  group_data = {group_data[2], group_data[3], group_data[4]}
+  local time_since_wave = Helper.Time.time - self.wave_start_time
   
-  -- Check if spawning this group would exceed wave power cap
-  if self.current_wave_power_spawned + group_power > self.current_wave_power_target then
-    -- Try a smaller group or wait
-    self:change_state('waiting_for_wave_clear')
-    return
+  -- Check if it's time to spawn the next group
+  if time_since_wave >= self.next_group_spawn_time then
+    local group = self.wave_groups[self.current_group_index]
+    if group then
+      -- Check onscreen limit before spawning
+      local max_onscreen = MAX_ONSCREEN_ROUND_POWER(self.arena.level)
+      if current_power_onscreen + group.power <= max_onscreen then
+        -- Spawn the group
+        self:spawn_group_instantly({group.type, group.amount, group.spawn_type})
+        self.current_wave_power_spawned = self.current_wave_power_spawned + group.power
+        
+        -- Move to next group
+        self.current_group_index = self.current_group_index + 1
+        if self.current_group_index > #self.wave_groups then
+          self.all_groups_spawned = true
+          self:change_state('waiting_for_wave_clear')
+        else
+          self.next_group_spawn_time = self.wave_groups[self.current_group_index].spawn_time
+        end
+      else
+        -- Wait for enemies to die before spawning more
+        self:change_state('waiting_for_wave_clear')
+      end
+    end
   end
-  
-  -- Check if too many enemies onscreen (still respect max onscreen limit)
-  local max_onscreen = MAX_ONSCREEN_ROUND_POWER(self.arena.level)
-  if current_power_onscreen + group_power > max_onscreen then
-    -- Wait a bit before trying again
-    self.timer = 0.5
-    self:change_state('waiting_for_delay')
-    return
-  end
-  
-  -- Spawn the group immediately
-  self:spawn_group_instantly(group_data)
-  self.current_wave_power_spawned = self.current_wave_power_spawned + group_power
-  
-  -- Continue spawning immediately (will check limits next frame)
 end
 
 -- Spawn a group instantly without delay

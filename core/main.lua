@@ -1366,6 +1366,7 @@ function init()
       -- 'tank',
       'snakearrow',
       'turret',
+      'crossfire',
       -- 'mortar',
       -- 'singlemortar',
       -- 'cleaver',
