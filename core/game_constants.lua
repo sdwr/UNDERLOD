@@ -472,13 +472,14 @@ enemy_movement_types = {
   ['crossfire'] = MOVEMENT_TYPE_APPROACH_ORB_RANDOM,
   ['spiral'] = MOVEMENT_TYPE_SEEK_ORB_SPIRAL,
 
-  ['burst'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['burst'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['snakearrow'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  
   ['selfburst'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
   ['arcspread'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
   ['aim_spread'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
   ['plasma'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
   ['laser'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['snakearrow'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
   ['summoner'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
   ['spawner'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
   ['firewall_caster'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
