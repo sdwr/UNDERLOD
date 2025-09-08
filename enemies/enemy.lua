@@ -210,27 +210,26 @@ function Enemy:update(dt)
       self.idleTimer = self.idleTimer - dt
       self:add_idle_deceleration()
       if self.idleTimer <= 0 then
-        local movementData = MOVEMENT_TYPE_DATA[self.currentMovementAction] or MOVEMENT_TYPE_DATA['default']
         --this should be after attacking, so continue the original movement action
-        self:set_movement_action(movementData)
+        self:set_movement_action(self.currentMovementAction)
       end
     elseif self.state == unit_states['moving'] then
-      local movementData = MOVEMENT_TYPE_DATA[self.currentMovementAction] or MOVEMENT_TYPE_DATA['default']
       --false action timer means 
       if self.actionTimer then
         self.actionTimer = self.actionTimer - dt
       end
-
+      
       if self.actionTimer and self.actionTimer <= 0 then
         local success = self:pick_action()
         if not success then
           --this is if the attack failed, so continue the original movement action
-          self:set_movement_action(movementData)
+          self:set_movement_action(self.currentMovementAction)
         end
       else
         local continue_movement = self:update_movement()
         if not continue_movement then
           --here is where we move to the next movement action, because the movement action is complete
+          local movementData = MOVEMENT_TYPE_DATA[self.currentMovementAction]
           self:set_movement_action(movementData.after)
         end
       end
@@ -267,9 +266,16 @@ function Enemy:set_idle_retry()
   Helper.Unit:set_state(self, unit_states['idle'])
 end
 
-function Enemy:set_movement_action(action)
-  self.currentMovementAction = action
-  local movementData = MOVEMENT_TYPE_DATA[action] or MOVEMENT_TYPE_DATA['default']
+function Enemy:set_movement_action(action_name)
+  self.currentMovementAction = action_name
+
+  local movementData = MOVEMENT_TYPE_DATA[action_name]
+
+  if not movementData then
+    self.currentMovementAction = 'default'
+    movementData = MOVEMENT_TYPE_DATA['default']
+  end
+
   if movementData.action_timer then
     self.actionTimer = movementData.action_timer
   else

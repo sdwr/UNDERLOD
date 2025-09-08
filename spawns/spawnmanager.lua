@@ -765,6 +765,19 @@ function SpawnManager:update(dt)
           self:change_state('finished')
           self.arena:level_clear()
         end
+      else
+        local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
+        local all_dead = true
+        for _, e in ipairs(enemies) do
+          if e and not e.dead then
+            all_dead = false
+            break
+          end
+        end
+        if all_dead then
+          self:change_state('finished')
+          self.arena:level_clear()
+        end
       end
     end
 
@@ -993,10 +1006,9 @@ function SpawnManager:complete_current_subwave()
     else
       -- All waves complete
       if SpawnManager.debug_enabled then
-          print("[SpawnManager] ALL WAVES COMPLETE - Level cleared!")
+          print("[SpawnManager] ALL WAVES SPAWNED")
       end
-      self:change_state('finished')
-      self.arena:level_clear(true)
+      self:change_state('waiting_for_clear')
     end
   end
 end

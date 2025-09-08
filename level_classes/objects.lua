@@ -1728,9 +1728,15 @@ function Unit:pick_action()
    
 
   if action then
+    if self.icon == 'ghost' then
+      print('casting ghost', action.name)
+    end
     self:cast(action)
     self.last_cast = action.name
     return true
+  end
+  if self.icon == 'ghost' then
+    print('no action', self.type)
   end
 
   return false
