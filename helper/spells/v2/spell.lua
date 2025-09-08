@@ -70,8 +70,6 @@ function Cast:init(args)
   --unit and target and x and y are set in objects.lua 
   self.unit = self.unit
   self.target = self.target
-  self.x = self.x or self.unit.x
-  self.y = self.y or self.unit.y
 
   self.name = self.name or 'cast'
   self.spellclass = self.spellclass
@@ -146,6 +144,13 @@ function Cast:cast()
     end
   end
 
+
+  if self.x == 0 and self.y == 0 then
+    if self.unit then
+      self.x = self.unit.x
+      self.y = self.unit.y
+    end
+  end
 
   self.spelldata.x = self.x
   self.spelldata.y = self.y

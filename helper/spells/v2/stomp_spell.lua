@@ -36,7 +36,14 @@ function Stomp_Spell:die()
 
   local targets = {}
   if self.team == 'enemy' then
-    targets = main.current.main:get_objects_in_shape(self.attack_sensor, main.current.friendlies)
+    -- Enemy stomps only check player cursor
+    local cursor = main.current.current_arena and main.current.current_arena.player_cursor
+    if cursor and not cursor.dead then
+      local cursor_circle = Circle(cursor.x, cursor.y, cursor.cursor_radius or 4)
+      if self.attack_sensor:collides_with_circle(cursor_circle) then
+        targets = {cursor}
+      end
+    end
   else
     targets = main.current.main:get_objects_in_shape(self.attack_sensor, main.current.enemies)
   end

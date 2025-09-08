@@ -9,6 +9,7 @@ require 'helper/spells/bomb'
 require 'helper/spells/frostfield'
 
 require 'helper/spells/v2/spell'
+require 'helper/spells/v2/enemy_projectile'
 require 'helper/spells/v2/stomp_spell'
 require 'helper/spells/v2/laser_spell'
 require 'helper/spells/v2/spread_laser'

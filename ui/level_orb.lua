@@ -151,9 +151,10 @@ function LevelOrb:on_trigger_enter(other)
   if other.class == 'boss' then return end
   -- if not other.can_damage_orb then return end
 
-  local enemy_round_power = enemy_to_round_power[other.type] or 10
+  local enemy_round_power = enemy_to_round_power[other.type] or 100
+  local damage_taken = enemy_round_power * 0.1
 
-  self:hit(enemy_round_power, other, DAMAGE_TYPE_PHYSICAL)
+  self:hit(damage_taken, other, DAMAGE_TYPE_PHYSICAL)
   
   other:die()
 end

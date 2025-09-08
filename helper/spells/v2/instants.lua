@@ -82,53 +82,59 @@ end
 
 ArrowProjectile = Object:extend()
 ArrowProjectile.__class_name = 'ArrowProjectile'
-ArrowProjectile:implement(GameObject)
 ArrowProjectile:implement(Physics)
+ArrowProjectile:implement(GameObject)
 function ArrowProjectile:init(args)
   self:init_game_object(args)
-
-  -- Create a rectangular hitbox for the arrow
-  self.height = self.bullet_size or 3
+  
+  -- Arrow properties
+  self.radius = args.bullet_size or 3
+  self.speed = args.speed or 140
+  self.color = args.color or blue[0]
+  self.damage = get_dmg_value(args.damage)
+  self.unit = args.unit
+  self.target = args.target
+  self.is_troop = args.is_troop
+  self.team = args.team or (self.is_troop and 'player' or 'enemy')
+  
+  -- Position - use unit position if not specified
+  self.x = args.x or (self.unit and self.unit.x) or 0
+  self.y = args.y or (self.unit and self.unit.y) or 0
+  
+  -- Arrow visual properties
+  self.height = self.radius
   self.width = self.height * 2
-  local shape_type = self.is_troop and 'projectile' or 'enemy_projectile'
-  self.x = self.unit.x
-  self.y = self.unit.y
-  self:set_as_rectangle(self.width, self.height, 'dynamic', shape_type)
+  self.max_pierce = args.pierce or 0
+  self.pierce_count = 0
   
-  self.damage = get_dmg_value(self.damage)
-  self.pierce = self.pierce or 0
-  self.speed = self.speed or 140
-  self.color = self.color or blue[0]
-  self.unit = self.unit
-  self.target = self.target
+  -- Create collision shape
+  self.shape = Circle(self.x, self.y, self.radius)
 
   
-  -- Store starting position
-  self.start_x = self.x
-  self.start_y = self.y
-  
-  -- Calculate direction to target (but arrow will fly past target)
+  -- Calculate direction to target
   if self.target then
     local xdist = self.target.x - self.x
     local ydist = self.target.y - self.y
     self.angle = math.atan2(ydist, xdist)
   else
-    self.angle = self.angle or 0
+    self.angle = args.angle or 0
   end
   
   -- Set the arrow's rotation to match its direction
   self.r = self.angle
-
-  -- Set physics velocity instead of manual movement
-  local vx = math.cos(self.angle) * self.speed
-  local vy = math.sin(self.angle) * self.speed
-  self:set_velocity(vx, vy)
+  self:set_angle(self.r)
   
-  local pitch = self.pitch or 1
-  local volume = self.volume or 2
-  table.random({arrow_release1, arrow_release2, arrow_release3}):play{volume= volume, pitch=pitch}
-
-  self.already_hit_targets = {}
+  
+  local pitch = args.pitch or 1
+  local volume = args.volume or 2
+  if arrow_release1 and arrow_release2 and arrow_release3 then
+    table.random({arrow_release1, arrow_release2, arrow_release3}):play{volume= volume, pitch=pitch}
+  end
+  
+  self.homing = args.homing
+  self.hit_targets = {}  -- Track what we've hit
+  self.duration = 10  -- Max lifetime
+  self.elapsed = 0
 end
 
 function ArrowProjectile:update(dt)
@@ -137,58 +143,75 @@ function ArrowProjectile:update(dt)
   if self.dead then
     return
   end
-
-  if self.homing and self.target and not self.target.dead then
-    self.angle = math.atan2(self.target.y - self.y, self.target.x - self.x)
-    self.r = self.angle
-    self:set_angle(self.angle)
-    local vx = math.cos(self.angle) * self.speed
-    local vy = math.sin(self.angle) * self.speed
-    self:set_velocity(vx, vy)
-  end
-
-
-  -- Check if arrow has gone out of bounds
-  local out_of_bounds_margin = 50  -- Extra margin beyond screen edges
-  if self.x < -out_of_bounds_margin or self.x > gw + out_of_bounds_margin or 
-     self.y < -out_of_bounds_margin or self.y > gh + out_of_bounds_margin then
+  
+  self.elapsed = self.elapsed + dt
+  if self.elapsed > self.duration then
     self:die()
     return
   end
-
-end
-
-function ArrowProjectile:on_trigger_enter(other)
-  if other:is(Wall) then
+  
+  -- Update homing
+  if self.homing and self.target and not self.target.dead then
+    self.angle = math.atan2(self.target.y - self.y, self.target.x - self.x)
+    self.r = self.angle
+  end
+  
+  -- Move arrow
+  self:update_movement(dt)
+  
+  -- Update collision shape
+  self.shape:move_to(self.x, self.y)
+  
+  -- Check collisions
+  self:check_hits()
+  
+  -- Check bounds
+  if self.x < -50 or self.x > gw + 50 or self.y < -50 or self.y > gh + 50 then
     self:die()
   end
-  if other:is(Enemy) and self.is_troop then
-    self:hit_target(other)
-  elseif other:is(Troop) and not self.is_troop then
-    self:hit_target(other)
+end
+
+function ArrowProjectile:update_movement(dt)
+  self.x = self.x + math.cos(self.angle) * self.speed * dt
+  self.y = self.y + math.sin(self.angle) * self.speed * dt
+end
+
+function ArrowProjectile:check_hits()
+  if self.is_troop then
+    -- Player arrow checks enemies
+    local enemies = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
+    for _, enemy in ipairs(enemies) do
+      if not self.hit_targets[enemy.id] then
+        self:hit_target(enemy)
+      end
+    end
+  else
+    -- Enemy arrow checks player cursor only
+    local cursor = main.current.current_arena and main.current.current_arena.player_cursor
+    if cursor and not cursor.dead and not self.hit_targets[cursor.id] then
+      local cursor_circle = Circle(cursor.x, cursor.y, cursor.cursor_radius or 4)
+      if self.shape:collides_with_circle(cursor_circle) then
+        self:hit_target(cursor)
+      end
+    end
   end
 end
 
 function ArrowProjectile:hit_target(target)
-  if self.dead then return end
-  if table.contains(self.already_hit_targets, target) then return end
-
-  local hit_target = false
-  if #self.already_hit_targets == 0 then
+  self.hit_targets[target.id] = true
+  self.pierce_count = self.pierce_count + 1
+  
+  -- Apply damage
+  if self.pierce_count == 1 then
+    -- First hit
     Helper.Damage:primary_hit(target, self.damage, self.unit, DAMAGE_TYPE_PHYSICAL, true)
-    self.damage = self.damage * 0.8
-    table.insert(self.already_hit_targets, target)
-    hit_target = true
   else
-    if self.pierce and self.pierce > 0 then
-      Helper.Damage:indirect_hit(target, self.damage, self.unit, DAMAGE_TYPE_PHYSICAL, true)
-      self.damage = self.damage * 0.8
-      table.insert(self.already_hit_targets, target)
-      hit_target = true
-      self.pierce = self.pierce - 1
-    end
+    -- Pierce hits
+    Helper.Damage:indirect_hit(target, self.damage * 0.8, self.unit, DAMAGE_TYPE_PHYSICAL, true)
   end
-  if hit_target and self.pierce <= 0 then
+  
+  -- Check if we should die
+  if self.max_pierce <= 0 or self.pierce_count > self.max_pierce then
     self:die()
   end
 end
@@ -281,86 +304,82 @@ function Arcspread:die()
   self.dead = true
 end
 
-DamageArc = Object:extend()
+DamageArc = EnemyProjectile:extend()
 DamageArc.__class_name = 'DamageArc'
-DamageArc:implement(GameObject)
-DamageArc:implement(Physics)
 function DamageArc:init(args)
-  self:init_game_object(args)
-  self.color = self.color or red[0]
-
-  self.damage = get_dmg_value(self.damage)
-
-  self.pierce = self.pierce or 0
-  self.angle = self.angle or 0
-  self.width = self.width or math.pi/4
-  self.speed = self.speed or 100
-  self.radius = self.radius or 20
-  self.duration = self.duration or 10
-
-  self.grow = self.grow
-
+  -- Set defaults before parent init
+  args.radius = 8  -- EnemyProjectile expects radius for collision shape
+  args.speed = args.speed or 100
+  args.duration = args.duration or 10
+  args.color = args.color or red[0]
+  args.pierce = true  -- Allow multiple hits
+  
+  -- Store arc-specific properties before parent init
+  self.arc_radius = args.arc_radius or args.radius or 20  -- The arc's radius
+  self.width = args.width or math.pi/4
+  self.angle = args.angle or 0
+  self.grow = args.grow
+  self.max_hits = args.pierce or 0
+  
+  -- Call parent init
+  DamageArc.super.init(self, args)
+  
+  -- DamageArc specific properties
   self.flash_duration = self.flash_duration or 0.3
-  --memory
-  self.elapsed = 0
-  self.targets_hit = {}
-
+  self.targets_hit_count = 0
   self.in_death_flash = false
-
+  
   self.x, self.y = Helper.Geometry:move_point_radians(self.x, self.y, 
-  self.angle + math.pi, self.radius / 2)
-
+    self.angle + math.pi, self.arc_radius / 2)
+  
   self.t:after(self.duration, function() self:die() end)
 end
 
 function DamageArc:update(dt)
-  self:update_game_object(dt)
+  -- Call parent update (handles hit detection)
+  DamageArc.super.update(self, dt)
   
-  if not self.in_death_flash then
-    self:move(dt)
-    self:try_damage()
+  if not self.in_death_flash and self.targets_hit_count > self.max_hits then
+    self:die_on_hit()
   end
 end
 
-function DamageArc:move(dt)
+-- Override update_movement for arc movement
+function DamageArc:update_movement(dt)
   local movement = dt * self.speed
   if self.grow then
-    self.radius = self.radius + movement
+    self.arc_radius = self.arc_radius + movement
   else
     self.x, self.y = Helper.Geometry:move_point_radians(self.x, self.y, 
-    self.angle, movement)
+      self.angle, movement)
   end
 end
 
-function DamageArc:get_line()
-  local x1, y1 = Helper.Geometry:move_point(self.x, self.y, self.angle, self.radius)
-  local x2, y2 = Helper.Geometry:move_point(self.x, self.y, self.angle + self.width, self.radius)
-
-  return x1, y1, x2, y2
-
-end
-
-function DamageArc:try_damage()
-  local x1, y1, x2, y2  = self:get_line()
-  local line = Line(x1, y1, x2, y2)
+-- Override collision check for arc shape
+function DamageArc:collides_with_cursor(cursor)
+  local x1, y1 = Helper.Geometry:move_point(self.x, self.y, self.angle, self.arc_radius)
+  local x2, y2 = Helper.Geometry:move_point(self.x, self.y, self.angle + self.width, self.arc_radius)
   
-  local targets = main.current.main:get_objects_in_shape(line, friendly_classes, self.targets_hit)
+  local line = Line(x1, y1, x2, y2)
+  local cursor_circle = Circle(cursor.x, cursor.y, cursor.cursor_radius or 4)
+  
+  return line:collides_with_circle(cursor_circle)
+end
 
-  for _, target in ipairs(targets) do
-    dot1:play{pitch = random:float(0.95, 1.05), volume = 0.7}
-    target:hit(self.damage, self.unit, nil, true, true)
-    table.insert(self.targets_hit, target)
-
-  end
-
-  if #self.targets_hit > self.pierce then
-    self:die_on_hit()
+-- Override on_hit_cursor to handle pierce limit
+function DamageArc:on_hit_cursor(cursor)
+  self.targets_hit_count = self.targets_hit_count + 1
+  dot1:play{pitch = random:float(0.95, 1.05), volume = 0.7}
+  
+  if self.targets_hit_count <= self.max_hits then
+    -- Allow hitting again since we can pierce
+    self.hit_cursor = false
   end
 end
 
 function DamageArc:draw()
   graphics.push(self.x, self.y, 0, self.spring.x, self.spring.x)
-  graphics.arc( 'open', self.x, self.y, self.radius, self.angle, self.angle + self.width, self.color, 1)
+  graphics.arc( 'open', self.x, self.y, self.arc_radius, self.angle, self.angle + self.width, self.color, 1)
   graphics.pop()
 end
 
@@ -432,22 +451,20 @@ end
 ----------------------------------------------
 
 --need to tweak so it returns to unit, not to original position
-Boomerang = Object:extend()
+Boomerang = EnemyProjectile:extend()
 Boomerang.__class_name = 'Boomerang'
-Boomerang:implement(GameObject)
-Boomerang:implement(Physics)
 function Boomerang:init(args)
-  self:init_game_object(args)
-  self.radius = self.radius or 8
-  self.shape = Circle(self.x, self.y, self.radius)
-
-  self.color = yellow[0] or self.color
-  self.color = self.color:clone()
+  -- Set defaults before parent init
+  args.radius = args.radius or 8
+  args.speed = args.speed or 125
+  args.color = args.color or yellow[0]
+  args.pierce = true  -- Boomerang can hit multiple times
+  
+  -- Call parent init
+  Boomerang.super.init(self, args)
+  
+  -- Boomerang specific properties
   self.color.a = 0.7
-
-  self.damage = get_dmg_value(self.damage)
-
-  self.speed = self.speed or 125
 
   if self.spelltype == "targeted" then
     self.r = Get_Angle_For_Target(self)
@@ -474,47 +491,42 @@ function Boomerang:init(args)
 end
 
 function Boomerang:update(dt)
-  self:update_game_object(dt)
-  self:check_hits()
+  -- Call parent update (handles hit detection)
+  Boomerang.super.update(self, dt)
+  
   self.elapsed = self.elapsed + dt
   self.twirl_facing = self.twirl_facing + self.twirl_speed * dt
-
-  local x = self.x
-  local y = self.y
-
-  if not self.turned_around then
-    self.x = self.x + self.speed * math.cos(self.r) * dt
-    self.y = self.y + self.speed * math.sin(self.r) * dt
-  else
-    --return to unit
-    if not self.unit or self.unit.dead then self:die() end
-    if self:distance_to_object(self.unit) < 10 then self:die() end
-    self.x = self.x + self.speed * math.cos(self:angle_to_object(self.unit)) * dt
-    self.y = self.y + self.speed * math.sin(self:angle_to_object(self.unit)) * dt
-  end
-
 
   if self.elapsed > self.halfway_duration 
     and not self.turned_around 
     and self.unit and not self.unit.dead then
     self.r = self.r + math.pi
     self.turned_around = true
-    self.already_damaged = {}
+    self.hit_cursor = false  -- Allow hitting again on return
   end
+  
   if self.elapsed > self.duration then
     self:die()
   end
-
-  self.shape:move_to(self.x, self.y)
 end
 
-function Boomerang:check_hits()
-  local friendlies = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
-  for _, friendly in ipairs(friendlies) do
-    if not table.contains(self.already_damaged, friendly) then
-      friendly:hit(self.damage, self.unit, nil, true, true)
-      table.insert(self.already_damaged, friendly)
+-- Override update_movement for boomerang pattern
+function Boomerang:update_movement(dt)
+  if not self.turned_around then
+    self.x = self.x + self.speed * math.cos(self.r) * dt
+    self.y = self.y + self.speed * math.sin(self.r) * dt
+  else
+    -- Return to unit
+    if not self.unit or self.unit.dead then 
+      self:die() 
+      return
     end
+    if self:distance_to_object(self.unit) < 10 then 
+      self:die()
+      return
+    end
+    self.x = self.x + self.speed * math.cos(self:angle_to_object(self.unit)) * dt
+    self.y = self.y + self.speed * math.sin(self:angle_to_object(self.unit)) * dt
   end
 end
 
@@ -538,17 +550,19 @@ end
 
 ----------------------------------------------
 
-Burst = Object:extend()
+Burst = EnemyProjectile:extend()
 Burst.__class_name = 'Burst'
-Burst:implement(GameObject)
-Burst:implement(Physics)
 function Burst:init(args)
-  self:init_game_object(args)
-  self.radius = self.radius or 6
-  self.shape = Circle(self.x, self.y, self.radius)
-
-  self.color = self.color or red[0]
-  self.color = self.color:clone()
+  -- Set defaults before parent init
+  args.radius = args.radius or 6
+  args.speed = args.speed or 70
+  args.duration = args.duration or 12
+  args.color = args.color or red[0]
+  
+  -- Call parent init
+  Burst.super.init(self, args)
+  
+  -- Burst specific properties
   self.color.a = 0.7
 
   -- NEW: A separate, brighter, more opaque color for the internal blobs
@@ -558,10 +572,7 @@ function Burst:init(args)
   self.blob_color.g = math.min(1, self.color.g * 1.5)
   self.blob_color.b = math.min(1, self.color.b * 1.5)
 
-  self.damage = get_dmg_value(self.damage)
-  self.num_pieces = self.num_pieces or 10
-  
-  self.speed = self.speed or 70
+  self.num_pieces = args.num_pieces or 10
 
   if self.spelltype == "targeted" then
     self.r = Get_Angle_For_Target(self)
@@ -576,19 +587,15 @@ function Burst:init(args)
     self.r = self.r or 0
     self.distance = self.distance or math.random(100, 250)
   end  
-  self.secondary_damage = get_dmg_value(self.secondary_damage) or self.damage
-  self.secondary_distance = self.secondary_distance or 50
-  self.secondary_speed = self.secondary_speed or 100
+  self.secondary_damage = get_dmg_value(args.secondary_damage) or self.damage
+  self.secondary_distance = args.secondary_distance or 50
+  self.secondary_speed = args.secondary_speed or 100
   
-
   self.already_damaged = {}
+  self.traveled_distance = 0
   
   self:set_angle(self.r)
-
-  self.duration = self.duration or 12
-  self.elapsed = 0
   cannoneer1:play{volume=0.2}
-  self.t:after(self.duration, function() self:die() end)
 
   -- Create the data for our internal swirling blobs
   self.blobs = {}
@@ -611,17 +618,12 @@ function Burst:init(args)
 
 end
 
-function Burst:check_hits()
-  local friendlies = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
-  if #friendlies > 0 then
-    self:explode()
-  end
-end
-
 function Burst:update(dt)
-  self:update_game_object(dt)
-  local hit_target = self:check_hits()
-  self.elapsed = self.elapsed + dt
+  -- Track old position for distance calculation
+  local old_x, old_y = self.x, self.y
+  
+  -- Call parent update (handles movement, hit detection, bounds)
+  Burst.super.update(self, dt)
 
   -- Update blob positions for lava lamp movement
   for _, blob in ipairs(self.blobs) do
@@ -651,19 +653,29 @@ function Burst:update(dt)
     end
   end
 
-  local x = self.x
-  local y = self.y
-  self.x = self.x + self.speed * math.cos(self.r) * dt
-  self.y = self.y + self.speed * math.sin(self.r) * dt
-
-  local distance = math.sqrt((self.x - x)^2 + (self.y - y)^2)
-  self.distance = self.distance - distance
-  if self.distance <= 0 then
+  -- Check if we've traveled far enough
+  local distance = math.sqrt((self.x - old_x)^2 + (self.y - old_y)^2)
+  self.traveled_distance = self.traveled_distance + distance
+  if self.traveled_distance >= self.distance then
     self:explode()
   end
-  self.shape:move_to(self.x, self.y)
-  if Outside_Arena(self) then
+end
+
+-- Override on_hit_cursor to explode
+function Burst:on_hit_cursor(cursor)
+  self:explode()
+end
+
+-- Override check_bounds to explode instead of just dying
+function Burst:check_bounds()
+  if Outside_Arena and Outside_Arena(self) then
     self:explode()
+  elseif not Outside_Arena then
+    local margin = 50
+    if self.x < -margin or self.x > gw + margin or 
+       self.y < -margin or self.y > gh + margin then
+      self:explode()
+    end
   end
 end
 
@@ -741,71 +753,41 @@ function Burst:die()
   self.dead = true
 end
 
-BurstBullet = Object:extend()
+BurstBullet = EnemyProjectile:extend()
 BurstBullet.__class_name = 'BurstBullet'
-BurstBullet:implement(GameObject)
-BurstBullet:implement(Physics)
 function BurstBullet:init(args)
-  self:init_game_object(args)
-  self.radius = self.radius or 4
-  self.shape = Circle(self.x, self.y, self.radius)
-
-  self.color = self.color or red[0]
-  self.color = self.color:clone()
+  -- Set defaults before parent init
+  args.radius = args.radius or 4
+  args.speed = args.speed or 100
+  args.duration = args.duration or 12
+  args.color = args.color or red[0]
+  
+  -- Call parent init
+  BurstBullet.super.init(self, args)
+  
+  -- BurstBullet specific properties
   self.color.a = 0.7
-
-  self.damage = get_dmg_value(self.damage)
-
-  self.distance = self.distance or 50
-  self.speed = self.speed or 100
-  self.r = self.r or 0
+  self.distance = args.distance or 50
+  self.traveled_distance = 0
   self:set_angle(self.r)
-
-  self.duration = self.duration or 12
-  self.elapsed = 0
-  self.t:after(self.duration, function() self:die() end)
 end
 
 function BurstBullet:update(dt)
-  self:update_game_object(dt)
-  self:check_hits()
-  self.elapsed = self.elapsed + dt
-
-  local x = self.x
-  local y = self.y
-
-  self.x = self.x + self.speed * math.cos(self.r) * dt
-  self.y = self.y + self.speed * math.sin(self.r) * dt
-  self.shape:move_to(self.x, self.y)
-
-  local distance = math.sqrt((self.x - x)^2 + (self.y - y)^2)
-  self.distance = self.distance - distance
-  if self.distance <= 0 then
-    self:die()
-  end
-  self.shape:move_to(self.x, self.y)
-  if self.x < 0 or self.x > gw or self.y < 0 or self.y > gh then
+  -- Track distance traveled
+  local old_x, old_y = self.x, self.y
+  
+  -- Call parent update (handles movement, hit detection, bounds)
+  BurstBullet.super.update(self, dt)
+  
+  -- Check if we've traveled far enough
+  local distance = math.sqrt((self.x - old_x)^2 + (self.y - old_y)^2)
+  self.traveled_distance = self.traveled_distance + distance
+  if self.traveled_distance >= self.distance then
     self:die()
   end
 end
 
-function BurstBullet:check_hits()
-  local friendlies = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
-  if #friendlies > 0 then
-    friendlies[1]:hit(self.damage, self.unit, nil, true, true)
-    self:die()
-  end
-end
-
-function BurstBullet:draw()
-  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.x)
-    graphics.circle(self.x, self.y, self.shape.rs, self.color)
-  graphics.pop()
-end
-
-function BurstBullet:die()
-  self.dead = true
-end
+-- Hit detection is now handled by parent class
 
 
 

@@ -52,7 +52,7 @@ function WorldManager:on_enter(from)
     end
   end
   -- Set cursor to animated mode for arena
-  set_cursor_animated()
+  set_cursor_arena()
   
   -- Initialize music
   main_song_instance:stop()
@@ -85,7 +85,7 @@ function WorldManager:arena_on_enter(from)
   --input:set_mouse_visible(true)  -- Commented out to allow custom cursor
   
   -- Set cursor to animated mode for arena
-  set_cursor_animated()
+  set_cursor_arena()
 
   trigger:tween(2, main_song_instance, {volume = 0.5, pitch = 1}, math.linear)
 

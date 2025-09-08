@@ -72,42 +72,36 @@ end
 --angles and speeds
 --but need to resolve where the unit state /cooldown is handled first
 -- in the unit? in the spell? different solutions
-PlasmaBall = Object:extend()
+PlasmaBall = EnemyProjectile:extend()
 PlasmaBall.__class_name = 'PlasmaBall'
-PlasmaBall:implement(GameObject)
-PlasmaBall:implement(Physics)
 function PlasmaBall:init(args)
-  self:init_game_object(args)
-  self.radius = self.radius or 8
-  self.shape = Circle(self.x, self.y, self.radius)
-
-  self.color = red[0] or self.color
-  self.color = self.color:clone()
-  self.color.a = 0.7
-
-  self.explosion_radius = self.explosion_radius or 12
-  self.explosion_damage = self.damage or 30
-
-  self.speed = self.speed or 100
-  self.rotation_speed = self.rotation_speed or 1
-  self.movement_type = self.movement_type or 'spiral'
-  self.target = self.target
+  -- Set up plasma ball specific defaults before calling parent
+  args.radius = args.radius or 8
+  args.speed = args.speed or 100
+  args.duration = args.duration or 12
+  args.color = args.color or red[0]
   
-  self.r = self.r or 0
+  -- Call parent init
+  PlasmaBall.super.init(self, args)
+  
+  -- Plasma ball specific properties
+  self.color.a = 0.7
+  self.explosion_radius = args.explosion_radius or 12
+  self.explosion_damage = self.damage  -- Use parent's processed damage
+  self.rotation_speed = args.rotation_speed or 1
+  self.movement_type = args.movement_type or 'spiral'
+  self.target = args.target
+  
   self:set_angle(self.r)
-
-  self.duration = self.duration or 12
-  self.elapsed = 0
-  self.t:after(self.duration, function() self:die() end)
 end
 
 function PlasmaBall:update(dt)
-  self:update_game_object(dt)
-  self:check_hits()
-  self.elapsed = self.elapsed + dt
+  -- Call parent update (handles hit detection, bounds checking, etc)
+  PlasmaBall.super.update(self, dt)
+end
 
-  local x = self.x
-  local y = self.y
+-- Override update_movement for special movement patterns
+function PlasmaBall:update_movement(dt)
   if self.movement_type == 'straight' then
     self.x = self.x + self.speed * math.cos(self.r) * dt
     self.y = self.y + self.speed * math.sin(self.r) * dt
@@ -121,19 +115,16 @@ function PlasmaBall:update(dt)
       self.x = self.x + self.speed * math.cos(self.r) * dt
       self.y = self.y + self.speed * math.sin(self.r) * dt
     else
-      --just move straight if no target
+      -- Just move straight if no target
       self.x = self.x + self.speed * math.cos(self.r) * dt
       self.y = self.y + self.speed * math.sin(self.r) * dt
     end
   end
-  self.shape:move_to(self.x, self.y)
 end
 
-function PlasmaBall:check_hits()
-  local friendlies = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
-  if #friendlies > 0 then
-    self:explode()
-  end
+-- Override on_hit_cursor to explode instead of just dying
+function PlasmaBall:on_hit_cursor(cursor)
+  self:explode()
 end
 
 function PlasmaBall:draw()

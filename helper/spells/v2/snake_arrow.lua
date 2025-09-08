@@ -65,30 +65,22 @@ function SnakeArrows:die()
   end
 end
 
-SnakeArrow = Object:extend()
+SnakeArrow = EnemyProjectile:extend()
 SnakeArrow.__class_name = 'SnakeArrow'
-SnakeArrow:implement(GameObject)
-SnakeArrow:implement(Physics)
 
 function SnakeArrow:init(args)
-  self:init_game_object(args)
+  -- Set up snake arrow specific properties before calling parent
+  args.color = args.color or green[0]
+  args.speed = args.speed or 100
+  args.radius = args.radius or 4
+  args.duration = args.duration or 8
   
-  -- Basic properties
-  self.color = self.color or green[0]
-  self.damage = get_dmg_value(self.damage)
-  self.speed = self.speed or 100
-  self.curve_depth = self.curve_depth or 15  -- How far the S-curve deviates from straight line (reduced from 30)
-  self.curve_frequency = self.curve_frequency or 1.5  -- How many S-curves per second (reduced from 2)
-  self.duration = self.duration or 8
-  self.radius = self.radius or 4
-
-  if self.unit then
-    self.x = self.unit.x
-    self.y = self.unit.y
-  end
+  -- Call parent init
+  SnakeArrow.super.init(self, args)
   
-  -- Create collision shape
-  self.shape = Circle(self.x, self.y, self.radius)
+  -- Snake arrow specific properties
+  self.curve_depth = args.curve_depth or 15  -- How far the S-curve deviates from straight line
+  self.curve_frequency = args.curve_frequency or 1.5  -- How many S-curves per second
   
   -- Movement properties
   self.base_angle = self.r or 0  -- The base direction the arrow travels
@@ -116,12 +108,21 @@ function SnakeArrow:init(args)
 end
 
 function SnakeArrow:update(dt)
-  self:update_game_object(dt)
-  self:update_physics(dt)
+  -- Call parent update (handles hit detection, bounds checking, etc)
+  SnakeArrow.super.update(self, dt)
   
   -- Update curve time
   self.curve_time = self.curve_time + dt
   
+  -- Add trail particle
+  if self.last_trail_time + self.trail_interval < Helper.Time.time then
+    self:add_trail_particle()
+    self.last_trail_time = Helper.Time.time
+  end
+end
+
+-- Override update_movement for snake pattern
+function SnakeArrow:update_movement(dt)
   -- Calculate base movement
   local base_distance = self.speed * dt
   self.distance_traveled = self.distance_traveled + base_distance
@@ -135,29 +136,8 @@ function SnakeArrow:update(dt)
   
   -- Apply S-curve perpendicular to base direction
   local perpendicular_angle = self.base_angle + math.pi / 2
-  local curve_x = base_x + math.cos(perpendicular_angle) * curve_offset
-  local curve_y = base_y + math.sin(perpendicular_angle) * curve_offset
-  
-  -- Update position
-  self.x = curve_x
-  self.y = curve_y
-  
-  -- Update collision shape
-  self.shape:move_to(self.x, self.y)
-  
-  -- Add trail particle
-  if self.last_trail_time + self.trail_interval < Helper.Time.time then
-    self:add_trail_particle()
-    self.last_trail_time = Helper.Time.time
-  end
-  
-  -- Check for collisions
-  self:check_collisions()
-  
-  -- Check if out of bounds
-  if Outside_Arena(self) then
-    self:die()
-  end
+  self.x = base_x + math.cos(perpendicular_angle) * curve_offset
+  self.y = base_y + math.sin(perpendicular_angle) * curve_offset
 end
 
 function SnakeArrow:calculate_curve_offset()
@@ -182,27 +162,7 @@ function SnakeArrow:add_trail_particle()
   end
 end
 
-function SnakeArrow:check_collisions()
-  local targets = {}
-  if self.team == 'enemy' then
-    targets = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
-  else
-    targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
-  end
-  
-  if #targets > 0 then
-    for _, target in ipairs(targets) do
-      if not target.dead then
-        -- Deal damage
-        target:hit(self.damage, self.unit, self.damage_type, true, false)
-        
-        -- Die on collision
-        self:die()
-        return
-      end
-    end
-  end
-end
+-- Collision detection is now handled by parent class check_hits()
 
 function SnakeArrow:draw()
   if self.hidden then return end

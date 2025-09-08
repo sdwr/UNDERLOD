@@ -1357,16 +1357,16 @@ function init()
 
   special_enemy_by_tier = {
     [1] = {
-      -- 'goblin_archer',
-      -- 'archer',
+      'goblin_archer',
+      'archer',
       -- -- 'selfburst',
-      -- 'burst',
+      'burst',
       -- 'crossfire',
       -- 'spiral',
       -- 'tank',
       'snakearrow',
-      -- 'turret',
-      -- 'mortar',
+      'turret',
+      'mortar',
       -- 'singlemortar',
       -- 'cleaver',
       -- 'slowcharger',
@@ -2019,6 +2019,10 @@ end
 
 function set_cursor_animated()
   set_cursor_mode('animated')
+end
+
+function set_cursor_arena()
+  set_cursor_mode('arena')
 end
 
 function cleanup_global_cursor()

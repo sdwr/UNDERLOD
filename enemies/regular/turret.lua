@@ -156,9 +156,8 @@ function SingleProjectile:init(args)
     x = self.x,
     y = self.y,
     r = angle,
-    v = self.v or 120,
-    width = self.width or 10,
-    height = self.height or 4,
+    speed = self.v or 120,  -- Convert v to speed for EnemyProjectile
+    radius = math.max(self.width or 10, self.height or 4) / 2,  -- Convert width/height to radius
     damage = self.damage,
     color = self.color,
     unit = self.unit,
