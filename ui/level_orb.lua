@@ -13,7 +13,7 @@ function LevelOrb:init(args)
   
   -- Physical properties
   self.radius = args.radius or 10
-  self.boundary_radius = args.boundary_radius or 55
+  self.boundary_radius = args.boundary_radius or 75
   self.visible_radius = 0
 
   self:set_as_circle(self.radius, 'static', 'projectile')
@@ -148,6 +148,7 @@ end
 
 function LevelOrb:on_trigger_enter(other)
   if not other:is(Enemy) then return end
+  if other.class == 'boss' then return end
   -- if not other.can_damage_orb then return end
 
   local enemy_round_power = enemy_to_round_power[other.type] or 10
