@@ -211,7 +211,8 @@ function Enemy:update(dt)
       self:add_idle_deceleration()
       if self.idleTimer <= 0 then
         local movementData = MOVEMENT_TYPE_DATA[self.currentMovementAction] or MOVEMENT_TYPE_DATA['default']
-        self:set_movement_action(movementData.after)
+        --this should be after attacking, so continue the original movement action
+        self:set_movement_action(movementData)
       end
     elseif self.state == unit_states['moving'] then
       local movementData = MOVEMENT_TYPE_DATA[self.currentMovementAction] or MOVEMENT_TYPE_DATA['default']
@@ -223,11 +224,13 @@ function Enemy:update(dt)
       if self.actionTimer and self.actionTimer <= 0 then
         local success = self:pick_action()
         if not success then
-          self:set_movement_action(movementData.after)
+          --this is if the attack failed, so continue the original movement action
+          self:set_movement_action(movementData)
         end
       else
         local continue_movement = self:update_movement()
         if not continue_movement then
+          --here is where we move to the next movement action, because the movement action is complete
           self:set_movement_action(movementData.after)
         end
       end
@@ -300,7 +303,8 @@ function Enemy:choose_movement_target()
     return self:acquire_target_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
     return self:acquire_target_loose_seek()
-  elseif self.currentMovementAction == MOVEMENT_TYPE_APPROACH_ORB then
+  elseif self.currentMovementAction == MOVEMENT_TYPE_APPROACH_ORB or
+  self.currentMovementAction == MOVEMENT_TYPE_APPROACH_ORB_ATTACK then
     return self:acquire_target_approach_orb()
   elseif self.currentMovementAction == MOVEMENT_TYPE_APPROACH_ORB_RANDOM then
     return self:acquire_target_approach_orb_random()
@@ -331,7 +335,8 @@ function Enemy:update_movement()
     return self:update_move_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
     return self:update_move_seek_location()
-  elseif self.currentMovementAction == MOVEMENT_TYPE_APPROACH_ORB then
+  elseif self.currentMovementAction == MOVEMENT_TYPE_APPROACH_ORB or
+  self.currentMovementAction == MOVEMENT_TYPE_APPROACH_ORB_ATTACK then
     return self:update_move_seek_location_no_wander()
   elseif self.currentMovementAction == MOVEMENT_TYPE_APPROACH_ORB_RANDOM then
     return self:update_move_seek_location_no_wander()
