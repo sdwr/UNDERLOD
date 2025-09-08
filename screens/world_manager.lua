@@ -142,8 +142,8 @@ function WorldManager:create_arena(level, offset_x)
     end)
 
     -- Start spawning enemies immediately instead of after suction
-    self.t:after(0.5, function()
-      arena.spawn_manager:change_state('processing_wave')
+    self.t:after(1.5, function()
+      arena.spawn_manager:change_state('entry_delay')
     end)
 
   else

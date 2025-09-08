@@ -599,24 +599,32 @@ function SpawnManager:init(arena)
     -- Spawning State Machine
     self:change_state('arena_start')
     -- Possible States:
-    -- 'entry_delay':           Initial wait before the first wave.
-    -- 'between_waves_delay':   Pause between clearing one wave and starting the next.
-    -- 'processing_wave':       Actively reading and executing instructions for the current wave.
-    -- 'waiting_for_group':     Paused, waiting for a Spawn_Group call to finish.
-    -- 'waiting_for_delay':     Paused, waiting for a DELAY instruction's timer to finish.
-    -- 'waiting_for_boss_fight': Paused, waiting for the boss fight to finish.
-    -- 'waiting_for_clear':     All instructions for the wave are done; waiting for all enemies to be defeated.
-    -- 'finished':              All waves are complete.
-    -- 'boss_fight':            A special state for boss levels.
+    -- 'arena_start':           Waiting for external trigger
+    -- 'suction_to_targets':    Pulling troops to spawn locations
+    -- 'entry_delay':           Initial wait before the first wave
+    -- 'spawning_wave':         Actively spawning groups for current wave
+    -- 'waiting_for_wave_clear': Waiting for all enemies to die or timeout
+    -- 'between_waves_delay':   Pause between waves
+    -- 'finished':              All waves are complete
+    -- 'spawning_boss':         Spawning boss enemy
+    -- 'waiting_for_clear':     Waiting for boss to die
 
+    -- Wave configuration (3 waves: 30%, 30%, 40% of total power)
+    self.total_round_power = ROUND_POWER_BY_LEVEL(arena.level)
+    self.wave_power_percentages = {0.3, 0.3, 0.4}
+    self.current_wave = 1
+    self.total_waves = 3
+    
+    -- Track power for current wave
+    self.current_wave_power_target = 0
+    self.current_wave_power_spawned = 0
+    self.wave_start_time = 0
+    self.wave_timeout = 60 -- 60 seconds max per wave
+    
     -- Timers and Trackers
     self.timer = TIME_BETWEEN_WAVES
-    self.current_wave_index = 1
-    self.current_instruction_index = 1
-
     self.pending_spawns = 0
-    self.wave_spawn_delay = 0 -- Track cumulative spawn delay for the current wave
-  
+    self.wave_spawn_delay = 0
 end
 
 function SpawnManager:does_spawn_reservation_exist(x, y)
@@ -663,14 +671,14 @@ function SpawnManager:update(dt)
           self:change_state('spawning_boss')
           spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.5}
         else
-          self:change_state('processing_wave')
-          --spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
+          -- Start first wave
+          self:start_wave(1)
         end
       end
     end
-    -- If we are ready to process the next instruction in a wave, do so.
-    if self.state == 'processing_wave' then
-        self:process_infinite_wave()
+    -- If we are spawning a wave, keep spawning groups
+    if self.state == 'spawning_wave' then
+        self:process_wave_spawning()
     end
 
     if self.state == 'spawning_boss' then
@@ -678,24 +686,8 @@ function SpawnManager:update(dt)
       self:change_state('waiting_for_clear')
     end
     
-    -- If all instructions are done, wait for the arena to be clear.
-    if self.state == 'waiting_for_clear' then
-      if Is_Boss_Level(self.arena.level) then
-        if is_boss_dead then
-          self:change_state('finished')
-          self.arena:level_clear()
-        end
-      elseif self.next_group then
-        local group_power = Wave_Types:Get_Group_Power(self.next_group)
-        if current_power_onscreen + group_power <= MAX_ONSCREEN_ROUND_POWER(self.arena.level) then
-          self:change_state('processing_wave')
-        end
-      end
-    end
-    
-    -- Waiting for all enemies to be killed
-    if self.state == 'waiting_for_end' then
-      -- Check if all enemies are dead instead of round power
+    -- Waiting for wave to clear (all enemies dead or timeout)
+    if self.state == 'waiting_for_wave_clear' then
       local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
       local all_dead = true
       for _, enemy in ipairs(enemies) do
@@ -705,43 +697,107 @@ function SpawnManager:update(dt)
         end
       end
       
-      if all_dead then
-        self:change_state('finished')
-        self.arena:level_clear(true)
+      local time_since_wave_start = Helper.Time.time - self.wave_start_time
+      if all_dead or time_since_wave_start > self.wave_timeout then
+        -- Move to next wave or finish
+        if self.current_wave < self.total_waves then
+          self.current_wave = self.current_wave + 1
+          self.timer = TIME_BETWEEN_WAVES
+          self:change_state('between_waves_delay')
+        else
+          self:change_state('finished')
+          self.arena:level_clear(true)
+        end
+      end
+    end
+    
+    -- Between waves delay
+    if self.state == 'between_waves_delay' then
+      self.timer = self.timer - dt
+      if self.timer <= 0 then
+        self:start_wave(self.current_wave)
+      end
+    end
+    
+    -- Boss waiting
+    if self.state == 'waiting_for_clear' then
+      if Is_Boss_Level(self.arena.level) then
+        if is_boss_dead then
+          self:change_state('finished')
+          self.arena:level_clear()
+        end
       end
     end
 
 end
 
-function SpawnManager:process_infinite_wave()
+-- Start a new wave
+function SpawnManager:start_wave(wave_number)
+  self.current_wave = wave_number
+  self.current_wave_power_target = self.total_round_power * self.wave_power_percentages[wave_number]
+  self.current_wave_power_spawned = 0
+  self.wave_start_time = Helper.Time.time
+  
+  -- Don't reset onscreen tracking between waves, only spawned tracking for this wave
+  
+  self:change_state('spawning_wave')
+end
 
-  if not self.next_group then
-    self.next_group = Get_Next_Group(self.arena.level)
-  end
-
-  local group_data = self.next_group
-  local group_power = Wave_Types:Get_Group_Power(group_data)
-  local total_round_power = ROUND_POWER_BY_LEVEL(self.arena.level)
-
-  -- Check if spawning this group would exceed the total round power for the level
-  if total_power_spawned + group_power > total_round_power then
-    self:change_state('waiting_for_end')
+-- Process wave spawning - instantly spawn groups until power cap reached
+function SpawnManager:process_wave_spawning()
+  -- Check if we've reached the wave's power cap
+  if self.current_wave_power_spawned >= self.current_wave_power_target then
+    self:change_state('waiting_for_wave_clear')
     return
   end
   
-  -- Check if too many enemies are already onscreen
-  if current_power_onscreen + group_power > MAX_ONSCREEN_ROUND_POWER(self.arena.level) then
-    self:change_state('waiting_for_clear')
+  -- Get next group to spawn
+  local group_data = Get_Next_Group(self.arena.level)
+  local group_power = Wave_Types:Get_Group_Power(group_data)
+  group_data = {group_data[2], group_data[3], group_data[4]}
+  
+  -- Check if spawning this group would exceed wave power cap
+  if self.current_wave_power_spawned + group_power > self.current_wave_power_target then
+    -- Try a smaller group or wait
+    self:change_state('waiting_for_wave_clear')
     return
-  else
-    self:process_instruction(group_data)
-    --increase delay based on distance to the max onscreen power
-    local percent_to_max = (current_power_onscreen + group_power) / MAX_ONSCREEN_ROUND_POWER(self.arena.level)
-    local delay = math.remap(math.max(percent_to_max, 0.5), 0.5, 1, 3, 6)
-    self:process_instruction({'DELAY', delay})
-    self.next_group = nil
   end
+  
+  -- Check if too many enemies onscreen (still respect max onscreen limit)
+  local max_onscreen = MAX_ONSCREEN_ROUND_POWER(self.arena.level)
+  if current_power_onscreen + group_power > max_onscreen then
+    -- Wait a bit before trying again
+    self.timer = 0.5
+    self:change_state('waiting_for_delay')
+    return
+  end
+  
+  -- Spawn the group immediately
+  self:spawn_group_instantly(group_data)
+  self.current_wave_power_spawned = self.current_wave_power_spawned + group_power
+  
+  -- Continue spawning immediately (will check limits next frame)
+end
 
+-- Spawn a group instantly without delay
+function SpawnManager:spawn_group_instantly(group_data)
+  local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
+  
+  if spawn_type == 'scatter' then
+    for i = 1, amount do
+      local location = Get_Offscreen_Spawn_Point()
+      Spawn_Enemy(self.arena, type, location)
+    end
+  else
+    local wave_spawn_location = Get_Offscreen_Spawn_Point()
+    local target_location = Get_Cross_Screen_Destination(wave_spawn_location)
+    
+    for i = 1, amount do
+      local offset = SpawnGlobals.spawn_offsets[(i % #SpawnGlobals.spawn_offsets) + 1]
+      local location = {x = wave_spawn_location.x + offset.x, y = wave_spawn_location.y + offset.y}
+      Spawn_Enemy(self.arena, type, location, target_location)
+    end
+  end
 end
 
 function SpawnManager:process_instruction(instruction)
@@ -1082,15 +1138,14 @@ function SpawnManager:spawn_waves_with_timing()
   
   self.arena.enemies_spawned = true
   
-  -- Check if this is a boss level
-  if table.contains(BOSS_ROUNDS, self.arena.level) then
+  -- Check if this is a boss level using Is_Boss_Level function
+  if Is_Boss_Level(self.arena.level) then
     self:spawn_boss_immediately()
     self:change_state('waiting_for_clear')
   else
-    -- Start the wave-based spawning using the state machine
-    -- Reset to first wave and start with entry delay
-    self.current_wave_index = 1
-    self.current_instruction_index = 1
+    -- Start the 3-wave system
+    self.current_wave = 1
+    self.total_waves = 3
     self:change_state('entry_delay')
     self.timer = TIME_BETWEEN_WAVES
   end

@@ -131,11 +131,11 @@ TROOP_SWORDSMAN_RANGE = 80
 
 REGULAR_ENEMY_HP = 30
 REGULAR_ENEMY_DAMAGE = 15
-REGULAR_ENEMY_MS = 70
+REGULAR_ENEMY_MS = 40
 
 SPECIAL_ENEMY_HP = 100
 SPECIAL_ENEMY_DAMAGE = 20
-SPECIAL_ENEMY_MS = 50
+SPECIAL_ENEMY_MS = 40
 
 MINIBOSS_HP = 400
 MINIBOSS_DAMAGE = 20
@@ -333,16 +333,16 @@ SPECIAL_SWARMER_WEIGHT_BY_TYPE = {
 
 
 ROUND_POWER_DATA_BY_LEVEL = {
-  [1] = {800},
-  [2] = {1000},
-  [3] = {1200},
-  [4] = {1400},
-  [5] = {1600},
-  [6] = {1800},
-  [7] = {2000},
-  [8] = {2200},
-  [9] = {2400},
-  [10] = {2600},
+  [1] = {1500},
+  [2] = {1600},
+  [3] = {1800},
+  [4] = {2000},
+  [5] = {2200},
+  [6] = {2400},
+  [7] = {2600},
+  [8] = {2800},
+  [9] = {3000},
+  [10] = {3200},
   [11] = {2800},
   [12] = {3000},
   [13] = {3200},
