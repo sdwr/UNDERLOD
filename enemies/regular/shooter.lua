@@ -37,13 +37,13 @@ fns['init_enemy'] = function(self)
     cancel_range = self.attack_sensor.rs * 1.1,
     instantspell = true,
     cast_sound = scout1,
-    spellclass = ArrowProjectile,
+    spellclass = EnemyProjectile,
     spelldata = {
       group = main.current.effects,
       color = blue[0],
       damage = function() return self.dmg end,
-      bullet_size = 3,
-      is_troop = false,
+      radius = 3,  -- EnemyProjectile uses radius, not bullet_size
+      team = 'enemy',
       speed = 120,
     },
   }

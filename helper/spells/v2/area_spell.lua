@@ -117,9 +117,12 @@ function Area_Spell:apply_damage()
                     targets_in_area = {cursor}
                 end
             else
-                -- Rectangle shape check
-                if self.shape and self.shape:collides_with_circle(cursor.x, cursor.y, cursor.cursor_radius or 4) then
-                    targets_in_area = {cursor}
+                -- Rectangle shape check - use get_objects_in_shape
+                if self.shape then
+                    local objects = main.current.main:get_objects_in_shape(self.shape, {cursor})
+                    if #objects > 0 then
+                        targets_in_area = {cursor}
+                    end
                 end
             end
         end

@@ -80,7 +80,7 @@ function Area:try_damage()
       else
         -- Rectangle to circle collision
         local cursor_circle = Circle(cursor.x, cursor.y, cursor.cursor_radius or 4)
-        hit = self.shape:collides_with_circle(cursor_circle)
+        hit = self.shape:is_colliding_with_circle(cursor_circle)
       end
       
       if hit then

@@ -177,22 +177,12 @@ function ArrowProjectile:update_movement(dt)
 end
 
 function ArrowProjectile:check_hits()
-  if self.is_troop then
-    -- Player arrow checks enemies
-    local enemies = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
-    for _, enemy in ipairs(enemies) do
-      if not self.hit_targets[enemy.id] then
-        self:hit_target(enemy)
-      end
-    end
-  else
-    -- Enemy arrow checks player cursor only
-    local cursor = main.current.current_arena and main.current.current_arena.player_cursor
-    if cursor and not cursor.dead and not self.hit_targets[cursor.id] then
-      local cursor_circle = Circle(cursor.x, cursor.y, cursor.cursor_radius or 4)
-      if self.shape:collides_with_circle(cursor_circle) then
-        self:hit_target(cursor)
-      end
+  -- ArrowProjectile is only for player troops now
+  -- Enemy projectiles should use EnemyProjectile class
+  local enemies = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
+  for _, enemy in ipairs(enemies) do
+    if not self.hit_targets[enemy.id] then
+      self:hit_target(enemy)
     end
   end
 end
@@ -363,7 +353,7 @@ function DamageArc:collides_with_cursor(cursor)
   local line = Line(x1, y1, x2, y2)
   local cursor_circle = Circle(cursor.x, cursor.y, cursor.cursor_radius or 4)
   
-  return line:collides_with_circle(cursor_circle)
+  return line:is_colliding_with_circle(cursor_circle)
 end
 
 -- Override on_hit_cursor to handle pierce limit
