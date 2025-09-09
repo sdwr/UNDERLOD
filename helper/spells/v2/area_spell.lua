@@ -101,9 +101,32 @@ end
 
 
 function Area_Spell:apply_damage()
-    -- Determine which group of units to target
-    local target_group = self.is_troop and main.current.enemies or main.current.friendlies
-    local targets_in_area = main.current.main:get_objects_in_shape(self.shape, target_group)
+    local targets_in_area = {}
+    
+    if self.is_troop then
+        -- Player areas still check enemies normally
+        targets_in_area = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
+    else
+        -- Enemy areas only check for player cursor
+        local cursor = main.current.current_arena and main.current.current_arena.player_cursor
+        if cursor and not cursor.dead then
+            -- Check if cursor is in the area
+            if self.pick_shape == 'circle' then
+                local dist = math.distance(self.x, self.y, cursor.x, cursor.y)
+                if dist <= self.radius + (cursor.cursor_radius or 4) then
+                    targets_in_area = {cursor}
+                end
+            else
+                -- Rectangle shape check - use get_objects_in_shape
+                if self.shape then
+                    local objects = main.current.main:get_objects_in_shape(self.shape, {cursor})
+                    if #objects > 0 then
+                        targets_in_area = {cursor}
+                    end
+                end
+            end
+        end
+    end
 
     local actual_targets_hit = {}
     local hit_success = false

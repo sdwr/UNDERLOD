@@ -1357,14 +1357,17 @@ function init()
 
   special_enemy_by_tier = {
     [1] = {
-      'goblin_archer',
-      'archer',
+      -- 'goblin_archer',
+      -- 'archer',
       -- -- 'selfburst',
       'burst',
+      'crossfire',
+      -- 'spiral',
+      'tank',
       'snakearrow',
       'turret',
-      'mortar',
-      'singlemortar',
+      -- 'mortar',
+      -- 'singlemortar',
       -- 'cleaver',
       -- 'slowcharger',
     },
@@ -1380,6 +1383,7 @@ function init()
     },
     [2] = {
       'firewall_caster',
+      'crossfire',
       'mortar',
       'singlemortar',
       'line_mortar',
@@ -1429,6 +1433,9 @@ function init()
     ['cleaver'] = 75,
     ['selfburst'] = 75,
     ['snakearrow'] = 75,
+    ['crossfire'] = 75,
+    ['spiral'] = 75,
+    ['tank'] = 75,
 
     --special enemies t1.5
     ['mortar'] = 75,
@@ -2012,6 +2019,10 @@ end
 
 function set_cursor_animated()
   set_cursor_mode('animated')
+end
+
+function set_cursor_arena()
+  set_cursor_mode('arena')
 end
 
 function cleanup_global_cursor()

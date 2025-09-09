@@ -5,7 +5,7 @@ DEBUG_ENEMY_SEEK_TO_RANGE = false
 DEBUG_STEERING_VECTORS = false
 DEBUG_STEERING_ENEMY_TYPE = nil
 DEBUG_PLAYER_TROOPS = false
-DEBUG_PLAYER_CHARACTER_TYPE = 'archer'
+DEBUG_PLAYER_CHARACTER_TYPE = 'swordsman'
 DEBUG_DISTANCE_MULTI = false
 
 IS_DEMO = false
@@ -114,8 +114,8 @@ ENEMY_KNOCKBACK_FORCE_CHAIN_MULTIPLIER = 0.8
 
 ENEMY_KNOCKBACK_VELOCITY_REGAIN_CONTROL_THRESHOLD = 30
 
-LAUNCH_PUSH_FORCE_TROOP_ATTACK = 10
-KNOCKBACK_DURATION_TROOP_ATTACK = 0.2
+LAUNCH_PUSH_FORCE_TROOP_ATTACK = 100
+KNOCKBACK_DURATION_TROOP_ATTACK = 0.15
 
 KNOCKBACK_DURATION_BOSS = 1
 KNOCKBACK_DURATION_ENEMY = 0.6
@@ -218,6 +218,7 @@ ARENA_RADIUS = 200
 
 
 -- Steering and Movement constants
+TROOP_SEEK_DECELERATION = 2
 SEEK_DECELERATION = 5
 SEEK_WEIGHT = 1.75
 
@@ -357,7 +358,11 @@ SEEK_TO_RANGE_ENEMY_MOVEMENT_RADIUS = 60
 
 MOVEMENT_TYPE_SEEK_ORB = 'seek_orb'
 MOVEMENT_TYPE_SEEK_ORB_STALL = 'seek_orb_stall'
+MOVEMENT_TYPE_SEEK_ORB_SPIRAL = 'seek_orb_spiral'
+MOVEMENT_TYPE_SEEK_ORB_ATTACK = 'seek_orb_attack'
 MOVEMENT_TYPE_APPROACH_ORB = 'approach_orb'
+MOVEMENT_TYPE_APPROACH_ORB_ATTACK = 'approach_orb_attack'
+MOVEMENT_TYPE_APPROACH_ORB_RANDOM = 'approach_orb_random'
 MOVEMENT_TYPE_SEEK_ORB_RANGE = 'seek_orb_range'
 MOVEMENT_TYPE_SEEK = 'seek'
 MOVEMENT_TYPE_LOOSE_SEEK = 'loose_seek'
@@ -366,11 +371,64 @@ MOVEMENT_TYPE_RANDOM = 'random'
 MOVEMENT_TYPE_FLEE = 'flee'
 MOVEMENT_TYPE_WANDER = 'wander'
 MOVEMENT_TYPE_NONE = 'none'
+MOVEMENT_TYPE_STATIONARY = 'stationary'
+
+MOVEMENT_TYPE_DATA = {
+  [MOVEMENT_TYPE_SEEK_ORB] = {
+    can_attack = false,
+    action_timer = nil,
+    after = MOVEMENT_TYPE_SEEK_ORB
+  },
+  [MOVEMENT_TYPE_SEEK_ORB_STALL] = {
+    can_attack = false,
+    action_timer = nil,
+    after = MOVEMENT_TYPE_SEEK_ORB_STALL
+  },
+  [MOVEMENT_TYPE_SEEK_ORB_SPIRAL] = {
+    can_attack = false,
+    action_timer = nil,
+    after = MOVEMENT_TYPE_SEEK_ORB_SPIRAL
+  },
+  [MOVEMENT_TYPE_SEEK_ORB_ATTACK] = {
+    can_attack = true,
+    action_timer = 1.5,
+    after = MOVEMENT_TYPE_SEEK_ORB_ATTACK
+  },
+  [MOVEMENT_TYPE_APPROACH_ORB] = {
+    can_attack = false,
+    action_timer = nil,
+    after = MOVEMENT_TYPE_STATIONARY
+  },
+  [MOVEMENT_TYPE_APPROACH_ORB_ATTACK] = {
+    can_attack = true,
+    action_timer = 1.5,
+    after = MOVEMENT_TYPE_STATIONARY
+  },
+  [MOVEMENT_TYPE_APPROACH_ORB_RANDOM] = {
+    can_attack = false,
+    action_timer = nil,
+    after_delay = 1,
+    after = MOVEMENT_TYPE_STATIONARY
+  },
+  [MOVEMENT_TYPE_SEEK_ORB_RANGE] = {
+    can_attack = false,
+    action_timer = nil,
+    after_delay = 1,
+    after = MOVEMENT_TYPE_STATIONARY
+  },
+  [MOVEMENT_TYPE_STATIONARY] = {
+    can_attack = true,
+    action_timer = 0.5,
+    after = MOVEMENT_TYPE_STATIONARY
+  },
+  ['default'] = {
+    can_attack = true,
+    action_timer = 0.5,
+    after = MOVEMENT_TYPE_STATIONARY
+  },
+}
 
 get_movement_type_by_enemy = function(enemy)
-  if enemy.special_swarmer_type == 'orbkiller' then
-    return MOVEMENT_TYPE_SEEK_ORB
-  end
 
   return enemy_movement_types[enemy.type] or enemy_movement_types['default']
 end
@@ -400,32 +458,37 @@ enemy_movement_types = {
 
   ['default'] = MOVEMENT_TYPE_CROSS_SCREEN,
   -- Aggressive seekers - chase players directly
-  ['swarmer'] = MOVEMENT_TYPE_LOOSE_SEEK,
-  ['boulder'] = MOVEMENT_TYPE_CROSS_SCREEN,
+  ['swarmer'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
+  ['boulder'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
+  ['tank'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
   
   -- ['seeker'] = MOVEMENT_TYPE_SEEK_ORB,
 
   -- Ranged units that maintain distance
-  ['big_goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['archer'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['big_goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['archer'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
 
-  ['mortar'] = MOVEMENT_TYPE_APPROACH_ORB,
-  ['singlemortar'] = MOVEMENT_TYPE_APPROACH_ORB,
-  ['line_mortar'] = MOVEMENT_TYPE_APPROACH_ORB,
+  ['mortar'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['singlemortar'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['line_mortar'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
 
-  ['burst'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['selfburst'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['arcspread'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['aim_spread'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['plasma'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['laser'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['snakearrow'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['summoner'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['spawner'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
-  ['firewall_caster'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['crossfire'] = MOVEMENT_TYPE_APPROACH_ORB_ATTACK,
+  ['spiral'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+
+  ['burst'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['snakearrow'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+
+  ['selfburst'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['arcspread'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['aim_spread'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['plasma'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['laser'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['summoner'] = MOVEMENT_TYPE_APPROACH_ORB,
+  ['spawner'] = MOVEMENT_TYPE_APPROACH_ORB,
+  ['firewall_caster'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
   
-  ['turret'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['turret'] = MOVEMENT_TYPE_APPROACH_ORB,
   
   -- Bosses
   ['stompy'] = MOVEMENT_TYPE_LOOSE_SEEK,

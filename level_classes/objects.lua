@@ -349,6 +349,12 @@ function Unit:config_physics_object()
     self:set_as_steerable(self.max_v, MAX_ENEMY_FORCE, 4*math.pi, 4)
 
   elseif self.class == 'troop' then
+    -- Troops no longer have collision - they are invisible weapons at the orb
+    if self.no_collision then
+      -- Skip physics setup for troops
+      return
+    end
+    
     if self.ghost == true then
       self:set_as_rectangle(self.size, self.size,'dynamic', 'ghost')
     else
@@ -436,7 +442,9 @@ end
 function Unit:update(dt)
   self:update_game_object(dt)
   if self.hp < self.max_hp or self.isBoss then
-    self:show_hp()
+    if not self.type == 'swarmer' then
+      self:show_hp()
+    end
   elseif not self.isBoss then
     self:hide_hp()
   end
@@ -1686,16 +1694,19 @@ function Unit:pick_action()
     return false
   end
   
+  local movementData = MOVEMENT_TYPE_DATA[self.currentMovementAction] or MOVEMENT_TYPE_DATA['default']
+
+  if not movementData.can_attack then
+    return false
+  end
     
   
   local attack_options = self.attack_options or {}
-  local movement_options = self.movement_options or {get_movement_type_by_enemy(self)}
 
   local viable_attacks = {}
-  local viable_movements = {}
 
   if not self.castObject and self.attack_cooldown_timer ~= nil and self.attack_cooldown_timer <= 0 then
-    if self.way_onscreen then
+    if self.fully_onscreen then
       for k, v in pairs(attack_options) do
         if v.viable(self) then
           table.insert(viable_attacks, v)
@@ -1704,47 +1715,28 @@ function Unit:pick_action()
     end
   end
 
-  for k, v in pairs(movement_options) do
-    table.insert(viable_movements, v)
-  end
 
-  local type, action
-  if self.custom_action_selector then
-    type, action = self:custom_action_selector(viable_attacks, viable_movements)
-  else
+  local action = nil
+  if #viable_attacks > 0 then
+    
+    action = random:table(viable_attacks)
 
-    if #viable_attacks > 0 and math.random() > (self.move_option_weight or 0.15) then
-      type = 'attack'
-      
+    while #viable_attacks > 1 and self.last_cast == action.name do
       action = random:table(viable_attacks)
-
-      while #viable_attacks > 1 and self.last_cast == action.name do
-        action = random:table(viable_attacks)
-      end
-    else
-      type = 'movement'
-
-      if #viable_movements > 0 then
-          -- We have dynamic options, pick one.
-          action = random:table(viable_movements)
-      else
-          -- No dynamic options, use the enemy's default style.
-          action = self.movementStyle or MOVEMENT_TYPE_RANDOM
-      end
     end
   end
+   
 
   if action then
-    if type == 'retry' then
-      --return false and retry in 0.1 seconds
-      return false
-    elseif type == 'attack' then
-      self:cast(action)
-      self.last_cast = action.name
-    elseif type == 'movement' then
-      self:set_movement_action(action)
+    if self.icon == 'ghost' then
+      print('casting ghost', action.name)
     end
+    self:cast(action)
+    self.last_cast = action.name
     return true
+  end
+  if self.icon == 'ghost' then
+    print('no action', self.type)
   end
 
   return false
@@ -1921,6 +1913,7 @@ function Unit:set_physics_properties(args)
   local damping = args.damping or get_damping_by_unit_class(self.class)
   local friction = args.friction or ENEMY_FRICTION
   local mass = args.mass or get_mass_by_unit_class(self.class)
+  local max_v = args.max_v or self.mvspd
 
   local is_launching = args.is_launching or false
   
@@ -1928,6 +1921,7 @@ function Unit:set_physics_properties(args)
     self:set_damping(damping)
     self:set_friction(friction)
     self:set_mass(mass)
+    self.max_v = max_v
   end, 'setting_physics_properties')
   
   self.is_launching = is_launching

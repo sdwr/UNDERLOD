@@ -18,6 +18,7 @@ Helper.mousey = 0
 Helper.window_width = 0
 Helper.window_height = 0
 Helper.disable_unit_controls = false
+Helper.player_attack_location = nil
 
 -- Timing state variables
 Helper.tick_count = 0
@@ -132,31 +133,6 @@ function Helper:update(dt)
     Helper.mousex = Helper.mousex / sx
     Helper.mousey = Helper.mousey / sx
 
-    if love.keyboard.isDown( "d" ) then
-        Area{
-            group = main.current.effects,
-            pick_shape = 'circle',
-            x = Helper.mousex,
-            y = Helper.mousey,
-            r = 30,
-            dmg = 10,
-            duration = 0.2,
-            color = Helper.Color.blue,
-            is_troop = false
-        }
-        Area{
-            group = main.current.effects,
-            pick_shape = 'circle',
-            x = Helper.mousex,
-            y = Helper.mousey,
-            r = 30,
-            dmg = 10,
-            duration = 0.2,
-            color = Helper.Color.blue,
-            is_troop = true
-        }
-    end
-
     if input['q'].pressed then
         show_debug_arena_radius = not show_debug_arena_radius
     end
@@ -203,11 +179,6 @@ function Helper:update(dt)
         end
     end
 
-    -- if input['s'].pressed then
-    --     if not s_just_pressed then
-    --         Helper.Spell.Sweep:create(Helper.Color.blue, true, 100, 50, Helper.mousey - 50, Helper.window_width - 50, Helper.mousey + 50)
-    --     end
-    -- end
     if input['p'].pressed then
         Helper.Unit.do_draw_points = not Helper.Unit.do_draw_points 
     end

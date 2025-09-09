@@ -5,20 +5,22 @@
 -- Supports both unit targeting and ground targeting
 -- Can be launched with custom starting angles or angle offsets
 
-HomingMissile = Object:extend()
+HomingMissile = EnemyProjectile:extend()
 HomingMissile.__class_name = 'HomingMissile'
-HomingMissile:implement(GameObject)
-HomingMissile:implement(Physics)
 
 function HomingMissile:init(args)
-  self:init_game_object(args)
+  -- Set defaults before parent init
+  args.radius = args.radius or 3
+  args.speed = args.speed or 200
+  args.color = args.color or orange[0]
+  args.duration = args.max_lifetime or 5.0
+  args.pierce = false  -- Explodes on first hit
+  
+  -- Call parent init
+  HomingMissile.super.init(self, args)
 
-  -- Missile properties
-  self.damage = get_dmg_value(self.damage)
-  self.speed = self.speed or 200
+  -- Missile properties (parent already handles damage, speed, color, radius)
   self.max_turn_speed = self.max_turn_speed or math.pi -- radians per second
-  self.color = self.color or orange[0]
-  self.radius = self.radius or 3
   
   -- Explosion properties
   self.explosion_radius = self.explosion_radius or 60
@@ -30,13 +32,9 @@ function HomingMissile:init(args)
   self.max_distance = self.max_distance or 800 -- pixels
   self.explode_on_impact = args.explode_on_impact ~= false -- default true
   
-  -- Position and movement
-  self.unit = self.unit
-  self.target = self.target
+  -- Position and movement (parent handles unit, target, x, y)
   self.target_x = self.target_x -- For ground targeting
   self.target_y = self.target_y -- For ground targeting
-  self.x = self.x or (self.unit and self.unit.x) or 0
-  self.y = self.y or (self.unit and self.unit.y) or 0
   self.start_x = self.x
   self.start_y = self.y
   
@@ -47,8 +45,7 @@ function HomingMissile:init(args)
   -- Calculate initial angle
   self.angle = self:calculate_initial_angle()
   
-  -- Create hitbox
-  self.shape = Circle(self.x, self.y, self.radius)
+  -- Parent already creates shape
   
   -- Tracking
   self.lifetime = 0
@@ -68,7 +65,8 @@ function HomingMissile:init(args)
 end
 
 function HomingMissile:update(dt)
-  self:update_game_object(dt)
+  -- Call parent update (handles hit detection)
+  HomingMissile.super.update(self, dt)
   
   if self.dead or self.has_exploded then
     return
@@ -88,23 +86,8 @@ function HomingMissile:update(dt)
     return
   end
   
-  -- Update homing behavior
-  self:update_homing(dt)
-  
-  -- Move missile
-  self.x = self.x + math.cos(self.angle) * self.speed * dt
-  self.y = self.y + math.sin(self.angle) * self.speed * dt
-  
-  -- Update hitbox
-  self.shape:move_to(self.x, self.y)
-  
   -- Update trail
   self:update_trail(dt)
-  
-  -- Check for target collision
-  if self.explode_on_impact then
-    self:check_collisions()
-  end
 end
 
 function HomingMissile:calculate_initial_angle()
@@ -139,6 +122,15 @@ function HomingMissile:get_target_position()
   else
     return nil, nil
   end
+end
+
+-- Override update_movement for homing behavior
+function HomingMissile:update_movement(dt)
+  self:update_homing(dt)
+  
+  -- Move missile
+  self.x = self.x + math.cos(self.angle) * self.speed * dt
+  self.y = self.y + math.sin(self.angle) * self.speed * dt
 end
 
 function HomingMissile:update_homing(dt)
@@ -191,18 +183,10 @@ function HomingMissile:update_trail(dt)
   end
 end
 
-function HomingMissile:check_collisions()
-  -- Check for collisions with appropriate targets
-  local target_classes = self.is_troop and main.current.enemies or main.current.friendlies
-  local targets = main.current.main:get_objects_in_shape(self.shape, target_classes)
-  
-  if #targets > 0 then
-    for _, target in ipairs(targets) do
-      if not table.any(self.already_hit_targets, function(hit_target) return hit_target.id == target.id end) then
-        self:explode()
-        return
-      end
-    end
+-- Override on_hit_cursor to explode
+function HomingMissile:on_hit_cursor(cursor)
+  if self.explode_on_impact then
+    self:explode()
   end
 end
 

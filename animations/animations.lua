@@ -903,6 +903,7 @@ enemy_type_to_size = {
   ['archer'] = 'special',
   ['spawner'] = 'special',
   ['spread'] = 'special',
+  ['spiral'] = 'special',
   ['stomper'] = 'special',
   ['summoner'] = 'special',
   ['bomb'] = 'special',
@@ -919,6 +920,8 @@ enemy_type_to_size = {
   ['line_mortar'] = 'special',
   ['aim_spread'] = 'special',
   ['boulder'] = 'boulder',
+  ['tank'] = 'special',
+  ['crossfire'] = 'special',
   
   ['swarmer'] = 'swarmer',
   

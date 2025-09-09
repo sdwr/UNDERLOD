@@ -70,8 +70,6 @@ function Cast:init(args)
   --unit and target and x and y are set in objects.lua 
   self.unit = self.unit
   self.target = self.target
-  self.x = self.x or self.unit.x
-  self.y = self.y or self.unit.y
 
   self.name = self.name or 'cast'
   self.spellclass = self.spellclass
@@ -86,6 +84,9 @@ function Cast:init(args)
   --vars from data
   self.rotation_lock = self.rotation_lock or false
   self.cast_length = self.cast_length or (self.unit and self.unit.cast_time) or 0.5
+  if self.unit.is_troop then
+    self.cast_length = self.cast_length * math.random(0.8, 1.2)
+  end
   
   self.cancel_on_death = self.cancel_on_death or true
   self.cancel_on_range = self.cancel_on_range or false
@@ -138,17 +139,23 @@ function Cast:cast()
 
   --if the unit is a troop, check for global manual target
   if self.unit and self.unit:is(Troop) then
-    if Helper.manually_targeted_enemy and not Helper.manually_targeted_enemy.dead then
-      self.target = Helper.manually_targeted_enemy
+    if Helper.player_attack_location then
+      self.target = Helper.player_attack_location
     end
   end
 
+
+  if self.x == 0 and self.y == 0 then
+    if self.unit then
+      self.x = self.unit.x
+      self.y = self.unit.y
+    end
+  end
 
   self.spelldata.x = self.x
   self.spelldata.y = self.y
   self.spelldata.unit = self.unit
   self.spelldata.target = self.target
-  self.spelldata.cast_distance_multiplier = self.cast_distance_multiplier
 
   if self.cast_sound and not self.cast_sound_at_start then
     self.cast_volume = self.cast_volume or 1

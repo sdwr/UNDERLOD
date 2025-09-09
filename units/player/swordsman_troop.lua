@@ -45,7 +45,6 @@ function Swordsman_Troop:setup_cast(cast_target)
     target = cast_target,
     backswing = self.backswing,
     instantspell = true,
-    cast_distance_multiplier = self.cast_distance_multiplier,
     -- This is the data for the actual spell that gets created.
     spellclass = Area_Spell,
     spelldata = {

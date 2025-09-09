@@ -2,9 +2,9 @@ enemy_size_to_xy = {
   critter = {x = 7, y = 4},
   small = {x = 8, y = 6},
   regular = {x = 10, y = 10},
-  swarmer = {x = 14, y = 7},
-  regular_big = {x = 16, y = 12},
-  special = {x = 24, y = 24},
+  swarmer = {x = 14, y = 8},
+  regular_big = {x = 24, y = 18},
+  special = {x = 20, y = 20},
   boulder = {x = 26, y = 28},
   huge = {x = 36, y = 24},
 

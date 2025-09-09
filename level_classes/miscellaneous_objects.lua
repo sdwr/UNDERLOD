@@ -68,7 +68,29 @@ function Area:try_damage()
   if self.is_troop then
     targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
   else
-    targets = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
+    -- Enemy areas only check player cursor
+    local cursor = main.current.current_arena and main.current.current_arena.player_cursor
+    if cursor and not cursor.dead then
+      -- Check collision based on shape type
+      local hit = false
+      if self.pick_shape == 'circle' then
+        -- Circle to circle collision
+        local dist = math.distance(self.x, self.y, cursor.x, cursor.y)
+        hit = dist <= self.shape.rs + (cursor.cursor_radius or 4)
+      else
+        -- Rectangle to circle collision
+        local cursor_circle = Circle(cursor.x, cursor.y, cursor.cursor_radius or 4)
+        hit = self.shape:is_colliding_with_circle(cursor_circle)
+      end
+      
+      if hit then
+        targets = {cursor}
+      else
+        targets = {}
+      end
+    else
+      targets = {}
+    end
   end
 
   --healing area
@@ -237,7 +259,19 @@ function DotArea:init(args)
     self.t:every(0.2, function()
       local targets = {}
       if self.team == 'enemy' then
-        targets = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
+        -- Enemy DoT only checks player cursor
+        local cursor = main.current.current_arena and main.current.current_arena.player_cursor
+        if cursor and not cursor.dead then
+          -- Check if cursor is in shape
+          local cursor_circle = Circle(cursor.x, cursor.y, cursor.cursor_radius or 4)
+          if main.current.main:get_objects_in_shape(self.shape, {cursor})[1] then
+            targets = {cursor}
+          else
+            targets = {}
+          end
+        else
+          targets = {}
+        end
       else
         targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
       end
@@ -700,7 +734,14 @@ function Stomp:stomp()
 
     local targets = {}
     if self.team == 'enemy' then
-        targets = main.current.main:get_objects_in_shape(self.attack_sensor, main.current.friendlies)
+        -- Enemy mortars only check player cursor
+        local cursor = main.current.current_arena and main.current.current_arena.player_cursor
+        if cursor and not cursor.dead then
+            local cursor_circle = Circle(cursor.x, cursor.y, cursor.cursor_radius or 4)
+            if self.attack_sensor:is_colliding_with_circle(cursor_circle) then
+                targets = {cursor}
+            end
+        end
     else
         targets = main.current.main:get_objects_in_shape(self.attack_sensor, main.current.enemies)
     end
@@ -862,8 +903,19 @@ function Laser:stopSound()
 end
 
 function Laser:try_damage()
-  local target_classes = self.damage_troops and main.current.friendlies or main.current.enemies
-  local targets = main.current.main:get_objects_in_shape(self.shape, target_classes)
+  local targets = {}
+  if self.damage_troops then
+    -- Enemy lasers only check player cursor
+    local cursor = main.current.current_arena and main.current.current_arena.player_cursor
+    if cursor and not cursor.dead then
+      -- Check if cursor is in the laser shape
+      if main.current.main:get_objects_in_shape(self.shape, {cursor})[1] then
+        targets = {cursor}
+      end
+    end
+  else
+    targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
+  end
   for _, target in ipairs(targets) do
     target:hit(self.dps * self.tick, self.parent, self.damage_type, true, true)
   end
@@ -1260,14 +1312,26 @@ end
 function CustomCursor:draw()
     if self.mode == 'simple' then
         self:draw_simple_mode()
-    else
+    elseif self.mode == 'animated' then
         -- Check if the left mouse button is being held down OR space is held
-        if input['m1'].down then
-            self:draw_pull_state()
-        else
-            self:draw_idle_state()
-        end
+        self:draw_animated_mode()
+    elseif self.mode == 'arena' then
+        self:draw_arena_mode()
+    else
+        self:draw_simple_mode()
     end
+end
+
+function CustomCursor:draw_animated_mode()
+  if input['m1'].down then
+    self:draw_pull_state()
+  else
+    self:draw_idle_state()
+  end
+end
+
+function CustomCursor:draw_arena_mode()
+  graphics.circle(self.x, self.y, 2, self.base_color, 1)
 end
 
 function CustomCursor:draw_pointer_shape(x, y, scale)
@@ -1498,7 +1562,7 @@ end
 
 function Critter:push(f, r, push_invulnerable, duration)
   -- Apply damage impulse instead of state change
-  Helper.Unit:apply_knockback(self, f, r, duration or KNOCKBACK_DURATION_ENEMY, push_invulnerable)
+  Helper.Unit:apply_knockback(self, f, r)
   
   self.push_force = f
   self.being_pushed = true

@@ -1,10 +1,12 @@
 require 'units/player/player_troop'
+require 'units/player/player_cursor'
 require 'units/player/laser_troop'
 require 'units/player/swordsman_troop'
 require 'units/player/archer_troop'
 
 troop_classes = {
   Troop,
+  PlayerCursor,
   Laser_Troop,
   Swordsman_Troop,
   Archer_Troop

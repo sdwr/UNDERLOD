@@ -28,9 +28,16 @@ fns['init_enemy'] = function(self)
 
   local shoot = {
     name = 'shoot',
-    viable = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); return target end,
+    viable = function() 
+      local cursor = main.current.current_arena and main.current.current_arena.player_cursor
+      if cursor and not cursor.dead then
+        local dist = math.distance(self.x, self.y, cursor.x, cursor.y)
+        return dist <= self.attack_range
+      end
+      return false
+    end,
     oncast = function() 
-      self.target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies)
+      self.target = main.current.current_arena and main.current.current_arena.player_cursor
     end,
 
     cancel_on_range = false,

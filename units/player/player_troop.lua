@@ -13,8 +13,18 @@ function Troop:init(args)
   --self.buffs[1] = {name = buff_types['dmg'], amount = 0.2, color = red_transparent_weak}
   --self.buffs[2] = {name = buff_types['aspd'], amount = 0.2, color = green_transparent_weak}
   self.beingHealed = false
+  
+  -- Position troop at center of screen (orb location)
+  args.x = gw/2
+  args.y = gh/2
+  
   self:init_game_object(args)
   Helper.Unit:add_custom_variables_to_unit(self)
+  -- Disable collision for troops
+  if not self.is_player_cursor then
+    self.no_collision = true
+  end
+  
   self:init_unit()
   local level = self.level or 1
 
@@ -136,8 +146,24 @@ function Troop:update(dt)
   self:calculate_stats()
   self:update_targets() -- Updates who the unit is targeting
 
-  self:update_movement_effect(dt)
+  -- Don't update movement effects since troops don't move
+  -- self:update_movement_effect(dt)
   self:update_survivor_effect(dt)
+  
+  -- Keep troops at player cursor position (unless this IS the player cursor)
+  if not self.is_player_cursor then
+    -- Follow the player cursor if it exists
+    if main.current and main.current.current_arena and main.current.current_arena.player_cursor then
+      local cursor = main.current.current_arena.player_cursor
+      self.x = cursor.x
+      self.y = cursor.y
+    else
+      -- Fallback to center if no cursor
+      self.x = gw/2
+      self.y = gh/2
+    end
+    self:set_velocity(0, 0)
+  end
 
   -- ===================================================================
   -- 2. THE STATE MACHINE (Hierarchical and Predictable)
@@ -145,22 +171,25 @@ function Troop:update(dt)
   -- This is one big if/elseif block. Only ONE of these can run per frame,
   -- which prevents state flickering. The order is based on priority.
 
-  if self.state == unit_states['normal']
-  or self.state == unit_states['idle'] then
-    self:update_ai_logic()
-  end
+  -- Disable movement for troops
+  -- if table.contains(unit_states_can_move, self.state) then
+  --   self:follow_wasd()
+  --   self:do_automatic_movement()
+  -- end
 
-  --dont need to check if following, because m1 cancels the rally point
-  if table.contains(unit_states_can_rally, self.state) then
-    if self.rallying and self.target_pos then
-      if not Helper.Unit:in_range_of_rally_point(self) then
-        self:rally_to_point()
+  if table.contains(unit_states_can_cast, self.state) then
+    self.target = Helper.Target:get_close_enemy(self)
+    if self.target then
+      if Helper.Unit:can_cast(self, self.target) then
+        self:setup_cast(self.target)
       end
     end
   end
 
-  if table.contains(unit_states_can_move, self.state) then
-    self:do_automatic_movement()
+  if self.state == unit_states['casting'] then
+    if not self.target or self.target.dead then
+      self:cancel_cast()
+    end
   end
 
 
@@ -176,28 +205,14 @@ function Troop:update(dt)
   -- If the unit is actively following the mouse.
   elseif self.state == unit_states['following'] then
 
-      self:cancel_cast()
+      -- self:cancel_cast()
       -- self:clear_my_target()
       -- self:clear_assigned_target()
-
-      -- Check if we should STOP following.
-      if input['m1'].released then
-        self:start_deceleration()
-        Helper.Unit:set_state(self, unit_states['idle'])
-      else
-        self:follow_mouse()
-
-      end
 
   -- PRIORITY 3: Action States (Busy States)
   -- If the unit is in the middle of casting an ability.
   elseif self.state == unit_states['casting'] then
 
-    if self.castObject then
-      if Helper.Unit:target_out_of_range(self, self.castObject.target) then
-        self:cancel_cast()
-      end
-    end
   end
 
   -- ===================================================================
@@ -206,6 +221,21 @@ function Troop:update(dt)
   
   self.r = self:get_angle()
   self.attack_sensor:move_to(self.x, self.y)
+end
+
+function Troop:follow_wasd()
+  if self.being_knocked_back then return end
+  if Helper.Unit.wasd_pressed then 
+    self:set_velocity(0, 0)
+  end
+  if Helper.Unit.wasd_released then
+    self:start_deceleration()
+  elseif Helper.Unit.wasd_down then
+    self:seek_point(Helper.Unit.movement_target.x, Helper.Unit.movement_target.y, SEEK_DECELERATION, SEEK_WEIGHT)
+    self.t:after(0, function()
+      self:reset_physics_properties()
+    end, 'reset_physics_properties')
+  end
 end
 
 function Troop:do_automatic_movement()
@@ -222,14 +252,8 @@ function Troop:do_automatic_movement()
     self:add_cohesion(team:get_center(), TROOP_COHESION_MIN_DISTANCE, TROOP_COHESION_WEIGHT)
   end
 
-  --rotate towards target or velocity
-  if self:in_range('assigned')() then
-    self:rotate_towards_object(Helper.manually_targeted_enemy, 1)
-  elseif self:in_range('regular')() then
-    self:rotate_towards_object(self.target, 1)
-  else
-    self:rotate_towards_velocity(1)
-  end
+
+  self:rotate_towards_velocity(1)
 end
 
 
@@ -247,62 +271,6 @@ function Troop:start_deceleration()
   end, 'reset_physics_properties')
 end
 
-function Troop:update_ai_logic()
-  -- This function is only called when the unit is in the 'normal' state.
-  -- It represents the unit's autonomous decision-making process.
-
-  -- 1. VALIDATE CURRENT TARGET
-  -- First, check if our current target is dead or invalid. If so, clear it.
-  local regular_target = self.target
-
-  if regular_target and regular_target.dead then
-    self:clear_my_target()
-  end
-
-  if regular_target and Helper.manually_targeted_enemy and regular_target ~= Helper.manually_targeted_enemy then
-    self:clear_my_target()
-  end
-
-  local cast_target = nil
-  if Helper.manually_targeted_enemy then
-    cast_target = Helper.manually_targeted_enemy
-  elseif regular_target then
-    --should also check if the target is too far away compared to other enemies
-    cast_target = regular_target
-  end
-
-
-  -- 2. ACQUIRE NEW TARGET
-  -- If we don't have a target, try to find the closest one within our aggro range.
-  if not cast_target then
-      --find target if not already found
-      -- pick random in attack range
-      -- or closest in aggro range
-      self:set_target(Helper.Target:get_close_enemy(self, nil, {fully_onscreen = true}))
-      cast_target = self.target
-
-  end
-
-  -- 3. ACT BASED ON TARGET STATUS
-  -- If we have a valid target (either pre-existing or newly acquired)...
-  if cast_target then
-      -- 3a. CHECK IF WE CAN ATTACK.
-      -- We must be in range AND our cast must be off cooldown.
-      if Helper.Unit:can_cast(self, cast_target) then
-          -- If yes, commit to casting.
-          -- NOTE: Your can_cast helper might do both checks, which is fine!
-          self:setup_cast(cast_target)
-      end
-  end
-end
-
-
-function Troop:set_rally_position(i)
-  local team = Helper.Unit.teams[self.team]
-  self.target_pos = {x = team.rallyCircle.x + math.random(-i, i), y = team.rallyCircle.y + math.random(-i, i)}
-
-end
-
 -- ===================================================================
 -- REFACTORED Troop:push
 -- Now calls the standardized helper function.
@@ -312,66 +280,45 @@ function Troop:push(f, r, push_invulnerable, duration)
   duration = duration or KNOCKBACK_DURATION_ENEMY
   
   -- Call the universal knockback function
-  Helper.Unit:apply_knockback(self, f, r, duration, push_invulnerable)
+  Helper.Unit:apply_knockback(self, f, r)
 end
 
 
 function Troop:draw()
-  --graphics.circle(self.x, self.y, self.attack_sensor.rs, orange[0], 1)
-
-  local final_scale_x = self.hfx.attack_scale_x.x 
-    * self.hfx.move_scale_x.x 
-    * self.hfx.survivor_scale.x
-    * self.hfx.hit.x 
-  local final_scale_y = self.hfx.attack_scale_y.x 
-    * self.hfx.move_scale_y.x
-    * self.hfx.survivor_scale.x
-    * self.hfx.hit.x 
-
-  graphics.push(self.x, self.y, self.r, final_scale_x, final_scale_y)
-  self:draw_buffs()
-
-  -- Distance multiplier glow effect
-  self:draw_distance_glow()
-
-  -- -- darken the non-selected units
-  -- local color = self.color:clone()
-  -- color = color:lighten(SELECTED_PLAYER_LIGHTEN)
-
-  --draw unit model (rectangle not circle??)
-  graphics.rectangle(self.x, self.y, self.shape.w*.66, self.shape.h*.66, 3, 3, self.hfx.hit.f and fg[0] or self.color)
+  -- Troops are invisible - don't draw anything
+  return
 
   -- if not self.selected then
   --   graphics.rectangle(self.x, self.y, 3, 3, 1, 1, self.color)
   -- end
 
-  if self.state == unit_states['casting'] then
-    self:draw_cast_timer()
-  end
-  if self.state == unit_states['channeling'] then
-    self:draw_channeling()
-  end
+  -- if self.state == unit_states['casting'] then
+  --   self:draw_cast_timer()
+  -- end
+  -- if self.state == unit_states['channeling'] then
+  --   self:draw_channeling()
+  -- end
 
-  if not Helper.Unit:cast_off_cooldown(self) then
-    self:draw_cooldown_timer()
-  end
-  if self.bubbled then 
-    graphics.circle(self.x, self.y, self.shape.w, yellow_transparent_weak)
-  end
-  --not going very transparent
-  if self:isShielded() then
-    local color = yellow[5]:clone()
-    color.a = 0.3
-    graphics.circle(self.x, self.y, self.shape.w*0.6, color)
-  end
+  -- if not Helper.Unit:cast_off_cooldown(self) then
+  --   self:draw_cooldown_timer()
+  -- end
+  -- if self.bubbled then 
+  --   graphics.circle(self.x, self.y, self.shape.w, yellow_transparent_weak)
+  -- end
+  -- --not going very transparent
+  -- if self:isShielded() then
+  --   local color = yellow[5]:clone()
+  --   color.a = 0.3
+  --   graphics.circle(self.x, self.y, self.shape.w*0.6, color)
+  -- end
 
-  --draw aggro sensor
-  -- graphics.circle(self.x, self.y, self.aggro_sensor.rs, yellow[5], 2)
+  -- --draw aggro sensor
+  -- -- graphics.circle(self.x, self.y, self.aggro_sensor.rs, yellow[5], 2)
 
-  graphics.pop()
+  -- graphics.pop()
   
-  -- Debug steering forces
-  self:draw_steering_debug()
+  -- -- Debug steering forces
+  -- self:draw_steering_debug()
 end
 
 function Troop:draw_distance_glow()
@@ -501,6 +448,12 @@ function Troop:die()
   self.death_function()
 end
 
+--override in subclasses
+function Troop:on_trigger_enter(other)
+  return
+end
+
+--no longer used
 function Troop:on_collision_enter(other, contact)
   local x, y = contact:getPositions()
 
@@ -544,7 +497,7 @@ function Troop:on_collision_enter(other, contact)
 end
 
 function Troop:setup_cast(cast_target)
-  self.cast_distance_multiplier = Helper.Target:get_distance_multiplier(self, cast_target)
+  --override in subclasses
 end
 
 function Troop:removeHealFlag(duration)

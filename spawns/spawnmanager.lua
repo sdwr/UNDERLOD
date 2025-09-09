@@ -589,6 +589,9 @@ end
 SpawnManager = Object:extend()
 SpawnManager.__class_name = 'SpawnManager'
 
+-- Debug flag - toggle with F9
+SpawnManager.debug_enabled = false
+
 function SpawnManager:init(arena)
     self.arena = arena
     self.level_data = arena.level_list[arena.level]
@@ -599,24 +602,48 @@ function SpawnManager:init(arena)
     -- Spawning State Machine
     self:change_state('arena_start')
     -- Possible States:
-    -- 'entry_delay':           Initial wait before the first wave.
-    -- 'between_waves_delay':   Pause between clearing one wave and starting the next.
-    -- 'processing_wave':       Actively reading and executing instructions for the current wave.
-    -- 'waiting_for_group':     Paused, waiting for a Spawn_Group call to finish.
-    -- 'waiting_for_delay':     Paused, waiting for a DELAY instruction's timer to finish.
-    -- 'waiting_for_boss_fight': Paused, waiting for the boss fight to finish.
-    -- 'waiting_for_clear':     All instructions for the wave are done; waiting for all enemies to be defeated.
-    -- 'finished':              All waves are complete.
-    -- 'boss_fight':            A special state for boss levels.
+    -- 'arena_start':           Waiting for external trigger
+    -- 'suction_to_targets':    Pulling troops to spawn locations
+    -- 'entry_delay':           Initial wait before the first wave
+    -- 'spawning_wave':         Actively spawning groups for current wave
+    -- 'spawning_subwave':      Actively spawning groups for current subwave
+    -- 'waiting_for_subwave_clear': Waiting for subwave enemies to die
+    -- 'between_subwaves_delay': Pause between subwaves
+    -- 'waiting_for_wave_clear': Waiting for all enemies to die or timeout
+    -- 'between_waves_delay':   Pause between waves
+    -- 'finished':              All waves are complete
+    -- 'spawning_boss':         Spawning boss enemy
+    -- 'waiting_for_clear':     Waiting for boss to die
 
+    -- Wave configuration (2 waves with 2 subwaves each)
+    -- Each subwave has the power of what a full wave used to have
+    self.total_round_power = ROUND_POWER_BY_LEVEL(arena.level)
+    self.wave_power_percentages = {0.3, 0.3, 0.4}  -- Distribution per subwave
+    self.current_wave = 1
+    self.total_waves = 2
+    self.current_subwave = 1
+    self.subwaves_per_wave = 2
+    
+    -- Track power for current subwave
+    self.current_subwave_power_target = 0
+    self.current_subwave_power_spawned = 0
+    self.subwave_start_time = 0
+    self.subwave_timeout = 15 -- 30 seconds max per subwave
+    
+    -- Subwave group scheduling
+    self.subwave_groups = {}  -- All groups for current subwave
+    self.current_group_index = 1
+    self.subwave_spawn_window = 5  -- Spawn all groups within first 5 seconds of subwave
+    self.next_group_spawn_time = 0
+    self.all_groups_spawned = false
+    
+    -- Delay between subwaves
+    self.between_subwaves_delay = 2  -- 2 seconds between subwaves
+    
     -- Timers and Trackers
     self.timer = TIME_BETWEEN_WAVES
-    self.current_wave_index = 1
-    self.current_instruction_index = 1
-
     self.pending_spawns = 0
-    self.wave_spawn_delay = 0 -- Track cumulative spawn delay for the current wave
-  
+    self.wave_spawn_delay = 0
 end
 
 function SpawnManager:does_spawn_reservation_exist(x, y)
@@ -633,7 +660,15 @@ end
 
 function SpawnManager:change_state(new_state)
   if self.state ~= new_state then
+      local old_state = self.state
       self.state = new_state
+      if SpawnManager.debug_enabled then
+          print(string.format("[SpawnManager] State: %s -> %s (Wave %d/%d, Subwave %d/%d, Time: %.2f)",
+              old_state or "nil", new_state,
+              self.current_wave or 0, self.total_waves or 0,
+              self.current_subwave or 0, self.subwaves_per_wave or 0,
+              Helper.Time and Helper.Time.time or 0))
+      end
   end
 end
 
@@ -645,14 +680,15 @@ function SpawnManager:complete_wave(wave_index)
 end
 
 function SpawnManager:update(dt)
+    -- Check for F9 key to toggle debug
+    if input and input.f9 and input.f9.pressed then
+        SpawnManager.debug_enabled = not SpawnManager.debug_enabled
+        print("[SpawnManager] Debug mode: " .. (SpawnManager.debug_enabled and "ENABLED" or "DISABLED"))
+    end
+    
     if self.state == 'finished' then return end
     --don't do anything until triggered by world manager
     if self.state == 'arena_start' then return end
-
-    if self.arena:percent_of_round_power_killed() >= 1 then
-      self:change_state('finished')
-      self.arena:level_clear(true)
-    end
 
     if self.state == 'suction_to_targets' then 
       Suction_Troops_To_Spawn_Locations(self.arena, true)
@@ -668,14 +704,14 @@ function SpawnManager:update(dt)
           self:change_state('spawning_boss')
           spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.5}
         else
-          self:change_state('processing_wave')
-          --spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.25}
+          -- Start first wave
+          self:start_wave(1)
         end
       end
     end
-    -- If we are ready to process the next instruction in a wave, do so.
-    if self.state == 'processing_wave' then
-        self:process_infinite_wave()
+    -- If we are spawning a subwave, check for scheduled group spawns
+    if self.state == 'spawning_subwave' then
+        self:process_scheduled_spawns(dt)
     end
 
     if self.state == 'spawning_boss' then
@@ -683,44 +719,329 @@ function SpawnManager:update(dt)
       self:change_state('waiting_for_clear')
     end
     
-    -- If all instructions are done, wait for the arena to be clear.
+    -- This state is now deprecated - spawning_subwave handles everything
+    if self.state == 'waiting_for_subwave_clear' then
+      -- Should not reach here, but handle gracefully
+      self:change_state('spawning_subwave')
+    end
+    
+    -- Between subwaves delay
+    if self.state == 'between_subwaves_delay' then
+      local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
+      local all_dead = true
+      
+      for _, e in ipairs(enemies) do
+        if e and not e.dead then
+          all_dead = false
+          break
+        end
+      end
+      
+      -- Start immediately if all enemies are dead, otherwise wait
+      if all_dead then
+        self:start_subwave()
+      else
+        self.timer = self.timer - dt
+        if self.timer <= 0 then
+          self:start_subwave()
+        end
+      end
+    end
+    
+    -- Between waves delay
+    if self.state == 'between_waves_delay' then
+      self.timer = self.timer - dt
+      if self.timer <= 0 then
+        -- Reset subwave to 1 for the new wave
+        self.current_subwave = 1
+        self:start_subwave()
+      end
+    end
+    
+    -- Boss waiting
     if self.state == 'waiting_for_clear' then
       if Is_Boss_Level(self.arena.level) then
         if is_boss_dead then
           self:change_state('finished')
           self.arena:level_clear()
         end
-      elseif self.next_group then
-        local group_power = Wave_Types:Get_Group_Power(self.next_group)
-        if current_power_onscreen + group_power <= MAX_ONSCREEN_ROUND_POWER(self.arena.level) then
-          self:change_state('processing_wave')
+      else
+        local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
+        local all_dead = true
+        for _, e in ipairs(enemies) do
+          if e and not e.dead then
+            all_dead = false
+            break
+          end
+        end
+        if all_dead then
+          self:change_state('finished')
+          self.arena:level_clear()
         end
       end
     end
 
 end
 
-function SpawnManager:process_infinite_wave()
+-- Start a new wave (which contains multiple subwaves)
+function SpawnManager:start_wave(wave_number)
+  self.current_wave = wave_number
+  self.current_subwave = 1
+  
+  -- Start the first subwave of this wave
+  self:start_subwave()
+end
 
-  if not self.next_group then
-    self.next_group = Get_Next_Group(self.arena.level)
+-- Start a new subwave
+function SpawnManager:start_subwave()
+  -- Calculate which power percentage to use based on total subwave index
+  local total_subwave_index = (self.current_wave - 1) * self.subwaves_per_wave + self.current_subwave
+  local power_index = math.min(total_subwave_index, #self.wave_power_percentages)
+  
+  self.current_subwave_power_target = self.total_round_power * self.wave_power_percentages[power_index]
+  self.current_subwave_power_spawned = 0
+  self.subwave_start_time = Helper.Time.time
+  
+  -- Generate all groups for this subwave
+  self:generate_subwave_groups()
+  
+  if SpawnManager.debug_enabled then
+      print(string.format("[SpawnManager] Starting subwave %d-%d with %d groups, target power: %d",
+          self.current_wave, self.current_subwave,
+          #self.subwave_groups, self.current_subwave_power_target))
+      for i, group in ipairs(self.subwave_groups) do
+          print(string.format("  Group %d: %s x%d @ %.2fs (power: %d)",
+              i, group.type, group.amount, group.spawn_time, group.power))
+      end
   end
+  
+  self:change_state('spawning_subwave')
+end
 
-  local group_data = self.next_group
-  local group_power = Wave_Types:Get_Group_Power(group_data)
-
-  if current_power_onscreen + group_power > MAX_ONSCREEN_ROUND_POWER(self.arena.level) then
-    self:change_state('waiting_for_clear')
-    return
+-- Generate all groups for the subwave at once
+function SpawnManager:generate_subwave_groups()
+  self.subwave_groups = {}
+  self.current_group_index = 1
+  self.all_groups_spawned = false
+  
+  local power_generated = 0
+  local target_power = self.current_subwave_power_target
+  
+  -- Generate groups until we reach target power
+  while power_generated < target_power do
+    local group_data = Get_Next_Group(self.arena.level)
+    local group_power = Wave_Types:Get_Group_Power(group_data)
+    
+    -- Stop if this group would exceed target
+    if power_generated + group_power > target_power then
+      break
+    end
+    
+    -- Store the full group data
+    local group = {
+      type = group_data[2],
+      amount = group_data[3],
+      spawn_type = group_data[4],
+      power = group_power,
+      spawn_time = 0  -- Will be set when sorting
+    }
+    
+    table.insert(self.subwave_groups, group)
+    power_generated = power_generated + group_power
+  end
+  
+  -- Sort groups into categories
+  local swarmer_groups = {}
+  local special_groups = {}
+  local boulder_groups = {}
+  
+  for _, group in ipairs(self.subwave_groups) do
+    if group.type == 'swarmer' then
+      table.insert(swarmer_groups, group)
+    elseif group.type == 'boulder' then
+      table.insert(boulder_groups, group)
+    else
+      table.insert(special_groups, group)
+    end
+  end
+  
+  -- Assign random spawn times within the spawn window
+  for _, group in ipairs(swarmer_groups) do
+    group.spawn_time = random:float(0, self.subwave_spawn_window)
+  end
+  for _, group in ipairs(special_groups) do
+    group.spawn_time = random:float(0, self.subwave_spawn_window)
+  end
+  for _, group in ipairs(boulder_groups) do
+    group.spawn_time = random:float(0, self.subwave_spawn_window)
+  end
+  
+  -- Recombine and sort by spawn time
+  self.subwave_groups = {}
+  for _, group in ipairs(swarmer_groups) do table.insert(self.subwave_groups, group) end
+  for _, group in ipairs(special_groups) do table.insert(self.subwave_groups, group) end
+  for _, group in ipairs(boulder_groups) do table.insert(self.subwave_groups, group) end
+  
+  table.sort(self.subwave_groups, function(a, b) return a.spawn_time < b.spawn_time end)
+  
+  -- Set next spawn time
+  if #self.subwave_groups > 0 then
+    self.next_group_spawn_time = self.subwave_groups[1].spawn_time
   else
-    self:process_instruction(group_data)
-    --increase delay based on distance to the max onscreen power
-    local percent_to_max = (current_power_onscreen + group_power) / MAX_ONSCREEN_ROUND_POWER(self.arena.level)
-    local delay = math.remap(math.max(percent_to_max, 0.5), 0.5, 1, 3, 6)
-    self:process_instruction({'DELAY', delay})
-    self.next_group = nil
+    self.all_groups_spawned = true
   end
+end
 
+-- Process scheduled spawns during subwave
+function SpawnManager:process_scheduled_spawns(dt)
+  local time_since_start = Helper.Time.time - self.subwave_start_time
+  
+  -- Check if subwave timer has elapsed - force completion
+  if time_since_start >= self.subwave_timeout then
+    if SpawnManager.debug_enabled then
+        print(string.format("[SpawnManager] Subwave timeout reached (%.2fs), forcing completion",
+            time_since_start))
+    end
+    self:complete_current_subwave()
+    return
+  end
+  
+  -- If all groups are spawned, check if we should complete the subwave
+  if self.all_groups_spawned then
+    local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
+    local all_dead = true
+    for _, e in ipairs(enemies) do
+      if e and not e.dead then
+        all_dead = false
+        break
+      end
+    end
+    
+    -- Check if current power on screen is below 20% of subwave power
+    local power_threshold = self.current_subwave_power_target * 0.2
+    local should_complete = all_dead or (current_power_onscreen and current_power_onscreen < power_threshold)
+    
+    if should_complete then
+      -- Either all enemies dead or power is below 20%, complete subwave
+      if SpawnManager.debug_enabled then
+          if all_dead then
+              print(string.format("[SpawnManager] All enemies dead, completing subwave %d-%d",
+                  self.current_wave, self.current_subwave))
+          else
+              print(string.format("[SpawnManager] Power below 20%% (%.0f/%.0f), completing subwave %d-%d",
+                  current_power_onscreen or 0, self.current_subwave_power_target,
+                  self.current_wave, self.current_subwave))
+          end
+      end
+      self:complete_current_subwave()
+    end
+    return
+  end
+  
+  -- Check if it's time to spawn the next group
+  if time_since_start >= self.next_group_spawn_time then
+    local group = self.subwave_groups[self.current_group_index]
+    if group then
+      -- Spawn the group
+      self:spawn_group_instantly({group.type, group.amount, group.spawn_type})
+      self.current_subwave_power_spawned = self.current_subwave_power_spawned + group.power
+      
+      if SpawnManager.debug_enabled then
+          print(string.format("[SpawnManager] Spawned: %s x%d (power: %d, total: %d/%d, time: %.2f)",
+              group.type, group.amount, group.power,
+              self.current_subwave_power_spawned, self.current_subwave_power_target,
+              Helper.Time.time - self.subwave_start_time))
+      end
+      
+      -- Move to next group
+      self.current_group_index = self.current_group_index + 1
+      if self.current_group_index > #self.subwave_groups then
+        self.all_groups_spawned = true
+      else
+        self.next_group_spawn_time = self.subwave_groups[self.current_group_index].spawn_time
+      end
+    end
+  else
+    -- Not time to spawn yet, but check if we should accelerate
+    local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
+    local all_dead = true
+    for _, e in ipairs(enemies) do
+      if e and not e.dead then
+        all_dead = false
+        break
+      end
+    end
+    
+    if all_dead then
+      -- All enemies dead, accelerate next spawn
+      local time_to_next = self.next_group_spawn_time - time_since_start
+      if time_to_next > 1 then
+        -- Skip ahead to spawn in 1 second
+        local old_time = self.next_group_spawn_time
+        self.next_group_spawn_time = time_since_start + 1
+        if SpawnManager.debug_enabled then
+            print(string.format("[SpawnManager] Enemies cleared, accelerating next spawn from %.2fs to %.2fs",
+                old_time, self.next_group_spawn_time))
+        end
+      end
+    end
+  end
+end
+
+-- Complete the current subwave and move to next
+function SpawnManager:complete_current_subwave()
+  if SpawnManager.debug_enabled then
+      print(string.format("[SpawnManager] Completing subwave %d-%d (spawned %d/%d power)",
+          self.current_wave, self.current_subwave,
+          self.current_subwave_power_spawned, self.current_subwave_power_target))
+  end
+  
+  if self.current_subwave < self.subwaves_per_wave then
+    -- Move to next subwave in current wave
+    self.current_subwave = self.current_subwave + 1
+    self.timer = self.between_subwaves_delay
+    self:change_state('between_subwaves_delay')
+  else
+    -- Current wave is complete
+    if SpawnManager.debug_enabled then
+        print(string.format("[SpawnManager] Wave %d complete!", self.current_wave))
+    end
+    
+    if self.current_wave < self.total_waves then
+      -- Move to next wave
+      self.current_wave = self.current_wave + 1
+      self.current_subwave = 1  -- Reset subwave counter
+      self.timer = TIME_BETWEEN_WAVES
+      self:change_state('between_waves_delay')
+    else
+      -- All waves complete
+      if SpawnManager.debug_enabled then
+          print("[SpawnManager] ALL WAVES SPAWNED")
+      end
+      self:change_state('waiting_for_clear')
+    end
+  end
+end
+
+-- Spawn a group instantly without delay
+function SpawnManager:spawn_group_instantly(group_data)
+  local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
+  
+  if spawn_type == 'scatter' then
+    for i = 1, amount do
+      local location = Get_Offscreen_Spawn_Point()
+      Spawn_Enemy(self.arena, type, location)
+    end
+  else
+    local wave_spawn_location = Get_Offscreen_Spawn_Point()
+    local target_location = Get_Cross_Screen_Destination(wave_spawn_location)
+    
+    for i = 1, amount do
+      local offset = SpawnGlobals.spawn_offsets[(i % #SpawnGlobals.spawn_offsets) + 1]
+      local location = {x = wave_spawn_location.x + offset.x, y = wave_spawn_location.y + offset.y}
+      Spawn_Enemy(self.arena, type, location, target_location)
+    end
+  end
 end
 
 function SpawnManager:process_instruction(instruction)
@@ -883,6 +1204,7 @@ function Spawn_Enemy(arena, type, location, target_location)
                       level = arena.level, data = data}
 
   current_power_onscreen = current_power_onscreen + enemy_to_round_power[type]
+  total_power_spawned = total_power_spawned + enemy_to_round_power[type]
 
   Spawn_Enemy_Sound(arena, false)
   Spawn_Enemy_Effect(arena, enemy)
@@ -1060,15 +1382,16 @@ function SpawnManager:spawn_waves_with_timing()
   
   self.arena.enemies_spawned = true
   
-  -- Check if this is a boss level
-  if table.contains(BOSS_ROUNDS, self.arena.level) then
+  -- Check if this is a boss level using Is_Boss_Level function
+  if Is_Boss_Level(self.arena.level) then
     self:spawn_boss_immediately()
     self:change_state('waiting_for_clear')
   else
-    -- Start the wave-based spawning using the state machine
-    -- Reset to first wave and start with entry delay
-    self.current_wave_index = 1
-    self.current_instruction_index = 1
+    -- Start the 2-wave system with 2 subwaves each
+    self.current_wave = 1
+    self.total_waves = 2
+    self.current_subwave = 1
+    self.subwaves_per_wave = 2
     self:change_state('entry_delay')
     self.timer = TIME_BETWEEN_WAVES
   end

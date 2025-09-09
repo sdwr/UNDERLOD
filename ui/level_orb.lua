@@ -12,7 +12,8 @@ function LevelOrb:init(args)
   self.group = args.group or main.current.main
   
   -- Physical properties
-  self.radius = args.radius or 18
+  self.radius = args.radius or 10
+  self.boundary_radius = args.boundary_radius or 75
   self.visible_radius = 0
 
   self:set_as_circle(self.radius, 'static', 'projectile')
@@ -147,11 +148,13 @@ end
 
 function LevelOrb:on_trigger_enter(other)
   if not other:is(Enemy) then return end
-  if not other.can_damage_orb then return end
+  if other.class == 'boss' then return end
+  -- if not other.can_damage_orb then return end
 
-  local enemy_round_power = enemy_to_round_power[other.type] or 10
+  local enemy_round_power = enemy_to_round_power[other.type] or 100
+  local damage_taken = enemy_round_power * 0.1
 
-  self:hit(enemy_round_power, other, DAMAGE_TYPE_PHYSICAL)
+  self:hit(damage_taken, other, DAMAGE_TYPE_PHYSICAL)
   
   other:die()
 end
@@ -248,6 +251,13 @@ function LevelOrb:draw()
     love.graphics.setLineWidth(2)
     love.graphics.ellipse("line", 0, 0, oval_rx, oval_ry)
     love.graphics.pop()
+  end
+
+  if self.boundary_radius then
+    --make it light grey
+    local boundary_color = green[-3]:clone()
+    boundary_color.a = 0.07
+    graphics.circle(self.x, self.y, self.boundary_radius, boundary_color)
   end
   
   -- Draw charge particles
@@ -373,6 +383,7 @@ function LevelOrb:draw()
   graphics.circle(self.x, self.y, self.visible_radius * 0.98, inner_highlight, 1)
   
   graphics.pop()
+
 end
 
 function LevelOrb:die()
@@ -504,7 +515,7 @@ end
 
 function LevelOrb:on_progress_particle_hit()
   -- Called when a progress particle reaches the orb
-  self:add_progress_sound()
+  -- self:add_progress_sound()
   self:add_progress_ripple()
   self.last_progress_sound_time = Helper.Time.time
 end

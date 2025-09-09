@@ -9,6 +9,7 @@ function Enemy:init(args)
   self.faction = 'enemy'
   self.isEnemy = true
   self.transition_active = true
+  self.can_attack = true
 
   self:setExtraFunctions()
   Helper.Unit:add_custom_variables_to_unit(self)
@@ -17,6 +18,9 @@ function Enemy:init(args)
   self.init_enemy(self)
 
   self:init_unit()
+  if self.type == 'swarmer' then
+    self:hide_hp()
+  end
   self:init_hitbox_points()
 
   self.spritesheet = find_enemy_spritesheet(self)
@@ -158,6 +162,9 @@ function Enemy:update(dt)
 
     self:onTickCallbacks(dt)
     self:update_buffs(dt)
+    if self.update_enemy then
+      self:update_enemy(dt)
+    end
 
     self:update_animation(dt)
 
@@ -194,27 +201,36 @@ function Enemy:update(dt)
 
     --get target / rotate to target
     if self.target and self.target.dead then self.target = nil end
+
+    if not self.currentMovementAction then
+      self:set_movement_action(get_movement_type_by_enemy(self))
+    end
     
     if self.state == unit_states['idle'] then
       self.idleTimer = self.idleTimer - dt
       self:add_idle_deceleration()
       if self.idleTimer <= 0 then
+        --this should be after attacking, so continue the original movement action
+        self:set_movement_action(self.currentMovementAction)
+      end
+    elseif self.state == unit_states['moving'] then
+      --false action timer means 
+      if self.actionTimer then
+        self.actionTimer = self.actionTimer - dt
+      end
+      
+      if self.actionTimer and self.actionTimer <= 0 then
         local success = self:pick_action()
         if not success then
-          self:set_idle_retry()
+          --this is if the attack failed, so continue the original movement action
+          self:set_movement_action(self.currentMovementAction)
         end
-        
-      end
-    end
-
-    if self.state == unit_states['moving'] then
-      self.actionTimer = self.actionTimer - dt
-      if self.actionTimer <= 0 then
-        self:set_idle()
       else
-        local movement_success = self:update_movement()
-        if not movement_success then
-          self:set_idle()
+        local continue_movement = self:update_movement()
+        if not continue_movement then
+          --here is where we move to the next movement action, because the movement action is complete
+          local movementData = MOVEMENT_TYPE_DATA[self.currentMovementAction]
+          self:set_movement_action(movementData.after)
         end
       end
     end
@@ -240,8 +256,8 @@ function Enemy:update(dt)
     if self.area_sensor then self.area_sensor:move_to(self.x, self.y) end
 end
 
-function Enemy:set_idle()
-  self.idleTimer = self.baseIdleTimer * random:float(0.8, 1.2)
+function Enemy:set_idle(idle_timer)
+  self.idleTimer = idle_timer or self.baseIdleTimer * random:float(0.8, 1.2)
   Helper.Unit:set_state(self, unit_states['idle'])
 end
 
@@ -250,19 +266,25 @@ function Enemy:set_idle_retry()
   Helper.Unit:set_state(self, unit_states['idle'])
 end
 
-function Enemy:set_movement_action(action, actionTimer)
-  self.currentMovementAction = action
-  if actionTimer then
-    self.actionTimer = actionTimer
-  else
-    self.actionTimer = self.baseActionTimer * random:float(0.8, 1.2)
+function Enemy:set_movement_action(action_name)
+  self.currentMovementAction = action_name
+
+  local movementData = MOVEMENT_TYPE_DATA[action_name]
+
+  if not movementData then
+    self.currentMovementAction = 'default'
+    movementData = MOVEMENT_TYPE_DATA['default']
   end
 
-  Helper.Unit:set_state(self, unit_states['moving'])
-  local chose_target_success = self:choose_movement_target()
-  if not chose_target_success then
-    self:set_idle()
+  if movementData.action_timer then
+    self.actionTimer = movementData.action_timer
+  else
+    self.actionTimer = false
   end
+
+  self:choose_movement_target()
+
+  Helper.Unit:set_state(self, unit_states['moving'])
 end
 
 function Enemy:add_idle_deceleration()
@@ -279,20 +301,25 @@ function Enemy:choose_movement_target()
   if self.currentMovementAction == MOVEMENT_TYPE_CROSS_SCREEN then
     return self:acquire_target_cross_screen(false)
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB 
-  or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL then
+  or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL 
+  or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_SPIRAL 
+  or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_ATTACK then
     return self:acquire_target_seek_orb()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK then
     return self:acquire_target_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
     return self:acquire_target_loose_seek()
-  elseif self.currentMovementAction == MOVEMENT_TYPE_APPROACH_ORB then
+  elseif self.currentMovementAction == MOVEMENT_TYPE_APPROACH_ORB or
+  self.currentMovementAction == MOVEMENT_TYPE_APPROACH_ORB_ATTACK then
     return self:acquire_target_approach_orb()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_APPROACH_ORB_RANDOM then
+    return self:acquire_target_approach_orb_random()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_RANGE then
     return self:acquire_target_seek_orb_range()
   elseif self.currentMovementAction == MOVEMENT_TYPE_RANDOM then
     return self:acquire_target_random()
-  elseif self.currentMovementAction == MOVEMENT_TYPE_NONE then
-    return false -- Stationary enemies don't need movement targets
+  elseif self.currentMovementAction == MOVEMENT_TYPE_STATIONARY then
+    return true
   end
 end
 
@@ -305,12 +332,19 @@ function Enemy:update_movement()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB then
     return self:update_move_seek_location_no_wander()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL then
-    return self:update_move_seek_location_no_wander()
+    return self:update_move_seek_stall()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_SPIRAL then
+    return self:update_move_seek_spiral()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_ATTACK then
+    return self:update_move_seek_stall()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK then
     return self:update_move_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
     return self:update_move_seek_location()
-  elseif self.currentMovementAction == MOVEMENT_TYPE_APPROACH_ORB then
+  elseif self.currentMovementAction == MOVEMENT_TYPE_APPROACH_ORB or
+  self.currentMovementAction == MOVEMENT_TYPE_APPROACH_ORB_ATTACK then
+    return self:update_move_seek_location_no_wander()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_APPROACH_ORB_RANDOM then
     return self:update_move_seek_location_no_wander()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_RANGE then
     return self:update_move_seek_to_range()
@@ -318,8 +352,8 @@ function Enemy:update_movement()
     return self:update_move_seek_location()
   elseif self.currentMovementAction == MOVEMENT_TYPE_WANDER then
     return self:update_move_wander()
-  elseif self.currentMovementAction == MOVEMENT_TYPE_NONE then
-    return false -- Stationary enemies don't move
+  elseif self.currentMovementAction == MOVEMENT_TYPE_STATIONARY then
+    return true
   end
   return false
 end
@@ -384,6 +418,34 @@ function Enemy:acquire_target_approach_orb()
   
   local oval_x, oval_y = math.closest_point_on_ellipse(target.x, target.y, oval_rx, oval_ry, self.x, self.y)
   self.target_location = {x = oval_x, y = oval_y}
+  return true
+end
+
+function Enemy:acquire_target_approach_orb_random()
+  local target = {x = gw/2, y = gh/2}
+  local desired_range = SEEK_TO_RANGE_RADIUS
+  local oval_rx = desired_range * SEEK_TO_RANGE_RADIUS_X_MULTIPLIER
+  local oval_ry = desired_range * SEEK_TO_RANGE_RADIUS_Y_MULTIPLIER
+
+  -- Get a random angle between 0 and 2*pi
+  local angle = random:float(0, 2*math.pi)
+  
+  -- Calculate a point on the ellipse using the parametric equation
+  local random_x = target.x + oval_rx * math.cos(angle)
+  local random_y = target.y + oval_ry * math.sin(angle)
+
+  --cap the distance to the desired range
+  local MAX_DISTANCE_TO_TRAVEL = 150
+  local distance = math.distance(self.x, self.y, random_x, random_y)
+  if distance > MAX_DISTANCE_TO_TRAVEL then
+    local angle = math.atan2(random_y - self.y, random_x - self.x)
+    random_x = self.x + desired_range * math.cos(angle)
+    random_y = self.y + desired_range * math.sin(angle)
+  end
+  
+  -- Directly set the target location to this point
+  self.target_location = {x = random_x, y = random_y}
+  
   return true
 end
 
@@ -556,7 +618,6 @@ function Enemy:update_move_seek()
   end
 
   -- 3. Apply final steering adjustments in all active cases.
-  self:rotate_towards_velocity(0.5)
   self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
 
   -- 4. Return true because the movement action is successfully ongoing.
@@ -570,7 +631,6 @@ function Enemy:update_move_seek_location()
     else
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
       self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER)
-      self:rotate_towards_velocity(0.5)
       self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
       return true
     end
@@ -579,13 +639,35 @@ function Enemy:update_move_seek_location()
   return false
 end
 
+function Enemy:update_move_seek_stall()
+  if self.target_location then
+    if self:distance_to_point(self.target_location.x, self.target_location.y) < DISTANCE_TO_TARGET_FOR_IDLE then
+      return false
+    else
+      --slow down as you get closer to the target
+      local distance_to_target = self:distance_to_point(self.target_location.x, self.target_location.y)
+      distance_to_target = math.clamp(distance_to_target, 65, 150)
+      local speed_multiplier = Helper.Target:approach_orb_stall_speed_multiplier(distance_to_target)
+      self:set_physics_properties({max_v = self.mvspd * speed_multiplier})
+      self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
+      return true
+    end
+  end
+  return false
+end
+
+function Enemy:update_move_seek_spiral()
+  --TODO: implement spiral movement
+  self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
+  return true
+end
+
 function Enemy:update_move_seek_location_no_wander()
   if self.target_location then
     if self:distance_to_point(self.target_location.x, self.target_location.y) < DISTANCE_TO_TARGET_FOR_IDLE then
       return false
     else
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
-      self:rotate_towards_velocity(0.5)
       return true
     end
   end
@@ -604,7 +686,6 @@ function Enemy:update_move_seek_to_range()
       -- Continue moving to the target position
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
       self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER)
-      self:rotate_towards_velocity(0.5)
       self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
       return true
     end
@@ -727,7 +808,7 @@ function Enemy:die()
 
   self.super.die(self)
   self.dead = true
-  _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.5}
+  _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.1}
   
   -- Drop gold when enemy dies
   -- if main.current and main.current.gold_counter then
@@ -738,7 +819,7 @@ function Enemy:die()
   -- Add progress to wave progress bar
   if main.current and main.current.current_arena and main.current.current_arena.progress_bar then
     local round_power = enemy_to_round_power[self.type] or 100
-    main.current.current_arena.progress_bar:increase_with_particles(round_power, self.x, self.y)
+    -- main.current.current_arena.progress_bar:increase_with_particles(round_power, self.x, self.y)
   end
   if self.parent and self.parent.summons and self.parent.summons > 0 then
     self.parent.summons = self.parent.summons - 1
@@ -757,5 +838,5 @@ function Enemy:push(f, r, push_invulnerable)
   end
 
   -- Call the universal knockback function with the modified force
-  Helper.Unit:apply_knockback_enemy(self, f, r)
+  Helper.Unit:apply_knockback(self, f, r)
 end
