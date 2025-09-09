@@ -1358,7 +1358,7 @@ function init()
   special_enemy_by_tier = {
     [1] = {
       -- 'goblin_archer',
-      'archer',
+      -- 'archer',
       -- -- 'selfburst',
       'burst',
       'crossfire',
@@ -1367,7 +1367,7 @@ function init()
       'snakearrow',
       'turret',
       -- 'mortar',
-      'singlemortar',
+      -- 'singlemortar',
       -- 'cleaver',
       -- 'slowcharger',
     },

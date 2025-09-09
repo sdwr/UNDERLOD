@@ -906,7 +906,7 @@ function SpawnManager:process_scheduled_spawns(dt)
     return
   end
   
-  -- If all groups are spawned, check if enemies are dead
+  -- If all groups are spawned, check if we should complete the subwave
   if self.all_groups_spawned then
     local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
     local all_dead = true
@@ -917,11 +917,21 @@ function SpawnManager:process_scheduled_spawns(dt)
       end
     end
     
-    if all_dead then
-      -- All enemies dead, complete subwave
+    -- Check if current power on screen is below 20% of subwave power
+    local power_threshold = self.current_subwave_power_target * 0.2
+    local should_complete = all_dead or (current_power_onscreen and current_power_onscreen < power_threshold)
+    
+    if should_complete then
+      -- Either all enemies dead or power is below 20%, complete subwave
       if SpawnManager.debug_enabled then
-          print(string.format("[SpawnManager] All enemies dead, completing subwave %d-%d",
-              self.current_wave, self.current_subwave))
+          if all_dead then
+              print(string.format("[SpawnManager] All enemies dead, completing subwave %d-%d",
+                  self.current_wave, self.current_subwave))
+          else
+              print(string.format("[SpawnManager] Power below 20%% (%.0f/%.0f), completing subwave %d-%d",
+                  current_power_onscreen or 0, self.current_subwave_power_target,
+                  self.current_wave, self.current_subwave))
+          end
       end
       self:complete_current_subwave()
     end

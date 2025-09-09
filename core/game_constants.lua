@@ -218,6 +218,7 @@ ARENA_RADIUS = 200
 
 
 -- Steering and Movement constants
+TROOP_SEEK_DECELERATION = 2
 SEEK_DECELERATION = 5
 SEEK_WEIGHT = 1.75
 
