@@ -29,7 +29,7 @@ fns['init_enemy'] = function(self)
   end
 end
 
-fns['update'] = function(self, dt)
+fns['update_enemy'] = function(self, dt)
   -- Store current position for trail
   table.insert(self.segment_history, 1, {x = self.x, y = self.y})
   
@@ -40,10 +40,6 @@ fns['update'] = function(self, dt)
   
   -- Update wave phase for wiggling motion
   self.wave_phase = self.wave_phase + dt * self.wave_frequency
-end
-
-fns['attack'] = function(self)
-  -- Snake doesn't attack, it just moves towards the orb
 end
 
 fns['draw_enemy'] = function(self)
