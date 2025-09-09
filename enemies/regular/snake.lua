@@ -30,12 +30,16 @@ fns['init_enemy'] = function(self)
 end
 
 fns['update_enemy'] = function(self, dt)
-  -- Store current position for trail
-  table.insert(self.segment_history, 1, {x = self.x, y = self.y})
-  
-  -- Keep only the positions we need
-  while #self.segment_history > self.snake_segments * self.segment_spacing do
-    table.remove(self.segment_history)
+  -- Only store position if we've moved enough
+  local last_pos = self.segment_history[1]
+  if not last_pos or math.distance(self.x, self.y, last_pos.x, last_pos.y) > 2 then
+    -- Store current position for trail
+    table.insert(self.segment_history, 1, {x = self.x, y = self.y})
+    
+    -- Keep only the positions we need for all segments
+    while #self.segment_history > self.snake_segments * self.segment_spacing do
+      table.remove(self.segment_history)
+    end
   end
   
   -- Update wave phase for wiggling motion
@@ -43,63 +47,65 @@ fns['update_enemy'] = function(self, dt)
 end
 
 fns['draw_enemy'] = function(self)
-  -- Draw the snake body segments
-  local segments_to_draw = {}
+  -- Build segments from history
+  local segments = {}
   
-  -- Add head position
-  table.insert(segments_to_draw, self.x)
-  table.insert(segments_to_draw, self.y)
+  -- Start with head
+  table.insert(segments, {x = self.x, y = self.y})
   
-  -- Add body segments from history
-  for i = 1, self.snake_segments - 1 do
+  -- Add body segments from history 
+  for i = 1, math.min(#self.segment_history, self.snake_segments - 1) do
     local index = i * self.segment_spacing
-    if self.segment_history[index] then
-      local segment = self.segment_history[index]
-      
-      -- Add perpendicular wiggle offset
-      local dx = self.x - segment.x
-      local dy = self.y - segment.y
-      local length = math.sqrt(dx * dx + dy * dy)
-      
-      if length > 0.1 then
-        local perp_x = -dy / length
-        local perp_y = dx / length
-        
-        -- Calculate wiggle offset based on segment position
-        local t = i / self.snake_segments
-        local offset = math.sin(self.wave_phase - t * math.pi * 2) * self.wave_amplitude * (1 - t * 0.5)
-        
-        local wiggled_x = segment.x + perp_x * offset
-        local wiggled_y = segment.y + perp_y * offset
-        
-        table.insert(segments_to_draw, wiggled_x)
-        table.insert(segments_to_draw, wiggled_y)
-      else
-        table.insert(segments_to_draw, segment.x)
-        table.insert(segments_to_draw, segment.y)
-      end
+    if index <= #self.segment_history and self.segment_history[index] then
+      table.insert(segments, self.segment_history[index])
     end
   end
   
-  -- Draw the snake as a continuous line if we have enough points
-  if #segments_to_draw >= 4 then
-    -- Draw main body line
-    graphics.polyline(self.color, 4, unpack(segments_to_draw))
-    
-    -- Draw secondary inner line for depth
-    local inner_color = self.color:clone()
-    inner_color.a = 0.6
-    graphics.polyline(inner_color, 2, unpack(segments_to_draw))
+  -- Only draw if we have enough segments
+  if #segments >= 2 then
+    -- Draw body segments as circles that get smaller
+    for i = #segments, 2, -1 do
+      local segment = segments[i]
+      local size_ratio = 1 - ((i - 1) / #segments) * 0.4  -- Size decreases toward tail
+      local radius = (self.shape.w / 2) * size_ratio
+      
+      -- Add wiggle offset
+      local wiggle_x = 0
+      local wiggle_y = 0
+      if i > 1 and i < #segments then
+        -- Get direction between this segment and next
+        local next_seg = segments[i - 1]
+        local dx = next_seg.x - segment.x
+        local dy = next_seg.y - segment.y
+        local length = math.sqrt(dx * dx + dy * dy)
+        
+        if length > 0.1 then
+          -- Perpendicular to movement direction
+          local perp_x = -dy / length
+          local perp_y = dx / length
+          
+          local t = (i - 1) / (#segments - 1)
+          local offset = math.sin(self.wave_phase - t * math.pi * 2) * self.wave_amplitude * (1 - t * 0.3)
+          wiggle_x = perp_x * offset
+          wiggle_y = perp_y * offset
+        end
+      end
+      
+      -- Draw segment circle
+      local segment_color = self.color:clone()
+      segment_color.a = 0.8 * (1 - (i - 1) / #segments * 0.3)  -- Fade toward tail
+      graphics.circle(segment.x + wiggle_x, segment.y + wiggle_y, radius, segment_color)
+    end
   end
   
-  -- Draw head as a circle
+  -- Draw head last (on top)
   graphics.circle(self.x, self.y, self.shape.w / 2, self.color)
   
   -- Draw eyes
   local eye_color = white[0]:clone()
-  eye_color.a = 0.8
+  eye_color.a = 0.9
   local eye_size = 2
-  local eye_offset = self.shape.w / 3
+  local eye_offset = self.shape.w / 4
   
   -- Calculate eye positions based on movement direction
   local vx, vy = self:get_velocity()
@@ -110,11 +116,11 @@ fns['draw_enemy'] = function(self)
     local perp_x = -dir_y
     local perp_y = dir_x
     
-    graphics.circle(self.x + dir_x * 2 + perp_x * eye_offset, 
-                   self.y + dir_y * 2 + perp_y * eye_offset, 
+    graphics.circle(self.x + dir_x * 3 + perp_x * eye_offset, 
+                   self.y + dir_y * 3 + perp_y * eye_offset, 
                    eye_size, eye_color)
-    graphics.circle(self.x + dir_x * 2 - perp_x * eye_offset, 
-                   self.y + dir_y * 2 - perp_y * eye_offset, 
+    graphics.circle(self.x + dir_x * 3 - perp_x * eye_offset, 
+                   self.y + dir_y * 3 - perp_y * eye_offset, 
                    eye_size, eye_color)
   end
   
