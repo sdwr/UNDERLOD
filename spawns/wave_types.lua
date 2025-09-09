@@ -22,7 +22,7 @@ function Get_Next_Group(level)
   local options = {
     [1] = {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'},
     [2] = {'GROUP', 'swarmer', math.floor(SWARMERS_PER_LEVEL(level) * 1.5), 'scatter'},
-    [3] = {'GROUP', 'boulder', BOULDERS_PER_LEVEL(level), 'nil'},
+    [3] = {'GROUP', 'snake', BOULDERS_PER_LEVEL(level), 'nil'},
     [4] = {'GROUP', Get_Random_Special_Enemy(tier), 1, 'nil'},
   }
 

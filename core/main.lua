@@ -1462,6 +1462,7 @@ function init()
     ['summoner'] = 75,
     ['assassin'] = 75,
     ['boulder'] = 75,
+    ['snake'] = 75,
 
     --bosses
     ['stompy'] = BOSS_ROUND_POWER,
@@ -1476,6 +1477,7 @@ function init()
     ['chaser'] = grey[0],
     ['cleaver'] = grey[0],
     ['boulder'] = grey[2],
+    ['snake'] = purple[-2],
 
     ['rager'] = red[3],
     ['stomper'] = red[3],

@@ -920,6 +920,7 @@ enemy_type_to_size = {
   ['line_mortar'] = 'special',
   ['aim_spread'] = 'special',
   ['boulder'] = 'boulder',
+  ['snake'] = 'snake',
   ['tank'] = 'special',
   ['crossfire'] = 'special',
   
@@ -941,6 +942,8 @@ enemy_size_to_num_particles = {
   ['regular'] = 2,
   ['regular_special'] = 3,
   ['special'] = 4,
+  ['boulder'] = 4,
+  ['snake'] = 3,
   ['huge'] = 7,
   ['boss'] = 10,
   ['heigan'] = 10,

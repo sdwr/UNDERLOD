@@ -460,6 +460,7 @@ enemy_movement_types = {
   -- Aggressive seekers - chase players directly
   ['swarmer'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
   ['boulder'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
+  ['snake'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
   ['tank'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
   
   -- ['seeker'] = MOVEMENT_TYPE_SEEK_ORB,

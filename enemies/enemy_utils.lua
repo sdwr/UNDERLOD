@@ -6,6 +6,7 @@ enemy_size_to_xy = {
   regular_big = {x = 24, y = 18},
   special = {x = 20, y = 20},
   boulder = {x = 26, y = 28},
+  snake = {x = 18, y = 18},
   huge = {x = 36, y = 24},
 
   stompy = {x = 46, y = 46},

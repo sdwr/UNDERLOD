@@ -775,8 +775,13 @@ function SpawnManager:update(dt)
           end
         end
         if all_dead then
-          self:change_state('finished')
-          self.arena:level_clear()
+          if self.current_wave == self.total_waves then
+            self:change_state('finished')
+            self.arena:level_clear()
+          else
+            self:start_wave(self.current_wave + 1)
+          end
+          
         end
       end
     end
@@ -853,13 +858,13 @@ function SpawnManager:generate_subwave_groups()
   -- Sort groups into categories
   local swarmer_groups = {}
   local special_groups = {}
-  local boulder_groups = {}
+  local snake_groups = {}
   
   for _, group in ipairs(self.subwave_groups) do
     if group.type == 'swarmer' then
       table.insert(swarmer_groups, group)
-    elseif group.type == 'boulder' then
-      table.insert(boulder_groups, group)
+    elseif group.type == 'snake' then
+      table.insert(snake_groups, group)
     else
       table.insert(special_groups, group)
     end
@@ -872,7 +877,7 @@ function SpawnManager:generate_subwave_groups()
   for _, group in ipairs(special_groups) do
     group.spawn_time = random:float(0, self.subwave_spawn_window)
   end
-  for _, group in ipairs(boulder_groups) do
+  for _, group in ipairs(snake_groups) do
     group.spawn_time = random:float(0, self.subwave_spawn_window)
   end
   
@@ -880,7 +885,7 @@ function SpawnManager:generate_subwave_groups()
   self.subwave_groups = {}
   for _, group in ipairs(swarmer_groups) do table.insert(self.subwave_groups, group) end
   for _, group in ipairs(special_groups) do table.insert(self.subwave_groups, group) end
-  for _, group in ipairs(boulder_groups) do table.insert(self.subwave_groups, group) end
+  for _, group in ipairs(snake_groups) do table.insert(self.subwave_groups, group) end
   
   table.sort(self.subwave_groups, function(a, b) return a.spawn_time < b.spawn_time end)
   
@@ -919,7 +924,7 @@ function SpawnManager:process_scheduled_spawns(dt)
     
     -- Check if current power on screen is below 20% of subwave power
     local power_threshold = self.current_subwave_power_target * 0.2
-    local should_complete = all_dead or (current_power_onscreen and current_power_onscreen < power_threshold)
+    local should_complete = all_dead or (self.all_groups_spawned and current_power_onscreen and current_power_onscreen < power_threshold)
     
     if should_complete then
       -- Either all enemies dead or power is below 20%, complete subwave
@@ -928,7 +933,7 @@ function SpawnManager:process_scheduled_spawns(dt)
               print(string.format("[SpawnManager] All enemies dead, completing subwave %d-%d",
                   self.current_wave, self.current_subwave))
           else
-              print(string.format("[SpawnManager] Power below 20%% (%.0f/%.0f), completing subwave %d-%d",
+              print(string.format("[SpawnManager] Remaining power below 20%% (%.0f/%.0f), completing subwave %d-%d",
                   current_power_onscreen or 0, self.current_subwave_power_target,
                   self.current_wave, self.current_subwave))
           end
@@ -996,30 +1001,20 @@ function SpawnManager:complete_current_subwave()
           self.current_subwave_power_spawned, self.current_subwave_power_target))
   end
   
-  if self.current_subwave < self.subwaves_per_wave then
+  -- Check if this is the last subwave of the last wave
+  local is_last_subwave = self.current_subwave >= self.subwaves_per_wave
+  
+  if is_last_subwave then
+    -- This is the last subwave - wait for all enemies to die
+    if SpawnManager.debug_enabled then
+        print("[SpawnManager] Last subwave complete - waiting for all enemies to die")
+    end
+    self:change_state('waiting_for_clear')
+  else
     -- Move to next subwave in current wave
     self.current_subwave = self.current_subwave + 1
     self.timer = self.between_subwaves_delay
     self:change_state('between_subwaves_delay')
-  else
-    -- Current wave is complete
-    if SpawnManager.debug_enabled then
-        print(string.format("[SpawnManager] Wave %d complete!", self.current_wave))
-    end
-    
-    if self.current_wave < self.total_waves then
-      -- Move to next wave
-      self.current_wave = self.current_wave + 1
-      self.current_subwave = 1  -- Reset subwave counter
-      self.timer = TIME_BETWEEN_WAVES
-      self:change_state('between_waves_delay')
-    else
-      -- All waves complete
-      if SpawnManager.debug_enabled then
-          print("[SpawnManager] ALL WAVES SPAWNED")
-      end
-      self:change_state('waiting_for_clear')
-    end
   end
 end
 
