@@ -91,14 +91,14 @@ function Helper.Target:way_outside_camera_bounds(x, y)
 end
 
 function Helper.Target:approach_orb_stall_speed_multiplier(distance_to_orb)
-  if distance_to_orb > 150 then
+  if distance_to_orb > 140 then
     return 1
-  elseif distance_to_orb > 100 then
-    return 0.4
-  elseif distance_to_orb > 65 then
-    return 0.2
+  elseif distance_to_orb > 110 then
+    return 0.6
+  elseif distance_to_orb > 70 then
+    return 0.3
   else
-    return 0.1
+    return 0.15
   end
   
   return 0.15

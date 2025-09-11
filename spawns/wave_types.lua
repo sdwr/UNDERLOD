@@ -16,7 +16,12 @@ _last_group_type = 1
 function Get_Next_Group(level)
   local tier = LEVEL_TO_TIER(level) or 1
 
-  local chances = {20, 5, 10, 20}
+  local chances = {}
+  if level == 1 then
+    chances = {100, 0, 0, 0}
+  else
+    chances = {20, 5, 10, 20}
+  end
   -- chances[_last_group_type] = chances[_last_group_type] / 2
 
   local options = {

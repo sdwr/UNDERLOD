@@ -129,13 +129,13 @@ enemy_cast_times = {
 TROOP_RANGE = 500
 TROOP_SWORDSMAN_RANGE = 80
 
-REGULAR_ENEMY_HP = 30
-REGULAR_ENEMY_DAMAGE = 15
-REGULAR_ENEMY_MS = 40
+REGULAR_ENEMY_HP = 10
+REGULAR_ENEMY_DAMAGE = 10
+REGULAR_ENEMY_MS = 15
 
-SPECIAL_ENEMY_HP = 100
+SPECIAL_ENEMY_HP = 60
 SPECIAL_ENEMY_DAMAGE = 20
-SPECIAL_ENEMY_MS = 40
+SPECIAL_ENEMY_MS = 22
 
 MINIBOSS_HP = 400
 MINIBOSS_DAMAGE = 20
@@ -333,17 +333,17 @@ SPECIAL_SWARMER_WEIGHT_BY_TYPE = {
 
 
 ROUND_POWER_DATA_BY_LEVEL = {
-  [1] = {1500},
-  [2] = {1600},
-  [3] = {1800},
-  [4] = {2000},
-  [5] = {2200},
-  [6] = {2400},
-  [7] = {2600},
-  [8] = {2800},
-  [9] = {3000},
-  [10] = {3200},
-  [11] = {2800},
+  [1] = {2500},
+  [2] = {2600},
+  [3] = {2800},
+  [4] = {2800},
+  [5] = {3000},
+  [6] = {3200},
+  [7] = {3400},
+  [8] = {3600},
+  [9] = {3600},
+  [10] = {3800},
+  [11] = {4000},
   [12] = {3000},
   [13] = {3200},
   [14] = {3400},
@@ -457,7 +457,7 @@ SCALED_ENEMY_MS = function(level, base_ms)
 end
 
 function SWARMERS_PER_LEVEL(level)
-  return math.min(20, 8)
+  return math.min(20, 8 + math.floor(level / 4))
 end
 
 function BOULDERS_PER_LEVEL(level)
@@ -573,7 +573,7 @@ unit_stat_multipliers = {
 }
 
 enemy_type_to_stats = {
-    ['swarmer'] = { dmg = 0.5, hp = 0.6, mvspd = 0.7},
+    ['swarmer'] = {},
 
     ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
     ['chaser'] = { dmg = 1, mvspd = 1 },

@@ -358,25 +358,6 @@ function Enemy:update_movement()
   return false
 end
 
-function Enemy:get_orb_stall_speed_multiplier()
-  if not main.current.current_arena or not main.current.current_arena.level_orb then
-    return 1
-  end
-
-  local orb = main.current.current_arena.level_orb
-
-  --slow down as you get closer to the orb
-  local distance_to_orb = math.distance(self.x, self.y, main.current.current_arena.level_orb.x, main.current.current_arena.level_orb.y)
-  if distance_to_orb > 100 then
-    return 1
-  end
-
-  local percent_to_orb = 1 - (distance_to_orb / 100)
-  local multiplier = math.remap(percent_to_orb, 0, 1, 1, 0.2)
-
-  return multiplier
-end
-
 function Enemy:acquire_target_cross_screen(get_new_target)
   if not self.target_location or get_new_target then
     local current_location = {x = self.x, y = self.y}
@@ -650,6 +631,9 @@ function Enemy:update_move_seek_stall()
       local speed_multiplier = Helper.Target:approach_orb_stall_speed_multiplier(distance_to_target)
       self:set_physics_properties({max_v = self.mvspd * speed_multiplier})
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
+      self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER)
+      self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
+      self:rotate_towards_velocity(0.5)
       return true
     end
   end
