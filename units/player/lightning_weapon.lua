@@ -12,7 +12,7 @@ end
 
 function LightningWeapon:create_spelldata()
   return {
-    group = main.current.effects,
+    group = main.current.main,
     parent = self,
     source = self,
     target = self.target,
@@ -24,6 +24,7 @@ function LightningWeapon:create_spelldata()
     is_troop = true,
     is_weapon = true,
     color = yellow[5],
+    skip_first_bounce = false,  -- Draw line from weapon to first target
   }
 end
 
