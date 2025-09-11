@@ -16,7 +16,7 @@ weapon_definitions = {
     base_stats = {
       attack_cooldown = 0.2,
       cast_time = 0,
-      damage = 5,
+      damage = 6,
       attack_range = 110
     }
   },
@@ -29,11 +29,11 @@ weapon_definitions = {
     icon = 'lightning',
     description = 'Chain attack',
     base_stats = {
-      attack_cooldown = 0.8,
+      attack_cooldown = 1.2,
       cast_time = 0.1,
-      damage = 12,
+      damage = 14,
       attack_range = 110,
-      chain_count = 2
+      chain_count = 4
     }
   },
   
@@ -63,7 +63,7 @@ weapon_definitions = {
     base_stats = {
       attack_cooldown = 0.6,
       cast_time = 0.1,
-      damage = 8,
+      damage = 10,
       attack_range = 110
     }
   },
@@ -78,7 +78,7 @@ weapon_definitions = {
     base_stats = {
       attack_cooldown = 1.0,
       cast_time = 0.25,
-      damage = 8,
+      damage = 10,
       attack_range = 60,
       area_radius = 30
     }
