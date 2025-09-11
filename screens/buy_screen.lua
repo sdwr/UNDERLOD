@@ -8,6 +8,11 @@ function BuyScreen:init(name)
   self:init_state(name)
   self:init_game_object()
   buyScreen = self
+  
+  -- Initialize weapons array if not present
+  if not self.weapons then
+    self.weapons = {}
+  end
 end
 
 function BuyScreen:on_exit()
@@ -111,9 +116,7 @@ function BuyScreen:on_enter(from)
   self.reroll_button = RerollButton{group = self.main, x = 90, y = gh - 20, parent = self}
 
   --only roll items once a character exists
-  if not self.first_shop then
-    self:try_roll_items(true)
-  end
+  self:try_roll_items(true)
   
   GoButton{group = self.main, x = gw - 90, y = gh - 20, parent = self}
   
@@ -244,11 +247,78 @@ end
 function BuyScreen:buy_unit(character)
   table.insert(self.units, {character = character, level = 1, reserve = {0, 0}, items = {nil, nil, nil, nil, nil, nil}})
   self:set_party()
-  if #self.items == 0 then
-    self.first_shop = false
-    self:try_roll_items(false)
-  end
   self:save_run()
+end
+
+-- Weapon management functions
+function BuyScreen:add_weapon(weapon_name)
+  -- Check if we already own this weapon
+  local existing_weapon = nil
+  local existing_index = nil
+  
+  for i, weapon in ipairs(self.weapons) do
+    if weapon.name == weapon_name then
+      existing_weapon = weapon
+      existing_index = i
+      break
+    end
+  end
+  
+  if existing_weapon then
+    -- Increment count for existing weapon
+    existing_weapon.count = (existing_weapon.count or 1) + 1
+    
+    -- Check for upgrade
+    if existing_weapon.count >= WEAPON_COPIES_TO_UPGRADE then
+      if existing_weapon.level < WEAPON_MAX_LEVEL then
+        existing_weapon.level = existing_weapon.level + 1
+        existing_weapon.count = 1
+        
+        -- Play upgrade sound
+        if upgrade1 then
+          upgrade1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+        end
+      end
+    end
+  else
+    -- Add new weapon if we haven't reached the cap
+    if #self.weapons < MAX_OWNED_WEAPONS then
+      table.insert(self.weapons, {
+        name = weapon_name,
+        level = 1,
+        count = 1
+      })
+    else
+      -- Can't add more weapons
+      return false
+    end
+  end
+  
+  -- Force refresh of owned weapons display
+  if self.owned_weapons_display then
+    self.owned_weapons_display.weapons = table.copy(self.weapons)
+    self.owned_weapons_display:refresh_cards()
+  end
+  
+  self:save_run()
+  return true
+end
+
+function BuyScreen:get_weapon_count()
+  return #self.weapons
+end
+
+function BuyScreen:can_buy_weapon(weapon_name)
+  -- Check if at max weapons (unless it's a duplicate)
+  if #self.weapons >= MAX_OWNED_WEAPONS then
+    for _, weapon in ipairs(self.weapons) do
+      if weapon.name == weapon_name then
+        return true -- Can buy duplicates to upgrade
+      end
+    end
+    return false -- Can't buy new weapon type
+  end
+  return true
 end
 
 --item functions
@@ -355,52 +425,19 @@ end
 function BuyScreen:set_party()
   Kill_All_Cards()
   Character_Cards = {}
-
-  local y = gh/2 - 25
-  local x = gw/2
-
-  local number_of_cards = #self.units
-  local show_buy_card = false
-  if number_of_cards == 0 then
-    show_buy_card = true
-  elseif number_of_cards == 1 then
-    show_buy_card = true
-  elseif number_of_cards == 2 then
-    show_buy_card = true
+  
+  -- Create owned weapons display in center of screen
+  if self.owned_weapons_display then
+    self.owned_weapons_display:die()
   end
-
-  if show_buy_card then
-    number_of_cards = number_of_cards + 1
-  end
-
-
-  --center single unit, otherwise start on the left
-
-  local x = gw/2 - CHARACTER_CARD_WIDTH - CHARACTER_CARD_SPACING - 15
-  local card_order = {[1] = 2, [2] = 3, [3] = 1}
-
-  for i, unit in ipairs(self.units) do
-    local card_index = card_order[i]
-    table.insert(Character_Cards, CharacterCard{group = self.main, x = x + (card_index-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, unit = unit, character = unit.character, i = i, parent = self})
-    unit.spawn_effect = true
-    self.first_shop = false
-  end
-
-  local num_cards = #Character_Cards
-  local buy_card_index = num_cards + 1
-  local buy_card_order = card_order[buy_card_index]
-  local buy_card_cost = 5 * (num_cards+1)
-
-  if #Character_Cards < 3 then
-    table.insert(Character_Cards, CharacterCardBuy{group = self.main, x = x + (buy_card_order-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, i = buy_card_index, parent = self,
-      is_unlocked = true, cost = buy_card_cost})
-  end
-
-
-
-  --check how many of the same unit are in the party
-  local max_count = self:most_copies_of_unit()
-  Stats_Current_Run_Num_Same_Unit(max_count)
+  
+  self.owned_weapons_display = OwnedWeaponDisplay{
+    group = self.ui,
+    x = gw/2,
+    y = gh/2 - 60,
+    weapons = self.weapons,
+    parent = self
+  }
 end
 
 function BuyScreen:try_buy_unit(cost)
@@ -410,64 +447,85 @@ function BuyScreen:try_buy_unit(cost)
     self.select_character_overlay = CharacterSelectOverlay{
       group = self.overlay_ui
     }
-    self.first_shop = false
   end
 end
 
 function BuyScreen:most_copies_of_unit()
-  local unit_counts = {}
-  for _, unit in ipairs(self.units) do
-    unit_counts[unit.character] = (unit_counts[unit.character] or 0) + 1
-  end
-  local max = 0
-  local max_unit = nil
-  for unit, count in pairs(unit_counts) do
-    if count > max then
-      max = count
-    end
-  end
-  return max
+  -- No longer tracking units, return 0
+  return 0
 end
 
 function BuyScreen:try_roll_items(is_shop_start)
-  self:set_items(self.shop_level, is_shop_start)
+  self:set_weapons(self.shop_level, is_shop_start)
 end
 
-
-function BuyScreen:set_items(shop_level, is_shop_start)
-  --clear item cards (UI elements)
-  if self.items then for _, item in ipairs(self.items) do item:die() end end
-  self.items = {}
-  local shop_level = shop_level or 1
-  local tier_weights = level_to_item_odds[shop_level]
-  local item_1
-  local item_2
-  local item_3
-
-  if self.first_shop then
-    return
+-- New weapon shop functions
+function BuyScreen:set_weapons(shop_level, is_shop_start)
+  -- Clear weapon cards (UI elements)
+  if self.weapon_cards then 
+    for _, card in ipairs(self.weapon_cards) do 
+      card:die() 
+    end 
   end
-
-  if not self.shop_item_data then
-    self.shop_item_data = {nil, nil, nil}
+  self.weapon_cards = {}
+  
+  -- Initialize shop weapon data
+  if not self.shop_weapon_data then
+    self.shop_weapon_data = {}
   end
-
+  
+  -- Roll new weapons if needed
   if not locked_state and self.reroll_shop then
-    self.shop_item_data = create_random_items(self.level)
+    self.shop_weapon_data = Get_Random_Shop_Weapons(3)
   elseif locked_state and self.reroll_shop then
-    for i = 1, 3 do
-      if not self.shop_item_data[i] then
-        self.shop_item_data[i] = create_random_item(self.level)
+    -- Fill empty slots with new weapons
+    while #self.shop_weapon_data < 3 do
+      local available_weapons = Get_Random_Shop_Weapons(1)
+      if available_weapons[1] then
+        table.insert(self.shop_weapon_data, available_weapons[1])
       end
     end
   end
-
-  --only reroll once (so, main menu and back in won't reroll again)
+  
+  -- Only reroll once
   self.reroll_shop = false
+  
+  -- Disable interaction with buttons while rerolling
+  if self.reroll_button then self.reroll_button.interact_with_mouse = false end
+  if self.lock_button then self.lock_button.interact_with_mouse = false end
+  
+  -- Create weapon cards at same position as item cards were
+  local item_h = 80
+  local item_w = 60
+  local y = gh - (item_h / 2) - 20
+  local x = gw/2 - 70
+  
+  for i = 1, 3 do
+    if self.shop_weapon_data[i] then
+      local card = WeaponCard{
+        group = self.ui,  -- Use ui group like item cards
+        x = x + (i-1) * 70,
+        y = y,
+        w = item_w,
+        h = item_h,
+        weapon_name = self.shop_weapon_data[i],
+        parent = self,
+        i = i
+      }
+      table.insert(self.weapon_cards, card)
+    end
+  end
+  
+  -- Re-enable buttons after a short delay
+  self.t:after(0.1, function()
+    if self.reroll_button then self.reroll_button.interact_with_mouse = true end
+    if self.lock_button then self.lock_button.interact_with_mouse = true end
+  end)
+end
 
-  --disable interaction with the reroll and lock buttons while rerolling
-  self.reroll_button.interact_with_mouse = false
-  self.lock_button.interact_with_mouse = false
+-- Keep old function for compatibility but have it call the new one
+function BuyScreen:set_items(shop_level, is_shop_start)
+  self:set_weapons(shop_level, is_shop_start)
   self.reroll_button:on_mouse_exit()
   self.lock_button:on_mouse_exit()
   self.reroll_button.selected = false
@@ -897,12 +955,12 @@ function GoButton:update(dt)
   self:update_game_object(dt)
 
   if ((self.selected and input.m1.pressed) or input.enter.pressed) and not self.transitioning then
-    if #self.parent.units == 0 then
+    if #self.parent.weapons == 0 then
       if not self.info_text then
         error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
         self.info_text = InfoText{group = main.current.ui}
         self.info_text:activate({
-          {text = '[fg]cannot start the round with [yellow]0 [fg]units', font = pixul_font, alignment = 'center'},
+          {text = '[fg]cannot start the round with [yellow]0 [fg]weapons', font = pixul_font, alignment = 'center'},
         }, nil, nil, nil, nil, 16, 4, nil, 2)
         self.info_text.x, self.info_text.y = gw/2, gh/2 + 10
       end
@@ -916,7 +974,7 @@ function GoButton:update(dt)
       ui_transition1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
       self.transitioning = true
       buyScreen:save_run()
-      TransitionEffect{group = main.transitions, x = self.x, y = self.y, color = state.dark_transitions and bg[-2] or character_colors[random:table(self.parent.units).character], transition_action = function()
+      TransitionEffect{group = main.transitions, x = self.x, y = self.y, color = state.dark_transitions and bg[-2] or orange[0], transition_action = function()
 
         main:add(WorldManager'world_manager')
 

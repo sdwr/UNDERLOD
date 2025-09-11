@@ -79,6 +79,20 @@ troop_cast_times = {
   ['default'] = cast_times['instant']
 }
 
+-- Weapon stats table for the new weapon system
+weapon_default_stats = {
+  attack_cooldown = 0.8,
+  cast_time = 0.1,
+  damage = 10,
+  attack_range = 110,
+}
+
+weapon_get_stats = function(weapon_name, level)
+  level = level or 1
+  local base_stats = weapon_definitions[weapon_name] and weapon_definitions[weapon_name].base_stats or weapon_default_stats
+  return Calculate_Weapon_Stats_At_Level(base_stats, level)
+end
+
 enemy_cast_times = {
   -- Regular enemies with animations
   ['shooter'] = GOBLIN_CAST_TIME,
@@ -304,15 +318,15 @@ SPECIAL_SWARMER_DATA = {
 
 SPECIAL_SWARMER_WEIGHT_BY_TYPE = {
   [1] = {0},
-  [2] = {5},
-  [3] = {5},
-  [4] = {5, 5},
-  [5] = {5, 5, 5},
-  [6] = {5, 5, 5},
-  [7] = {5, 5, 5},
-  [8] = {5, 5, 5},
-  [9] = {5, 5, 5},
-  [10] = {5, 5, 5},
+  [2] = {0},
+  [3] = {0, 0, 5},
+  [4] = {0, 0, 5},
+  [5] = {0, 0, 5},
+  [6] = {0, 0, 5},
+  [7] = {0, 0, 5},
+  [8] = {0, 0, 5},
+  [9] = {0, 0, 5},
+  [10] = {0, 0, 5},
   [11] = {0},
   [12] = {0},
   [13] = {0},
@@ -333,19 +347,19 @@ SPECIAL_SWARMER_WEIGHT_BY_TYPE = {
 
 
 ROUND_POWER_DATA_BY_LEVEL = {
-  [1] = {2500},
-  [2] = {2600},
-  [3] = {2800},
+  [1] = {2200},
+  [2] = {2400},
+  [3] = {2600},
   [4] = {2800},
   [5] = {3000},
   [6] = {3200},
   [7] = {3400},
   [8] = {3600},
-  [9] = {3600},
+  [9] = {3800},
   [10] = {3800},
   [11] = {4000},
-  [12] = {3000},
-  [13] = {3200},
+  [12] = {4200},
+  [13] = {4400},
   [14] = {3400},
   [15] = {3600},
   [16] = {3800},

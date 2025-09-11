@@ -857,7 +857,19 @@ function Unit:calculate_stats(first_run)
     self:init_stats()
     
     -- Set base cast/cooldown values based on unit type
-    if self.is_troop then
+    if self.is_weapon and self.weapon_name then
+      -- Use weapon-specific stats
+      local stats = weapon_get_stats(self.weapon_name, level)
+      self.base_attack_cooldown = stats.attack_cooldown
+      self.base_cast_time = stats.cast_time
+      self.base_dmg = stats.damage
+      if stats.attack_range then
+        self.base_attack_range = stats.attack_range
+      end
+      if stats.global_range then
+        self.global_range = true
+      end
+    elseif self.is_troop then
       local character = self.character or 'default'
       self.base_attack_cooldown = troop_attack_cooldowns[character] or troop_attack_cooldowns['default']
       self.base_cast_time = troop_cast_times[character] or troop_cast_times['default']

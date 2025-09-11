@@ -29,10 +29,35 @@ function WorldManager:on_enter(from)
 
 
   self:create_class_lists()
-  self:arena_on_enter()
+self:arena_on_enter()
 
   -- Create level list for spawn management
   self.level_list = Build_Level_List(NUMBER_OF_ROUNDS)
+  
+  -- Convert weapons to units format for compatibility
+  if self.weapons and #self.weapons > 0 then
+    self.units = {}
+    for _, weapon in ipairs(self.weapons) do
+      local weapon_def = Get_Weapon_Definition(weapon.name)
+      local items = {}
+      
+      -- Add default items for specific weapons
+      if weapon.name == 'cannon' and weapon_def.default_items then
+        items = weapon_def.default_items
+      end
+      
+      table.insert(self.units, {
+        character = weapon.name,
+        level = weapon.level or 1,
+        items = items
+      })
+    end
+  else
+    -- Default starting weapon if no weapons purchased yet
+    self.units = {
+      {character = 'machine_gun', level = 1, items = {}},
+    }
+  end
 
   -- Set up the current arena if it doesn't exist
   if not self.current_arena then
