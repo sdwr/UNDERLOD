@@ -6,6 +6,7 @@ require 'units/player/frost_aoe_weapon'
 require 'units/player/machine_gun_weapon'
 require 'units/player/lightning_weapon'
 require 'units/player/cannon_weapon'
+require 'units/player/laser_weapon'
 require 'units/player/laser_troop'
 require 'units/player/swordsman_troop'
 require 'units/player/archer_troop'
@@ -98,6 +99,8 @@ function Team:add_weapon(x, y, weapon_index)
     weapon = LightningWeapon(weapon_data)
   elseif weapon_data.character == 'cannon' then
     weapon = CannonWeapon(weapon_data)
+  elseif weapon_data.character == 'laser' then
+    weapon = LaserWeapon(weapon_data)
   else
     weapon = Weapon(weapon_data)
   end

@@ -82,6 +82,21 @@ weapon_definitions = {
       attack_range = 60,
       area_radius = 30
     }
+  },
+  
+  laser = {
+    name = 'laser',
+    display_name = 'Laser',
+    cost = 4,
+    tier = 1,
+    icon = 'laser',
+    description = 'Beam attack',
+    base_stats = {
+      attack_cooldown = 1.5,
+      cast_time = 0,
+      damage = 20,
+      attack_range = 120
+    }
   }
 }
 

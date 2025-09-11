@@ -111,6 +111,12 @@ weapon_stats = {
     damage = 25,
     attack_range = 100,
   },
+  ['laser'] = {
+    attack_cooldown = 1.5,
+    cast_time = 0,
+    damage = 20,
+    attack_range = 120,
+  },
   ['default'] = {
     attack_cooldown = 1,
     cast_time = 0.1,
