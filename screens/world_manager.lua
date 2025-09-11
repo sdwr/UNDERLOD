@@ -29,7 +29,7 @@ function WorldManager:on_enter(from)
 
 
   self:create_class_lists()
-  self:arena_on_enter()
+self:arena_on_enter()
 
   -- Create level list for spawn management
   self.level_list = Build_Level_List(NUMBER_OF_ROUNDS)
@@ -38,7 +38,7 @@ function WorldManager:on_enter(from)
   self.units = {
     {character = 'machine_gun', level = 1, items = {}},
     {character = 'lightning', level = 1, items = {}},
-    {character = 'cannon', level = 1, items = {}},  -- Cannon with splash proc
+    {character = 'cannon', level = 1, items = {{procs = {'splash'}}}},  -- Cannon with splash proc
   }
 
   -- Set up the current arena if it doesn't exist

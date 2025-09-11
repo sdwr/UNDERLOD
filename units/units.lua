@@ -110,17 +110,6 @@ function Team:add_weapon(x, y, weapon_index)
   end
   table.insert(self.weapons, weapon)
   
-  -- Keep a placeholder in troops array for compatibility
-  local troop_placeholder = {
-    team = self.index,
-    created_at = love.timer.getTime(),
-    dead = false,
-    x = x,
-    y = y,
-    weapon = weapon
-  }
-  table.insert(self.troops, troop_placeholder)
-  
   return weapon
 end
 
