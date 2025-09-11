@@ -420,7 +420,7 @@ function Replace_Team(arena, index, unit)
   local newTeam = Team(index, unit)
   table.insert(Helper.Unit.teams, index, newTeam)
 
-  newTeam:set_troop_data({
+  newTeam:set_weapon_data({
     group = arena.main,
     x = unit_locations[1].x,
     y = unit_locations[1].y,
@@ -451,7 +451,7 @@ function Spawn_Team(arena, index, unit)
   local newTeam = Team(index, unit)
   table.insert(Helper.Unit.teams, index, newTeam)
 
-  newTeam:set_troop_data({
+  newTeam:set_weapon_data({
     group = arena.main,
     x = spawn_location.x,
     y = spawn_location.y,
@@ -487,7 +487,7 @@ function Spawn_Teams(arena, suction_enabled)
       local spawn_x = team_spawn_location.x
       local spawn_y = team_spawn_location.y
 
-      team:set_troop_data({
+      team:set_weapon_data({
           group = arena.main,
           x = spawn_x,
           y = spawn_y,
@@ -509,7 +509,7 @@ end
 
 function Spawn_Troops_At_Locations(arena, team, locations)
   for i, location in ipairs(locations) do
-    Helper.Unit:resurrect_troop(team, nil, location)
+    team:add_weapon(location.x, location.y, i)
   end
 end
 
@@ -527,15 +527,11 @@ function Get_Random_Spawn_Outside_Arena(distance)
 end
 
 function Spawn_Troops(arena, team, unit, spawn_location)
-
-
   local team_spawn_location = spawn_location
-
-  local number_of_troops = UNIT_LEVEL_TO_NUMBER_OF_TROOPS[unit.level]
+  local number_of_weapons = UNIT_LEVEL_TO_NUMBER_OF_WEAPONS[unit.level]
 
   if unit.troop_hps then
-    for i = 1, number_of_troops do
-      
+    for i = 1, number_of_weapons do
       local health = unit.troop_hps[i]
       if health and health > 0 then
         if not team_spawn_location then
@@ -545,12 +541,14 @@ function Spawn_Troops(arena, team, unit, spawn_location)
         local offset_y = (math.random() - 0.5) * 10
         local x = spawn_location.x + offset_x
         local y = spawn_location.y + offset_y
-        local troop = team:add_troop(x, y)
-        troop.hp = unit.troop_hps[i]
+        local weapon = team:add_weapon(x, y, i)
+        if weapon then
+          weapon.hp = unit.troop_hps[i]
+        end
       end
     end
   else
-    for i = 1, number_of_troops do
+    for i = 1, number_of_weapons do
       if not team_spawn_location then
         spawn_location = Get_Random_Spawn_Outside_Arena(SpawnGlobals.SPAWN_DISTANCE_OUTSIDE_ARENA)
       end
@@ -558,8 +556,7 @@ function Spawn_Troops(arena, team, unit, spawn_location)
       local offset_y = (math.random() - 0.5) * 10
       local x = spawn_location.x + offset_x
       local y = spawn_location.y + offset_y
-        
-        team:add_troop(x, y)
+      team:add_weapon(x, y, i)
     end
   end
 end

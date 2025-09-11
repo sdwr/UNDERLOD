@@ -1,5 +1,7 @@
 require 'units/player/player_troop'
 require 'units/player/player_cursor'
+require 'units/player/weapon'
+require 'units/player/archer_weapon'
 require 'units/player/laser_troop'
 require 'units/player/swordsman_troop'
 require 'units/player/archer_troop'
@@ -56,19 +58,58 @@ function Team:init(i, unit)
   self.data_saved_to_unit = false
 end
 
-function Team:set_troop_data(data)
-  self.troop_data = data
+function Team:set_weapon_data(data)
+  self.weapon_data = data
 end
 
-function Team:add_troop(x, y)
-  self.troop_data.x = x
-  self.troop_data.y = y
-  local troop = Create_Troop(self.troop_data)
-  troop.team = self.index
-  troop.created_at = love.timer.getTime()
-  table.insert(self.troops, troop)
+function Team:add_weapon(x, y, weapon_index)
+  if not self.weapon_data then return end
+  if not main.current or not main.current.current_arena then return end
   
-  return troop
+  local player_cursor = main.current.current_arena.player_cursor
+  if not player_cursor then return end
+  
+  -- Create weapon data without circular references
+  local weapon_data = {
+    group = self.weapon_data.group,
+    x = x,
+    y = y,
+    level = self.weapon_data.level,
+    character = self.weapon_data.character,
+    items = self.weapon_data.items,
+    passives = self.weapon_data.passives,
+    player_cursor = player_cursor,
+    team_index = self.index,
+  }
+  
+  -- Create the appropriate weapon type based on character
+  local weapon
+  if weapon_data.character == 'archer' then
+    weapon = ArcherWeapon(weapon_data)
+  else
+    weapon = Weapon(weapon_data)
+  end
+  weapon.team = self.index
+  weapon.team_ref = self  -- Store team reference after creation
+  weapon.created_at = love.timer.getTime()
+  
+  if not self.weapons then
+    self.weapons = {}
+  end
+  table.insert(self.weapons, weapon)
+  
+  -- Keep a placeholder in troops array for compatibility
+  local troop_placeholder = {
+    team = self.index,
+    created_at = love.timer.getTime(),
+    dead = false,
+    x = x,
+    y = y,
+    weapon = weapon
+  }
+  table.insert(self.troops, troop_placeholder)
+  
+  return weapon
 end
 
 --need to prevent changing state to following/rallying/moving
@@ -326,34 +367,30 @@ end
 
 --item functions
 
---needs troops to be added to team first (should be done in init?
+--needs weapons to be created first
 function Team:apply_item_procs()
-  --assume all items are the same between troops, so just grab the first one
-  if not self.troops or #self.troops == 0 then
-    print('no troops in team')
+  if not self.weapons or #self.weapons == 0 then
+    print('no weapons in team')
     return
   end
 
-  --add 1 copy of 'team' procs to the team
-  local team_items = self.troops[1].items
-
-  if team_items then
-    --add direct item procs
-    for _, item in pairs(team_items) do
+  -- Apply procs to each weapon
+  for _, weapon in ipairs(self.weapons) do
+    if weapon and not weapon.dead then
+      weapon:apply_item_procs()
+    end
+  end
+  
+  -- Apply team-level procs from items
+  if self.weapon_data and self.weapon_data.items then
+    for _, item in pairs(self.weapon_data.items) do
       if item and item.procs then
         for _, proc in pairs(item.procs) do
           local procname = proc
-          --can fill data from item here, but defaults should be ok
           local procObj = Create_Proc(procname, self, nil)
           self:add_proc(procObj)
         end
       end
-    end
-    --add set procs
-    local set_procs = self.troops[1]:get_set_procs()
-    for _, procname in pairs(set_procs) do
-      local procObj = Create_Proc(procname, self, nil)
-      self:add_proc(procObj)
     end
   end
 end

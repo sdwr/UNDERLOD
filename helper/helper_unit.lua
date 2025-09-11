@@ -615,20 +615,20 @@ function Helper.Unit:update_enemy_distance_tier()
     self.last_closest_enemy_distance_tier = self.closest_enemy_distance_tier or 999
     self.closest_enemy_distance_tier = get_distance_effect_tier(self.closest_enemy_distance)
 
-    if self.closest_enemy_distance_tier and self.closest_enemy_distance_tier < self.last_closest_enemy_distance_tier then            --play tier effects
-        if not self.tier_effect_debounce then
-            self.tier_effect_debounce = {}
-            for i = 1, #TIER_TO_DISTANCE do
-                self.tier_effect_debounce[i] = 0
-            end
-        end
-        --debounce to prevent spamming
-        if self.tier_effect_debounce[self.closest_enemy_distance_tier] < Helper.Time.time then
-            Helper.Sound:play_distance_multiplier_sound(self.closest_enemy_distance_tier)
-            Helper.Unit:create_distance_tier_effects(self.closest_enemy_distance_tier)
-            self.tier_effect_debounce[self.closest_enemy_distance_tier] = Helper.Time.time + 0.5
-        end
-    end
+    -- if self.closest_enemy_distance_tier and self.closest_enemy_distance_tier < self.last_closest_enemy_distance_tier then            --play tier effects
+    --     if not self.tier_effect_debounce then
+    --         self.tier_effect_debounce = {}
+    --         for i = 1, #TIER_TO_DISTANCE do
+    --             self.tier_effect_debounce[i] = 0
+    --         end
+    --     end
+    --     --debounce to prevent spamming
+    --     if self.tier_effect_debounce[self.closest_enemy_distance_tier] < Helper.Time.time then
+    --         Helper.Sound:play_distance_multiplier_sound(self.closest_enemy_distance_tier)
+    --         Helper.Unit:create_distance_tier_effects(self.closest_enemy_distance_tier)
+    --         self.tier_effect_debounce[self.closest_enemy_distance_tier] = Helper.Time.time + 0.5
+    --     end
+    -- end
 
 end
 
