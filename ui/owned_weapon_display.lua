@@ -45,7 +45,7 @@ function OwnedWeaponDisplay:refresh_cards()
         h = self.CARD_HEIGHT,
         weapon_name = weapon.name,
         level = weapon.level,
-        count = weapon.count,
+        xp = weapon.xp or 0,  -- Support old 'count' field
         weapon = weapon,
         index = i
       }
@@ -70,7 +70,7 @@ function OwnedWeaponDisplay:update(dt)
         if not parent_weapon or 
            weapon.name ~= parent_weapon.name or 
            weapon.level ~= parent_weapon.level or 
-           weapon.count ~= parent_weapon.count then
+           (weapon.xp or weapon.count or 0) ~= (parent_weapon.xp or parent_weapon.count or 0) then
           weapons_changed = true
           break
         end

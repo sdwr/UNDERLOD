@@ -266,7 +266,7 @@ function BuyScreen:add_weapon(weapon_name)
   
   if existing_weapon then
     -- Increment count for existing weapon
-    existing_weapon.count = (existing_weapon.count or 1) + 1
+    existing_weapon.xp = (existing_weapon.xp or 0) + 1
     
     -- Check for upgrade
     if existing_weapon.count >= WEAPON_COPIES_TO_UPGRADE then
@@ -286,7 +286,7 @@ function BuyScreen:add_weapon(weapon_name)
       table.insert(self.weapons, {
         name = weapon_name,
         level = 1,
-        count = 1
+        xp = 0
       })
     else
       -- Can't add more weapons

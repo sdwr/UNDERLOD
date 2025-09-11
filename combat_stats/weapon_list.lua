@@ -1,7 +1,6 @@
 -- Global weapon definitions and shop functions
 
 WEAPON_MAX_LEVEL = 3
-WEAPON_COPIES_TO_UPGRADE = 2
 MAX_OWNED_WEAPONS = 6
 
 -- Weapon definitions with base stats and costs
