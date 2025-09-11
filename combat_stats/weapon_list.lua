@@ -17,22 +17,22 @@ weapon_definitions = {
       attack_cooldown = 0.2,
       cast_time = 0,
       damage = 5,
-      attack_range = 60
+      attack_range = 110
     }
   },
   
   lightning = {
     name = 'lightning',
     display_name = 'Bolt',
-    cost = 4,
+    cost = 2,
     tier = 1,
     icon = 'lightning',
     description = 'Chain attack',
     base_stats = {
-      attack_cooldown = 1.0,
+      attack_cooldown = 0.8,
       cast_time = 0.1,
       damage = 12,
-      attack_range = 70,
+      attack_range = 110,
       chain_count = 2
     }
   },
@@ -40,7 +40,7 @@ weapon_definitions = {
   cannon = {
     name = 'cannon',
     display_name = 'Cannon',
-    cost = 5,
+    cost = 3,
     tier = 1,
     icon = 'bomb',
     description = 'Explosive',
@@ -48,7 +48,7 @@ weapon_definitions = {
       attack_cooldown = 1.2,
       cast_time = 0.15,
       damage = 25,
-      attack_range = 60
+      attack_range = 110
     },
     default_items = {{procs = {'splash'}}}
   },
@@ -64,21 +64,21 @@ weapon_definitions = {
       attack_cooldown = 0.6,
       cast_time = 0.1,
       damage = 8,
-      attack_range = 80
+      attack_range = 110
     }
   },
   
   frost_aoe = {
     name = 'frost_aoe',
     display_name = 'Frost',
-    cost = 6,
+    cost = 2,
     tier = 1,
     icon = 'gem',
     description = 'Area freeze',
     base_stats = {
-      attack_cooldown = 2.0,
-      cast_time = 0.3,
-      damage = 15,
+      attack_cooldown = 1.0,
+      cast_time = 0.25,
+      damage = 8,
       attack_range = 60,
       area_radius = 30
     }

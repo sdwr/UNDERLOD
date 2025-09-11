@@ -294,9 +294,10 @@ function BuyScreen:add_weapon(weapon_name)
     end
   end
   
-  -- Update displays
+  -- Force refresh of owned weapons display
   if self.owned_weapons_display then
-    self.owned_weapons_display.weapons = self.weapons
+    self.owned_weapons_display.weapons = table.copy(self.weapons)
+    self.owned_weapons_display:refresh_cards()
   end
   
   self:save_run()
@@ -954,12 +955,12 @@ function GoButton:update(dt)
   self:update_game_object(dt)
 
   if ((self.selected and input.m1.pressed) or input.enter.pressed) and not self.transitioning then
-    if #self.parent.units == 0 then
+    if #self.parent.weapons == 0 then
       if not self.info_text then
         error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
         self.info_text = InfoText{group = main.current.ui}
         self.info_text:activate({
-          {text = '[fg]cannot start the round with [yellow]0 [fg]units', font = pixul_font, alignment = 'center'},
+          {text = '[fg]cannot start the round with [yellow]0 [fg]weapons', font = pixul_font, alignment = 'center'},
         }, nil, nil, nil, nil, 16, 4, nil, 2)
         self.info_text.x, self.info_text.y = gw/2, gh/2 + 10
       end
@@ -973,7 +974,7 @@ function GoButton:update(dt)
       ui_transition1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
       self.transitioning = true
       buyScreen:save_run()
-      TransitionEffect{group = main.transitions, x = self.x, y = self.y, color = state.dark_transitions and bg[-2] or character_colors[random:table(self.parent.units).character], transition_action = function()
+      TransitionEffect{group = main.transitions, x = self.x, y = self.y, color = state.dark_transitions and bg[-2] or orange[0], transition_action = function()
 
         main:add(WorldManager'world_manager')
 
