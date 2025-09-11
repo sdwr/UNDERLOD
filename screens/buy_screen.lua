@@ -433,7 +433,7 @@ function BuyScreen:set_party()
   self.owned_weapons_display = OwnedWeaponDisplay{
     group = self.ui,
     x = gw/2,
-    y = gh/2,
+    y = gh/2 - 60,
     weapons = self.weapons,
     parent = self
   }
