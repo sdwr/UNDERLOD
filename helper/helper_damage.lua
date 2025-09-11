@@ -53,12 +53,12 @@ function Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects,
   --Elemental or physical damage application
   if table.contains(ELEMENTAL_HIT_DAMAGE_TYPES, damageType) then
     Helper.Damage:apply_elemental_effects(unit, actual_damage, damageType, from, hitOptions)
+  end
+  
+  if isChained then
+    Helper.Damage:deal_damage_chained(unit, actual_damage)
   else
-    if isChained then
-      Helper.Damage:deal_damage_chained(unit, actual_damage)
-    else
-      Helper.Damage:deal_damage(unit, actual_damage)
-    end
+    Helper.Damage:deal_damage(unit, actual_damage)
   end
 
   -- ===================================================================
