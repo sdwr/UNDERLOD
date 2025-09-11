@@ -47,80 +47,111 @@ fns['update_enemy'] = function(self, dt)
 end
 
 fns['draw_enemy'] = function(self)
-  -- Build segments from history
-  local segments = {}
+  -- Build path points from history
+  local path_points = {}
   
   -- Start with head
-  table.insert(segments, {x = self.x, y = self.y})
+  table.insert(path_points, {x = self.x, y = self.y})
   
   -- Add body segments from history 
   for i = 1, math.min(#self.segment_history, self.snake_segments - 1) do
     local index = i * self.segment_spacing
     if index <= #self.segment_history and self.segment_history[index] then
-      table.insert(segments, self.segment_history[index])
-    end
-  end
-  
-  -- Only draw if we have enough segments
-  if #segments >= 2 then
-    -- Draw body segments as circles that get smaller
-    for i = #segments, 2, -1 do
-      local segment = segments[i]
-      local size_ratio = 1 - ((i - 1) / #segments) * 0.4  -- Size decreases toward tail
-      local radius = (self.shape.w / 2) * size_ratio
+      local segment = self.segment_history[index]
       
-      -- Add wiggle offset
+      -- Add smooth curve offset using sine wave
       local wiggle_x = 0
       local wiggle_y = 0
-      if i > 1 and i < #segments then
-        -- Get direction between this segment and next
-        local next_seg = segments[i - 1]
-        local dx = next_seg.x - segment.x
-        local dy = next_seg.y - segment.y
-        local length = math.sqrt(dx * dx + dy * dy)
+      
+      -- Only wiggle middle segments, not head or tail
+      if i > 1 and i < self.snake_segments - 2 then
+        -- Get direction for perpendicular offset
+        local prev_index = math.max(1, index - self.segment_spacing)
+        local next_index = math.min(#self.segment_history, index + self.segment_spacing)
         
-        if length > 0.1 then
-          -- Perpendicular to movement direction
-          local perp_x = -dy / length
-          local perp_y = dx / length
+        if self.segment_history[prev_index] and self.segment_history[next_index] then
+          local dx = self.segment_history[next_index].x - self.segment_history[prev_index].x
+          local dy = self.segment_history[next_index].y - self.segment_history[prev_index].y
+          local length = math.sqrt(dx * dx + dy * dy)
           
-          local t = (i - 1) / (#segments - 1)
-          local offset = math.sin(self.wave_phase - t * math.pi * 2) * self.wave_amplitude * (1 - t * 0.3)
-          wiggle_x = perp_x * offset
-          wiggle_y = perp_y * offset
+          if length > 0.1 then
+            -- Perpendicular to movement direction
+            local perp_x = -dy / length
+            local perp_y = dx / length
+            
+            -- Smooth sine wave for curves
+            local t = i / self.snake_segments
+            local offset = math.sin(self.wave_phase + t * math.pi * 3) * self.wave_amplitude * (1 - t * 0.5)
+            wiggle_x = perp_x * offset
+            wiggle_y = perp_y * offset
+          end
         end
       end
       
-      -- Draw segment circle
-      local segment_color = self.color:clone()
-      segment_color.a = 0.8 * (1 - (i - 1) / #segments * 0.3)  -- Fade toward tail
-      graphics.circle(segment.x + wiggle_x, segment.y + wiggle_y, radius, segment_color)
+      table.insert(path_points, {x = segment.x + wiggle_x, y = segment.y + wiggle_y})
     end
   end
   
-  -- Draw head last (on top)
-  graphics.circle(self.x, self.y, self.shape.w / 2, self.color)
+  -- Only draw if we have enough points
+  if #path_points >= 2 then
+    -- Convert points to flat array for polyline
+    local line_points = {}
+    for i, point in ipairs(path_points) do
+      table.insert(line_points, point.x)
+      table.insert(line_points, point.y)
+    end
+    
+    -- Draw main body line with varying thickness
+    if #line_points >= 4 then
+      -- Draw outer line (thicker)
+      local outer_color = self.color:clone()
+      outer_color.a = 0.7
+      graphics.polyline(outer_color, 6, unpack(line_points))
+      
+      -- Draw inner line (thinner) for depth
+      local inner_color = self.color:clone()
+      inner_color.a = 0.9
+      graphics.polyline(inner_color, 3, unpack(line_points))
+    end
+  end
+  
+  -- Draw head as a circle
+  graphics.circle(self.x, self.y, self.shape.w / 2.5, self.color)
   
   -- Draw eyes
   local eye_color = white[0]:clone()
   eye_color.a = 0.9
   local eye_size = 2
-  local eye_offset = self.shape.w / 4
+  local eye_offset = self.shape.w / 5
   
-  -- Calculate eye positions based on movement direction
+  -- Calculate eye positions based on movement direction or next segment
+  local dir_x, dir_y = 0, 0
   local vx, vy = self:get_velocity()
   local speed = math.sqrt(vx * vx + vy * vy)
+  
   if speed > 0.1 then
-    local dir_x = vx / speed
-    local dir_y = vy / speed
+    dir_x = vx / speed
+    dir_y = vy / speed
+  elseif #self.segment_history > 1 then
+    -- Use direction to first segment if not moving
+    dir_x = self.x - self.segment_history[1].x
+    dir_y = self.y - self.segment_history[1].y
+    local length = math.sqrt(dir_x * dir_x + dir_y * dir_y)
+    if length > 0.1 then
+      dir_x = dir_x / length
+      dir_y = dir_y / length
+    end
+  end
+  
+  if dir_x ~= 0 or dir_y ~= 0 then
     local perp_x = -dir_y
     local perp_y = dir_x
     
-    graphics.circle(self.x + dir_x * 3 + perp_x * eye_offset, 
-                   self.y + dir_y * 3 + perp_y * eye_offset, 
+    graphics.circle(self.x + dir_x * 2 + perp_x * eye_offset, 
+                   self.y + dir_y * 2 + perp_y * eye_offset, 
                    eye_size, eye_color)
-    graphics.circle(self.x + dir_x * 3 - perp_x * eye_offset, 
-                   self.y + dir_y * 3 - perp_y * eye_offset, 
+    graphics.circle(self.x + dir_x * 2 - perp_x * eye_offset, 
+                   self.y + dir_y * 2 - perp_y * eye_offset, 
                    eye_size, eye_color)
   end
   
