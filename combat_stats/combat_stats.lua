@@ -85,7 +85,7 @@ weapon_stats = {
     attack_cooldown = 0.5,
     cast_time = 0.1,
     damage = 15,
-    global_range = true,
+    attack_range = 100,
   },
   ['frost_aoe'] = {
     attack_cooldown = 2.5,
@@ -109,7 +109,7 @@ weapon_stats = {
     attack_cooldown = 1.2,  -- Slow but powerful
     cast_time = 0.15,
     damage = 25,
-    global_range = true,
+    attack_range = 100,
   },
   ['default'] = {
     attack_cooldown = 1,

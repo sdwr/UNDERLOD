@@ -38,7 +38,7 @@ function WorldManager:on_enter(from)
   self.units = {
     {character = 'machine_gun', level = 1, items = {}},
     {character = 'lightning', level = 1, items = {}},
-    {character = 'cannon', level = 1, items = {{procs = {'splash'}}}},  -- Cannon with splash proc
+    {character = 'cannon', level = 1, items = {}},  -- Cannon with splash proc
   }
 
   -- Set up the current arena if it doesn't exist

@@ -18,7 +18,7 @@ function CannonWeapon:create_spelldata()
     bullet_size = 8,  -- Large cannonball
     bullet_shape = 'circle',  -- Round cannonball
     pierce = false,
-    speed = 250,  -- Slower than bullets
+    speed = 100,  -- Slower than bullets
     is_weapon = true,
     is_troop = true,
     color = orange[0],
