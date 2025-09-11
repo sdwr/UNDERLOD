@@ -16,7 +16,7 @@ weapon_definitions = {
       attack_cooldown = 0.2,
       cast_time = 0,
       damage = 6,
-      attack_range = 110
+      global_range = true
     }
   },
   
@@ -47,7 +47,7 @@ weapon_definitions = {
       attack_cooldown = 1.2,
       cast_time = 0.15,
       damage = 25,
-      attack_range = 110
+      global_range = true
     },
     default_items = {{procs = {'splash'}}}
   },
@@ -63,7 +63,7 @@ weapon_definitions = {
       attack_cooldown = 0.6,
       cast_time = 0.1,
       damage = 10,
-      attack_range = 110
+      global_range = true
     }
   },
   

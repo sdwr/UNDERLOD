@@ -95,20 +95,11 @@ function OwnedWeaponDisplay:draw()
     self.title_text:draw(self.x, self.y - 40)
   end
   
-  if not self.weapons or #self.weapons == 0 then
-    graphics.print('No weapons owned', pixul_font, self.x, self.y, 0, 1, 1, nil, nil, fg[-5])
-    return
-  end
-  
   -- Draw weapon cards
   for _, card in ipairs(self.weapon_cards) do
     card:draw()
   end
   
-  -- Show weapon count / max
-  local count_text = #self.weapons .. '/' .. MAX_OWNED_WEAPONS .. ' weapons'
-  local count_color = #self.weapons >= MAX_OWNED_WEAPONS and red[0] or fg[-3]
-  graphics.print(count_text, pixul_font, self.x, self.y + 65, 0, 0.8, 0.8, nil, nil, count_color)
 end
 
 function OwnedWeaponDisplay:die()
