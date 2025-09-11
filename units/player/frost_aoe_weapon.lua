@@ -1,6 +1,7 @@
 FrostAoeWeapon = Weapon:extend()
 
 function FrostAoeWeapon:init(data)
+  self.weapon_name = 'frost_aoe'
   self.base_attack_range = 50  -- Detection radius for enemies
   FrostAoeWeapon.super.init(self, data)
   

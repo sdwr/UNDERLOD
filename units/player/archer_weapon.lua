@@ -1,6 +1,7 @@
 ArcherWeapon = Weapon:extend()
 
 function ArcherWeapon:init(data)
+  self.weapon_name = 'archer'
   self.base_attack_range = TROOP_RANGE
   ArcherWeapon.super.init(self, data)
   
@@ -86,6 +87,5 @@ end
 
 function ArcherWeapon:set_character()
   self.attack_sensor = Circle(self.x, self.y, self.base_attack_range)
-  self.infinite_range = true
   -- Cast/cooldown values are set in calculate_stats()
 end

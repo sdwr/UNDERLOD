@@ -79,6 +79,28 @@ troop_cast_times = {
   ['default'] = cast_times['instant']
 }
 
+-- Weapon stats table for the new weapon system
+weapon_stats = {
+  ['archer'] = {
+    attack_cooldown = 0.5,
+    cast_time = 0.1,
+    damage = 15,
+    global_range = true,
+  },
+  ['frost_aoe'] = {
+    attack_cooldown = 2.5,
+    cast_time = 0,
+    damage = 20,
+    attack_range = 50,
+  },
+  ['default'] = {
+    attack_cooldown = 1,
+    cast_time = 0.1,
+    damage = 15,
+    attack_range = 60,
+  }
+}
+
 enemy_cast_times = {
   -- Regular enemies with animations
   ['shooter'] = GOBLIN_CAST_TIME,

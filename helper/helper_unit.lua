@@ -209,6 +209,13 @@ function Helper.Unit:can_cast(unit, target)
         if not table.any(unit_states_can_cast, function(v) return unit.state == v end) then
             return false
         end
+
+        if not unit.global_range then
+            if Helper.Geometry:distance(unit.x, unit.y, target.x, target.y) >= unit.attack_sensor.rs then
+                return false
+            end
+        end
+        
         return Helper.Unit:cast_off_cooldown(unit)
     end
     return false

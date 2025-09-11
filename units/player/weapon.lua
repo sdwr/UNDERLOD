@@ -14,6 +14,11 @@ function Weapon:init(args)
   self.player_cursor = args.player_cursor
   self.team_index = args.team_index or 1
   
+  -- Custom weapon stats (set before calculate_stats)
+  self.custom_cast_time = args.custom_cast_time
+  self.custom_attack_cooldown = args.custom_attack_cooldown
+  self.custom_damage = args.custom_damage
+  
   -- Position at cursor with offset
   if self.player_cursor then
     args.x = self.player_cursor.x
@@ -94,7 +99,11 @@ function Weapon:update(dt)
   
   -- Auto-fire at enemies
   if table.contains(unit_states_can_cast, self.state) then
-    self.target = Helper.Target:get_close_enemy(self)
+    if self.global_range then
+      self.target = Helper.Target:get_close_enemy(self)
+    else
+      self.target = Helper.Target:get_closest_enemy(self)
+    end
     if self.target then
       if Helper.Unit:can_cast(self, self.target) then
         self:setup_cast(self.target)
