@@ -2,6 +2,7 @@ require 'units/player/player_troop'
 require 'units/player/player_cursor'
 require 'units/player/weapon'
 require 'units/player/archer_weapon'
+require 'units/player/frost_aoe_weapon'
 require 'units/player/laser_troop'
 require 'units/player/swordsman_troop'
 require 'units/player/archer_troop'
@@ -86,6 +87,8 @@ function Team:add_weapon(x, y, weapon_index)
   local weapon
   if weapon_data.character == 'archer' then
     weapon = ArcherWeapon(weapon_data)
+  elseif weapon_data.character == 'frost_aoe' then
+    weapon = FrostAoeWeapon(weapon_data)
   else
     weapon = Weapon(weapon_data)
   end
