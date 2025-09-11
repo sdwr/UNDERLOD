@@ -122,11 +122,8 @@ function Get_Weapon_Definition(weapon_name)
 end
 
 -- Calculate weapon stats at a given level
-function Calculate_Weapon_Stats_At_Level(weapon_name, level)
-  local def = weapon_definitions[weapon_name]
-  if not def then return {} end
-  
-  local stats = table.copy(def.base_stats)
+function Calculate_Weapon_Stats_At_Level(base_stats, level)
+  local stats = table.copy(base_stats)
   
   -- Level scaling: +25% damage per level, -10% cooldown per level
   if level > 1 then

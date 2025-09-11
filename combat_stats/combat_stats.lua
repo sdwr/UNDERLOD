@@ -80,44 +80,18 @@ troop_cast_times = {
 }
 
 -- Weapon stats table for the new weapon system
-weapon_stats = {
-  ['archer'] = {
-    attack_cooldown = 0.5,
-    cast_time = 0.1,
-    damage = 15,
-    attack_range = 100,
-  },
-  ['frost_aoe'] = {
-    attack_cooldown = 2.5,
-    cast_time = 0,
-    damage = 20,
-    attack_range = 50,
-  },
-  ['machine_gun'] = {
-    attack_cooldown = 0.2,  -- Rapid fire
-    cast_time = 0,
-    damage = 5,
-    attack_range = 80,
-  },
-  ['lightning'] = {
-    attack_cooldown = 1.0,
-    cast_time = 0.1,
-    damage = 12,
-    attack_range = 70,
-  },
-  ['cannon'] = {
-    attack_cooldown = 1.2,  -- Slow but powerful
-    cast_time = 0.15,
-    damage = 25,
-    attack_range = 100,
-  },
-  ['default'] = {
-    attack_cooldown = 1,
-    cast_time = 0.1,
-    damage = 15,
-    attack_range = 60,
-  }
+weapon_default_stats = {
+  attack_cooldown = 0.8,
+  cast_time = 0.1,
+  damage = 10,
+  attack_range = 110,
 }
+
+weapon_get_stats = function(weapon_name, level)
+  level = level or 1
+  local base_stats = weapon_definitions[weapon_name] and weapon_definitions[weapon_name].base_stats or weapon_default_stats
+  return Calculate_Weapon_Stats_At_Level(base_stats, level)
+end
 
 enemy_cast_times = {
   -- Regular enemies with animations

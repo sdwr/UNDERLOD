@@ -859,7 +859,7 @@ function Unit:calculate_stats(first_run)
     -- Set base cast/cooldown values based on unit type
     if self.is_weapon and self.weapon_name then
       -- Use weapon-specific stats
-      local stats = weapon_stats[self.weapon_name] or weapon_stats['default']
+      local stats = weapon_get_stats(self.weapon_name, level)
       self.base_attack_cooldown = stats.attack_cooldown
       self.base_cast_time = stats.cast_time
       self.base_dmg = stats.damage
