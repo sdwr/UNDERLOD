@@ -25,6 +25,8 @@ EXPECTED_SAVE_FIELDS = {
   'times_rerolled',
   'difficulty',
   'perks',
+  'weapons',
+  'shop_weapon_data',
 }
 
 USER_STATS = {}
