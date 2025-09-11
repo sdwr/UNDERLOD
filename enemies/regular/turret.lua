@@ -36,9 +36,10 @@ fns['init_enemy'] = function(self)
         bullet_size = 4,
         is_troop = false,
         speed = 100,
-        projectile_count = 3,
+        projectile_count = 5,
         spread_angle = math.pi/12, -- 15 degrees spread
-        delay_between = 0.1, -- 0.1 seconds between projectiles
+        delay_between = 0, -- 0 seconds between projectiles
+        duration = 0.7, -- projectile duration
         x = self.x,
         y = self.y,
       },
@@ -69,6 +70,7 @@ function MultiProjectile:init(args)
   self.projectile_count = self.projectile_count or 3
   self.spread_angle = self.spread_angle or math.pi/12
   self.delay_between = self.delay_between or 0.1
+  self.duration = self.duration or 10
 
   if self.target then
     local xdist = self.target.x - self.x
@@ -104,11 +106,12 @@ function MultiProjectile:create_projectile(index)
     x = self.x,
     y = self.y,
     r = projectile_angle,
-    v = self.speed,
+    speed = self.speed,
     damage = self.damage,
     color = self.color,
-    bullet_size = self.bullet_size,
+    radius = self.bullet_size,
     is_troop = self.is_troop,
+    duration = self.duration,
     source = 'turret'
   }
 end

@@ -32,7 +32,7 @@ function OwnedWeaponCard:init(args)
   self.interact_with_mouse = true
   
   -- Title text showing level and name
-  local level_text = 'Lv.' .. self.level .. ' '
+  local level_text = self.level .. ' '
   local title_string = level_text .. self.weapon_def.name
   self.title_text = Text({{text = '[yellow]' .. title_string, font = pixul_font, alignment = 'center'}}, global_text_tags)
   

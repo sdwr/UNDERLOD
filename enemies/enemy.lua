@@ -318,7 +318,8 @@ function Enemy:choose_movement_target()
     return self:acquire_target_seek_orb_range()
   elseif self.currentMovementAction == MOVEMENT_TYPE_RANDOM then
     return self:acquire_target_random()
-  elseif self.currentMovementAction == MOVEMENT_TYPE_STATIONARY then
+  elseif self.currentMovementAction == MOVEMENT_TYPE_STATIONARY or
+  self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_RANGE_STATIONARY then
     return true
   end
 end
@@ -352,7 +353,8 @@ function Enemy:update_movement()
     return self:update_move_seek_location()
   elseif self.currentMovementAction == MOVEMENT_TYPE_WANDER then
     return self:update_move_wander()
-  elseif self.currentMovementAction == MOVEMENT_TYPE_STATIONARY then
+  elseif self.currentMovementAction == MOVEMENT_TYPE_STATIONARY or
+  self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_RANGE_STATIONARY then
     return true
   end
   return false

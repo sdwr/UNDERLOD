@@ -355,7 +355,7 @@ end
 
 MOVEMENT_RANDOM_TIMER = 5
 LOOSE_SEEK_RETARGET_TIME = 10
-SEEK_TO_RANGE_RADIUS = 130
+SEEK_TO_RANGE_RADIUS = 90
 SEEK_TO_RANGE_RADIUS_X_MULTIPLIER = 1.3
 SEEK_TO_RANGE_RADIUS_Y_MULTIPLIER = 0.7
 SEEK_TO_RANGE_ENEMY_MOVEMENT_RADIUS = 60
@@ -376,6 +376,7 @@ MOVEMENT_TYPE_FLEE = 'flee'
 MOVEMENT_TYPE_WANDER = 'wander'
 MOVEMENT_TYPE_NONE = 'none'
 MOVEMENT_TYPE_STATIONARY = 'stationary'
+MOVEMENT_TYPE_SEEK_ORB_RANGE_STATIONARY = 'seek_orb_range_stationary'
 
 MOVEMENT_TYPE_DATA = {
   [MOVEMENT_TYPE_SEEK_ORB] = {
@@ -417,8 +418,14 @@ MOVEMENT_TYPE_DATA = {
   [MOVEMENT_TYPE_SEEK_ORB_RANGE] = {
     can_attack = false,
     action_timer = nil,
-    after_delay = 1,
-    after = MOVEMENT_TYPE_STATIONARY
+    after_delay = 0,
+    after = MOVEMENT_TYPE_SEEK_ORB_RANGE_STATIONARY
+  },
+  [MOVEMENT_TYPE_SEEK_ORB_RANGE_STATIONARY] = {
+    can_attack = true,
+    action_timer = 1,
+    after_delay = 0,
+    after = MOVEMENT_TYPE_SEEK_ORB_RANGE
   },
   [MOVEMENT_TYPE_STATIONARY] = {
     can_attack = true,
@@ -493,7 +500,7 @@ enemy_movement_types = {
   ['spawner'] = MOVEMENT_TYPE_APPROACH_ORB,
   ['firewall_caster'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
   
-  ['turret'] = MOVEMENT_TYPE_APPROACH_ORB,
+  ['turret'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
   
   -- Bosses
   ['stompy'] = MOVEMENT_TYPE_LOOSE_SEEK,

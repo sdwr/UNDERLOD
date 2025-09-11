@@ -64,7 +64,9 @@ function PlayerCursor:follow_mouse()
   local mouse_x, mouse_y = love.mouse.getPosition()
   mouse_x = mouse_x / sx
   mouse_y = mouse_y / sx
-  self:seek_point(mouse_x, mouse_y, TROOP_SEEK_DECELERATION, SEEK_WEIGHT)
+  self.x = mouse_x
+  self.y = mouse_y
+  self.body:setPosition(self.x, self.y)
 end
 
 function PlayerCursor:enforce_orb_boundary()
