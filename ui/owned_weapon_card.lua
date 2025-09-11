@@ -9,6 +9,8 @@ function OwnedWeaponCard:init(args)
   self.level = args.level or 1
   self.count = args.count or 1
   self.index = args.index or 1
+  self.weapon = args.weapon or {}
+  self.item_parts = {}
   
   -- Get weapon definition
   self.weapon_def = Get_Weapon_Definition(self.weapon_name)
@@ -16,6 +18,10 @@ function OwnedWeaponCard:init(args)
   -- Card dimensions
   self.w = 50
   self.h = 20
+
+  self.ITEM_SLOT_WIDTH = 15
+  self.ITEM_SLOT_HEIGHT = 15
+  self.ITEM_SLOT_SPACING = 5
   
   -- Position based on index
   self.x = args.x
@@ -27,9 +33,34 @@ function OwnedWeaponCard:init(args)
   
   -- Title text showing level and name
   local level_text = self.level .. ' '
-  local title_string = level_text .. self.weapon_name
+  local title_string = level_text .. self.weapon_def.name
   self.title_text = Text({{text = '[yellow]' .. title_string, font = pixul_font, alignment = 'center'}}, global_text_tags)
   
+  -- Create ItemPart instances for weapon items
+  self:create_item_parts()
+end
+
+function OwnedWeaponCard:create_item_parts()
+  -- Clean up existing item parts
+  for _, part in ipairs(self.item_parts) do
+    part:die()
+  end
+  self.item_parts = {}
+  
+  -- Create 3 item parts for weapon slots
+  for i = 1, 3 do
+    local y_offset = (i-1) * (self.ITEM_SLOT_HEIGHT + self.ITEM_SLOT_SPACING)
+    local item_part = ItemPart{
+      group = self.group,
+      x = self.x,
+      y = self.y + self.h/2 + self.ITEM_SLOT_HEIGHT/2 + self.ITEM_SLOT_SPACING + y_offset,
+      i = i,
+      parent = self,
+      w = self.ITEM_SLOT_WIDTH,
+      h = self.ITEM_SLOT_HEIGHT
+    }
+    table.insert(self.item_parts, item_part)
+  end
 end
 
 function OwnedWeaponCard:update(dt)
@@ -72,8 +103,17 @@ function OwnedWeaponCard:draw()
   if self.title_text then
     self.title_text:draw(self.x, self.y - self.h/2 + 10)
   end
+
+  self:draw_item_slots()
   
   graphics.pop()
+end
+
+function OwnedWeaponCard:draw_item_slots()
+  -- Draw item parts
+  for _, item_part in ipairs(self.item_parts) do
+    item_part:draw()
+  end
 end
 
 function OwnedWeaponCard:die()
@@ -84,4 +124,9 @@ function OwnedWeaponCard:die()
     self.title_text = nil
   end
   
+  -- Clean up item parts
+  for _, part in ipairs(self.item_parts) do
+    part:die()
+  end
+  self.item_parts = {}
 end

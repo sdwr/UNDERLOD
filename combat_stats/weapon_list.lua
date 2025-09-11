@@ -7,7 +7,7 @@ MAX_OWNED_WEAPONS = 6
 -- Weapon definitions with base stats and costs
 weapon_definitions = {
   machine_gun = {
-    name = 'machine_gun',
+    name = 'machine gun',
     display_name = 'MG',
     cost = 3,
     tier = 1,
@@ -69,7 +69,7 @@ weapon_definitions = {
   },
   
   frost_aoe = {
-    name = 'frost_aoe',
+    name = 'frost',
     display_name = 'Frost',
     cost = 2,
     tier = 1,

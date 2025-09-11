@@ -13,6 +13,10 @@ function OwnedWeaponDisplay:init(args)
   
   -- Display properties
   self.max_display = MAX_OWNED_WEAPONS
+
+  self.CARD_WIDTH = 45
+  self.CARD_SPACING = 10
+  self.CARD_HEIGHT = 20
   
   -- Create weapon cards
   self.weapon_cards = {}
@@ -32,14 +36,17 @@ function OwnedWeaponDisplay:refresh_cards()
   -- Create new cards
   if self.weapons and #self.weapons > 0 then
     for i, weapon in ipairs(self.weapons) do
-      local first_card_x_offset = (#self.weapons / 2 * 45)
+      local first_card_x_offset = (#self.weapons / 2 * self.CARD_WIDTH) + (self.CARD_SPACING * (#self.weapons - 1) / 2)
       local card = OwnedWeaponCard{
         group = self.group,
-        x = self.x - first_card_x_offset + (i-1) * 45,
+        x = self.x - first_card_x_offset + (i-1) * self.CARD_WIDTH + (i-1) * self.CARD_SPACING,
         y = self.y,
+        w = self.CARD_WIDTH,
+        h = self.CARD_HEIGHT,
         weapon_name = weapon.name,
         level = weapon.level,
         count = weapon.count,
+        weapon = weapon,
         index = i
       }
       table.insert(self.weapon_cards, card)

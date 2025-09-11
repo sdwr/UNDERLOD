@@ -461,13 +461,15 @@ ItemPart.__class_name = 'ItemPart'
 ItemPart:implement(GameObject)
 function ItemPart:init(args)
   self:init_game_object(args)
-  self.shape = Rectangle(self.x, self.y, self.sx * 20, self.sy * 20)
+
+  self.h = self.h or ITEM_PART_HEIGHT
+  self.w = self.w or ITEM_PART_WIDTH
+
+  self.shape = Rectangle(self.x, self.y, self.sx * self.w, self.sy * self.h)
   self.interact_with_mouse = true
   self.itemGrabbed = false
   self.info_text = nil
 
-  self.h = ITEM_PART_HEIGHT
-  self.w = ITEM_PART_WIDTH
 
   self.spring:pull(0.2, 200, 10)
   self.just_created = true
@@ -475,11 +477,23 @@ function ItemPart:init(args)
 end
 
 function ItemPart:hasItem()
-  return not not self.parent.unit.items[self.i]
+  if self.parent.weapon then
+    return self.parent.weapon.items and self.parent.weapon.items[self.i]
+  elseif self.parent.unit then
+    return not not self.parent.unit.items[self.i]
+  end
+  return false
 end
 
 function ItemPart:addItem(item)
-  self.parent.unit.items[self.i] = item
+  if self.parent.weapon then
+    if not self.parent.weapon.items then
+      self.parent.weapon.items = {}
+    end
+    self.parent.weapon.items[self.i] = item
+  elseif self.parent.unit then
+    self.parent.unit.items[self.i] = item
+  end
   Refresh_All_Cards_Text()
 end
 
@@ -531,12 +545,23 @@ function ItemPart:sellItem()
 end
 
 function ItemPart:removeItem()
-  self.parent.unit.items[self.i] = nil
+  if self.parent.weapon then
+    if self.parent.weapon.items then
+      self.parent.weapon.items[self.i] = nil
+    end
+  elseif self.parent.unit then
+    self.parent.unit.items[self.i] = nil
+  end
   Refresh_All_Cards_Text()
 end
 
 function ItemPart:getItem()
-  return self.parent.unit.items[self.i]
+  if self.parent.weapon then
+    return self.parent.weapon.items and self.parent.weapon.items[self.i]
+  elseif self.parent.unit then
+    return self.parent.unit.items[self.i]
+  end
+  return nil
 end
 
 function ItemPart:isActiveInvSlot()
@@ -563,9 +588,12 @@ function ItemPart:update(dt)
   end
 
   if input.m1.pressed and self.colliding_with_mouse and self:hasItem() and not Loose_Inventory_Item then
-    self.itemGrabbed = true
-    Loose_Inventory_Item = LooseItem{group = main.current.ui, item = self:getItem(), parent = self}
-    self:remove_tooltip()
+    -- Only allow dragging from character cards, not weapon cards
+    if self.parent.unit then
+      self.itemGrabbed = true
+      Loose_Inventory_Item = LooseItem{group = main.current.ui, item = self:getItem(), parent = self}
+      self:remove_tooltip()
+    end
   end
 
   if self.itemGrabbed and input.m1.released then
@@ -585,10 +613,31 @@ function ItemPart:update(dt)
         local target_item = active:getItem()
         
         -- Do the swap immediately without triggering refreshes
-        self.parent.unit.items[self.i] = nil
-        active.parent.unit.items[active.i] = nil
-        active.parent.unit.items[active.i] = source_item
-        self.parent.unit.items[self.i] = target_item
+        if self.parent.unit then
+          self.parent.unit.items[self.i] = nil
+        elseif self.parent.weapon and self.parent.weapon.items then
+          self.parent.weapon.items[self.i] = nil
+        end
+        
+        if active.parent.unit then
+          active.parent.unit.items[active.i] = nil
+          active.parent.unit.items[active.i] = source_item
+        elseif active.parent.weapon then
+          if not active.parent.weapon.items then
+            active.parent.weapon.items = {}
+          end
+          active.parent.weapon.items[active.i] = nil
+          active.parent.weapon.items[active.i] = source_item
+        end
+        
+        if self.parent.unit then
+          self.parent.unit.items[self.i] = target_item
+        elseif self.parent.weapon then
+          if not self.parent.weapon.items then
+            self.parent.weapon.items = {}
+          end
+          self.parent.weapon.items[self.i] = target_item
+        end
         main.current:save_run()
                 
         -- Loose item creates particle effect and dies at target
@@ -635,7 +684,8 @@ function ItemPart:update(dt)
   end
 
   --differentiate between moving the item to another slot, and selling the item w m2
-  if input.m2.released and not self.itemGrabbed and self:isActiveInvSlot() and self:hasItem() then
+  -- Only allow selling from character cards, not weapon cards
+  if input.m2.released and not self.itemGrabbed and self:isActiveInvSlot() and self:hasItem() and self.parent.unit then
     self:sellItem()
     main.current:save_run()
   end
@@ -652,7 +702,7 @@ function ItemPart:draw(y)
   end
   if not self.parent.grabbed then
     graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
-    local item = self.parent.unit.items[self.i]
+    local item = self:getItem()
     -- Use V2 item tier_color if available, otherwise fall back to item_to_color
     -- But show default color when item is grabbed
     local tier_color = (item and not self.itemGrabbed and not self.hide_item_display) and (item.tier_color or item_to_color(item)) or grey[0]
