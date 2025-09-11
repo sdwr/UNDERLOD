@@ -700,6 +700,7 @@ end
 
 function Enemy:on_collision_enter(other, contact)
     local x, y = contact:getPositions()
+    if self.x ~= self.x then return end
     
     if other:is(Wall) then
         self:bounce(contact:getNormal())

@@ -129,6 +129,7 @@ function PlayerCursor:on_trigger_enter(other)
 end
 
 function PlayerCursor:hit(damage, from, damageType, playHitEffects, cannotProcOnHit)
+  if from and from.x ~= from.x then return end
   self:take_damage(damage)
 end
 

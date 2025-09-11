@@ -1587,7 +1587,8 @@ end
 
 function Critter:on_collision_enter(other, contact)
   local x, y = contact:getPositions()
-
+  if self.x ~= self.x then return end
+  
   if other:is(Wall) then
     self.hfx:use('hit', 0.15, 200, 10, 0.1)
     self:bounce(contact:getNormal())
