@@ -78,13 +78,13 @@ function OwnedWeaponDisplay:draw()
       text_color = blue[3]
     end
     
-    graphics.print(level_text, font, x, y + 5, 0, 0.6, 0.6, nil, nil, text_color)
+    graphics.print(level_text, pixul_font, x, y + 5, 0, 0.6, 0.6, nil, nil, text_color)
   end
   
   -- Show weapon count / max
   local count_text = #self.weapons .. '/' .. MAX_OWNED_WEAPONS .. ' weapons'
   local count_color = #self.weapons >= MAX_OWNED_WEAPONS and red[0] or fg[-3]
-  graphics.print(count_text, font, self.x, self.y + self.item_height/2 + 10, 0, 0.8, 0.8, nil, nil, count_color)
+  graphics.print(count_text, pixul_font, self.x, self.y + self.item_height/2 + 10, 0, 0.8, 0.8, nil, nil, count_color)
 end
 
 function OwnedWeaponDisplay:die()

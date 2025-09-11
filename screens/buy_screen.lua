@@ -425,7 +425,7 @@ function BuyScreen:set_party()
   Kill_All_Cards()
   Character_Cards = {}
   
-  -- Create owned weapons display instead of character cards
+  -- Create owned weapons display in center of screen
   if self.owned_weapons_display then
     self.owned_weapons_display:die()
   end
@@ -433,52 +433,10 @@ function BuyScreen:set_party()
   self.owned_weapons_display = OwnedWeaponDisplay{
     group = self.ui,
     x = gw/2,
-    y = gh/2 - 25,
+    y = gh/2,
     weapons = self.weapons,
     parent = self
   }
-
-  local number_of_cards = #self.units
-  local show_buy_card = false
-  if number_of_cards == 0 then
-    show_buy_card = true
-  elseif number_of_cards == 1 then
-    show_buy_card = true
-  elseif number_of_cards == 2 then
-    show_buy_card = true
-  end
-
-  if show_buy_card then
-    number_of_cards = number_of_cards + 1
-  end
-
-
-  --center single unit, otherwise start on the left
-
-  local x = gw/2 - CHARACTER_CARD_WIDTH - CHARACTER_CARD_SPACING - 15
-  local card_order = {[1] = 2, [2] = 3, [3] = 1}
-
-  for i, unit in ipairs(self.units) do
-    local card_index = card_order[i]
-    table.insert(Character_Cards, CharacterCard{group = self.main, x = x + (card_index-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, unit = unit, character = unit.character, i = i, parent = self})
-    unit.spawn_effect = true
-  end
-
-  local num_cards = #Character_Cards
-  local buy_card_index = num_cards + 1
-  local buy_card_order = card_order[buy_card_index]
-  local buy_card_cost = 5 * (num_cards+1)
-
-  if #Character_Cards < 3 then
-    table.insert(Character_Cards, CharacterCardBuy{group = self.main, x = x + (buy_card_order-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, i = buy_card_index, parent = self,
-      is_unlocked = true, cost = buy_card_cost})
-  end
-
-
-
-  --check how many of the same unit are in the party
-  local max_count = self:most_copies_of_unit()
-  Stats_Current_Run_Num_Same_Unit(max_count)
 end
 
 function BuyScreen:try_buy_unit(cost)
@@ -492,18 +450,8 @@ function BuyScreen:try_buy_unit(cost)
 end
 
 function BuyScreen:most_copies_of_unit()
-  local unit_counts = {}
-  for _, unit in ipairs(self.units) do
-    unit_counts[unit.character] = (unit_counts[unit.character] or 0) + 1
-  end
-  local max = 0
-  local max_unit = nil
-  for unit, count in pairs(unit_counts) do
-    if count > max then
-      max = count
-    end
-  end
-  return max
+  -- No longer tracking units, return 0
+  return 0
 end
 
 function BuyScreen:try_roll_items(is_shop_start)

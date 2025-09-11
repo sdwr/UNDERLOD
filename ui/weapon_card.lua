@@ -83,6 +83,11 @@ function WeaponCard:update(dt)
   -- Update owned count/level
   self.owned_count = self:get_owned_count()
   self.owned_level = self:get_owned_level()
+  
+  -- Handle clicking
+  if input.m1.pressed and self.selected then
+    self:on_click()
+  end
 end
 
 function WeaponCard:on_click()
@@ -92,6 +97,22 @@ function WeaponCard:on_click()
     -- Not enough gold feedback
     error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     self.spring:pull(0.2, 200, 10)
+    
+    -- Show not enough gold text
+    if not self.error_text then
+      self.error_text = InfoText{group = main.current.ui}
+      self.error_text:activate({
+        {text = '[fg]not enough gold', font = pixul_font, alignment = 'center'},
+      }, nil, nil, nil, nil, 16, 4, nil, 2)
+      self.error_text.x, self.error_text.y = self.x, self.y - 40
+      self.t:after(1.5, function() 
+        if self.error_text then
+          self.error_text:deactivate()
+          self.error_text.dead = true
+          self.error_text = nil
+        end
+      end)
+    end
   end
 end
 
