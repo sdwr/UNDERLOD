@@ -189,8 +189,8 @@ function Weapon:apply_item_procs()
     if item and item.procs then
       for _, proc in pairs(item.procs) do
         local procname = proc
-        local procObj = Create_Proc(procname, self, nil)
-        self:add_proc(procObj)
+        -- Create_Proc automatically adds the proc to the unit
+        Create_Proc(procname, nil, self)
       end
     end
   end
@@ -201,8 +201,8 @@ function Weapon:apply_item_procs()
       if passive and passive.procs then
         for _, proc in pairs(passive.procs) do
           local procname = proc
-          local procObj = Create_Proc(procname, self, nil)
-          self:add_proc(procObj)
+          -- Create_Proc automatically adds the proc to the unit
+          Create_Proc(procname, nil, self)
         end
       end
     end

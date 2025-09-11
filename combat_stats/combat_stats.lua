@@ -93,6 +93,24 @@ weapon_stats = {
     damage = 20,
     attack_range = 50,
   },
+  ['machine_gun'] = {
+    attack_cooldown = 0.2,  -- Rapid fire
+    cast_time = 0,
+    damage = 5,
+    attack_range = 80,
+  },
+  ['lightning'] = {
+    attack_cooldown = 1.0,
+    cast_time = 0.1,
+    damage = 12,
+    attack_range = 70,
+  },
+  ['cannon'] = {
+    attack_cooldown = 1.2,  -- Slow but powerful
+    cast_time = 0.15,
+    damage = 25,
+    global_range = true,
+  },
   ['default'] = {
     attack_cooldown = 1,
     cast_time = 0.1,

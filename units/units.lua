@@ -3,6 +3,9 @@ require 'units/player/player_cursor'
 require 'units/player/weapon'
 require 'units/player/archer_weapon'
 require 'units/player/frost_aoe_weapon'
+require 'units/player/machine_gun_weapon'
+require 'units/player/lightning_weapon'
+require 'units/player/cannon_weapon'
 require 'units/player/laser_troop'
 require 'units/player/swordsman_troop'
 require 'units/player/archer_troop'
@@ -89,6 +92,12 @@ function Team:add_weapon(x, y, weapon_index)
     weapon = ArcherWeapon(weapon_data)
   elseif weapon_data.character == 'frost_aoe' then
     weapon = FrostAoeWeapon(weapon_data)
+  elseif weapon_data.character == 'machine_gun' then
+    weapon = MachineGunWeapon(weapon_data)
+  elseif weapon_data.character == 'lightning' then
+    weapon = LightningWeapon(weapon_data)
+  elseif weapon_data.character == 'cannon' then
+    weapon = CannonWeapon(weapon_data)
   else
     weapon = Weapon(weapon_data)
   end
@@ -423,12 +432,25 @@ function Team:die()
   -- Save combat data to unit before dying
   self:save_combat_data_to_unit()
   
+  -- Kill weapons if they exist
+  if self.weapons then
+    for i, weapon in ipairs(self.weapons) do
+      if weapon and weapon.die then
+        weapon:die()
+      end
+    end
+  end
+  
+  -- Handle troop placeholders (they don't have die method)
   for i, troop in ipairs(self.troops) do
-    troop:die()
+    if troop and troop.die then
+      troop:die()
+    end
     if not troop.died_at then
       troop.died_at = love.timer.getTime()
     end
   end
+  
   for i, proc in ipairs(self.procs) do
     proc:die()
   end

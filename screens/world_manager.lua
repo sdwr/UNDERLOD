@@ -34,10 +34,11 @@ function WorldManager:on_enter(from)
   -- Create level list for spawn management
   self.level_list = Build_Level_List(NUMBER_OF_ROUNDS)
   
-  -- TEST: Override units with 1 archer and 1 frost_aoe for testing
+  -- TEST: Override units with test weapons
   self.units = {
-    {character = 'archer', level = 1, items = {}},
-    {character = 'frost_aoe', level = 1, items = {}}
+    {character = 'machine_gun', level = 1, items = {}},
+    {character = 'lightning', level = 1, items = {}},
+    {character = 'cannon', level = 1, items = {{procs = {'splash'}}}},  -- Cannon with splash proc
   }
 
   -- Set up the current arena if it doesn't exist
