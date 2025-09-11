@@ -54,42 +54,7 @@ function OwnedWeaponCard:update_xp_requirements()
   end
 end
 
-function OwnedWeaponCard:add_xp(amount)
-  if self.level >= WEAPON_MAX_LEVEL then return false end
-  
-  self.xp = self.xp + amount
-  
-  -- Check for level up
-  while self.xp >= self.xp_needed and self.level < WEAPON_MAX_LEVEL do
-    self.xp = self.xp - self.xp_needed
-    self:level_up()
-  end
-  
-  return true
-end
-
-function OwnedWeaponCard:level_up()
-  self.level = self.level + 1
-  self.xp = 0
-  self:update_xp_requirements()
-  
-  -- Update title text
-  if self.title_text then
-    self.title_text.dead = true
-  end
-  local level_text = 'Lv.' .. self.level .. ' '
-  local title_string = level_text .. self.weapon_def.name
-  self.title_text = Text({{text = '[yellow]' .. title_string, font = pixul_font, alignment = 'center'}}, global_text_tags)
-  
-  -- Play level up effect
-  ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-  
-  -- Update weapon data
-  if self.weapon then
-    self.weapon.level = self.level
-    self.weapon.xp = self.xp
-  end
-end
+-- Removed add_xp and level_up functions - weapon leveling is handled in BuyScreen
 
 function OwnedWeaponCard:get_xp_progress()
   if self.level >= WEAPON_MAX_LEVEL then return 0 end
@@ -125,6 +90,23 @@ function OwnedWeaponCard:update(dt)
   
   if self.shape then
     self.shape:move_to(self.x, self.y)
+  end
+  
+  -- Update values from weapon if they've changed
+  if self.weapon then
+    if self.weapon.level ~= self.level or self.weapon.xp ~= self.xp then
+      self.level = self.weapon.level
+      self.xp = self.weapon.xp or 0
+      self:update_xp_requirements()
+      
+      -- Update title text
+      if self.title_text then
+        self.title_text.dead = true
+      end
+      local level_text = 'Lv.' .. self.level .. ' '
+      local title_string = level_text .. self.weapon_def.name
+      self.title_text = Text({{text = '[yellow]' .. title_string, font = pixul_font, alignment = 'center'}}, global_text_tags)
+    end
   end
 end
 

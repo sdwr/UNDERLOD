@@ -265,19 +265,25 @@ function BuyScreen:add_weapon(weapon_name)
   end
   
   if existing_weapon then
-    -- Increment count for existing weapon
+    -- Add XP to existing weapon
     existing_weapon.xp = (existing_weapon.xp or 0) + 1
     
-    -- Check for upgrade
-    if existing_weapon.count >= WEAPON_COPIES_TO_UPGRADE then
-      if existing_weapon.level < WEAPON_MAX_LEVEL then
-        existing_weapon.level = existing_weapon.level + 1
-        existing_weapon.count = 1
-        
-        -- Play upgrade sound
-        if upgrade1 then
-          upgrade1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-        end
+    -- Check for level up
+    -- Level 1->2 needs 2 xp, Level 2->3 needs 3 xp
+    local xp_needed = 0
+    if existing_weapon.level == 1 then
+      xp_needed = 2
+    elseif existing_weapon.level == 2 then
+      xp_needed = 3
+    end
+    
+    if existing_weapon.xp >= xp_needed and existing_weapon.level < WEAPON_MAX_LEVEL then
+      existing_weapon.level = existing_weapon.level + 1
+      existing_weapon.xp = existing_weapon.xp - xp_needed
+      
+      -- Play upgrade sound
+      if upgrade1 then
+        upgrade1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
       end
     end
   else
