@@ -1,5 +1,6 @@
 PlayerCursor = Troop:extend()
 PlayerCursor.__class_name = 'PlayerCursor'
+PLAYER_CURSOR_INVULNERABILITY_TIME = 0.5
 
 function PlayerCursor:init(args)
   -- Set troop properties before calling parent init
@@ -107,7 +108,11 @@ function PlayerCursor:draw()
   graphics.circle(self.x, self.y, self.cursor_radius + 2, glow_color)
   
   -- Inner circle
-  graphics.circle(self.x, self.y, self.cursor_radius, self.color)
+  local inner_color = self.color:clone()
+  if self.invulnerable then
+    inner_color.a = 0.5
+  end
+  graphics.circle(self.x, self.y, self.cursor_radius, inner_color)
   
   -- Center dot
   graphics.circle(self.x, self.y, 1, self.color)
@@ -117,17 +122,23 @@ function PlayerCursor:draw()
   self:draw_steering_debug()
 end
 
-function PlayerCursor:hit(damage, from, damageType, playHitEffects, cannotProcOnHit)
-  -- Redirect damage to the orb
-  if self.orb and not self.orb.dead then
-    self.orb:hit(damage, from, damageType, playHitEffects)
+function PlayerCursor:on_trigger_enter(other)
+  if other:is(Enemy) then
+    self:hit(other.dmg, other, nil, true, true)
   end
 end
 
+function PlayerCursor:hit(damage, from, damageType, playHitEffects, cannotProcOnHit)
+  self:take_damage(damage)
+end
+
 function PlayerCursor:take_damage(damage)
+  if self.invulnerable then return end
   -- Redirect damage to the orb
   if self.orb and not self.orb.dead then
     self.orb:hit(damage, nil, DAMAGE_TYPE_PHYSICAL)
+    self.invulnerable = true
+    self.t:after(PLAYER_CURSOR_INVULNERABILITY_TIME, function() self.invulnerable = false end)
   end
 end
 
