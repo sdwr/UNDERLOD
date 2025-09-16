@@ -81,18 +81,15 @@ function AimProjectile_Spell:fire_projectiles()
   
   -- Fire projectiles
   for i, angle in ipairs(angles) do
-    -- Create a dummy target at the angle for the existing ArrowProjectile
-    local target_distance = 100
-    local target_x = self.x + math.cos(angle) * target_distance
-    local target_y = self.y + math.sin(angle) * target_distance
     
-    ArrowProjectile{
+    EnemyProjectile{
       group = main.current.main,
       unit = self.unit,
       team = "enemy",
+      is_troop = false,
       x = self.x,
       y = self.y,
-      target = {x = target_x, y = target_y},
+      r = angle,
       max_distance = self.max_distance,
       speed = self.speed,
       damage = self.damage,

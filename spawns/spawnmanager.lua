@@ -724,8 +724,10 @@ function SpawnManager:update(dt)
     
     -- Between subwaves delay (skip if triggered by low power or all enemies dead)
     if self.state == 'between_subwaves_delay' then
-      -- Immediately start next subwave, no delay
-      self:start_subwave()
+      self.timer = self.timer - dt
+      if self.timer <= 0 then
+        self:start_subwave()
+      end
     end
     
     -- Between waves delay
@@ -909,9 +911,9 @@ function SpawnManager:process_scheduled_spawns(dt)
       end
     end
     
-    -- Check if current power on screen is below 20% of subwave power
-    local power_threshold = self.current_subwave_power_target * 0.4
-    local should_complete = all_dead or (self.all_groups_spawned and current_power_onscreen and current_power_onscreen < power_threshold)
+    local power_threshold = 0
+    local should_complete = all_dead or (self.all_groups_spawned and current_power_onscreen and current_power_onscreen <= power_threshold)
+    should_complete = should_complete and time_since_start > 3 --wait for 3 seconds before completing
     
     if should_complete then
       -- Either all enemies dead or power is below 20%, complete subwave

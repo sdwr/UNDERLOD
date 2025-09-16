@@ -506,7 +506,7 @@ enemy_movement_types = {
   ['spawner'] = MOVEMENT_TYPE_APPROACH_ORB,
   ['firewall_caster'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
   
-  ['turret'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['turret'] = MOVEMENT_TYPE_SEEK_ORB_STALL_ATTACK,
   
   -- Bosses
   ['stompy'] = MOVEMENT_TYPE_LOOSE_SEEK,

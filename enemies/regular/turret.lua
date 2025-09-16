@@ -39,7 +39,7 @@ fns['init_enemy'] = function(self)
         projectile_count = 5,
         spread_angle = math.pi/12, -- 15 degrees spread
         delay_between = 0, -- 0 seconds between projectiles
-        duration = 0.7, -- projectile duration
+        duration = 1.2, -- projectile duration
         x = self.x,
         y = self.y,
       },

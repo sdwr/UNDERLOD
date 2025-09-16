@@ -3,7 +3,7 @@ function Mortar_Spell:init(args)
   Mortar_Spell.super.init(self, args)
 
   self.color = self.color or red[0]
-  turret_hit_wall2:play{volume = 0.9}
+  turret_hit_wall2:play{volume = 0.6}
 
   self.knockback = self.knockback or false
 
@@ -38,7 +38,7 @@ function Mortar_Spell:fire()
 
   local target = self.target
   if not target then return end
-  cannoneer1:play{pitch = random:float(0.95, 1.05), volume = 0.9}
+  cannoneer1:play{pitch = random:float(0.95, 1.05), volume = 0.2}
 
   Stomp{
     group = main.current.main,
