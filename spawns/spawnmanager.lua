@@ -612,25 +612,25 @@ function SpawnManager:init(arena)
     -- 'spawning_boss':         Spawning boss enemy
     -- 'waiting_for_clear':     Waiting for boss to die
 
-    -- Wave configuration (1 wave with 3 subwaves)
+    -- Wave configuration (1 wave with 2 subwaves)
     -- Each subwave has the power of what a full wave used to have
     self.total_round_power = ROUND_POWER_BY_LEVEL(arena.level)
-    self.wave_power_percentages = {0.3, 0.3, 0.4}  -- Distribution per subwave
+    self.wave_power_percentages = {0.4, 0.6}  -- Distribution per subwave (40% and 60%)
     self.current_wave = 1
     self.total_waves = 1
     self.current_subwave = 1
-    self.subwaves_per_wave = 3
+    self.subwaves_per_wave = 2
     
     -- Track power for current subwave
     self.current_subwave_power_target = 0
     self.current_subwave_power_spawned = 0
     self.subwave_start_time = 0
-    self.subwave_timeout = 15 -- 30 seconds max per subwave
+    self.subwave_timeout = 25 -- 30 seconds max per subwave
     
     -- Subwave group scheduling
     self.subwave_groups = {}  -- All groups for current subwave
     self.current_group_index = 1
-    self.subwave_spawn_window = 5  -- Spawn all groups within first 5 seconds of subwave
+    self.subwave_spawn_window = 10  -- Spawn all groups within first 10 seconds of subwave
     self.next_group_spawn_time = 0
     self.all_groups_spawned = false
     
@@ -810,80 +810,158 @@ function SpawnManager:generate_subwave_groups()
   self.subwave_groups = {}
   self.current_group_index = 1
   self.all_groups_spawned = false
-  
+
   local power_generated = 0
   local target_power = self.current_subwave_power_target
-  
-  -- Generate groups until we reach target power
-  while power_generated < target_power do
-    local group_data = Get_Next_Group(self.arena.level)
-    local group_power = Wave_Types:Get_Group_Power(group_data)
-    
-    -- Stop if this group would exceed target
-    if power_generated + group_power > target_power then
-      break
-    end
-    
-    -- Store the full group data
-    local group = {
-      type = group_data[2],
-      amount = group_data[3],
-      spawn_type = group_data[4],
-      power = group_power,
-      spawn_time = 0  -- Will be set when sorting
-    }
-    
-    table.insert(self.subwave_groups, group)
-    power_generated = power_generated + group_power
-  end
-  
-  -- Sort groups into categories
-  local swarmer_groups = {}
-  local special_groups = {}
-  local snake_groups = {}
-  
-  for _, group in ipairs(self.subwave_groups) do
-    if group.type == 'swarmer' then
-      table.insert(swarmer_groups, group)
-    elseif group.type == 'snake' then
-      table.insert(snake_groups, group)
-    else
-      table.insert(special_groups, group)
-    end
-  end
-  
-  -- Distribute spawn times evenly throughout the spawn window
-  local total_groups = #swarmer_groups + #special_groups + #snake_groups
-  local time_per_group = self.subwave_spawn_window / math.max(total_groups, 1)
-  local current_time = 0
 
-  for _, group in ipairs(swarmer_groups) do
-    group.spawn_time = current_time
-    current_time = current_time + time_per_group
+  -- Determine number of special enemies for this subwave
+  local num_special = self:get_special_enemies_for_subwave()
+  local tier = LEVEL_TO_TIER(self.arena.level) or 1
+
+  -- Generate special enemy groups first (not counting snakes)
+  local special_groups = {}
+  for i = 1, num_special do
+    local special_type = Get_Random_Special_Enemy(tier)
+    local group = {
+      type = special_type,
+      amount = 1,
+      spawn_type = 'nil',
+      power = enemy_to_round_power[special_type] or 100,
+      spawn_time = 0
+    }
+    table.insert(special_groups, group)
+    power_generated = power_generated + group.power
   end
-  for _, group in ipairs(special_groups) do
-    group.spawn_time = current_time
-    current_time = current_time + time_per_group
+
+  -- Calculate remaining power for swarmers and snakes
+  local remaining_power = target_power - power_generated
+  local swarmer_groups = {}
+  local snake_groups = {}
+
+  -- Generate swarmers and snakes to fill remaining power
+  while power_generated < target_power do
+    -- Alternate between swarmers and snakes with weighted chance
+    local roll = random:float(0, 1)
+    local group
+
+    if roll < 0.8 then  -- 80% chance for swarmers
+      local swarmer_amount = SWARMERS_PER_LEVEL(self.arena.level)
+      local swarmer_power = enemy_to_round_power['swarmer'] * swarmer_amount
+
+      group = {
+        type = 'swarmer',
+        amount = swarmer_amount,
+        spawn_type = random:bool(30) and 'scatter' or 'nil',
+        power = swarmer_power,
+        spawn_time = 0
+      }
+      table.insert(swarmer_groups, group)
+    else  -- 20% chance for snakes
+      local snake_amount = BOULDERS_PER_LEVEL(self.arena.level)
+      local snake_power = enemy_to_round_power['snake'] * snake_amount
+
+      group = {
+        type = 'snake',
+        amount = snake_amount,
+        spawn_type = 'nil',
+        power = snake_power,
+        spawn_time = 0
+      }
+      table.insert(snake_groups, group)
+    end
+
+    if group then
+      power_generated = power_generated + group.power
+    end
   end
-  for _, group in ipairs(snake_groups) do
-    group.spawn_time = current_time
-    current_time = current_time + time_per_group
+
+  -- Distribute spawn times:
+  -- - Swarmers and snakes: spread evenly over entire spawn window (0-10s)
+  -- - Special enemies: concentrated in 2nd and 3rd fifths (2-6s)
+
+  local swarmer_snake_total = #swarmer_groups + #snake_groups
+  if swarmer_snake_total > 0 then
+    local time_per_swarmer_snake = self.subwave_spawn_window / swarmer_snake_total
+    local current_time = 0
+
+    -- Interleave swarmers and snakes throughout the window
+    local all_swarmer_snake = {}
+    for _, group in ipairs(swarmer_groups) do table.insert(all_swarmer_snake, group) end
+    for _, group in ipairs(snake_groups) do table.insert(all_swarmer_snake, group) end
+
+    -- Shuffle them to mix swarmers and snakes
+    for i = #all_swarmer_snake, 2, -1 do
+      local j = random:int(1, i)
+      all_swarmer_snake[i], all_swarmer_snake[j] = all_swarmer_snake[j], all_swarmer_snake[i]
+    end
+
+    for _, group in ipairs(all_swarmer_snake) do
+      group.spawn_time = current_time
+      current_time = current_time + time_per_swarmer_snake
+    end
   end
-  
-  -- Recombine and sort by spawn time
+
+  -- Special enemies in 2nd and 3rd fifths (2-6 seconds)
+  if #special_groups > 0 then
+    local special_start = self.subwave_spawn_window * 0.2  -- Start at 2s (2/10)
+    local special_end = self.subwave_spawn_window * 0.6    -- End at 6s (6/10)
+    local special_window = special_end - special_start
+    local time_per_special = special_window / #special_groups
+
+    for i, group in ipairs(special_groups) do
+      group.spawn_time = special_start + (i - 1) * time_per_special
+    end
+  end
+
+  -- Combine all groups
   self.subwave_groups = {}
   for _, group in ipairs(swarmer_groups) do table.insert(self.subwave_groups, group) end
   for _, group in ipairs(special_groups) do table.insert(self.subwave_groups, group) end
   for _, group in ipairs(snake_groups) do table.insert(self.subwave_groups, group) end
-  
+
+  -- Sort by spawn time
   table.sort(self.subwave_groups, function(a, b) return a.spawn_time < b.spawn_time end)
-  
+
   -- Set next spawn time
   if #self.subwave_groups > 0 then
     self.next_group_spawn_time = self.subwave_groups[1].spawn_time
   else
     self.all_groups_spawned = true
   end
+end
+
+-- Helper function to determine number of special enemies for current subwave
+function SpawnManager:get_special_enemies_for_subwave()
+  local level = self.arena.level
+  local subwave = self.current_subwave
+
+  -- Define special enemy counts per level and subwave
+  -- Format: [level] = {subwave1_count, subwave2_count}
+  local special_counts = {
+    [1] = {0, 0},      -- Level 1: no specials
+    [2] = {1, 1},      -- Level 2: no specials
+    [3] = {1, 2},      -- Level 3: 1 per subwave
+    [4] = {1, 2},      -- Level 4: 1 per subwave
+    [5] = {1, 3},      -- Level 5: 1 in first, 2 in second
+    -- Boss levels don't spawn regular enemies
+  }
+
+  -- For levels after boss, use a formula
+  if level > 5 and not Is_Boss_Level(level) then
+    local adjusted_level = LEVELS_AFTER_BOSS_LEVEL(level)
+    if subwave == 1 then
+      return 2  -- 2 specials in first subwave
+    else
+      return 3  -- 3 specials in second subwave
+    end
+  end
+
+  local counts = special_counts[level]
+  if counts then
+    return counts[subwave] or 0
+  end
+
+  return 0
 end
 
 -- Process scheduled spawns during subwave
@@ -1371,11 +1449,11 @@ function SpawnManager:spawn_waves_with_timing()
     self:spawn_boss_immediately()
     self:change_state('waiting_for_clear')
   else
-    -- Start the 1-wave system with 3 subwaves
+    -- Start the 1-wave system with 2 subwaves
     self.current_wave = 1
     self.total_waves = 1
     self.current_subwave = 1
-    self.subwaves_per_wave = 3
+    self.subwaves_per_wave = 2
     self:change_state('entry_delay')
     self.timer = TIME_BETWEEN_WAVES
   end

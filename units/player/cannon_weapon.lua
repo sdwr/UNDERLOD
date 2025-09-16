@@ -37,7 +37,7 @@ function CannonWeapon:setup_cast(cast_target)
       self:stretch_on_attack()
       -- Cannon fire sound
       if explosion1 then
-        explosion1:play{pitch = random:float(0.7, 0.9), volume = 0.3}
+        explosion1:play{pitch = random:float(0.7, 0.9), volume = 0.15}
       end
     end,
     unit = self,
