@@ -739,7 +739,7 @@ end
 -- ===================================================================
 function Helper.Unit:process_perk_name(stat, unit)
     -- Determine which stats to process based on unit type
-    if unit:is(Troop) then
+    if unit:is(Troop) or unit:is(Weapon) then
         -- Troops process stats without any prefix
         if not (string.sub(stat, 1, 6) == "enemy_" or 
                string.sub(stat, 1, 8) == "critter_" or 

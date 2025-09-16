@@ -612,14 +612,14 @@ function SpawnManager:init(arena)
     -- 'spawning_boss':         Spawning boss enemy
     -- 'waiting_for_clear':     Waiting for boss to die
 
-    -- Wave configuration (2 waves with 2 subwaves each)
+    -- Wave configuration (1 wave with 3 subwaves)
     -- Each subwave has the power of what a full wave used to have
     self.total_round_power = ROUND_POWER_BY_LEVEL(arena.level)
     self.wave_power_percentages = {0.3, 0.3, 0.4}  -- Distribution per subwave
     self.current_wave = 1
-    self.total_waves = 2
+    self.total_waves = 1
     self.current_subwave = 1
-    self.subwaves_per_wave = 2
+    self.subwaves_per_wave = 3
     
     -- Track power for current subwave
     self.current_subwave_power_target = 0
@@ -722,27 +722,10 @@ function SpawnManager:update(dt)
       self:change_state('spawning_subwave')
     end
     
-    -- Between subwaves delay
+    -- Between subwaves delay (skip if triggered by low power or all enemies dead)
     if self.state == 'between_subwaves_delay' then
-      local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
-      local all_dead = true
-      
-      for _, e in ipairs(enemies) do
-        if e and not e.dead then
-          all_dead = false
-          break
-        end
-      end
-      
-      -- Start immediately if all enemies are dead, otherwise wait
-      if all_dead then
-        self:start_subwave()
-      else
-        self.timer = self.timer - dt
-        if self.timer <= 0 then
-          self:start_subwave()
-        end
-      end
+      -- Immediately start next subwave, no delay
+      self:start_subwave()
     end
     
     -- Between waves delay
@@ -867,15 +850,22 @@ function SpawnManager:generate_subwave_groups()
     end
   end
   
-  -- Assign random spawn times within the spawn window
+  -- Distribute spawn times evenly throughout the spawn window
+  local total_groups = #swarmer_groups + #special_groups + #snake_groups
+  local time_per_group = self.subwave_spawn_window / math.max(total_groups, 1)
+  local current_time = 0
+
   for _, group in ipairs(swarmer_groups) do
-    group.spawn_time = random:float(0, self.subwave_spawn_window)
+    group.spawn_time = current_time
+    current_time = current_time + time_per_group
   end
   for _, group in ipairs(special_groups) do
-    group.spawn_time = random:float(0, self.subwave_spawn_window)
+    group.spawn_time = current_time
+    current_time = current_time + time_per_group
   end
   for _, group in ipairs(snake_groups) do
-    group.spawn_time = random:float(0, self.subwave_spawn_window)
+    group.spawn_time = current_time
+    current_time = current_time + time_per_group
   end
   
   -- Recombine and sort by spawn time
@@ -920,7 +910,7 @@ function SpawnManager:process_scheduled_spawns(dt)
     end
     
     -- Check if current power on screen is below 20% of subwave power
-    local power_threshold = self.current_subwave_power_target * 0.2
+    local power_threshold = self.current_subwave_power_target * 0.4
     local should_complete = all_dead or (self.all_groups_spawned and current_power_onscreen and current_power_onscreen < power_threshold)
     
     if should_complete then
@@ -1379,11 +1369,11 @@ function SpawnManager:spawn_waves_with_timing()
     self:spawn_boss_immediately()
     self:change_state('waiting_for_clear')
   else
-    -- Start the 2-wave system with 2 subwaves each
+    -- Start the 1-wave system with 3 subwaves
     self.current_wave = 1
-    self.total_waves = 2
+    self.total_waves = 1
     self.current_subwave = 1
-    self.subwaves_per_wave = 2
+    self.subwaves_per_wave = 3
     self:change_state('entry_delay')
     self.timer = TIME_BETWEEN_WAVES
   end
