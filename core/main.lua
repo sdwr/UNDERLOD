@@ -1365,7 +1365,7 @@ function init()
       -- 'spiral',
       -- 'tank',
       -- 'snakearrow',
-      'turret',
+      'crossfire',
       -- 'mortar',
       -- 'singlemortar',
       -- 'cleaver',

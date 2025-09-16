@@ -303,7 +303,8 @@ function Enemy:choose_movement_target()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB 
   or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL 
   or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_SPIRAL 
-  or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_ATTACK then
+  or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_ATTACK
+  or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL_ATTACK then
     return self:acquire_target_seek_orb()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK then
     return self:acquire_target_seek()
@@ -336,7 +337,8 @@ function Enemy:update_movement()
     return self:update_move_seek_stall()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_SPIRAL then
     return self:update_move_seek_spiral()
-  elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_ATTACK then
+  elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_ATTACK or
+  self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL_ATTACK then
     return self:update_move_seek_stall()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK then
     return self:update_move_seek()
@@ -795,7 +797,7 @@ function Enemy:die()
 
   self.super.die(self)
   self.dead = true
-  _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.1}
+  -- _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.05}
   
   -- Drop gold when enemy dies
   -- if main.current and main.current.gold_counter then

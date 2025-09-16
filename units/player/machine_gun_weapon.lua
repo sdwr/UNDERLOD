@@ -2,7 +2,7 @@ MachineGunWeapon = Weapon:extend()
 
 function MachineGunWeapon:init(data)
   self.weapon_name = 'machine_gun'
-  self.base_attack_range = 80
+  self.base_attack_range = TROOP_RANGE
   MachineGunWeapon.super.init(self, data)
   
   self.backswing = data.backswing or 0.05

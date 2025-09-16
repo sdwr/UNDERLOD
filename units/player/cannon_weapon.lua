@@ -2,7 +2,7 @@ CannonWeapon = Weapon:extend()
 
 function CannonWeapon:init(data)
   self.weapon_name = 'cannon'
-  self.base_attack_range = 60
+  self.base_attack_range = TROOP_RANGE
   CannonWeapon.super.init(self, data)
   
   self.backswing = data.backswing or 0.2

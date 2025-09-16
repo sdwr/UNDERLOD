@@ -20,7 +20,7 @@ function Get_Next_Group(level)
   if level == 1 then
     chances = {100, 0, 0, 0}
   else
-    chances = {20, 5, 10, 20}
+    chances = {20, 0, 10, 10}
   end
   -- chances[_last_group_type] = chances[_last_group_type] / 2
 

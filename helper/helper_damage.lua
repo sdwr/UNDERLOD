@@ -523,7 +523,7 @@ function Helper.Damage:apply_death_effects(unit, from)
       slow(0.25, 1)
       magic_die1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     else
-      _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.5}
+      _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.2}
     end
   end
 end

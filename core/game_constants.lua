@@ -364,6 +364,7 @@ MOVEMENT_TYPE_SEEK_ORB = 'seek_orb'
 MOVEMENT_TYPE_SEEK_ORB_STALL = 'seek_orb_stall'
 MOVEMENT_TYPE_SEEK_ORB_SPIRAL = 'seek_orb_spiral'
 MOVEMENT_TYPE_SEEK_ORB_ATTACK = 'seek_orb_attack'
+MOVEMENT_TYPE_SEEK_ORB_STALL_ATTACK = 'seek_orb_stall_attack'
 MOVEMENT_TYPE_APPROACH_ORB = 'approach_orb'
 MOVEMENT_TYPE_APPROACH_ORB_ATTACK = 'approach_orb_attack'
 MOVEMENT_TYPE_APPROACH_ORB_RANDOM = 'approach_orb_random'
@@ -388,6 +389,11 @@ MOVEMENT_TYPE_DATA = {
     can_attack = false,
     action_timer = nil,
     after = MOVEMENT_TYPE_SEEK_ORB_STALL
+  },
+  [MOVEMENT_TYPE_SEEK_ORB_STALL_ATTACK] = {
+    can_attack = true,
+    action_timer = 1.5,
+    after = MOVEMENT_TYPE_SEEK_ORB_STALL_ATTACK
   },
   [MOVEMENT_TYPE_SEEK_ORB_SPIRAL] = {
     can_attack = false,
@@ -485,8 +491,8 @@ enemy_movement_types = {
   ['singlemortar'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
   ['line_mortar'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
 
-  ['crossfire'] = MOVEMENT_TYPE_APPROACH_ORB_ATTACK,
-  ['spiral'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['crossfire'] = MOVEMENT_TYPE_SEEK_ORB_STALL_ATTACK,
+  ['spiral'] = MOVEMENT_TYPE_SEEK_ORB_STALL_ATTACK,
 
   ['burst'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
   ['snakearrow'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
