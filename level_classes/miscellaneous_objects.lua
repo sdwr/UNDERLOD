@@ -650,7 +650,7 @@ function Stomp:init(args)
       self.y = self.target.y + math.random(-self.target_offset or 0, self.target_offset or 0)
     end
 
-    self.sound_volume = self.sound_volume or 0.5
+    self.sound_volume = self.sound_volume or 0.25
     orb1:play({volume = self.sound_volume})
 
     -- Main effect colors
@@ -835,7 +835,7 @@ function Mortar:update(dt)
 end
 
 function Mortar:fire()
-  cannoneer1:play{pitch = random:float(0.95, 1.05), volume = 0.9}
+  cannoneer1:play{pitch = random:float(0.95, 1.05), volume = 0.25}
   Stomp{group = main.current.main, unit = self.unit, team = self.team, x = self.target.x + math.random(-10, 10), y = self.target.y + math.random(-10, 10), rs = self.rs, color = self.color, damage = self.damage, level = self.level, parent = self}
 end
 

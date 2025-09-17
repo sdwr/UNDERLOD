@@ -625,12 +625,12 @@ function SpawnManager:init(arena)
     self.current_subwave_power_target = 0
     self.current_subwave_power_spawned = 0
     self.subwave_start_time = 0
-    self.subwave_timeout = 25 -- 30 seconds max per subwave
     
     -- Subwave group scheduling
     self.subwave_groups = {}  -- All groups for current subwave
     self.current_group_index = 1
     self.subwave_spawn_window = 10  -- Spawn all groups within first 10 seconds of subwave
+    self.subwave_timeout = self.subwave_spawn_window + 25 -- 30 seconds max per subwave
     self.next_group_spawn_time = 0
     self.all_groups_spawned = false
     
@@ -948,7 +948,6 @@ function SpawnManager:get_special_enemies_for_subwave()
 
   -- For levels after boss, use a formula
   if level > 5 and not Is_Boss_Level(level) then
-    local adjusted_level = LEVELS_AFTER_BOSS_LEVEL(level)
     if subwave == 1 then
       return 2  -- 2 specials in first subwave
     else
@@ -1100,7 +1099,7 @@ function SpawnManager:spawn_group_instantly(group_data)
     
     for i = 1, amount do
       local offset = SpawnGlobals.spawn_offsets[(i % #SpawnGlobals.spawn_offsets) + 1]
-      local location = {x = wave_spawn_location.x + offset.x, y = wave_spawn_location.y + offset.y}
+      local location = {x = wave_spawn_location.x + offset.x + random:float(-1, 1), y = wave_spawn_location.y + offset.y + random:float(-1, 1)}
       Spawn_Enemy(self.arena, type, location, target_location)
     end
   end

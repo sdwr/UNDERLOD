@@ -149,6 +149,7 @@ end
 function LevelOrb:on_trigger_enter(other)
   if not other:is(Enemy) then return end
   if other.class == 'boss' then return end
+  if other.x ~= other.x then return end
   -- if not other.can_damage_orb then return end
 
   local enemy_round_power = enemy_to_round_power[other.type] or 100
