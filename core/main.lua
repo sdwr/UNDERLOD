@@ -1614,7 +1614,9 @@ function update(dt)
 
   if input['f6'].pressed then
     DEBUG_STEERING_VECTORS = not DEBUG_STEERING_VECTORS
+    DEBUG_ENEMY_SEEK_TO_RANGE = DEBUG_STEERING_VECTORS  -- Toggle seek-to-range visualization with steering vectors
     print('DEBUG_STEERING_VECTORS:', DEBUG_STEERING_VECTORS)
+    print('DEBUG_ENEMY_SEEK_TO_RANGE:', DEBUG_ENEMY_SEEK_TO_RANGE)
     print('DEBUG_STEERING_ENEMY_TYPE:', DEBUG_STEERING_ENEMY_TYPE)
   end
   

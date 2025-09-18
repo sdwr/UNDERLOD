@@ -12,6 +12,7 @@ fns['init_enemy'] = function(self)
   self.icon = 'sorcerer'
 
   self.baseIdleTimer = 0
+  self.baseActionTimer = 2  -- Attack every 2 seconds instead of every 1 second
 
   self.rotation_speed = 0.25  -- Radians per second
   self:set_fixed_rotation(true)  -- Prevent physics-based rotation from collisions
@@ -121,7 +122,8 @@ function CrossfireAttack:init(args)
       movement_type = 'straight',
       duration = 10,  -- Long duration so it goes off screen
       color = self.color,
-      explosion_radius = 15,
+      radius = 5,  -- Smaller projectile (default is 8)
+      explosion_radius = 10,  -- Smaller explosion (was 15)
       damage = self.damage,
     }
     table.insert(self.projectiles, projectile)
