@@ -1252,11 +1252,6 @@ function Spawn_Enemy(arena, type, location, target_location)
       special_swarmer_type = SPECIAL_SWARMER_TYPES[random:weighted_pick(unpack(SPECIAL_SWARMER_WEIGHT_BY_TYPE[arena.level]))]
     end
   end
-
-  if special_swarmer_type == 'orbkiller' then
-    metal_click:play{pitch = random:float(0.8, 1.2), volume = 1}
-  end
-
   
   local enemy = Enemy{type = type, group = arena.main,
                       x = location.x, y = location.y,
@@ -1364,7 +1359,7 @@ function Spawn_Enemy_Sound(arena, isBoss)
   if isBoss then
     alert1:play{pitch = random:float(0.8, 1.2), volume = 1}
   else
-    alert1:play{pitch = random:float(0.8, 1.2), volume = 1}
+    -- alert1:play{pitch = random:float(0.8, 1.2), volume = 1}
   end
 end
 

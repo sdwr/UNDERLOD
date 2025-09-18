@@ -13,7 +13,7 @@ fns['init_enemy'] = function(self)
 
   self.baseIdleTimer = 0
 
-  self.rotation_speed = 0.25  -- Radians per second
+  self.rotation_speed = 0.4  -- Radians per second
   self:set_fixed_rotation(true)  -- Prevent physics-based rotation from collisions
 
   --set attacks
@@ -129,7 +129,7 @@ function CrossfireAttack:init(args)
   end
   
   -- Play sound effect
-  shoot1:play{pitch = random:float(0.8, 1.2), volume = 0.3}
+  shoot2:play{pitch = random:float(0.95, 1.05), volume = 1}
   
   -- Die immediately after creating projectiles
   self:die()

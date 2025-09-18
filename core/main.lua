@@ -189,6 +189,7 @@ function init()
   chargeup = Sound('chargeup.wav', s)
   chargeuprising = Sound('chargeuprising.wav', s)
   title_music = Sound('Debussy - Reverie.mp3', { tags = { music } })
+  shoot2 = Sound('shoot2.wav', s)
 
 
 
