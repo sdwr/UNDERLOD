@@ -101,25 +101,25 @@ fns['update_touch_color'] = function(self, dt)
   if self.is_fading then
     self.fade_progress = self.fade_progress + dt / self.fade_duration
 
+    -- Interpolate between colors - FIXED ORDER
+    local t = math.min(self.fade_progress, 1)
+    if self.is_green then
+      -- Currently green, fading TO red
+      self.color.r = math.lerp(t, self.green_color.r, self.red_color.r)
+      self.color.g = math.lerp(t, self.green_color.g, self.red_color.g)
+      self.color.b = math.lerp(t, self.green_color.b, self.red_color.b)
+    else
+      -- Currently red, fading TO green
+      self.color.r = math.lerp(t, self.red_color.r, self.green_color.r)
+      self.color.g = math.lerp(t, self.red_color.g, self.green_color.g)
+      self.color.b = math.lerp(t, self.red_color.b, self.green_color.b)
+    end
+
     if self.fade_progress >= 1 then
       -- Fade complete, switch states
       self.fade_progress = 1
       self.is_fading = false
       self.is_green = not self.is_green
-    end
-
-    -- Interpolate between colors
-    local t = self.fade_progress
-    if self.is_green then
-      -- Fading from red to green
-      self.color.r = math.lerp(self.red_color.r, self.green_color.r, t)
-      self.color.g = math.lerp(self.red_color.g, self.green_color.g, t)
-      self.color.b = math.lerp(self.red_color.b, self.green_color.b, t)
-    else
-      -- Fading from green to red
-      self.color.r = math.lerp(self.green_color.r, self.red_color.r, t)
-      self.color.g = math.lerp(self.green_color.g, self.red_color.g, t)
-      self.color.b = math.lerp(self.green_color.b, self.red_color.b, t)
     end
   end
 end
