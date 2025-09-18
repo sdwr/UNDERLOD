@@ -15,8 +15,6 @@ fns['init_enemy'] = function(self)
   --set stats and cooldowns
   -- Attack speed now handled by base class
 
-  self.baseActionTimer = 1.25
-
   self.move_option_weight = 0
 
 

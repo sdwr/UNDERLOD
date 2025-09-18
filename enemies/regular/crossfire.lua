@@ -12,7 +12,6 @@ fns['init_enemy'] = function(self)
   self.icon = 'sorcerer'
 
   self.baseIdleTimer = 0
-  self.baseActionTimer = 2  -- Attack every 2 seconds instead of every 1 second
 
   self.rotation_speed = 0.25  -- Radians per second
   self:set_fixed_rotation(true)  -- Prevent physics-based rotation from collisions

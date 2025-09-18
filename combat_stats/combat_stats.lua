@@ -25,7 +25,7 @@ attack_cooldowns = {
   ['fast'] = 0.8,
   ['medium'] = 1.5,
   ['medium-slow'] = 2,
-  ['slow'] = 2.5,
+  ['slow'] = 3.5,
   ['very-slow'] = 4.0
 }
 
@@ -48,7 +48,7 @@ enemy_attack_cooldowns = {
   ['charger'] = attack_cooldowns['slow'],
   ['summoner'] = attack_cooldowns['slow'],
   ['seeker'] = attack_cooldowns['very-slow'],
-  ['crossfire'] = attack_cooldowns['medium-slow'],
+  ['crossfire'] = attack_cooldowns['slow'],
   
   -- Bosses  
   ['stompy'] = attack_cooldowns['fast'],
@@ -149,7 +149,7 @@ REGULAR_ENEMY_MS = 8
 
 SPECIAL_ENEMY_HP = 60
 SPECIAL_ENEMY_DAMAGE = 20
-SPECIAL_ENEMY_MS = 10
+SPECIAL_ENEMY_MS = 25
 
 MINIBOSS_HP = 400
 MINIBOSS_DAMAGE = 20
@@ -292,6 +292,7 @@ SPECIAL_SWARMER_TYPES = {
   'orbkiller',
   'exploder',
   'poison',
+  'seeker',
 }
 
 SPECIAL_SWARMER_DATA = {
@@ -312,6 +313,10 @@ SPECIAL_SWARMER_DATA = {
     duration = 8,
     tick_rate = 1,
     damage_multi = 1,
+  },
+  ['seeker'] = {
+    speed_multiplier = 1,
+    damage_multiplier = 1,
   },
 }
 
@@ -588,6 +593,8 @@ unit_stat_multipliers = {
 
 enemy_type_to_stats = {
     ['swarmer'] = {},
+
+    ['snake'] = { mvspd = 0.3},
 
     ['seeker'] = { dmg = 1, mvspd = 1 },
     ['chaser'] = { dmg = 1, mvspd = 1 },

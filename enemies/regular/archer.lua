@@ -15,8 +15,6 @@ fns['init_enemy'] = function(self)
   --set stats and cooldowns - fast attack speed for short action timer
   -- Attack speed and cast time now handled by base class
 
-  self.baseActionTimer = 2  -- Short action timer
-
   self.move_option_weight = 0
 
   -- Set attack range and sensor
