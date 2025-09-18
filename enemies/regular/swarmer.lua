@@ -22,9 +22,25 @@ fns['init_enemy'] = function(self)
   elseif self.special_swarmer_type == 'poison' then
     self.color = purple[0]:clone()
   elseif self.special_swarmer_type == 'touch' then
+    self.color = green[0]:clone()
+
+    -- Touch-specific properties - always green (helpful)
+    self.is_green = true  -- Always in green (touchable) state
+
+    -- Make invulnerable to normal damage
+    self.invulnerable = true
+    self.can_be_touched = true
+
+    -- Add callback for when damage is rejected due to invulnerability
+    self.rejectDamageCallback = function()
+      if tink then
+        tink:play{pitch = random:float(1.2, 1.4), volume = 0.3}
+      end
+    end
+  elseif self.special_swarmer_type == 'touch_fade' then
     self.color = green[0]:clone()  -- Start with green
 
-    -- Touch-specific properties
+    -- Touch fade-specific properties
     self.is_green = true  -- Start in green (touchable) state
     self.color_switch_timer = 0
     self.color_switch_interval = 2.5  -- Switch colors every 2.5 seconds
@@ -65,7 +81,7 @@ fns['init_enemy'] = function(self)
 end
 
 fns['update_enemy'] = function(self, dt)
-  if self.special_swarmer_type == 'touch' then
+  if self.special_swarmer_type == 'touch_fade' then
     self:update_touch_color(dt)
   end
 end
@@ -116,13 +132,13 @@ fns['draw_enemy'] = function(self)
     self:draw_fallback_animation()
   end
 
-  -- Add visual feedback for touch enemy
-  if self.special_swarmer_type == 'touch' then
+  -- Add visual feedback for touch enemies
+  if self.special_swarmer_type == 'touch' or self.special_swarmer_type == 'touch_fade' then
     if self.is_green and not self.is_fading then
       -- Add a pulsing effect when in green (touchable) state
       local pulse = math.sin(love.timer.getTime() * 4) * 0.1 + 0.9
       graphics.push(self.x, self.y, 0, pulse, pulse)
-      local outline_color = self.green_color:clone()
+      local outline_color = green[0]:clone()
       outline_color.a = 0.3
       graphics.circle(self.x, self.y, self.shape.h, outline_color, 2)
       graphics.pop()
