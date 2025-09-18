@@ -474,7 +474,7 @@ end
 enemy_movement_types = {
 
   ['default'] = MOVEMENT_TYPE_CROSS_SCREEN,
-  -- Aggressive seekers - chase players directly
+  
   ['swarmer'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
   ['boulder'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
   ['snake'] = MOVEMENT_TYPE_SEEK_ORB_STALL,

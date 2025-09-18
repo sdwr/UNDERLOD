@@ -939,10 +939,10 @@ function SpawnManager:get_special_enemies_for_subwave()
   -- Format: [level] = {subwave1_count, subwave2_count}
   local special_counts = {
     [1] = {0, 0},      -- Level 1: no specials
-    [2] = {1, 1},      -- Level 2: no specials
-    [3] = {1, 2},      -- Level 3: 1 per subwave
-    [4] = {1, 2},      -- Level 4: 1 per subwave
-    [5] = {1, 3},      -- Level 5: 1 in first, 2 in second
+    [2] = {1, 2},      -- Level 2: no specials
+    [3] = {2, 4},      -- Level 3: 1 per subwave
+    [4] = {3, 4},      -- Level 4: 1 per subwave
+    [5] = {4, 5},      -- Level 5: 1 in first, 2 in second
     -- Boss levels don't spawn regular enemies
   }
 

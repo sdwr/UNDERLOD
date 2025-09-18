@@ -1955,6 +1955,7 @@ end
 
 function Unit:put_attack_on_cooldown()
   local attack_cooldown = self.attack_cooldown or 1
+  attack_cooldown = attack_cooldown * random:float(0.9, 1.1)
   self.attack_cooldown_timer = attack_cooldown
   self.my_last_attack_time = Helper.Time.time
 end
