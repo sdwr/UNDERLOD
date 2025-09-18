@@ -293,6 +293,7 @@ SPECIAL_SWARMER_TYPES = {
   'exploder',
   'poison',
   'seeker',
+  'touch',
 }
 
 SPECIAL_SWARMER_DATA = {
@@ -318,30 +319,35 @@ SPECIAL_SWARMER_DATA = {
     speed_multiplier = 1,
     damage_multiplier = 1,
   },
+  ['touch'] = {
+    -- Touch swarmer doesn't need special data since most of its behavior is in the swarmer file
+    speed_multiplier = 1,
+    damage_multiplier = 1,
+  },
 }
 
 
 SPECIAL_SWARMER_WEIGHT_BY_TYPE = {
-  [1] = {0},
-  [2] = {0},
-  [3] = {0, 0, 5},
-  [4] = {0, 0, 5},
-  [5] = {0, 0, 5},
-  [6] = {0, 0, 5},
-  [7] = {0, 0, 5},
-  [8] = {0, 0, 5},
-  [9] = {0, 0, 5},
-  [10] = {0, 0, 5},
-  [11] = {0},
-  [12] = {0},
-  [13] = {0},
-  [14] = {0},
-  [15] = {0},
-  [16] = {0},
-  [17] = {0},
-  [18] = {0},
-  [19] = {0},
-  [20] = {0},
+  [1] = {0, 0, 0, 0, 0},
+  [2] = {0, 0, 0, 0, 0},
+  [3] = {0, 0, 5, 0, 8},  -- Added 8% touch chance starting level 3
+  [4] = {0, 0, 5, 0, 8},
+  [5] = {0, 0, 5, 0, 8},
+  [6] = {0, 0, 5, 0, 8},
+  [7] = {0, 0, 5, 0, 8},
+  [8] = {0, 0, 5, 0, 8},
+  [9] = {0, 0, 5, 0, 8},
+  [10] = {0, 0, 5, 0, 8},
+  [11] = {0, 0, 0, 0, 8},  -- Keep touch spawning after boss levels
+  [12] = {0, 0, 0, 0, 8},
+  [13] = {0, 0, 0, 0, 8},
+  [14] = {0, 0, 0, 0, 8},
+  [15] = {0, 0, 0, 0, 8},
+  [16] = {0, 0, 0, 0, 8},
+  [17] = {0, 0, 0, 0, 8},
+  [18] = {0, 0, 0, 0, 8},
+  [19] = {0, 0, 0, 0, 8},
+  [20] = {0, 0, 0, 0, 8},
   [21] = {0},
   [22] = {0},
   [23] = {0},

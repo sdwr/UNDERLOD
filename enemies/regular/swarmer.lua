@@ -21,6 +21,31 @@ fns['init_enemy'] = function(self)
     self.color = orange[0]:clone()
   elseif self.special_swarmer_type == 'poison' then
     self.color = purple[0]:clone()
+  elseif self.special_swarmer_type == 'touch' then
+    self.color = green[0]:clone()  -- Start with green
+
+    -- Touch-specific properties
+    self.is_green = true  -- Start in green (touchable) state
+    self.color_switch_timer = 0
+    self.color_switch_interval = 2.5  -- Switch colors every 2.5 seconds
+    self.fade_progress = 0  -- For smooth color transitions
+    self.fade_duration = 0.5  -- Take 0.5 seconds to fade between colors
+    self.is_fading = false
+
+    -- Make invulnerable to normal damage
+    self.invulnerable = true
+    self.can_be_touched = true
+
+    -- Colors for switching
+    self.green_color = green[0]:clone()
+    self.red_color = red[0]:clone()
+
+    -- Add callback for when damage is rejected due to invulnerability
+    self.rejectDamageCallback = function()
+      if tink then
+        tink:play{pitch = random:float(1.2, 1.4), volume = 0.3}
+      end
+    end
   else
     self.color = grey[0]:clone()
   end
@@ -39,12 +64,69 @@ fns['init_enemy'] = function(self)
   self.attack_options = {}
 end
 
+fns['update_enemy'] = function(self, dt)
+  if self.special_swarmer_type == 'touch' then
+    self:update_touch_color(dt)
+  end
+end
+
+fns['update_touch_color'] = function(self, dt)
+  -- Update color switching timer
+  self.color_switch_timer = self.color_switch_timer + dt
+
+  if self.color_switch_timer >= self.color_switch_interval then
+    -- Start fading to the opposite color
+    self.is_fading = true
+    self.fade_progress = 0
+    self.color_switch_timer = 0
+  end
+
+  -- Handle color fading
+  if self.is_fading then
+    self.fade_progress = self.fade_progress + dt / self.fade_duration
+
+    if self.fade_progress >= 1 then
+      -- Fade complete, switch states
+      self.fade_progress = 1
+      self.is_fading = false
+      self.is_green = not self.is_green
+    end
+
+    -- Interpolate between colors
+    local t = self.fade_progress
+    if self.is_green then
+      -- Fading from red to green
+      self.color.r = math.lerp(self.red_color.r, self.green_color.r, t)
+      self.color.g = math.lerp(self.red_color.g, self.green_color.g, t)
+      self.color.b = math.lerp(self.red_color.b, self.green_color.b, t)
+    else
+      -- Fading from green to red
+      self.color.r = math.lerp(self.green_color.r, self.red_color.r, t)
+      self.color.g = math.lerp(self.green_color.g, self.red_color.g, t)
+      self.color.b = math.lerp(self.green_color.b, self.red_color.b, t)
+    end
+  end
+end
+
 fns['draw_enemy'] = function(self)
 
   local animation_success = self:draw_animation()
 
   if not animation_success then
     self:draw_fallback_animation()
+  end
+
+  -- Add visual feedback for touch enemy
+  if self.special_swarmer_type == 'touch' then
+    if self.is_green and not self.is_fading then
+      -- Add a pulsing effect when in green (touchable) state
+      local pulse = math.sin(love.timer.getTime() * 4) * 0.1 + 0.9
+      graphics.push(self.x, self.y, 0, pulse, pulse)
+      local outline_color = self.green_color:clone()
+      outline_color.a = 0.3
+      graphics.circle(self.x, self.y, self.shape.h, outline_color, 2)
+      graphics.pop()
+    end
   end
 
 end
@@ -114,6 +196,38 @@ fns['poison'] = function(self)
   }
 end
 
+fns['touch_collision'] = function(self, other)
+  if self.is_green then
+    -- Green state - explode and damage nearby enemies
+    self:touch_explosion()
+    self:die()
+    return true  -- Prevent normal collision damage
+  end
+  return false
+end
+
+fns['touch_explosion'] = function(self)
+
+  -- Use Area_Spell for the explosion
+  Area_Spell{
+    group = main.current.effects,
+    unit = self,
+    is_troop = true,
+    x = self.x,
+    y = self.y,
+    damage = function() return self.dmg * 1.5 end,  -- Good damage for the risk/reward
+    radius = 45,
+    duration = 0.2,
+    pick_shape = 'circle',
+    color = green[0],  -- Don't modify alpha, let Area_Spell handle it
+    opacity = 0.08,  -- Very transparent fill (default Area_Spell opacity)
+    line_width = 2,  -- Slightly thicker outline
+  }
+
+  -- Play explosion sound
+    gold1:play{pitch = random:float(1.1, 1.3), volume = 0.8}
+end
+
 fns['on_death'] = function(self)
   if self.special_swarmer_type == 'exploder' then
     self:explode()
@@ -124,6 +238,8 @@ fns['on_death'] = function(self)
     if self.targeting_line then
       self.targeting_line.dead = true
     end
+  elseif self.special_swarmer_type == 'touch' then
+    -- Touch enemies don't explode on death, only on green touch
   end
 end
 

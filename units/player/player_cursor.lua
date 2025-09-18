@@ -123,6 +123,13 @@ function PlayerCursor:draw()
 end
 
 function PlayerCursor:on_trigger_enter(other)
+  if other.special_swarmer_type == 'touch' then
+    local success = other:touch_collision()
+    if success then
+      return
+    end
+  end
+
   if other:is(Enemy) then
     self:hit(other.dmg, other, nil, true, true)
   end
