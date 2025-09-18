@@ -254,7 +254,7 @@ fns['on_death'] = function(self)
     if self.targeting_line then
       self.targeting_line.dead = true
     end
-  elseif self.special_swarmer_type == 'touch' then
+  elseif self.special_swarmer_type == 'touch' or self.special_swarmer_type == 'touch_fade' then
     -- Touch enemies don't explode on death, only on green touch
   end
 end

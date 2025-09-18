@@ -123,7 +123,7 @@ function PlayerCursor:draw()
 end
 
 function PlayerCursor:on_trigger_enter(other)
-  if other.special_swarmer_type == 'touch' then
+  if other.special_swarmer_type == 'touch' or other.special_swarmer_type == 'touch_fade' then
     local success = other:touch_collision()
     if success then
       return
