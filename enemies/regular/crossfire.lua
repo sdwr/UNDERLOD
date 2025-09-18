@@ -12,8 +12,9 @@ fns['init_enemy'] = function(self)
   self.icon = 'sorcerer'
 
   self.baseIdleTimer = 0
-  
+
   self.rotation_speed = 0.25  -- Radians per second
+  self:set_fixed_rotation(true)  -- Prevent physics-based rotation from collisions
 
   --set attacks
   self.attack_options = {}
@@ -55,7 +56,33 @@ fns['draw_enemy'] = function(self)
     self:draw_fallback_animation()
   end
 end
- 
+
+fns['draw_fallback_custom'] = function(self)
+  local base_color = self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color
+
+  graphics.push(self.x, self.y, self.r or 0, self.hfx.hit.x, self.hfx.hit.x)
+
+  -- Draw base rounded rectangle
+  local corner_radius = get_enemy_corner_radius(self)
+  graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, corner_radius, corner_radius, base_color)
+
+  -- Draw cardinal direction notches
+  local notch_length = 6
+  local notch_offset = self.shape.w/2 - 2
+
+  -- Draw notches at fixed positions (they'll rotate with the enemy due to graphics.push using self.r)
+  -- Right notch
+  graphics.line(self.x + notch_offset, self.y, self.x + notch_offset + notch_length, self.y, base_color, 2)
+  -- Bottom notch
+  graphics.line(self.x, self.y + notch_offset, self.x, self.y + notch_offset + notch_length, base_color, 2)
+  -- Left notch
+  graphics.line(self.x - notch_offset, self.y, self.x - notch_offset - notch_length, self.y, base_color, 2)
+  -- Top notch
+  graphics.line(self.x, self.y - notch_offset, self.x, self.y - notch_offset - notch_length, base_color, 2)
+
+  graphics.pop()
+end
+
 enemy_to_class['crossfire'] = fns
 
 -- Custom spell class for shooting in 4 cardinal directions

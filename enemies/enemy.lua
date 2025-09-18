@@ -104,11 +104,17 @@ end
 
 -- Draw the base shape (triangle for dragon, rounded rectangle for others)
 function Enemy:draw_fallback_base_shape()
+  -- Check if enemy has custom fallback drawing that overrides default
+  if self.draw_fallback_custom then
+    self:draw_fallback_custom()
+    return
+  end
+
   -- Determine base color (hit flash, silenced, or normal color)
   local base_color = self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color
-  
+
   graphics.push(self.x, self.y, self.r or 0, self.hfx.hit.x, self.hfx.hit.x)
-  
+
   if self.type == 'dragon' then
     -- Special case: Dragon uses triangle polygon
     local points = self:make_regular_polygon(3, (self.shape.w / 2) / 60 * 70, self:get_angle())
@@ -118,7 +124,7 @@ function Enemy:draw_fallback_base_shape()
     local corner_radius = get_enemy_corner_radius(self)
     graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, corner_radius, corner_radius, base_color)
   end
-  
+
   graphics.pop()
 end
 
