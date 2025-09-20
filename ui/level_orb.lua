@@ -164,9 +164,11 @@ function LevelOrb:hit(damage, from, damage_type)
   if self.dead then return end
   if self.invulnerable then return end
   if from and from.x ~= from.x then return end
+  if from and from.dead then return end
   
   -- Apply damage reduction
-  local actual_damage = damage * (1 - self.damage_reduction)
+  -- local actual_damage = damage * (1 - self.damage_reduction)
+  local actual_damage = 1
   
   -- Take damage
   self.hp = self.hp - actual_damage

@@ -231,7 +231,7 @@ function Enemy:update(dt)
           self:set_movement_action(self.currentMovementAction)
         end
       else
-        local continue_movement = self:update_movement()
+        local continue_movement = self:update_movement(dt)
         if not continue_movement then
           --here is where we move to the next movement action, because the movement action is complete
           local movementData = MOVEMENT_TYPE_DATA[self.currentMovementAction]
@@ -307,10 +307,11 @@ function Enemy:choose_movement_target()
     return self:acquire_target_cross_screen(false)
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB 
   or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL 
-  or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_SPIRAL 
   or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_ATTACK
   or self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL_ATTACK then
     return self:acquire_target_seek_orb()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_SPIRAL then
+    return self:acquire_target_seek_orb_spiral()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK then
     return self:acquire_target_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
@@ -330,7 +331,7 @@ function Enemy:choose_movement_target()
   end
 end
 
-function Enemy:update_movement()
+function Enemy:update_movement(dt)
   if self.being_knocked_back then return end
   if not self.transition_active then return end
   
@@ -341,7 +342,7 @@ function Enemy:update_movement()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL then
     return self:update_move_seek_stall()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_SPIRAL then
-    return self:update_move_seek_spiral()
+    return self:update_move_seek_spiral(dt)
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_ATTACK or
   self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL_ATTACK then
     return self:update_move_seek_stall()
@@ -377,6 +378,11 @@ function Enemy:acquire_target_cross_screen(get_new_target)
 end
 
 function Enemy:acquire_target_seek_orb()
+  self.target_location = {x = gw/2, y = gh/2}
+  return true
+end
+
+function Enemy:acquire_target_seek_orb_spiral()
   self.target_location = {x = gw/2, y = gh/2}
   return true
 end
@@ -650,10 +656,42 @@ function Enemy:update_move_seek_stall()
 end
 
 function Enemy:update_move_seek_spiral()
-  --TODO: implement spiral movement
-  self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
+
+  if not self.target_location then
+    return false
+  end
+
+  if math.distance(self.x, self.y, self.target_location.x, self.target_location.y) < DISTANCE_TO_TARGET_FOR_IDLE then
+    return false
+  end
+
+  -- These variables define the spiral's shape (no dt dependency)
+  local RADIUS_REDUCTION = 20 -- Move to a circle 20 pixels smaller each step
+  local ANGLE_OFFSET = math.pi / 6 -- 30 degrees ahead for the spiral motion
+
+  -- 1. Get the enemy's current position relative to the center
+  local dx = self.x - self.target_location.x
+  local dy = self.y - self.target_location.y
+
+  -- 2. Convert current position to polar coordinates
+  -- This is the angle from the center (target) to the unit
+  local current_angle = math.atan2(dy, dx)
+  local current_radius = math.sqrt(dx^2 + dy^2)
+
+  -- 3. Calculate the target point on the spiral path
+  -- Move to a smaller radius and ahead by a fixed angle
+  local target_radius = math.max(0, current_radius - RADIUS_REDUCTION)
+  local target_angle = current_angle + ANGLE_OFFSET
+
+  -- Convert the polar coordinates back to Cartesian coordinates
+  local movement_target_x = self.target_location.x + target_radius * math.cos(target_angle)
+  local movement_target_y = self.target_location.y + target_radius * math.sin(target_angle)
+
+  -- 4. Seek the new target point
+  self:seek_point(movement_target_x, movement_target_y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
+
   return true
-end
+  end
 
 function Enemy:update_move_seek_location_no_wander()
   if self.target_location then

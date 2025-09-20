@@ -231,7 +231,6 @@ get_seek_weight_by_enemy_type = function(enemy_type)
 end
 
 seek_weight_by_enemy_type = {
-  ['goblin_archer'] = 3,
   ['default'] = SEEK_WEIGHT,
 }
 
@@ -397,7 +396,7 @@ MOVEMENT_TYPE_DATA = {
   },
   [MOVEMENT_TYPE_SEEK_ORB_SPIRAL] = {
     can_attack = false,
-    action_timer = nil,
+    action_timer = 1.5,
     after = MOVEMENT_TYPE_SEEK_ORB_SPIRAL
   },
   [MOVEMENT_TYPE_SEEK_ORB_ATTACK] = {
@@ -485,14 +484,14 @@ enemy_movement_types = {
   -- Ranged units that maintain distance
   ['big_goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
   ['goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
-  ['archer'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
-
+  
   ['mortar'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
   ['singlemortar'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
   ['line_mortar'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
-
+  
   ['crossfire'] = MOVEMENT_TYPE_APPROACH_ORB,
   ['spiral'] = MOVEMENT_TYPE_SEEK_ORB_STALL_ATTACK,
+  ['archer'] = MOVEMENT_TYPE_SEEK_ORB_SPIRAL,
 
   ['burst'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
   ['snakearrow'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,

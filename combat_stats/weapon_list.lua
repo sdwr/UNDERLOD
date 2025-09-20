@@ -72,9 +72,9 @@ weapon_definitions = {
     icon = 'gem',
     description = 'Area freeze',
     base_stats = {
-      attack_cooldown = 1.0,
+      attack_cooldown = 2.0,
       cast_time = 0.25,
-      damage = 10,
+      damage = 20,
       attack_range = 60,
       area_radius = 30
     }
