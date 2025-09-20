@@ -1422,6 +1422,7 @@ function init()
 
   enemy_to_round_power = {
     ['swarmer'] = 25,
+    ['snake_segment'] = 0,  -- Segments don't count toward round power
 
     ['shooter'] = 50,
     ['seeker'] = 50,

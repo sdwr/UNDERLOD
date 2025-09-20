@@ -7,14 +7,15 @@ fns['init_enemy'] = function(self)
   self.data = self.data or {}
   self.icon = 'slime'
 
+  -- Set class before shape so Set_Enemy_Shape knows it's a special enemy
+  self.class = 'special_enemy'
+
   --create shape
   self.color = grey[0]:clone()
   Set_Enemy_Shape(self, self.size)
 
   self.stopChasingInRange = false
   self.haltOnPlayerContact = true
-
-  self.class = 'special_enemy'
 
 
   self.attack_options = {}

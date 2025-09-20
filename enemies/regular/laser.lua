@@ -9,11 +9,12 @@ fns['init_enemy'] = function(self)
   --self.mega = self.data.mega or false
   self.mega = true
 
+  -- Set class before shape so Set_Enemy_Shape knows it's a special enemy
+  self.class = 'special_enemy'
+
   --create shape
   self.color = blue[0]:clone()
   Set_Enemy_Shape(self, self.size)
-
-  self.class = 'special_enemy'
   self.single_animation = true
   self.icon = 'mech1'
 

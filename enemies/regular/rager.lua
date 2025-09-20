@@ -22,11 +22,11 @@ fns['init_enemy'] = function(self)
   self.data = self.data or {}
 
 
+  self.class = 'special_enemy'
   --create shape
   self.color = red[5]:clone()
   Set_Enemy_Shape(self, self.size)
 
-  self.class = 'special_enemy'
 
   --set attacks
   self.t:cooldown(attack_speeds['fast'], function() local targets = self:get_objects_in_shape(self.attack_sensor, main.current.friendlies); return targets and #targets > 0 end, function()

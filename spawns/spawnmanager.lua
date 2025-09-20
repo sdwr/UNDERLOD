@@ -297,7 +297,9 @@ function Get_Cross_Screen_Destination(current_location)
   
   -- Calculate destination on opposite side of center, with some randomness
   local target_distance = gw * 2 
-  local angle_offset = random:float(-math.pi/6, math.pi/6)  -- ±30 degrees variation
+  local avoid_center_offset = math.pi/12
+  local angle_offset = avoid_center_offset + random:float(0, math.pi/6)  -- ±30 degrees variation
+  angle_offset = random:bool() and angle_offset or -angle_offset
   
   -- Get the opposite direction (add π to reverse direction)
   local opposite_angle = math.atan2(dy, dx) + math.pi + angle_offset
@@ -844,7 +846,7 @@ function SpawnManager:generate_subwave_groups()
     local roll = random:float(0, 1)
     local group
 
-    if roll < 0.8 then  -- 80% chance for swarmers
+    if roll < 0.7 then  -- 80% chance for swarmers
       local swarmer_amount = SWARMERS_PER_LEVEL(self.arena.level)
       local swarmer_power = enemy_to_round_power['swarmer'] * swarmer_amount
 

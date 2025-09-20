@@ -4,11 +4,12 @@ fns['init_enemy'] = function(self)
   --set extra variables from data
   self.data = self.data or {}
 
+  -- Set class before shape so Set_Enemy_Shape knows it's a special enemy
+  self.class = 'special_enemy'
+
   --create shape
   self.color = orange[0]:clone()
   Set_Enemy_Shape(self, self.size)
-
-  self.class = 'special_enemy'
   self.icon = 'rockslime'
 
 

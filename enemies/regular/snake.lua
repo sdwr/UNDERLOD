@@ -3,159 +3,163 @@ local fns = {}
 fns['init_enemy'] = function(self)
   self.data = self.data or {}
 
-  -- Set class before shape so Set_Enemy_Shape knows it's a special enemy
+  -- Snake is a regular enemy with collision
   self.class = 'special_enemy'
 
-  -- Create shape
+  -- Create shape - snake is now a long rectangle
   self.color = purple[-2]:clone()
-  Set_Enemy_Shape(self, self.size)
+  self.snake_length = 80  -- Length of the snake body
+  self.snake_width = 12   -- Width of the snake body
+  
+  self:set_as_rectangle(self.snake_length, self.snake_width, 'dynamic', 'ghost_enemy')
   self.icon = 'snake'
-    
+
   -- Movement behavior
   self.haltOnPlayerContact = false
   self.stopChasingInRange = false
   self.ignoreKnockback = true
-  
-  -- Snake-specific variables
-  self.snake_segments = 8  -- Number of segments for visual trail
-  self.segment_history = {}  -- Store past positions for segments
-  self.segment_spacing = 4  -- Distance between segments
-  self.wave_amplitude = 10  -- How much the snake wiggles
-  self.wave_frequency = 3  -- How fast it wiggles
-  self.wave_phase = random:float(0, math.pi * 2)  -- Random starting phase
-  
-  -- Initialize segment history
-  for i = 1, self.snake_segments do
-    table.insert(self.segment_history, {x = self.x, y = self.y})
-  end
+
+  -- Snake segment spawning variables
+  self.spawned_segments = {}  -- References to spawned segment enemies
+  self.segment_spawn_distance = 3  -- Distance to travel before spawning new segment (smaller for continuous trail)
+  self.last_head_position = nil  -- Track last head position for spawning
+
+  self.segment_count = 0
+  self.max_segments = 10  -- Maximum number of segments to spawn
+
+  -- Zig-zag pattern variables
+  self.zigzag_amplitude = 15  -- How far to zig-zag
+  self.zigzag_phase = 0  -- Current phase in the zig-zag
+  self.zigzag_segments_per_cycle = 6  -- Segments per full zig-zag
+
+  -- Visual trail (kept for head decoration)
 end
 
 fns['update_enemy'] = function(self, dt)
-  -- Only store position if we've moved enough
-  local last_pos = self.segment_history[1]
-  if not last_pos or math.distance(self.x, self.y, last_pos.x, last_pos.y) > 2 then
-    -- Store current position for trail
-    table.insert(self.segment_history, 1, {x = self.x, y = self.y})
-    
-    -- Keep only the positions we need for all segments
-    while #self.segment_history > self.snake_segments * self.segment_spacing do
-      table.remove(self.segment_history)
-    end
+  -- Calculate head position (front of the snake rectangle)
+  local vx, vy = self:get_velocity()
+  local speed = math.sqrt(vx * vx + vy * vy)
+  local head_x, head_y = self.x, self.y
+
+  if speed > 0.1 then
+    local dir_x = vx / speed
+    local dir_y = vy / speed
+    -- Head is at the front of the rectangle
+    head_x = self.x + dir_x * (self.snake_length / 2)
+    head_y = self.y + dir_y * (self.snake_length / 2)
   end
-  
-  -- Update wave phase for wiggling motion
-  self.wave_phase = self.wave_phase + dt * self.wave_frequency
+
+  if not self.last_head_position then
+    self.last_head_position = {x = head_x, y = head_y}
+  end
+
+  -- Track distance traveled by the head
+  local distance = math.distance(head_x, head_y, self.last_head_position.x, self.last_head_position.y)
+
+  -- Spawn new segment if head has traveled far enough
+  if distance >= self.segment_spawn_distance and self.segment_count < self.max_segments then
+    -- self:spawn_segment()
+    self.last_head_position = {x = head_x, y = head_y}
+    -- self.segment_count = self.segment_count + 1
+  end
+
+  -- Clean up dead segments
+  -- for i = #self.spawned_segments, 1, -1 do
+  --   if self.spawned_segments[i] and self.spawned_segments[i].dead then
+  --     table.remove(self.spawned_segments, i)
+  --   end
+  -- end
 end
 
-fns['draw_enemy'] = function(self)
-  -- Build path points from history
-  local path_points = {}
-  
-  -- Start with head
-  table.insert(path_points, {x = self.x, y = self.y})
-  
-  -- Add body segments from history 
-  for i = 1, math.min(#self.segment_history, self.snake_segments - 1) do
-    local index = i * self.segment_spacing
-    if index <= #self.segment_history and self.segment_history[index] then
-      local segment = self.segment_history[index]
-      
-      -- Add smooth curve offset using sine wave
-      local wiggle_x = 0
-      local wiggle_y = 0
-      
-      -- Only wiggle middle segments, not head or tail
-      if i > 1 and i < self.snake_segments - 2 then
-        -- Get direction for perpendicular offset
-        local prev_index = math.max(1, index - self.segment_spacing)
-        local next_index = math.min(#self.segment_history, index + self.segment_spacing)
-        
-        if self.segment_history[prev_index] and self.segment_history[next_index] then
-          local dx = self.segment_history[next_index].x - self.segment_history[prev_index].x
-          local dy = self.segment_history[next_index].y - self.segment_history[prev_index].y
-          local length = math.sqrt(dx * dx + dy * dy)
-          
-          if length > 0.1 then
-            -- Perpendicular to movement direction
-            local perp_x = -dy / length
-            local perp_y = dx / length
-            
-            -- Smooth sine wave for curves
-            local t = i / self.snake_segments
-            local offset = math.sin(self.wave_phase + t * math.pi * 3) * self.wave_amplitude * (1 - t * 0.5)
-            wiggle_x = perp_x * offset
-            wiggle_y = perp_y * offset
-          end
-        end
-      end
-      
-      table.insert(path_points, {x = segment.x + wiggle_x, y = segment.y + wiggle_y})
-    end
-  end
-  
-  -- Only draw if we have enough points
-  if #path_points >= 2 then
-    -- Convert points to flat array for polyline
-    local line_points = {}
-    for i, point in ipairs(path_points) do
-      table.insert(line_points, point.x)
-      table.insert(line_points, point.y)
-    end
-    
-    -- Draw main body line with varying thickness
-    if #line_points >= 4 then
-      -- Draw outer line (thicker)
-      local outer_color = self.color:clone()
-      outer_color.a = 0.7
-      graphics.polyline(outer_color, 6, unpack(line_points))
-      
-      -- Draw inner line (thinner) for depth
-      local inner_color = self.color:clone()
-      inner_color.a = 0.9
-      graphics.polyline(inner_color, 3, unpack(line_points))
-    end
-  end
-  
-  -- Draw head as a circle
-  graphics.circle(self.x, self.y, self.shape.w / 2.5, self.color)
-  
-  -- Draw eyes
-  local eye_color = white[0]:clone()
-  eye_color.a = 0.9
-  local eye_size = 2
-  local eye_offset = self.shape.w / 5
-  
-  -- Calculate eye positions based on movement direction or next segment
-  local dir_x, dir_y = 0, 0
+fns['spawn_segment'] = function(self)
+  -- Calculate where to place segment along the snake body
   local vx, vy = self:get_velocity()
   local speed = math.sqrt(vx * vx + vy * vy)
   
   if speed > 0.1 then
-    dir_x = vx / speed
-    dir_y = vy / speed
-  elseif #self.segment_history > 1 then
-    -- Use direction to first segment if not moving
-    dir_x = self.x - self.segment_history[1].x
-    dir_y = self.y - self.segment_history[1].y
-    local length = math.sqrt(dir_x * dir_x + dir_y * dir_y)
-    if length > 0.1 then
-      dir_x = dir_x / length
-      dir_y = dir_y / length
+    local dir_x = vx / speed
+    local dir_y = vy / speed
+    
+    -- Place segment behind the head, distributed along the body
+    local segment_offset = (self.segment_count / self.max_segments) * self.snake_length
+    local segment_x = self.x + dir_x * (self.snake_length / 2 - segment_offset)
+    local segment_y = self.y + dir_y * (self.snake_length / 2 - segment_offset)
+    
+    -- Spawn segment enemy
+    print('spawn_segment', self.icon, Helper.Time.time, self.x, self.y)
+    print('segment_x', segment_x, segment_y)
+    local segment = Enemy{
+      type = 'snake_segment',
+      group = self.group,
+      x = segment_x,
+      y = segment_y,
+      level = self.level,
+      data = {
+        parent_snake = self
+      }
+    }
+    
+    -- Set rotation after creation
+    if segment then
+      segment.r = math.atan2(dir_y, dir_x)
+      segment:set_fixed_rotation(true)
+      table.insert(self.spawned_segments, segment)
     end
   end
-  
-  if dir_x ~= 0 or dir_y ~= 0 then
+end
+
+fns['draw_enemy'] = function(self)
+  -- Draw snake as a long rectangle
+  graphics.push(self.x, self.y, self.r, 1, 1)
+
+  -- Draw main body rectangle
+  local body_color = self.color:clone()
+  graphics.rectangle(self.x, self.y, self.snake_length, self.snake_width, 3, 3, body_color)
+
+  -- Draw darker inner stripe for depth
+  local stripe_color = self.color:clone()
+  stripe_color = stripe_color:darken(0.3)
+  graphics.rectangle(self.x, self.y, self.snake_length * 0.8, self.snake_width * 0.4, 2, 2, stripe_color)
+
+  graphics.rotate(0)
+  graphics.pop()
+
+  -- Draw head indicator (front of the rectangle)
+  local vx, vy = self:get_velocity()
+  local speed = math.sqrt(vx * vx + vy * vy)
+  local head_x, head_y = self.x, self.y
+
+  if speed > 0.1 then
+    -- Calculate head position at front of rectangle based on movement direction
+    local dir_x = vx / speed
+    local dir_y = vy / speed
+    head_x = self.x + dir_x * (self.snake_length / 2 - 5)
+    head_y = self.y + dir_y * (self.snake_length / 2 - 5)
+  end
+
+  -- Draw head as a small circle
+  graphics.circle(head_x, head_y, 6, self.color)
+
+  -- Draw eyes on the head
+  local eye_color = white[0]:clone()
+  eye_color.a = 0.9
+  local eye_size = 2
+  local eye_offset = 3
+
+  if speed > 0.1 then
+    local dir_x = vx / speed
+    local dir_y = vy / speed
     local perp_x = -dir_y
     local perp_y = dir_x
-    
-    graphics.circle(self.x + dir_x * 2 + perp_x * eye_offset, 
-                   self.y + dir_y * 2 + perp_y * eye_offset, 
+
+    graphics.circle(head_x + perp_x * eye_offset,
+                   head_y + perp_y * eye_offset,
                    eye_size, eye_color)
-    graphics.circle(self.x + dir_x * 2 - perp_x * eye_offset, 
-                   self.y + dir_y * 2 - perp_y * eye_offset, 
+    graphics.circle(head_x - perp_x * eye_offset,
+                   head_y - perp_y * eye_offset,
                    eye_size, eye_color)
   end
-  
+
   -- Apply status effect overlays if needed
   self:draw_fallback_status_effects()
 end

@@ -608,7 +608,7 @@ unit_stat_multipliers = {
 enemy_type_to_stats = {
     ['swarmer'] = {},
 
-    ['snake'] = { mvspd = 0.3},
+    ['snake'] = { mvspd = 3},
 
     ['seeker'] = { dmg = 1, mvspd = 1 },
     ['chaser'] = { dmg = 1, mvspd = 1 },

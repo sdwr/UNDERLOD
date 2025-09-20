@@ -336,7 +336,7 @@ function Enemy:update_movement(dt)
   if not self.transition_active then return end
   
   if self.currentMovementAction == MOVEMENT_TYPE_CROSS_SCREEN then
-    return self:update_move_seek_location()
+    return self:update_move_seek_location_no_wander()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB then
     return self:update_move_seek_location_no_wander()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL then
@@ -620,7 +620,7 @@ function Enemy:update_move_seek()
   return true
 end
 
-function Enemy:update_move_seek_location() 
+function Enemy:update_move_seek_location()
   if self.target_location then
     if self:distance_to_point(self.target_location.x, self.target_location.y) < DISTANCE_TO_TARGET_FOR_IDLE then
       return false
@@ -628,6 +628,7 @@ function Enemy:update_move_seek_location()
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
       self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER)
       self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
+      self:rotate_towards_velocity(0.5)
       return true
     end
   end
@@ -706,6 +707,7 @@ function Enemy:update_move_seek_location_no_wander()
       return false
     else
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
+      self:rotate_towards_velocity(0.5)
       return true
     end
   end

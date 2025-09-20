@@ -4,11 +4,12 @@ fns['init_enemy'] = function(self)
   --set extra variables from data
   self.data = self.data or {}
 
+  self.class = 'special_enemy'
+  
   --create shape
   self.color = green[0]:clone()
   Set_Enemy_Shape(self, self.size)
 
-  self.class = 'special_enemy'
   self.icon = 'goblin2'
 
 
