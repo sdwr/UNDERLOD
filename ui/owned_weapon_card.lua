@@ -124,11 +124,12 @@ function OwnedWeaponCard:update(dt)
       local weapon_cost = 20 -- Base weapon cost
       local sell_price = math.floor(weapon_cost * 0.5)
 
-      -- Remove weapon from parent
-      if self.parent and self.parent.parent and self.parent.parent.weapons then
-        for i, weapon in ipairs(self.parent.parent.weapons) do
+      -- Set weapon to nil in BuyScreen's weapons array (keeps indices stable)
+      local buy_screen = main.current
+      if buy_screen and buy_screen:is(BuyScreen) and buy_screen.weapons then
+        for i, weapon in pairs(buy_screen.weapons) do
           if weapon == self.weapon then
-            table.remove(self.parent.parent.weapons, i)
+            buy_screen.weapons[i] = nil  -- Set to nil instead of removing
             break
           end
         end
@@ -143,12 +144,12 @@ function OwnedWeaponCard:update(dt)
       end
       Create_Info_Text('+' .. sell_price .. ' gold', self, 'gold')
 
-      -- Save and refresh
-      local buy_screen = main.current
+      -- Save and refresh the display
       if buy_screen and buy_screen:is(BuyScreen) then
         buy_screen:save_run()
-        if self.parent then
-          self.parent:refresh_cards()
+        -- Refresh the owned weapons display
+        if buy_screen.owned_weapons_display then
+          buy_screen.owned_weapons_display:refresh_cards()
         end
       end
     end
@@ -208,8 +209,6 @@ end
 function OwnedWeaponCard:draw()
   graphics.push(self.x, self.y, 0, self.spring.x * self.sx, self.spring.x * self.sy)
 
-  local border_color = fg[0]
-
   if self.is_empty then
     -- Draw empty slot
     local bg_color = bg[5]
@@ -226,24 +225,23 @@ function OwnedWeaponCard:draw()
       graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, nil, 1, fg[10])
     end
   else
-    -- Background based on weapon level
+    -- Background and border based on weapon level
     local bg_color = bg[2]
     local border_width = 2
-
-    if self.level == 1 then
-      border_color = fg[0]
-    elseif self.level == 2 then
-      border_color = green[0]
-    elseif self.level == 3 then
-      border_color = orange[0]
-    end
+    local border_color = fg[0]  -- Default grey
 
     -- Level-based visual enhancements
-    if self.level == 2 then
+    if self.level == 1 then
+      bg_color = bg[2]
+      border_color = fg[0]  -- Grey for level 1
+      border_width = 2
+    elseif self.level == 2 then
       bg_color = bg[0]
+      border_color = green[0]  -- Green for level 2
       border_width = 2
     elseif self.level >= WEAPON_MAX_LEVEL then
       bg_color = bg[-2]
+      border_color = orange[0]  -- Orange for level 3 (max)
       border_width = 3
     end
 
@@ -283,7 +281,12 @@ function OwnedWeaponCard:draw()
       graphics.rectangle(self.x, self.y, self.w+6, self.h+6, 3, 3, glow_color)
       graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, nil, border_width, yellow[0])
     else
-      graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, nil, border_width, border_color)
+      -- Draw border with the appropriate level color
+      if self.selected then
+        graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, nil, border_width, yellow[0])
+      else
+        graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, nil, border_width, border_color)
+      end
     end
   end
 

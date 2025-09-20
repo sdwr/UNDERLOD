@@ -636,8 +636,8 @@ function ItemPart:update(dt)
     local source_item = self:getItem()
     local active = Active_Inventory_Slot
     
-    -- Determine what to do based on target
-    if active and not self:isActiveInvSlot() and self.i == active.i then
+    -- Determine what to do based on target (any slot can accept any item now)
+    if active and not self:isActiveInvSlot() then
       -- Valid target slot of same type
       if active:hasItem() then
         -- SWAP: Exchange items between slots

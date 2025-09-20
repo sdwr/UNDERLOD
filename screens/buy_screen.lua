@@ -287,14 +287,50 @@ function BuyScreen:add_weapon(weapon_name)
       end
     end
   else
-    -- Add new weapon if we haven't reached the cap
-    if #self.weapons < MAX_OWNED_WEAPONS then
-      table.insert(self.weapons, {
-        name = weapon_name,
-        level = 1,
-        xp = 0
-      })
-    else
+    -- Add new weapon to first available slot
+    local added = false
+
+    -- First, try to find an empty (nil) slot
+    for i = 1, MAX_OWNED_WEAPONS do
+      if self.weapons[i] == nil then
+        self.weapons[i] = {
+          name = weapon_name,
+          level = 1,
+          xp = 0,
+          items = {}
+        }
+        added = true
+        break
+      end
+    end
+
+    -- If no empty slots but we're under the limit, check actual count
+    if not added then
+      local weapon_count = 0
+      for i = 1, MAX_OWNED_WEAPONS do
+        if self.weapons[i] then
+          weapon_count = weapon_count + 1
+        end
+      end
+
+      if weapon_count < MAX_OWNED_WEAPONS then
+        -- This shouldn't happen, but as a fallback, add to the end
+        for i = 1, MAX_OWNED_WEAPONS do
+          if not self.weapons[i] then
+            self.weapons[i] = {
+              name = weapon_name,
+              level = 1,
+              xp = 0,
+              items = {}
+            }
+            added = true
+            break
+          end
+        end
+      end
+    end
+
+    if not added then
       -- Can't add more weapons
       return false
     end

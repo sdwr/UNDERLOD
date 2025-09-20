@@ -60,15 +60,21 @@ function OwnedWeaponDisplay:update(dt)
   if self.parent and self.parent.weapons then
     local weapons_changed = false
     
-    -- Check if weapons have changed
-    if #self.weapons ~= #self.parent.weapons then
-      weapons_changed = true
-    else
-      for i, weapon in ipairs(self.weapons) do
-        local parent_weapon = self.parent.weapons[i]
-        if not parent_weapon or 
-           weapon.name ~= parent_weapon.name or 
-           weapon.level ~= parent_weapon.level or 
+    -- Check if weapons have changed (handle sparse array with nils)
+    for i = 1, MAX_OWNED_WEAPONS do
+      local weapon = self.weapons[i]
+      local parent_weapon = self.parent.weapons[i]
+
+      -- Check if slot changed from empty to filled or vice versa
+      if (weapon == nil) ~= (parent_weapon == nil) then
+        weapons_changed = true
+        break
+      end
+
+      -- Check if both exist and properties changed
+      if weapon and parent_weapon then
+        if weapon.name ~= parent_weapon.name or
+           weapon.level ~= parent_weapon.level or
            (weapon.xp or weapon.count or 0) ~= (parent_weapon.xp or parent_weapon.count or 0) then
           weapons_changed = true
           break

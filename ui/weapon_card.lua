@@ -214,13 +214,13 @@ function WeaponCard:draw()
   -- Let BaseCard handle the main drawing
   self:draw_base_card()
 
-  -- Draw upgradeable glow on top if this weapon can upgrade an existing one
+  -- Draw upgradeable glow border if this weapon can upgrade an existing one
   if self.owned_count > 0 and self.owned_level < WEAPON_MAX_LEVEL then
-    -- Draw a very subtle glow overlay
+    -- Draw a glowing green border overlay
     local glow_color = green[0]:clone()
-    glow_color.a = 0.1
+    glow_color.a = 0.3  -- Slightly brighter
     graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
-    graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, glow_color)
+    graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, nil, 3, glow_color)  -- Border only
     graphics.pop()
   end
 end
