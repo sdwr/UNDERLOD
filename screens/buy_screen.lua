@@ -256,8 +256,9 @@ function BuyScreen:add_weapon(weapon_name)
   local existing_weapon = nil
   local existing_index = nil
   
-  for i, weapon in ipairs(self.weapons) do
-    if weapon.name == weapon_name then
+  for i = 1, MAX_OWNED_WEAPONS do
+    local weapon = self.weapons[i]
+    if weapon and weapon.name == weapon_name then
       existing_weapon = weapon
       existing_index = i
       break
@@ -351,16 +352,25 @@ function BuyScreen:get_weapon_count()
 end
 
 function BuyScreen:can_buy_weapon(weapon_name)
-  -- Check if at max weapons (unless it's a duplicate)
-  if #self.weapons >= MAX_OWNED_WEAPONS then
-    for _, weapon in ipairs(self.weapons) do
-      if weapon.name == weapon_name then
-        return true -- Can buy duplicates to upgrade
+  -- Count actual weapons (handle sparse array)
+  local weapon_count = 0
+  local has_this_weapon = false
+
+  for i = 1, MAX_OWNED_WEAPONS do
+    if self.weapons[i] then
+      weapon_count = weapon_count + 1
+      if self.weapons[i].name == weapon_name then
+        has_this_weapon = true
       end
     end
-    return false -- Can't buy new weapon type
   end
-  return true
+
+  -- Check if at max weapons (unless it's a duplicate)
+  if weapon_count >= MAX_OWNED_WEAPONS then
+    return has_this_weapon -- Can only buy if it's a duplicate for upgrade
+  end
+
+  return true -- Have space for new weapon
 end
 
 function BuyScreen:get_item_target_slot(item)
