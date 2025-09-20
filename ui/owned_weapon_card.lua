@@ -208,6 +208,8 @@ end
 function OwnedWeaponCard:draw()
   graphics.push(self.x, self.y, 0, self.spring.x * self.sx, self.spring.x * self.sy)
 
+  local border_color = fg[0]
+
   if self.is_empty then
     -- Draw empty slot
     local bg_color = bg[5]
@@ -226,6 +228,24 @@ function OwnedWeaponCard:draw()
   else
     -- Background based on weapon level
     local bg_color = bg[2]
+    local border_width = 2
+
+    if self.level == 1 then
+      border_color = fg[0]
+    elseif self.level == 2 then
+      border_color = green[0]
+    elseif self.level == 3 then
+      border_color = orange[0]
+    end
+
+    -- Level-based visual enhancements
+    if self.level == 2 then
+      bg_color = bg[0]
+      border_width = 2
+    elseif self.level >= WEAPON_MAX_LEVEL then
+      bg_color = bg[-2]
+      border_width = 3
+    end
 
     -- Draw card background
     graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, bg_color)
@@ -247,17 +267,13 @@ function OwnedWeaponCard:draw()
       self.image:draw(self.x, self.y, 0, 0.5, 0.5)
     end
 
-    -- Draw level indicator in corner
+    -- Draw level indicator in corner with enhanced styling
     if self.level > 0 then
       local level_color = yellow[0]
-      if self.level >= WEAPON_MAX_LEVEL then
-        level_color = orange[0]
-      end
-      graphics.print(self.level, pixul_font, self.x, self.y - self.h/2 + 4, 0, 1, 1, nil, nil, level_color)
+      local level_text = 'Lv. ' .. tostring(self.level)
+      -- Simple level indicator without background box
+      graphics.print(level_text, pixul_font, self.x, self.y - self.h/2 + 4, 0, 1, 1, nil, nil, level_color)
     end
-
-    -- Draw border
-    local border_color = self.selected and yellow[0] or fg[0]
 
     -- Override with yellow glow when highlighted as target
     if self.highlight_target then
@@ -265,9 +281,9 @@ function OwnedWeaponCard:draw()
       local glow_color = yellow[0]:clone()
       glow_color.a = 0.4
       graphics.rectangle(self.x, self.y, self.w+6, self.h+6, 3, 3, glow_color)
-      graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, nil, 2, yellow[0])
+      graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, nil, border_width, yellow[0])
     else
-      graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, nil, 2, border_color)
+      graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, nil, border_width, border_color)
     end
   end
 

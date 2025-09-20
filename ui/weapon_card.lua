@@ -17,14 +17,7 @@ function WeaponCard:init(args)
     args.image = item_images['default']
   end
   
-  -- Set tier color based on cost
-  if self.weapon_def.cost <= 2 then
-    args.tier_color = fg[0]  -- Common
-  elseif self.weapon_def.cost <= 4 then
-    args.tier_color = green[0]  -- Uncommon
-  else
-    args.tier_color = blue[0]  -- Rare
-  end
+  args.tier_color = fg[0]
   
   WeaponCard.super.init(self, args)
   
@@ -44,7 +37,20 @@ function WeaponCard:init(args)
   
   self.owned_count = self:get_owned_count()
   self.owned_level = self:get_owned_level()
-  
+
+  -- Check if this is an upgrade or new weapon
+  self.is_upgrade = self.owned_count > 0 and self.owned_level < WEAPON_MAX_LEVEL
+  self.is_maxed = self.owned_level >= WEAPON_MAX_LEVEL
+
+  -- Update description with upgrade status
+  local desc_lines = {}
+  if self.weapon_def.description then
+    table.insert(desc_lines, {text = '[fg]' .. self.weapon_def.description, font = pixul_font, alignment = 'center'})
+  end
+  if #desc_lines > 0 then
+    self.bottom_text = Text(desc_lines, global_text_tags)
+  end
+
   -- Update every frame to check affordability
   self.t:every(0.1, function()
     self.can_afford = gold >= self.cost
@@ -91,13 +97,35 @@ function WeaponCard:update(dt)
 end
 
 function WeaponCard:on_click()
+  -- Check if weapon is already at max level
+  if self.owned_level >= WEAPON_MAX_LEVEL then
+    error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    self.spring:pull(0.2, 200, 10)
+
+    if not self.error_text then
+      self.error_text = InfoText{group = main.current.ui}
+      self.error_text:activate({
+        {text = '[fg]weapon at max level', font = pixul_font, alignment = 'center'},
+      }, nil, nil, nil, nil, 16, 4, nil, 2)
+      self.error_text.x, self.error_text.y = self.x, self.y - 40
+      self.t:after(1.5, function()
+        if self.error_text then
+          self.error_text:deactivate()
+          self.error_text.dead = true
+          self.error_text = nil
+        end
+      end)
+    end
+    return
+  end
+
   if self.can_afford then
     self:buy()
   else
     -- Not enough gold feedback
     error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     self.spring:pull(0.2, 200, 10)
-    
+
     -- Show not enough gold text
     if not self.error_text then
       self.error_text = InfoText{group = main.current.ui}
@@ -105,7 +133,7 @@ function WeaponCard:on_click()
         {text = '[fg]not enough gold', font = pixul_font, alignment = 'center'},
       }, nil, nil, nil, nil, 16, 4, nil, 2)
       self.error_text.x, self.error_text.y = self.x, self.y - 40
-      self.t:after(1.5, function() 
+      self.t:after(1.5, function()
         if self.error_text then
           self.error_text:deactivate()
           self.error_text.dead = true
@@ -118,11 +146,18 @@ end
 
 function WeaponCard:buy()
   if gold < self.cost then return end
-  
+
+  -- Check if weapon is already at max level
+  if self.owned_level >= WEAPON_MAX_LEVEL then
+    Create_Info_Text('weapon at max level', self, 'error')
+    error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    return
+  end
+
   -- Deduct gold
   gold = gold - self.cost
   self.parent.gold = gold
-  
+
   -- Add weapon to parent's weapons
   if self.parent then
     self.parent:add_weapon(self.weapon_name)
@@ -178,6 +213,16 @@ end
 function WeaponCard:draw()
   -- Let BaseCard handle the main drawing
   self:draw_base_card()
+
+  -- Draw upgradeable glow on top if this weapon can upgrade an existing one
+  if self.owned_count > 0 and self.owned_level < WEAPON_MAX_LEVEL then
+    -- Draw a very subtle glow overlay
+    local glow_color = green[0]:clone()
+    glow_color.a = 0.1
+    graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
+    graphics.rectangle(self.x, self.y, self.w, self.h, 6, 6, glow_color)
+    graphics.pop()
+  end
 end
 
 function WeaponCard:die()
