@@ -24,7 +24,7 @@ function OwnedWeaponCard:init(args)
 
   self.ITEM_SLOT_WIDTH = 20
   self.ITEM_SLOT_HEIGHT = 20
-  self.ITEM_SLOT_SPACING = 3
+  self.ITEM_SLOT_SPACING = 5
 
   -- Position based on index
   self.x = args.x
@@ -87,7 +87,7 @@ function OwnedWeaponCard:create_item_parts()
     local item_part = ItemPart{
       group = self.group,
       x = self.x,  -- Center horizontally with the card
-      y = self.y + self.h/2 + self.ITEM_SLOT_HEIGHT/2 + 10 + y_offset,  -- Position below the card
+      y = self.y + self.h/2 + self.ITEM_SLOT_HEIGHT/2 + 5 + y_offset,  -- Position below the card
       i = i,
       parent = self,
       w = self.ITEM_SLOT_WIDTH,
