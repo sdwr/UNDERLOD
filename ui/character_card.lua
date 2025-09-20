@@ -588,10 +588,41 @@ function ItemPart:update(dt)
   end
 
   if input.m1.pressed and self.colliding_with_mouse and self:hasItem() and not Loose_Inventory_Item then
-    -- Only allow dragging from character cards, not weapon cards
-    if self.parent.unit then
-      self.itemGrabbed = true
-      Loose_Inventory_Item = LooseItem{group = main.current.ui, item = self:getItem(), parent = self}
+    -- Allow dragging from both character cards and weapon cards
+    self.itemGrabbed = true
+    Loose_Inventory_Item = LooseItem{group = main.current.ui, item = self:getItem(), parent = self}
+    self:remove_tooltip()
+  end
+
+  -- Right-click to sell items
+  if input.m2.pressed and self.colliding_with_mouse and self:hasItem() then
+    local item = self:getItem()
+    if item then
+      -- Calculate sell price (50% of original cost)
+      local sell_price = math.floor((item.cost or 0) * 0.5)
+
+      -- Remove item from slot
+      if self.parent.unit then
+        self.parent.unit.items[self.i] = nil
+      elseif self.parent.weapon and self.parent.weapon.items then
+        self.parent.weapon.items[self.i] = nil
+      end
+
+      -- Add gold
+      gold = gold + sell_price
+
+      -- Play sound and show feedback
+      if gold1 then
+        gold1:play{pitch = random:float(0.95, 1.05), volume = 0.3}
+      end
+      Create_Info_Text('+' .. sell_price .. ' gold', self, 'gold')
+
+      -- Save if in BuyScreen
+      local buy_screen = main.current
+      if buy_screen and buy_screen:is(BuyScreen) then
+        buy_screen:save_run()
+      end
+
       self:remove_tooltip()
     end
   end

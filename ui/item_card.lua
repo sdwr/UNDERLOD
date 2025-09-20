@@ -159,12 +159,7 @@ function ItemCard:buy_item_to_slot(item_part, unit)
     return false
   end
   
-  -- Check if item fits in this slot type
-  local required_slot_index = ITEM_SLOTS[self.item.slot].index
-  if slot_index ~= required_slot_index then
-    Create_Info_Text('wrong slot type for ' .. self.item.name, self, 'error')
-    return false
-  end
+  -- Any item can go in any slot now - no type checking needed
   
   -- Check gold (same as existing)
   if gold < self.cost then

@@ -104,6 +104,56 @@ function OwnedWeaponCard:update(dt)
     self.shape:move_to(self.x, self.y)
   end
 
+  -- Right-click to sell weapon
+  if input.m2.pressed and self.colliding_with_mouse and not self.is_empty then
+    -- Check if weapon has items
+    local has_items = false
+    if self.weapon and self.weapon.items then
+      for i = 1, 3 do
+        if self.weapon.items[i] then
+          has_items = true
+          break
+        end
+      end
+    end
+
+    if has_items then
+      Create_Info_Text('remove items first', self, 'error')
+    else
+      -- Calculate sell price (50% of weapon cost)
+      local weapon_cost = 20 -- Base weapon cost
+      local sell_price = math.floor(weapon_cost * 0.5)
+
+      -- Remove weapon from parent
+      if self.parent and self.parent.parent and self.parent.parent.weapons then
+        for i, weapon in ipairs(self.parent.parent.weapons) do
+          if weapon == self.weapon then
+            table.remove(self.parent.parent.weapons, i)
+            break
+          end
+        end
+      end
+
+      -- Add gold
+      gold = gold + sell_price
+
+      -- Play sound and show feedback
+      if gold1 then
+        gold1:play{pitch = random:float(0.95, 1.05), volume = 0.3}
+      end
+      Create_Info_Text('+' .. sell_price .. ' gold', self, 'gold')
+
+      -- Save and refresh
+      local buy_screen = main.current
+      if buy_screen and buy_screen:is(BuyScreen) then
+        buy_screen:save_run()
+        if self.parent then
+          self.parent:refresh_cards()
+        end
+      end
+    end
+  end
+
   -- Update values from weapon if they've changed
   if self.weapon and not self.is_empty then
     if self.weapon.level ~= self.level or self.weapon.xp ~= self.xp then
