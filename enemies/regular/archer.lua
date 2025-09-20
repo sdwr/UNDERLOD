@@ -4,11 +4,12 @@ fns['init_enemy'] = function(self)
   --set extra variables from data
   self.data = self.data or {}
 
+  -- Set class before shape so Set_Enemy_Shape knows it's a special enemy
+  self.class = 'special_enemy'
+
   --create shape
   self.color = red[0]:clone()
   Set_Enemy_Shape(self, self.size)
-
-  self.class = 'special_enemy'
   self.icon = 'archer'  -- Using goblin2 icon for now
 
 
@@ -22,9 +23,9 @@ fns['init_enemy'] = function(self)
   self.attack_sensor = Circle(self.x, self.y, self.attack_range)
 
   -- Turret properties
-  self.turret_angle = 0  -- Current turret angle (starts pointing at center)
-  self.turret_max_arc = 140 * math.pi / 180  -- 140 degrees total arc
-  self.turret_rotation_speed = 4  -- Radians per second
+  self.turret_angle = nil
+  self.turret_max_arc = 160 * math.pi / 180  -- 140 degrees total arc
+  self.turret_rotation_speed = 0.1 
 
   --set attacks
   self.attack_options = {}
@@ -56,6 +57,7 @@ fns['init_enemy'] = function(self)
 end
 
 fns['update_enemy'] = function(self, dt)
+  
   -- Update turret angle
   local center_x = gw/2
   local center_y = gh/2
@@ -67,6 +69,10 @@ fns['update_enemy'] = function(self, dt)
   local cursor = main.current.current_arena and main.current.current_arena.player_cursor
   local desired_angle = angle_to_center
 
+  if self.turret_angle == nil then
+    self.turret_angle = angle_to_center
+  end
+
   if cursor and not cursor.dead then
     local angle_to_cursor = math.atan2(cursor.y - self.y, cursor.x - self.x)
     local angle_diff = angle_to_cursor - angle_to_center
@@ -77,17 +83,13 @@ fns['update_enemy'] = function(self, dt)
       -- Cursor is within arc, aim at it
       desired_angle = angle_to_cursor
     else
-      -- Cursor is outside arc, clamp to nearest arc boundary
-      if angle_diff > 0 then
-        desired_angle = angle_to_center + half_arc
-      else
-        desired_angle = angle_to_center - half_arc
-      end
+      -- Cursor is outside arc, clamp to center
+      desired_angle = angle_to_center
     end
   end
 
-  -- Smoothly rotate turret toward desired angle
-  self.turret_angle =  desired_angle
+  -- Smoothly rotate turret toward desired angle self.turret_angle =  desired_angle
+  self.turret_angle = math.lerp_angle_dt(self.turret_rotation_speed, dt, self.turret_angle, desired_angle)
 end
 
 fns['draw_enemy'] = function(self)
@@ -107,16 +109,18 @@ fns['draw_fallback_custom'] = function(self)
   graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, corner_radius, corner_radius, base_color)
 
   -- Draw turret barrel
-  local barrel_length = 12
-  local barrel_width = 3
-  local barrel_x = self.x + math.cos(self.turret_angle) * barrel_length
-  local barrel_y = self.y + math.sin(self.turret_angle) * barrel_length
+  if self.turret_angle then
+    local barrel_length = 12
+    local barrel_width = 3
+    local barrel_x = self.x + math.cos(self.turret_angle) * barrel_length
+    local barrel_y = self.y + math.sin(self.turret_angle) * barrel_length
 
-  -- Draw barrel as a line
-  graphics.line(self.x, self.y, barrel_x, barrel_y, grey[-2], barrel_width)
+    -- Draw barrel as a line
+    graphics.line(self.x, self.y, barrel_x, barrel_y, grey[-2], barrel_width)
 
-  -- Draw barrel tip
-  graphics.circle(barrel_x, barrel_y, 2, grey[-4])
+    -- Draw barrel tip
+    graphics.circle(barrel_x, barrel_y, 2, grey[-4])
+  end
 
   graphics.pop()
 end

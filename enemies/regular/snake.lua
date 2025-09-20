@@ -2,12 +2,13 @@ local fns = {}
 
 fns['init_enemy'] = function(self)
   self.data = self.data or {}
-  
+
+  -- Set class before shape so Set_Enemy_Shape knows it's a special enemy
+  self.class = 'special_enemy'
+
   -- Create shape
   self.color = purple[-2]:clone()
   Set_Enemy_Shape(self, self.size)
-  
-  self.class = 'special_enemy'
   self.icon = 'snake'
     
   -- Movement behavior

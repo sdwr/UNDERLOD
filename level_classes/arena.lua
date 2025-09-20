@@ -194,7 +194,7 @@ end
 
 function Arena:init_physics()
   self.floor = Group()
-  self.main = Group():set_as_physics_world(32, 0, 0, {'troop', 'enemy', 'projectile', 'enemy_projectile', 'force_field', 'ghost', 'effect', 'door'})
+  self.main = Group():set_as_physics_world(32, 0, 0, {'troop', 'enemy', 'ghost_enemy', 'projectile', 'enemy_projectile', 'force_field', 'ghost', 'effect', 'door'})
   self.post_main = Group()
   self.effects = Group()
   self.effects:set_custom_draw_list(main_after_characters)
@@ -242,6 +242,14 @@ function Arena:init_physics()
   self.main:disable_collision_between('door', 'effect')
   self.main:disable_collision_between('door', 'force_field')
 
+  -- Ghost enemy collision rules (no collision with other enemies but still collide with troops/projectiles)
+  self.main:disable_collision_between('ghost_enemy', 'enemy')
+  self.main:disable_collision_between('ghost_enemy', 'ghost_enemy')
+  self.main:disable_collision_between('ghost_enemy', 'ghost')
+  self.main:disable_collision_between('ghost_enemy', 'effect')
+  self.main:disable_collision_between('ghost_enemy', 'door')
+  self.main:disable_collision_between('ghost_enemy', 'force_field')
+  self.main:disable_collision_between('ghost_enemy', 'enemy_projectile')
 
   self.main:enable_trigger_between('projectile', 'enemy')
   self.main:enable_trigger_between('troop', 'enemy_projectile')
@@ -249,6 +257,11 @@ function Arena:init_physics()
   self.main:enable_trigger_between('ghost', 'troop')
   self.main:enable_trigger_between('enemy', 'troop')
   self.main:enable_trigger_between('door', 'troop')
+
+  -- Ghost enemy trigger rules
+  self.main:enable_trigger_between('ghost_enemy', 'troop')
+  self.main:enable_trigger_between('projectile', 'ghost_enemy')
+  self.main:enable_trigger_between('ghost_enemy', 'enemy_projectile')
 
 end
 

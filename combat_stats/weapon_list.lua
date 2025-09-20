@@ -58,7 +58,7 @@ weapon_definitions = {
     icon = 'bow',
     description = 'Projectile',
     base_stats = {
-      attack_cooldown = 0.6,
+      attack_cooldown = 2.25,
       cast_time = 0.1,
       damage = 10
     }
