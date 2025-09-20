@@ -59,6 +59,9 @@ function WeaponCard:init(args)
       self.cost_text:set_text{{text = color .. self.cost, font = pixul_font, alignment = 'center'}}
     end
   end)
+
+  -- Play creation effect
+  self:creation_effect()
 end
 
 function WeaponCard:get_owned_count()

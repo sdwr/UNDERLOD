@@ -510,12 +510,12 @@ end
 
 function BuyScreen:draw()
   self.main:draw()
-  self.effects:draw()
   if self.items_text then self.items_text:draw(self.items_text_x, self.items_text_y) end
-
-
+  
+  
   self.ui:draw()
   self.ui_top:draw()
+  self.effects:draw()
   if self.paused then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
   
   self.overlay_ui:draw()
@@ -627,37 +627,44 @@ function BuyScreen:set_weapons(shop_level, is_shop_start)
   local total_width = 5 * card_spacing - (card_spacing - card_w)
   local start_x = gw/2 - total_width/2 + card_w/2
 
-  -- Create 3 weapon cards
+  -- Add delay for first shop (after transition)
+  local initial_delay = is_shop_start and 0.5 or 0
+
+  -- Create 3 weapon cards with staggered spawn
   for i = 1, 3 do
     if self.shop_weapon_data[i] then
-      local card = WeaponCard{
-        group = self.ui,
-        x = start_x + (i-1) * card_spacing,
-        y = y,
-        w = card_w,
-        h = card_h,
-        weapon_name = self.shop_weapon_data[i],
-        parent = self,
-        i = i
-      }
-      table.insert(self.weapon_cards, card)
+      self.t:after(initial_delay + i * 0.25, function()
+        local card = WeaponCard{
+          group = self.ui,
+          x = start_x + (i-1) * card_spacing,
+          y = y,
+          w = card_w,
+          h = card_h,
+          weapon_name = self.shop_weapon_data[i],
+          parent = self,
+          i = i
+        }
+        table.insert(self.weapon_cards, card)
+      end)
     end
   end
 
-  -- Create 2 item cards
+  -- Create 2 item cards with staggered spawn
   for i = 1, 2 do
     if self.shop_item_data[i] then
-      local card = ItemCard{
-        group = self.ui,
-        x = start_x + (2 + i) * card_spacing,  -- Position after 3 weapons
-        y = y,
-        w = card_w,
-        h = card_h,
-        item = self.shop_item_data[i],
-        parent = self,
-        i = 3 + i  -- Index continues from weapons
-      }
-      table.insert(self.item_cards, card)
+      self.t:after(initial_delay + (3 + i) * 0.25, function()
+        local card = ItemCard{
+          group = self.ui,
+          x = start_x + (2 + i) * card_spacing,  -- Position after 3 weapons
+          y = y,
+          w = card_w,
+          h = card_h,
+          item = self.shop_item_data[i],
+          parent = self,
+          i = 3 + i  -- Index continues from weapons
+        }
+        table.insert(self.item_cards, card)
+      end)
     end
   end
 
