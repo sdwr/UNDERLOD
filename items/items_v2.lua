@@ -511,6 +511,13 @@ function create_random_items(level)
   return items
 end
 
+Get_Random_Shop_Items = function(count, level, exclude_rarity)
+  local items = {}
+  for i = 1, count do
+    table.insert(items, create_random_item(level, exclude_rarity))
+  end
+  return items
+end
 
 -- Main function to create a random item
 function create_random_item(level, exclude_rarity)

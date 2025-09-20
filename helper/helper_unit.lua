@@ -964,6 +964,27 @@ function Helper.Unit:find_available_inventory_slot(units, item)
   return nil, nil
 end
 
+function Helper.Unit:find_available_weapon_slot(weapons, item)
+  -- For BuyScreen, check weapon slots instead of unit slots
+  for _, weapon in ipairs(weapons) do
+    local max_slots = math.min(weapon.level or 1, 3)
+
+    -- Initialize items array if it doesn't exist
+    if not weapon.items then
+      weapon.items = {}
+    end
+
+    -- Find first empty slot
+    for slot = 1, max_slots do
+      if not weapon.items[slot] then
+        return weapon, slot
+      end
+    end
+  end
+
+  return nil, nil
+end
+
 function Helper.Unit:unit_has_open_inventory_slot(unit, slot_index)
   if not unit.items[slot_index] then
     return true

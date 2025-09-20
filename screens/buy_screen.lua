@@ -102,8 +102,7 @@ function BuyScreen:on_enter(from)
   
   self.gold_counter = GoldCounter{group = self.ui, x = GOLD_COUNTER_X_OFFSET, y = LEVEL_MAP_Y_POSITION + 1}
 
-  self.items_text_x, self.items_text_y = gw/2 - 150, gh - 60
-  self.items_text = Text({{text = '[wavy_mid, fg]shop - Lv. ' .. self.last_shop_level, font = pixul_font, alignment = 'center'}}, global_text_tags)
+  -- Removed shop level text
 
   self.level_buttons = {}
   self.items = {}
@@ -112,8 +111,9 @@ function BuyScreen:on_enter(from)
   self:set_party()
   
   
-  self.lock_button = LockButton{group = self.main, x = gw/2 - 150, y = gh - 40, parent = self}
-  self.reroll_button = RerollButton{group = self.main, x = 90, y = gh - 20, parent = self}
+  -- Move buttons to the left
+  self.lock_button = LockButton{group = self.main, x = 60, y = gh - 40, parent = self}
+  self.reroll_button = RerollButton{group = self.main, x = 60, y = gh - 20, parent = self}
 
   --only roll items once a character exists
   self:try_roll_items(true)
@@ -465,55 +465,77 @@ function BuyScreen:try_roll_items(is_shop_start)
   self:set_weapons(self.shop_level, is_shop_start)
 end
 
--- New weapon shop functions
+-- Combined weapon and item shop
 function BuyScreen:set_weapons(shop_level, is_shop_start)
-  -- Clear weapon cards (UI elements)
-  if self.weapon_cards then 
-    for _, card in ipairs(self.weapon_cards) do 
-      card:die() 
-    end 
+  -- Clear all cards
+  if self.weapon_cards then
+    for _, card in ipairs(self.weapon_cards) do
+      card:die()
+    end
   end
   self.weapon_cards = {}
-  
-  -- Initialize shop weapon data
+
+  if self.item_cards then
+    for _, card in ipairs(self.item_cards) do
+      card:die()
+    end
+  end
+  self.item_cards = {}
+
+  -- Initialize shop data
   if not self.shop_weapon_data then
     self.shop_weapon_data = {}
   end
-  
-  -- Roll new weapons if needed
+  if not self.shop_item_data then
+    self.shop_item_data = {}
+  end
+
+  -- Roll new weapons and items if needed
   if not locked_state and self.reroll_shop then
     self.shop_weapon_data = Get_Random_Shop_Weapons(3)
+    self.shop_item_data = Get_Random_Shop_Items(2, shop_level)  -- Get 2 items
   elseif locked_state and self.reroll_shop then
-    -- Fill empty slots with new weapons
+    -- Fill empty slots
     while #self.shop_weapon_data < 3 do
       local available_weapons = Get_Random_Shop_Weapons(1)
       if available_weapons[1] then
         table.insert(self.shop_weapon_data, available_weapons[1])
       end
     end
+    while #self.shop_item_data < 2 do
+      local available_items = Get_Random_Shop_Items(1, shop_level)
+      if available_items[1] then
+        table.insert(self.shop_item_data, available_items[1])
+      end
+    end
   end
-  
+
   -- Only reroll once
   self.reroll_shop = false
-  
+
   -- Disable interaction with buttons while rerolling
   if self.reroll_button then self.reroll_button.interact_with_mouse = false end
   if self.lock_button then self.lock_button.interact_with_mouse = false end
-  
-  -- Create weapon cards at same position as item cards were
-  local item_h = 80
-  local item_w = 60
-  local y = gh - (item_h / 2) - 20
-  local x = gw/2 - 70
-  
+
+  -- Shop layout: 5 cards total (3 weapons + 2 items)
+  local card_h = 80
+  local card_w = 60
+  local card_spacing = 70
+  local y = gh - (card_h / 2) - 20
+
+  -- Center the 5 cards
+  local total_width = 5 * card_spacing - (card_spacing - card_w)
+  local start_x = gw/2 - total_width/2 + card_w/2
+
+  -- Create 3 weapon cards
   for i = 1, 3 do
     if self.shop_weapon_data[i] then
       local card = WeaponCard{
-        group = self.ui,  -- Use ui group like item cards
-        x = x + (i-1) * 70,
+        group = self.ui,
+        x = start_x + (i-1) * card_spacing,
         y = y,
-        w = item_w,
-        h = item_h,
+        w = card_w,
+        h = card_h,
         weapon_name = self.shop_weapon_data[i],
         parent = self,
         i = i
@@ -521,7 +543,24 @@ function BuyScreen:set_weapons(shop_level, is_shop_start)
       table.insert(self.weapon_cards, card)
     end
   end
-  
+
+  -- Create 2 item cards
+  for i = 1, 2 do
+    if self.shop_item_data[i] then
+      local card = ItemCard{
+        group = self.ui,
+        x = start_x + (2 + i) * card_spacing,  -- Position after 3 weapons
+        y = y,
+        w = card_w,
+        h = card_h,
+        item = self.shop_item_data[i],
+        parent = self,
+        i = 3 + i  -- Index continues from weapons
+      }
+      table.insert(self.item_cards, card)
+    end
+  end
+
   -- Re-enable buttons after a short delay
   self.t:after(0.1, function()
     if self.reroll_button then self.reroll_button.interact_with_mouse = true end

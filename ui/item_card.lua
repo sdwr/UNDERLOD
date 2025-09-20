@@ -230,9 +230,41 @@ function ItemCard:update_scale_based_on_position()
 end
 
 function ItemCard:buy_item()
-  -- Use Helper.Unit to find available slot
+  -- Check if we're in BuyScreen
+  if self.parent and self.parent:is(BuyScreen) and self.parent.weapons then
+    -- Find available weapon slot
+    local weapon, slot_index = Helper.Unit:find_available_weapon_slot(self.parent.weapons, self.item)
+
+    if not weapon or not slot_index then
+      Create_Info_Text('no available weapon slots', self, 'error')
+      return
+    end
+
+    -- Add item to weapon (store full item object)
+    weapon.items[slot_index] = self.item
+
+    -- Handle purchase
+    self:handle_purchase_transaction()
+
+    -- Save and refresh
+    if self.parent.save_run then
+      self.parent:save_run()
+    end
+    if self.parent.set_party then
+      self.parent:set_party()
+    end
+
+    -- Remove the card
+    self.t:after(0.1, function()
+      self:die()
+    end)
+
+    return
+  end
+
+  -- Original behavior for non-BuyScreen
   local unit, slot_index = Helper.Unit:find_available_inventory_slot(self.parent.units, self.item)
-  
+
   if not unit or not slot_index then
     print("no available slot to buy item")
     return
@@ -317,9 +349,20 @@ function ItemCard:update(dt)
 
   if input.m1.pressed and self.colliding_with_mouse and not self.grabbed then
     -- Check if the purchase is possible
-    local unit, slot_index = Helper.Unit:find_available_inventory_slot(self.parent.units, self.item)
+    local can_buy = false
+    local no_slot_message = 'no available item slots'
     
-    if gold >= self.cost and unit and slot_index then
+    if self.parent and self.parent:is(BuyScreen) and self.parent.weapons then
+      -- Check weapon slots for BuyScreen
+      local weapon, slot_index = Helper.Unit:find_available_weapon_slot(self.parent.weapons, self.item)
+      can_buy = gold >= self.cost and weapon and slot_index
+    else
+      -- Check unit slots for other screens
+      local unit, slot_index = Helper.Unit:find_available_inventory_slot(self.parent.units, self.item)
+      can_buy = gold >= self.cost and unit and slot_index
+    end
+
+    if can_buy then
       -- SUCCESS: The player can afford it and has space.
       self.timeGrabbed = love.timer.getTime()
       self.grabbed = true
@@ -331,9 +374,9 @@ function ItemCard:update(dt)
       
       self:remove_set_bonus_tooltip()
         
-    elseif not unit or not slot_index then
+    elseif not can_buy and gold >= self.cost then
       self:remove_set_bonus_tooltip()
-      Create_Info_Text('no empty ' .. ITEM_SLOTS[self.item.slot].name .. ' slots - right click to sell', self, 'error')
+      Create_Info_Text(no_slot_message, self, 'error')
 
     elseif gold < self.cost then
       self:remove_set_bonus_tooltip()

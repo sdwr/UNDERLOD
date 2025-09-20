@@ -21,9 +21,6 @@ function OwnedWeaponDisplay:init(args)
   -- Create weapon cards
   self.weapon_cards = {}
   self:refresh_cards()
-  
-  -- Title text
-  self.title_text = Text({{text = '[yellow]Owned Weapons', font = pixul_font, alignment = 'center'}}, global_text_tags)
 end
 
 function OwnedWeaponDisplay:refresh_cards()
@@ -32,25 +29,27 @@ function OwnedWeaponDisplay:refresh_cards()
     card:die()
   end
   self.weapon_cards = {}
-  
-  -- Create new cards
-  if self.weapons and #self.weapons > 0 then
-    for i, weapon in ipairs(self.weapons) do
-      local first_card_x_offset = (#self.weapons / 2 * self.CARD_WIDTH) + (self.CARD_SPACING * (#self.weapons - 1) / 2)
-      local card = OwnedWeaponCard{
-        group = self.group,
-        x = self.x - first_card_x_offset + (i-1) * self.CARD_WIDTH + (i-1) * self.CARD_SPACING,
-        y = self.y,
-        w = self.CARD_WIDTH,
-        h = self.CARD_HEIGHT,
-        weapon_name = weapon.name,
-        level = weapon.level,
-        xp = weapon.xp or 0,  -- Support old 'count' field
-        weapon = weapon,
-        index = i
-      }
-      table.insert(self.weapon_cards, card)
-    end
+
+  -- Create cards for all weapon slots (owned and empty)
+  local total_slots = MAX_OWNED_WEAPONS or 6
+  local first_card_x_offset = (total_slots / 2 * self.CARD_WIDTH) + (self.CARD_SPACING * (total_slots - 1) / 2)
+
+  for i = 1, total_slots do
+    local weapon = self.weapons[i]  -- May be nil for empty slots
+    local card = OwnedWeaponCard{
+      group = self.group,
+      x = self.x - first_card_x_offset + (i-1) * self.CARD_WIDTH + (i-1) * self.CARD_SPACING,
+      y = self.y,
+      w = self.CARD_WIDTH,
+      h = self.CARD_HEIGHT,
+      weapon_name = weapon and weapon.name or nil,
+      level = weapon and weapon.level or nil,
+      xp = weapon and (weapon.xp or 0) or nil,
+      weapon = weapon,
+      index = i,
+      is_empty = not weapon
+    }
+    table.insert(self.weapon_cards, card)
   end
 end
 
@@ -90,29 +89,18 @@ function OwnedWeaponDisplay:update(dt)
 end
 
 function OwnedWeaponDisplay:draw()
-  -- Draw title
-  if self.title_text then
-    self.title_text:draw(self.x, self.y - 40)
-  end
-  
-  -- Draw weapon cards
+  -- Draw weapon cards (no title)
   for _, card in ipairs(self.weapon_cards) do
     card:draw()
   end
-  
 end
 
 function OwnedWeaponDisplay:die()
   self.dead = true
-  
+
   -- Clean up cards
   for _, card in ipairs(self.weapon_cards) do
     card:die()
   end
   self.weapon_cards = {}
-  
-  if self.title_text then
-    self.title_text.dead = true
-    self.title_text = nil
-  end
 end

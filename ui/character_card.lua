@@ -728,21 +728,7 @@ function ItemPart:draw(y)
 
       local image = find_item_image(item)
       image:draw(self.x, self.y, 0, 0.4, 0.4)
-    elseif item and not self.hide_item_display and self.itemGrabbed then
-      -- When item is grabbed, show empty slot appearance
-      --draw item type icon
-      local item_slot = ITEM_SLOTS_BY_INDEX[self.i]
-      local image = find_item_image(ITEM_SLOTS[item_slot])
-      local color = fg[5]:clone()
-      color.a = 0.5
-      image:draw(self.x, self.y, 0, 0.4, 0.4, 0, 0, color)
-    else
-      --draw item type icon
-      local item_slot = ITEM_SLOTS_BY_INDEX[self.i]
-      local image = find_item_image(ITEM_SLOTS[item_slot])
-      local color = fg[5]:clone()
-      color.a = 0.5
-      image:draw(self.x, self.y, 0, 0.4, 0.4, 0, 0, color)
+    -- Empty slots - don't draw slot type images anymore
     end
     
     if self.colliding_with_mouse and main.current and not Loose_Inventory_Item and not self.just_dropped_item then

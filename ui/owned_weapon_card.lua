@@ -4,43 +4,51 @@ OwnedWeaponCard:implement(GameObject)
 
 function OwnedWeaponCard:init(args)
   self:init_game_object(args)
-  
+
   self.weapon_name = args.weapon_name
   self.level = args.level or 1
   self.xp = args.xp or 0  -- Support old 'count' param for compatibility
   self.index = args.index or 1
   self.weapon = args.weapon or {}
+  self.is_empty = args.is_empty
   self.item_parts = {}
-  
-  -- Get weapon definition
-  self.weapon_def = Get_Weapon_Definition(self.weapon_name)
-  
+
+  -- Get weapon definition if not empty
+  if not self.is_empty and self.weapon_name then
+    self.weapon_def = Get_Weapon_Definition(self.weapon_name)
+  end
+
   -- Card dimensions
   self.w = 50
-  self.h = 20
+  self.h = 50  -- Make it square for icon
 
   self.ITEM_SLOT_WIDTH = 15
   self.ITEM_SLOT_HEIGHT = 15
   self.ITEM_SLOT_SPACING = 5
-  
+
   -- Position based on index
   self.x = args.x
   self.y = args.y
-  
+
   -- Create shape for interaction
   self.shape = Rectangle(self.x, self.y, self.w, self.h)
   self.interact_with_mouse = true
-  
-  -- Title text showing level and name
-  local level_text = self.level .. ' '
-  local title_string = level_text .. self.weapon_def.name
-  self.title_text = Text({{text = '[yellow]' .. title_string, font = pixul_font, alignment = 'center'}}, global_text_tags)
-  
+
+  -- Get weapon icon image if available (same as WeaponCard)
+  if not self.is_empty and self.weapon_def then
+    if self.weapon_def.icon and item_images[self.weapon_def.icon] then
+      self.image = item_images[self.weapon_def.icon]
+    elseif item_images['default'] then
+      self.image = item_images['default']
+    end
+  end
+
   -- Calculate XP needed for next level
-  self:update_xp_requirements()
-  
-  -- Create ItemPart instances for weapon items
-  self:create_item_parts()
+  if not self.is_empty then
+    self:update_xp_requirements()
+    -- Create ItemPart instances for weapon items
+    self:create_item_parts()
+  end
 end
 
 function OwnedWeaponCard:update_xp_requirements()
@@ -68,14 +76,20 @@ function OwnedWeaponCard:create_item_parts()
     part:die()
   end
   self.item_parts = {}
-  
-  -- Create 3 item parts for weapon slots
-  for i = 1, 3 do
-    local y_offset = (i-1) * (self.ITEM_SLOT_HEIGHT + self.ITEM_SLOT_SPACING)
+
+  -- Create item slots based on weapon level (1 slot at level 1, 2 at level 2, 3 at level 3)
+  local num_slots = math.min(self.level or 1, 3)
+
+  -- Calculate starting position to center the slots horizontally
+  local total_width = num_slots * self.ITEM_SLOT_WIDTH + (num_slots - 1) * self.ITEM_SLOT_SPACING
+  local start_x = self.x - total_width / 2 + self.ITEM_SLOT_WIDTH / 2
+
+  for i = 1, num_slots do
+    local x_offset = (i - 1) * (self.ITEM_SLOT_WIDTH + self.ITEM_SLOT_SPACING)
     local item_part = ItemPart{
       group = self.group,
-      x = self.x,
-      y = self.y + self.h/2 + self.ITEM_SLOT_HEIGHT/2 + self.ITEM_SLOT_SPACING + y_offset,
+      x = start_x + x_offset,
+      y = self.y + self.h/2 + self.ITEM_SLOT_HEIGHT/2 + 5,  -- Position below the card
       i = i,
       parent = self,
       w = self.ITEM_SLOT_WIDTH,
@@ -87,80 +101,125 @@ end
 
 function OwnedWeaponCard:update(dt)
   self:update_game_object(dt)
-  
+
   if self.shape then
     self.shape:move_to(self.x, self.y)
   end
-  
+
   -- Update values from weapon if they've changed
-  if self.weapon then
+  if self.weapon and not self.is_empty then
     if self.weapon.level ~= self.level or self.weapon.xp ~= self.xp then
+      local old_level = self.level
       self.level = self.weapon.level
       self.xp = self.weapon.xp or 0
       self:update_xp_requirements()
-      
-      -- Update title text
-      if self.title_text then
-        self.title_text.dead = true
+
+      -- Recreate item parts if level changed
+      if old_level ~= self.level then
+        self:create_item_parts()
       end
-      local level_text = 'Lv.' .. self.level .. ' '
-      local title_string = level_text .. self.weapon_def.name
-      self.title_text = Text({{text = '[yellow]' .. title_string, font = pixul_font, alignment = 'center'}}, global_text_tags)
     end
+  end
+
+  -- Update item parts
+  for _, part in ipairs(self.item_parts) do
+    part:update(dt)
   end
 end
 
 function OwnedWeaponCard:on_mouse_enter()
+  if self.is_empty then return end
+
   self.selected = true
   ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
   self.spring:pull(0.2, 200, 10)
+
+  -- Create hover tooltip with weapon name and level
+  if self.weapon_def then
+    self.info_text = InfoText{group = main.current.ui}
+    local level_text = 'Lv.' .. self.level .. ' '
+    local title_string = level_text .. self.weapon_def.name
+    self.info_text:activate({
+      {text = '[yellow]' .. title_string, font = pixul_font, alignment = 'center'},
+    }, nil, nil, nil, nil, 16, 4, nil, 2)
+    self.info_text.x, self.info_text.y = self.x, self.y - 40
+  end
 end
 
 function OwnedWeaponCard:on_mouse_exit()
   self.selected = false
+
+  -- Remove tooltip
+  if self.info_text then
+    self.info_text:deactivate()
+    self.info_text.dead = true
+    self.info_text = nil
+  end
 end
 
 function OwnedWeaponCard:draw()
   graphics.push(self.x, self.y, 0, self.spring.x * self.sx, self.spring.x * self.sy)
-  
-  -- Background based on weapon level
-  local bg_color = bg[2]
-  
-  -- Draw card background
-  graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, bg_color)
-  
-  -- Draw XP progress bar at top of card
-  if self.level < WEAPON_MAX_LEVEL then
-    local xp_progress = self:get_xp_progress()
-    if xp_progress > 0 then
-      local bar_height = 3
-      local bar_width = self.w * xp_progress
-      local xp_color = blue[0]:clone()
-      xp_color.a = 0.5
-      graphics.rectangle(self.x - self.w/2 + bar_width/2, self.y, bar_width, self.h, 0, 0, xp_color)
+
+  if self.is_empty then
+    -- Draw empty slot
+    local bg_color = bg[5]
+    graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, bg_color)
+    graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, nil, 1, fg[10])
+  else
+    -- Background based on weapon level
+    local bg_color = bg[2]
+
+    -- Draw card background
+    graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, bg_color)
+
+    -- Draw XP progress bar at bottom of card
+    if self.level < WEAPON_MAX_LEVEL then
+      local xp_progress = self:get_xp_progress()
+      if xp_progress > 0 then
+        local bar_height = 4
+        local bar_width = self.w * xp_progress
+        local xp_color = blue[0]:clone()
+        xp_color.a = 0.7
+        graphics.rectangle(self.x - self.w/2 + bar_width/2, self.y + self.h/2 - bar_height/2, bar_width, bar_height, 0, 0, xp_color)
+      end
     end
+
+    -- Draw weapon icon (same as BaseCard does)
+    if self.image then
+      self.image:draw(self.x, self.y, 0, 0.5, 0.5)
+    end
+
+    -- Draw level indicator in corner
+    if self.level > 0 then
+      local level_color = yellow[0]
+      if self.level >= WEAPON_MAX_LEVEL then
+        level_color = orange[0]
+      end
+      graphics.print(self.level, pixul_font, self.x, self.y - self.h/2 + 4, 0, 1, 1, nil, nil, level_color)
+    end
+
+    -- Draw border
+    local border_color = self.selected and yellow[0] or fg[0]
+    graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, nil, 2, border_color)
   end
-  
-  -- Draw border
-  local border_color = self.selected and yellow[0] or fg[0]
-  graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, nil, 2, border_color)
-  
-  -- Draw texts
-  if self.title_text then
-    self.title_text:draw(self.x, self.y - self.h/2 + 10)
-  end
-  
+
   graphics.pop()
+
+  -- Draw item slots below the card
+  for _, part in ipairs(self.item_parts) do
+    part:draw()
+  end
 end
 
 function OwnedWeaponCard:die()
   self.dead = true
-  
-  if self.title_text then
-    self.title_text.dead = true
-    self.title_text = nil
+
+  if self.info_text then
+    self.info_text:deactivate()
+    self.info_text.dead = true
+    self.info_text = nil
   end
-  
+
   -- Clean up item parts
   for _, part in ipairs(self.item_parts) do
     part:die()
