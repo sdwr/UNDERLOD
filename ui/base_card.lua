@@ -184,4 +184,13 @@ function BaseCard:die()
     self.cost_text.dead = true
     self.cost_text = nil
   end
+
+  self:death_effect()
+end
+
+function BaseCard:death_effect()
+  for i = 1, 5 do
+    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+  end
+  HitCircle{group = main.current.effects, x = self.x, y = self.y}:scale_down()
 end

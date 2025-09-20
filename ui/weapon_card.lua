@@ -136,6 +136,22 @@ function WeaponCard:buy()
   -- Update state
   self.owned_count = self:get_owned_count()
   self.owned_level = self:get_owned_level()
+
+  -- Clear shop data and refresh cards (like ItemCard does)
+  if self.parent then
+    self.parent.shop_weapon_data[self.i] = nil
+    self.parent:save_run()
+    if self.parent.set_party then
+      self.parent:set_party()
+    end
+  end
+
+  if self.parent.on_item_purchased then
+    self.parent:on_item_purchased(nil, nil, self.weapon_name)
+  end
+
+  self:die()
+  return true
 end
 
 function WeaponCard:draw()
@@ -144,5 +160,5 @@ function WeaponCard:draw()
 end
 
 function WeaponCard:die()
-  self.dead = true
+  WeaponCard.super.die(self)
 end

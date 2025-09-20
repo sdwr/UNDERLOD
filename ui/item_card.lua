@@ -351,7 +351,7 @@ function ItemCard:update(dt)
     -- Check if the purchase is possible
     local can_buy = false
     local no_slot_message = 'no available item slots'
-    
+
     if self.parent and self.parent:is(BuyScreen) and self.parent.weapons then
       -- Check weapon slots for BuyScreen
       local weapon, slot_index = Helper.Unit:find_available_weapon_slot(self.parent.weapons, self.item)

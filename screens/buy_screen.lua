@@ -112,13 +112,13 @@ function BuyScreen:on_enter(from)
   
   
   -- Move buttons to the left
-  self.lock_button = LockButton{group = self.main, x = 60, y = gh - 40, parent = self}
-  self.reroll_button = RerollButton{group = self.main, x = 60, y = gh - 20, parent = self}
+  self.lock_button = LockButton{group = self.main, x = 40, y = gh - 50, parent = self}
+  self.reroll_button = RerollButton{group = self.main, x = 40, y = gh - 25, parent = self}
 
   --only roll items once a character exists
   self:try_roll_items(true)
   
-  GoButton{group = self.main, x = gw - 90, y = gh - 20, parent = self}
+  GoButton{group = self.main, x = gw - 50, y = gh - 30, parent = self}
   
   -- self.tutorial_button = Button{group = self.main, x = gw/2 + 129, y = 18, button_text = '?', fg_color = 'bg10', bg_color = 'bg', 
   --   action = function()

@@ -22,9 +22,9 @@ function OwnedWeaponCard:init(args)
   self.w = 50
   self.h = 50  -- Make it square for icon
 
-  self.ITEM_SLOT_WIDTH = 15
-  self.ITEM_SLOT_HEIGHT = 15
-  self.ITEM_SLOT_SPACING = 5
+  self.ITEM_SLOT_WIDTH = 20
+  self.ITEM_SLOT_HEIGHT = 20
+  self.ITEM_SLOT_SPACING = 3
 
   -- Position based on index
   self.x = args.x
@@ -80,16 +80,14 @@ function OwnedWeaponCard:create_item_parts()
   -- Create item slots based on weapon level (1 slot at level 1, 2 at level 2, 3 at level 3)
   local num_slots = math.min(self.level or 1, 3)
 
-  -- Calculate starting position to center the slots horizontally
-  local total_width = num_slots * self.ITEM_SLOT_WIDTH + (num_slots - 1) * self.ITEM_SLOT_SPACING
-  local start_x = self.x - total_width / 2 + self.ITEM_SLOT_WIDTH / 2
-
+  -- Position slots vertically below the card
   for i = 1, num_slots do
-    local x_offset = (i - 1) * (self.ITEM_SLOT_WIDTH + self.ITEM_SLOT_SPACING)
+    local y_offset = (i - 1) * (self.ITEM_SLOT_HEIGHT + self.ITEM_SLOT_SPACING)
+
     local item_part = ItemPart{
       group = self.group,
-      x = start_x + x_offset,
-      y = self.y + self.h/2 + self.ITEM_SLOT_HEIGHT/2 + 5,  -- Position below the card
+      x = self.x,  -- Center horizontally with the card
+      y = self.y + self.h/2 + self.ITEM_SLOT_HEIGHT/2 + 10 + y_offset,  -- Position below the card
       i = i,
       parent = self,
       w = self.ITEM_SLOT_WIDTH,
@@ -176,7 +174,7 @@ function OwnedWeaponCard:draw()
     if self.level < WEAPON_MAX_LEVEL then
       local xp_progress = self:get_xp_progress()
       if xp_progress > 0 then
-        local bar_height = 4
+        local bar_height = 6
         local bar_width = self.w * xp_progress
         local xp_color = blue[0]:clone()
         xp_color.a = 0.7
