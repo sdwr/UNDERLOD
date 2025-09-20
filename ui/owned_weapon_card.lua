@@ -270,7 +270,7 @@ function OwnedWeaponCard:draw()
       local level_color = yellow[0]
       local level_text = 'Lv. ' .. tostring(self.level)
       -- Simple level indicator without background box
-      graphics.print(level_text, pixul_font, self.x, self.y - self.h/2 + 4, 0, 1, 1, nil, nil, level_color)
+      graphics.print(level_text, pixul_font, self.x - 13, self.y - self.h/2 + 2, 0, 1, 1, nil, nil, level_color)
     end
 
     -- Override with yellow glow when highlighted as target
