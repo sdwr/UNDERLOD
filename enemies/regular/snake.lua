@@ -6,11 +6,11 @@ fns['init_enemy'] = function(self)
   -- Snake is a regular enemy with collision
   self.class = 'special_enemy'
 
-  -- Create shape - snake is now a long rectangle
+  -- Create shape - snake head is smaller now
   self.color = purple[-2]:clone()
-  self.snake_length = 80  -- Length of the snake body
+  self.snake_length = 20  -- Length of the snake head
   self.snake_width = 12   -- Width of the snake body
-  
+
   self:set_as_rectangle(self.snake_length, self.snake_width, 'dynamic', 'ghost_enemy')
   self.icon = 'snake'
 
@@ -21,11 +21,12 @@ fns['init_enemy'] = function(self)
 
   -- Snake segment spawning variables
   self.spawned_segments = {}  -- References to spawned segment enemies
-  self.segment_spawn_distance = 3  -- Distance to travel before spawning new segment (smaller for continuous trail)
-  self.last_head_position = nil  -- Track last head position for spawning
+  self.segment_spawn_distance = 20  -- Distance to travel before spawning new segment
+  self.distance_traveled = 20  -- Start at 10 to spawn first segment sooner
+  self.last_position = nil  -- Track last position for distance calculation
 
   self.segment_count = 0
-  self.max_segments = 10  -- Maximum number of segments to spawn
+  self.max_segments = 30  -- Maximum number of segments to spawn
 
   -- Zig-zag pattern variables
   self.zigzag_amplitude = 15  -- How far to zig-zag
@@ -36,58 +37,44 @@ fns['init_enemy'] = function(self)
 end
 
 fns['update_enemy'] = function(self, dt)
-  -- Calculate head position (front of the snake rectangle)
-  local vx, vy = self:get_velocity()
-  local speed = math.sqrt(vx * vx + vy * vy)
-  local head_x, head_y = self.x, self.y
-
-  if speed > 0.1 then
-    local dir_x = vx / speed
-    local dir_y = vy / speed
-    -- Head is at the front of the rectangle
-    head_x = self.x + dir_x * (self.snake_length / 2)
-    head_y = self.y + dir_y * (self.snake_length / 2)
+  if not self.last_position then
+    self.last_position = {x = self.x, y = self.y}
   end
 
-  if not self.last_head_position then
-    self.last_head_position = {x = head_x, y = head_y}
-  end
+  -- Track distance traveled
+  local dist = math.distance(self.x, self.y, self.last_position.x, self.last_position.y)
+  self.distance_traveled = self.distance_traveled + dist
+  self.last_position = {x = self.x, y = self.y}
 
-  -- Track distance traveled by the head
-  local distance = math.distance(head_x, head_y, self.last_head_position.x, self.last_head_position.y)
-
-  -- Spawn new segment if head has traveled far enough
-  if distance >= self.segment_spawn_distance and self.segment_count < self.max_segments then
-    -- self:spawn_segment()
-    self.last_head_position = {x = head_x, y = head_y}
-    -- self.segment_count = self.segment_count + 1
+  -- Spawn new segment every 20 units traveled
+  if self.distance_traveled >= self.segment_spawn_distance and self.segment_count < self.max_segments then
+    self:spawn_segment()
+    self.distance_traveled = 0  -- Reset distance counter
+    self.segment_count = self.segment_count + 1
   end
 
   -- Clean up dead segments
-  -- for i = #self.spawned_segments, 1, -1 do
-  --   if self.spawned_segments[i] and self.spawned_segments[i].dead then
-  --     table.remove(self.spawned_segments, i)
-  --   end
-  -- end
+  for i = #self.spawned_segments, 1, -1 do
+    if self.spawned_segments[i] and self.spawned_segments[i].dead then
+      table.remove(self.spawned_segments, i)
+    end
+  end
 end
 
 fns['spawn_segment'] = function(self)
-  -- Calculate where to place segment along the snake body
+  -- Get movement direction
   local vx, vy = self:get_velocity()
   local speed = math.sqrt(vx * vx + vy * vy)
-  
+
   if speed > 0.1 then
     local dir_x = vx / speed
     local dir_y = vy / speed
-    
-    -- Place segment behind the head, distributed along the body
-    local segment_offset = (self.segment_count / self.max_segments) * self.snake_length
-    local segment_x = self.x + dir_x * (self.snake_length / 2 - segment_offset)
-    local segment_y = self.y + dir_y * (self.snake_length / 2 - segment_offset)
-    
+
+    -- Place segment 10 units behind the center (half of snake_length)
+    local segment_x = self.x - dir_x * 10
+    local segment_y = self.y - dir_y * 10
+
     -- Spawn segment enemy
-    print('spawn_segment', self.icon, Helper.Time.time, self.x, self.y)
-    print('segment_x', segment_x, segment_y)
     local segment = Enemy{
       type = 'snake_segment',
       group = self.group,
@@ -98,11 +85,11 @@ fns['spawn_segment'] = function(self)
         parent_snake = self
       }
     }
-    
+
     -- Set rotation after creation
     if segment then
-      segment.r = math.atan2(dir_y, dir_x)
-      segment:set_fixed_rotation(true)
+      segment.r = self.r
+      segment.freezerotation = true
       table.insert(self.spawned_segments, segment)
     end
   end

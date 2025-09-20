@@ -6,7 +6,7 @@ fns['init_enemy'] = function(self)
   -- Set as special enemy for no collision
   self.class = 'special_enemy'
   self.icon = 'snake_segment'
-  self.size = 'tiny'  -- Use tiny size for segments (1x1)
+  self.size = 'segment'  -- Use tiny size for segments (1x1)
 
   -- Visual properties
   self.color = purple[-3]:clone()
@@ -25,11 +25,6 @@ fns['init_enemy'] = function(self)
   -- Segment is invulnerable but forwards damage to parent
   self.invulnerable = true
 
-  -- Small wiggle animation
-  self.wiggle_timer = random:float(0, math.pi * 2)
-  self.wiggle_amplitude = 1
-  self.wiggle_frequency = 2
-
   -- Don't move after creation
   self.haltOnPlayerContact = true
   self.stopChasingInRange = true
@@ -47,24 +42,30 @@ fns['update_enemy'] = function(self, dt)
     return
   end
 
-  -- Small wiggle animation
-  self.wiggle_timer = self.wiggle_timer + dt * self.wiggle_frequency
-
   -- Stop any movement
   self:set_velocity(0, 0)
 end
 
 fns['draw_enemy'] = function(self)
-  -- Empty draw function - segments are invisible hit points
-  -- Only used for targeting and damage forwarding
+  -- Draw segment as a simple rectangle matching snake color
+  graphics.push(self.x, self.y, self.r, 1, 1)
+
+  local segment_color = self.color:clone()
+  segment_color.a = 0.9
+  graphics.rectangle(self.x, self.y, 20, 12, 3, 3, segment_color)
+
+  -- Draw darker inner stripe for depth
+  local inner_color = self.color:clone()
+  inner_color = inner_color:darken(0.3)
+  graphics.rectangle(self.x, self.y, 16, 5, 2, 2, inner_color)
+
+  graphics.pop()
 end
 
 -- Forward damage to parent snake
-fns['rejectDamageCallback'] = function(self, damage, from, damageType)
-  print('rejectDamageCallback snake segment', damage, from, damageType)
+fns['take_damage'] = function(self, damage)
   if self.parent_snake and not self.parent_snake.dead then
-    -- Forward damage to parent without the invulnerable flag
-    Helper.Damage:apply_hit(self.parent_snake, damage, from, damageType, true)
+    self.parent_snake:take_damage(damage)
   end
 end
 

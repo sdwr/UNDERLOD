@@ -1,5 +1,5 @@
 enemy_size_to_xy = {
-  tiny = {x = 1, y = 1},  -- Snake segments
+  segment = {x = 20, y = 12},  -- Snake segments
   critter = {x = 7, y = 4},
   small = {x = 8, y = 6},
   regular = {x = 10, y = 10},
