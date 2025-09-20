@@ -380,6 +380,11 @@ MOVEMENT_TYPE_STATIONARY = 'stationary'
 MOVEMENT_TYPE_SEEK_ORB_RANGE_STATIONARY = 'seek_orb_range_stationary'
 
 MOVEMENT_TYPE_DATA = {
+  [MOVEMENT_TYPE_CROSS_SCREEN] = {
+    can_attack = false,
+    action_timer = nil,
+    after = MOVEMENT_TYPE_CROSS_SCREEN
+  },
   [MOVEMENT_TYPE_SEEK_ORB] = {
     can_attack = false,
     action_timer = nil,
@@ -477,7 +482,7 @@ enemy_movement_types = {
   
   ['swarmer'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
   ['boulder'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
-  ['snake'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
+  ['snake'] = MOVEMENT_TYPE_CROSS_SCREEN,
   ['tank'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
   
   -- ['seeker'] = MOVEMENT_TYPE_SEEK_ORB,

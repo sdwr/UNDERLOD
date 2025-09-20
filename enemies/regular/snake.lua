@@ -2,13 +2,14 @@ local fns = {}
 
 fns['init_enemy'] = function(self)
   self.data = self.data or {}
-  
+
+  -- Set class before shape so it uses the right collision tag
+  self.class = 'special_enemy'
+  self.icon = 'snake'
+
   -- Create shape
   self.color = purple[-2]:clone()
   Set_Enemy_Shape(self, self.size)
-  
-  self.class = 'special_enemy'
-  self.icon = 'snake'
     
   -- Movement behavior
   self.haltOnPlayerContact = false
@@ -22,39 +23,134 @@ fns['init_enemy'] = function(self)
   self.wave_amplitude = 10  -- How much the snake wiggles
   self.wave_frequency = 3  -- How fast it wiggles
   self.wave_phase = random:float(0, math.pi * 2)  -- Random starting phase
-  
+
+  -- Store spawn point for extending back to origin
+  self.spawn_point = {x = self.x, y = self.y}
+  self.extend_to_origin = true  -- Snake extends back to spawn point
+
   -- Initialize segment history
   for i = 1, self.snake_segments do
     table.insert(self.segment_history, {x = self.x, y = self.y})
   end
+
+  -- Segment enemies for targeting
+  self.segments = {}
+  self.segment_spawn_distance = 30  -- Distance between targetable segments
+  self.next_segment_distance = 0
+  self.total_distance_traveled = 0
 end
 
 fns['update_enemy'] = function(self, dt)
-  -- Only store position if we've moved enough
+  -- Track distance moved
   local last_pos = self.segment_history[1]
-  if not last_pos or math.distance(self.x, self.y, last_pos.x, last_pos.y) > 2 then
+  local distance_moved = 0
+
+  if last_pos then
+    distance_moved = math.distance(self.x, self.y, last_pos.x, last_pos.y)
+  end
+
+  -- Only store position if we've moved enough
+  if not last_pos or distance_moved > 2 then
     -- Store current position for trail
     table.insert(self.segment_history, 1, {x = self.x, y = self.y})
-    
-    -- Keep only the positions we need for all segments
-    while #self.segment_history > self.snake_segments * self.segment_spacing do
-      table.remove(self.segment_history)
+
+    -- Update total distance for segment spawning
+    self.total_distance_traveled = self.total_distance_traveled + distance_moved
+    self.next_segment_distance = self.next_segment_distance + distance_moved
+
+    -- Keep history extending back to spawn if enabled
+    if self.extend_to_origin then
+      -- Don't remove history, let it grow to spawn point
+    else
+      -- Keep only the positions we need for all segments
+      while #self.segment_history > self.snake_segments * self.segment_spacing do
+        table.remove(self.segment_history)
+      end
     end
   end
-  
+
+  -- Spawn segment enemies at intervals
+  if self.next_segment_distance >= self.segment_spawn_distance then
+    self.next_segment_distance = 0
+    self:spawn_segment()
+  end
+
+  -- Update existing segments to follow the path
+  self:update_segments()
+
   -- Update wave phase for wiggling motion
   self.wave_phase = self.wave_phase + dt * self.wave_frequency
+end
+
+fns['spawn_segment'] = function(self)
+  -- Don't spawn too many segments
+  if #self.segments >= 20 then return end
+
+  -- Get position from history for this segment
+  local segment_index = #self.segments + 1
+  local history_index = segment_index * 10  -- Space them out in history
+
+  if history_index <= #self.segment_history then
+    local pos = self.segment_history[history_index]
+
+    -- Create a segment enemy at this position
+    local segment = Enemy{
+      type = 'snake_segment',
+      group = main.current.main,
+      x = pos.x,
+      y = pos.y,
+      level = self.level,
+      data = {
+        parent_snake = self,
+        segment_index = segment_index,
+        spawn_point = self.spawn_point
+      }
+    }
+
+    table.insert(self.segments, segment)
+  end
+end
+
+fns['update_segments'] = function(self)
+  -- Update each segment to follow the snake's path
+  for i, segment in ipairs(self.segments) do
+    if segment and not segment.dead then
+      local history_index = (i + 1) * 10  -- Space them out
+
+      if history_index <= #self.segment_history then
+        local target_pos = self.segment_history[history_index]
+        -- Directly set position since special enemies don't collide
+        if segment.set_position then
+          segment:set_position(target_pos.x, target_pos.y)
+        end
+      end
+    end
+  end
+end
+
+fns['on_death'] = function(self)
+  -- Clean up all segments when snake dies
+  if self.segments then
+    for _, segment in ipairs(self.segments) do
+      if segment and not segment.dead then
+        segment.dead = true
+      end
+    end
+  end
 end
 
 fns['draw_enemy'] = function(self)
   -- Build path points from history
   local path_points = {}
-  
+
   -- Start with head
   table.insert(path_points, {x = self.x, y = self.y})
-  
-  -- Add body segments from history 
-  for i = 1, math.min(#self.segment_history, self.snake_segments - 1) do
+
+  -- Determine how many segments to draw
+  local segments_to_draw = self.extend_to_origin and #self.segment_history or math.min(#self.segment_history, self.snake_segments - 1)
+
+  -- Add body segments from history
+  for i = 1, segments_to_draw do
     local index = i * self.segment_spacing
     if index <= #self.segment_history and self.segment_history[index] then
       local segment = self.segment_history[index]
@@ -64,7 +160,8 @@ fns['draw_enemy'] = function(self)
       local wiggle_y = 0
       
       -- Only wiggle middle segments, not head or tail
-      if i > 1 and i < self.snake_segments - 2 then
+      local total_segments = self.extend_to_origin and #self.segment_history / self.segment_spacing or self.snake_segments
+      if i > 1 and i < total_segments - 2 then
         -- Get direction for perpendicular offset
         local prev_index = math.max(1, index - self.segment_spacing)
         local next_index = math.min(#self.segment_history, index + self.segment_spacing)
@@ -80,7 +177,8 @@ fns['draw_enemy'] = function(self)
             local perp_y = dx / length
             
             -- Smooth sine wave for curves
-            local t = i / self.snake_segments
+            local total_segments = self.extend_to_origin and #self.segment_history / self.segment_spacing or self.snake_segments
+            local t = i / total_segments
             local offset = math.sin(self.wave_phase + t * math.pi * 3) * self.wave_amplitude * (1 - t * 0.5)
             wiggle_x = perp_x * offset
             wiggle_y = perp_y * offset

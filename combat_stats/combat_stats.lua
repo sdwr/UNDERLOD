@@ -606,7 +606,8 @@ unit_stat_multipliers = {
 enemy_type_to_stats = {
     ['swarmer'] = {},
 
-    ['snake'] = { mvspd = 0.3},
+    ['snake'] = { mvspd = 1},
+    ['snake_segment'] = { hp = 0.1, dmg = 0, mvspd = 0 },  -- Minimal stats, just for targeting
 
     ['seeker'] = { dmg = 1, mvspd = 1 },
     ['chaser'] = { dmg = 1, mvspd = 1 },

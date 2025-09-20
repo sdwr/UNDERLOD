@@ -38,6 +38,7 @@ require 'enemies/regular/archer'
 require 'enemies/regular/swarmer'
 require 'enemies/regular/boulder'
 require 'enemies/regular/snake'
+require 'enemies/regular/snake_segment'
 require 'enemies/regular/tank'
 
 require 'enemies/miniboss/bigstomper'

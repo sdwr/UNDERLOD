@@ -1465,6 +1465,7 @@ function init()
     ['assassin'] = 75,
     ['boulder'] = 75,
     ['snake'] = 75,
+    ['snake_segment'] = 0,  -- Segments don't count toward round power
 
     --bosses
     ['stompy'] = BOSS_ROUND_POWER,

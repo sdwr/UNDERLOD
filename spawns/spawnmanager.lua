@@ -287,21 +287,36 @@ function Get_Cross_Screen_Destination(current_location)
     return nil
   end
 
+  local CENTER_EXCLUSION_ANGLE = math.pi/12
+
   -- Calculate the opposite side of the screen from current position
   local center_x = gw / 2
   local center_y = gh / 2
-  
+
   -- Get vector from center to current location
   local dx = current_location.x - center_x
   local dy = current_location.y - center_y
-  
-  -- Calculate destination on opposite side of center, with some randomness
-  local target_distance = gw * 2 
-  local angle_offset = random:float(-math.pi/6, math.pi/6)  -- ±30 degrees variation
-  
+
+  -- Calculate destination on opposite side of center, avoiding the center orb
+  local target_distance = gw * 2
+
   -- Get the opposite direction (add π to reverse direction)
-  local opposite_angle = math.atan2(dy, dx) + math.pi + angle_offset
-  
+  local base_angle = math.atan2(dy, dx) + math.pi
+
+  -- Define exclusion zone around center (angles that pass too close to center)
+
+  -- Generate random offset that avoids center
+  local angle_offset
+  if random:bool(50) then
+    -- Offset to one side, avoiding center
+    angle_offset = random:float(CENTER_EXCLUSION_ANGLE, math.pi/4)
+  else
+    -- Offset to other side, avoiding center
+    angle_offset = random:float(-math.pi/4, -CENTER_EXCLUSION_ANGLE)
+  end
+
+  local opposite_angle = base_angle + angle_offset
+
   local destination = {
     x = center_x + math.cos(opposite_angle) * target_distance,
     y = center_y + math.sin(opposite_angle) * target_distance

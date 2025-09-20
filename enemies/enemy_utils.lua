@@ -31,5 +31,11 @@ Set_Enemy_Shape = function(enemy, size)
     xy = enemy_size_to_xy['regular']
   end
 
-  enemy:set_as_rectangle(xy.x, xy.y, 'dynamic', 'enemy')
+  -- Special enemies use a different collision tag to avoid colliding with other enemies
+  local tag = 'enemy'
+  if enemy.class == 'special_enemy' then
+    tag = 'special_enemy'
+  end
+
+  enemy:set_as_rectangle(xy.x, xy.y, 'dynamic', tag)
 end

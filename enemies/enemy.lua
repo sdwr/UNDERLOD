@@ -335,7 +335,7 @@ function Enemy:update_movement()
   if not self.transition_active then return end
   
   if self.currentMovementAction == MOVEMENT_TYPE_CROSS_SCREEN then
-    return self:update_move_seek_location()
+    return self:update_move_seek_location_no_wander()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB then
     return self:update_move_seek_location_no_wander()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL then
