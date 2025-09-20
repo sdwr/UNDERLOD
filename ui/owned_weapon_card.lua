@@ -161,8 +161,18 @@ function OwnedWeaponCard:draw()
   if self.is_empty then
     -- Draw empty slot
     local bg_color = bg[5]
-    graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, bg_color)
-    graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, nil, 1, fg[10])
+
+    -- Draw yellow glow when highlighted as target
+    if self.highlight_target then
+      local glow_color = yellow[0]:clone()
+      glow_color.a = 0.4
+      graphics.rectangle(self.x, self.y, self.w+6, self.h+6, 3, 3, glow_color)
+      graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, bg_color)
+      graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, nil, 1, yellow[0])
+    else
+      graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, bg_color)
+      graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, nil, 1, fg[10])
+    end
   else
     -- Background based on weapon level
     local bg_color = bg[2]
@@ -198,7 +208,17 @@ function OwnedWeaponCard:draw()
 
     -- Draw border
     local border_color = self.selected and yellow[0] or fg[0]
-    graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, nil, 2, border_color)
+
+    -- Override with yellow glow when highlighted as target
+    if self.highlight_target then
+      -- Draw yellow glow with reduced opacity
+      local glow_color = yellow[0]:clone()
+      glow_color.a = 0.4
+      graphics.rectangle(self.x, self.y, self.w+6, self.h+6, 3, 3, glow_color)
+      graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, nil, 2, yellow[0])
+    else
+      graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, nil, 2, border_color)
+    end
   end
 
   graphics.pop()

@@ -154,6 +154,27 @@ function WeaponCard:buy()
   return true
 end
 
+function WeaponCard:on_mouse_enter()
+  WeaponCard.super.on_mouse_enter(self)
+
+  -- Highlight target slot if can afford
+  if self.can_afford and self.parent and self.parent.get_weapon_target_slot then
+    local target_card, is_upgrade = self.parent:get_weapon_target_slot(self.weapon_name)
+    if target_card then
+      target_card.highlight_target = true
+    end
+  end
+end
+
+function WeaponCard:on_mouse_exit()
+  WeaponCard.super.on_mouse_exit(self)
+
+  -- Clear highlights
+  if self.parent and self.parent.clear_all_highlights then
+    self.parent:clear_all_highlights()
+  end
+end
+
 function WeaponCard:draw()
   -- Let BaseCard handle the main drawing
   self:draw_base_card()

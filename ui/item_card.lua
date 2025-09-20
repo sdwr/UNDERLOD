@@ -366,13 +366,18 @@ function ItemCard:update(dt)
       -- SUCCESS: The player can afford it and has space.
       self.timeGrabbed = love.timer.getTime()
       self.grabbed = true
-      
+
       -- Store the mouse offset from card center when grabbing
       local mouse_x, mouse_y = camera:get_mouse_position()
       self.grab_offset_x = mouse_x - self.x
       self.grab_offset_y = mouse_y - self.y
-      
+
       self:remove_set_bonus_tooltip()
+
+      -- Clear highlights when grabbed
+      if self.parent and self.parent.clear_all_highlights then
+        self.parent:clear_all_highlights()
+      end
         
     elseif not can_buy and gold >= self.cost then
       self:remove_set_bonus_tooltip()
@@ -522,11 +527,24 @@ end
 
 function ItemCard:on_mouse_enter()
   ItemCard.super.on_mouse_enter(self)
+
+  -- Highlight target slot if not grabbed
+  if not self.grabbed and self.parent and self.parent:is(BuyScreen) then
+    local weapon, slot_index, weapon_card, item_part = self.parent:get_item_target_slot(self.item)
+    if item_part and item_part.highlight then
+      item_part:highlight()
+    end
+  end
 end
 
 function ItemCard:on_mouse_exit()
   ItemCard.super.on_mouse_exit(self)
   self:remove_set_bonus_tooltip()
+
+  -- Clear highlights
+  if self.parent and self.parent.clear_all_highlights then
+    self.parent:clear_all_highlights()
+  end
 end
 
 function ItemCard:die()

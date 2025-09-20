@@ -706,7 +706,18 @@ function ItemPart:draw(y)
     -- Use V2 item tier_color if available, otherwise fall back to item_to_color
     -- But show default color when item is grabbed
     local tier_color = (item and not self.itemGrabbed and not self.hide_item_display) and (item.tier_color or item_to_color(item)) or grey[0]
-    graphics.rectangle(self.x, self.y, self.w+4, self.h+4, 3, 3, tier_color)
+
+    -- Override with yellow when highlighted
+    if self.highlighted then
+      tier_color = yellow[0]
+      -- Draw a larger yellow glow rectangle behind with reduced opacity
+      local glow_color = yellow[0]:clone()
+      glow_color.a = 0.4
+      graphics.rectangle(self.x, self.y, self.w+8, self.h+8, 3, 3, glow_color)
+    else
+      graphics.rectangle(self.x, self.y, self.w+4, self.h+4, 3, 3, tier_color)
+    end
+
     graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, bg[5])
 
     if item and not self.hide_item_display and not self.itemGrabbed then

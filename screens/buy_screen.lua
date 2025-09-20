@@ -327,6 +327,60 @@ function BuyScreen:can_buy_weapon(weapon_name)
   return true
 end
 
+function BuyScreen:get_item_target_slot(item)
+  -- Find the first available slot for an item across all weapons
+  if not self.weapons or not self.owned_weapons_display then return nil, nil, nil, nil end
+
+  local weapon, slot_index = Helper.Unit:find_available_weapon_slot(self.weapons, item)
+  if not weapon or not slot_index then return nil, nil, nil, nil end
+
+  -- Find the corresponding weapon card and item part
+  for _, card in ipairs(self.owned_weapons_display.weapon_cards) do
+    if card.weapon == weapon and card.item_parts and card.item_parts[slot_index] then
+      return weapon, slot_index, card, card.item_parts[slot_index]
+    end
+  end
+
+  return weapon, slot_index, nil, nil
+end
+
+function BuyScreen:get_weapon_target_slot(weapon_name)
+  -- Find existing weapon for upgrade or first empty slot
+  if not self.weapons or not self.owned_weapons_display then return nil, false end
+
+  -- Check for existing weapon (upgrade)
+  for _, card in ipairs(self.owned_weapons_display.weapon_cards) do
+    if card.weapon and card.weapon.name == weapon_name then
+      return card, true -- Found existing weapon, this is an upgrade
+    end
+  end
+
+  -- Check for first empty slot
+  for _, card in ipairs(self.owned_weapons_display.weapon_cards) do
+    if card.is_empty then
+      return card, false -- Found empty slot, this is a new weapon
+    end
+  end
+
+  return nil, false
+end
+
+function BuyScreen:clear_all_highlights()
+  -- Clear all highlighted slots
+  if self.owned_weapons_display and self.owned_weapons_display.weapon_cards then
+    for _, card in ipairs(self.owned_weapons_display.weapon_cards) do
+      card.highlight_target = false
+      if card.item_parts then
+        for _, part in ipairs(card.item_parts) do
+          if part.unhighlight then
+            part:unhighlight()
+          end
+        end
+      end
+    end
+  end
+end
+
 --item functions
 --NO LONGER FUNCTIONAL WITH SLOT SYSTEM
 function BuyScreen:unit_first_available_inventory_slot(unit)
