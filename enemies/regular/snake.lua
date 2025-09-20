@@ -22,7 +22,7 @@ fns['init_enemy'] = function(self)
   -- Snake segment spawning variables
   self.spawned_segments = {}  -- References to spawned segment enemies
   self.segment_spawn_distance = 20  -- Distance to travel before spawning new segment
-  self.distance_traveled = 20  -- Start at 10 to spawn first segment sooner
+  self.distance_traveled = 19  -- Start at 10 to spawn first segment sooner
   self.last_position = nil  -- Track last position for distance calculation
 
   self.segment_count = 0
@@ -81,9 +81,7 @@ fns['spawn_segment'] = function(self)
       x = segment_x,
       y = segment_y,
       level = self.level,
-      data = {
-        parent_snake = self
-      }
+      parent_snake = self
     }
 
     -- Set rotation after creation
@@ -96,36 +94,34 @@ fns['spawn_segment'] = function(self)
 end
 
 fns['draw_enemy'] = function(self)
-  -- Draw snake as a long rectangle
-  graphics.push(self.x, self.y, self.r, 1, 1)
+  local animation_success = self:draw_animation()
+
+  if not animation_success then
+    self:draw_fallback_animation()
+  end
+end
+
+-- Custom fallback drawing for snake head
+fns['draw_fallback_custom'] = function(self)
+  -- Determine base color (hit flash, silenced, or normal color)
+  local base_color = self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color
+
+  graphics.push(self.x, self.y, self.r or 0, self.hfx.hit.x, self.hfx.hit.x)
 
   -- Draw main body rectangle
-  local body_color = self.color:clone()
-  graphics.rectangle(self.x, self.y, self.snake_length, self.snake_width, 3, 3, body_color)
+  graphics.rectangle(self.x, self.y, self.snake_length, self.snake_width, 3, 3, base_color)
 
   -- Draw darker inner stripe for depth
-  local stripe_color = self.color:clone()
+  local stripe_color = base_color:clone()
   stripe_color = stripe_color:darken(0.3)
   graphics.rectangle(self.x, self.y, self.snake_length * 0.8, self.snake_width * 0.4, 2, 2, stripe_color)
 
-  graphics.rotate(0)
-  graphics.pop()
 
-  -- Draw head indicator (front of the rectangle)
-  local vx, vy = self:get_velocity()
-  local speed = math.sqrt(vx * vx + vy * vy)
-  local head_x, head_y = self.x, self.y
+  local head_x = self.x + (self.snake_length / 2)
+  local head_y = self.y 
 
-  if speed > 0.1 then
-    -- Calculate head position at front of rectangle based on movement direction
-    local dir_x = vx / speed
-    local dir_y = vy / speed
-    head_x = self.x + dir_x * (self.snake_length / 2 - 5)
-    head_y = self.y + dir_y * (self.snake_length / 2 - 5)
-  end
-
-  -- Draw head as a small circle
-  graphics.circle(head_x, head_y, 6, self.color)
+  -- Draw head as a small circle at the front
+  graphics.circle(head_x, head_y, 6, base_color)
 
   -- Draw eyes on the head
   local eye_color = white[0]:clone()
@@ -133,22 +129,17 @@ fns['draw_enemy'] = function(self)
   local eye_size = 2
   local eye_offset = 3
 
-  if speed > 0.1 then
-    local dir_x = vx / speed
-    local dir_y = vy / speed
-    local perp_x = -dir_y
-    local perp_y = dir_x
+  local perp_x = 0
+  local perp_y = 1
 
-    graphics.circle(head_x + perp_x * eye_offset,
-                   head_y + perp_y * eye_offset,
-                   eye_size, eye_color)
-    graphics.circle(head_x - perp_x * eye_offset,
-                   head_y - perp_y * eye_offset,
-                   eye_size, eye_color)
-  end
+  graphics.circle(head_x + perp_x * eye_offset,
+                  head_y + perp_y * eye_offset,
+                  eye_size, eye_color)
+  graphics.circle(head_x - perp_x * eye_offset,
+                  head_y - perp_y * eye_offset,
+                  eye_size, eye_color)
 
-  -- Apply status effect overlays if needed
-  self:draw_fallback_status_effects()
+  graphics.pop()
 end
 
 enemy_to_class['snake'] = fns

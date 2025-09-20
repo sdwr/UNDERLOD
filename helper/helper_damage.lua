@@ -11,7 +11,7 @@ function Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects,
   -- Check invulnerability and call reject callback if applicable
   if unit.invulnerable then
     if unit.rejectDamageCallback then
-      unit:rejectDamageCallback(damage, from, damageType)
+      unit:rejectDamageCallback(damage, from, damageType, playHitEffects)
     end
     return
   end
