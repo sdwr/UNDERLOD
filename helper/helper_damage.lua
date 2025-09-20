@@ -6,7 +6,7 @@ Helper.Damage = {}
 -- ===================================================================
 function Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects, hitOptions)
   -- Early returns for invalid states
-  if not unit or unit.dead or unit.offscreen then return end
+  if not unit or unit.dead then return end
 
   -- Check invulnerability and call reject callback if applicable
   if unit.invulnerable then

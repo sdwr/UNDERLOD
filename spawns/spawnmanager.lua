@@ -865,7 +865,7 @@ function SpawnManager:generate_subwave_groups()
       group = {
         type = 'snake',
         amount = snake_amount,
-        spawn_type = 'nil',
+        spawn_type = 'scatter',
         power = snake_power,
         spawn_time = 0
       }

@@ -183,6 +183,12 @@ function Enemy:update(dt)
       return
     end
 
+    if not self.has_been_onscreen then
+      if self.fully_onscreen then
+        self.has_been_onscreen = true
+      end
+    end
+
     if self.offscreen or not self.way_onscreen then
       self.in_arena_radius = false
     else
@@ -702,6 +708,11 @@ function Enemy:update_move_seek_spiral()
   end
 
 function Enemy:update_move_seek_location_no_wander()
+  --dont move after crossing the screen (should be just for cross screen?)
+  if self.has_been_onscreen and self.offscreen then
+    return false
+  end
+
   if self.target_location then
     if self:distance_to_point(self.target_location.x, self.target_location.y) < DISTANCE_TO_TARGET_FOR_IDLE then
       return false
