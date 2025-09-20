@@ -661,14 +661,21 @@ function Enemy:update_move_seek_spiral()
     return false
   end
 
-  if math.distance(self.x, self.y, self.target_location.x, self.target_location.y) < DISTANCE_TO_TARGET_FOR_IDLE then
+  local distance_to_target = math.distance(self.x, self.y, self.target_location.x, self.target_location.y)
+
+  if distance_to_target < DISTANCE_TO_TARGET_FOR_IDLE then
     return false
   end
 
   -- These variables define the spiral's shape (no dt dependency)
-  local RADIUS_REDUCTION = 20 -- Move to a circle 20 pixels smaller each step
+  local BASE_RADIUS_REDUCTION = .95
   local ANGLE_OFFSET = math.pi / 6 -- 30 degrees ahead for the spiral motion
 
+  local radius_reduction = BASE_RADIUS_REDUCTION
+  if distance_to_target < 150 then
+    radius_reduction = 0.97
+  end
+  
   -- 1. Get the enemy's current position relative to the center
   local dx = self.x - self.target_location.x
   local dy = self.y - self.target_location.y
@@ -680,7 +687,7 @@ function Enemy:update_move_seek_spiral()
 
   -- 3. Calculate the target point on the spiral path
   -- Move to a smaller radius and ahead by a fixed angle
-  local target_radius = math.max(0, current_radius - RADIUS_REDUCTION)
+  local target_radius = math.max(0, current_radius * radius_reduction)
   local target_angle = current_angle + ANGLE_OFFSET
 
   -- Convert the polar coordinates back to Cartesian coordinates

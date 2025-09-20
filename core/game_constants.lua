@@ -395,7 +395,7 @@ MOVEMENT_TYPE_DATA = {
     after = MOVEMENT_TYPE_SEEK_ORB_STALL_ATTACK
   },
   [MOVEMENT_TYPE_SEEK_ORB_SPIRAL] = {
-    can_attack = false,
+    can_attack = true,
     action_timer = 1.5,
     after = MOVEMENT_TYPE_SEEK_ORB_SPIRAL
   },
