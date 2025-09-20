@@ -279,13 +279,13 @@ function OwnedWeaponCard:draw()
       local glow_color = yellow[0]:clone()
       glow_color.a = 0.4
       graphics.rectangle(self.x, self.y, self.w+6, self.h+6, 3, 3, glow_color)
-      graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, nil, border_width, yellow[0])
+      graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, yellow[0], border_width)
     else
       -- Draw border with the appropriate level color
       if self.selected then
-        graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, nil, border_width, yellow[0])
+        graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, yellow[0], border_width)
       else
-        graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, nil, border_width, border_color)
+        graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, border_color, border_width)
       end
     end
   end
