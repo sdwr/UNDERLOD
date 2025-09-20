@@ -84,6 +84,7 @@ function Cast:init(args)
   --vars from data
   self.rotation_lock = self.rotation_lock or false
   self.cast_length = self.cast_length or (self.unit and self.unit.cast_time) or 0.5
+  
   if self.unit.is_troop then
     self.cast_length = self.cast_length * math.random(0.8, 1.2)
   end

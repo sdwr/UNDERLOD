@@ -38,12 +38,12 @@ fns['init_enemy'] = function(self)
     end,
     cancel_on_range = false,
     instantspell = true,
+    cast_length = 0.1,
     cast_sound = scout1,
     spellclass = DoubleShot,  -- Custom spell class for 2 bullets
     spelldata = {
       group = main.current.main,
       color = red[0],
-      cast_length = 0.1,
       radius = 4,
       damage = function() return self.dmg end,
       v = 120,  -- Speed for physics-based movement
