@@ -668,7 +668,7 @@ function Enemy:update_move_seek_spiral()
   end
 
   -- These variables define the spiral's shape (no dt dependency)
-  local BASE_RADIUS_REDUCTION = .95
+  local BASE_RADIUS_REDUCTION = .9
   local ANGLE_OFFSET = math.pi / 6 -- 30 degrees ahead for the spiral motion
 
   local radius_reduction = BASE_RADIUS_REDUCTION

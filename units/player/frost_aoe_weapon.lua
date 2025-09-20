@@ -36,9 +36,6 @@ function FrostAoeWeapon:setup_cast(cast_target)
     name = 'frost_explosion',
     viable = function() return math.distance(self.x, self.y, cast_target.x, cast_target.y) <= self.cast_radius end,
     oncast = function() end,
-    oncastfinish = function() 
-      self:stretch_on_attack()
-    end,
     unit = self,
     target = cast_target,
     backswing = self.backswing,
