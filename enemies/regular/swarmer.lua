@@ -241,7 +241,7 @@ fns['touch_explosion'] = function(self)
   }
 
   -- Play explosion sound
-    gold1:play{pitch = random:float(1.1, 1.3), volume = 0.8}
+    gold1:play{pitch = random:float(1.1, 1.3), volume = 0.4}
 end
 
 fns['on_death'] = function(self)
