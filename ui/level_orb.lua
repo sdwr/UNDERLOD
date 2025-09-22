@@ -150,7 +150,8 @@ function LevelOrb:on_trigger_enter(other)
   if not other:is(Enemy) then return end
   if other.class == 'boss' then return end
   if other.x ~= other.x then return end
-  -- if not other.can_damage_orb then return end
+  if other.dead then return end
+  if other.not_damage_orb then return end
 
   local enemy_round_power = enemy_to_round_power[other.type] or 100
   local damage_taken = enemy_round_power * 0.1
@@ -168,7 +169,7 @@ function LevelOrb:hit(damage, from, damage_type)
   
   -- Apply damage reduction
   -- local actual_damage = damage * (1 - self.damage_reduction)
-  local actual_damage = 1
+  local actual_damage = math.min(damage, 1)
   
   -- Take damage
   self.hp = self.hp - actual_damage

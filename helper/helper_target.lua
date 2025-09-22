@@ -90,7 +90,11 @@ function Helper.Target:way_outside_camera_bounds(x, y)
   or y > gh - SpawnGlobals.ENEMY_MOVE_BOUNDS_OFFSET_WAY_OUTSIDE
 end
 
-function Helper.Target:approach_orb_stall_speed_multiplier(distance_to_orb)
+function Helper.Target:approach_orb_stall_speed_multiplier(unit, distance_to_orb)
+  if unit and unit.offscreen then
+    return 1.5
+  end
+
   if distance_to_orb > 140 then
     return 1
   elseif distance_to_orb > 110 then

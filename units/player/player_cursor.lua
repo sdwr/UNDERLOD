@@ -145,8 +145,10 @@ function PlayerCursor:take_damage(damage)
   -- Redirect damage to the orb
   if self.orb and not self.orb.dead then
     self.orb:hit(damage, nil, DAMAGE_TYPE_PHYSICAL)
-    self.invulnerable = true
-    self.t:after(PLAYER_CURSOR_INVULNERABILITY_TIME, function() self.invulnerable = false end)
+    if damage >= 1 then
+      self.invulnerable = true
+      self.t:after(PLAYER_CURSOR_INVULNERABILITY_TIME, function() self.invulnerable = false end)
+    end
   end
 end
 

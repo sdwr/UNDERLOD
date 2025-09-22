@@ -663,7 +663,7 @@ function Enemy:update_move_seek_stall()
       --slow down as you get closer to the target
       local distance_to_target = self:distance_to_point(self.target_location.x, self.target_location.y)
       distance_to_target = math.clamp(distance_to_target, 65, 150)
-      local speed_multiplier = Helper.Target:approach_orb_stall_speed_multiplier(distance_to_target)
+      local speed_multiplier = Helper.Target:approach_orb_stall_speed_multiplier(self, distance_to_target)
       self:set_physics_properties({max_v = self.mvspd * speed_multiplier})
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
       self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER)

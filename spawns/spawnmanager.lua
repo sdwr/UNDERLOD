@@ -637,7 +637,7 @@ function SpawnManager:init(arena)
     self.all_groups_spawned = false
     
     -- Delay between subwaves
-    self.between_subwaves_delay = 2  -- 2 seconds between subwaves
+    self.between_subwaves_delay = 0  -- 2 seconds between subwaves
     
     -- Timers and Trackers
     self.timer = TIME_BETWEEN_WAVES
@@ -846,7 +846,7 @@ function SpawnManager:generate_subwave_groups()
     local roll = random:float(0, 1)
     local group
 
-    if roll < 0.8 then  -- 80% chance for swarmers
+    if self.arena.level == 1 or roll < 0.8 then  -- 80% chance for swarmers
       local swarmer_amount = SWARMERS_PER_LEVEL(self.arena.level)
       local swarmer_power = enemy_to_round_power['swarmer'] * swarmer_amount
 
@@ -858,7 +858,7 @@ function SpawnManager:generate_subwave_groups()
         spawn_time = 0
       }
       table.insert(swarmer_groups, group)
-    else  -- 20% chance for snakes
+    else --chance for snakes
       local snake_amount = BOULDERS_PER_LEVEL(self.arena.level)
       local snake_power = enemy_to_round_power['snake'] * snake_amount
 

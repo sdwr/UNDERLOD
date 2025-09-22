@@ -9,6 +9,7 @@ fns['init_enemy'] = function(self)
   self.size = 'segment'  -- Use tiny size for segments (1x1)
 
   self.invulnerable = true
+  self.not_damage_orb = true
 
   -- Visual properties
   self.color = purple[-3]:clone()
