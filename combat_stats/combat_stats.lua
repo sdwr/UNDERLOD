@@ -108,6 +108,8 @@ enemy_cast_times = {
   ['boomerang'] = ENT_CAST_TIME,
   
   -- Enemies with instant cast (no animation or simple attacks)
+  ['snake_boss'] = cast_times['instant'],
+
   ['stomper'] = cast_times['instant'],
   ['plasma'] = cast_times['instant'],
   ['spread'] = cast_times['instant'],
@@ -606,6 +608,8 @@ unit_stat_multipliers = {
 }
 
 enemy_type_to_stats = {
+    ['snake_boss'] = { mvspd = 2.5},
+  
     ['swarmer'] = {},
 
     ['snake'] = { mvspd = 3},

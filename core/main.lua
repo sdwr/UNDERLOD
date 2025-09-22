@@ -1298,6 +1298,7 @@ function init()
   }
 
   boss_enemies = {
+    'snake_boss',
     'stompy',
     'dragon',
     'heigan',
@@ -1305,6 +1306,7 @@ function init()
   }
 
   level_to_boss_enemy = {
+    [4] = 'snake_boss',
     [6] = 'stompy',
     [11] = 'dragon',
     [16] = 'heigan',

@@ -84,7 +84,7 @@ function Cast:init(args)
   --vars from data
   self.rotation_lock = self.rotation_lock or false
   self.cast_length = self.cast_length or (self.unit and self.unit.cast_time) or 0.5
-  
+
   if self.unit.is_troop then
     self.cast_length = self.cast_length * math.random(0.8, 1.2)
   end
@@ -180,7 +180,9 @@ function Cast:cast()
       self.unit:onAttackCallbacks(self.target)
     end
   else 
-    Helper.Unit:set_state(self.unit, unit_states['channeling'])
+    if not self.unit.move_while_casting then
+      Helper.Unit:set_state(self.unit, unit_states['channeling'])
+    end
   end
   self.unit:end_cast()
   self:die()
@@ -330,7 +332,7 @@ function Spell:init(args)
   self.startTime = Helper.Time.time
   self.elapsedTime = 0
 
-  if self.spell_duration > 0 then
+  if self.spell_duration > 0 and not self.unit.move_while_casting then
     Helper.Unit:set_state(self.unit, unit_states['channeling'])
   end
 

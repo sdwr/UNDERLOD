@@ -329,6 +329,8 @@ function Enemy:choose_movement_target()
     return self:acquire_target_approach_orb_random()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_RANGE then
     return self:acquire_target_seek_orb_range()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_MOVE_FORWARD then
+    return self:acquire_target_move_forward()
   elseif self.currentMovementAction == MOVEMENT_TYPE_RANDOM then
     return self:acquire_target_random()
   elseif self.currentMovementAction == MOVEMENT_TYPE_STATIONARY or
@@ -349,6 +351,8 @@ function Enemy:update_movement(dt)
     return self:update_move_seek_stall()
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_SPIRAL then
     return self:update_move_seek_spiral(dt)
+  elseif self.currentMovementAction == MOVEMENT_TYPE_MOVE_FORWARD then
+    return self:update_move_forward(dt)
   elseif self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_ATTACK or
   self.currentMovementAction == MOVEMENT_TYPE_SEEK_ORB_STALL_ATTACK then
     return self:update_move_seek_stall()
@@ -595,6 +599,15 @@ function Enemy:acquire_target_random()
   return true
 end
 
+function Enemy:acquire_target_move_forward()
+  -- Set a target 100 units ahead in the current direction
+  self.target_location = {
+    x = self.x + math.cos(self.r) * 100,
+    y = self.y + math.sin(self.r) * 100
+  }
+  return true
+end
+
 function Enemy:update_move_wander()
   self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER)
   return true
@@ -660,6 +673,23 @@ function Enemy:update_move_seek_stall()
     end
   end
   return false
+end
+
+function Enemy:update_move_forward()
+  -- Move forward by seeking the target point
+  if not self.target_location then
+    return false
+  end
+
+  -- Check if we're close enough to the target
+  if self:distance_to_point(self.target_location.x, self.target_location.y) < DISTANCE_TO_TARGET_FOR_IDLE then
+    return false  -- Need new target
+  end
+
+  -- Seek the target point
+  self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
+
+  return true
 end
 
 function Enemy:update_move_seek_spiral()

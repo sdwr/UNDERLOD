@@ -1,6 +1,9 @@
 
 function Is_Boss_Level(level)
-  if level == 6 then
+  if level == 4 then
+    -- return 'snake_boss'
+    return nil
+  elseif level == 6 then
     return 'stompy'
   elseif level == 11 then
     return 'dragon'

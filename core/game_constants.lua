@@ -70,7 +70,7 @@ RALLY_DURATION = 3
 RALLY_CIRCLE_OVERSHOOT_DISTANCE = 10
 RALLY_CIRCLE_STOP_DISTANCE = 5
 
-BOSS_MASS = 10
+BOSS_MASS = 1
 SPECIAL_ENEMY_MASS = 1
 REGULAR_ENEMY_MASS = 1
 TROOP_MASS = 1
@@ -377,6 +377,7 @@ MOVEMENT_TYPE_WANDER = 'wander'
 MOVEMENT_TYPE_NONE = 'none'
 MOVEMENT_TYPE_STATIONARY = 'stationary'
 MOVEMENT_TYPE_SEEK_ORB_RANGE_STATIONARY = 'seek_orb_range_stationary'
+MOVEMENT_TYPE_MOVE_FORWARD = 'move_forward'
 
 MOVEMENT_TYPE_DATA = {
   [MOVEMENT_TYPE_CROSS_SCREEN] = {
@@ -442,6 +443,11 @@ MOVEMENT_TYPE_DATA = {
     action_timer = 0.5,
     after = MOVEMENT_TYPE_STATIONARY
   },
+  [MOVEMENT_TYPE_MOVE_FORWARD] = {
+    can_attack = true,
+    action_timer = 0.5,
+    after = MOVEMENT_TYPE_MOVE_FORWARD
+  },
   ['default'] = {
     can_attack = true,
     action_timer = 0.5,
@@ -481,6 +487,7 @@ enemy_movement_types = {
   
   ['swarmer'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
   ['boulder'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
+  ['snake_boss'] = MOVEMENT_TYPE_MOVE_FORWARD,
   ['snake'] = MOVEMENT_TYPE_CROSS_SCREEN,
   ['snake_segment'] = MOVEMENT_TYPE_STATIONARY,  -- Segments don't move
   ['tank'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
