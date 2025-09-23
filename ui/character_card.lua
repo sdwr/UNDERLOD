@@ -531,7 +531,7 @@ function ItemPart:sellItem()
     else
       --play sell sound
       coins1:play{pitch = random:float(0.8, 1.2), volume = 1}
-      local sell_value = math.floor(item.cost / 2)
+      local sell_value = 0  -- Items sell for 0 gold
       gold = gold + sell_value
 
       Stats_Sell_Item()
@@ -598,8 +598,8 @@ function ItemPart:update(dt)
   if input.m2.pressed and self.colliding_with_mouse and self:hasItem() then
     local item = self:getItem()
     if item then
-      -- Calculate sell price (50% of original cost)
-      local sell_price = math.floor((item.cost or 0) * 0.5)
+      -- Items sell for 0 gold
+      local sell_price = 0
 
       -- Remove item from slot
       if self.parent.unit then

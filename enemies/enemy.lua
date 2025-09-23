@@ -414,12 +414,11 @@ end
 
 function Enemy:acquire_target_seek()
   -- 30% chance to target critters
-  if random:float(0, 1) < ENEMY_CHANCE_TO_TARGET_CRITTER then
-    self.target = Helper.Target:get_closest_enemy(self)
+  if main and main.current and main.current.current_arena and main.current.current_arena.player_cursor then
+    self.target = main.current.current_arena.player_cursor
   else
-    self.target = Helper.Target:get_random_enemy(self)
+    self.target = {x = gw/2, y = gh/2}
   end
-  return self.target ~= nil
 end
 
 function Enemy:acquire_target_loose_seek()

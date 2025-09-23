@@ -119,9 +119,8 @@ function OwnedWeaponCard:update(dt)
     if has_items then
       Create_Info_Text('remove items first', self, 'error')
     else
-      -- Calculate sell price (50% of weapon cost)
-      local weapon_cost = 20 -- Base weapon cost
-      local sell_price = math.floor(weapon_cost * 0.5)
+      -- Weapons sell for 0 gold
+      local sell_price = 0
 
       -- Set weapon to nil in BuyScreen's weapons array (keeps indices stable)
       local buy_screen = main.current
