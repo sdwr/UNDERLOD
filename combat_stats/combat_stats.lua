@@ -499,12 +499,7 @@ function SWARMERS_PER_LEVEL(level)
 end
 
 function BOULDERS_PER_LEVEL(level)
-  if level < 4 then return 1 end
-  if level < 8 then return 2 end
-  if level < 12 then return 3 end
-  if level < 16 then return 4 end
-  if level < 20 then return 5 end
-  return 6
+  return 1
 end
 
 function SPECIAL_ENEMIES_PER_LEVEL(level)

@@ -599,9 +599,15 @@ SpawnManager.debug_enabled = false
 function SpawnManager:init(arena)
     self.arena = arena
     self.level_data = arena.level_list[arena.level]
-    self.t = self.arena.t 
+    self.t = self.arena.t
 
     self.spawn_reservations = {}
+
+    -- Spawn collision check system
+    self.spawn_check_radius = 2  -- Minimum distance between spawned enemies
+    self.spawn_queue = {}  -- Queue for enemies that couldn't spawn due to collision
+    self.last_spawn_enemy_time = love.timer.getTime()
+    self.enemy_spawns_prevented = 0
 
     -- Spawning State Machine
     self:change_state('arena_start')
@@ -845,29 +851,18 @@ function SpawnManager:generate_subwave_groups()
   local swarmer_groups = {}
   local snake_groups = {}
 
-  -- Generate swarmers and snakes to fill remaining power
-  while power_generated < target_power do
-    -- Alternate between swarmers and snakes with weighted chance
-    local roll = random:float(0, 1)
-    local group
+  -- First, determine how many snake groups to spawn
+  local num_snakes = self:get_snakes_for_subwave()
+  local snake_groups_to_spawn = num_snakes > 0 and math.ceil(num_snakes / BOULDERS_PER_LEVEL(self.arena.level)) or 0
 
-    if self.arena.level == 1 or roll < 0.8 then  -- 80% chance for swarmers
-      local swarmer_amount = SWARMERS_PER_LEVEL(self.arena.level)
-      local swarmer_power = enemy_to_round_power['swarmer'] * swarmer_amount
+  -- Create snake groups first (if any)
+  for i = 1, snake_groups_to_spawn do
+    local snake_amount = BOULDERS_PER_LEVEL(self.arena.level)
+    local snake_power = enemy_to_round_power['snake'] * snake_amount
 
-      group = {
-        type = 'swarmer',
-        amount = swarmer_amount,
-        spawn_type = random:bool(30) and 'scatter' or 'nil',
-        power = swarmer_power,
-        spawn_time = 0
-      }
-      table.insert(swarmer_groups, group)
-    else --chance for snakes
-      local snake_amount = BOULDERS_PER_LEVEL(self.arena.level)
-      local snake_power = enemy_to_round_power['snake'] * snake_amount
-
-      group = {
+    -- Don't exceed target power
+    if power_generated + snake_power <= target_power then
+      local group = {
         type = 'snake',
         amount = snake_amount,
         spawn_type = 'scatter',
@@ -875,11 +870,30 @@ function SpawnManager:generate_subwave_groups()
         spawn_time = 0
       }
       table.insert(snake_groups, group)
+      power_generated = power_generated + snake_power
+    end
+  end
+
+  -- Fill remaining power with swarmer groups
+  while power_generated < target_power do
+    local swarmer_amount = SWARMERS_PER_LEVEL(self.arena.level)
+    local swarmer_power = enemy_to_round_power['swarmer'] * swarmer_amount
+
+    -- Check if adding this group would exceed target
+    if power_generated + swarmer_power > target_power * 1.2 then
+      -- Too much, reduce the amount or skip
+      break
     end
 
-    if group then
-      power_generated = power_generated + group.power
-    end
+    local group = {
+      type = 'swarmer',
+      amount = swarmer_amount,
+      spawn_type = random:bool(30) and 'scatter' or 'nil',
+      power = swarmer_power,
+      spawn_time = 0
+    }
+    table.insert(swarmer_groups, group)
+    power_generated = power_generated + swarmer_power
   end
 
   -- Distribute spawn times:
@@ -946,10 +960,10 @@ function SpawnManager:get_special_enemies_for_subwave()
   -- Format: [level] = {subwave1_count, subwave2_count}
   local special_counts = {
     [1] = {0, 0},      -- Level 1: no specials
-    [2] = {1, 2},      -- Level 2: no specials
-    [3] = {2, 4},      -- Level 3: 1 per subwave
-    [4] = {3, 4},      -- Level 4: 1 per subwave
-    [5] = {4, 5},      -- Level 5: 1 in first, 2 in second
+    [2] = {1, 2},      -- Level 2: 1-2 specials
+    [3] = {2, 2},      -- Level 3: 2 per subwave
+    [4] = {2, 3},      -- Level 4: 2-3 specials
+    [5] = {3, 4},      -- Level 5: 3-4 specials
     -- Boss levels don't spawn regular enemies
   }
 
@@ -970,10 +984,64 @@ function SpawnManager:get_special_enemies_for_subwave()
   return 0
 end
 
+-- Helper function to determine number of snakes for current subwave
+function SpawnManager:get_snakes_for_subwave()
+  local level = self.arena.level
+  local subwave = self.current_subwave
+
+  -- Define max snake counts per level
+  -- Format: [level] = max_snakes_per_subwave
+  local max_snakes_by_level = {
+    [1] = 0,   -- No snakes at level 1
+    [2] = 1,   -- No snakes at level 2
+    [3] = 2,   -- Max 1 snake starting level 3
+    [4] = 3,   -- Max 2 snakes
+    [5] = 3,   -- Max 2 snakes
+    -- After boss levels
+    [7] = 3,
+    [8] = 3,
+    [9] = 4,
+    [10] = 4,
+    -- Continue pattern...
+  }
+
+  -- Get max snakes for this level
+  local max_snakes = max_snakes_by_level[level]
+  if not max_snakes and level > 10 then
+    -- Formula for higher levels: gradually increase
+    max_snakes = 4
+  elseif not max_snakes then
+    max_snakes = 0
+  end
+
+  -- Randomize between 0, some, and max
+  if max_snakes == 0 then
+    return 0
+  elseif max_snakes == 1 then
+    -- 50% chance of 0 or 1
+    return random:int(0, 1)
+  else
+    -- Three possibilities: 0, half max, or max
+    local roll = random:float(0, 1)
+    if roll < 0.33 then
+      return 0  -- No snakes this subwave
+    elseif roll < 0.66 then
+      return math.ceil(max_snakes / 2)  -- Some snakes
+    else
+      return max_snakes  -- Max snakes
+    end
+  end
+end
+
 -- Process scheduled spawns during subwave
 function SpawnManager:process_scheduled_spawns(dt)
   local time_since_start = Helper.Time.time - self.subwave_start_time
-  
+
+  -- Periodically try to spawn queued enemies when space is available
+  if #self.spawn_queue > 0 and love.timer.getTime() - self.last_spawn_enemy_time > 0.5 then
+    self:try_spawn_from_queue()
+  end
+
   -- Check if subwave timer has elapsed - force completion
   if time_since_start >= self.subwave_timeout then
     if SpawnManager.debug_enabled then
@@ -1068,14 +1136,21 @@ end
 
 -- Complete the current subwave and move to next
 function SpawnManager:complete_current_subwave()
+  -- Process any remaining spawns in the queue
+  self:process_spawn_queue()
+
   if SpawnManager.debug_enabled then
-      print(string.format("[SpawnManager] Completing subwave %d-%d (spawned %d/%d power)",
+      print(string.format("[SpawnManager] Completing subwave %d-%d (spawned %d/%d power, prevented %d spawns)",
           self.current_wave, self.current_subwave,
-          self.current_subwave_power_spawned, self.current_subwave_power_target))
+          self.current_subwave_power_spawned, self.current_subwave_power_target,
+          self.enemy_spawns_prevented))
   end
-  
+
+  -- Reset spawn prevention counter
+  self.enemy_spawns_prevented = 0
+  self.spawn_queue = {}
+
   -- Check if this is the last subwave of the last wave
-  local is_last_subwave = self.current_subwave >= self.subwaves_per_wave
   
   if is_last_subwave then
     -- This is the last subwave - wait for all enemies to die
@@ -1094,21 +1169,121 @@ end
 -- Spawn a group instantly without delay
 function SpawnManager:spawn_group_instantly(group_data)
   local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
-  
+
   if spawn_type == 'scatter' then
     for i = 1, amount do
       local location = Get_Offscreen_Spawn_Point()
-      Spawn_Enemy(self.arena, type, location)
+      self:try_spawn_enemy(type, location, nil)
     end
   else
     local wave_spawn_location = Get_Offscreen_Spawn_Point()
     local target_location = Get_Cross_Screen_Destination(wave_spawn_location)
-    
+
     for i = 1, amount do
       local offset = SpawnGlobals.spawn_offsets[(i % #SpawnGlobals.spawn_offsets) + 1]
       local location = {x = wave_spawn_location.x + offset.x + random:float(-1, 1), y = wave_spawn_location.y + offset.y + random:float(-1, 1)}
-      Spawn_Enemy(self.arena, type, location, target_location)
+      self:try_spawn_enemy(type, location, target_location)
     end
+  end
+end
+
+-- Try to spawn an enemy, queue if blocked
+function SpawnManager:try_spawn_enemy(type, location, target_location)
+  -- Check for collision
+  local check_circle = Circle(location.x, location.y, self.spawn_check_radius)
+  local objects = self.arena.main:get_objects_in_shape(check_circle, main.current.enemies)
+
+  if #objects > 0 then
+    -- Spawn blocked, add to queue
+    self.enemy_spawns_prevented = self.enemy_spawns_prevented + 1
+    table.insert(self.spawn_queue, {
+      type = type,
+      target_location = target_location,
+      original_location = location
+    })
+
+    if SpawnManager.debug_enabled then
+      print(string.format("[SpawnManager] Spawn blocked at (%.1f, %.1f), queued %s (queue size: %d)",
+        location.x, location.y, type, #self.spawn_queue))
+    end
+  else
+    -- Spawn successful
+    Spawn_Enemy(self.arena, type, location, target_location)
+    self.last_spawn_enemy_time = love.timer.getTime()
+  end
+end
+
+-- Try to spawn a few enemies from the queue
+function SpawnManager:try_spawn_from_queue()
+  if #self.spawn_queue == 0 then return end
+
+  local max_spawns_per_check = 3  -- Don't spawn too many at once
+  local spawned = 0
+
+  for i = #self.spawn_queue, 1, -1 do
+    if spawned >= max_spawns_per_check then break end
+
+    local spawn_data = self.spawn_queue[i]
+    local location = Get_Offscreen_Spawn_Point()
+    local check_circle = Circle(location.x, location.y, self.spawn_check_radius)
+    local objects = self.arena.main:get_objects_in_shape(check_circle, main.current.enemies)
+
+    if #objects == 0 then
+      -- Found clear spot, spawn enemy
+      Spawn_Enemy(self.arena, spawn_data.type, location, spawn_data.target_location)
+      table.remove(self.spawn_queue, i)
+      spawned = spawned + 1
+      self.last_spawn_enemy_time = love.timer.getTime()
+    end
+  end
+
+  if spawned > 0 and SpawnManager.debug_enabled then
+    print(string.format("[SpawnManager] Spawned %d queued enemies, %d remain",
+      spawned, #self.spawn_queue))
+  end
+end
+
+-- Process queued spawns
+function SpawnManager:process_spawn_queue()
+  if #self.spawn_queue == 0 then return end
+
+  if SpawnManager.debug_enabled then
+    print(string.format("[SpawnManager] Processing spawn queue with %d enemies", #self.spawn_queue))
+  end
+
+  local max_attempts = 10
+  local spawned_count = 0
+
+  -- Try to spawn each queued enemy
+  for i = #self.spawn_queue, 1, -1 do
+    local spawn_data = self.spawn_queue[i]
+    local spawned = false
+
+    -- Try multiple random offscreen locations
+    for attempt = 1, max_attempts do
+      local location = Get_Offscreen_Spawn_Point()
+      local check_circle = Circle(location.x, location.y, self.spawn_check_radius)
+      local objects = self.arena.main:get_objects_in_shape(check_circle, main.current.enemies)
+
+      if #objects == 0 then
+        -- Found clear spot, spawn enemy
+        Spawn_Enemy(self.arena, spawn_data.type, location, spawn_data.target_location)
+        table.remove(self.spawn_queue, i)
+        spawned = true
+        spawned_count = spawned_count + 1
+        break
+      end
+    end
+
+    if not spawned and SpawnManager.debug_enabled then
+      print(string.format("[SpawnManager] Failed to spawn queued %s after %d attempts",
+        spawn_data.type, max_attempts))
+    end
+  end
+
+  if SpawnManager.debug_enabled then
+    print(string.format("[SpawnManager] Spawned %d/%d queued enemies, %d remain in queue",
+      spawned_count, spawned_count + #self.spawn_queue, #self.spawn_queue))
   end
 end
 

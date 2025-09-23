@@ -55,9 +55,9 @@ end
 
 --called in oncastfinish for all troops
 function Troop:stretch_on_attack()
-  local stretch_factor = 0.4
-  self.hfx:pull('attack_scale_y', stretch_factor)
-  self.hfx:pull('attack_scale_x', - stretch_factor)
+  -- local stretch_factor = 0.4
+  -- self.hfx:pull('attack_scale_y', stretch_factor)
+  -- self.hfx:pull('attack_scale_x', - stretch_factor)
 end
 
 function Troop:follow_mouse()
