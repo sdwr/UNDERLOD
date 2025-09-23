@@ -232,7 +232,7 @@ fns['touch_explosion'] = function(self)
     x = self.x,
     y = self.y,
     damage = function() return self.dmg * 1.5 end,  -- Good damage for the risk/reward
-    radius = 45,
+    radius = 25,
     duration = 0.2,
     pick_shape = 'circle',
     color = green[0],  -- Don't modify alpha, let Area_Spell handle it
@@ -241,7 +241,7 @@ fns['touch_explosion'] = function(self)
   }
 
   -- Play explosion sound
-    gold1:play{pitch = random:float(1.1, 1.3), volume = 0.4}
+    gold1:play{pitch = random:float(1.1, 1.3), volume = 0.2}
 end
 
 fns['on_death'] = function(self)
