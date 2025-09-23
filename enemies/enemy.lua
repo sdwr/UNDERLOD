@@ -413,12 +413,8 @@ function Enemy:acquire_target_seek_orb_spiral()
 end
 
 function Enemy:acquire_target_seek()
-  -- 30% chance to target critters
-  if main and main.current and main.current.current_arena and main.current.current_arena.player_cursor then
-    self.target = main.current.current_arena.player_cursor
-  else
-    self.target = {x = gw/2, y = gh/2}
-  end
+  self.target = Helper.Target:get_closest_enemy(self)
+  return self.target ~= nil
 end
 
 function Enemy:acquire_target_loose_seek()
@@ -648,7 +644,7 @@ function Enemy:update_move_seek()
 
   -- 3. Apply final steering adjustments in all active cases.
   self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
-
+  self:rotate_towards_velocity(0.5)
   -- 4. Return true because the movement action is successfully ongoing.
   return true
 end

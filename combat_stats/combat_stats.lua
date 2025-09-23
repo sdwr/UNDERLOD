@@ -612,7 +612,7 @@ enemy_type_to_stats = {
 
     ['snake'] = { mvspd = 3},
 
-    ['seeker'] = { dmg = 1, mvspd = 1 },
+    ['seeker'] = { dmg = 1, mvspd = 3 },
     ['chaser'] = { dmg = 1, mvspd = 1 },
     ['shooter'] = {},
 

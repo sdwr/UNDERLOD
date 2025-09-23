@@ -1,84 +1,58 @@
 local fns = {}
-fns['attack'] = function(self, mods, color)
-  mods = mods or {}
-  local t = {team = "enemy", group = main.current.effects, x = mods.x or self.x, y = mods.y or self.y, r = self.r, w = 20, color = color or self.color, damage = function() return self.dmg end,
-    character = self.character, level = self.level, parent = self, unit = self}
-
-  Helper.Unit:set_state(self, unit_states['frozen'])
-
-  self.t:after(0.3, function() 
-    Helper.Unit:set_state(self, unit_states['stopped'])
-    Area(table.merge(t, mods))
-    _G[random:table{'swordsman1', 'swordsman2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.75}
-  end, 'stopped')
-  self.t:after(0.4 + .4, function() Helper.Unit:set_state(self, unit_states['idle']) end, 'normal')
-end
-
 fns['init_enemy'] = function(self)
-  
+
   --set extra data from variables
   self.data = self.data or {}
-  self.icon = 'rat1'
+  self.icon = 'seeker'
 
-  --create shape
-  self.color = grey[0]:clone()
-  Set_Enemy_Shape(self, self.size)
+  -- Set to same size as swarmer
+  self.size = 'swarmer'
 
-
-
-  self.stopChasingInRange = false
-  self.haltOnPlayerContact = true
+  -- Red triangle special enemy
+  self.color = red[0]:clone()
 
   self.class = 'regular_enemy'
+  self.group_tag = 'ghost_enemy'
 
-  --set sensors
-  self.attack_sensor = Circle(self.x, self.y, 500)
+  Set_Enemy_Shape(self, self.size)
 
-  self.move_option_weight = 0.4
-  --set attacks
+  -- Never stop chasing, keep going until contact
+  self.stopChasingInRange = false
+  self.haltOnPlayerContact = false
+  self.not_damage_orb = true
+
+  -- No idle time, constantly seeking
+  self.baseIdleTimer = 0
+
+  -- No attacks - just seeks the player cursor
   self.attack_options = {}
-
-  local charge = {
-    name = 'charge',
-    viable = function() return true end,
-
-
-    oncast = function() local target = self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies); self.target = target end,
-    spellclass = Launch_Spell,
-    spelldata = {
-      group = main.current.main,
-      team = "enemy",
-      charge_duration = 0.5, -- Shorter charge time than charger (1.75)
-      spell_duration = 1.8, -- Shorter duration than charger (2.5)
-      aim_width = 4, -- Thinner aim line than charger (8)
-      cancel_on_death = true,
-      keep_original_angle = true,
-      draw_under_units = true,
-      target = self.target,
-      show_charge_line = false,
-      play_charge_sound = false,
-      x = self.x,
-      y = self.y,
-      color = grey[0], -- Use seeker's color instead of red
-      impulse_magnitude = 150, -- Less force than charger (500)
-      damage = function() return self.dmg end,
-      parent = self
-    }
-  }
-  table.insert(self.attack_options, charge)
-
+  self.can_attack = false
 end
 
 fns['draw_enemy'] = function(self)
-
-  
+  -- Try to draw animation first
   local animation_success = self:draw_animation()
-  
+
   if not animation_success then
-    self:draw_fallback_animation()
+    -- Custom fallback for triangle shape
+    self:draw_fallback_custom()
   end
+end
 
+fns['draw_fallback_custom'] = function(self)
+  -- Determine base color (hit flash, silenced, or normal color)
+  local base_color = self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color
 
+  graphics.push(self.x, self.y, self.r or 0, self.hfx.hit.x, self.hfx.hit.x)
+
+  -- Draw triangle polygon (same as dragon but tiny size)
+  local points = self:make_regular_polygon(3, (self.shape.w / 2) / 60 * 70, self:get_angle())
+  graphics.polygon(points, base_color)
+
+  graphics.pop()
+
+  -- Apply status effect overlays if present
+  self:draw_fallback_status_effects()
 end
 
 enemy_to_class['seeker'] = fns

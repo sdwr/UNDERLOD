@@ -874,26 +874,33 @@ function SpawnManager:generate_subwave_groups()
     end
   end
 
-  -- Fill remaining power with swarmer groups
+  -- Fill remaining power with swarmer groups (or seeker groups on level 4+)
   while power_generated < target_power do
     local swarmer_amount = SWARMERS_PER_LEVEL(self.arena.level)
-    local swarmer_power = enemy_to_round_power['swarmer'] * swarmer_amount
+
+    -- On level 4+, have a chance to spawn a seeker group instead of swarmers
+    local enemy_type = 'swarmer'
+    if self.arena.level >= 4 and random:bool(30) then  -- 30% chance for seeker group
+      enemy_type = 'seeker'
+    end
+
+    local group_power = enemy_to_round_power[enemy_type] * swarmer_amount
 
     -- Check if adding this group would exceed target
-    if power_generated + swarmer_power > target_power * 1.2 then
+    if power_generated + group_power > target_power * 1.2 then
       -- Too much, reduce the amount or skip
       break
     end
 
     local group = {
-      type = 'swarmer',
+      type = enemy_type,
       amount = swarmer_amount,
       spawn_type = random:bool(30) and 'scatter' or 'nil',
-      power = swarmer_power,
+      power = group_power,
       spawn_time = 0
     }
     table.insert(swarmer_groups, group)
-    power_generated = power_generated + swarmer_power
+    power_generated = power_generated + group_power
   end
 
   -- Distribute spawn times:
@@ -1435,7 +1442,7 @@ function Spawn_Enemy(arena, type, location, target_location)
       special_swarmer_type = SPECIAL_SWARMER_TYPES[random:weighted_pick(unpack(SPECIAL_SWARMER_WEIGHT_BY_TYPE[arena.level]))]
     end
   end
-  
+
   local enemy = Enemy{type = type, group = arena.main,
                       x = location.x, y = location.y,
                       special_swarmer_type = special_swarmer_type,

@@ -385,6 +385,11 @@ MOVEMENT_TYPE_DATA = {
     action_timer = 0.5,
     after = MOVEMENT_TYPE_CROSS_SCREEN
   },
+  [MOVEMENT_TYPE_SEEK] = {
+    can_attack = false,
+    action_timer = 0.5,
+    after = MOVEMENT_TYPE_SEEK
+  },
   [MOVEMENT_TYPE_SEEK_ORB] = {
     can_attack = false,
     action_timer = nil,
@@ -492,7 +497,7 @@ enemy_movement_types = {
   ['snake_segment'] = MOVEMENT_TYPE_STATIONARY,  -- Segments don't move
   ['tank'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
   
-  -- ['seeker'] = MOVEMENT_TYPE_SEEK_ORB,
+  ['seeker'] = MOVEMENT_TYPE_SEEK,
 
   -- Ranged units that maintain distance
   ['big_goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,

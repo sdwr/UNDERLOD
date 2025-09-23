@@ -33,8 +33,8 @@ Set_Enemy_Shape = function(enemy, size)
   end
 
   -- Special enemies use ghost_enemy tag to avoid collision with other enemies
-  local collision_tag = 'enemy'
-  if enemy.class == 'special_enemy' then
+  local collision_tag = enemy.group_tag or 'enemy'
+  if not enemy.group_tag and enemy.class == 'special_enemy' then
     collision_tag = 'ghost_enemy'
   end
 
