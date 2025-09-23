@@ -1,6 +1,6 @@
 PlayerCursor = Troop:extend()
 PlayerCursor.__class_name = 'PlayerCursor'
-PLAYER_CURSOR_INVULNERABILITY_TIME = 0.5
+PLAYER_CURSOR_INVULNERABILITY_TIME = 1.25
 
 function PlayerCursor:init(args)
   -- Set troop properties before calling parent init

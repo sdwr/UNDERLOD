@@ -43,7 +43,7 @@ function SpawnGlobals.Init()
   SpawnGlobals.SUCTION_CANCELABLE_DISTANCE = 20
   SpawnGlobals.SUCTION_CANCEL_THRESHOLD = 0.65
 
-  SpawnGlobals.SUBWAVE_SPAWN_WINDOW = 10  -- Spawn all groups within first 10 seconds of subwave
+  SpawnGlobals.SUBWAVE_SPAWN_WINDOW = 20  -- Spawn all groups within first 10 seconds of subwave
   SpawnGlobals.SUBWAVE_POWER_PERCENTAGES = {0.4, 0.6}  -- Distribution per subwave (40% and 60%)
   SpawnGlobals.TOTAL_WAVES = 1  -- Default number of waves
   SpawnGlobals.SUBWAVES_PER_WAVE = 2  -- Default subwaves per wave
@@ -1151,7 +1151,8 @@ function SpawnManager:complete_current_subwave()
   self.spawn_queue = {}
 
   -- Check if this is the last subwave of the last wave
-  
+  local is_last_subwave = self.current_subwave >= self.subwaves_per_wave
+
   if is_last_subwave then
     -- This is the last subwave - wait for all enemies to die
     if SpawnManager.debug_enabled then

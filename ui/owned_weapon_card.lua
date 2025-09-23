@@ -52,11 +52,10 @@ function OwnedWeaponCard:init(args)
 end
 
 function OwnedWeaponCard:update_xp_requirements()
-  -- XP needed: Level 1->2 needs 2 xp, Level 2->3 needs 3 xp
-  if self.level == 1 then
-    self.xp_needed = 2
-  elseif self.level == 2 then
-    self.xp_needed = 3
+  -- Use global XP requirements table
+  local next_level = self.level + 1
+  if next_level <= WEAPON_MAX_LEVEL then
+    self.xp_needed = WEAPON_XP_REQUIREMENTS[next_level]
   else
     self.xp_needed = 0  -- Max level
   end

@@ -42,10 +42,14 @@ function Enemy:init(args)
   self.haltOnPlayerContact = default_to(self.haltOnPlayerContact, true)
 
   self:set_attack_cooldown_timer(0)
-  
+
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 20 + self.shape.w / 2)
-  
+
   self.last_attack_started = 0
+
+  -- Offscreen timeout system
+  self.spawn_time = love.timer.getTime()
+  self.offscreen_timeout = 5  -- Seconds before despawning if never onscreen
 
 end
 
@@ -186,6 +190,17 @@ function Enemy:update(dt)
     if not self.has_been_onscreen then
       if self.fully_onscreen then
         self.has_been_onscreen = true
+      else
+        -- Check if enemy has been spawned for too long without being onscreen
+        local time_since_spawn = love.timer.getTime() - self.spawn_time
+        if time_since_spawn > self.offscreen_timeout then
+          if DEBUG_SPAWN_SYSTEM then
+            print(string.format("[DESPAWN] Enemy %s despawned after %.2fs offscreen (type: %s, pos: %.0f,%.0f)",
+              tostring(self.id), time_since_spawn, self.type or "unknown", self.x, self.y))
+          end
+          self:despawn()
+          return
+        end
       end
     end
 

@@ -3,6 +3,13 @@
 WEAPON_MAX_LEVEL = 3
 MAX_OWNED_WEAPONS = 6
 
+-- XP needed to reach each level (index is target level)
+WEAPON_XP_REQUIREMENTS = {
+  [1] = 0,  -- Level 1 is default
+  [2] = 1,  -- Need 1 XP to reach level 2
+  [3] = 2   -- Need 2 XP to reach level 3
+}
+
 -- Weapon definitions with base stats and costs
 weapon_definitions = {
   machine_gun = {

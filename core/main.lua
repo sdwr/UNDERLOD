@@ -46,6 +46,9 @@ function init()
   shared_init()
   SpawnGlobals.Init()
 
+  -- Global debug flags
+  DEBUG_SPAWN_SYSTEM = false
+
   math.randomseed(os.time())
 
 
@@ -1637,6 +1640,10 @@ function update(dt)
   end
   
   if input['f9'].pressed then
+    -- Toggle debug mode for spawn system
+    DEBUG_SPAWN_SYSTEM = not DEBUG_SPAWN_SYSTEM
+    print("[DEBUG] Spawn system debug: " .. tostring(DEBUG_SPAWN_SYSTEM))
+
     -- Toggle round power visualizer
     if main.current and main.current.current_arena and main.current.current_arena.round_power_visualizer then
       main.current.current_arena.round_power_visualizer:toggle()
