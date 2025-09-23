@@ -608,14 +608,13 @@ function ItemPart:update(dt)
         self.parent.weapon.items[self.i] = nil
       end
 
-      -- Add gold
+      -- Add gold (0 for items)
       gold = gold + sell_price
 
-      -- Play sound and show feedback
+      -- Play sound but don't show +0 gold text
       if gold1 then
         gold1:play{pitch = random:float(0.95, 1.05), volume = 0.3}
       end
-      Create_Info_Text('+' .. sell_price .. ' gold', self, 'gold')
 
       -- Save if in BuyScreen
       local buy_screen = main.current

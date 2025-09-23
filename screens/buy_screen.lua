@@ -1694,14 +1694,16 @@ function TypeIcon:unhighlight()
 end
 
 -- helper functions
-function Create_Info_Text(text, parent, type)
+function Create_Info_Text(text, parent, type, no_sound)
   if global_info_text then
     global_info_text:deactivate()
     global_info_text.dead = true
     global_info_text = nil
   end
-  error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-  local info_text = InfoText{group = main.current.world_ui or main.current.ui}
+  if not no_sound then
+    error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+  end
+  local info_text = InfoText{group = main.current.ui_top or main.current.world_ui or main.current.ui}
   
   info_text:activate({
     {text = '[fg]' .. text, font = pixul_font, alignment = 'center'},

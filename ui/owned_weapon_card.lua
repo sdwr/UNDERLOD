@@ -133,14 +133,13 @@ function OwnedWeaponCard:update(dt)
         end
       end
 
-      -- Add gold
+      -- Add gold (0 for weapons)
       gold = gold + sell_price
 
-      -- Play sound and show feedback
+      -- Play sound but don't show +0 gold text
       if gold1 then
         gold1:play{pitch = random:float(0.95, 1.05), volume = 0.3}
       end
-      Create_Info_Text('+' .. sell_price .. ' gold', self, 'gold')
 
       -- Save and refresh the display
       if buy_screen and buy_screen:is(BuyScreen) then
@@ -181,27 +180,17 @@ function OwnedWeaponCard:on_mouse_enter()
   ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
   self.spring:pull(0.2, 200, 10)
 
-  -- Create hover tooltip with weapon name and level
+  -- Create hover tooltip with weapon name and level using global function
   if self.weapon_def then
-    self.info_text = InfoText{group = main.current.ui}
     local level_text = 'Lv.' .. self.level .. ' '
     local title_string = level_text .. self.weapon_def.name
-    self.info_text:activate({
-      {text = '[yellow]' .. title_string, font = pixul_font, alignment = 'center'},
-    }, nil, nil, nil, nil, 16, 4, nil, 2)
-    self.info_text.x, self.info_text.y = self.x, self.y - 40
+    Create_Info_Text(title_string, self, 'weapon_hover', true)
   end
 end
 
 function OwnedWeaponCard:on_mouse_exit()
   self.selected = false
-
-  -- Remove tooltip
-  if self.info_text then
-    self.info_text:deactivate()
-    self.info_text.dead = true
-    self.info_text = nil
-  end
+  -- Global tooltip is handled by Create_Info_Text and clears itself
 end
 
 function OwnedWeaponCard:draw()
@@ -298,12 +287,7 @@ end
 
 function OwnedWeaponCard:die()
   self.dead = true
-
-  if self.info_text then
-    self.info_text:deactivate()
-    self.info_text.dead = true
-    self.info_text = nil
-  end
+  -- Global tooltip is handled by Create_Info_Text and clears itself
 
   -- Clean up item parts
   for _, part in ipairs(self.item_parts) do
