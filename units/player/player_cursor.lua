@@ -28,6 +28,14 @@ function PlayerCursor:init(args)
   self.color = white[0]:clone()
   self.pulse_timer = 0
   self.scale = 1.0
+
+  -- Casting properties
+  self.is_casting = false
+  self.cast_timer = 0
+  self.cast_duration = 0.3
+  self.facing_angle = 0
+  self.last_velocity_x = 0
+  self.last_velocity_y = 0
   
   -- Make sure we're targetable
   self.faction = 'friendly'
@@ -46,12 +54,27 @@ end
 function PlayerCursor:update(dt)
   -- Don't call parent update since we override everything
   self:update_game_object(dt)
-  
+
   -- Update pulse animation for visibility
   self.pulse_timer = self.pulse_timer + dt * 3
   self.scale = 1.0 + 0.2 * math.sin(self.pulse_timer)
-  
-  self:follow_mouse()
+
+  -- Check for M1 press to start casting
+  if input['m1'].pressed and not self.is_casting then
+    self:start_cast()
+  end
+
+  -- Update casting
+  if self.is_casting then
+    self.cast_timer = self.cast_timer - dt
+    if self.cast_timer <= 0 then
+      self:complete_cast()
+    end
+  else
+    -- Only follow mouse when not casting
+    self:follow_mouse()
+  end
+
   -- self:follow_wasd()
   -- self:enforce_orb_boundary()
 
@@ -65,9 +88,8 @@ function PlayerCursor:follow_mouse()
   local mouse_x, mouse_y = love.mouse.getPosition()
   mouse_x = mouse_x / sx
   mouse_y = mouse_y / sx
-  self.x = mouse_x
-  self.y = mouse_y
-  self.body:setPosition(self.x, self.y)
+  self:seek_point(mouse_x, mouse_y, SEEK_DECELERATION, 3)
+  self:rotate_towards_velocity(0.5)
 end
 
 function PlayerCursor:enforce_orb_boundary()
@@ -111,8 +133,17 @@ function PlayerCursor:draw()
   local inner_color = self.color:clone()
   if self.invulnerable then
     inner_color.a = 0.5
+  elseif self.is_casting then
+    -- Change color when casting
+    inner_color = yellow[5]:clone()
   end
   graphics.circle(self.x, self.y, self.cursor_radius, inner_color)
+
+  -- Draw facing indicator all the time
+  local indicator_length = 5
+  local end_x = self.x + math.cos(self:get_angle()) * indicator_length
+  local end_y = self.y + math.sin(self:get_angle()) * indicator_length
+  graphics.line(self.x, self.y, end_x, end_y, yellow[7], 2)
   
   -- Center dot
   graphics.circle(self.x, self.y, 1, self.color)
@@ -159,6 +190,39 @@ end
 
 function PlayerCursor:do_automatic_movement()
   -- No automatic movement
+end
+
+function PlayerCursor:start_cast()
+  self.is_casting = true
+  self.cast_timer = self.cast_duration
+  sword_swing:play{pitch = random:float(0.9, 1.1), volume = 0.75}
+  self:set_velocity(0, 0)
+  -- Visual feedback could be added here
+end
+
+function PlayerCursor:complete_cast()
+  self.is_casting = false
+
+  -- Create damage circle in front of cursor
+  local distance = 30 -- Distance in front of cursor
+  local facing_angle = self:get_angle() 
+  local target_x = self.x + math.cos(facing_angle) * distance
+  local target_y = self.y + math.sin(facing_angle) * distance
+
+  -- Create area_spell damage circle
+
+  Area_Spell{
+    group = main.current.effects,
+    is_troop = true,
+    x = target_x,
+    y = target_y,
+    radius = 30, -- Radius of damage circle
+    pick_shape = 'circle',
+    duration = 0.2,
+    color = red[5],
+    damage = 10,
+    unit = self,
+  }
 end
 
 function PlayerCursor:setup_cast(cast_target)

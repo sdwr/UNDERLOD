@@ -158,8 +158,8 @@ function WorldManager:create_arena(level, offset_x)
     arena:create_door()
 
     -- Only spawn teams and enemies for non-tutorial levels
-    Spawn_Teams(arena, false)  -- Changed to false to disable suction
-    Helper.Unit:update_unit_colors()
+    -- Spawn_Teams(arena, false)  -- DISABLED FOR TESTING PLAYER CURSOR ATTACKS
+    -- Helper.Unit:update_unit_colors()
     -- Removed suction effect - troops now spawn directly at center
 
     self.t:after(1.5, function()
@@ -373,8 +373,8 @@ function WorldManager:complete_transition()
     self:assign_physics_groups(self.current_arena)
     
     -- Set up teams for the new arena
-    Spawn_Teams(self.current_arena)
-    Helper.Unit:update_unit_colors()
+    -- Spawn_Teams(self.current_arena)  -- DISABLED FOR TESTING PLAYER CURSOR ATTACKS
+    -- Helper.Unit:update_unit_colors()
     
     -- self.current_arena:create_walls()
     self.current_arena:create_door()
