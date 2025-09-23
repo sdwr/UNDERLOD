@@ -1,5 +1,66 @@
 local DPSCalculator = {}
 
+-- Predicted AOE targets by weapon type
+DPSCalculator.WEAPON_AOE_TARGETS = {
+  machine_gun = 1,    -- Single target only
+  lightning = 4,      -- Chains to 4 targets at full damage
+  cannon = 3,         -- Splash hits ~3 enemies
+  archer = 1,         -- Single target only
+  frost_aoe = 4,      -- Area hits ~4 enemies
+  frost = 4,          -- Alias for frost_aoe
+  laser = 1,          -- Single target
+  swordsman = 1,      -- Single target
+}
+
+-- Calculate weapon DPS (both single target and AOE)
+function DPSCalculator.calculate_weapon_dps(weapon_name, level)
+  level = level or 1
+
+  -- Get weapon stats at the specified level
+  local stats = weapon_get_stats(weapon_name, level)
+  if not stats then
+    return 0, 0
+  end
+
+  -- Calculate effective attack rate (attacks per second)
+  local total_attack_time = (stats.attack_cooldown or 1) + (stats.cast_time or 0)
+  local attacks_per_second = 1 / total_attack_time
+
+  -- Calculate single target DPS
+  local single_target_dps = (stats.damage or 0) * attacks_per_second
+
+  -- Calculate AOE DPS based on weapon type
+  local aoe_targets = DPSCalculator.WEAPON_AOE_TARGETS[weapon_name] or 1
+  local aoe_dps = single_target_dps * aoe_targets  -- Lightning does full damage on chains
+
+  return single_target_dps, aoe_dps
+end
+
+-- Calculate total DPS for all weapons owned by player (works with arena or buy_screen)
+function DPSCalculator.calculate_player_total_dps(state)
+  if not state or not state.units then
+    return 0, 0
+  end
+
+  local total_single_dps = 0
+  local total_aoe_dps = 0
+
+  -- Iterate through all player units and their weapons
+  for _, unit in ipairs(state.units) do
+    if unit.character then
+      local weapon_name = unit.character
+      local level = unit.level or 1
+      local single_dps, aoe_dps = DPSCalculator.calculate_weapon_dps(weapon_name, level)
+
+      -- Multiply by number of weapons at this level
+      local num_weapons = UNIT_LEVEL_TO_NUMBER_OF_WEAPONS[level] or 1
+      total_single_dps = total_single_dps + (single_dps * num_weapons)
+      total_aoe_dps = total_aoe_dps + (aoe_dps * num_weapons)
+    end
+  end
+
+  return total_single_dps, total_aoe_dps
+end
 
 -- Calculate required DPS for a subwave
 function DPSCalculator.calculate_subwave_dps(level, wave_index, subwave_index, total_waves, total_subwaves_per_wave)
@@ -178,7 +239,83 @@ function DPSCalculator.handle_f4_press()
     end
   end
 
+  print(string.rep("=", 60))
+
+  -- Display current weapon DPS from arena or buy_screen
+  local current_state = nil
+  if main and main.current then
+    if main.current.current_arena then
+      current_state = main.current.current_arena
+    elseif main.current.units then  -- Buy screen or other state with units
+      current_state = main.current
+    end
+  end
+
+  if current_state then
+    DPSCalculator.display_weapon_dps_summary(current_state)
+  end
+
   print(string.rep("=", 60) .. "\n")
+end
+
+-- Display weapon DPS summary for current state (arena or buy_screen)
+function DPSCalculator.display_weapon_dps_summary(state)
+  print("\nCURRENT WEAPON DPS")
+  print(string.rep("-", 60))
+
+  local total_single = 0
+  local total_aoe = 0
+
+  if state.units then
+    for _, unit in ipairs(state.units) do
+      if unit.character then
+        local weapon_name = unit.character
+        local level = unit.level or 1
+        local single_dps, aoe_dps = DPSCalculator.calculate_weapon_dps(weapon_name, level)
+        local num_weapons = UNIT_LEVEL_TO_NUMBER_OF_WEAPONS[level] or 1
+
+        local total_weapon_single = single_dps * num_weapons
+        local total_weapon_aoe = aoe_dps * num_weapons
+
+        total_single = total_single + total_weapon_single
+        total_aoe = total_aoe + total_weapon_aoe
+
+        local display_name = weapon_definitions[weapon_name] and weapon_definitions[weapon_name].display_name or weapon_name
+        print(string.format("%-12s (Lv%d x%d): Single=%6.1f  AOE=%6.1f",
+          display_name, level, num_weapons, total_weapon_single, total_weapon_aoe))
+      end
+    end
+  end
+
+  print(string.rep("-", 60))
+  print(string.format("TOTAL DPS:               Single=%6.1f  AOE=%6.1f", total_single, total_aoe))
+
+  -- Compare to current level requirements (if in arena)
+  if state.level then
+    local all_dps = DPSCalculator.calculate_level_dps(state.level, 1, 2)
+    local max_required = 0
+    for _, dps_info in ipairs(all_dps) do
+      max_required = math.max(max_required, dps_info.required_dps)
+    end
+
+    print(string.rep("-", 60))
+    print(string.format("Required DPS for Level %d: %.1f", state.level, max_required))
+    print(string.format("Single Target Coverage: %.1f%%", (total_single / max_required) * 100))
+    print(string.format("AOE Coverage: %.1f%%", (total_aoe / max_required) * 100))
+  elseif state.next_level_index then
+    -- In buy screen, use next_level_index
+    local level = state.next_level_index
+    local all_dps = DPSCalculator.calculate_level_dps(level, 1, 2)
+    local max_required = 0
+    for _, dps_info in ipairs(all_dps) do
+      max_required = math.max(max_required, dps_info.required_dps)
+    end
+
+    print(string.rep("-", 60))
+    print(string.format("Required DPS for Next Level (%d): %.1f", level, max_required))
+    print(string.format("Single Target Coverage: %.1f%%", (total_single / max_required) * 100))
+    print(string.format("AOE Coverage: %.1f%%", (total_aoe / max_required) * 100))
+  end
 end
 
 return DPSCalculator
