@@ -43,6 +43,11 @@ function SpawnGlobals.Init()
   SpawnGlobals.SUCTION_CANCELABLE_DISTANCE = 20
   SpawnGlobals.SUCTION_CANCEL_THRESHOLD = 0.65
 
+  SpawnGlobals.SUBWAVE_SPAWN_WINDOW = 10  -- Spawn all groups within first 10 seconds of subwave
+  SpawnGlobals.SUBWAVE_POWER_PERCENTAGES = {0.4, 0.6}  -- Distribution per subwave (40% and 60%)
+  SpawnGlobals.TOTAL_WAVES = 1  -- Default number of waves
+  SpawnGlobals.SUBWAVES_PER_WAVE = 2  -- Default subwaves per wave
+
   TROOP_0_SPAWN_LOCATION = {x = SpawnGlobals.TROOP_0_SPAWN_X, y = SpawnGlobals.TROOP_0_SPAWN_Y}
   TEAM_INDEX_TO_SPAWN_LOCATION = {
     [0] = {x = SpawnGlobals.TROOP_0_SPAWN_X, y = SpawnGlobals.TROOP_0_SPAWN_Y},
@@ -617,11 +622,11 @@ function SpawnManager:init(arena)
     -- Wave configuration (1 wave with 2 subwaves)
     -- Each subwave has the power of what a full wave used to have
     self.total_round_power = ROUND_POWER_BY_LEVEL(arena.level)
-    self.wave_power_percentages = {0.4, 0.6}  -- Distribution per subwave (40% and 60%)
+    self.wave_power_percentages = SpawnGlobals.SUBWAVE_POWER_PERCENTAGES
     self.current_wave = 1
-    self.total_waves = 1
+    self.total_waves = SpawnGlobals.TOTAL_WAVES
     self.current_subwave = 1
-    self.subwaves_per_wave = 2
+    self.subwaves_per_wave = SpawnGlobals.SUBWAVES_PER_WAVE
     
     -- Track power for current subwave
     self.current_subwave_power_target = 0
@@ -631,7 +636,7 @@ function SpawnManager:init(arena)
     -- Subwave group scheduling
     self.subwave_groups = {}  -- All groups for current subwave
     self.current_group_index = 1
-    self.subwave_spawn_window = 10  -- Spawn all groups within first 10 seconds of subwave
+    self.subwave_spawn_window = SpawnGlobals.SUBWAVE_SPAWN_WINDOW
     self.subwave_timeout = self.subwave_spawn_window + 25 -- 30 seconds max per subwave
     self.next_group_spawn_time = 0
     self.all_groups_spawned = false

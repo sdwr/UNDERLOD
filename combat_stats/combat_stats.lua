@@ -212,6 +212,9 @@ BASE_CRIT_MULT = 2
 
 SHOCK_DEF_REDUCTION = -0.2
 
+-- DPS calculation constants
+SWARMER_TRAVEL_TIME = 45  -- seconds for swarmer to reach center from spawn
+
 REPEAT_ATTACK_DELAY = 0.15
 
 BOSS_LEVELS = {6, 11, 16, 21}

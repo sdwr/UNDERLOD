@@ -1641,6 +1641,15 @@ function update(dt)
     if main.current and main.current.current_arena and main.current.current_arena.round_power_visualizer then
       main.current.current_arena.round_power_visualizer:toggle()
     end
+    -- Also display DPS calculations for current subwave
+    local DPSCalculator = require('combat_stats.dps_calculator')
+    DPSCalculator.handle_f9_press()
+  end
+
+  if input['f4'].pressed then
+    -- Display DPS calculations for all waves
+    local DPSCalculator = require('combat_stats.dps_calculator')
+    DPSCalculator.handle_f4_press()
   end
 end
 
