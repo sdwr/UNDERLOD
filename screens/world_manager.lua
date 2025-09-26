@@ -646,6 +646,7 @@ function WorldManager:transition_to_next_level_buy_screen(delay)
   if state.selected_stage then
     self.t:after(delay or 2, function()
       TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
+        main:add(LevelSelectScreen'level_select')
         main:go_to('level_select')
       end}
     end)

@@ -71,13 +71,30 @@ function ProgressBar:highest_wave_complete()
 end
 
 function ProgressBar:increase_with_particles(roundPower, x, y)
-  self.segments[self.active_wave]:create_progress_particle(roundPower, x, y)
+  -- Don't create particles if all waves are complete or invalid wave index
+  if self.active_wave > self.number_of_waves or self.active_wave < 1 then
+    return
+  end
+
+  local segment = self.segments[self.active_wave]
+  if segment then
+    segment:create_progress_particle(roundPower, x, y)
+  end
 end
 
 function ProgressBar:complete_wave(wave_index)
-  self.segments[wave_index]:complete_wave()
+  if wave_index < 1 or wave_index > self.number_of_waves then
+    return
+  end
+
+  local segment = self.segments[wave_index]
+  if segment then
+    segment:complete_wave()
+  end
+
   if self.active_wave <= wave_index then
-    self.active_wave = self.active_wave + 1
+    -- Don't increment past the total number of waves
+    self.active_wave = math.min(self.active_wave + 1, self.number_of_waves + 1)
   end
 end
 
@@ -152,17 +169,28 @@ function ProgressBarSegment:increase_progress(amount)
 end
 
 function ProgressBarSegment:get_progress_location()
-  return {x = gw/2, y = gh/2}
+  -- Return the actual position of this segment
+  return {x = self.x, y = self.y}
 end
 
 function ProgressBarSegment:create_progress_particle(roundPower, x, y)
+  -- Ensure we have a valid arena and group before creating particle
+  if not main.current or not main.current.current_arena then
+    return
+  end
+
+  local arena = main.current.current_arena
+  if not arena.main then
+    return
+  end
+
   self.t:after(0.0, function()
     ProgressParticle{
-      group = main.current.main,
+      group = arena.main,
       x = x,
       y = y,
       roundPower = roundPower,
-      parent = self, 
+      parent = self,
     }
   end)
 end

@@ -6,7 +6,7 @@
 
 -- Default wave configuration
 DEFAULT_WAVE_DURATION = 20  -- seconds for enemies to spawn over
-DEFAULT_WAVE_TIMEOUT = 30   -- seconds before forcing wave completion
+DEFAULT_WAVE_TIMEOUT = 60   -- seconds before forcing wave completion
 
 -- Default power distribution across waves
 DEFAULT_WAVE_POWER_SPLITS = {
@@ -37,8 +37,9 @@ LIST_OF_STAGES = {
 STAGE_DATA = {
   ['A1'] = {
     name = 'A1',
-    round_power = 3000,
-    number_of_waves = 3,
+    round_power = 2000,
+    number_of_waves = 2,
+    wave_duration = 10,
     normal_enemies = {'swarmer'},
     special_enemies = {},
     weapons = {

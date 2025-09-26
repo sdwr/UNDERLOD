@@ -2,7 +2,6 @@ LevelSelectScreen = Object:extend()
 LevelSelectScreen.__class_name = 'LevelSelectScreen'
 LevelSelectScreen:implement(State)
 LevelSelectScreen:implement(GameObject)
-
 function LevelSelectScreen:init(name)
   self:init_state(name)
   self:init_game_object()
