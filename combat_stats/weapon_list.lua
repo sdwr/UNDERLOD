@@ -20,6 +20,7 @@ weapon_definitions = {
     icon = 'repeater',
     description = 'Rapid fire',
     base_stats = {
+      global_range = true,
       attack_cooldown = 0.2,
       cast_time = 0,
       damage = 6

@@ -31,18 +31,35 @@ function WorldManager:on_enter(from)
   self:create_class_lists()
 self:arena_on_enter()
 
-  -- Load stage data if we have a selected stage
+  -- Load stage data and weapons if we have a selected stage
+  local stage_data = nil
   if state.selected_stage then
-    local stage_data = Get_Stage_Data(state.selected_stage)
+    stage_data = Get_Stage_Data(state.selected_stage)
     if stage_data then
-      -- Create a single wave with 65% of the stage's round power
-      local required_power = stage_data.round_power * 0.65
+      -- Get number of waves from stage data
+      local num_waves = stage_data.number_of_waves or 1
+
+      -- Calculate power distribution across waves (100% of round power)
+      local total_required = stage_data.round_power
+      local waves_power = {}
+
+      -- Use default wave power splits if available
+      if DEFAULT_WAVE_POWER_SPLITS and DEFAULT_WAVE_POWER_SPLITS[num_waves] then
+        for i = 1, num_waves do
+          waves_power[i] = total_required * DEFAULT_WAVE_POWER_SPLITS[num_waves][i]
+        end
+      else
+        -- Equal distribution as fallback
+        for i = 1, num_waves do
+          waves_power[i] = total_required / num_waves
+        end
+      end
 
       -- Create level list entry for this stage
       self.level_list = {
         [1] = {
           level = 1,
-          waves_power = {required_power}, -- Single wave/segment
+          waves_power = waves_power,  -- Multiple segments based on waves
           round_power = stage_data.round_power,
           color = grey[0],
           environmental_hazards = {}
@@ -56,19 +73,30 @@ self:arena_on_enter()
     -- No stage selected, use default level generation
     self.level_list = Build_Level_List(NUMBER_OF_ROUNDS)
   end
-  
-  -- Convert weapons to units format for compatibility
-  if self.weapons and #self.weapons > 0 then
+
+  -- Get weapons from stage data or use defaults
+  if stage_data and stage_data.weapons then
+    -- Use weapons from stage data
+    self.units = {}
+    for weapon_name, weapon_config in pairs(stage_data.weapons) do
+      table.insert(self.units, {
+        character = weapon_name,
+        level = weapon_config.level or 1,
+        items = weapon_config.items or {}  -- Items are already in the correct format
+      })
+    end
+  elseif self.weapons and #self.weapons > 0 then
+    -- Fallback to existing weapon system
     self.units = {}
     for _, weapon in ipairs(self.weapons) do
       local weapon_def = Get_Weapon_Definition(weapon.name)
       local items = {}
-      
+
       -- Add default items for specific weapons
       if weapon.name == 'cannon' and weapon_def.default_items then
         items = weapon_def.default_items
       end
-      
+
       table.insert(self.units, {
         character = weapon.name,
         level = weapon.level or 1,
@@ -575,27 +603,53 @@ function WorldManager:set_perks(perks)
 end
 
 function WorldManager:transition_to_next_level_buy_screen(delay)
-  
+
   if self.current_arena then
     self.current_arena.transitioning = true
+
+    -- Update completion stats if we have a stage selected
+    if state.selected_stage then
+      -- Load existing stats
+      system.load_stats()
+      if not USER_STATS.stages_completed then USER_STATS.stages_completed = {} end
+      if not USER_STATS.stages_no_damage then USER_STATS.stages_no_damage = {} end
+
+      -- Mark stage as completed
+      USER_STATS.stages_completed[state.selected_stage] = true
+
+      -- Check for hitless completion
+      local damage_taken = self.current_arena.damage_taken or 0
+      if damage_taken == 0 then
+        USER_STATS.stages_no_damage[state.selected_stage] = true
+      end
+
+      -- Save the updated stats
+      system.save_stats()
+    end
   end
 
   Reset_Global_Proc_List()
 
-  -- Increment level and set reroll_shop in the current state
-  self.level = self.level + 1
-  self.reroll_shop = true
-  self.times_rerolled = 0
-  self:save_run()
+  -- For stage-based play, go back to level select instead of buy screen
+  if state.selected_stage then
+    self.t:after(delay or 2, function()
+      TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
+        main:go_to('level_select')
+      end}
+    end)
+  else
+    -- Original behavior for non-stage play
+    -- Increment level and set reroll_shop in the current state
+    self.level = self.level + 1
+    self.reroll_shop = true
+    self.times_rerolled = 0
+    self:save_run()
 
-  if delay == nil then
-    delay = 2
+    self.t:after(delay or 2, function()
+      TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
+        Go_To_Buy_Screen()
+      end}
+    end)
   end
-
-  self.t:after(delay, function()
-    TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
-      Go_To_Buy_Screen()
-    end}
-  end)
 
 end

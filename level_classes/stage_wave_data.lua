@@ -4,6 +4,18 @@
 -- 'Level' refers to gameplay progression (increments when you complete stages)
 
 
+-- Default wave configuration
+DEFAULT_WAVE_DURATION = 20  -- seconds for enemies to spawn over
+DEFAULT_WAVE_TIMEOUT = 30   -- seconds before forcing wave completion
+
+-- Default power distribution across waves
+DEFAULT_WAVE_POWER_SPLITS = {
+  [1] = {1.0},        -- 1 wave: 100%
+  [2] = {0.4, 0.6},   -- 2 waves: 40%, 60%
+  [3] = {0.28, 0.32, 0.4},  -- 3 waves: 28%, 32%, 40%
+  [4] = {0.22, 0.24, 0.26, 0.28},  -- 4 waves: 22%, 24%, 26%, 28%
+}
+
 LIST_OF_STAGES = {
   'A1',
   'A2',

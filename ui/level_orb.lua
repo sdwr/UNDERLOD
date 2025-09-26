@@ -173,10 +173,15 @@ function LevelOrb:hit(damage, from, damage_type)
   
   -- Take damage
   self.hp = self.hp - actual_damage
-  
+
+  -- Track damage taken in arena
+  if self.parent and self.parent.damage_taken then
+    self.parent.damage_taken = self.parent.damage_taken + actual_damage
+  end
+
   -- Visual feedback
   self:flash_hurt()
-  
+
   -- Play hit sound
   hit1:play{pitch = random:float(0.9, 1.1), volume = 1}
   

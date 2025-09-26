@@ -14,6 +14,9 @@ function Arena:init(args)
   -- Stage properties for spawn manager
   self.stage_id = args.stage_id
   self.difficulty = args.difficulty
+
+  -- Track damage taken for hitless completion
+  self.damage_taken = 0
   
   -- Create arena-specific groups
   self.main = Group()

@@ -768,6 +768,13 @@ _set_unit_base_stats = function(unit)
         unit.base_dmg = SCALED_ENEMY_DAMAGE(level, REGULAR_ENEMY_DAMAGE)
         unit.base_mvspd = SCALED_ENEMY_MS(level, REGULAR_ENEMY_MS)
 
+        -- Apply difficulty multipliers if provided
+        if unit.difficulty_multipliers then
+            unit.base_hp = unit.base_hp * unit.difficulty_multipliers.hp
+            unit.base_dmg = unit.base_dmg * unit.difficulty_multipliers.dmg
+            unit.base_mvspd = unit.base_mvspd * unit.difficulty_multipliers.mvspd
+        end
+
         --store baseline for burn max hp calculation
         unit.baseline_hp = unit.base_hp
         
@@ -775,20 +782,41 @@ _set_unit_base_stats = function(unit)
         unit.base_hp = SCALED_ENEMY_HP(level, SPECIAL_ENEMY_HP)
         unit.base_dmg = SCALED_ENEMY_DAMAGE(level, SPECIAL_ENEMY_DAMAGE)
         unit.base_mvspd = SCALED_ENEMY_MS(level, SPECIAL_ENEMY_MS)
-        
+
+        -- Apply difficulty multipliers if provided
+        if unit.difficulty_multipliers then
+            unit.base_hp = unit.base_hp * unit.difficulty_multipliers.hp
+            unit.base_dmg = unit.base_dmg * unit.difficulty_multipliers.dmg
+            unit.base_mvspd = unit.base_mvspd * unit.difficulty_multipliers.mvspd
+        end
+
         unit.baseline_hp = unit.base_hp
 
     elseif unit.class == 'miniboss' then
         unit.base_hp = SCALED_ENEMY_HP(level, MINIBOSS_HP)
         unit.base_dmg = SCALED_ENEMY_DAMAGE(level, MINIBOSS_DAMAGE)
         unit.base_mvspd = SCALED_ENEMY_MS(level, MINIBOSS_MS)
-        
+
+        -- Apply difficulty multipliers if provided
+        if unit.difficulty_multipliers then
+            unit.base_hp = unit.base_hp * unit.difficulty_multipliers.hp
+            unit.base_dmg = unit.base_dmg * unit.difficulty_multipliers.dmg
+            unit.base_mvspd = unit.base_mvspd * unit.difficulty_multipliers.mvspd
+        end
+
         unit.baseline_hp = unit.base_hp
         
     elseif unit.class == 'boss' then
         unit.base_hp = SCALED_BOSS_HP(level, BOSS_HP)
         unit.base_dmg = SCALED_BOSS_DAMAGE(level, BOSS_DAMAGE)
         unit.base_mvspd = SCALED_BOSS_MS(level, BOSS_MS)
+
+        -- Apply difficulty multipliers if provided
+        if unit.difficulty_multipliers then
+            unit.base_hp = unit.base_hp * unit.difficulty_multipliers.hp
+            unit.base_dmg = unit.base_dmg * unit.difficulty_multipliers.dmg
+            unit.base_mvspd = unit.base_mvspd * unit.difficulty_multipliers.mvspd
+        end
 
         unit.baseline_hp = unit.base_hp
     end
