@@ -1132,7 +1132,12 @@ function ProgressParticle:init(args)
   
   self:set_as_circle(self.rs, 'dynamic', 'effect')
   self:set_as_steerable(self.v, 2000, 4*math.pi, 4)
+
+  -- Make the particle semi-transparent yellow
   self.color = self.color or yellow[2]
+  self.color = self.color:clone()
+  self.color.a = 0.6  -- Semi-transparent
+
   self.t:tween(self.duration, self, {rs = 1}, math.cubic_in_out)
 
   self.elapsed = 0

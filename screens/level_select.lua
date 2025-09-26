@@ -20,6 +20,9 @@ function LevelSelectScreen:on_enter(from)
   self.options_ui = Group():no_camera()
   self.paused = false
 
+  -- Store where we came from
+  self.entered_from = from
+
   -- Title
   self.title_text = Text2{group = self.ui, x = gw/2, y = 20, lines = {{text = '[wavy_mid, fg]SELECT STAGE', font = fat_font, alignment = 'center'}}}
 
@@ -45,6 +48,18 @@ function LevelSelectScreen:on_enter(from)
   -- Selected stage info
   self.selected_stage = nil
   self.detail_panel = nil
+
+  -- If coming from arena, reopen the last played stage
+  if self.entered_from == 'world_manager' and state.stage_id then
+    -- Find the button for the last played stage
+    for _, button in ipairs(self.stage_buttons) do
+      if button.stage_id == state.stage_id then
+        -- Auto-select this stage
+        self:show_stage_details(button.stage_num, button.stage_id, button.stage_data)
+        break
+      end
+    end
+  end
 end
 
 function LevelSelectScreen:create_stage_grid()
@@ -324,30 +339,48 @@ function LevelSelectScreen:draw()
   end
   if self.options_ui then self.options_ui:draw() end
 
-  -- Draw completion indicators on stage buttons
+  -- Draw completion indicators and selection highlight on stage buttons
   for _, button in ipairs(self.stage_buttons or {}) do
-    if button and not button.dead and button.is_unlocked then
-      -- Check completion for all difficulties
-      local has_normal = USER_STATS.stages_completed and USER_STATS.stages_completed['normal_' .. button.stage_num]
-      local has_hard = USER_STATS.stages_completed and USER_STATS.stages_completed['hard_' .. button.stage_num]
-      local has_extreme = USER_STATS.stages_completed and USER_STATS.stages_completed['extreme_' .. button.stage_num]
+    if button and not button.dead then
+      -- Draw semi-transparent yellow border for selected stage
+      if self.selected_stage and self.selected_stage.id == button.stage_id then
+        local border_color = yellow[5]:clone()
+        border_color.a = 0.6  -- Semi-transparent
+        graphics.rectangle(button.x, button.y, button.w, button.h, nil, nil, border_color, 2)
+      end
 
-      if has_normal or has_hard or has_extreme then
-        local indicator_y = button.y + button.h/2 + 5
-        local indicator_size = 3
+      if button.is_unlocked then
+        -- Check completion using new format
+        local stage_key = string.upper(button.stage_id)
+        -- Position pips inside the button at the bottom
+        local indicator_y = button.y + button.h/2 - 8  -- Inside the button, near bottom
+        local pip_size = 2
+        local pip_spacing = 10
+        local start_x = button.x
 
-        -- Draw small circles for each completed difficulty
-        local spacing = 8
-        local start_x = button.x - spacing
+        if USER_STATS.stage_progress and USER_STATS.stage_progress[stage_key] then
+          local progress = USER_STATS.stage_progress[stage_key]
 
-        if has_normal then
-          graphics.circle(start_x - spacing, indicator_y, indicator_size, green[5])
-        end
-        if has_hard then
-          graphics.circle(start_x, indicator_y, indicator_size, yellow[5])
-        end
-        if has_extreme then
-          graphics.circle(start_x + spacing, indicator_y, indicator_size, red[5])
+          -- Normal difficulty pip
+          local color = bg[2]
+          if progress.normal then
+            color = progress.normal.hitless and blue[5] or (progress.normal.completed and green[5] or nil)
+          end
+          graphics.circle(start_x - pip_spacing, indicator_y, pip_size, color)
+
+          -- Hard difficulty pip
+          color = bg[2]
+          if progress.hard then
+            color = progress.hard.hitless and blue[5] or (progress.hard.completed and yellow[5] or nil)
+          end
+          graphics.circle(start_x, indicator_y, pip_size, color)
+
+          -- Extreme difficulty pip
+          color = bg[2]
+          if progress.extreme then
+            color = progress.extreme.hitless and blue[5] or (progress.extreme.completed and red[5] or nil)
+          end
+          graphics.circle(start_x + pip_spacing, indicator_y, pip_size, color)
         end
       end
     end
