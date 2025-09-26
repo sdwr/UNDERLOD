@@ -17,7 +17,7 @@ function Arena:init(args)
 
   -- Track damage taken for hitless completion
   self.damage_taken = 0
-  
+
   -- Create arena-specific groups
   self.main = Group()
   self.floor = Group()

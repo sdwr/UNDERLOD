@@ -556,15 +556,15 @@ ZONE_SCALING = function(level)
 end
 
 DISTANCE_TIER_TO_COOLDOWN_MULTIPLIER = {
-  [1] = 0.25,
-  [2] = 0.45,
-  [3] = 0.68,
-  [4] = 1,
-  [5] = 1.4,
+  [1] = 0.50,
+  [2] = 0.65,
+  [3] = 0.75,
+  [4] = 0.85,
+  [5] = 1.2,
 }
 
 TIER_TO_DISTANCE = {
-  [1] = 60,
+  [1] = 40,
   [2] = 100,
   [3] = 110,
   [4] = 150,

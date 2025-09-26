@@ -21,7 +21,7 @@ weapon_definitions = {
     description = 'Rapid fire',
     base_stats = {
       global_range = true,
-      attack_cooldown = 0.2,
+      attack_cooldown = 0.4,
       cast_time = 0,
       damage = 6
     }

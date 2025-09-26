@@ -2330,7 +2330,7 @@ end
 
 Proc_DistanceMultiplier = Proc:extend()
 function Proc_DistanceMultiplier:init(args)
-  self.triggers = {}
+  self.triggers = {PROC_STATIC}
   self.scope = 'troop'
 
   Proc_DistanceMultiplier.super.init(self, args)

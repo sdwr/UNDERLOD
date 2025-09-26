@@ -195,7 +195,7 @@ function WorldManager:create_arena(level, offset_x)
     offset_x = offset_x,
     offset_y = 0,
     level_list = self.level_list,
-    stage_id = state.selected_stage,
+    stage_id = state.stage_id,
     difficulty = state.difficulty,
   }
   
@@ -608,19 +608,31 @@ function WorldManager:transition_to_next_level_buy_screen(delay)
     self.current_arena.transitioning = true
 
     -- Update completion stats if we have a stage selected
-    if state.selected_stage then
+    if state.selected_stage and state.difficulty then
       -- Load existing stats
       system.load_stats()
-      if not USER_STATS.stages_completed then USER_STATS.stages_completed = {} end
-      if not USER_STATS.stages_no_damage then USER_STATS.stages_no_damage = {} end
+      if not USER_STATS.stage_progress then USER_STATS.stage_progress = {} end
+
+      -- Ensure stage entry exists
+      if not USER_STATS.stage_progress[state.selected_stage] then
+        USER_STATS.stage_progress[state.selected_stage] = {}
+      end
+
+      -- Ensure difficulty entry exists
+      if not USER_STATS.stage_progress[state.selected_stage][state.difficulty] then
+        USER_STATS.stage_progress[state.selected_stage][state.difficulty] = {
+          completed = false,
+          hitless = false
+        }
+      end
 
       -- Mark stage as completed
-      USER_STATS.stages_completed[state.selected_stage] = true
+      USER_STATS.stage_progress[state.selected_stage][state.difficulty].completed = true
 
       -- Check for hitless completion
       local damage_taken = self.current_arena.damage_taken or 0
       if damage_taken == 0 then
-        USER_STATS.stages_no_damage[state.selected_stage] = true
+        USER_STATS.stage_progress[state.selected_stage][state.difficulty].hitless = true
       end
 
       -- Save the updated stats

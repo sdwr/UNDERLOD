@@ -60,8 +60,9 @@ function LevelSelectScreen:create_stage_grid()
   -- Get all stages from STAGE_DATA
   local stages = {}
   local index = 1
-  for stage_id, stage_data in pairs(LIST_OF_STAGES) do
-    stages[index] = {id = stage_id, data = stage_data}
+  for stage_num, stage_id in pairs(LIST_OF_STAGES) do
+    local stage_data = Get_Stage_Data(stage_id)
+    stages[index] = {id = stage_id, data = stage_data, num = stage_num}
     index = index + 1
   end
 
@@ -155,7 +156,7 @@ function LevelSelectScreen:show_stage_details(stage_num, stage_id, stage_data)
   self.detail_panel = GameObject{group = self.detail_ui, x = panel_x, y = panel_y}
 
   -- Stage name
-  local stage_name = stage_data.name or ("Stage " .. stage_num)
+  local stage_name = stage_data.name or ("Stage " .. stage_id)
   Text2{group = self.detail_ui, x = panel_x, y = panel_y - 100, lines = {{text = '[wavy_mid, fg]' .. stage_name, font = pixul_font, alignment = 'center'}}}
 
   -- Difficulty buttons
@@ -165,10 +166,15 @@ function LevelSelectScreen:show_stage_details(stage_num, stage_id, stage_data)
   for i, difficulty in ipairs(difficulties) do
     local diff_y = panel_y - 40 + (i - 1) * 50
 
-    -- Check completion status
-    local diff_stage_id = difficulty .. '_' .. stage_num
-    local is_completed = USER_STATS.stages_completed and USER_STATS.stages_completed[diff_stage_id] or false
-    local is_no_damage = USER_STATS.stages_no_damage and USER_STATS.stages_no_damage[diff_stage_id] or false
+    -- Check completion status using new nested format
+    local stage_key = string.upper(stage_id)
+    local is_completed = false
+    local is_no_damage = false
+
+    if USER_STATS.stage_progress and USER_STATS.stage_progress[stage_key] and USER_STATS.stage_progress[stage_key][difficulty] then
+      is_completed = USER_STATS.stage_progress[stage_key][difficulty].completed or false
+      is_no_damage = USER_STATS.stage_progress[stage_key][difficulty].hitless or false
+    end
 
     -- Difficulty button
     local button_color = 'bg10'
@@ -194,7 +200,7 @@ function LevelSelectScreen:show_stage_details(stage_num, stage_id, stage_data)
       bg_color = 'bg',
       action = function(b)
         ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-        self:start_stage(stage_num, difficulty)
+        self:start_stage(stage_id, difficulty)
       end
     }
 
@@ -207,25 +213,26 @@ function LevelSelectScreen:show_stage_details(stage_num, stage_id, stage_data)
   end
 end
 
-function LevelSelectScreen:start_stage(stage_num, difficulty)
-  local stage_id = difficulty .. '_' .. stage_num
+function LevelSelectScreen:start_stage(stage_id, difficulty)
+  -- Use uppercase stage format like 'A1' for STAGE_DATA lookup
+  local stage_key = string.upper(stage_id)
 
   TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
     self.transitioning = true
 
     -- Set state for the selected stage
-    state.selected_stage = stage_id
-    state.difficulty = difficulty
-    state.stage_number = stage_num
+    state.selected_stage = stage_key  -- Use 'A1' format
+    state.difficulty = difficulty  -- Use 'normal' format
+    state.stage_id = stage_key
     state.level = 1  -- Gameplay level starts at 1
 
     -- Go directly to WorldManager, bypassing buy screen
     main:add(WorldManager'world_manager')
     main:go_to('world_manager', {
       level = 1,
-      selected_stage = stage_id,
-      difficulty = difficulty,
-      stage_number = stage_num,
+      selected_stage = stage_key,  -- Pass 'A1' format
+      difficulty = difficulty,  -- Pass 'normal' format
+      stage_id = stage_key,
       units = {},  -- Start with no units
       passives = {},
       shop_item_data = {},
@@ -242,11 +249,16 @@ function LevelSelectScreen:is_stage_unlocked(stage_num)
 
   -- Check if previous stage is completed (any difficulty)
   local prev_completed = false
-  for _, diff in ipairs({'normal', 'hard', 'extreme'}) do
-    local prev_id = diff .. '_' .. (stage_num - 1)
-    if USER_STATS.stages_completed and USER_STATS.stages_completed[prev_id] then
-      prev_completed = true
-      break
+  local prev_stage_idx = stage_num - 1
+  if prev_stage_idx > 0 and prev_stage_idx <= #LIST_OF_STAGES then
+    local prev_stage = LIST_OF_STAGES[prev_stage_idx]
+    if USER_STATS.stage_progress and USER_STATS.stage_progress[prev_stage] then
+      for _, diff in ipairs({'normal', 'hard', 'extreme'}) do
+        if USER_STATS.stage_progress[prev_stage][diff] and USER_STATS.stage_progress[prev_stage][diff].completed then
+          prev_completed = true
+          break
+        end
+      end
     end
   end
 

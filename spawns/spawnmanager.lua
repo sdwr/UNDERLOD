@@ -605,18 +605,7 @@ function SpawnManager:init(arena)
     self.stage_data = nil
     self.difficulty_multipliers = nil
 
-    -- Load stage data if available
-    if self.stage_id then
-        self.stage_data = Get_Stage_Data(self.stage_id)
-        if not self.stage_data then
-            -- Try without difficulty prefix (e.g., "A1" instead of "normal_1")
-            local stage_num = self.stage_id:match("_%d+$")
-            if stage_num then
-                local base_stage = "A" .. stage_num:sub(2)
-                self.stage_data = STAGE_DATA[base_stage]
-            end
-        end
-    end
+    self.stage_data = Get_Stage_Data(self.stage_id)
 
     -- Get difficulty multipliers from stage data or defaults
     self.difficulty_multipliers = Get_Stage_Enemy_Stats_Multiplier(self.stage_id, self.difficulty)
@@ -850,37 +839,21 @@ function SpawnManager:generate_wave_groups()
   -- Generate special enemy groups based on stage data or level
   local special_groups = {}
 
-  if self.stage_data and self.stage_data.special_enemies_by_wave and self.stage_data.special_enemies_by_wave[self.current_wave] then
-    -- Use stage-specific special enemies for this wave
-    for enemy_type, amount in pairs(self.stage_data.special_enemies_by_wave[self.current_wave]) do
-      for i = 1, amount do
-        local group = {
-          type = enemy_type,
-          amount = 1,  -- Always 1 special enemy per group
-          spawn_type = 'location',
-          power = enemy_to_round_power[enemy_type] or 100,
-          spawn_time = 0
-        }
-        table.insert(special_groups, group)
-        power_generated = power_generated + group.power
+  if self.stage_data then
+    if self.stage_data.special_enemies_by_wave and self.stage_data.special_enemies_by_wave[self.current_wave] then
+      for enemy_type, amount in pairs(self.stage_data.special_enemies_by_wave[self.current_wave]) do
+        for i = 1, amount do
+          local group = {
+            type = enemy_type,
+            amount = 1,  -- Always 1 special enemy per group
+            spawn_type = 'location',
+            power = enemy_to_round_power[enemy_type] or 100,
+            spawn_time = 0
+          }
+          table.insert(special_groups, group)
+          power_generated = power_generated + group.power
+        end
       end
-    end
-  else
-    -- Fallback to level-based generation
-    local num_special = SPECIAL_ENEMIES_PER_LEVEL(self.arena.level)
-    local tier = LEVEL_TO_TIER(self.arena.level) or 1
-
-    for i = 1, num_special do
-      local special_type = Get_Random_Special_Enemy(tier)
-      local group = {
-        type = special_type,
-        amount = 1,
-        spawn_type = 'location',
-        power = enemy_to_round_power[special_type] or 100,
-        spawn_time = 0
-      }
-      table.insert(special_groups, group)
-      power_generated = power_generated + group.power
     end
   end
 
@@ -942,7 +915,7 @@ function SpawnManager:generate_wave_groups()
     local group = {
       type = enemy_type,
       amount = amount,
-      spawn_type = random:bool(30) and 'scatter' or 'location',
+      spawn_type = 'location',
       power = group_power,
       spawn_time = 0
     }
@@ -1002,88 +975,6 @@ function SpawnManager:generate_wave_groups()
     self.next_group_spawn_time = self.wave_groups[1].spawn_time
   else
     self.all_groups_spawned = true
-  end
-end
-
--- Helper function to determine number of special enemies for current subwave
-function SpawnManager:get_special_enemies_for_subwave()
-  local level = self.arena.level
-  local subwave = self.current_subwave
-
-  -- Define special enemy counts per level and subwave
-  -- Format: [level] = {subwave1_count, subwave2_count}
-  local special_counts = {
-    [1] = {0, 0},      -- Level 1: no specials
-    [2] = {1, 2},      -- Level 2: 1-2 specials
-    [3] = {2, 2},      -- Level 3: 2 per subwave
-    [4] = {2, 3},      -- Level 4: 2-3 specials
-    [5] = {3, 4},      -- Level 5: 3-4 specials
-    -- Boss levels don't spawn regular enemies
-  }
-
-  -- For levels after boss, use a formula
-  if level > 5 and not Is_Boss_Level(level) then
-    if subwave == 1 then
-      return 2  -- 2 specials in first subwave
-    else
-      return 3  -- 3 specials in second subwave
-    end
-  end
-
-  local counts = special_counts[level]
-  if counts then
-    return counts[subwave] or 0
-  end
-
-  return 0
-end
-
--- Helper function to determine number of snakes for current subwave
-function SpawnManager:get_snakes_for_subwave()
-  local level = self.arena.level
-  local subwave = self.current_subwave
-
-  -- Define max snake counts per level
-  -- Format: [level] = max_snakes_per_subwave
-  local max_snakes_by_level = {
-    [1] = 0,   -- No snakes at level 1
-    [2] = 1,   -- No snakes at level 2
-    [3] = 2,   -- Max 1 snake starting level 3
-    [4] = 3,   -- Max 2 snakes
-    [5] = 3,   -- Max 2 snakes
-    -- After boss levels
-    [7] = 3,
-    [8] = 3,
-    [9] = 4,
-    [10] = 4,
-    -- Continue pattern...
-  }
-
-  -- Get max snakes for this level
-  local max_snakes = max_snakes_by_level[level]
-  if not max_snakes and level > 10 then
-    -- Formula for higher levels: gradually increase
-    max_snakes = 4
-  elseif not max_snakes then
-    max_snakes = 0
-  end
-
-  -- Randomize between 0, some, and max
-  if max_snakes == 0 then
-    return 0
-  elseif max_snakes == 1 then
-    -- 50% chance of 0 or 1
-    return random:int(0, 1)
-  else
-    -- Three possibilities: 0, half max, or max
-    local roll = random:float(0, 1)
-    if roll < 0.33 then
-      return 0  -- No snakes this subwave
-    elseif roll < 0.66 then
-      return math.ceil(max_snakes / 2)  -- Some snakes
-    else
-      return max_snakes  -- Max snakes
-    end
   end
 end
 
@@ -1468,6 +1359,32 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
     end
 end
 
+function Get_Special_Swarmer_Type(types_dict)
+  local special_swarmer_type = nil
+  if types_dict then
+    -- Calculate total chance
+    local total_chance = 0
+    for swarmer_type, chance in pairs(types_dict) do
+      total_chance = total_chance + chance
+    end
+
+    -- Roll to see if we spawn a special type
+    if random:bool(total_chance) then
+      -- Pick a special type based on weights
+      local roll = random:float(0, total_chance)
+      local accumulated = 0
+      for swarmer_type, chance in pairs(types_dict) do
+        accumulated = accumulated + chance
+        if roll <= accumulated then
+          special_swarmer_type = swarmer_type
+          break
+        end
+      end
+    end
+  end
+  return special_swarmer_type
+end
+
 
 -- This function is now just a simple unit factory.
 function Spawn_Enemy(arena, type, location, target_location)
@@ -1476,10 +1393,7 @@ function Spawn_Enemy(arena, type, location, target_location)
   local special_swarmer_type = nil
   if type == 'swarmer' then
     --reduce into 1 value
-    local special_swarmer_chance = table.reduce(SPECIAL_SWARMER_WEIGHT_BY_TYPE[arena.level], function(acc, weight) return acc + weight end, 0)
-    if random:bool(special_swarmer_chance) then
-      special_swarmer_type = SPECIAL_SWARMER_TYPES[random:weighted_pick(unpack(SPECIAL_SWARMER_WEIGHT_BY_TYPE[arena.level]))]
-    end
+    special_swarmer_type = Get_Special_Swarmer_Type(arena.spawn_manager.stage_data.special_swarmer_types)
   end
 
   local enemy = Enemy{type = type, group = arena.main,
