@@ -88,97 +88,29 @@ function MainMenu:on_enter(from)
   local run = system.load_run()
   system.load_stats()
 
-  --continue game
-  if(run and not not next(run)) then
-    self.arena_continue_button = Button{group = self.main_ui, x = 52, y = gh/2 + 12, force_update = true, button_text = 'continue',  fg_color = 'bg10', bg_color = 'bg', action = function(b)
-      ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-      ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-      ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-      TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
-        self.transitioning = true
-        slow_amount = 1
-        run_passive_pool = run.run_passive_pool or {
-          'centipede', 'ouroboros_technique_r', 'ouroboros_technique_l', 'amplify', 'resonance', 'ballista', 'call_of_the_void', 'crucio', 'speed_3', 'damage_4', 'shoot_5', 'death_6', 'lasting_7',
-          'defensive_stance', 'offensive_stance', 'kinetic_bomb', 'porcupine_technique', 'last_stand', 'seeping', 'deceleration', 'annihilation', 'malediction', 'hextouch', 'whispers_of_doom',
-          'tremor', 'heavy_impact', 'fracture', 'meat_shield', 'hive', 'baneling_burst', 'blunt_arrow', 'explosive_arrow', 'divine_machine_arrow', 'chronomancy', 'awakening', 'divine_punishment',
-          'assassination', 'flying_daggers', 'ultimatum', 'magnify', 'echo_barrage', 'unleash', 'reinforce', 'payback', 'enchanted', 'freezing_field', 'burning_field', 'gravity_field', 'magnetism',
-          'insurance', 'dividends', 'berserking', 'unwavering_stance', 'unrelenting_stance', 'blessing', 'haste', 'divine_barrage', 'orbitism', 'psyker_orbs', 'psychosink', 'rearm', 'taunt', 'construct_instability',
-          'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
-          'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
-        }
-        current_new_game_plus = run.current_new_game_plus or current_new_game_plus or 0
-        Helper.Unit.team_saves = run.team_saves or {{}, {}, {}, {}}
-        system.save_state()
-        main:add(BuyScreen'buy_screen')
-
-        run_time = run.time or 0
-        locked_state = run.locked_state
-
-        --need to increment loop for NG+ ?
-        main:go_to('buy_screen', run)
-      end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
-    end}
-  end
-  --start new game
-  self.new_game_label = Text({{text = '[wavy_mid, bg10]new game:', font = pixul_font, alignment = 'left'}}, global_text_tags)
-
-  self.arena_run_button_normal = Button{group = self.main_ui, x = 110, y = gh/2 - 10, force_update = true, button_text = 'normal', fg_color = 'bg10', bg_color = 'bg', action = function(b)
-    state.difficulty = 'normal'
+  -- Continue button removed - now goes directly to level select
+  -- Play button to go to level select
+  self.play_button = Button{group = self.main_ui, x = 34, y = gh/2, force_update = true, button_text = 'play', fg_color = 'bg10', bg_color = 'bg', action = function(b)
     ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
       self.transitioning = true
-      Start_New_Run_And_Go_To_Buy_Screen()
-    end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
-  end}
-
-  self.arena_run_button_hard = Button{group = self.main_ui, x = 160, y = gh/2 - 10, force_update = true, button_text = 'hard', fg_color = 'bg10', bg_color = 'bg', action = function(b)
-    -- Check if the final boss has been defeated
-    if not USER_STATS or not USER_STATS.final_boss_defeated or USER_STATS.final_boss_defeated < 1 then
-      -- Show info text that hard mode is locked
-      if not self.hard_mode_locked_info then
-        self.hard_mode_locked_info = InfoText{group = self.ui}
-      end
-      self.hard_mode_locked_info:activate({
-        {text = '[fg]beat normal mode to unlock', font = pixul_font, alignment = 'center'},
-      }, nil, nil, nil, nil, 16, 4, nil, 2)
-      self.hard_mode_locked_info.x, self.hard_mode_locked_info.y = gw/2, gh/2 + 10
-      
-      -- Auto-hide the info text after 2 seconds
-      self.t:after(2, function() 
-        if self.hard_mode_locked_info then 
-          self.hard_mode_locked_info:deactivate()
-          self.hard_mode_locked_info.dead = true
-          self.hard_mode_locked_info = nil 
-        end 
-      end, 'hard_mode_locked_info')
-      
-      -- Play error sound
-      error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-      return
-    end
-    
-    -- If unlocked, proceed with normal hard mode transition
-    state.difficulty = 'hard'
-    ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-    ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-    ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-    TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
-      self.transitioning = true
-      Start_New_Run_And_Go_To_Buy_Screen()
-    end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
+      slow_amount = 1
+      main:add(LevelSelectScreen'level_select')
+      main:go_to('level_select')
+    end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']loading...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
   end}
 
   self.achievements_panel = AchievementsPanel{group = self.ui}
-  self.options_button = Button{group = self.main_ui, x = 47, y = gh/2 + 56, force_update = true, button_text = 'options', fg_color = 'bg10', bg_color = 'bg', action = function(b)
+  self.options_button = Button{group = self.main_ui, x = 47, y = gh/2 + 24, force_update = true, button_text = 'options', fg_color = 'bg10', bg_color = 'bg', action = function(b)
     if not self.paused then
       open_options(self)
     else
       close_options(self)
     end
   end}
-  self.quit_button = Button{group = self.main_ui, x = 37, y = gh/2 + 78, force_update = true, button_text = 'quit', fg_color = 'bg10', bg_color = 'bg', action = function(b)
+  self.quit_button = Button{group = self.main_ui, x = 37, y = gh/2 + 46, force_update = true, button_text = 'quit', fg_color = 'bg10', bg_color = 'bg', action = function(b)
     cleanup_global_cursor()
     system.save_state()
     --steam.shutdown()
@@ -229,9 +161,7 @@ function MainMenu:on_exit()
   self.flashes = nil
   self.hfx = nil
   self.title_text = nil
-  self.new_game_label = nil
-  self.arena_run_button_normal = nil
-  self.arena_run_button_hard = nil
+  self.play_button = nil
 end
 
 
@@ -290,7 +220,6 @@ function MainMenu:draw()
 
   self.main_ui:draw()
   self.title_text:draw(70, gh/2 - 40)
-  if self.new_game_label then self.new_game_label:draw(49, gh/2 - 10) end
   self.ui:draw()
   if self.paused then graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent) end
   self.options_ui:draw()

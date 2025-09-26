@@ -5,36 +5,51 @@ ItemCard = BaseCard:extend()
 function ItemCard:init(args)
   -- Set up item-specific properties before calling super
   self.item = args.item
-  args.image = find_item_image(self.item)
+
+  -- Use weapon icon instead of item icon
+  if self.item.assigned_weapon then
+    local weapon_def = Get_Weapon_Definition(self.item.assigned_weapon)
+    if weapon_def and weapon_def.icon then
+      args.image = item_images[weapon_def.icon] or item_images['default']
+    else
+      args.image = item_images['default']
+    end
+  else
+    args.image = find_item_image(self.item)
+  end
+
   args.colors = self.item.colors
   args.tier_color = self.item.tier_color or item_to_color(self.item)
   args.name = self.item.name
-  
+
   -- Call parent constructor
   ItemCard.super.init(self, args)
   
   -- Item-specific properties
-  self.cost = self.item.cost or 0
+  self.cost = 0  -- No cost anymore
   self.stats = self.item.stats
   self.sets = self.item.sets
   self.origX = self.x
   self.origY = self.y
+  self.assigned_weapon = self.item.assigned_weapon
+  self.assigned_weapon_index = self.item.assigned_weapon_index
 
-  -- Item card specific behavior
-  self.timeGrabbed = 0
-  self.buyTimer = 0.2
-  self.grabbed = false
-  self.grab_offset_x = 0
-  self.grab_offset_y = 0
+  -- Items are no longer draggable/moveable
+  self.can_drag = false
   
   -- Scaling behavior near character slots
   self.base_scale = 1
   self.current_scale = 1
   self.shrink_threshold_y = gh/2 - 25 + 80 -- Character card Y + some buffer
 
-  -- Create cost text
-  if self.cost > 0 then
-    self.cost_text = Text({{text = '[yellow]' .. self.cost, font = pixul_font, alignment = 'center'}}, global_text_tags)
+  -- No cost text needed anymore
+
+  -- Create weapon assignment indicator
+  if self.assigned_weapon then
+    local weapon_def = Get_Weapon_Definition(self.assigned_weapon)
+    if weapon_def then
+      self.weapon_name_text = Text({{text = '[fg]' .. weapon_def.display_name, font = pixul_font, alignment = 'center'}}, global_text_tags)
+    end
   end
 
   -- Set bonus elements
@@ -138,13 +153,9 @@ function ItemCard:find_item_part_at_position(x, y)
 end
 
 function ItemCard:handle_purchase_transaction()
-  -- Handle the gold transaction and bookkeeping
+  -- Play purchase sound
   gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
-  gold = gold - self.cost
 
-  if self.cost > 10 then
-    Stats_Current_Run_Over10Cost_Items_Purchased()
-  end
   self.parent.shop_item_data[self.i] = nil
   self.parent:save_run()
 end
@@ -227,16 +238,38 @@ end
 function ItemCard:buy_item()
   -- Check if we're in BuyScreen
   if self.parent and self.parent:is(BuyScreen) and self.parent.weapons then
-    -- Find available weapon slot
-    local weapon, slot_index = Helper.Unit:find_available_weapon_slot(self.parent.weapons, self.item)
+    -- Find the assigned weapon
+    local target_weapon = nil
+    if self.assigned_weapon_index then
+      target_weapon = self.parent.weapons[self.assigned_weapon_index]
+    end
 
-    if not weapon or not slot_index then
-      Create_Info_Text('no available weapon slots', self, 'error')
+    if not target_weapon then
+      Create_Info_Text('weapon not found', self, 'error')
       return
     end
 
-    -- Add item to weapon (store full item object)
-    weapon.items[slot_index] = self.item
+    -- Initialize items array if not present
+    if not target_weapon.items then
+      target_weapon.items = {}
+    end
+
+    -- Find available slot in this specific weapon (up to 6 items)
+    local slot_index = nil
+    for i = 1, 6 do
+      if not target_weapon.items[i] then
+        slot_index = i
+        break
+      end
+    end
+
+    if not slot_index then
+      Create_Info_Text('weapon has max items', self, 'error')
+      return
+    end
+
+    -- Add item to weapon
+    target_weapon.items[slot_index] = self.item
 
     -- Handle purchase
     self:handle_purchase_transaction()
@@ -247,6 +280,11 @@ function ItemCard:buy_item()
     end
     if self.parent.set_party then
       self.parent:set_party()
+    end
+
+    -- Notify parent of purchase
+    if self.parent.on_item_purchased then
+      self.parent:on_item_purchased(nil, nil, self.item)
     end
 
     -- Remove the card
@@ -342,106 +380,55 @@ function ItemCard:update(dt)
   if self.dead then return end
   ItemCard.super.update(self, dt)
 
-  if input.m1.pressed and self.colliding_with_mouse and not self.grabbed then
+  -- Items are no longer draggable, just click to buy
+  if input.m1.pressed and self.colliding_with_mouse then
     -- Check if the purchase is possible
     local can_buy = false
     local no_slot_message = 'no available item slots'
 
     if self.parent and self.parent:is(BuyScreen) and self.parent.weapons then
-      -- Check weapon slots for BuyScreen
-      local weapon, slot_index = Helper.Unit:find_available_weapon_slot(self.parent.weapons, self.item)
-      can_buy = gold >= self.cost and weapon and slot_index
+      -- Check if assigned weapon has space for items
+      if self.assigned_weapon_index then
+        local target_weapon = self.parent.weapons[self.assigned_weapon_index]
+        if target_weapon then
+          if not target_weapon.items then
+            target_weapon.items = {}
+          end
+          -- Check if weapon has space (up to 6 items)
+          local has_space = false
+          for i = 1, 6 do
+            if not target_weapon.items[i] then
+              has_space = true
+              break
+            end
+          end
+          can_buy = has_space
+          if not has_space then
+            no_slot_message = 'weapon has max items'
+          end
+        end
+      end
     else
       -- Check unit slots for other screens
       local unit, slot_index = Helper.Unit:find_available_inventory_slot(self.parent.units, self.item)
-      can_buy = gold >= self.cost and unit and slot_index
+      can_buy = unit and slot_index  -- No cost check needed
     end
 
     if can_buy then
-      -- SUCCESS: The player can afford it and has space.
-      self.timeGrabbed = love.timer.getTime()
-      self.grabbed = true
-
-      -- Store the mouse offset from card center when grabbing
-      local mouse_x, mouse_y = camera:get_mouse_position()
-      self.grab_offset_x = mouse_x - self.x
-      self.grab_offset_y = mouse_y - self.y
-
+      -- Items are clicked to buy immediately
+      self:buy_item()
       self:remove_set_bonus_tooltip()
-
-      -- Clear highlights when grabbed
-      if self.parent and self.parent.clear_all_highlights then
-        self.parent:clear_all_highlights()
-      end
         
-    elseif not can_buy and gold >= self.cost then
+    elseif not can_buy then
       self:remove_set_bonus_tooltip()
       Create_Info_Text(no_slot_message, self, 'error')
-
-    elseif gold < self.cost then
-      self:remove_set_bonus_tooltip()
-      Create_Info_Text('not enough gold', self, 'error')
-
     end
   end
 
-  --determine when to purchase the item vs when to cancel the purchase
-  --should be able to click to buy?
-  --but also cancel by letting go if you drag it halfway
-  --leave this for now, kinda confusing to track the mouse position or duration of click
-  -- and have 2 different ways to cancel the purchase
-  if self.grabbed and input.m1.released then
-    self.grabbed = false
-    
-    -- Check if dropped over an item slot
-    local mouse_x, mouse_y = camera:get_mouse_position()
-    local item_part, unit = self:find_item_part_at_position(mouse_x, mouse_y)
-    
-    -- Reset scaling when released
-    self.current_scale = 1.0
-    self.sx = 1.0
-    self.sy = 1.0
-    
-    if love.timer.getTime() - self.timeGrabbed < self.buyTimer then
-      -- Quick click - use normal buy logic
-      self:buy_item()
-    elseif item_part and unit then
-      -- Dropped over an item slot - try to buy to that specific slot
-      self:buy_item_to_slot(item_part, unit)
-    else
-      -- Dropped elsewhere - return to original position
-      self.x = self.origX
-      self.y = self.origY
-    end
-  end
-
-  if self.grabbed then
-    local mouse_x, mouse_y = camera:get_mouse_position()
-    self.x = mouse_x - self.grab_offset_x
-    self.y = mouse_y - self.grab_offset_y
-    
-    -- Calculate scaling based on proximity to character slots
-    self:update_scale_based_on_position()
-    
-    self:remove_set_bonus_tooltip()
-  end
-
-  -- Update set button positions to move with the ItemCard, accounting for scaling
+  -- Update set button positions with the ItemCard
   for i, set_button in ipairs(self.set_bonus_elements) do
-    local base_x = self.x
-    local base_y = self.y + 10 + (i-1)*20
-    
-    -- If grabbed and scaling, apply the same scaling offset as in draw method
-    if self.grabbed and self.current_scale < 1.0 then
-      local mouse_x, mouse_y = camera:get_mouse_position()
-      local scale_offset_x = (mouse_x - self.x) * (1 - self.current_scale)
-      local scale_offset_y = (mouse_y - self.y) * (1 - self.current_scale)
-      base_x = base_x + scale_offset_x
-      base_y = base_y + scale_offset_y
-    end
-    
-    set_button.x = base_x
-    set_button.y = base_y
+    set_button.x = self.x
+    set_button.y = self.y + 10 + (i-1)*20
     if set_button.shape then
       set_button.shape:move_to(set_button.x, set_button.y)
     end
@@ -489,34 +476,26 @@ end
 
 function ItemCard:draw()
   if not self.item then return end
-  
-  -- If grabbed and scaling, we need to handle the scaling towards mouse cursor
-  if self.grabbed and self.current_scale < 1.0 then
-    local mouse_x, mouse_y = camera:get_mouse_position()
-    
-    -- Calculate offset from card center to mouse for scaling origin
-    local scale_offset_x = (mouse_x - self.x) * (1 - self.current_scale)
-    local scale_offset_y = (mouse_y - self.y) * (1 - self.current_scale)
-    
-    -- Temporarily adjust position for scaling towards mouse
-    local original_x, original_y = self.x, self.y
-    self.x = self.x + scale_offset_x
-    self.y = self.y + scale_offset_y
-    
-    -- Override the spring scaling with our custom scaling
-    local original_sx, original_sy = self.sx, self.sy
-    self.sx = self.current_scale * self.spring.x
-    self.sy = self.current_scale * self.spring.x
-    
-    -- Draw base card
-    self:draw_base_card()
-    
-    -- Restore original values
-    self.x, self.y = original_x, original_y
-    self.sx, self.sy = original_sx, original_sy
-  else
-    -- Normal drawing
-    self:draw_base_card()
+
+  -- Draw base card
+  self:draw_base_card()
+
+  -- Draw weapon assignment indicator on top
+  if self.weapon_name_text and self.assigned_weapon then
+    -- Draw a small banner at the top with weapon name
+    local text_w = self.weapon_name_text.w
+    local text_h = 10
+    local banner_y = self.y - self.h/2 - 8
+
+    graphics.push(self.x, banner_y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
+
+    -- Background for weapon name
+    graphics.rectangle(self.x, banner_y, text_w + 8, text_h, 4, 4, bg[0])
+
+    -- Draw weapon name
+    self.weapon_name_text:draw(self.x, banner_y)
+
+    graphics.pop()
   end
 end
 

@@ -908,11 +908,23 @@ function Enemy:die()
   --   main.current.gold_counter:add_round_power(round_power, self.x, self.y)
   -- end
 
-  -- Add progress to wave progress bar
-  if main.current and main.current.current_arena and main.current.current_arena.progress_bar then
-    local round_power = enemy_to_round_power[self.type] or 100
-    -- main.current.current_arena.progress_bar:increase_with_particles(round_power, self.x, self.y)
+  -- Drop XP shard with value based on round power
+  if main.current and main.current.current_arena then
+    local round_power = enemy_to_round_power[self.type] or 25
+
+    -- Create a single XP shard with full value
+    if round_power > 0 then
+    main.current.current_arena.t:after(0, function()
+      XPShard{
+        group = main.current.current_arena.main,
+        x = self.x or 0,
+        y = self.y or 0,
+        xp_value = round_power
+      }
+      end)
+    end
   end
+  
   if self.parent and self.parent.summons and self.parent.summons > 0 then
     self.parent.summons = self.parent.summons - 1
   end

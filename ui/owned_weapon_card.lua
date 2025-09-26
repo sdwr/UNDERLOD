@@ -76,23 +76,53 @@ function OwnedWeaponCard:create_item_parts()
   end
   self.item_parts = {}
 
-  -- Create item slots based on weapon level (1 slot at level 1, 2 at level 2, 3 at level 3)
-  local num_slots = math.min(self.level or 1, 3)
+  -- Only show item slots if weapon has items
+  if not self.weapon or not self.weapon.items then
+    return
+  end
 
-  -- Position slots vertically below the card
-  for i = 1, num_slots do
-    local y_offset = (i - 1) * (self.ITEM_SLOT_HEIGHT + self.ITEM_SLOT_SPACING)
+  -- Count actual items
+  local num_items = 0
+  for i = 1, 6 do
+    if self.weapon.items[i] then
+      num_items = num_items + 1
+    end
+  end
 
-    local item_part = ItemPart{
-      group = self.group,
-      x = self.x,  -- Center horizontally with the card
-      y = self.y + self.h/2 + self.ITEM_SLOT_HEIGHT/2 + 5 + y_offset,  -- Position below the card
-      i = i,
-      parent = self,
-      w = self.ITEM_SLOT_WIDTH,
-      h = self.ITEM_SLOT_HEIGHT
-    }
-    table.insert(self.item_parts, item_part)
+  if num_items == 0 then
+    return
+  end
+
+  -- Create item parts only for existing items
+  -- Position slots in a 3x2 grid below the card
+  local slots_per_row = 3
+  local slot_index = 0
+
+  for i = 1, 6 do
+    if self.weapon.items[i] then
+      local row = math.floor(slot_index / slots_per_row)
+      local col = slot_index % slots_per_row
+
+      local x_offset = (col - 1) * (self.ITEM_SLOT_WIDTH + self.ITEM_SLOT_SPACING)
+      local y_offset = row * (self.ITEM_SLOT_HEIGHT + self.ITEM_SLOT_SPACING)
+
+      -- Center the grid horizontally
+      local grid_width = (slots_per_row - 1) * (self.ITEM_SLOT_WIDTH + self.ITEM_SLOT_SPACING)
+      local start_x = self.x - grid_width / 2
+
+      local item_part = ItemPart{
+        group = self.group,
+        x = start_x + x_offset,
+        y = self.y + self.h/2 + self.ITEM_SLOT_HEIGHT/2 + 5 + y_offset,
+        i = i,
+        parent = self,
+        w = self.ITEM_SLOT_WIDTH,
+        h = self.ITEM_SLOT_HEIGHT,
+        item = self.weapon.items[i]  -- Pass the actual item
+      }
+      table.insert(self.item_parts, item_part)
+      slot_index = slot_index + 1
+    end
   end
 end
 

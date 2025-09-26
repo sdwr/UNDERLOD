@@ -135,11 +135,12 @@ function Arena:create_progress_bar()
   if Is_Boss_Level(self.level) then
     return -- No progress bar for boss levels
   end
-  
+
   local level_data = self.level_list and self.level_list[self.level]
-  if level_data and level_data.waves then
+
+  if level_data and level_data.waves_power then
     local waves_power = level_data.waves_power
-    
+
     self.progress_bar = ProgressBar{
       group = self.ui, parent = self, w = 300, h = 5,
       x = gw/2, y = LEVEL_MAP_Y_POSITION, offset_x = self.offset_x, offset_y = self.offset_y,
@@ -147,6 +148,11 @@ function Arena:create_progress_bar()
       waves_power = waves_power,
       fade_in = true,
     }
+
+    -- Start the fade-in animation
+    if self.progress_bar and self.progress_bar.begin_fade_in then
+      self.progress_bar:begin_fade_in()
+    end
   end
 end
 
@@ -194,7 +200,7 @@ end
 
 function Arena:init_physics()
   self.floor = Group()
-  self.main = Group():set_as_physics_world(32, 0, 0, {'troop', 'enemy', 'ghost_enemy', 'projectile', 'enemy_projectile', 'force_field', 'ghost', 'effect', 'door'})
+  self.main = Group():set_as_physics_world(32, 0, 0, {'troop', 'enemy', 'ghost_enemy', 'projectile', 'enemy_projectile', 'force_field', 'ghost', 'effect', 'door', 'xp_shard'})
   self.post_main = Group()
   self.effects = Group()
   self.effects:set_custom_draw_list(main_after_characters)
@@ -257,6 +263,8 @@ function Arena:init_physics()
   self.main:enable_trigger_between('ghost', 'troop')
   self.main:enable_trigger_between('enemy', 'troop')
   self.main:enable_trigger_between('door', 'troop')
+
+  self.main:enable_trigger_between('xp_shard', 'troop')
 
   -- Ghost enemy trigger rules
   self.main:enable_trigger_between('ghost_enemy', 'troop')

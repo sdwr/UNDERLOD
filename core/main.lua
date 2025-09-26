@@ -11,6 +11,8 @@ require 'ui/ui'
 require 'ui/character_tooltip'
 require 'ui/set_bonus_tooltip'
 require 'level_classes/door'
+require 'level_classes/xp_shard'
+require 'level_classes/stage_wave_data'
 require 'level_classes/arena'
 require 'level_classes/base_level'
 require 'level_classes/level_0'
@@ -21,6 +23,7 @@ require 'items/constants'
 require 'items/old_items'
 require 'items/items_v2'
 require 'screens/mainmenu'
+require 'screens/level_select'
 require 'save/buy_screen_utils'
 require 'screens/buy_screen'
 require 'screens/world_manager'
@@ -1763,20 +1766,20 @@ function open_options(self)
       end, 'pause')
     end }
 
-    --restart new game
-    if not self:is(MainMenu) then
-      self.restart_button = Button { group = self.options_ui, x = gw / 2, y = gh - 200, force_update = true, button_text = 'restart run', fg_color = 'bg10', bg_color = 'bg', action = function(
-          b)
-        self.transitioning = true
-        ui_transition2:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
-        ui_switch2:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
-        ui_switch1:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
-        TransitionEffect { group = main.transitions, x = gw / 2, y = gh / 2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
-          
-          Start_New_Run_And_Go_To_Buy_Screen()
-        end, text = Text({ { text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center' } }, global_text_tags) }
-      end }
-    end
+    -- Restart button removed - no longer needed with level select system
+    -- if not self:is(MainMenu) then
+    --   self.restart_button = Button { group = self.options_ui, x = gw / 2, y = gh - 200, force_update = true, button_text = 'restart run', fg_color = 'bg10', bg_color = 'bg', action = function(
+    --       b)
+    --     self.transitioning = true
+    --     ui_transition2:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
+    --     ui_switch2:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
+    --     ui_switch1:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
+    --     TransitionEffect { group = main.transitions, x = gw / 2, y = gh / 2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
+    --
+    --       Start_New_Run_And_Go_To_Buy_Screen()
+    --     end, text = Text({ { text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center' } }, global_text_tags) }
+    --   end }
+    -- end
 
     self.sfx_button = Button { group = self.options_ui, x = gw / 2 - 46, y = gh - 175, force_update = true, button_text = 'sfx volume: ' .. tostring((state.sfx_volume or 0.5) * 10), fg_color = 'bg10', bg_color = 'bg',
       action = function(b)

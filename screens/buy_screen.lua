@@ -100,7 +100,8 @@ function BuyScreen:on_enter(from)
   
   self.show_level_buttons = false
   
-  self.gold_counter = GoldCounter{group = self.ui, x = GOLD_COUNTER_X_OFFSET, y = LEVEL_MAP_Y_POSITION + 1}
+  -- Gold counter removed - no longer using gold system
+  -- self.gold_counter = GoldCounter{group = self.ui, x = GOLD_COUNTER_X_OFFSET, y = LEVEL_MAP_Y_POSITION + 1}
 
   -- Removed shop level text
 
@@ -146,9 +147,36 @@ end
 function BuyScreen:on_item_purchased(unit, slot_index, item)
   -- Refresh character cards to show the new item
   Refresh_All_Cards_Text()
-  
-  -- You can add additional logic here if needed
-  -- For example, play a specific sound, show a notification, etc.
+
+  -- Remove all shop cards after purchase (only 1 upgrade per screen)
+  self:remove_all_shop_cards()
+end
+
+function BuyScreen:on_weapon_purchased()
+  -- Remove all shop cards after purchase (only 1 upgrade per screen)
+  self:remove_all_shop_cards()
+end
+
+function BuyScreen:remove_all_shop_cards()
+  -- Remove all weapon cards
+  if self.weapon_cards then
+    for _, card in ipairs(self.weapon_cards) do
+      card:die()
+    end
+    self.weapon_cards = {}
+  end
+
+  -- Remove all item cards
+  if self.item_cards then
+    for _, card in ipairs(self.item_cards) do
+      card:die()
+    end
+    self.item_cards = {}
+  end
+
+  -- Clear shop data
+  self.shop_weapon_data = {}
+  self.shop_item_data = {}
 end
 
 
@@ -520,7 +548,8 @@ function BuyScreen:draw()
 end
 
 function BuyScreen:gain_gold(amount)
-  gold = (gold + amount) or 0
+  -- Gold system removed
+  -- gold = (gold + amount) or 0
 end
 
 function BuyScreen:set_party()
@@ -542,13 +571,11 @@ function BuyScreen:set_party()
 end
 
 function BuyScreen:try_buy_unit(cost)
-  if gold >= cost then
-    self:gain_gold(-cost)
-    gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
-    self.select_character_overlay = CharacterSelectOverlay{
-      group = self.overlay_ui
-    }
-  end
+  -- No longer checking gold, always allow unit purchase
+  gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
+  self.select_character_overlay = CharacterSelectOverlay{
+    group = self.overlay_ui
+  }
 end
 
 function BuyScreen:most_copies_of_unit()
@@ -586,9 +613,14 @@ function BuyScreen:set_weapons(shop_level, is_shop_start)
   end
 
   -- Roll new weapons and items if needed
+  -- Level 1 only shows weapons, no items
   if not locked_state and self.reroll_shop then
     self.shop_weapon_data = Get_Random_Shop_Weapons(3)
-    self.shop_item_data = Get_Random_Shop_Items(2, shop_level)  -- Get 2 items
+    if self.level > 1 and self.weapons and #self.weapons > 0 then
+      self.shop_item_data = Get_Random_Shop_Items(2, shop_level, nil, self.weapons)  -- Pass weapons for assignment
+    else
+      self.shop_item_data = {}  -- No items at level 1 or if no weapons owned
+    end
   elseif locked_state and self.reroll_shop then
     -- Fill empty slots
     while #self.shop_weapon_data < 3 do
@@ -597,10 +629,12 @@ function BuyScreen:set_weapons(shop_level, is_shop_start)
         table.insert(self.shop_weapon_data, available_weapons[1])
       end
     end
-    while #self.shop_item_data < 2 do
-      local available_items = Get_Random_Shop_Items(1, shop_level)
-      if available_items[1] then
-        table.insert(self.shop_item_data, available_items[1])
+    if self.level > 1 and self.weapons and #self.weapons > 0 then
+      while #self.shop_item_data < 2 do
+        local available_items = Get_Random_Shop_Items(1, shop_level, nil, self.weapons)
+        if available_items[1] then
+          table.insert(self.shop_item_data, available_items[1])
+        end
       end
     end
   end

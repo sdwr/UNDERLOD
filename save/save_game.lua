@@ -33,11 +33,20 @@ function Save_Run(run_data)
   system.save_state()
 end
 
-function Start_New_Run_And_Go_To_Buy_Screen()
+function Start_New_Run_And_Go_To_Buy_Screen(stage_info)
   -- Common logic to start a new run and transition to buy screen
   local new_run = Start_New_Run()
+
+  -- If stage_info provided, set the selected stage data
+  if stage_info then
+    new_run.selected_stage = stage_info.selected_stage
+    new_run.difficulty = stage_info.difficulty
+    new_run.stage_number = stage_info.stage_number
+    new_run.level = 1  -- Gameplay level starts at 1
+  end
+
   Save_Run(new_run)
-  
+
   Go_To_Buy_Screen()
 end
 
@@ -147,7 +156,11 @@ function Create_Blank_Game_Stats()
   stats.dragon_no_eggs = 0
   stats.heigan_no_floor = 0
   stats.final_boss_perfect = 0
-  
+
+  -- Stage completion tracking
+  stats.stages_completed = {}  -- Track which stages have been beaten
+  stats.stages_no_damage = {}  -- Track which stages have been beaten without damage
+
   --current run stats
   stats.current_run_rerolls = 0 --done
   stats.current_run_troop_deaths = 0 --done

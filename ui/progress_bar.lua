@@ -156,7 +156,7 @@ function ProgressBarSegment:get_progress_location()
 end
 
 function ProgressBarSegment:create_progress_particle(roundPower, x, y)
-  self.t:after(0.3, function()
+  self.t:after(0.0, function()
     ProgressParticle{
       group = main.current.main,
       x = x,

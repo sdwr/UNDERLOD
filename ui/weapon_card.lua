@@ -21,14 +21,9 @@ function WeaponCard:init(args)
   
   WeaponCard.super.init(self, args)
   
-  -- Set cost after parent init
-  self.cost = Get_Weapon_Cost(self.weapon_name)
-  self.can_afford = gold >= self.cost
-  
-  -- Create cost text like ItemCard
-  if self.cost > 0 then
-    self.cost_text = Text({{text = '[yellow]' .. self.cost, font = pixul_font, alignment = 'center'}}, global_text_tags)
-  end
+  -- No cost system anymore - all weapons are free
+  self.cost = 0
+  self.can_afford = true  -- Always can afford since there's no cost
   
   -- Create description text
   if self.weapon_def.description then
@@ -51,14 +46,7 @@ function WeaponCard:init(args)
     self.bottom_text = Text(desc_lines, global_text_tags)
   end
 
-  -- Update every frame to check affordability
-  self.t:every(0.1, function()
-    self.can_afford = gold >= self.cost
-    if self.cost_text then
-      local color = self.can_afford and '[yellow]' or '[red]'
-      self.cost_text:set_text{{text = color .. self.cost, font = pixul_font, alignment = 'center'}}
-    end
-  end)
+  -- No need to update affordability since there's no cost
 
   -- Play creation effect
   self:creation_effect()
@@ -122,29 +110,8 @@ function WeaponCard:on_click()
     return
   end
 
-  if self.can_afford then
-    self:buy()
-  else
-    -- Not enough gold feedback
-    error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-    self.spring:pull(0.2, 200, 10)
-
-    -- Show not enough gold text
-    if not self.error_text then
-      self.error_text = InfoText{group = main.current.ui}
-      self.error_text:activate({
-        {text = '[fg]not enough gold', font = pixul_font, alignment = 'center'},
-      }, nil, nil, nil, nil, 16, 4, nil, 2)
-      self.error_text.x, self.error_text.y = self.x, self.y - 40
-      self.t:after(1.5, function()
-        if self.error_text then
-          self.error_text:deactivate()
-          self.error_text.dead = true
-          self.error_text = nil
-        end
-      end)
-    end
-  end
+  -- Always can buy since there's no cost
+  self:buy()
 end
 
 function WeaponCard:buy()
@@ -184,8 +151,9 @@ function WeaponCard:buy()
     end
   end
 
-  if self.parent.on_item_purchased then
-    self.parent:on_item_purchased(nil, nil, self.weapon_name)
+  -- Notify parent that a weapon was purchased
+  if self.parent.on_weapon_purchased then
+    self.parent:on_weapon_purchased()
   end
 
   self:die()

@@ -30,24 +30,36 @@ function OwnedWeaponDisplay:refresh_cards()
   end
   self.weapon_cards = {}
 
-  -- Create cards for all weapon slots (owned and empty)
-  local total_slots = MAX_OWNED_WEAPONS or 6
-  local first_card_x_offset = (total_slots / 2 * self.CARD_WIDTH) + (self.CARD_SPACING * (total_slots - 1) / 2)
+  -- Only create cards for owned weapons (skip empty slots)
+  local owned_weapons = {}
+  for i = 1, (MAX_OWNED_WEAPONS or 6) do
+    if self.weapons[i] then
+      table.insert(owned_weapons, {weapon = self.weapons[i], original_index = i})
+    end
+  end
 
-  for i = 1, total_slots do
-    local weapon = self.weapons[i]  -- May be nil for empty slots
+  -- Calculate centering based on actual number of owned weapons
+  local num_owned = #owned_weapons
+  if num_owned == 0 then return end  -- No weapons to display
+
+  local total_width = (num_owned * self.CARD_WIDTH) + (self.CARD_SPACING * (num_owned - 1))
+  local start_x = self.x - total_width / 2 + self.CARD_WIDTH / 2
+
+  -- Create cards only for owned weapons, centered
+  for i, weapon_data in ipairs(owned_weapons) do
+    local weapon = weapon_data.weapon
     local card = OwnedWeaponCard{
       group = self.group,
-      x = self.x - first_card_x_offset + (i-1) * self.CARD_WIDTH + (i-1) * self.CARD_SPACING,
+      x = start_x + (i-1) * (self.CARD_WIDTH + self.CARD_SPACING),
       y = self.y,
       w = self.CARD_WIDTH,
       h = self.CARD_HEIGHT,
-      weapon_name = weapon and weapon.name or nil,
-      level = weapon and weapon.level or nil,
-      xp = weapon and (weapon.xp or 0) or nil,
+      weapon_name = weapon.name,
+      level = weapon.level,
+      xp = weapon.xp or 0,
       weapon = weapon,
-      index = i,
-      is_empty = not weapon
+      index = weapon_data.original_index,
+      is_empty = false
     }
     table.insert(self.weapon_cards, card)
   end

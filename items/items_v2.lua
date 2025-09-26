@@ -511,10 +511,40 @@ function create_random_items(level)
   return items
 end
 
-Get_Random_Shop_Items = function(count, level, exclude_rarity)
+Get_Random_Shop_Items = function(count, level, exclude_rarity, weapons)
   local items = {}
+
+  -- If no weapons provided, return empty
+  if not weapons or #weapons == 0 then
+    return items
+  end
+
   for i = 1, count do
-    table.insert(items, create_random_item(level, exclude_rarity))
+    local item = create_random_item(level, exclude_rarity)
+    if item then
+      -- Assign a random owned weapon to this item
+      local valid_weapons = {}
+      for j = 1, #weapons do
+        if weapons[j] then
+          table.insert(valid_weapons, weapons[j])
+        end
+      end
+
+      if #valid_weapons > 0 then
+        local target_weapon = random:table(valid_weapons)
+        item.assigned_weapon = target_weapon.name
+        item.assigned_weapon_index = nil
+        -- Find the index
+        for j = 1, #weapons do
+          if weapons[j] and weapons[j].name == target_weapon.name then
+            item.assigned_weapon_index = j
+            break
+          end
+        end
+      end
+
+      table.insert(items, item)
+    end
   end
   return items
 end

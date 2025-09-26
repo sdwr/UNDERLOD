@@ -31,8 +31,31 @@ function WorldManager:on_enter(from)
   self:create_class_lists()
 self:arena_on_enter()
 
-  -- Create level list for spawn management
-  self.level_list = Build_Level_List(NUMBER_OF_ROUNDS)
+  -- Load stage data if we have a selected stage
+  if state.selected_stage then
+    local stage_data = Get_Stage_Data(state.selected_stage)
+    if stage_data then
+      -- Create a single wave with 65% of the stage's round power
+      local required_power = stage_data.round_power * 0.65
+
+      -- Create level list entry for this stage
+      self.level_list = {
+        [1] = {
+          level = 1,
+          waves_power = {required_power}, -- Single wave/segment
+          round_power = stage_data.round_power,
+          color = grey[0],
+          environmental_hazards = {}
+        }
+      }
+    else
+      -- Fallback if no stage data
+      self.level_list = Build_Level_List(NUMBER_OF_ROUNDS)
+    end
+  else
+    -- No stage selected, use default level generation
+    self.level_list = Build_Level_List(NUMBER_OF_ROUNDS)
+  end
   
   -- Convert weapons to units format for compatibility
   if self.weapons and #self.weapons > 0 then
