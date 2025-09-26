@@ -601,6 +601,24 @@ function SpawnManager:init(arena)
     self.level_data = arena.level_list[arena.level]
     self.t = self.arena.t
 
+    -- Stage-based spawning
+    self.stage_id = arena.stage_id  -- e.g., "normal_1", "hard_3"
+    self.difficulty = arena.difficulty  -- "normal", "hard", "extreme"
+    self.stage_data = nil
+
+    -- Load stage data if available
+    if self.stage_id then
+        self.stage_data = Get_Stage_Data(self.stage_id)
+        if not self.stage_data then
+            -- Try without difficulty prefix (e.g., "A1" instead of "normal_1")
+            local stage_num = self.stage_id:match("_%d+$")
+            if stage_num then
+                local base_stage = "A" .. stage_num:sub(2)
+                self.stage_data = STAGE_DATA[base_stage]
+            end
+        end
+    end
+
     self.spawn_reservations = {}
 
     -- Spawn collision check system
@@ -1690,11 +1708,13 @@ end
 
 function SpawnManager:spawn_enemy_immediately(type, location)
   local enemy = Enemy{
-    type = type, 
+    type = type,
     group = self.arena.main,
-    x = location.x, 
+    x = location.x,
     y = location.y,
-    level = self.arena.level, 
+    level = self.arena.level,
+    difficulty = self.difficulty,  -- Pass difficulty for stat scaling
+    stage_id = self.stage_id,
     data = {}
   }
 

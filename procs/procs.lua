@@ -2328,9 +2328,21 @@ function Proc_Triforce:init(args)
   
 end
 
+Proc_DistanceMultiplier = Proc:extend()
+function Proc_DistanceMultiplier:init(args)
+  self.triggers = {}
+  self.scope = 'troop'
+
+  Proc_DistanceMultiplier.super.init(self, args)
+end
+
+
+
 
 
 proc_name_to_class = {
+  ['distance_multiplier'] = Proc_DistanceMultiplier,
+
   ['reroll'] = Proc_Reroll,
   ['reset'] = Proc_Reset,
   ['damagepotion'] = Proc_DamagePotion,

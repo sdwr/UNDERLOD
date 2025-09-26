@@ -215,6 +215,10 @@ function Helper.Unit:can_cast(unit, target)
                 return false
             end
         end
+
+        if Has_Static_Proc(unit, 'distance_multiplier') then
+            return Helper.Unit:cast_off_cooldown_distance_multiplier(unit, target)
+        end
         
         return Helper.Unit:cast_off_cooldown(unit)
     end

@@ -10,6 +10,10 @@ function Arena:init(args)
   self.offset_x = args.offset_x or 0
   self.offset_y = args.offset_y or 0
   self.level_list = args.level_list
+
+  -- Stage properties for spawn manager
+  self.stage_id = args.stage_id
+  self.difficulty = args.difficulty
   
   -- Create arena-specific groups
   self.main = Group()

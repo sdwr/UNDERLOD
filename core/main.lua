@@ -2010,8 +2010,12 @@ function close_options(self, remain_paused)
       self.main_menu_button.dead = true; self.main_menu_button = nil
     end
     system.save_state()
-    if self:is(MainMenu) or self:is(BuyScreen) then
+    if self:is(MainMenu) or self:is(BuyScreen) or self:is(LevelSelectScreen) then
       -- input:set_mouse_visible(true)
+      -- Clear the options UI group for these screens
+      if self.options_ui then
+        self.options_ui:clear()
+      end
     elseif self:is(Arena) then
       -- input:set_mouse_visible(true)
     end

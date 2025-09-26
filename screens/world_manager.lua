@@ -160,13 +160,15 @@ end
 
 function WorldManager:create_arena(level, offset_x)
   local arena_class = CombatLevel
-  
+
   local arena = arena_class{
     level = level,
     x = offset_x,
     offset_x = offset_x,
     offset_y = 0,
     level_list = self.level_list,
+    stage_id = state.selected_stage,
+    difficulty = state.difficulty,
   }
   
   if not self.current_arena then
