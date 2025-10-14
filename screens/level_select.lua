@@ -263,13 +263,13 @@ function LevelSelectScreen:is_stage_unlocked(stage_data)
   end
 
   local stage_row = stage_data.name:split('_')[1]
-  local stage_num = stage_data.name:split('_')[2]
+  local stage_num = tonumber(stage_data.name:split('_')[2])
 
   local prev_completed = false
   local above_completed = false
-  
+
   -- Check if previous stage is completed (any difficulty)
-  local prev_stage_name = stage_row .. '_' .. stage_num - 1
+  local prev_stage_name = stage_row .. '_' .. (stage_num - 1)
   if USER_STATS.stage_progress and USER_STATS.stage_progress[prev_stage_name] then
     for _, diff in ipairs({'normal', 'hard', 'extreme'}) do
       if USER_STATS.stage_progress[prev_stage_name][diff] and USER_STATS.stage_progress[prev_stage_name][diff].completed then
@@ -280,7 +280,8 @@ function LevelSelectScreen:is_stage_unlocked(stage_data)
   end
 
   if stage_num == 1 then
-    prev_stage_name = stage_row - 1 .. '_' .. stage_num
+    local prev_row = string.char(string.byte(stage_row) - 1)
+    prev_stage_name = prev_row .. '_' .. stage_num
     if USER_STATS.stage_progress and USER_STATS.stage_progress[prev_stage_name] then
       for _, diff in ipairs({'normal', 'hard', 'extreme'}) do
         if USER_STATS.stage_progress[prev_stage_name][diff] and USER_STATS.stage_progress[prev_stage_name][diff].completed then

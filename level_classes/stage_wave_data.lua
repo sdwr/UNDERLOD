@@ -31,7 +31,7 @@ LIST_OF_STAGES = {
   'C_2',
   'C_3',
   'C_4',
-  'C5',
+  'C_5',
 }
 
 STAGE_DATA = {
@@ -205,7 +205,12 @@ end
 -- API FUNCTIONS
 -- ========================================
 function Get_Stage_Data(stage_id)
-  return STAGE_DATA[stage_id] or STAGE_DATA['A1']
+  if STAGE_DATA[stage_id] then
+    return STAGE_DATA[stage_id]
+  end
+  local data = deepcopy(STAGE_DATA['A_1'])
+  data.name = stage_id
+  return data
 end
 
 function Get_Stage_Round_Power(stage_id)
