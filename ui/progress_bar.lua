@@ -113,6 +113,7 @@ function ProgressBarSegment:init(args)
 
   self.segment_color = args.segment_color or yellow[-4]:clone()
   self.segment_bgcolor = args.segment_bgcolor or fg[-10]:clone()
+  self.particles_color = args.particles_color or self.segment_color:clone()
 
   if self.fade_in then
     self.segment_color.a = 0
@@ -163,7 +164,7 @@ function ProgressBarSegment:increase_progress(amount)
     self:complete_wave()
   end
 
-  alert1:play{pitch = random:float(0.95, 1.05), volume = 0.6}
+  alert1:play{pitch = random:float(0.95, 1.05), volume = 0.3}
 
   self:create_particles()
 end
@@ -204,8 +205,10 @@ end
 
 function ProgressBarSegment:create_particles()
   local progress_location = self:get_progress_location()
-  for i = 1, 10 do
-    HitParticle{group = main.current.effects, x = progress_location.x, y = progress_location.y, color = self.color}
+  local color = self.particles_color:clone()
+  color.a = math.max(color.a, 0.3)
+  for i = 1, 3 do
+    HitParticle{group = main.current.effects, x = progress_location.x, y = progress_location.y, color = color}
   end
 end
 
