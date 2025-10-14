@@ -12,8 +12,8 @@ DEFAULT_WAVE_TIMEOUT = 60   -- seconds before forcing wave completion
 DEFAULT_WAVE_POWER_SPLITS = {
   [1] = {1.0},        -- 1 wave: 100%
   [2] = {0.4, 0.6},   -- 2 waves: 40%, 60%
-  [3] = {0.28, 0.32, 0.4},  -- 3 waves: 28%, 32%, 40%
-  [4] = {0.22, 0.24, 0.26, 0.28},  -- 4 waves: 22%, 24%, 26%, 28%
+  [3] = {0.35, 0.65},  -- 3 waves: 28%, 32%, 40%
+  [4] = {0.24, 0.30, 0.46},  -- 4 waves: 22%, 24%, 26%, 28%
   [5] = {1.0},
 }
 

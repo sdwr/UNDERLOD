@@ -33,8 +33,8 @@ self:arena_on_enter()
 
   -- Load stage data and weapons if we have a selected stage
   local stage_data = nil
-  if state.selected_stage then
-    stage_data = Get_Stage_Data(state.selected_stage)
+  if USER_STATS.selected_stage then
+    stage_data = Get_Stage_Data(USER_STATS.selected_stage)
     if stage_data then
       -- Get number of waves from stage data
       local num_waves = stage_data.number_of_waves or 1
@@ -195,8 +195,8 @@ function WorldManager:create_arena(level, offset_x)
     offset_x = offset_x,
     offset_y = 0,
     level_list = self.level_list,
-    stage_id = state.stage_id,
-    difficulty = state.difficulty,
+    stage_id = USER_STATS.stage_id,
+    difficulty = USER_STATS.difficulty,
   }
   
   if not self.current_arena then
@@ -608,31 +608,31 @@ function WorldManager:transition_to_next_level_buy_screen(delay)
     self.current_arena.transitioning = true
 
     -- Update completion stats if we have a stage selected
-    if state.selected_stage and state.difficulty then
+    if USER_STATS.selected_stage and USER_STATS.difficulty then
       -- Load existing stats
       system.load_stats()
       if not USER_STATS.stage_progress then USER_STATS.stage_progress = {} end
 
       -- Ensure stage entry exists
-      if not USER_STATS.stage_progress[state.selected_stage] then
-        USER_STATS.stage_progress[state.selected_stage] = {}
+      if not USER_STATS.stage_progress[USER_STATS.selected_stage] then
+        USER_STATS.stage_progress[USER_STATS.selected_stage] = {}
       end
 
       -- Ensure difficulty entry exists
-      if not USER_STATS.stage_progress[state.selected_stage][state.difficulty] then
-        USER_STATS.stage_progress[state.selected_stage][state.difficulty] = {
+      if not USER_STATS.stage_progress[USER_STATS.selected_stage][USER_STATS.difficulty] then
+        USER_STATS.stage_progress[USER_STATS.selected_stage][USER_STATS.difficulty] = {
           completed = false,
           hitless = false
         }
       end
 
       -- Mark stage as completed
-      USER_STATS.stage_progress[state.selected_stage][state.difficulty].completed = true
+      USER_STATS.stage_progress[USER_STATS.selected_stage][USER_STATS.difficulty].completed = true
 
       -- Check for hitless completion
       local damage_taken = self.current_arena.damage_taken or 0
       if damage_taken == 0 then
-        USER_STATS.stage_progress[state.selected_stage][state.difficulty].hitless = true
+        USER_STATS.stage_progress[USER_STATS.selected_stage][USER_STATS.difficulty].hitless = true
       end
 
       -- Save the updated stats
@@ -643,9 +643,9 @@ function WorldManager:transition_to_next_level_buy_screen(delay)
   Reset_Global_Proc_List()
 
   -- For stage-based play, go back to level select instead of buy screen
-  if state.selected_stage then
+  if USER_STATS.selected_stage then
     self.t:after(delay or 2, function()
-      TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
+      TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = USER_STATS.dark_transitions and bg[-2] or fg[0], transition_action = function()
         main:add(LevelSelectScreen'level_select')
         main:go_to('level_select', nil, {
           just_completed_stage = true,
@@ -661,7 +661,7 @@ function WorldManager:transition_to_next_level_buy_screen(delay)
     self:save_run()
 
     self.t:after(delay or 2, function()
-      TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
+      TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = USER_STATS.dark_transitions and bg[-2] or fg[0], transition_action = function()
         Go_To_Buy_Screen()
       end}
     end)

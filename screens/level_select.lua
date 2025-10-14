@@ -46,11 +46,10 @@ function LevelSelectScreen:on_enter(from, opts)
 
   -- Load completion data
   system.load_stats()
-  if not state.stage_progress then state.stage_progress = {} end
-  if not state.stage_progress['A_1'] then state.stage_progress['A_1'] = {unlocked = true} end
-  if not state.stages_completed then state.stages_completed = {} end
-  if not state.stages_no_damage then state.stages_no_damage = {} end
-  system.save_state()
+  if not USER_STATS.stage_progress then USER_STATS.stage_progress = {} end
+  if not USER_STATS.stage_progress['A_1'] then USER_STATS.stage_progress['A_1'] = {} end
+  USER_STATS.stage_progress['A_1'].unlocked = true
+  system.save_stats()
 
   -- Create stage grid (5 per row)
   self:create_stage_grid()
@@ -69,10 +68,10 @@ function LevelSelectScreen:on_enter(from, opts)
   end
 
   -- If coming from arena, reopen the last played stage
-  if self.entered_from == 'world_manager' and state.stage_id then
+  if self.entered_from == 'world_manager' and USER_STATS.stage_id then
     -- Find the button for the last played stage
     for _, button in ipairs(self.stage_buttons) do
-      if button.stage_id == state.stage_id then
+      if button.stage_id == USER_STATS.stage_id then
         -- Auto-select this stage
         self:show_stage_details(button.stage_num, button.stage_id, button.stage_data)
         break
@@ -83,15 +82,18 @@ end
 
 function LevelSelectScreen:update_unlocked_stages(show_effects)
   local i = 0
+  local time_between_effects = 0.5
   for _, button in ipairs(self.stage_buttons) do
     if self:should_unlock_stage(button.stage_data) then
       if show_effects then
+        self.t:after(time_between_effects * i, function()
         self:play_unlock_stage_effect(button)
-        i = i + 1
-      end
-      self.t:after(0.5 * i, function()
         self:unlock_stage(button)
-      end)
+        end)
+        i = i + 1
+      else
+        self:unlock_stage(button)
+      end
     end
   end
 end
@@ -99,11 +101,23 @@ end
 
 function LevelSelectScreen:unlock_stage(button)
   button.is_unlocked = true
-  if not state.stage_progress[button.stage_id] then
-    state.stage_progress[button.stage_id] = {}
+  button.interact_with_mouse = true
+  button.fg_color = 'fg'
+
+  -- Update button action to allow clicking
+  button.action = function(b)
+    ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    self:show_stage_details(button.stage_num, button.stage_id, button.stage_data)
   end
-  state.stage_progress[button.stage_id].unlocked = true
-  system.save_state()
+
+  -- Update text color to show it's unlocked
+  button.text:set_text{{text = '[fg]' .. button.stage_id, font = pixul_font, alignment = 'center'}}
+
+  if not USER_STATS.stage_progress[button.stage_id] then
+    USER_STATS.stage_progress[button.stage_id] = {}
+  end
+  USER_STATS.stage_progress[button.stage_id].unlocked = true
+  system.save_stats()
 end
 
 function LevelSelectScreen:play_unlock_stage_effect(button)
@@ -141,8 +155,7 @@ function LevelSelectScreen:create_stage_grid()
       local y = START_Y + row * (BUTTON_SIZE + BUTTON_SPACING)
 
       -- Check if unlocked using stage ID
-      local is_unlocked = state.stage_progress[stage_info.name] and state.stage_progress[stage_info.name].unlocked
-
+      local is_unlocked = USER_STATS.stage_progress[stage_info.name] and USER_STATS.stage_progress[stage_info.name].unlocked
       -- Create button
       local button = self:create_stage_button(x, y, i, stage_info, is_unlocked)
       table.insert(self.stage_buttons, button)
@@ -280,14 +293,16 @@ function LevelSelectScreen:start_stage(stage_id, difficulty)
   -- Use uppercase stage format like 'A1' for STAGE_DATA lookup
   local stage_key = string.upper(stage_id)
 
-  TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
+  TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = USER_STATS.dark_transitions and bg[-2] or fg[0], transition_action = function()
     self.transitioning = true
 
+    system.load_stats()
     -- Set state for the selected stage
-    state.selected_stage = stage_key  -- Use 'A1' format
-    state.difficulty = difficulty  -- Use 'normal' format
-    state.stage_id = stage_key
-    state.level = 1  -- Gameplay level starts at 1
+    USER_STATS.selected_stage = stage_key  -- Use 'A1' format
+    USER_STATS.difficulty = difficulty  -- Use 'normal' format
+    USER_STATS.stage_id = stage_key
+    USER_STATS.level = 1  -- Gameplay level starts at 1
+    system.save_stats()
 
     -- Go directly to WorldManager, bypassing buy screen
     main:add(WorldManager'world_manager')
