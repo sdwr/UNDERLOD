@@ -44,9 +44,10 @@ self:arena_on_enter()
       local waves_power = {}
 
       -- Use default wave power splits if available
-      if DEFAULT_WAVE_POWER_SPLITS and DEFAULT_WAVE_POWER_SPLITS[num_waves] then
+      local power_splits = stage_data.wave_power_splits or DEFAULT_WAVE_POWER_SPLITS[num_waves]
+      if power_splits then
         for i = 1, num_waves do
-          waves_power[i] = total_required * DEFAULT_WAVE_POWER_SPLITS[num_waves][i]
+          waves_power[i] = total_required * power_splits[i]
         end
       else
         -- Equal distribution as fallback

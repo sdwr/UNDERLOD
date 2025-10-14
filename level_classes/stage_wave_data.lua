@@ -12,8 +12,8 @@ DEFAULT_WAVE_TIMEOUT = 60   -- seconds before forcing wave completion
 DEFAULT_WAVE_POWER_SPLITS = {
   [1] = {1.0},        -- 1 wave: 100%
   [2] = {0.4, 0.6},   -- 2 waves: 40%, 60%
-  [3] = {0.35, 0.65},  -- 3 waves: 28%, 32%, 40%
-  [4] = {0.24, 0.30, 0.46},  -- 4 waves: 22%, 24%, 26%, 28%
+  [3] = {0.24, 0.3, 0.46},  -- 3 waves: 28%, 32%, 40%
+  [4] = {0.22, 0.24, 0.26, 0.28},  -- 4 waves: 22%, 24%, 26%, 28%
   [5] = {1.0},
 }
 
@@ -38,9 +38,9 @@ LIST_OF_STAGES = {
 STAGE_DATA = {
   ['A_1'] = {
     name = 'A_1',
-    round_power = 2000,
-    number_of_waves = 2,
-    wave_duration = 10,
+    round_power = 1200,
+    number_of_waves = 1,
+    wave_duration = 13,
     normal_enemies = {'swarmer'},
     special_enemies = {},
     weapons = {
@@ -52,8 +52,8 @@ STAGE_DATA = {
   },
   ['A_2'] = {
     name = 'A_2',
-    round_power = 5000,
-    number_of_waves = 3,
+    round_power = 3000,
+    number_of_waves = 2,
     normal_enemies = {'swarmer'},
     special_swarmer_types = {['touch'] = 8},
     special_enemies = {},
@@ -66,8 +66,8 @@ STAGE_DATA = {
   },
   ['A_3'] = {
     name = 'A_3',
-    round_power = 5000,
-    number_of_waves = 3,
+    round_power = 4000,
+    number_of_waves = 2,
     normal_enemies = {'swarmer'},
     special_swarmer_types = {['touch'] = 8},
     special_enemies_by_wave = {
@@ -84,7 +84,7 @@ STAGE_DATA = {
   },
   ['A_4'] = {
     name = 'A_4',
-    round_power = 6000,
+    round_power = 4000,
     number_of_waves = 3,
     normal_enemies = {'swarmer'},
     special_swarmer_types = {['touch'] = 8},
@@ -103,6 +103,7 @@ STAGE_DATA = {
   ['A_5'] = {
     name = 'A_5',
     boss = 'stompy',
+    round_power = 1000,
     weapons = {
       ['machine_gun'] = {
         level = 1,
