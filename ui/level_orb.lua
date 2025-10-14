@@ -529,3 +529,27 @@ function LevelOrb:on_progress_particle_hit()
   self:add_progress_ripple()
   self.last_progress_sound_time = Helper.Time.time
 end
+
+function LevelOrb:wave_complete_effect()
+  ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.4}
+
+  local current_radius = self.visible_radius > 0 and self.visible_radius or self.radius
+  table.insert(self.ripples, {
+    timer = 0,
+    duration = 0.8,
+    start_radius = 0,
+    max_radius = current_radius * 1.5,
+    alpha = 1
+  })
+
+  self.t:tween(0.15, self, {scale = 1.15}, math.ease_out_cubic, function()
+    self.t:tween(0.25, self, {scale = 1.0}, math.ease_in_out_cubic)
+  end)
+
+  local flash_color = blue[5]:clone()
+  self.hurt_flash_timer = 0.3
+  self.color = flash_color
+  self.t:after(0.3, function()
+    self.color = self.base_color:clone()
+  end)
+end

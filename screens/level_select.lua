@@ -7,7 +7,7 @@ function LevelSelectScreen:init(name)
   self:init_game_object()
 end
 
-function LevelSelectScreen:on_enter(from)
+function LevelSelectScreen:on_enter(from, opts)
   slow_amount = 1
 
   -- Set cursor to simple mode for menus
@@ -18,10 +18,16 @@ function LevelSelectScreen:on_enter(from)
   self.main_ui = Group():no_camera()
   self.detail_ui = Group():no_camera()
   self.options_ui = Group():no_camera()
+  self.effects_ui = Group():no_camera()
   self.paused = false
 
   -- Store where we came from
   self.entered_from = from
+
+  -- Store completion data if just completed a level
+  self.just_completed_stage = opts and opts.just_completed_stage
+  self.just_completed_difficulty = opts and opts.just_completed_difficulty
+  self.just_completed_hitless = opts and opts.just_completed_hitless
 
   -- Title
   self.title_text = Text2{group = self.ui, x = gw/2, y = 20, lines = {{text = '[wavy_mid, fg]SELECT STAGE', font = fat_font, alignment = 'center'}}}
@@ -40,8 +46,11 @@ function LevelSelectScreen:on_enter(from)
 
   -- Load completion data
   system.load_stats()
-  if not USER_STATS.stages_completed then USER_STATS.stages_completed = {} end
-  if not USER_STATS.stages_no_damage then USER_STATS.stages_no_damage = {} end
+  if not state.stage_progress then state.stage_progress = {} end
+  if not state.stage_progress['A_1'] then state.stage_progress['A_1'] = {unlocked = true} end
+  if not state.stages_completed then state.stages_completed = {} end
+  if not state.stages_no_damage then state.stages_no_damage = {} end
+  system.save_state()
 
   -- Create stage grid (5 per row)
   self:create_stage_grid()
@@ -49,6 +58,15 @@ function LevelSelectScreen:on_enter(from)
   -- Selected stage info
   self.selected_stage = nil
   self.detail_panel = nil
+
+  -- Play victory effects if just completed a level
+  if self.just_completed_stage then
+    self.t:after(1.5, function()
+      self:update_unlocked_stages(true)
+    end)
+  else
+    self:update_unlocked_stages(false)
+  end
 
   -- If coming from arena, reopen the last played stage
   if self.entered_from == 'world_manager' and state.stage_id then
@@ -61,6 +79,36 @@ function LevelSelectScreen:on_enter(from)
       end
     end
   end
+end
+
+function LevelSelectScreen:update_unlocked_stages(show_effects)
+  local i = 0
+  for _, button in ipairs(self.stage_buttons) do
+    if self:should_unlock_stage(button.stage_data) then
+      if show_effects then
+        self:play_unlock_stage_effect(button)
+        i = i + 1
+      end
+      self.t:after(0.5 * i, function()
+        self:unlock_stage(button)
+      end)
+    end
+  end
+end
+
+
+function LevelSelectScreen:unlock_stage(button)
+  button.is_unlocked = true
+  if not state.stage_progress[button.stage_id] then
+    state.stage_progress[button.stage_id] = {}
+  end
+  state.stage_progress[button.stage_id].unlocked = true
+  system.save_state()
+end
+
+function LevelSelectScreen:play_unlock_stage_effect(button)
+  spawn_mark2:play{pitch = random:float(0.95, 1.05), volume = 0.4}
+  HitCircle{group = self.effects_ui, x = button.x, y = button.y, color = yellow[5]}
 end
 
 function LevelSelectScreen:create_stage_grid()
@@ -93,7 +141,7 @@ function LevelSelectScreen:create_stage_grid()
       local y = START_Y + row * (BUTTON_SIZE + BUTTON_SPACING)
 
       -- Check if unlocked using stage ID
-      local is_unlocked = self:is_stage_unlocked(stage_info)
+      local is_unlocked = state.stage_progress[stage_info.name] and state.stage_progress[stage_info.name].unlocked
 
       -- Create button
       local button = self:create_stage_button(x, y, i, stage_info, is_unlocked)
@@ -256,10 +304,10 @@ function LevelSelectScreen:start_stage(stage_id, difficulty)
   end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
 end
 
-function LevelSelectScreen:is_stage_unlocked(stage_data)
-  -- Stage 1 is always unlocked
-  if stage_data.name == 'A_1' then
-    return true
+function LevelSelectScreen:should_unlock_stage(stage_data)
+  if USER_STATS.stage_progress and USER_STATS.stage_progress[stage_data.name]
+  and USER_STATS.stage_progress[stage_data.name].unlocked then
+    return false
   end
 
   local stage_row = stage_data.name:split('_')[1]
@@ -300,10 +348,12 @@ function LevelSelectScreen:on_exit()
   if self.main_ui then self.main_ui:destroy() end
   if self.detail_ui then self.detail_ui:destroy() end
   if self.options_ui then self.options_ui:destroy() end
+  if self.effects_ui then self.effects_ui:destroy() end
   self.ui = nil
   self.main_ui = nil
   self.detail_ui = nil
   self.options_ui = nil
+  self.effects_ui = nil
   self.title_text = nil
   self.back_button = nil
   self.stage_buttons = nil
@@ -329,6 +379,7 @@ function LevelSelectScreen:update(dt)
     if self.ui then self.ui:update(dt*slow_amount) end
     if self.main_ui then self.main_ui:update(dt*slow_amount) end
     if self.detail_ui then self.detail_ui:update(dt*slow_amount) end
+    if self.effects_ui then self.effects_ui:update(dt*slow_amount) end
   else
     if self.options_ui then self.options_ui:update(dt*slow_amount) end
   end
@@ -348,6 +399,9 @@ function LevelSelectScreen:draw()
     graphics.rectangle(gw/2, gh/2, 2*gw, 2*gh, nil, nil, modal_transparent)
   end
   if self.options_ui then self.options_ui:draw() end
+
+  -- Draw effects on top
+  if self.effects_ui then self.effects_ui:draw() end
 
   -- Draw completion indicators and selection highlight on stage buttons
   for _, button in ipairs(self.stage_buttons or {}) do

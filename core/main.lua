@@ -2014,7 +2014,7 @@ function close_options(self, remain_paused)
       -- input:set_mouse_visible(true)
       -- Clear the options UI group for these screens
       if self.options_ui then
-        self.options_ui:clear()
+        self.options_ui:destroy()
       end
     elseif self:is(Arena) then
       -- input:set_mouse_visible(true)

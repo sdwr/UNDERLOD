@@ -42,13 +42,13 @@ function State:init_state(name)
 end
 
 
-function State:enter(from, data)
+function State:enter(from, data, data_for_state)
   reset_slow_amount()
   
   self.active = true
   if self.on_enter then
     Load_Save_Data_Into_State(self, data)
-    self:on_enter(from)
+    self:on_enter(from, data_for_state)
   end
 end
 
@@ -115,7 +115,7 @@ end
 -- You must handle the destruction of it yourself in its on_exit function.
 
 --save data is loaded in save_game.lua
-function Main:go_to(state, data)
+function Main:go_to(state, data, data_for_state)
   if type(state) == 'string' then state = self:get(state) end
 
   if self.current then
@@ -128,5 +128,5 @@ function Main:go_to(state, data)
 
   local last_state = self.current
   self.current = state
-  state:enter(last_state, data)
+  state:enter(last_state, data, data_for_state)
 end

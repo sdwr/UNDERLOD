@@ -665,7 +665,7 @@ function SpawnManager:init(arena)
     self.all_groups_spawned = false
     
     -- Timers and Trackers
-    self.timer = TIME_BETWEEN_WAVES
+    self.timer = TIME_BEFORE_FIRST_WAVE
     self.pending_spawns = 0
     self.wave_spawn_delay = 0
 end
@@ -1098,6 +1098,11 @@ function SpawnManager:complete_current_wave()
   -- Complete the current segment in progress bar
   if self.arena and self.arena.progress_bar then
       self.arena.progress_bar:complete_wave(self.current_wave)
+  end
+
+  -- Play wave complete effect on level orb
+  if self.arena and self.arena.level_orb and not self.arena.level_orb.dead then
+      self.arena.level_orb:wave_complete_effect()
   end
 
   -- Move to waiting for wave clear state
