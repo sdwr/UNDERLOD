@@ -17,26 +17,26 @@ DEFAULT_WAVE_POWER_SPLITS = {
 }
 
 LIST_OF_STAGES = {
-  'A1',
-  'A2',
-  'A3',
-  'A4',
-  'A5',
-  'B1',
-  'B2',
-  'B3',
-  'B4',
-  'B5',
-  'C1',
-  'C2',
-  'C3',
-  'C4',
+  'A_1',
+  'A_2',
+  'A_3',
+  'A_4',
+  'A_5',
+  'B_1',
+  'B_2',
+  'B_3',
+  'B_4',
+  'B_5',
+  'C_1',
+  'C_2',
+  'C_3',
+  'C_4',
   'C5',
 }
 
 STAGE_DATA = {
-  ['A1'] = {
-    name = 'A1',
+  ['A_1'] = {
+    name = 'A_1',
     round_power = 2000,
     number_of_waves = 2,
     wave_duration = 10,
@@ -49,8 +49,8 @@ STAGE_DATA = {
       }
     }
   },
-  ['A2'] = {
-    name = 'A2',
+  ['A_2'] = {
+    name = 'A_2',
     round_power = 5000,
     number_of_waves = 3,
     normal_enemies = {'swarmer'},
@@ -63,8 +63,8 @@ STAGE_DATA = {
       }
     }
   },
-  ['A3'] = {
-    name = 'A3',
+  ['A_3'] = {
+    name = 'A_3',
     round_power = 5000,
     number_of_waves = 3,
     normal_enemies = {'swarmer'},
@@ -81,8 +81,8 @@ STAGE_DATA = {
       }
     }
   },
-  ['A4'] = {
-    name = 'A4',
+  ['A_4'] = {
+    name = 'A_4',
     round_power = 6000,
     number_of_waves = 3,
     normal_enemies = {'swarmer'},
@@ -99,8 +99,8 @@ STAGE_DATA = {
       }
     }
   },
-  ['A5'] = {
-    name = 'A5',
+  ['A_5'] = {
+    name = 'A_5',
     boss = 'stompy',
     weapons = {
       ['machine_gun'] = {

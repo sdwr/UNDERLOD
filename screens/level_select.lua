@@ -30,6 +30,7 @@ function LevelSelectScreen:on_enter(from)
   self.back_button = Button{group = self.main_ui, x = 40, y = gh - 20, force_update = true, button_text = 'back', fg_color = 'bg10', bg_color = 'bg', action = function(b)
     ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
+      main:add(MainMenu'mainmenu')
       main:go_to('mainmenu')
     end}
   end}
@@ -74,9 +75,9 @@ function LevelSelectScreen:create_stage_grid()
   -- Get all stages from STAGE_DATA
   local stages = {}
   local index = 1
-  for stage_num, stage_id in pairs(LIST_OF_STAGES) do
+  for _, stage_id in pairs(LIST_OF_STAGES) do
     local stage_data = Get_Stage_Data(stage_id)
-    stages[index] = {id = stage_id, data = stage_data, num = stage_num}
+    stages[index] = stage_data
     index = index + 1
   end
 
@@ -91,11 +92,11 @@ function LevelSelectScreen:create_stage_grid()
       local x = START_X + col * (BUTTON_SIZE + BUTTON_SPACING)
       local y = START_Y + row * (BUTTON_SIZE + BUTTON_SPACING)
 
-      -- Check if unlocked using new logic
-      local is_unlocked = self:is_stage_unlocked(i)
+      -- Check if unlocked using stage ID
+      local is_unlocked = self:is_stage_unlocked(stage_info)
 
       -- Create button
-      local button = self:create_stage_button(x, y, i, stage_info.id, stage_info.data, is_unlocked)
+      local button = self:create_stage_button(x, y, i, stage_info, is_unlocked)
       table.insert(self.stage_buttons, button)
 
       index = index + 1
@@ -103,7 +104,7 @@ function LevelSelectScreen:create_stage_grid()
   end
 end
 
-function LevelSelectScreen:create_stage_button(x, y, stage_num, stage_id, stage_data, is_unlocked)
+function LevelSelectScreen:create_stage_button(x, y, i, stage_data, is_unlocked)
   local BUTTON_SIZE = 35
 
   -- Determine button appearance
@@ -115,7 +116,7 @@ function LevelSelectScreen:create_stage_button(x, y, stage_num, stage_id, stage_
   if is_unlocked then
     button_action = function(b)
       ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-      self:show_stage_details(stage_num, stage_id, stage_data)
+      self:show_stage_details(i, stage_data.name, stage_data)
     end
   end
 
@@ -127,7 +128,7 @@ function LevelSelectScreen:create_stage_button(x, y, stage_num, stage_id, stage_
     w = BUTTON_SIZE,
     h = BUTTON_SIZE,
     force_update = true,
-    button_text = tostring(stage_num),
+    button_text = stage_data.name,
     fg_color = fg_color,
     bg_color = bg_color,
     action = button_action
@@ -137,20 +138,20 @@ function LevelSelectScreen:create_stage_button(x, y, stage_num, stage_id, stage_
   button.interact_with_mouse = selectable
 
   -- Store stage info
-  button.stage_num = stage_num
-  button.stage_id = stage_id
+  button.stage_num = i
+  button.stage_id = stage_data.name
   button.stage_data = stage_data
   button.is_unlocked = is_unlocked
 
   -- Update text color for disabled buttons
   if not selectable then
-    button.text:set_text{{text = '[bg10]' .. tostring(stage_num), font = pixul_font, alignment = 'center'}}
+    button.text:set_text{{text = '[bg10]' .. stage_data.name, font = pixul_font, alignment = 'center'}}
   end
 
   return button
 end
 
-function LevelSelectScreen:show_stage_details(stage_num, stage_id, stage_data)
+function LevelSelectScreen:show_stage_details(i, stage_id, stage_data)
   -- Clear previous detail panel
   if self.detail_panel then
     self.detail_ui:destroy()
@@ -158,7 +159,7 @@ function LevelSelectScreen:show_stage_details(stage_num, stage_id, stage_data)
     self.detail_panel = nil
   end
 
-  self.selected_stage = {num = stage_num, id = stage_id, data = stage_data}
+  self.selected_stage = {num = i, id = stage_id, data = stage_data}
 
   -- Create detail panel on left side
   local panel_x = 120  -- Left side of screen
@@ -255,34 +256,42 @@ function LevelSelectScreen:start_stage(stage_id, difficulty)
   end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
 end
 
-function LevelSelectScreen:is_stage_unlocked(stage_num)
+function LevelSelectScreen:is_stage_unlocked(stage_data)
   -- Stage 1 is always unlocked
-  if stage_num == 1 then
+  if stage_data.name == 'A_1' then
     return true
   end
 
-  -- Check if previous stage is completed (any difficulty)
+  local stage_row = stage_data.name:split('_')[1]
+  local stage_num = stage_data.name:split('_')[2]
+
   local prev_completed = false
-  local prev_stage_idx = stage_num - 1
-  if prev_stage_idx > 0 and prev_stage_idx <= #LIST_OF_STAGES then
-    local prev_stage = LIST_OF_STAGES[prev_stage_idx]
-    if USER_STATS.stage_progress and USER_STATS.stage_progress[prev_stage] then
+  local above_completed = false
+  
+  -- Check if previous stage is completed (any difficulty)
+  local prev_stage_name = stage_row .. '_' .. stage_num - 1
+  if USER_STATS.stage_progress and USER_STATS.stage_progress[prev_stage_name] then
+    for _, diff in ipairs({'normal', 'hard', 'extreme'}) do
+      if USER_STATS.stage_progress[prev_stage_name][diff] and USER_STATS.stage_progress[prev_stage_name][diff].completed then
+        prev_completed = true
+        break
+      end
+    end
+  end
+
+  if stage_num == 1 then
+    prev_stage_name = stage_row - 1 .. '_' .. stage_num
+    if USER_STATS.stage_progress and USER_STATS.stage_progress[prev_stage_name] then
       for _, diff in ipairs({'normal', 'hard', 'extreme'}) do
-        if USER_STATS.stage_progress[prev_stage][diff] and USER_STATS.stage_progress[prev_stage][diff].completed then
-          prev_completed = true
+        if USER_STATS.stage_progress[prev_stage_name][diff] and USER_STATS.stage_progress[prev_stage_name][diff].completed then
+          above_completed = true
           break
         end
       end
     end
   end
 
-  -- Check if stage above is unlocked (for grid layout)
-  local above_unlocked = false
-  if stage_num > 5 then  -- If not in first row
-    above_unlocked = self:is_stage_unlocked(stage_num - 5)
-  end
-
-  return prev_completed or above_unlocked
+  return prev_completed or above_completed
 end
 
 function LevelSelectScreen:on_exit()
