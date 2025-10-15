@@ -60,6 +60,7 @@ self:arena_on_enter()
       self.level_list = {
         [1] = {
           level = 1,
+          boss = stage_data.boss,
           waves_power = waves_power,  -- Multiple segments based on waves
           round_power = stage_data.round_power,
           color = grey[0],

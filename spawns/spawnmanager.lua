@@ -633,6 +633,8 @@ function SpawnManager:init(arena)
     -- Wave configuration
     if self.stage_data then
         -- Use stage-specific configuration
+        self.boss = self.stage_data.boss
+
         self.total_round_power = self.stage_data.round_power or 3000
         self.total_waves = self.stage_data.number_of_waves or 1
         self.wave_duration = self.stage_data.wave_duration or DEFAULT_WAVE_DURATION
@@ -724,7 +726,7 @@ function SpawnManager:update(dt)
       self.timer = self.timer - dt
       if self.timer <= 0 then
         self.pending_spawns = 0
-        if Is_Boss_Level(self.arena.level) then
+        if self.boss then
           self:change_state('spawning_boss')
           spawn_mark2:play{pitch = random:float(1.1, 1.3), volume = 0.5}
         else
@@ -739,7 +741,7 @@ function SpawnManager:update(dt)
     end
 
     if self.state == 'spawning_boss' then
-      self:spawn_boss_immediately()
+      self:spawn_boss_immediately(self.boss)
       self:change_state('waiting_for_clear')
     end
     -- Wait for wave to clear before starting next wave
@@ -775,7 +777,7 @@ function SpawnManager:update(dt)
     
     -- Boss waiting
     if self.state == 'waiting_for_clear' then
-      if Is_Boss_Level(self.arena.level) then
+      if self.boss then
         if is_boss_dead then
           self:change_state('finished')
           self.arena:level_clear()
@@ -1576,55 +1578,6 @@ function Create_Unit_With_Warning(arena, location, warning_time, creation_callba
   end)
 end
 
--- ===================================================================
--- NEW METHOD: Spawn enemies in waves with timing and markers
--- ===================================================================
-function SpawnManager:spawn_waves_with_timing()
-  if self.arena.level == 0 then
-    self:change_state('finished')
-    return
-  end
-
-  if self.arena.enemies_spawned then
-    return -- Already spawned
-  end
-
-  self.arena.enemies_spawned = true
-
-  -- Check if stage has a boss
-  if self.stage_data and self.stage_data.boss then
-    self:spawn_boss_immediately(self.stage_data.boss)
-    self:change_state('waiting_for_clear')
-  -- Check if this is a boss level using Is_Boss_Level function
-  elseif Is_Boss_Level(self.arena.level) then
-    self:spawn_boss_immediately()
-    self:change_state('waiting_for_clear')
-  else
-    -- Start the wave system
-    self:change_state('entry_delay')
-    self.timer = TIME_BETWEEN_WAVES
-  end
-end
-
-function SpawnManager:calc_group_x(index, num_groups)
-  --use the right 60% of the arena, with equal padding between and around the groups
-  local playable_width = (RIGHT_BOUND - LEFT_BOUND) * 0.6
-  local start_x = RIGHT_BOUND
-  local spacing = playable_width / (num_groups + 1)
-
-  return start_x - (spacing * index)
-end
-
-function SpawnManager:calc_single_y(index, num_in_group)
-  local playable_height = (BOTTOM_BOUND - TOP_BOUND)
-  local spacing = playable_height / (num_in_group + 1)
-  return TOP_BOUND + (spacing * index)
-end
-
-function SpawnManager:calc_swarmer_y()
-  return math.random(TOP_BOUND + 20, BOTTOM_BOUND - 20)
-end
-
 function SpawnManager:spawn_group_immediately(arena, group_data, group_x)
   local type, amount = group_data[1], group_data[2]
   local spawn_type = group_data[3]
@@ -1668,9 +1621,6 @@ function SpawnManager:spawn_enemy_immediately(type, location)
 end
 
 function SpawnManager:spawn_boss_immediately(boss_name)
-  if not boss_name then
-    boss_name = level_to_boss_enemy[self.arena.level]
-  end
 
   if boss_name and boss_name ~= "" then
     -- Spawn boss immediately without warning
