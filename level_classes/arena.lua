@@ -14,6 +14,7 @@ function Arena:init(args)
   -- Stage properties for spawn manager
   self.stage_id = args.stage_id
   self.difficulty = args.difficulty
+  self.stage_data = args.stage_data  -- Store stage data passed from WorldManager
 
   -- Track damage taken for hitless completion
   self.damage_taken = 0
@@ -139,7 +140,8 @@ end
 -- end
 
 function Arena:create_progress_bar()
-  if Is_Boss_Level(self.level) then
+  -- Check if this is a boss level from stage data
+  if self.stage_data and self.stage_data.boss then
     return -- No progress bar for boss levels
   end
 

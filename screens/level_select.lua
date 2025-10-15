@@ -79,10 +79,10 @@ function LevelSelectScreen:on_enter(from, opts)
   end
 
   -- If coming from arena, reopen the last played stage
-  if self.entered_from == 'world_manager' and USER_STATS.stage_id then
+  if self.entered_from == 'world_manager' and USER_STATS.selected_stage then
     -- Find the button for the last played stage
     for _, button in ipairs(self.stage_buttons) do
-      if button.stage_id == USER_STATS.stage_id then
+      if button.stage_id == USER_STATS.selected_stage then
         -- Auto-select this stage
         self:show_stage_details(button.stage_num, button.stage_id, button.stage_data)
         break
@@ -313,7 +313,7 @@ function LevelSelectScreen:start_stage(stage_id, difficulty)
     -- Set state for the selected stage
     USER_STATS.selected_stage = stage_key  -- Use 'A1' format
     USER_STATS.difficulty = difficulty  -- Use 'normal' format
-    USER_STATS.stage_id = stage_key
+    USER_STATS.selected_stage = stage_key
     USER_STATS.level = 1  -- Gameplay level starts at 1
     system.save_stats()
 
@@ -323,7 +323,6 @@ function LevelSelectScreen:start_stage(stage_id, difficulty)
       level = 1,
       selected_stage = stage_key,  -- Pass 'A1' format
       difficulty = difficulty,  -- Pass 'normal' format
-      stage_id = stage_key,
       units = {},  -- Start with no units
       passives = {},
       shop_item_data = {},

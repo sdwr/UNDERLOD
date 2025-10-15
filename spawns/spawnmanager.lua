@@ -599,13 +599,11 @@ function SpawnManager:init(arena)
     self.level_data = arena.level_list[arena.level]
     self.t = self.arena.t
 
-    -- Stage-based spawning
-    self.stage_id = arena.stage_id  -- e.g., "normal_1", "hard_3"
+    -- Stage-based spawning - use stage_data passed from arena (single source of truth)
+    self.stage_id = arena.stage_id  -- e.g., "A_1", "B_2"
     self.difficulty = arena.difficulty  -- "normal", "hard", "extreme"
-    self.stage_data = nil
+    self.stage_data = arena.stage_data  -- Use stage_data from arena instead of fetching again
     self.difficulty_multipliers = nil
-
-    self.stage_data = Get_Stage_Data(self.stage_id)
 
     -- Get difficulty multipliers from stage data or defaults
     self.difficulty_multipliers = Get_Stage_Enemy_Stats_Multiplier(self.stage_id, self.difficulty)

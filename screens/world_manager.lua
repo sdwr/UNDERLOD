@@ -191,14 +191,18 @@ end
 function WorldManager:create_arena(level, offset_x)
   local arena_class = CombatLevel
 
+  -- Get stage data once and pass it to arena
+  local stage_data = USER_STATS.selected_stage and Get_Stage_Data(USER_STATS.selected_stage) or nil
+
   local arena = arena_class{
     level = level,
     x = offset_x,
     offset_x = offset_x,
     offset_y = 0,
     level_list = self.level_list,
-    stage_id = USER_STATS.stage_id,
+    stage_id = USER_STATS.selected_stage,
     difficulty = USER_STATS.difficulty,
+    stage_data = stage_data,  -- Pass stage data directly
   }
   
   if not self.current_arena then
