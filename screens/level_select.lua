@@ -2,6 +2,17 @@ LevelSelectScreen = Object:extend()
 LevelSelectScreen.__class_name = 'LevelSelectScreen'
 LevelSelectScreen:implement(State)
 LevelSelectScreen:implement(GameObject)
+
+-- Generic function to format stage names for display
+-- Removes underscore and replaces 5s with skull for boss levels
+function format_stage_name(stage_name)
+  local formatted = stage_name:gsub('_', '')
+  if formatted:sub(-1) == '5' then
+    formatted = formatted:sub(1, -2) .. '#'
+  end
+  return formatted
+end
+
 function LevelSelectScreen:init(name)
   self:init_state(name)
   self:init_game_object()
@@ -110,8 +121,9 @@ function LevelSelectScreen:unlock_stage(button)
     self:show_stage_details(button.stage_num, button.stage_id, button.stage_data)
   end
 
-  -- Update text color to show it's unlocked
-  button.text:set_text{{text = '[fg]' .. button.stage_id, font = pixul_font, alignment = 'center'}}
+  -- Update text color to show it's unlocked with formatted name
+  local display_name = format_stage_name(button.stage_id)
+  button.text:set_text{{text = '[fg]' .. display_name, font = pixul_font, alignment = 'center'}}
 
   if not USER_STATS.stage_progress[button.stage_id] then
     USER_STATS.stage_progress[button.stage_id] = {}
@@ -181,7 +193,8 @@ function LevelSelectScreen:create_stage_button(x, y, i, stage_data, is_unlocked)
     end
   end
 
-  -- Create the button
+  -- Create the button with formatted name
+  local display_name = format_stage_name(stage_data.name)
   local button = Button{
     group = self.main_ui,
     x = x,
@@ -189,7 +202,7 @@ function LevelSelectScreen:create_stage_button(x, y, i, stage_data, is_unlocked)
     w = BUTTON_SIZE,
     h = BUTTON_SIZE,
     force_update = true,
-    button_text = stage_data.name,
+    button_text = display_name,
     fg_color = fg_color,
     bg_color = bg_color,
     action = button_action
@@ -206,7 +219,7 @@ function LevelSelectScreen:create_stage_button(x, y, i, stage_data, is_unlocked)
 
   -- Update text color for disabled buttons
   if not selectable then
-    button.text:set_text{{text = '[bg10]' .. stage_data.name, font = pixul_font, alignment = 'center'}}
+    button.text:set_text{{text = '[bg10]' .. display_name, font = pixul_font, alignment = 'center'}}
   end
 
   return button
@@ -231,8 +244,8 @@ function LevelSelectScreen:show_stage_details(i, stage_id, stage_data)
   -- Panel background
   self.detail_panel = GameObject{group = self.detail_ui, x = panel_x, y = panel_y}
 
-  -- Stage name
-  local stage_name = stage_data.name or ("Stage " .. stage_id)
+  -- Stage name with formatted display
+  local stage_name = format_stage_name(stage_data.name)
   Text2{group = self.detail_ui, x = panel_x, y = panel_y - 100, lines = {{text = '[wavy_mid, fg]' .. stage_name, font = pixul_font, alignment = 'center'}}}
 
   -- Difficulty buttons
