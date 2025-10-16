@@ -10,53 +10,35 @@ fns['init_enemy'] = function(self)
   self.size = 'special'
   Set_Enemy_Shape(self, self.size)
   self.icon = 'big_touch'
-
+  
+  self.baseIdleTimer = 0
+  
+  -- Movement behavior
+  self.haltOnPlayerContact = false
+  self.stopChasingInRange = false
+  self.ignoreKnockback = true
+  
   -- Apply touch behavior with larger explosion radius
   TouchBehavior.apply_touch_behavior(self, {
     touch_aoe_radius = 55,  -- Larger explosion than regular touch
     touch_damage_multiplier = 2.0
   })
-
-  self.baseIdleTimer = 0
-
-  -- Movement behavior
-  self.haltOnPlayerContact = false
-  self.stopChasingInRange = false
-  self.ignoreKnockback = true
-
-  -- Aggro range detection
-  self.aggro_range = 80  -- Range to detect player and switch targets
+  
+  -- Apply aggro switching behavior with speed buff
+  AggroSwitchingBehavior.apply_aggro_switching(self, {
+    orb_movement = MOVEMENT_TYPE_SEEK_ORB,
+    player_movement = MOVEMENT_TYPE_SEEK,
+    on_aggro_player = function(self)
+      self:add_buff({name = 'aggro_speed_buff', duration = 999, maxDuration = 999, stats = {mvspd = 1.2}})
+    end,
+    on_aggro_orb = function(self)
+      self:remove_buff('aggro_speed_buff')
+    end
+  })
 end
 
 fns['update_enemy'] = function(self, dt)
-  -- Check if any player units are in aggro range
-  local closest_troop = Helper.Target:get_closest_enemy(self)
-
-  if closest_troop and not closest_troop.dead then
-    local distance_to_troop = math.distance(self.x, self.y, closest_troop.x, closest_troop.y)
-
-    if distance_to_troop <= self.aggro_range then
-      -- Switch to seeking player
-      if self.currentMovementAction ~= MOVEMENT_TYPE_SEEK then
-        -- Force re-acquisition of target
-        self:set_movement_action(MOVEMENT_TYPE_SEEK)
-        self:add_buff({name = 'seek_movement_buff', duration = 999, maxDuration = 999, stats = {mvspd = 1.2}})
-      end
-    else
-      -- Switch back to seeking orb
-      if self.currentMovementAction ~= MOVEMENT_TYPE_SEEK_ORB then
-        -- Force re-acquisition of target
-        self:set_movement_action(MOVEMENT_TYPE_SEEK_ORB)
-        self:remove_buff('seek_movement_buff')
-      end
-    end
-  else
-    -- No player units found, seek orb
-    if self.currentMovementAction ~= MOVEMENT_TYPE_SEEK_ORB then
-      self:set_movement_action(MOVEMENT_TYPE_SEEK_ORB)
-      self:remove_buff('seek_movement_buff')
-    end
-  end
+  AggroSwitchingBehavior.update_aggro_switching(self)
 end
 
 fns['attack'] = function(self)

@@ -49,11 +49,27 @@ fns['init_enemy'] = function(self)
 
 
   self.attack_options = {}
+
+  -- Optional aggro switching behavior (enabled via data.enable_aggro_switching)
+  self.enable_aggro_switching = true
+
+  if self.enable_aggro_switching then
+    AggroSwitchingBehavior.apply_aggro_switching(self, {
+      orb_movement = MOVEMENT_TYPE_SEEK_ORB_STALL,
+      player_movement = MOVEMENT_TYPE_SEEK,
+      -- No speed buff for swarmers
+    })
+  end
 end
 
 fns['update_enemy'] = function(self, dt)
   if self.special_swarmer_type == 'touch_fade' then
     TouchBehavior.update_touch_fade_color(self, dt)
+  end
+
+  -- Update aggro switching if enabled
+  if self.has_aggro_switching then
+    AggroSwitchingBehavior.update_aggro_switching(self)
   end
 end
 
