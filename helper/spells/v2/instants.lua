@@ -408,18 +408,19 @@ function Avalanche:init(args)
   self:init_game_object(args)
   if not self.group.world then self.dead = true; return end
   self.color = grey[0]
-  self.rs = self.rs or 25
+  self.rs = self.rs or 45
   self.damage = get_dmg_value(self.damage)
 
-  self.timesToCast = 15
+  self.timesToCast = 8
 
 
-  self.t:every(0.7, function()
+  self.t:every_immediate(0.7, function()
     if not self.unit then self:die(); return end
     if self.unit and self.unit.dead then self:die(); return end
     local x, y = math.random(self.rs, gw - self.rs), math.random(self.rs, gh - self.rs)
     Stomp{group = main.current.main, unit = self.unit, team = self.team, x = x, y = y,
       rs = self.rs, color = self.color, damage = self.damage, chargeTime = 1.5, knockback = true, 
+      sound_volume = 0.15,
       parent = self}
   end, self.timesToCast, function() self:die() end, 'avalanche')
 

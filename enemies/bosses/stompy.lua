@@ -83,6 +83,24 @@ fns['init_enemy'] = function(self)
     }
   }
 
+  local line_mortar = {
+    name = 'line_mortar',
+    viable = function() return Helper.Target:get_random_enemy(self) end,
+    oncast = function() self.target = Helper.Target:get_random_enemy(self) end,
+
+    spellclass = LineMortar_Spell,
+    spelldata = {
+      group = main.current.main,
+      team = "enemy",
+      spell_duration = 10,
+      num_shots = 8,
+      shot_interval = 0.4,
+      damage = function() return self.dmg end,
+      rs = 18,
+      parent = self
+    }
+  }
+
   local avalanche = {
     name = 'avalanche',
     viable = function() return true end,
@@ -154,9 +172,10 @@ fns['init_enemy'] = function(self)
   }
 
   table.insert(self.attack_options, stomp)
-  table.insert(self.attack_options, mortar)
+  table.insert(self.attack_options, line_mortar)
   table.insert(self.attack_options, avalanche)
-  table.insert(self.attack_options, charge)
+  -- table.insert(self.attack_options, mortar)
+  -- table.insert(self.attack_options, charge)
   -- table.insert(self.attack_options, prevent_casting)
 
 end

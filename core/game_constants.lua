@@ -444,6 +444,12 @@ MOVEMENT_TYPE_DATA = {
     after_delay = 0,
     after = MOVEMENT_TYPE_SEEK_ORB_RANGE
   },
+  [MOVEMENT_TYPE_RANDOM] = {
+    can_attack = true,
+    action_timer = 0.5,
+    after_delay = 0,
+    after = MOVEMENT_TYPE_RANDOM
+  },
   [MOVEMENT_TYPE_STATIONARY] = {
     can_attack = true,
     action_timer = 0.5,
@@ -527,7 +533,7 @@ enemy_movement_types = {
   ['turret'] = MOVEMENT_TYPE_SEEK_ORB_STALL_ATTACK,
   
   -- Bosses
-  ['stompy'] = MOVEMENT_TYPE_LOOSE_SEEK,
+  ['stompy'] = MOVEMENT_TYPE_RANDOM,
   ['dragon'] = MOVEMENT_TYPE_LOOSE_SEEK,
   ['heigan'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
 }
