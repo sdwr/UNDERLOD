@@ -15,6 +15,11 @@ function ProgressBar:init(args)
   if self.fade_in then
     self.bgcolor.a = 0
   end
+
+  self.sensor = Rectangle(self.x, self.y, self.w + 12, self.h + 12)
+  self.target_transparency = 1
+  self.current_transparency = 1
+  self.transparency_fade_speed = 1
   
   self.segments = {}
   local spacing = 4 -- Spacing between segments in pixels
@@ -39,6 +44,24 @@ end
 
 function ProgressBar:update(dt)
   self:update_game_object(dt)
+
+  if main.current and main.current.main and main.current.enemies then
+    local enemies_in_sensor = main.current.main:get_objects_in_shape(self.sensor, main.current.enemies, nil)
+    local friendlies_in_sensor = main.current.main:get_objects_in_shape(self.sensor, main.current.friendlies, nil)
+    if #enemies_in_sensor > 0 or #friendlies_in_sensor > 0 then
+      self.target_transparency = 0.3
+    else
+      self.target_transparency = 1
+    end
+  end
+
+  if self.current_transparency ~= self.target_transparency then
+    if self.current_transparency < self.target_transparency then
+      self.current_transparency = math.min(self.current_transparency + self.transparency_fade_speed * dt, self.target_transparency)
+    else
+      self.current_transparency = math.max(self.current_transparency - self.transparency_fade_speed * dt, self.target_transparency)
+    end
+  end
 end
 
 function ProgressBar:begin_fade_in()
@@ -49,12 +72,14 @@ function ProgressBar:begin_fade_in()
 end
 
 function ProgressBar:draw()
-  local background_padding = 6 -- Add some padding for visual separation
-  -- Draw the background for the entire progress bar, offset slightly
+  local background_padding = 6
+  local draw_color = self.bgcolor:clone()
+  draw_color.a = draw_color.a * self.current_transparency
+
   graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
     graphics.rectangle(
-      self.x, self.y, self.shape.w + background_padding, self.shape.h + background_padding, 
-      6, 6, self.bgcolor -- Use a slightly larger corner radius for the background
+      self.x, self.y, self.shape.w + background_padding, self.shape.h + background_padding,
+      6, 6, draw_color
     )
   graphics.pop()
 end
@@ -141,17 +166,22 @@ function ProgressBarSegment:draw()
   local progressPct = math.min(self.progress / self.max_progress, 1)
   local width = self.shape.w * progressPct
   local new_center_x = self.x - self.shape.w/2 + width/2
-  
+
+  local transparency = self.parent and self.parent.current_transparency or 1
+  local bg_color = self.segment_bgcolor:clone()
+  local fg_color = self.segment_color:clone()
+  bg_color.a = bg_color.a * transparency
+  fg_color.a = fg_color.a * transparency
+
   graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
     graphics.rectangle(
-      self.x, self.y, self.shape.w, self.shape.h, 
-      4, 4, self.segment_bgcolor
+      self.x, self.y, self.shape.w, self.shape.h,
+      4, 4, bg_color
     )
-    -- This rectangle should be a solid block of color
     if progressPct > 0 then
       graphics.rectangle(
-        new_center_x, self.y, width, self.shape.h, 
-        4, 4, self.segment_color
+        new_center_x, self.y, width, self.shape.h,
+        4, 4, fg_color
       )
     end
   graphics.pop()

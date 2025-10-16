@@ -517,8 +517,11 @@ function Helper.Damage:apply_death_effects(unit, from)
     
   elseif unit.isEnemy then
     -- Enemy death effects
-    for i = 1, random:int(2, 3) do 
-      HitParticle{group = main.current.effects, x = unit.x, y = unit.y, color = unit.color} 
+    local color = unit.color:clone()
+    color.a = 0.4
+    for i = 1, random:int(1, 3) do
+      local v = random:float(25, 50)
+      HitParticle{group = main.current.effects, v = v, x = unit.x, y = unit.y, color = color} 
     end
     local radius = 6
     if unit.shape then

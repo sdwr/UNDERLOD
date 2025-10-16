@@ -113,6 +113,19 @@ STAGE_DATA = {
       }
     }
   },
+  ['B_1'] = {
+    name = 'B_1',
+    round_power = 1400,
+    number_of_waves = 1,
+    normal_enemies = {'seeker'},
+    special_enemies = {},
+    weapons = {
+      ['machine_gun'] = {
+        level = 1,
+        items = {{procs = {'distance_multiplier'}}},
+      }
+    }
+  },
 }
 
 ORB_HEALTH_BY_DIFFICULTY = {

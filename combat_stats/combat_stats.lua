@@ -495,7 +495,7 @@ SCALED_ENEMY_MS = function(level, base_ms)
 end
 
 function SWARMERS_PER_LEVEL(level)
-  return math.min(20, 8 + math.floor(level / 4))
+  return 10
 end
 
 function BOULDERS_PER_LEVEL(level)

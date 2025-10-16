@@ -898,11 +898,6 @@ function SpawnManager:generate_wave_groups()
     -- Pick a random normal enemy type from the list
     local enemy_type = normal_enemy_types[random:int(1, #normal_enemy_types)]
 
-    -- Use existing logic for seekers on level 4+ if not using stage data
-    if not self.stage_data and enemy_type == 'swarmer' and self.arena.level >= 4 and random:bool(30) then
-      enemy_type = 'seeker'
-    end
-
     local amount = SWARMERS_PER_LEVEL(self.arena.level)
     local group_power = (enemy_to_round_power[enemy_type] or 25) * amount
 
@@ -912,10 +907,15 @@ function SpawnManager:generate_wave_groups()
       break
     end
 
+    local spawn_type = 'location'
+    if enemy_type == 'seeker' then
+      spawn_type = math.random() < 0.3 and 'scatter' or 'location'
+    end
+
     local group = {
       type = enemy_type,
       amount = amount,
-      spawn_type = 'location',
+      spawn_type = spawn_type,
       power = group_power,
       spawn_time = 0
     }
