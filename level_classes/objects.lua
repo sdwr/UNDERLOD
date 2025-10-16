@@ -585,6 +585,13 @@ function Unit:count_elemental_afflictions()
   return count
 end
 
+function Unit:increment_buff_stacks(buffName)
+  local existing_buff = self.buffs[buffName]
+  if existing_buff then
+    existing_buff.stacks = math.min(existing_buff.stacks + 1, existing_buff.max_stacks)
+  end
+end
+
 function Unit:add_buff(buff)
   --copy the buff so we don't modify the original (procs are reusing the same buff data object)
   local buffCopy = {}

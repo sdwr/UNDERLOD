@@ -27,6 +27,36 @@ fns['init_enemy'] = function(self)
   -- No attacks - just seeks the player cursor
   self.attack_options = {}
   self.can_attack = false
+
+  -- Momentum system - gains speed over time
+  self.momentum_timer = 0
+  self.momentum_stack_interval = 1  -- Gain a stack every 1.5 seconds
+  self.momentum_mvspd_per_stack = 0.1  -- 5% move speed per stack
+  self.momentum_max_stacks = 35  -- Max 5 stacks = 25% bonus
+end
+
+fns['update_enemy'] = function(self, dt)
+  -- Increment momentum timer
+  self.momentum_timer = self.momentum_timer + dt
+
+  -- Check if it's time to add a momentum stack
+  if self.momentum_timer >= self.momentum_stack_interval then
+    self.momentum_timer = self.momentum_timer - self.momentum_stack_interval
+
+    local existing_buff = self:get_buff('momentum')
+    if existing_buff then
+      self:increment_buff_stacks('momentum')
+    else
+      self:add_buff(
+        {name = 'momentum', 
+        duration = 999, 
+        maxDuration = 999, 
+        stacks = 1, 
+        max_stacks = self.momentum_max_stacks,
+        stats = {mvspd = self.momentum_mvspd_per_stack},
+      })
+    end
+  end
 end
 
 fns['draw_enemy'] = function(self)
