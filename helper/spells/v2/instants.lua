@@ -400,12 +400,10 @@ function DamageArc:die()
   self.dead = true
 end
 
-Avalanche = Object:extend()
+Avalanche = Spell:extend()
 Avalanche.__class_name = 'Avalanche'
-Avalanche:implement(GameObject)
-Avalanche:implement(Physics)
 function Avalanche:init(args)
-  self:init_game_object(args)
+  Avalanche.super.init(self, args)
   if not self.group.world then self.dead = true; return end
   self.color = grey[0]
   self.rs = self.rs or 45
@@ -419,24 +417,23 @@ function Avalanche:init(args)
     if self.unit and self.unit.dead then self:die(); return end
     local x, y = math.random(self.rs, gw - self.rs), math.random(self.rs, gh - self.rs)
     Stomp{group = main.current.main, unit = self.unit, team = self.team, x = x, y = y,
-      rs = self.rs, color = self.color, damage = self.damage, chargeTime = 1.5, knockback = true, 
+      rs = self.rs, color = self.color, damage = self.damage, chargeTime = 1.5, knockback = true,
       sound_volume = 0.15,
       parent = self}
   end, self.timesToCast, function() self:die() end, 'avalanche')
 
-  Helper.Unit:set_state(self.unit, unit_states['idle'])
 end
 
 function Avalanche:update(dt)
-  self:update_game_object(dt)
+  Avalanche.super.update(self, dt)
 end
 
 function Avalanche:draw()
 end
 
 function Avalanche:die()
-  self.dead = true
   self.t:cancel('avalanche')
+  Avalanche.super.die(self)
 end
 
 ----------------------------------------------

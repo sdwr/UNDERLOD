@@ -105,7 +105,6 @@ fns['init_enemy'] = function(self)
     name = 'avalanche',
     viable = function() return true end,
 
-    instantspell = true,
     cast_length = GOLEM_CAST_TIME,
     cast_sound = usurer1,
     cast_volume = 2,
