@@ -29,6 +29,8 @@ require 'helper/spells/v2/snake_arrow'
 require 'helper/spells/v2/aim_projectile'
 require 'helper/spells/v2/homing_missile'
 
+require 'helper/spells/v2/bombardment'
+
 require 'helper/spells/v2/instants'
 
 

@@ -170,8 +170,42 @@ fns['init_enemy'] = function(self)
     }
   }
 
+  local bombardment = {
+    name = 'bombardment',
+    viable = function() return true end,
+
+    cast_length = GOLEM_CAST_TIME,
+    oncast = function() end,
+    cast_sound = usurer1,
+    cast_volume = 2,
+    spellclass = Bombardment_Spell,
+    spelldata = {
+      group = main.current.main,
+      team = "enemy",
+      cancel_on_death = true,
+
+      -- Wave configuration
+      num_waves = 8,
+      time_between_waves = 1,
+      projectiles_per_wave = 8,
+
+      -- Projectile appearance
+      color = grey[0],
+      projectile_radius = 15,
+      projectile_speed = 65,
+      projectile_duration = 12,
+
+      -- Pattern
+      use_alternating_offset = true,
+
+      damage = function() return self.dmg end,
+      parent = self
+    }
+  }
+
   table.insert(self.attack_options, stomp)
   table.insert(self.attack_options, line_mortar)
+  table.insert(self.attack_options, bombardment)
   table.insert(self.attack_options, avalanche)
   -- table.insert(self.attack_options, mortar)
   -- table.insert(self.attack_options, charge)
