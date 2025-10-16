@@ -293,11 +293,27 @@ load_special_swarmer_data = function(swarmer)
 
 end
 
+load_special_seeker_data = function(seeker)
+  local data = SPECIAL_SEEKER_DATA[seeker.special_seeker_type]
+  if not data then
+    return
+  end
+
+  for k, v in pairs(data) do
+    seeker[k] = v
+  end
+end
+
 SPECIAL_SWARMER_TYPES = {
   'orbkiller',
   'exploder',
   'poison',
   'seeker',
+  'touch',
+  'touch_fade',
+}
+
+SPECIAL_SEEKER_TYPES = {
   'touch',
   'touch_fade',
 }
@@ -334,6 +350,19 @@ SPECIAL_SWARMER_DATA = {
     -- Touch fade swarmer - same as touch but switches between green and red
     speed_multiplier = 1,
     damage_multiplier = 1,
+  },
+}
+
+SPECIAL_SEEKER_DATA = {
+  ['touch'] = {
+    no_stacking_mvspd = true,
+    mvspd_buff_range = {0.2, 0.6},
+    touch_aoe_radius = 35,
+  },
+  ['touch_fade'] = {
+    no_stacking_mvspd = true,
+    mvspd_buff_range = {0.2, 0.6},
+    touch_aoe_radius = 35,
   },
 }
 

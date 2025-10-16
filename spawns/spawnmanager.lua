@@ -1390,20 +1390,47 @@ function Get_Special_Swarmer_Type(types_dict)
   return special_swarmer_type
 end
 
+function Get_Special_Seeker_Type(types_dict)
+  local special_seeker_type = nil
+  if types_dict then
+    -- Calculate total chance
+    local total_chance = 0
+    for seeker_type, chance in pairs(types_dict) do
+      total_chance = total_chance + chance
+    end
+
+    if random:bool(total_chance) then
+      local roll = random:float(0, total_chance)
+      local accumulated = 0
+      for seeker_type, chance in pairs(types_dict) do
+        accumulated = accumulated + chance
+        if roll <= accumulated then
+          special_seeker_type = seeker_type
+          break
+        end
+      end
+    end
+  end
+  return special_seeker_type
+end
 
 -- This function is now just a simple unit factory.
 function Spawn_Enemy(arena, type, location, target_location)
   local data = {}
 
   local special_swarmer_type = nil
+  local special_seeker_type = nil
   if type == 'swarmer' then
     --reduce into 1 value
     special_swarmer_type = Get_Special_Swarmer_Type(arena.spawn_manager.stage_data.special_swarmer_types)
+  elseif type == 'seeker' then
+    special_seeker_type = Get_Special_Seeker_Type(arena.spawn_manager.stage_data.special_seeker_types)
   end
 
   local enemy = Enemy{type = type, group = arena.main,
                       x = location.x, y = location.y,
                       special_swarmer_type = special_swarmer_type,
+                      special_seeker_type = special_seeker_type,
                       target_location = target_location,
                       level = arena.level,
                       difficulty_multipliers = arena.spawn_manager.difficulty_multipliers,

@@ -131,6 +131,7 @@ STAGE_DATA = {
     round_power = 2500,
     number_of_waves = 2,
     normal_enemies = {'seeker'},
+    special_seeker_types = {['touch'] = 10},
     special_enemies_by_wave = {
       [1] = {},
       [2] = {['laser'] = 2},
@@ -147,6 +148,7 @@ STAGE_DATA = {
     round_power = 3000,
     number_of_waves = 2,
     normal_enemies = {'seeker'},
+    special_seeker_types = {['touch'] = 10},
     special_enemies_by_wave = {
       [1] = {['laser'] = 1, ['snakearrow'] = 1},
       [2] = {['laser'] = 2, ['snakearrow'] = 2},
@@ -163,6 +165,7 @@ STAGE_DATA = {
     round_power = 3500,
     number_of_waves = 3,
     normal_enemies = {'seeker'},
+    special_seeker_types = {['touch'] = 10},
     special_enemies_by_wave = {
       [1] = {['laser'] = 1, ['snakearrow'] = 2},
       [2] = {['laser'] = 2, ['snakearrow'] = 2},

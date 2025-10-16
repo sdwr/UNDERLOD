@@ -1,5 +1,6 @@
 require 'enemies/enemy'
 require 'enemies/enemy_utils'
+require 'enemies/touch_behavior'
 require 'enemies/enemy_critter'
 require 'enemies/bosses/dragon'
 require 'enemies/bosses/heigan'
