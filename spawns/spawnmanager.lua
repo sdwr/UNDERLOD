@@ -871,25 +871,25 @@ function SpawnManager:generate_wave_groups()
     normal_enemy_types = {'swarmer'}
   end
 
-  -- Snakes are now handled through special_enemies_by_wave in stage data
-  local snake_groups_to_spawn = 0
+  -- Handle snake spawns from stage data (separate from normal and special enemies)
+  if self.stage_data and self.stage_data.snake_enemies_by_wave and self.stage_data.snake_enemies_by_wave[self.current_wave] then
+    for enemy_type, amount in pairs(self.stage_data.snake_enemies_by_wave[self.current_wave]) do
+      for i = 1, amount do
+        local snake_power = enemy_to_round_power[enemy_type] or 75
 
-  -- Create snake groups first (if any)
-  for i = 1, snake_groups_to_spawn do
-    local snake_amount = BOULDERS_PER_LEVEL(self.arena.level)
-    local snake_power = enemy_to_round_power['snake'] * snake_amount
-
-    -- Don't exceed target power
-    if power_generated + snake_power <= target_power then
-      local group = {
-        type = 'snake',
-        amount = snake_amount,
-        spawn_type = 'scatter',
-        power = snake_power,
-        spawn_time = 0
-      }
-      table.insert(snake_groups, group)
-      power_generated = power_generated + snake_power
+        -- Don't exceed target power
+        if power_generated + snake_power <= target_power then
+          local group = {
+            type = enemy_type,
+            amount = 1,  -- Spawn 1 snake at a time
+            spawn_type = 'scatter',
+            power = snake_power,
+            spawn_time = 0
+          }
+          table.insert(snake_groups, group)
+          power_generated = power_generated + snake_power
+        end
+      end
     end
   end
 
@@ -924,28 +924,26 @@ function SpawnManager:generate_wave_groups()
   end
 
   -- Distribute spawn times:
-  -- - Normal enemies and snakes: spread evenly over entire spawn window
+  -- - Normal enemies: spread evenly over entire spawn window
+  -- - Snakes: randomized in first half of spawn window
   -- - Special enemies: concentrated in middle portion
 
-  local normal_snake_total = #normal_groups + #snake_groups
-  if normal_snake_total > 0 then
-    local time_per_normal = self.wave_spawn_window / normal_snake_total
+  -- Normal enemies spread evenly
+  if #normal_groups > 0 then
+    local time_per_normal = self.wave_spawn_window / #normal_groups
     local current_time = 0
 
-    -- Interleave normal enemies and snakes throughout the window
-    local all_normal_snake = {}
-    for _, group in ipairs(normal_groups) do table.insert(all_normal_snake, group) end
-    for _, group in ipairs(snake_groups) do table.insert(all_normal_snake, group) end
-
-    -- Shuffle them to mix normal enemies and snakes
-    for i = #all_normal_snake, 2, -1 do
-      local j = random:int(1, i)
-      all_normal_snake[i], all_normal_snake[j] = all_normal_snake[j], all_normal_snake[i]
-    end
-
-    for _, group in ipairs(all_normal_snake) do
+    for _, group in ipairs(normal_groups) do
       group.spawn_time = current_time
       current_time = current_time + time_per_normal
+    end
+  end
+
+  -- Snakes randomized in first half of wave
+  if #snake_groups > 0 then
+    local snake_window = self.wave_spawn_window * 0.5
+    for _, group in ipairs(snake_groups) do
+      group.spawn_time = random:float(0, snake_window)
     end
   end
 

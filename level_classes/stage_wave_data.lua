@@ -136,6 +136,10 @@ STAGE_DATA = {
       [1] = {},
       [2] = {['laser'] = 2},
     },
+    snake_enemies_by_wave = {
+      [1] = {['snake'] = 1},
+      [2] = {['snake'] = 1},
+    },
     weapons = {
       ['machine_gun'] = {
         level = 1,
@@ -152,6 +156,10 @@ STAGE_DATA = {
     special_enemies_by_wave = {
       [1] = {['laser'] = 1, ['snakearrow'] = 1},
       [2] = {['laser'] = 2, ['snakearrow'] = 2},
+    },
+    snake_enemies_by_wave = {
+      [1] = {['snake'] = 2},
+      [2] = {['snake'] = 2},
     },
     weapons = {
       ['machine_gun'] = {
@@ -170,6 +178,11 @@ STAGE_DATA = {
       [1] = {['laser'] = 1, ['snakearrow'] = 2},
       [2] = {['laser'] = 2, ['snakearrow'] = 2},
       [3] = {['laser'] = 2, ['snakearrow'] = 3},
+    },
+    snake_enemies_by_wave = {
+      [1] = {['snake'] = 2},
+      [2] = {['snake'] = 2},
+      [3] = {['snake'] = 3},
     },
     weapons = {
       ['machine_gun'] = {
