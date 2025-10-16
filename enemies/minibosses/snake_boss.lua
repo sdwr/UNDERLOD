@@ -47,34 +47,6 @@ function SnakeSidewaysShot:init(args)
   self:die()
 end
 
-SnakeLaserBarrage = Spell:extend()
-function SnakeLaserBarrage:init(args)
-  SnakeLaserBarrage.super.init(self, args)
-
-  -- Fire lasers starting from forward direction, then spreading outward in both directions
-  Spread_Laser{
-    group = main.current.main,
-    unit = self.unit,
-    x = self.unit.x,
-    y = self.unit.y,
-    spread_type = 'forward',
-    starting_r = self.unit.r,  -- Start from unit's current rotation
-    num_shots = 6,  -- 1 forward + 5 pairs spreading outward
-    shot_interval = 0.3,  -- Delay between lasers
-    charge_duration = 1.3,  -- Charge time for each laser
-    fire_duration = 0.15,  -- How long each laser fires
-    total_rotation = math.pi * 0.8,  -- Maximum spread angle (144 degrees total)
-    both_directions = true,  -- Alternate firing left and right from center
-    damage = function() return self.unit.dmg * 0.75 end,
-    color = purple[5],
-    laser_aim_width = 3,
-    is_troop = false,
-    team = 'enemy',
-  }
-
-  self:die()
-end
-
 SnakeSpeedBoost = Spell:extend()
 function SnakeSpeedBoost:init(args)
   SnakeSpeedBoost.super.init(self, args)
@@ -115,7 +87,7 @@ fns['init_enemy'] = function(self)
   self.ignoreKnockback = true
   self.bounces_off_walls = true
   self.permanent_freezerotation = true
-  self.move_while_casting = true
+  self.move_while_casting = false
 
   self.baseIdleTimer = 0
 
@@ -146,6 +118,8 @@ fns['init_enemy'] = function(self)
     name = 'sideways_shot',
     viable = function() return #self.spawned_segments > 4 end,  -- Need at least 4 segments
     oncast = function() end,
+    cast_length = 0.5,
+    cast_sound = scout1,
     instantspell = true,
 
     spellclass = SnakeSidewaysShot,
@@ -153,7 +127,6 @@ fns['init_enemy'] = function(self)
       group = main.current.main,
       unit = self,
     },
-    cast_sound = scout1,
   }
 
   -- Attack 2: Laser barrage
@@ -162,13 +135,27 @@ fns['init_enemy'] = function(self)
     viable = function() return true end,
     oncast = function() end,
     cast_length = 0.5,
-    spellclass = SnakeLaserBarrage,
+    cast_sound = laser1,
+    spellclass = Spread_Laser,
+    instantspell = false,
     spelldata = {
       group = main.current.main,
       unit = self,
+      x = self.x,
+      y = self.y,
+      spread_type = 'forward',
+      num_shots = 6,  -- 1 forward + 5 pairs spreading outward
+      shot_interval = 0.3,  -- Delay between lasers
+      charge_duration = 1.3,  -- Charge time for each laser
+      fire_duration = 0.15,  -- How long each laser fires
+      total_rotation = math.pi * 0.8,  -- Maximum spread angle (144 degrees total)
+      both_directions = true,  -- Alternate firing left and right from center
+      damage = function() return self.dmg * 0.75 end,
+      color = purple[5],
+      laser_aim_width = 3,
+      is_troop = false,
+      team = 'enemy',
     },
-    instantspell = true,
-    cast_sound = laser1,
   }
 
   -- Attack 3: Speed boost
