@@ -19,11 +19,10 @@ function Spread_Laser:init(args)
   self.charge_duration = self.charge_duration or 1
   self.fire_duration = self.fire_duration or 0.2
 
-  self.spell_duration = (self.num_shots * self.shot_interval) + self.charge_duration + 0.2
   --memory
   self.laser_beams = {}
   self.elapsed_time = 0
-  self.next_shot = 0.2
+  self.next_shot = self.shot_interval
   self.shots_left = self.num_shots
   self.r = 0
   self.r_offset = 0
@@ -51,6 +50,12 @@ end
 function Spread_Laser:update(dt)
   Spread_Laser.super.update(self, dt)
   self.next_shot = self.next_shot - dt
+
+  if self:should_die() then
+    self:die()
+    return
+  end
+
   if self.next_shot <= 0 and self.shots_left > 0 then
     self.next_shot = self.shot_interval
     self.shots_left = self.shots_left - 1
@@ -63,6 +68,19 @@ function Spread_Laser:update(dt)
 
     end
   end
+end
+
+
+function Spread_Laser:should_die()
+  if self.shots_left <= 0 then
+    for i, laser_beam in ipairs(self.laser_beams) do
+      if laser_beam.is_charging or laser_beam.is_firing then
+        return false
+      end
+    end
+    return true
+  end
+  return false
 end
 
 function Spread_Laser:draw()
@@ -121,7 +139,6 @@ function Spread_Laser:shoot_laser(rotation)
       rotation_offset = rotation,
       charge_duration = self.charge_duration,
       fire_duration = self.fire_duration,
-      spell_duration = self.spell_duration,
       color = self.color,
       damage = self.damage,
       reduce_pierce_damage = self.reduce_pierce_damage,
@@ -129,6 +146,7 @@ function Spread_Laser:shoot_laser(rotation)
       damage_troops = self.damage_troops,
       damage_once = self.damage_once,
       end_spell_on_fire = false,
+      spell_duration = 10,
       fire_follows_unit = false,
       fade_fire_draw = true,
       fade_in_aim_draw = true,

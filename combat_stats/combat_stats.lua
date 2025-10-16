@@ -24,7 +24,7 @@ attack_cooldowns = {
   ['very-fast'] = 0.5,
   ['fast'] = 0.8,
   ['medium'] = 1.5,
-  ['medium-slow'] = 2,
+  ['medium-slow'] = 2.5,
   ['slow'] = 3.5,
   ['very-slow'] = 4.0
 }
@@ -50,11 +50,12 @@ enemy_attack_cooldowns = {
   ['seeker'] = attack_cooldowns['very-slow'],
   ['crossfire'] = attack_cooldowns['slow'],
   
-  -- Bosses  
+  -- Bosses
   ['stompy'] = attack_cooldowns['fast'],
   ['dragon'] = attack_cooldowns['fast'],
   ['heigan'] = attack_cooldowns['fast'],
   ['heigan_eruption'] = 8.0, -- Special case for boss abilities
+  ['snake_boss'] = attack_cooldowns['medium-slow'],
   
   -- Static
   ['dragonegg'] = attack_cooldowns['slow'],

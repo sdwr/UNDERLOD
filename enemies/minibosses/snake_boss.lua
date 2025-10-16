@@ -98,9 +98,6 @@ fns['init_enemy'] = function(self)
   self.distance_traveled = 19  -- Start close to spawning first segment
   self.last_position = {x = self.x, y = self.y}
 
-  -- Attack timers
-  self.baseActionTimer = 2.5  -- Time between attacks
-
   -- Initialize angle based on spawn position
   if self.x < gw/2 then
     self.r = 0  -- Face right if spawning on left
@@ -109,6 +106,7 @@ fns['init_enemy'] = function(self)
   end
   local offset = random:float(math.pi / 4, math.pi / 2)
   self.r = self.r + (offset * math.random(2) == 1 and 1 or -1)
+  self:set_angle(self.r)
 
   -- Attack options
   self.attack_options = {}
@@ -118,7 +116,7 @@ fns['init_enemy'] = function(self)
     name = 'sideways_shot',
     viable = function() return #self.spawned_segments > 4 end,  -- Need at least 4 segments
     oncast = function() end,
-    cast_length = 0.5,
+    cast_length = 0.1,
     cast_sound = scout1,
     instantspell = true,
 
@@ -144,6 +142,7 @@ fns['init_enemy'] = function(self)
       x = self.x,
       y = self.y,
       spread_type = 'forward',
+      spell_duration = 10,
       num_shots = 6,  -- 1 forward + 5 pairs spreading outward
       shot_interval = 0.3,  -- Delay between lasers
       charge_duration = 1.3,  -- Charge time for each laser
@@ -163,7 +162,7 @@ fns['init_enemy'] = function(self)
     name = 'speed_boost',
     viable = function() return not self:has_buff('speed_boost') end,  -- Only when not already boosted
     oncast = function() end,
-    cast_length = 0.5,
+    cast_length = 0.1,
     spellclass = SnakeSpeedBoost,
     spelldata = {
       group = main.current.main,
@@ -174,7 +173,7 @@ fns['init_enemy'] = function(self)
   }
 
   table.insert(self.attack_options, sideways_shot)
-  table.insert(self.attack_options, laser_barrage)
+  -- table.insert(self.attack_options, laser_barrage)
   table.insert(self.attack_options, speed_boost)
 end
 
@@ -265,6 +264,7 @@ fns['check_wall_bounce'] = function(self)
 
     while self.r > math.pi do self.r = self.r - 2 * math.pi end
     while self.r < -math.pi do self.r = self.r + 2 * math.pi end
+    self:set_angle(self.r)
 
     self:choose_movement_target()
     hit2:play({pitch = random:float(0.9, 1.1), volume = 0.3})
