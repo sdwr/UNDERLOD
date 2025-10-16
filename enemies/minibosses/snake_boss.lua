@@ -228,67 +228,57 @@ fns['update_enemy'] = function(self, dt)
   end
 end
 
-fns['spawn_segment'] = function(self)
-  -- Get movement direction
-  local vx, vy = self:get_velocity()
-  local speed = math.sqrt(vx * vx + vy * vy)
+fns['spawn_segment'] = function(self, angle_override)
+  local angle = angle_override or self.r
+  local dir_x = math.cos(angle)
+  local dir_y = math.sin(angle)
 
-  if speed > 0.1 then
-    local dir_x = vx / speed
-    local dir_y = vy / speed
+  local segment_x = self.x - dir_x * 15
+  local segment_y = self.y - dir_y * 15
 
-    -- Place segment 15 units behind the center (half of snake_length)
-    local segment_x = self.x - dir_x * 15
-    local segment_y = self.y - dir_y * 15
+  local segment = Enemy{
+    type = 'snake_segment',
+    group = self.group,
+    x = segment_x,
+    y = segment_y,
+    level = self.level,
+    parent_snake = self,
+  }
 
-    -- Spawn segment enemy
-    local segment = Enemy{
-      type = 'snake_segment',
-      group = self.group,
-      x = segment_x,
-      y = segment_y,
-      level = self.level,
-      parent_snake = self,
-    }
-
-    -- Set rotation and health after creation
-    if segment then
-      segment.r = self.r
-      segment.freezerotation = true
-      segment.hp = segment.hp * 2  -- Tougher segments for miniboss
-      segment.max_hp = segment.max_hp * 2
-      table.insert(self.spawned_segments, 1, segment)  -- Add to front (newest)
-    end
+  if segment then
+    segment.r = angle
+    segment.freezerotation = true
+    segment.hp = segment.hp * 2
+    segment.max_hp = segment.max_hp * 2
+    table.insert(self.spawned_segments, 1, segment)
   end
 end
 
 fns['check_wall_bounce'] = function(self)
   local margin = 2
-  local bounced = false
 
   local vx, vy = self:get_velocity()
 
-  -- Check horizontal walls
-  -- Bounce only if moving towards the wall
-  if (self.y < margin and vy < 0) or (self.y > gh - margin and vy > 0) then
-    self.r = -self.r  -- Flip vertical component
-    self:set_velocity(vx, -vy)
-    bounced = true
-  end
+  local bounce_horizontal = (self.y < margin and vy < 0) or (self.y > gh - margin and vy > 0)
+  local bounce_vertical = (self.x < margin and vx < 0) or (self.x > gw - margin and vx > 0)
 
-  -- Check vertical walls
-  -- Bounce only if moving towards the wall
-  if (self.x < margin and vx < 0) or (self.x > gw - margin and vx > 0) then
-    self.r = math.pi - self.r  -- Flip horizontal component
-    self:set_velocity(-vx, vy)
-    bounced = true
-  end
+  if bounce_horizontal or bounce_vertical then
+    local pre_bounce_r = self.r
+    self:spawn_segment(pre_bounce_r)
 
-  -- Normalize angle
-  while self.r > math.pi do self.r = self.r - 2 * math.pi end
-  while self.r < -math.pi do self.r = self.r + 2 * math.pi end
+    if bounce_horizontal then
+      self.r = -self.r
+      self:set_velocity(vx, -vy)
+    end
 
-  if bounced then
+    if bounce_vertical then
+      self.r = math.pi - self.r
+      self:set_velocity(-vx, vy)
+    end
+
+    while self.r > math.pi do self.r = self.r - 2 * math.pi end
+    while self.r < -math.pi do self.r = self.r + 2 * math.pi end
+
     self:choose_movement_target()
     hit2:play({pitch = random:float(0.9, 1.1), volume = 0.3})
   end

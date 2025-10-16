@@ -77,9 +77,9 @@ function Spread_Laser:get_next_rotation()
     self.r_offset = self.r_offset + offset
   elseif self.spread_type == 'forward' then
     if self.both_directions or self.total_rotation then
-      -- First shot is forward, then alternate outward in both directions
-        local step = self.total_rotation / (self.num_shots - 1) * 2  -- Spread step
-        self.r_offset = step * i
+      -- First shot is forward (i=0), then progressively spread outward
+      local step = self.total_rotation / (self.num_shots - 1)
+      self.r_offset = step * i
     else
       -- Default circular spread
       local offset = (math.pi * 2) / self.num_shots * self.rotation_direction
