@@ -468,17 +468,18 @@ function Arena:die()
     }}
     -- trigger:tween(2, camera, {x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, r = 0}, math.linear, function() camera.x, camera.y, camera.r = gw/2 + self.offset_x, gh/2 + self.offset_y, 0 end)
     self.t:after(2, function()
-      self.death_info_text = Text2{group = self.ui, x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, sx = 0.7, sy = 0.7, lines = {
-        {text = '[wavy_mid, fg]level reached: [wavy_mid, yellow]' .. self.level, font = fat_font, alignment = 'center'},
-      }}
-      self.restart_button = Button{group = self.ui, x = gw/2 + self.offset_x, y = gh/2 + 24 + self.offset_y, force_update = true, button_text = 'restart run', fg_color = 'bg10', bg_color = 'bg', action = function(b)
+      -- self.death_info_text = Text2{group = self.ui, x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, sx = 0.7, sy = 0.7, lines = {
+      --   {text = '[wavy_mid, fg]level reached: [wavy_mid, yellow]' .. self.level, font = fat_font, alignment = 'center'},
+      -- }}
+      self.restart_button = Button{group = self.ui, x = gw/2 + self.offset_x, y = gh/2 + 24 + self.offset_y, force_update = true, button_text = 'level select', fg_color = 'bg10', bg_color = 'bg', action = function(b)
         self.transitioning = true
         ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
         ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
         ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
         TransitionEffect{group = main.transitions, x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
-          Start_New_Run_And_Go_To_Buy_Screen()
-        end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
+          main:add(LevelSelectScreen'level_select')
+          main:go_to('level_select')
+        end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']returning...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
       end}
     end)
     return true
