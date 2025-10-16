@@ -924,7 +924,8 @@ enemy_type_to_size = {
   ['snake_segment'] = 'tiny',  -- Small segment size
   ['tank'] = 'special',
   ['crossfire'] = 'special',
-  
+  ['big_touch'] = 'special',
+
   ['swarmer'] = 'swarmer',
   
   -- Minibosses

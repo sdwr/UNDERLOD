@@ -641,6 +641,7 @@ enemy_type_to_stats = {
     ['swarmer'] = {},
 
     ['snake'] = { mvspd = 3},
+    ['big_touch'] = { mvspd = 0.65},
 
     ['seeker'] = { dmg = 1, mvspd = 2.25, hp = 0.65 },
     ['chaser'] = { dmg = 1, mvspd = 1 },

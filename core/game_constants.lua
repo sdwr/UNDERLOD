@@ -503,7 +503,8 @@ enemy_movement_types = {
   ['snake'] = MOVEMENT_TYPE_CROSS_SCREEN,
   ['snake_segment'] = MOVEMENT_TYPE_STATIONARY,  -- Segments don't move
   ['tank'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
-  
+  ['big_touch'] = MOVEMENT_TYPE_SEEK_ORB,  -- Starts by seeking orb, switches in update
+
   ['seeker'] = MOVEMENT_TYPE_SEEK,
 
   -- Ranged units that maintain distance

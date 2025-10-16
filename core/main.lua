@@ -1474,6 +1474,7 @@ function init()
     ['assassin'] = 75,
     ['boulder'] = 75,
     ['snake'] = 75,
+    ['big_touch'] = 75,
 
     --bosses
     ['stompy'] = BOSS_ROUND_POWER,

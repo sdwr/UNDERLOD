@@ -60,6 +60,10 @@ STAGE_DATA = {
       [1] = {},
       [2] = {['crossfire'] = 2}
     },
+    snake_enemies_by_wave = {
+      [1] = {['snake'] = 1},
+      [2] = {['snake'] = 1},
+    },
     weapons = {
       ['machine_gun'] = {
         level = 1,
@@ -76,6 +80,10 @@ STAGE_DATA = {
     special_enemies_by_wave = {
       [1] = {['archer'] = 2, ['crossfire'] = 1},
       [2] = {['crossfire'] = 2, ['archer'] = 2}
+    },
+    snake_enemies_by_wave = {
+      [1] = {['snake'] = 2},
+      [2] = {['snake'] = 2},
     },
     weapons = {
       ['machine_gun'] = {
@@ -94,6 +102,11 @@ STAGE_DATA = {
       [1] = {['crossfire'] = 2},
       [2] = {['archer'] = 2, ['crossfire'] = 1},
       [3] = {['crossfire'] = 2, ['archer'] = 2},
+    },
+    snake_enemies_by_wave = {
+      [1] = {['snake'] = 2},
+      [2] = {['snake'] = 2},
+      [3] = {['snake'] = 3},
     },
     weapons = {
       ['machine_gun'] = {
@@ -131,14 +144,14 @@ STAGE_DATA = {
     round_power = 2500,
     number_of_waves = 2,
     normal_enemies = {'seeker'},
-    special_seeker_types = {['touch'] = 10},
+    special_seeker_types = {['touch'] = 4},
     special_enemies_by_wave = {
       [1] = {},
       [2] = {['laser'] = 2},
     },
     snake_enemies_by_wave = {
-      [1] = {['snake'] = 1},
-      [2] = {['snake'] = 1},
+      [1] = {['big_touch'] = 1},
+      [2] = {['big_touch'] = 1},
     },
     weapons = {
       ['machine_gun'] = {
@@ -152,14 +165,14 @@ STAGE_DATA = {
     round_power = 3000,
     number_of_waves = 2,
     normal_enemies = {'seeker'},
-    special_seeker_types = {['touch'] = 10},
+    special_seeker_types = {['touch'] = 4},
     special_enemies_by_wave = {
       [1] = {['laser'] = 1, ['snakearrow'] = 1},
       [2] = {['laser'] = 2, ['snakearrow'] = 2},
     },
     snake_enemies_by_wave = {
-      [1] = {['snake'] = 2},
-      [2] = {['snake'] = 2},
+      [1] = {['big_touch'] = 2},
+      [2] = {['big_touch'] = 2},
     },
     weapons = {
       ['machine_gun'] = {
@@ -173,16 +186,16 @@ STAGE_DATA = {
     round_power = 3500,
     number_of_waves = 3,
     normal_enemies = {'seeker'},
-    special_seeker_types = {['touch'] = 10},
+    special_seeker_types = {['touch'] = 4},
     special_enemies_by_wave = {
       [1] = {['laser'] = 1, ['snakearrow'] = 2},
       [2] = {['laser'] = 2, ['snakearrow'] = 2},
       [3] = {['laser'] = 2, ['snakearrow'] = 3},
     },
     snake_enemies_by_wave = {
-      [1] = {['snake'] = 2},
-      [2] = {['snake'] = 2},
-      [3] = {['snake'] = 3},
+      [1] = {['big_touch'] = 2},
+      [2] = {['big_touch'] = 2},
+      [3] = {['big_touch'] = 3},
     },
     weapons = {
       ['machine_gun'] = {
@@ -251,6 +264,7 @@ ENEMY_POWER = {
   ['seeker'] = 25,
 
   ['snake'] = 75,
+  ['big_touch'] = 75,
 
   -- Basic enemies
   ['shooter'] = 50,

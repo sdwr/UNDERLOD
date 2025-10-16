@@ -41,6 +41,7 @@ require 'enemies/regular/boulder'
 require 'enemies/regular/snake'
 require 'enemies/regular/snake_segment'
 require 'enemies/regular/tank'
+require 'enemies/regular/big_touch'
 
 require 'enemies/miniboss/bigstomper'
 require 'enemies/minibosses/snake_boss'
