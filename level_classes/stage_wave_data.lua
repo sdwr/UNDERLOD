@@ -56,7 +56,10 @@ STAGE_DATA = {
     number_of_waves = 2,
     normal_enemies = {'swarmer'},
     special_swarmer_types = {['touch'] = 8},
-    special_enemies = {},
+    special_enemies_by_wave = {
+      [1] = {},
+      [2] = {['crossfire'] = 2}
+    },
     weapons = {
       ['machine_gun'] = {
         level = 1,
@@ -71,9 +74,8 @@ STAGE_DATA = {
     normal_enemies = {'swarmer'},
     special_swarmer_types = {['touch'] = 8},
     special_enemies_by_wave = {
-      [1] = {['crossfire'] = 1},
-      [2] = {['archer'] = 1, ['crossfire'] = 1},
-      [3] = {['crossfire'] = 2},
+      [1] = {['archer'] = 2, ['crossfire'] = 1},
+      [2] = {['crossfire'] = 2, ['archer'] = 2}
     },
     weapons = {
       ['machine_gun'] = {
@@ -91,7 +93,7 @@ STAGE_DATA = {
     special_enemies_by_wave = {
       [1] = {['crossfire'] = 2},
       [2] = {['archer'] = 2, ['crossfire'] = 1},
-      [3] = {['crossfire'] = 3},
+      [3] = {['crossfire'] = 2, ['archer'] = 2},
     },
     weapons = {
       ['machine_gun'] = {
