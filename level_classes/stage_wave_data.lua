@@ -126,7 +126,75 @@ STAGE_DATA = {
       }
     }
   },
+  ['B_2'] = {
+    name = 'B_2',
+    round_power = 2500,
+    number_of_waves = 2,
+    normal_enemies = {'seeker'},
+    special_enemies_by_wave = {
+      [1] = {},
+      [2] = {['laser'] = 2},
+    },
+    weapons = {
+      ['machine_gun'] = {
+        level = 1,
+        items = {{procs = {'distance_multiplier'}}},
+      }
+    }
+  },
+  ['B_3'] = {
+    name = 'B_3',
+    round_power = 3000,
+    number_of_waves = 2,
+    normal_enemies = {'seeker'},
+    special_enemies_by_wave = {
+      [1] = {['laser'] = 1, ['snakearrow'] = 1},
+      [2] = {['laser'] = 2, ['snakearrow'] = 2},
+    },
+    weapons = {
+      ['machine_gun'] = {
+        level = 1,
+        items = {{procs = {'distance_multiplier'}}},
+      }
+    }
+  },
+  ['B_4'] = {
+    name = 'B_4',
+    round_power = 3500,
+    number_of_waves = 3,
+    normal_enemies = {'seeker'},
+    special_enemies_by_wave = {
+      [1] = {['laser'] = 1, ['snakearrow'] = 2},
+      [2] = {['laser'] = 2, ['snakearrow'] = 2},
+      [3] = {['laser'] = 2, ['snakearrow'] = 3},
+    },
+    weapons = {
+      ['machine_gun'] = {
+        level = 1,
+        items = {{procs = {'distance_multiplier'}}},
+      }
+    }
+  },
+  ['B_5'] = {
+    name = 'B_5',
+    round_power = 1000,
+    boss = 'snake_boss',
+    number_of_waves = 1,
+    normal_enemies = {'seeker'},
+    special_enemies = {},
+    weapons = {
+      ['machine_gun'] = {
+        level = 1,
+        items = {{procs = {'distance_multiplier'}}},
+      }
+    }
+  },
 }
+
+function Get_Stage_Weapons(stage_id)
+  local data = Get_Stage_Data(stage_id)
+  return data.weapons
+end
 
 ORB_HEALTH_BY_DIFFICULTY = {
   normal = 5,
