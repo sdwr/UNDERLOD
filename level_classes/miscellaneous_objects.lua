@@ -1065,7 +1065,7 @@ EnemyDeathAnimation:implement(GameObject)
 
 function EnemyDeathAnimation:init(args)
   self:init_game_object(args)
-  
+
   -- Store reference to the enemy unit
   self.enemy = args.enemy
 
@@ -1084,25 +1084,48 @@ function EnemyDeathAnimation:init(args)
   end
 
   self.elapsed = 0
-  
-  
+
+
   -- Create a specific death animation instance
   self.death_animation = DrawAnimations.create_normalized_animation(self.enemy, 'death', self.duration)
   self.death_anim_set = self.enemy.spritesheet and self.enemy.spritesheet['death']
-  
+
   -- Calculate and store the base scale (works even if enemy is GCed)
   self.base_scale_x, self.base_scale_y = DrawAnimations.calculate_enemy_scale(self.enemy)
-  
+
   -- Position where the enemy died
   self.x = args.x or 0
   self.y = args.y or 0
-  
+
   -- Death animation specific properties
   self.fade_start_time = 0.8  -- Start fading at 80% of duration
-  
+
   -- Particle effects
   self.particle_timer = 0
   self.particle_interval = 0.1
+
+  -- Create initial death effects
+  local color = self.enemy.color:clone()
+  color.a = 0.4
+  for i = 1, random:int(1, 3) do
+    local v = random:float(25, 50)
+    HitParticle{group = main.current.effects, v = v, x = self.x, y = self.y, color = color}
+  end
+
+  local radius = 6
+  if self.enemy.shape then
+    radius = self.enemy.shape.w / 2
+    radius = radius * 0.6
+  end
+  HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = radius}:scale_down(0.3):change_color(0.5, self.enemy.color)
+
+  -- Play death sound based on enemy class
+  if self.enemy.class == 'boss' then
+    slow(0.25, 1)
+    magic_die1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+  else
+    _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.1}
+  end
 end
 
 function EnemyDeathAnimation:update(dt)
@@ -1113,22 +1136,6 @@ function EnemyDeathAnimation:update(dt)
   -- Update the death animation if it exists
   if self.death_animation then
     self.death_animation:update(dt)
-  end
-  
-  -- Spawn particles in the first 30% of the animation
-  if self.elapsed <= self.duration * 0.3 then
-    self.particle_timer = self.particle_timer + dt
-    if self.particle_timer >= self.particle_interval then
-      self.particle_timer = 0
-      -- Spawn small particles around the animation
-      for i = 1, random:int(1, 3) do
-        local angle = random:float(0, math.pi * 2)
-        local distance = random:float(5, 15)
-        local px = self.x + math.cos(angle) * distance
-        local py = self.y + math.sin(angle) * distance
-        HitParticle{group = main.current.effects, x = px, y = py, color = self.enemy.color or fg[0]}
-      end
-    end
   end
   
   -- Die when animation is complete

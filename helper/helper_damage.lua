@@ -499,42 +499,21 @@ function Helper.Damage:apply_death_effects(unit, from)
   if unit.is_troop then
     -- Player troop death effects
     hit4:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-    
-    for i = 1, random:int(4, 6) do 
-      HitParticle{group = main.current.effects, x = unit.x, y = unit.y, color = unit.color} 
+
+    for i = 1, random:int(4, 6) do
+      HitParticle{group = main.current.effects, x = unit.x, y = unit.y, color = unit.color}
     end
     HitCircle{group = main.current.effects, x = unit.x, y = unit.y, rs = 12}:scale_down(0.3):change_color(0.5, unit.color)
-    
+
     -- Create death animation
     slow(0.25, 1)
     TroopDeathAnimation{group = main.current.effects, x = unit.x, y = unit.y}
-    
+
     -- Clean up dot area
-    if unit.dot_area then 
+    if unit.dot_area then
       unit.dot_area.dead = true
-      unit.dot_area = nil 
-    end
-    
-  elseif unit.isEnemy then
-    -- Enemy death effects
-    local color = unit.color:clone()
-    color.a = 0.4
-    for i = 1, random:int(1, 3) do
-      local v = random:float(25, 50)
-      HitParticle{group = main.current.effects, v = v, x = unit.x, y = unit.y, color = color} 
-    end
-    local radius = 6
-    if unit.shape then
-      radius = unit.shape.w / 2
-      radius = radius * 0.6
-    end
-    HitCircle{group = main.current.effects, x = unit.x, y = unit.y, rs = radius}:scale_down(0.3):change_color(0.5, unit.color)
-    
-    if unit.isBoss then
-      slow(0.25, 1)
-      magic_die1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-    else
-      _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.2}
+      unit.dot_area = nil
     end
   end
+  -- Enemy death effects are now handled entirely in EnemyDeathAnimation
 end

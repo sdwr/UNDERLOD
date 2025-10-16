@@ -1125,7 +1125,7 @@ function ProgressParticle:init(args)
   self:init_game_object(args)
   self.roundPower = self.roundPower or 0
   
-  self.v = self.v or 250
+  self.v = self.v or 150
   self.r = args.r or random:float(0, 2*math.pi)
   self.duration = self.duration or 3
   self.rs = self.rs or random:float(1.5, 3)
@@ -1136,7 +1136,7 @@ function ProgressParticle:init(args)
   -- Make the particle semi-transparent yellow
   self.color = self.color or yellow[2]
   self.color = self.color:clone()
-  self.color.a = 0.6  -- Semi-transparent
+  self.color.a = 0.3  -- Semi-transparent
 
   self.t:tween(self.duration, self, {rs = 1}, math.cubic_in_out)
 
