@@ -78,7 +78,7 @@ STAGE_DATA = {
     normal_enemies = {'swarmer'},
     special_swarmer_types = {['touch'] = 8},
     special_enemies_by_wave = {
-      [1] = {['bomber'] = 2, ['crossfire'] = 1},
+    [1] = {['bomber'] = 2, ['crossfire'] = 1},
       [2] = {['crossfire'] = 2, ['bomber'] = 2}
     },
     snake_enemies_by_wave = {

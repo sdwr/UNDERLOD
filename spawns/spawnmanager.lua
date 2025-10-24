@@ -222,6 +222,28 @@ function Get_Offscreen_Spawn_Point_Away_From(previous_location, min_distance)
   return Get_Offscreen_Spawn_Point()
 end
 
+function Get_Offscreen_Spawn_Point_For_Spiral()
+  local x, y
+
+  local edge = random:int(1, 2)
+  local spawn_range = {0.75, 0.9}
+
+  if edge == 1 then
+    x = gw * random:float(spawn_range[1], spawn_range[2])
+    y = -SpawnGlobals.offscreen_spawn_offset -- Just off the top edge
+  else
+    x = gw * (1 - random:float(spawn_range[1], spawn_range[2]))
+    y = gh + SpawnGlobals.offscreen_spawn_offset -- Just off the bottom edge
+  end
+
+  return {x = x, y = y}
+end
+
+function Is_Spiral_Movement_Enemy(enemy_type)
+  local movement_type = enemy_movement_types[enemy_type]
+  return movement_type == MOVEMENT_TYPE_SEEK_ORB_SPIRAL
+end
+
 function Outside_Arena(location)
   if location.x < SpawnGlobals.wall_width or 
      location.x > gw - SpawnGlobals.wall_width or 
@@ -1135,11 +1157,21 @@ function SpawnManager:spawn_group_instantly(group_data)
 
   if spawn_type == 'scatter' then
     for i = 1, amount do
-      local location = Get_Offscreen_Spawn_Point()
+      local location
+      if Is_Spiral_Movement_Enemy(type) then
+        location = Get_Offscreen_Spawn_Point_For_Spiral()
+      else
+        location = Get_Offscreen_Spawn_Point()
+      end
       self:try_spawn_enemy(type, location, nil)
     end
   elseif spawn_type == 'far' then
-    local wave_spawn_location = Get_Offscreen_Spawn_Point_Away_From(self.last_far_spawn_location)
+    local wave_spawn_location
+    if Is_Spiral_Movement_Enemy(type) then
+      wave_spawn_location = Get_Offscreen_Spawn_Point_For_Spiral()
+    else
+      wave_spawn_location = Get_Offscreen_Spawn_Point_Away_From(self.last_far_spawn_location)
+    end
     self.last_far_spawn_location = wave_spawn_location
     local target_location = Get_Cross_Screen_Destination(wave_spawn_location)
 
@@ -1149,7 +1181,12 @@ function SpawnManager:spawn_group_instantly(group_data)
       self:try_spawn_enemy(type, location, target_location)
     end
   else
-    local wave_spawn_location = Get_Offscreen_Spawn_Point()
+    local wave_spawn_location
+    if Is_Spiral_Movement_Enemy(type) then
+      wave_spawn_location = Get_Offscreen_Spawn_Point_For_Spiral()
+    else
+      wave_spawn_location = Get_Offscreen_Spawn_Point()
+    end
     local target_location = Get_Cross_Screen_Destination(wave_spawn_location)
 
     for i = 1, amount do
@@ -1285,8 +1322,13 @@ end
 -- ===================================================================
 function Spawn_Group(arena, group_data)
     local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
-    
-    local wave_spawn_location = Get_Offscreen_Spawn_Point()
+
+    local wave_spawn_location
+    if Is_Spiral_Movement_Enemy(type) then
+      wave_spawn_location = Get_Offscreen_Spawn_Point_For_Spiral()
+    else
+      wave_spawn_location = Get_Offscreen_Spawn_Point()
+    end
 
     if spawn_type == 'scatter' then
       Spawn_Group_Scattered(arena, group_data)
@@ -1344,7 +1386,12 @@ function Spawn_Group_Scattered(arena, group_data)
   arena.last_spawn_point = nil
 
   for i = 1, amount do
-    local location = Get_Offscreen_Spawn_Point()
+    local location
+    if Is_Spiral_Movement_Enemy(type) then
+      location = Get_Offscreen_Spawn_Point_For_Spiral()
+    else
+      location = Get_Offscreen_Spawn_Point()
+    end
     local create_enemy_action = function()
       Spawn_Enemy(arena, type, location)
       arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns - 1

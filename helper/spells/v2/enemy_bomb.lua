@@ -71,7 +71,7 @@ function EnemyBomb:update(dt)
   -- Check for beeps
   if self.next_beep_index <= #self.beep_times then
     if self.time_elapsed >= self.beep_times[self.next_beep_index] then
-      tick_new:play{pitch = random:float(0.95, 1.05), volume = 0.6}
+      tick_new:play{pitch = random:float(0.95, 1.05), volume = 0.3}
       -- Activate flash
       self.flash_active = true
       self.flash_timer = 0
@@ -89,7 +89,7 @@ function EnemyBomb:explode()
   if self.exploded then return end
   self.exploded = true
 
-  explosion_new:play{pitch = random:float(0.95, 1.05), volume = 0.2}
+  explosion_new:play{pitch = random:float(0.95, 1.05), volume = 0.1}
 
   -- Create evenly spaced projectiles
   local angle_step = (2 * math.pi) / self.num_projectiles

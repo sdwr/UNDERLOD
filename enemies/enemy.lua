@@ -674,7 +674,7 @@ function Enemy:update_move_seek_stall()
       local distance_to_target = self:distance_to_point(self.target_location.x, self.target_location.y)
       distance_to_target = math.clamp(distance_to_target, 65, 150)
       local speed_multiplier = Helper.Target:approach_orb_stall_speed_multiplier(self, distance_to_target)
-      
+
       --only applies max_v for this frame, gets reset in calculate_stats() next frame
       self:set_physics_properties({max_v = self.mvspd * speed_multiplier})
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
@@ -717,7 +717,7 @@ function Enemy:update_move_seek_spiral()
   end
 
   -- These variables define the spiral's shape (no dt dependency)
-  local BASE_RADIUS_REDUCTION = .9
+  local BASE_RADIUS_REDUCTION = .94
   local ANGLE_OFFSET = math.pi / 6 -- 30 degrees ahead for the spiral motion
 
   local radius_reduction = BASE_RADIUS_REDUCTION
