@@ -126,6 +126,7 @@ function ArrowProjectile:init(args)
   
   
   local pitch = args.pitch or 1
+  pitch = random:float(pitch * 0.9, pitch * 1.1)
   local volume = args.volume or 2
   if arrow_release1 and arrow_release2 and arrow_release3 then
     table.random({arrow_release1, arrow_release2, arrow_release3}):play{volume= volume, pitch=pitch}

@@ -13,7 +13,7 @@ function MachineGunWeapon:create_spelldata()
   return {
     group = main.current.main,
     on_attack_callbacks = true,
-    volume = 0.5,
+    volume = 2,
     spell_duration = 10,
     bullet_size = 2,
     pierce = false,

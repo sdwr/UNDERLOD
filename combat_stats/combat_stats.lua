@@ -40,7 +40,7 @@ enemy_attack_cooldowns = {
   -- Regular enemies
   ['goblin_archer'] = attack_cooldowns['fast'],
   ['stomper'] = attack_cooldowns['fast'],
-  ['plasma'] = attack_cooldowns['fast'], 
+  ['plasma'] = attack_cooldowns['fast'],
   ['spread'] = attack_cooldowns['fast'],
   ['mortar'] = attack_cooldowns['fast'],
   ['arcspread'] = attack_cooldowns['medium'],
@@ -49,17 +49,18 @@ enemy_attack_cooldowns = {
   ['summoner'] = attack_cooldowns['slow'],
   ['seeker'] = attack_cooldowns['very-slow'],
   ['crossfire'] = attack_cooldowns['slow'],
-  
+  ['bomber'] = attack_cooldowns['slow'],
+
   -- Bosses
   ['stompy'] = attack_cooldowns['fast'],
   ['dragon'] = attack_cooldowns['fast'],
   ['heigan'] = attack_cooldowns['fast'],
   ['heigan_eruption'] = 8.0, -- Special case for boss abilities
   ['snake_boss'] = attack_cooldowns['medium-slow'],
-  
+
   -- Static
   ['dragonegg'] = attack_cooldowns['slow'],
-  
+
   -- Default for any enemy not specified
   ['default'] = attack_cooldowns['medium']
 }

@@ -78,8 +78,8 @@ STAGE_DATA = {
     normal_enemies = {'swarmer'},
     special_swarmer_types = {['touch'] = 8},
     special_enemies_by_wave = {
-      [1] = {['archer'] = 2, ['crossfire'] = 1},
-      [2] = {['crossfire'] = 2, ['archer'] = 2}
+      [1] = {['bomber'] = 2, ['crossfire'] = 1},
+      [2] = {['crossfire'] = 2, ['bomber'] = 2}
     },
     snake_enemies_by_wave = {
       [1] = {['snake'] = 2},
@@ -100,8 +100,8 @@ STAGE_DATA = {
     special_swarmer_types = {['touch'] = 8},
     special_enemies_by_wave = {
       [1] = {['crossfire'] = 2},
-      [2] = {['archer'] = 2, ['crossfire'] = 1},
-      [3] = {['crossfire'] = 2, ['archer'] = 2},
+      [2] = {['bomber'] = 2, ['crossfire'] = 1},
+      [3] = {['crossfire'] = 2, ['bomber'] = 2},
     },
     snake_enemies_by_wave = {
       [1] = {['snake'] = 2},
@@ -272,6 +272,7 @@ ENEMY_POWER = {
 
   -- Special enemies (T1)
   ['archer'] = 75,
+  ['bomber'] = 75,
   ['burst'] = 75,
   ['turret'] = 75,
   ['cleaver'] = 75,

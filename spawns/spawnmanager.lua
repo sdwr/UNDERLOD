@@ -202,6 +202,26 @@ function Get_Offscreen_Spawn_Point()
   return {x = x, y = y}
 end
 
+function Get_Offscreen_Spawn_Point_Away_From(previous_location, min_distance)
+  if not previous_location then
+    return Get_Offscreen_Spawn_Point()
+  end
+
+  min_distance = min_distance or 100
+
+  local max_attempts = 20
+  for attempt = 1, max_attempts do
+    local new_location = Get_Offscreen_Spawn_Point()
+    local distance = math.distance(new_location.x, new_location.y, previous_location.x, previous_location.y)
+
+    if distance >= min_distance then
+      return new_location
+    end
+  end
+
+  return Get_Offscreen_Spawn_Point()
+end
+
 function Outside_Arena(location)
   if location.x < SpawnGlobals.wall_width or 
      location.x > gw - SpawnGlobals.wall_width or 
@@ -668,6 +688,7 @@ function SpawnManager:init(arena)
     self.timer = TIME_BEFORE_FIRST_WAVE
     self.pending_spawns = 0
     self.wave_spawn_delay = 0
+    self.last_far_spawn_location = nil
 end
 
 function SpawnManager:does_spawn_reservation_exist(x, y)
@@ -810,6 +831,7 @@ function SpawnManager:start_wave()
   self.current_wave_power_target = self.total_round_power * wave_power_percentage
   self.current_wave_power_spawned = 0
   self.wave_start_time = Helper.Time.time
+  self.last_far_spawn_location = nil
 
   -- Generate all groups for this wave
   self:generate_wave_groups()
@@ -846,7 +868,7 @@ function SpawnManager:generate_wave_groups()
           local group = {
             type = enemy_type,
             amount = 1,  -- Always 1 special enemy per group
-            spawn_type = 'location',
+            spawn_type = 'far',
             power = enemy_to_round_power[enemy_type] or 100,
             spawn_time = 0
           }
@@ -1115,6 +1137,16 @@ function SpawnManager:spawn_group_instantly(group_data)
     for i = 1, amount do
       local location = Get_Offscreen_Spawn_Point()
       self:try_spawn_enemy(type, location, nil)
+    end
+  elseif spawn_type == 'far' then
+    local wave_spawn_location = Get_Offscreen_Spawn_Point_Away_From(self.last_far_spawn_location)
+    self.last_far_spawn_location = wave_spawn_location
+    local target_location = Get_Cross_Screen_Destination(wave_spawn_location)
+
+    for i = 1, amount do
+      local offset = SpawnGlobals.spawn_offsets[(i % #SpawnGlobals.spawn_offsets) + 1]
+      local location = {x = wave_spawn_location.x + offset.x + random:float(-1, 1), y = wave_spawn_location.y + offset.y + random:float(-1, 1)}
+      self:try_spawn_enemy(type, location, target_location)
     end
   else
     local wave_spawn_location = Get_Offscreen_Spawn_Point()

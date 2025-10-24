@@ -518,6 +518,7 @@ enemy_movement_types = {
   ['crossfire'] = MOVEMENT_TYPE_APPROACH_ORB,
   ['spiral'] = MOVEMENT_TYPE_SEEK_ORB_STALL_ATTACK,
   ['archer'] = MOVEMENT_TYPE_SEEK_ORB_SPIRAL,
+  ['bomber'] = MOVEMENT_TYPE_SEEK_ORB_SPIRAL,
 
   ['burst'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
   ['snakearrow'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,

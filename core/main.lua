@@ -1439,6 +1439,7 @@ function init()
     --special enemies t1
     ['goblin_archer'] = 75,
     ['archer'] = 75,
+    ['bomber'] = 75,
     ['burst'] = 75,
     ['turret'] = 75,
     ['cleaver'] = 75,
