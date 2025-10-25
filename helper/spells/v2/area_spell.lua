@@ -7,7 +7,7 @@ function Area_Spell:init(args)
     Area_Spell.super.init(self, args)
 
     -- Define default values for the spell's properties
-    self.r = math.random() * 2 * math.pi
+    self.r = self.r or math.random() * 2 * math.pi
     self.radius = self.radius or 50
     self.radius = Helper.Unit:apply_area_size_multiplier(self.unit, self.radius)
     self.fade_duration = self.fade_duration or 0.2
@@ -20,6 +20,8 @@ function Area_Spell:init(args)
     self.tick_rate = self.tick_rate or 0.2
     self.is_troop = default_to(self.is_troop, false)
     self.is_chained = default_to(self.is_chained, true)
+
+    self.draw_shape = default_to(self.draw_shape, true)
 
     self.targets_to_exclude = self.targets_to_exclude or {}
 
@@ -35,6 +37,10 @@ function Area_Spell:init(args)
     if self.pick_shape == 'circle' then
       local w = self.radius
       self.shape = Circle(self.x, self.y, w)
+    elseif self.pick_shape == 'line' then
+        local w = self.width
+        local h = self.height
+        self.shape = Rectangle(self.x, self.y, w, h, self.r)
     else
       local w = self.radius
       local h = self.radius
@@ -119,7 +125,7 @@ function Area_Spell:apply_damage()
             else
                 -- Rectangle shape check - use get_objects_in_shape
                 if self.shape then
-                    local objects = main.current.main:get_objects_in_shape(self.shape, {cursor})
+                    local objects = main.current.main:get_objects_in_shape(self.shape, {PlayerCursor})
                     if #objects > 0 then
                         targets_in_area = {cursor}
                     end
@@ -174,13 +180,16 @@ end
 function Area_Spell:draw()
     if self.hidden then return end
 
-    if self.floor_effect then return end
+    if self.floor_effect or not self.draw_shape then return end
 
     -- Draw with shimmery outline effect (like Area class)
     graphics.push(self.x, self.y, self.r)
     if self.pick_shape == 'circle' then
       graphics.circle(self.x, self.y, self.radius, self.color_transparent)
       graphics.circle(self.x, self.y, self.radius, self.color, self.line_width * self.flashFactor)
+    elseif self.pick_shape == 'line' then
+      graphics.rectangle(self.x, self.y, self.width, self.height, 0, 0, self.color_transparent)
+      graphics.rectangle(self.x, self.y, self.width, self.height, 0, 0, self.color, self.line_width * self.flashFactor)
     else
       graphics.rectangle(self.x, self.y, self.radius, self.radius, 0, 0, self.color_transparent)
       graphics.rectangle(self.x, self.y, self.radius, self.radius, 0, 0, self.color, self.line_width * self.flashFactor)

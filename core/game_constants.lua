@@ -504,6 +504,7 @@ enemy_movement_types = {
   ['snake_segment'] = MOVEMENT_TYPE_STATIONARY,  -- Segments don't move
   ['tank'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
   ['big_touch'] = MOVEMENT_TYPE_SEEK_ORB,  -- Starts by seeking orb, switches in update
+  ['net'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
 
   ['seeker'] = MOVEMENT_TYPE_SEEK,
 

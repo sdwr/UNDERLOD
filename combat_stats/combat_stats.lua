@@ -643,6 +643,7 @@ enemy_type_to_stats = {
 
     ['snake'] = { mvspd = 3},
     ['big_touch'] = { mvspd = 0.65},
+    ['net'] = { mvspd = 0.45, hp = 0.5},
 
     ['seeker'] = { dmg = 1, mvspd = 2.25, hp = 0.65 },
     ['chaser'] = { dmg = 1, mvspd = 1 },

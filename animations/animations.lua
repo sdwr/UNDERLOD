@@ -922,6 +922,7 @@ enemy_type_to_size = {
   ['aim_spread'] = 'special',
   ['boulder'] = 'boulder',
   ['snake'] = 'snake',
+  ['net'] = 'snake',
   ['snake_segment'] = 'tiny',  -- Small segment size
   ['tank'] = 'special',
   ['crossfire'] = 'special',

@@ -1473,9 +1473,11 @@ function init()
     --special enemies t3
     ['summoner'] = 75,
     ['assassin'] = 75,
+
     ['boulder'] = 75,
     ['snake'] = 75,
     ['big_touch'] = 75,
+    ['net'] = 75,
 
     --bosses
     ['stompy'] = BOSS_ROUND_POWER,

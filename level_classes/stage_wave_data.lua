@@ -218,6 +218,96 @@ STAGE_DATA = {
       }
     }
   },
+  ['C_1'] = {
+    name = 'C_1',
+    round_power = 1600,
+    number_of_waves = 1,
+    wave_duration = 13,
+    normal_enemies = {'swarmer'},
+    special_enemies = {},
+    weapons = {
+      ['machine_gun'] = {
+        level = 1,
+        items = {{procs = {'distance_multiplier'}}},
+      }
+    }
+  },
+  ['C_2'] = {
+    name = 'C_2',
+    round_power = 3200,
+    number_of_waves = 2,
+    normal_enemies = {'swarmer'},
+    special_swarmer_types = {['touch'] = 8},
+    special_enemies_by_wave = {
+      [1] = {},
+      [2] = {['mortar'] = 2}
+    },
+    snake_enemies_by_wave = {
+      [1] = {['net'] = 6},
+      [2] = {['net'] = 6},
+    },
+    weapons = {
+      ['machine_gun'] = {
+        level = 1,
+        items = {{procs = {'distance_multiplier'}}},
+      }
+    }
+  },
+  ['C_3'] = {
+    name = 'C_3',
+    round_power = 4200,
+    number_of_waves = 2,
+    normal_enemies = {'swarmer'},
+    special_swarmer_types = {['touch'] = 8},
+    special_enemies_by_wave = {
+      [1] = {['arcspread'] = 2, ['mortar'] = 1},
+      [2] = {['mortar'] = 2, ['arcspread'] = 2}
+    },
+    snake_enemies_by_wave = {
+      [1] = {['net'] = 6},
+      [2] = {['net'] = 8},
+    },
+    weapons = {
+      ['machine_gun'] = {
+        level = 1,
+        items = {{procs = {'distance_multiplier'}}},
+      }
+    }
+  },
+  ['C_4'] = {
+    name = 'C_4',
+    round_power = 4200,
+    number_of_waves = 3,
+    normal_enemies = {'swarmer'},
+    special_swarmer_types = {['touch'] = 8},
+    special_enemies_by_wave = {
+      [1] = {['mortar'] = 2},
+      [2] = {['arcspread'] = 2, ['mortar'] = 1},
+      [3] = {['mortar'] = 2, ['arcspread'] = 2},
+    },
+    snake_enemies_by_wave = {
+      [1] = {['net'] = 6},
+      [2] = {['net'] = 8},
+      [3] = {['net'] = 8},
+    },
+    weapons = {
+      ['machine_gun'] = {
+        level = 1,
+        items = {{procs = {'distance_multiplier'}}},
+      }
+    }
+  },
+  ['C_5'] = {
+    name = 'C_5',
+    round_power = 1000,
+    boss = 'dragon',
+    weapons = {
+      ['machine_gun'] = {
+        level = 1,
+        items = {{procs = {'distance_multiplier'}}},
+      }
+    }
+  },
 }
 
 function Get_Stage_Weapons(stage_id)
@@ -265,6 +355,7 @@ ENEMY_POWER = {
 
   ['snake'] = 75,
   ['big_touch'] = 75,
+  ['net'] = 75,
 
   -- Basic enemies
   ['shooter'] = 50,

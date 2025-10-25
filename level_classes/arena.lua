@@ -45,7 +45,9 @@ function Arena:init(args)
 
   self:init_physics()
   self:init_spawn_manager()
-  
+
+  NetBehavior.reset()
+
   self:create_level_orb()
 
   -- self:create_gold_counter()
@@ -356,6 +358,8 @@ function Arena:update(dt)
     if self.spawn_manager then
       self.spawn_manager:update(dt)
     end
+
+    NetBehavior.update(dt)
   end
 end
 
@@ -443,13 +447,14 @@ end
 
 function Arena:draw()
   self:draw_game_object()
-  
+
   -- Draw arena groups
   self.floor:draw()
   self.effects:draw_floor_effects()
   self.main:draw()
   self.post_main:draw()
-  self.effects:draw()  
+  self.effects:draw()
+  NetBehavior.draw_warning_lines()
   self.ui:draw()
 end
 

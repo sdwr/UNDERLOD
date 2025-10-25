@@ -986,6 +986,9 @@ function SpawnManager:generate_wave_groups()
   -- Snakes randomized in first half of wave
   if #snake_groups > 0 then
     local snake_window = self.wave_spawn_window * 0.5
+    if snake_groups[1].type == 'net' then
+      snake_window = self.wave_spawn_window
+    end
     for _, group in ipairs(snake_groups) do
       group.spawn_time = random:float(0, snake_window)
     end
