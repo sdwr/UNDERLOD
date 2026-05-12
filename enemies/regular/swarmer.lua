@@ -1,4 +1,33 @@
 local fns = {}
+
+local SWARMER_GROUP_KILL_COUNTS = {}
+
+local function trigger_group_charge(self)
+  if not self.group or not self.spawn_group_id then return end
+  local charge_duration = 5.0
+  for _, obj in ipairs(self.group.objects) do
+    if obj.isEnemy and not obj.dead
+       and obj.spawn_group_id == self.spawn_group_id
+       and not obj.pack_charged then
+      obj.pack_charged = true
+      obj.has_aggro_switching = false
+      obj:set_movement_action(MOVEMENT_TYPE_SEEK)
+      local elapsed = 0
+      obj:add_buff({name = 'pack_charge', duration = 9999, color = red[3], stats = {mvspd = 2.0}})
+      obj.t:every(0.1, function()
+        if obj.dead then return end
+        elapsed = elapsed + 0.1
+        local buff = obj.buffs['pack_charge']
+        if buff then
+          buff.stats.mvspd = 2.0 * math.max(0, 1 - elapsed / charge_duration)
+        end
+      end, 50, function()
+        if not obj.dead then obj:remove_buff('pack_charge') end
+      end, 'pack_charge_decay')
+    end
+  end
+end
+
 fns['init_enemy'] = function(self)
 
   self.data = self.data or {}
@@ -39,14 +68,11 @@ fns['init_enemy'] = function(self)
 
   Set_Enemy_Shape(self, self.size)
 
-
-
   self.stopChasingInRange = false
   self.haltOnPlayerContact = true
 
   self.class = 'regular_enemy'
   self.baseIdleTimer = 0
-
 
   self.attack_options = {}
 
@@ -57,9 +83,10 @@ fns['init_enemy'] = function(self)
     AggroSwitchingBehavior.apply_aggro_switching(self, {
       orb_movement = MOVEMENT_TYPE_SEEK_ORB_STALL,
       player_movement = MOVEMENT_TYPE_SEEK,
-      -- No speed buff for swarmers
     })
   end
+
+  self.pack_charged = false
 end
 
 fns['update_enemy'] = function(self, dt)
@@ -157,6 +184,14 @@ fns['touch_collision'] = function(self, other)
 end
 
 fns['on_death'] = function(self)
+  if self.spawn_group_id and not self.pack_charged then
+    SWARMER_GROUP_KILL_COUNTS[self.spawn_group_id] = (SWARMER_GROUP_KILL_COUNTS[self.spawn_group_id] or 0) + 1
+    local kills = SWARMER_GROUP_KILL_COUNTS[self.spawn_group_id]
+    if random:bool(kills * 10) then
+      trigger_group_charge(self)
+    end
+  end
+
   if self.special_swarmer_type == 'exploder' then
     self:explode()
   elseif self.special_swarmer_type == 'poison' then

@@ -1,0 +1,1 @@
+-- pack_leader is implemented as special_swarmer_type = 'pack_leader' in swarmer.lua

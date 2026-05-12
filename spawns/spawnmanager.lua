@@ -1154,9 +1154,12 @@ function SpawnManager:complete_current_wave()
   self:change_state('waiting_for_wave_clear')
 end
 
+CURRENT_SPAWN_GROUP_ID = nil
+
 -- Spawn a group instantly without delay
 function SpawnManager:spawn_group_instantly(group_data)
   local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
+  CURRENT_SPAWN_GROUP_ID = random:uid()
 
   if spawn_type == 'scatter' then
     for i = 1, amount do
@@ -1198,6 +1201,8 @@ function SpawnManager:spawn_group_instantly(group_data)
       self:try_spawn_enemy(type, location, target_location)
     end
   end
+
+  CURRENT_SPAWN_GROUP_ID = nil
 end
 
 -- Try to spawn an enemy, queue if blocked
@@ -1212,7 +1217,8 @@ function SpawnManager:try_spawn_enemy(type, location, target_location)
     table.insert(self.spawn_queue, {
       type = type,
       target_location = target_location,
-      original_location = location
+      original_location = location,
+      spawn_group_id = CURRENT_SPAWN_GROUP_ID
     })
 
     if SpawnManager.debug_enabled then
@@ -1243,7 +1249,9 @@ function SpawnManager:try_spawn_from_queue()
 
     if #objects == 0 then
       -- Found clear spot, spawn enemy
+      CURRENT_SPAWN_GROUP_ID = spawn_data.spawn_group_id
       Spawn_Enemy(self.arena, spawn_data.type, location, spawn_data.target_location)
+      CURRENT_SPAWN_GROUP_ID = nil
       table.remove(self.spawn_queue, i)
       spawned = spawned + 1
       self.last_spawn_enemy_time = love.timer.getTime()
@@ -1514,6 +1522,7 @@ function Spawn_Enemy(arena, type, location, target_location)
                       target_location = target_location,
                       level = arena.level,
                       difficulty_multipliers = arena.spawn_manager.difficulty_multipliers,
+                      spawn_group_id = CURRENT_SPAWN_GROUP_ID,
                       data = data}
 
   current_power_onscreen = current_power_onscreen + enemy_to_round_power[type]

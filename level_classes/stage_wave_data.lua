@@ -56,14 +56,6 @@ STAGE_DATA = {
     number_of_waves = 2,
     normal_enemies = {'swarmer'},
     special_swarmer_types = {['touch'] = 8},
-    special_enemies_by_wave = {
-      [1] = {},
-      [2] = {['crossfire'] = 2}
-    },
-    snake_enemies_by_wave = {
-      [1] = {['snake'] = 1},
-      [2] = {['snake'] = 1},
-    },
     weapons = {
       ['machine_gun'] = {
         level = 1,
@@ -77,14 +69,6 @@ STAGE_DATA = {
     number_of_waves = 2,
     normal_enemies = {'swarmer'},
     special_swarmer_types = {['touch'] = 8},
-    special_enemies_by_wave = {
-    [1] = {['bomber'] = 2, ['crossfire'] = 1},
-      [2] = {['crossfire'] = 2, ['bomber'] = 2}
-    },
-    snake_enemies_by_wave = {
-      [1] = {['snake'] = 2},
-      [2] = {['snake'] = 2},
-    },
     weapons = {
       ['machine_gun'] = {
         level = 1,
