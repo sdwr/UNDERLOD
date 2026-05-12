@@ -497,48 +497,48 @@ enemy_movement_types = {
 
   ['default'] = MOVEMENT_TYPE_CROSS_SCREEN,
   
-  ['swarmer'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
-  ['boulder'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
+  ['swarmer'] = MOVEMENT_TYPE_CROSS_SCREEN,
+  ['boulder'] = MOVEMENT_TYPE_CROSS_SCREEN,
   ['snake_boss'] = MOVEMENT_TYPE_MOVE_FORWARD,
   ['snake'] = MOVEMENT_TYPE_CROSS_SCREEN,
   ['snake_segment'] = MOVEMENT_TYPE_STATIONARY,  -- Segments don't move
-  ['tank'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
-  ['big_touch'] = MOVEMENT_TYPE_SEEK_ORB,  -- Starts by seeking orb, switches in update
-  ['net'] = MOVEMENT_TYPE_SEEK_ORB_STALL,
+  ['tank'] = MOVEMENT_TYPE_CROSS_SCREEN,
+  ['big_touch'] = MOVEMENT_TYPE_CROSS_SCREEN,
+  ['net'] = MOVEMENT_TYPE_CROSS_SCREEN,
 
   ['seeker'] = MOVEMENT_TYPE_SEEK,
 
   -- Ranged units that maintain distance
-  ['big_goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
-  ['goblin_archer'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
-  
-  ['mortar'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
-  ['singlemortar'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
-  ['line_mortar'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
-  
-  ['crossfire'] = MOVEMENT_TYPE_APPROACH_ORB,
-  ['spiral'] = MOVEMENT_TYPE_SEEK_ORB_STALL_ATTACK,
-  ['archer'] = MOVEMENT_TYPE_SEEK_ORB_SPIRAL,
-  ['bomber'] = MOVEMENT_TYPE_SEEK_ORB_SPIRAL,
+  ['big_goblin_archer'] = MOVEMENT_TYPE_CROSS_SCREEN,
+  ['goblin_archer'] = MOVEMENT_TYPE_CROSS_SCREEN,
 
-  ['burst'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
-  ['snakearrow'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
+  ['mortar'] = MOVEMENT_TYPE_CROSS_SCREEN,
+  ['singlemortar'] = MOVEMENT_TYPE_CROSS_SCREEN,
+  ['line_mortar'] = MOVEMENT_TYPE_CROSS_SCREEN,
 
-  ['selfburst'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
-  ['arcspread'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
-  ['aim_spread'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
-  ['plasma'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
-  ['laser'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
-  ['summoner'] = MOVEMENT_TYPE_APPROACH_ORB,
-  ['spawner'] = MOVEMENT_TYPE_APPROACH_ORB,
-  ['firewall_caster'] = MOVEMENT_TYPE_SEEK_ORB_ATTACK,
-  
-  ['turret'] = MOVEMENT_TYPE_SEEK_ORB_STALL_ATTACK,
-  
+  ['crossfire'] = MOVEMENT_TYPE_CROSS_SCREEN,
+  ['spiral'] = MOVEMENT_TYPE_CROSS_SCREEN,
+  ['archer'] = MOVEMENT_TYPE_CROSS_SCREEN,
+  ['bomber'] = MOVEMENT_TYPE_CROSS_SCREEN,
+
+  ['burst'] = MOVEMENT_TYPE_CROSS_SCREEN,
+  ['snakearrow'] = MOVEMENT_TYPE_CROSS_SCREEN,
+
+  ['selfburst'] = MOVEMENT_TYPE_CROSS_SCREEN,
+  ['arcspread'] = MOVEMENT_TYPE_CROSS_SCREEN,
+  ['aim_spread'] = MOVEMENT_TYPE_CROSS_SCREEN,
+  ['plasma'] = MOVEMENT_TYPE_CROSS_SCREEN,
+  ['laser'] = MOVEMENT_TYPE_CROSS_SCREEN,
+  ['summoner'] = MOVEMENT_TYPE_CROSS_SCREEN,
+  ['spawner'] = MOVEMENT_TYPE_CROSS_SCREEN,
+  ['firewall_caster'] = MOVEMENT_TYPE_CROSS_SCREEN,
+
+  ['turret'] = MOVEMENT_TYPE_CROSS_SCREEN,
+
   -- Bosses
   ['stompy'] = MOVEMENT_TYPE_RANDOM,
   ['dragon'] = MOVEMENT_TYPE_LOOSE_SEEK,
-  ['heigan'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
+  ['heigan'] = MOVEMENT_TYPE_CROSS_SCREEN,
 }
 
 -- Spell constants

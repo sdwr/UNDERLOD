@@ -55,7 +55,7 @@ function LevelOrb:init(args)
     
   -- Damage resistance
   self.damage_reduction = 0 -- Percentage of damage to reduce (0 = no reduction)
-  self.invulnerable = false
+  self.invulnerable = true
 
 end
 
