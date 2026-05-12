@@ -1063,13 +1063,13 @@ function Helper.Unit:count_unit_set_pieces(unit)
 end
 
 function Helper.Unit:clear_automatic_target(target)
-    if target then
+    if target and target.remove_buff then
         target:remove_buff('automatic_targeted')
     end
 end
 
 function Helper.Unit:decrement_automatic_target(target)
-    if target then
+    if target and target.get_buff then
         local buff = target:get_buff('automatic_targeted')
         if buff then
             buff.count = buff.count - 1
@@ -1103,7 +1103,7 @@ function Helper.Unit:set_manual_target(target)
 end
 
 function Helper.Unit:set_automatic_target(target)
-    if not target or target.dead then return end
+    if not target or target.dead or not target.get_buff then return end
 
     if target:has_buff('manual_targeted') then
         return
