@@ -96,18 +96,16 @@ function Weapon:update(dt)
     -- Set velocity to zero since we're manually positioning
     self:set_velocity(0, 0)
 
-    if self.player_cursor.movement_speed and self.player_cursor.movement_speed > 2 then
+    if self.player_cursor.movement_angle then
       self.fire_angle = self.player_cursor.movement_angle + math.pi
-    else
-      self.fire_angle = nil
     end
   end
   
-  -- Fire only when cursor is moving, in the backward direction
+  -- Fire constantly at fire_angle (opposite of cursor facing)
   if table.contains(unit_states_can_cast, self.state) and self.fire_angle then
     local dummy = {x = self.x + 1, y = self.y, dead = false}
-    self.target = dummy
     if Helper.Unit:can_cast(self, dummy) then
+      self.target = dummy
       self:setup_cast(dummy)
     end
   end

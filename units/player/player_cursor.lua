@@ -70,9 +70,6 @@ function PlayerCursor:follow_mouse()
   local speed = math.sqrt(dx * dx + dy * dy)
   if speed > 2 then
     self.movement_angle = math.atan2(dy, dx)
-    self.movement_speed = speed
-  else
-    self.movement_speed = 0
   end
   self.x = mouse_x
   self.y = mouse_y
