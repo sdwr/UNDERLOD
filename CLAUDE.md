@@ -38,28 +38,37 @@ UNDERLOD is an arcade RTS roguelite built with LÖVE2D (Love2D game engine) in L
 
 ### Core Structure
 - **Engine**: Custom game engine in `/engine/` with modules for graphics, physics, input, audio, and game objects
-- **Game States**: Main game loop uses the `WorldManager` state, which creates `Arena`s for combat
+- **Game States**: Main game loop uses the `WorldManager` state (`screens/world_manager.lua`), which creates `Arena`s for combat
 - **Entity System**: Uses GameObject base class with Group management for collision and updates
-- **Module System**: Heavy use of `require` for modular organization
+- **Module System**: Heavy use of `require` for modular organization; entry point is root `main.lua` → `core/main.lua`
 
 ### Key Directories
-- `/engine/`: Custom LÖVE2D-based engine with graphics, physics, math utilities
-- `/units/`: Player units (Troop class with character types)
-- `/enemies/`: Enemy units (Seeker class with enemy types) and level management
-- `/ui/`: User interface elements including character cards, tooltips, progress bars
-- `/helper/`: Utility functions and spell implementations
-- `/procs/`: Item effects and perk system
-- `/spawns/`: Enemy spawning and wave management
-- `/combat_stats/`: Status effects (burn, chill, shock)
-- `/achievements/`: Achievement tracking system
-- `/documentation/`: Game design and code structure documentation
+- `/core/`: Entry-point logic (`main.lua`), shared globals, utils, game constants, media loading
+- `/engine/`: Custom LÖVE2D-based engine with graphics, physics, math utilities, data structures
+- `/screens/`: Game screens — `mainmenu.lua`, `buy_screen.lua`, `world_manager.lua`, `level_select.lua`
+- `/save/`: Save game logic (`save_game.lua`) and buy screen utilities (`buy_screen_utils.lua`)
+- `/units/`: Unit classes — `units.lua` (class lists + Team), `/units/player/` (Troop, PlayerCursor, weapons)
+- `/enemies/`: Enemy base class (`enemy.lua`), per-type files in `regular/`, `bosses/`, `miniboss/`, `static/`, `environmental/`
+- `/level_classes/`: Arena, combat levels, stage wave data, doors, XP shards, objects
+- `/spawns/`: Wave management (`spawnmanager.lua`, `levelmanager.lua`, `wave_types.lua`)
+- `/ui/`: User interface elements including tooltips, perk cards, floor items, panels
+- `/helper/`: Utility functions and spell implementations (`/helper/spells/`)
+- `/procs/`: Item proc system (`procs.lua`, `proc.lua`) and perk system (`perks.lua`)
+- `/items/`: Item definitions (`items_v2.lua`, `old_items.lua`, `constants.lua`)
+- `/combat_stats/`: Status effect constants (burn, chill, shock)
+- `/achievements/`: Achievement tracking and unlock logic
+- `/animations/`: Sprite animation init
+- `/util/`: Dev utilities — FPS counter, draw helpers, profiler
 
 ### Combat System
-- **Units**: All combat entities inherit from GameObject with Physics
-- **Player Units**: Troop class with `.character` property defining unit type
-- **Enemies**: Enemy class with `.type` property defining enemy type
-- **Spells**: Extend Spell class, craeted in `objects.lua` Unit class when a Unit creates a Cast object, that then creates the Spell object
-- **Items/Procs**: Loaded onto units at round start, affect combat through callbacks (ex. onAttackCallback, onTickCallback)
+- **Units**: All combat entities inherit from `Unit` (with `GameObject` and `Physics` mixins)
+- **Player Units**: `Troop` class in `units/player/player_troop.lua`; positioned at orb center (gw/2, gh/2); collision disabled. Subclasses: `Laser_Troop`, `Swordsman_Troop`, `Archer_Troop`
+- **Player Cursor**: `PlayerCursor` in `units/player/player_cursor.lua` — the actual collidable player entity; receives hits and redirects damage to the orb
+- **Weapons**: Separate weapon classes in `units/player/` (archer, frost AOE, machine gun, lightning, cannon, laser)
+- **Enemies**: `Enemy` base class in `enemies/enemy.lua`; `.type` property maps to per-type init via `enemy_to_class` table; `EnemyCritter` for critter types
+- **Spells**: Extend Spell class; created in `level_classes/objects.lua` when a Unit creates a Cast object, which then creates the Spell object
+- **Items/Procs**: Loaded onto units at round start, affect combat through callbacks (e.g. `onAttackCallback`, `onTickCallback`)
+- **Spawn System**: `SpawnManager` (initialized in Arena) consumes `stage_data` wave definitions from `stage_wave_data.lua` and `wave_types.lua`
 
 ### Unit States
 - `idle`: Default state, can move and act normally (enemies)
@@ -80,13 +89,18 @@ UNDERLOD is an arcade RTS roguelite built with LÖVE2D (Love2D game engine) in L
 - is_launching: is in process of launching, physics are modified
 
 ### Game Flow
-1. **Main Loop**: `main.lua` calls `State:update()` and `State:draw()`
-2. **Combat**: `Arena:update()` and `Arena:draw()` handle battle logic
-3. **Unit Updates**: Each GameObject calls `init()` once, then `update()` and `draw()` each frame
+1. **Main Loop**: root `main.lua` → `core/main.lua`; Love2D calls `love.update()` / `love.draw()` which dispatch to the active State
+2. **State Machine**: `WorldManager` is the primary combat state; `MainMenu`, `BuyScreen`, and `LevelSelect` are the other screens
+3. **Combat**: `Arena:update()` and `Arena:draw()` handle battle logic, enemy spawning via `SpawnManager`
+4. **Unit Updates**: Each GameObject calls `init()` once, then `update()` and `draw()` each frame via their Group
 
 ### Adding New Content
-**New Units**: Must be added to lookup tables in `main.lua`, implement attack in appropriate class (`Troop:set_character()` for players, `Seeker:init()` for enemies)
+**New Player Units**: Create a file in `units/player/`, extend `Troop` (or `Unit` directly), add to `require` list in `units/units.lua`, and add the class to `troop_classes`
 
-**New Items**: Add to item system with proc definitions, loaded via proc system
+**New Weapons**: Create a file in `units/player/`, extend `Weapon`, require in `units/units.lua`
 
-**New Enemies**: Add to `Seeker:init()` and spawn logic in `Arena:on_enter()`
+**New Enemies**: Create a file in `enemies/regular/` (or appropriate subfolder), register in `enemy_to_class` table and `enemy_includes.lua`; add spawn entries to `level_classes/stage_wave_data.lua` or `spawns/wave_types.lua`
+
+**New Items**: Add to `items/items_v2.lua` with proc definitions; procs are loaded via `procs/procs.lua`
+
+**New Spells**: Extend `Spell` class in `helper/spells/` (v2 spells in `helper/spells/v2/`); create via Cast object in `level_classes/objects.lua`
