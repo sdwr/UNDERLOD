@@ -82,22 +82,23 @@ function Weapon:update(dt)
   self:update_targets()
   self:update_survivor_effect(dt)
   
-  -- Follow player cursor
+  -- Follow player cursor, tracking position delta for fire direction
   if self.player_cursor and not self.player_cursor.dead then
+    local prev_x = self.x
+    local prev_y = self.y
 
     self.x = self.player_cursor.x
     self.y = self.player_cursor.y
-    
-    -- Update physics body if it exists
+
     if self.body then
       self.body:setPosition(self.x, self.y)
     end
-    
-    -- Set velocity to zero since we're manually positioning
     self:set_velocity(0, 0)
 
-    if self.player_cursor.movement_angle then
-      self.fire_angle = self.player_cursor.movement_angle + math.pi
+    local dx = self.x - prev_x
+    local dy = self.y - prev_y
+    if dx * dx + dy * dy > 0.1 then
+      self.fire_angle = math.atan2(dy, dx) + math.pi
     end
   end
   
