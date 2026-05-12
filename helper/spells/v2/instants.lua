@@ -24,6 +24,30 @@ function Get_Distance_To_Target(self)
   end
 end
 
+HitFlash = Object:extend()
+HitFlash.__class_name = 'HitFlash'
+HitFlash:implement(GameObject)
+function HitFlash:init(args)
+  self:init_game_object(args)
+  self.x = args.x
+  self.y = args.y
+  self.duration = 0.1
+  self.elapsed = 0
+  self.max_radius = args.max_radius or 16
+  self.color = args.color or white[5]
+end
+function HitFlash:update(dt)
+  self:update_game_object(dt)
+  self.elapsed = self.elapsed + dt
+  if self.elapsed >= self.duration then self.dead = true end
+end
+function HitFlash:draw()
+  local t = math.min(self.elapsed / self.duration, 1)
+  local c = self.color:clone()
+  c.a = 1 - t
+  graphics.circle(self.x, self.y, self.max_radius * t, c)
+end
+
 Arrow = Object:extend()
 Arrow.__class_name = 'Arrow'
 Arrow:implement(GameObject)
@@ -203,30 +227,20 @@ function ArrowProjectile:hit_target(target)
     Helper.Damage:indirect_hit(target, self.damage * 0.8, self.unit, DAMAGE_TYPE_PHYSICAL, true)
   end
   
-  -- Check if we should die
+  -- Hit juice
+  camera:shake(2, 0.05)
+  HitFlash{group = main.current.effects, x = target.x, y = target.y, color = self.color:clone()}
+
   if self.max_pierce <= 0 or self.pierce_count > self.max_pierce then
     self:die()
   end
 end
 
 function ArrowProjectile:draw()
-  -- Draw an arrow shape
-  graphics.push(self.x, self.y, self.r, 1, 1)
-  
-  -- Arrow body (rectangle)
-  graphics.rectangle(self.x, self.y, self.width, self.height, 2, 2, self.color)
-  
-  -- Arrow head (triangle)
-  --arrow head Center
-  -- local head_center_x = self.x + self.width/2
-  -- local head_center_y = self.y + self.height/2
-  -- local head_width = 6
-  -- local head_height = 8
-  -- graphics.triangle(
-  --   head_center_x, head_center_y, head_width, head_height, self.color
-  -- )
-  
-  graphics.pop()
+  local glow = self.color:clone()
+  glow.a = 0.25
+  graphics.circle(self.x, self.y, self.radius * 3, glow)
+  graphics.circle(self.x, self.y, self.radius, self.color)
 end
 
 function ArrowProjectile:die()

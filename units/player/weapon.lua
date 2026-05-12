@@ -103,17 +103,16 @@ function Weapon:update(dt)
     end
   end
   
-  -- Auto-fire at enemies
+  -- Fire only when cursor is moving, in the backward direction
   if table.contains(unit_states_can_cast, self.state) then
-    if self.global_range then
-      self.target = Helper.Target:get_close_enemy(self)
-    else
-      self.target = Helper.Target:get_closest_enemy(self)
-    end
-    if self.target then
-      if Helper.Unit:can_cast(self, self.target) then
-        self:setup_cast(self.target)
+    if self.fire_angle then
+      local dummy = {x = self.x + 1, y = self.y, dead = false}
+      self.target = dummy
+      if Helper.Unit:can_cast(self, dummy) then
+        self:setup_cast(dummy)
       end
+    else
+      self.target = nil
     end
   end
 
