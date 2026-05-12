@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "mcp__leann-server__leann_search"
+      "mcp__leann-server__leann_search",
+	  "Bash(git -C *)"
     ],
     "deny": [],
     "ask": []

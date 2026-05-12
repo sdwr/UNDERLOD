@@ -67,10 +67,13 @@ function PlayerCursor:follow_mouse()
   mouse_y = mouse_y / sx
   local dx = mouse_x - self.x
   local dy = mouse_y - self.y
-  local speed = math.sqrt(dx * dx + dy * dy)
-  if speed > 2 then
-    self.movement_angle = math.atan2(dy, dx)
+
+  self.smooth_vx = (self.smooth_vx or 0) * 0.82 + dx * 0.18
+  self.smooth_vy = (self.smooth_vy or 0) * 0.82 + dy * 0.18
+  if self.smooth_vx*self.smooth_vx + self.smooth_vy*self.smooth_vy > 0.25 then
+    self.movement_angle = math.atan2(self.smooth_vy, self.smooth_vx)
   end
+
   self.x = mouse_x
   self.y = mouse_y
   self.body:setPosition(self.x, self.y)

@@ -8,7 +8,9 @@ local function trigger_group_charge(self)
   for _, obj in ipairs(self.group.objects) do
     if obj.isEnemy and not obj.dead
        and obj.spawn_group_id == self.spawn_group_id
-       and not obj.pack_charged then
+       and not obj.pack_charged
+       and obj.special_swarmer_type ~= 'touch'
+       and obj.special_swarmer_type ~= 'touch_fade' then
       obj.pack_charged = true
       obj.has_aggro_switching = false
       obj:set_movement_action(MOVEMENT_TYPE_SEEK)

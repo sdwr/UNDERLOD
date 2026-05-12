@@ -30,9 +30,7 @@ function SwordWeapon:update(dt)
   self.attack_sensor.rs = self.attack_range
 
   if self.player_cursor and self.player_cursor.movement_angle then
-    local target = self.player_cursor.movement_angle
-    local diff = ((target - self.facing + 3 * math.pi) % (2 * math.pi)) - math.pi
-    self.facing = self.facing + diff * math.min(1, dt * 15)
+    self.facing = self.player_cursor.movement_angle
   end
 
   if self.swing_cooldown > 0 then
@@ -81,13 +79,27 @@ function SwordWeapon:do_swing_damage()
 end
 
 function SwordWeapon:draw()
+  if not self.is_swinging and self.swing_cooldown > 0 then return end
+
   local cx, cy = self.x, self.y
   local blade_length = self.attack_range or self.base_attack_range
-  local blade_width = 4
+  local blade_color = white[0]
+  local hilt_color = white[-6]
 
   graphics.push(cx, cy, self.sword_angle)
-  graphics.rectangle2(cx, cy - blade_width / 2, blade_length, blade_width, nil, nil, white[0])
-  graphics.pop()
 
-  graphics.circle(cx, cy, 3, white[-3])
+  -- pommel
+  graphics.circle(cx - 3, cy, 1.8, hilt_color)
+  -- handle
+  graphics.rectangle2(cx - 3, cy - 1.5, 9, 3, nil, nil, hilt_color)
+  -- crossguard
+  graphics.rectangle2(cx + 4.5, cy - 5, 2.5, 10, nil, nil, hilt_color)
+  -- tapered blade
+  graphics.polygon({
+    cx + 7, cy - 2.5,
+    cx + 7, cy + 2.5,
+    cx + blade_length, cy
+  }, blade_color)
+
+  graphics.pop()
 end
