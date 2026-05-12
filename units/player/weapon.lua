@@ -82,11 +82,8 @@ function Weapon:update(dt)
   self:update_targets()
   self:update_survivor_effect(dt)
   
-  -- Follow player cursor, tracking position delta for fire direction
+  -- Follow player cursor
   if self.player_cursor and not self.player_cursor.dead then
-    local prev_x = self.x
-    local prev_y = self.y
-
     self.x = self.player_cursor.x
     self.y = self.player_cursor.y
 
@@ -94,20 +91,25 @@ function Weapon:update(dt)
       self.body:setPosition(self.x, self.y)
     end
     self:set_velocity(0, 0)
+  end
 
-    local dx = self.x - prev_x
-    local dy = self.y - prev_y
-    if dx * dx + dy * dy > 0.1 then
-      self.fire_angle = math.atan2(dy, dx) + math.pi
+  -- Auto-fire at nearest enemy
+  if table.contains(unit_states_can_cast, self.state) then
+    if self.global_range then
+      self.target = Helper.Target:get_close_enemy(self)
+    else
+      self.target = Helper.Target:get_closest_enemy(self)
+    end
+    if self.target then
+      if Helper.Unit:can_cast(self, self.target) then
+        self:setup_cast(self.target)
+      end
     end
   end
-  
-  -- Fire constantly at fire_angle (opposite of cursor facing)
-  if table.contains(unit_states_can_cast, self.state) and self.fire_angle then
-    local dummy = {x = self.x + 1, y = self.y, dead = false}
-    if Helper.Unit:can_cast(self, dummy) then
-      self.target = dummy
-      self:setup_cast(dummy)
+
+  if self.state == unit_states['casting'] then
+    if not self.target or self.target.dead then
+      self:cancel_cast()
     end
   end
 
