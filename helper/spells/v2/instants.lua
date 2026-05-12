@@ -111,8 +111,10 @@ function ArrowProjectile:init(args)
   self.shape = Circle(self.x, self.y, self.radius)
 
   
-  -- Calculate direction to target
-  if self.target then
+  -- Calculate direction: prefer weapon fire_angle (backward from movement), then target, then args
+  if self.unit and self.unit.fire_angle then
+    self.angle = self.unit.fire_angle
+  elseif self.target then
     local xdist = self.target.x - self.x
     local ydist = self.target.y - self.y
     self.angle = math.atan2(ydist, xdist)

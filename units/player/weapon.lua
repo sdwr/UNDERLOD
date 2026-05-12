@@ -95,6 +95,12 @@ function Weapon:update(dt)
     
     -- Set velocity to zero since we're manually positioning
     self:set_velocity(0, 0)
+
+    if self.player_cursor.movement_speed and self.player_cursor.movement_speed > 2 then
+      self.fire_angle = self.player_cursor.movement_angle + math.pi
+    else
+      self.fire_angle = nil
+    end
   end
   
   -- Auto-fire at enemies

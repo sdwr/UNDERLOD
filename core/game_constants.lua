@@ -516,7 +516,7 @@ enemy_movement_types = {
   ['singlemortar'] = MOVEMENT_TYPE_CROSS_SCREEN,
   ['line_mortar'] = MOVEMENT_TYPE_CROSS_SCREEN,
 
-  ['crossfire'] = MOVEMENT_TYPE_CROSS_SCREEN,
+  ['crossfire'] = MOVEMENT_TYPE_APPROACH_ORB,
   ['spiral'] = MOVEMENT_TYPE_CROSS_SCREEN,
   ['archer'] = MOVEMENT_TYPE_CROSS_SCREEN,
   ['bomber'] = MOVEMENT_TYPE_CROSS_SCREEN,
@@ -529,8 +529,8 @@ enemy_movement_types = {
   ['aim_spread'] = MOVEMENT_TYPE_CROSS_SCREEN,
   ['plasma'] = MOVEMENT_TYPE_CROSS_SCREEN,
   ['laser'] = MOVEMENT_TYPE_CROSS_SCREEN,
-  ['summoner'] = MOVEMENT_TYPE_CROSS_SCREEN,
-  ['spawner'] = MOVEMENT_TYPE_CROSS_SCREEN,
+  ['summoner'] = MOVEMENT_TYPE_APPROACH_ORB,
+  ['spawner'] = MOVEMENT_TYPE_APPROACH_ORB,
   ['firewall_caster'] = MOVEMENT_TYPE_CROSS_SCREEN,
 
   ['turret'] = MOVEMENT_TYPE_CROSS_SCREEN,
@@ -538,7 +538,7 @@ enemy_movement_types = {
   -- Bosses
   ['stompy'] = MOVEMENT_TYPE_RANDOM,
   ['dragon'] = MOVEMENT_TYPE_LOOSE_SEEK,
-  ['heigan'] = MOVEMENT_TYPE_CROSS_SCREEN,
+  ['heigan'] = MOVEMENT_TYPE_SEEK_ORB_RANGE,
 }
 
 -- Spell constants

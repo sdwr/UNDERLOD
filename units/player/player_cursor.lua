@@ -65,6 +65,15 @@ function PlayerCursor:follow_mouse()
   local mouse_x, mouse_y = love.mouse.getPosition()
   mouse_x = mouse_x / sx
   mouse_y = mouse_y / sx
+  local dx = mouse_x - self.x
+  local dy = mouse_y - self.y
+  local speed = math.sqrt(dx * dx + dy * dy)
+  if speed > 2 then
+    self.movement_angle = math.atan2(dy, dx)
+    self.movement_speed = speed
+  else
+    self.movement_speed = 0
+  end
   self.x = mouse_x
   self.y = mouse_y
   self.body:setPosition(self.x, self.y)
