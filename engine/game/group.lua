@@ -374,22 +374,39 @@ function Group:get_objects_in_shape(shape, object_types, exclude_list, required_
 end
 
 function Group:get_closest_object_by_class(object, object_types, exclude_list, required_flags)
-  return self:get_closest_object(object, function(o) 
-    local is_valid_type = table.any(object_types, function(v) return o:is(v) end)
-    local is_not_excluded = not exclude_list or not table.any(exclude_list, function(v) return v.id == o.id end)
-    
-    local passes_flags = true
-    if required_flags then
-      for flag, value in pairs(required_flags) do
-        if o[flag] ~= value then
-          passes_flags = false
-          break
+  local min_dist_sq = math.huge
+  local closest = nil
+  for _, class in ipairs(object_types) do
+    local list = self.objects.by_class[class]
+    if list then
+      for _, o in ipairs(list) do
+        local excluded = false
+        if exclude_list then
+          for _, ex in ipairs(exclude_list) do
+            if ex.id == o.id then excluded = true; break end
+          end
+        end
+        if not excluded then
+          local passes = true
+          if required_flags then
+            for flag, value in pairs(required_flags) do
+              if o[flag] ~= value then passes = false; break end
+            end
+          end
+          if passes then
+            local dx = o.x - object.x
+            local dy = o.y - object.y
+            local d2 = dx*dx + dy*dy
+            if d2 < min_dist_sq then
+              min_dist_sq = d2
+              closest = o
+            end
+          end
         end
       end
     end
-    
-    return is_valid_type and is_not_excluded and passes_flags
-  end)
+  end
+  return closest
 end
 
 function Group:get_random_object_by_class(object_types, required_flags)

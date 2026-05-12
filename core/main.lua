@@ -974,6 +974,7 @@ function init()
     ['swordsman'] = white[0],
     ['archer'] = green[0],
     ['laser'] = blue[0],
+    ['sword'] = white[0],
   }
 
   item_stat_lookup = {
@@ -1664,6 +1665,16 @@ function update(dt)
     -- Display DPS calculations for all waves
     local DPSCalculator = require('combat_stats.dps_calculator')
     DPSCalculator.handle_f4_press()
+  end
+
+  if input['f12'].pressed then
+    love.USE_PROFILER = not love.USE_PROFILER
+    if love.USE_PROFILER then
+      love.frame = love.frame or 0
+      print('[PROFILER] enabled — report prints every 300 frames (~5s)')
+    else
+      print('[PROFILER] disabled')
+    end
   end
 end
 

@@ -423,6 +423,7 @@ end
 -- Returns the object's angle
 -- r = self:get_angle()
 function Physics:get_angle()
+  if self._cached_angle ~= nil then return self._cached_angle end
   if self.body then return self.body:getAngle() end
 end
 
@@ -431,7 +432,10 @@ end
 -- If set_fixed_rotation is set to true then this will do nothing
 -- self:set_angle(math.pi/8)
 function Physics:set_angle(v)
-  if self.body then self.body:setAngle(v) end
+  if self.body then
+    self.body:setAngle(v)
+    self._cached_angle = v
+  end
   return self
 end
 

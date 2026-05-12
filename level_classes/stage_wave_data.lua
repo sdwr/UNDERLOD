@@ -38,47 +38,47 @@ LIST_OF_STAGES = {
 STAGE_DATA = {
   ['A_1'] = {
     name = 'A_1',
-    round_power = 1200,
+    round_power = 4800,
     number_of_waves = 1,
     wave_duration = 13,
     normal_enemies = {'swarmer'},
     special_enemies = {},
     weapons = {
-      ['machine_gun'] = {
+      ['sword'] = {
         level = 1,
-        items = {{procs = {'distance_multiplier'}}},
+        items = {},
       }
     }
   },
   ['A_2'] = {
     name = 'A_2',
-    round_power = 3000,
+    round_power = 12000,
     number_of_waves = 2,
     normal_enemies = {'swarmer'},
     special_swarmer_types = {['touch'] = 8},
     weapons = {
-      ['machine_gun'] = {
+      ['sword'] = {
         level = 1,
-        items = {{procs = {'distance_multiplier'}}},
+        items = {},
       }
     }
   },
   ['A_3'] = {
     name = 'A_3',
-    round_power = 4000,
+    round_power = 16000,
     number_of_waves = 2,
     normal_enemies = {'swarmer'},
     special_swarmer_types = {['touch'] = 8},
     weapons = {
-      ['machine_gun'] = {
+      ['sword'] = {
         level = 1,
-        items = {{procs = {'distance_multiplier'}}},
+        items = {},
       }
     }
   },
   ['A_4'] = {
     name = 'A_4',
-    round_power = 4000,
+    round_power = 16000,
     number_of_waves = 3,
     normal_enemies = {'swarmer'},
     special_swarmer_types = {['touch'] = 8},
@@ -93,39 +93,39 @@ STAGE_DATA = {
       [3] = {['snake'] = 3},
     },
     weapons = {
-      ['machine_gun'] = {
+      ['sword'] = {
         level = 1,
-        items = {{procs = {'distance_multiplier'}}},
+        items = {},
       }
     }
   },
   ['A_5'] = {
     name = 'A_5',
     boss = 'stompy',
-    round_power = 1000,
+    round_power = 4000,
     weapons = {
-      ['machine_gun'] = {
+      ['sword'] = {
         level = 1,
-        items = {{procs = {'distance_multiplier'}}},
+        items = {},
       }
     }
   },
   ['B_1'] = {
     name = 'B_1',
-    round_power = 1400,
+    round_power = 5600,
     number_of_waves = 1,
     normal_enemies = {'seeker'},
     special_enemies = {},
     weapons = {
-      ['machine_gun'] = {
+      ['sword'] = {
         level = 1,
-        items = {{procs = {'distance_multiplier'}}},
+        items = {},
       }
     }
   },
   ['B_2'] = {
     name = 'B_2',
-    round_power = 2500,
+    round_power = 10000,
     number_of_waves = 2,
     normal_enemies = {'seeker'},
     special_seeker_types = {['touch'] = 4},
@@ -138,15 +138,15 @@ STAGE_DATA = {
       [2] = {['big_touch'] = 1},
     },
     weapons = {
-      ['machine_gun'] = {
+      ['sword'] = {
         level = 1,
-        items = {{procs = {'distance_multiplier'}}},
+        items = {},
       }
     }
   },
   ['B_3'] = {
     name = 'B_3',
-    round_power = 3000,
+    round_power = 12000,
     number_of_waves = 2,
     normal_enemies = {'seeker'},
     special_seeker_types = {['touch'] = 4},
@@ -159,15 +159,15 @@ STAGE_DATA = {
       [2] = {['big_touch'] = 2},
     },
     weapons = {
-      ['machine_gun'] = {
+      ['sword'] = {
         level = 1,
-        items = {{procs = {'distance_multiplier'}}},
+        items = {},
       }
     }
   },
   ['B_4'] = {
     name = 'B_4',
-    round_power = 3500,
+    round_power = 14000,
     number_of_waves = 3,
     normal_enemies = {'seeker'},
     special_seeker_types = {['touch'] = 4},
@@ -182,43 +182,43 @@ STAGE_DATA = {
       [3] = {['big_touch'] = 3},
     },
     weapons = {
-      ['machine_gun'] = {
+      ['sword'] = {
         level = 1,
-        items = {{procs = {'distance_multiplier'}}},
+        items = {},
       }
     }
   },
   ['B_5'] = {
     name = 'B_5',
-    round_power = 1000,
+    round_power = 4000,
     boss = 'snake_boss',
     number_of_waves = 1,
     normal_enemies = {'seeker'},
     special_enemies = {},
     weapons = {
-      ['machine_gun'] = {
+      ['sword'] = {
         level = 1,
-        items = {{procs = {'distance_multiplier'}}},
+        items = {},
       }
     }
   },
   ['C_1'] = {
     name = 'C_1',
-    round_power = 1600,
+    round_power = 6400,
     number_of_waves = 1,
     wave_duration = 13,
     normal_enemies = {'swarmer'},
     special_enemies = {},
     weapons = {
-      ['machine_gun'] = {
+      ['sword'] = {
         level = 1,
-        items = {{procs = {'distance_multiplier'}}},
+        items = {},
       }
     }
   },
   ['C_2'] = {
     name = 'C_2',
-    round_power = 3200,
+    round_power = 12800,
     number_of_waves = 2,
     normal_enemies = {'swarmer'},
     special_swarmer_types = {['touch'] = 8},
@@ -231,15 +231,15 @@ STAGE_DATA = {
       [2] = {['net'] = 6},
     },
     weapons = {
-      ['machine_gun'] = {
+      ['sword'] = {
         level = 1,
-        items = {{procs = {'distance_multiplier'}}},
+        items = {},
       }
     }
   },
   ['C_3'] = {
     name = 'C_3',
-    round_power = 4200,
+    round_power = 16800,
     number_of_waves = 2,
     normal_enemies = {'swarmer'},
     special_swarmer_types = {['touch'] = 8},
@@ -252,15 +252,15 @@ STAGE_DATA = {
       [2] = {['net'] = 8},
     },
     weapons = {
-      ['machine_gun'] = {
+      ['sword'] = {
         level = 1,
-        items = {{procs = {'distance_multiplier'}}},
+        items = {},
       }
     }
   },
   ['C_4'] = {
     name = 'C_4',
-    round_power = 4200,
+    round_power = 16800,
     number_of_waves = 3,
     normal_enemies = {'swarmer'},
     special_swarmer_types = {['touch'] = 8},
@@ -275,20 +275,20 @@ STAGE_DATA = {
       [3] = {['net'] = 8},
     },
     weapons = {
-      ['machine_gun'] = {
+      ['sword'] = {
         level = 1,
-        items = {{procs = {'distance_multiplier'}}},
+        items = {},
       }
     }
   },
   ['C_5'] = {
     name = 'C_5',
-    round_power = 1000,
+    round_power = 4000,
     boss = 'dragon',
     weapons = {
-      ['machine_gun'] = {
+      ['sword'] = {
         level = 1,
-        items = {{procs = {'distance_multiplier'}}},
+        items = {},
       }
     }
   },

@@ -86,6 +86,21 @@ weapon_definitions = {
       attack_range = 60,
       area_radius = 30
     }
+  },
+
+  sword = {
+    name = 'sword',
+    display_name = 'Sword',
+    cost = 3,
+    tier = 1,
+    icon = 'sword',
+    description = 'Click to swing',
+    base_stats = {
+      attack_cooldown = 0.85,
+      cast_time = 0,
+      damage = 5,
+      attack_range = 50,
+    }
   }
 }
 

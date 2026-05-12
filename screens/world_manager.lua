@@ -108,7 +108,7 @@ self:arena_on_enter()
   else
     -- Default starting weapon if no weapons purchased yet
     self.units = {
-      {character = 'machine_gun', level = 1, items = {}},
+      {character = 'sword', level = 1, items = {}},
     }
   end
 

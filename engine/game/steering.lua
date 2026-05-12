@@ -198,17 +198,23 @@ end
 function Physics:steering_separate(rs, class_avoid_list, weight, comparator)
   self.separating = true
   local fx, fy = 0, 0
-  local objects = table.flatten(table.foreachn(class_avoid_list, function(v) return self.group:get_objects_by_class(v) end), true)
+  local threshold_sq = (2*rs)*(2*rs)
+  local sx, sy, self_id = self.x, self.y, self.id
 
-  for _, object in ipairs(objects) do
-    if object.id ~= self.id and math.distance(object.x, object.y, self.x, self.y) < 2*rs then
-      comparator = comparator or function() return true end
-      if comparator and comparator(object) then
-        local tx, ty = self.x - object.x, self.y - object.y
-        local nx, ny = math.normalize(tx, ty)
-        local l = math.length(nx, ny)
-        fx = fx + rs*(nx/l)
-        fy = fy + rs*(ny/l)
+  for _, class in ipairs(class_avoid_list) do
+    local list = self.group.objects.by_class[class]
+    if list then
+      for _, object in ipairs(list) do
+        if object.id ~= self_id then
+          local tx, ty = sx - object.x, sy - object.y
+          if tx*tx + ty*ty < threshold_sq then
+            if not comparator or comparator(object) then
+              local nx, ny = math.normalize(tx, ty)
+              fx = fx + rs*nx
+              fy = fy + rs*ny
+            end
+          end
+        end
       end
     end
   end

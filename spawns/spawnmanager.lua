@@ -787,16 +787,7 @@ function SpawnManager:update(dt)
     end
     -- Wait for wave to clear before starting next wave
     if self.state == 'waiting_for_wave_clear' then
-        local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
-        local all_dead = true
-        for _, e in ipairs(enemies) do
-            if e and not e.dead then
-                all_dead = false
-                break
-            end
-        end
-
-        if all_dead then
+        if current_power_onscreen <= 0 then
             if self.current_wave >= self.total_waves then
                 self:change_state('finished')
                 self.arena:level_clear()
@@ -824,22 +815,13 @@ function SpawnManager:update(dt)
           self.arena:level_clear()
         end
       else
-        local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
-        local all_dead = true
-        for _, e in ipairs(enemies) do
-          if e and not e.dead then
-            all_dead = false
-            break
-          end
-        end
-        if all_dead then
+        if current_power_onscreen <= 0 then
           if self.current_wave == self.total_waves then
             self:change_state('finished')
             self.arena:level_clear()
           else
             self:start_wave(self.current_wave + 1)
           end
-          
         end
       end
     end
@@ -1044,30 +1026,10 @@ function SpawnManager:process_scheduled_spawns(dt)
   
   -- If all groups are spawned, check if we should complete the subwave
   if self.all_groups_spawned then
-    local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
-    local all_dead = true
-    for _, e in ipairs(enemies) do
-      if e and not e.dead then
-        all_dead = false
-        break
-      end
-    end
-    
-    local power_threshold = 0
-    local should_complete = all_dead or (self.all_groups_spawned and current_power_onscreen and current_power_onscreen <= power_threshold)
-    should_complete = should_complete and time_since_start > 3 --wait for 3 seconds before completing
-    
+    local should_complete = current_power_onscreen <= 0 and time_since_start > 3
     if should_complete then
-      -- Either all enemies dead or power is below 20%, complete wave
       if SpawnManager.debug_enabled then
-          if all_dead then
-              print(string.format("[SpawnManager] All enemies dead, completing wave %d",
-                  self.current_wave))
-          else
-              print(string.format("[SpawnManager] Remaining power below 20%% (%.0f/%.0f), completing wave %d",
-                  current_power_onscreen or 0, self.current_wave_power_target,
-                  self.current_wave))
-          end
+        print(string.format("[SpawnManager] All enemies dead, completing wave %d", self.current_wave))
       end
       self:complete_current_wave()
     end
@@ -1099,16 +1061,7 @@ function SpawnManager:process_scheduled_spawns(dt)
     end
   else
     -- Not time to spawn yet, but check if we should accelerate
-    local enemies = main.current.main:get_objects_by_classes(main.current.enemies)
-    local all_dead = true
-    for _, e in ipairs(enemies) do
-      if e and not e.dead then
-        all_dead = false
-        break
-      end
-    end
-    
-    if all_dead then
+    if current_power_onscreen <= 0 then
       -- All enemies dead, accelerate next spawn
       local time_to_next = self.next_group_spawn_time - time_since_start
       if time_to_next > 1 then
@@ -1527,6 +1480,36 @@ function Spawn_Enemy(arena, type, location, target_location)
 
   current_power_onscreen = current_power_onscreen + enemy_to_round_power[type]
   total_power_spawned = total_power_spawned + enemy_to_round_power[type]
+
+  -- Ghost spawn: only if another unit is already at this location
+  if enemy.fixture and main.current then
+    local check = Circle(location.x, location.y, 8)
+    local nearby = arena.main:get_objects_in_shape(check, main.current.enemies)
+    local blocked = false
+    for _, e in ipairs(nearby) do
+      if e ~= enemy then blocked = true; break end
+    end
+    if blocked then
+      enemy.fixture:setSensor(true)
+      local angle = random:float(0, 2 * math.pi)
+      enemy.body:setLinearVelocity(math.cos(angle) * 40, math.sin(angle) * 40)
+      local function check_clear()
+        if enemy.dead or not enemy.fixture then return end
+        local c = Circle(enemy.x, enemy.y, 6)
+        local still_near = arena.main:get_objects_in_shape(c, main.current.enemies)
+        local still_blocked = false
+        for _, e in ipairs(still_near) do
+          if e ~= enemy then still_blocked = true; break end
+        end
+        if still_blocked then
+          enemy.t:after(0.1, check_clear, 'ghost_check')
+        else
+          enemy.fixture:setSensor(false)
+        end
+      end
+      enemy.t:after(0.1, check_clear, 'ghost_check')
+    end
+  end
 
   Spawn_Enemy_Sound(arena, false)
   Spawn_Enemy_Effect(arena, enemy)
