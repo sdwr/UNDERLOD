@@ -18,16 +18,19 @@ DEFAULT_WAVE_POWER_SPLITS = {
 }
 
 LIST_OF_STAGES = {
+  'A_0',
   'A_1',
   'A_2',
   'A_3',
   'A_4',
   'A_5',
+  'B_0',
   'B_1',
   'B_2',
   'B_3',
   'B_4',
   'B_5',
+  'C_0',
   'C_1',
   'C_2',
   'C_3',
@@ -36,6 +39,36 @@ LIST_OF_STAGES = {
 }
 
 STAGE_DATA = {
+  ['A_0'] = {
+    name = 'A_0',
+    sequence = {'A_1', 'A_2', 'A_3', 'A_4', 'A_5'},
+    weapons = {
+      ['sword'] = {
+        level = 1,
+        items = {},
+      }
+    }
+  },
+  ['B_0'] = {
+    name = 'B_0',
+    sequence = {'B_1', 'B_2', 'B_3', 'B_4', 'B_5'},
+    weapons = {
+      ['sword'] = {
+        level = 1,
+        items = {},
+      }
+    }
+  },
+  ['C_0'] = {
+    name = 'C_0',
+    sequence = {'C_1', 'C_2', 'C_3', 'C_4', 'C_5'},
+    weapons = {
+      ['sword'] = {
+        level = 1,
+        items = {},
+      }
+    }
+  },
   ['A_1'] = {
     name = 'A_1',
     round_power = 4800,

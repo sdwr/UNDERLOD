@@ -11,6 +11,10 @@ function WorldManager:init(name)
   self.current_arena = nil
   self.next_arena = nil
   self.transitioning = false
+
+  -- Sequence stage state (A_0/B_0/C_0 chain through 1-5)
+  self.sequence_stages = nil
+  self.sequence_index = 1
   
   -- Camera control
   self.camera_target_x = 0
@@ -31,50 +35,19 @@ function WorldManager:on_enter(from)
   self:create_class_lists()
 self:arena_on_enter()
 
-  -- Load stage data and weapons if we have a selected stage
-  local stage_data = nil
+  -- If the selected stage is a sequence stage (A_0/B_0/C_0), capture its substage list
   if USER_STATS.selected_stage then
-    stage_data = Get_Stage_Data(USER_STATS.selected_stage)
-    if stage_data then
-      -- Get number of waves from stage data
-      local num_waves = stage_data.number_of_waves or 1
-
-      -- Calculate power distribution across waves (100% of round power)
-      local total_required = stage_data.round_power
-      local waves_power = {}
-
-      -- Use default wave power splits if available
-      local power_splits = stage_data.wave_power_splits or DEFAULT_WAVE_POWER_SPLITS[num_waves]
-      if power_splits then
-        for i = 1, num_waves do
-          waves_power[i] = total_required * power_splits[i]
-        end
-      else
-        -- Equal distribution as fallback
-        for i = 1, num_waves do
-          waves_power[i] = total_required / num_waves
-        end
-      end
-
-      -- Create level list entry for this stage
-      self.level_list = {
-        [1] = {
-          level = 1,
-          boss = stage_data.boss,
-          waves_power = waves_power,  -- Multiple segments based on waves
-          round_power = stage_data.round_power,
-          color = grey[0],
-          environmental_hazards = {}
-        }
-      }
+    local root_data = Get_Stage_Data(USER_STATS.selected_stage)
+    if root_data and root_data.sequence then
+      self.sequence_stages = root_data.sequence
+      self.sequence_index = 1
     else
-      -- Fallback if no stage data
-      self.level_list = Build_Level_List(NUMBER_OF_ROUNDS)
+      self.sequence_stages = nil
+      self.sequence_index = 1
     end
-  else
-    -- No stage selected, use default level generation
-    self.level_list = Build_Level_List(NUMBER_OF_ROUNDS)
   end
+
+  local stage_data = self:build_level_list_for_active_stage()
 
   -- Get weapons from stage data or use defaults
   if stage_data and stage_data.weapons then
@@ -188,11 +161,54 @@ function WorldManager:create_class_lists()
 
 end
 
+function WorldManager:get_active_stage_id()
+  if self.sequence_stages and self.sequence_stages[self.sequence_index] then
+    return self.sequence_stages[self.sequence_index]
+  end
+  return USER_STATS.selected_stage
+end
+
+function WorldManager:build_level_list_for_active_stage()
+  local active_id = self:get_active_stage_id()
+  local stage_data = active_id and Get_Stage_Data(active_id) or nil
+  if stage_data and stage_data.round_power then
+    local num_waves = stage_data.number_of_waves or 1
+    local total_required = stage_data.round_power
+    local waves_power = {}
+    local power_splits = stage_data.wave_power_splits or DEFAULT_WAVE_POWER_SPLITS[num_waves]
+    if power_splits then
+      for i = 1, num_waves do
+        waves_power[i] = total_required * power_splits[i]
+      end
+    else
+      for i = 1, num_waves do
+        waves_power[i] = total_required / num_waves
+      end
+    end
+    self.level_list = {
+      [1] = {
+        level = 1,
+        boss = stage_data.boss,
+        waves_power = waves_power,
+        round_power = stage_data.round_power,
+        color = grey[0],
+        environmental_hazards = {}
+      }
+    }
+  elseif stage_data then
+    -- Sequence root or other data without round_power; fall back
+    self.level_list = Build_Level_List(NUMBER_OF_ROUNDS)
+  else
+    self.level_list = Build_Level_List(NUMBER_OF_ROUNDS)
+  end
+  return stage_data
+end
+
 function WorldManager:create_arena(level, offset_x)
   local arena_class = CombatLevel
 
-  -- Get stage data once and pass it to arena
-  local stage_data = USER_STATS.selected_stage and Get_Stage_Data(USER_STATS.selected_stage) or nil
+  local active_id = self:get_active_stage_id()
+  local stage_data = active_id and Get_Stage_Data(active_id) or nil
 
   local arena = arena_class{
     level = level,
@@ -200,7 +216,7 @@ function WorldManager:create_arena(level, offset_x)
     offset_x = offset_x,
     offset_y = 0,
     level_list = self.level_list,
-    stage_id = USER_STATS.selected_stage,
+    stage_id = active_id,
     difficulty = USER_STATS.difficulty,
     stage_data = stage_data,  -- Pass stage data directly
   }
@@ -609,6 +625,17 @@ function WorldManager:set_perks(perks)
 end
 
 function WorldManager:transition_to_next_level_buy_screen(delay)
+
+  -- Sequence stage advancement: if more substages remain, chain into the next one
+  -- instead of returning to level select.
+  if self.sequence_stages and self.sequence_index < #self.sequence_stages then
+    self.sequence_index = self.sequence_index + 1
+    self:build_level_list_for_active_stage()
+    self.t:after(delay or 1.5, function()
+      self:advance_to_next_level()
+    end)
+    return
+  end
 
   if self.current_arena then
     self.current_arena.transitioning = true

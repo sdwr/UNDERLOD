@@ -41,19 +41,51 @@ function PlayerCursor:init(args)
   if self.fixture then
     self.fixture:setSensor(true)
   end
+
+  self.is_dashing = false
+  self.dash_cooldown = 0
+  self.dash_timer = 0
+  self.dash_duration = 0
+  self.dash_from_x = 0
+  self.dash_from_y = 0
+  self.dash_to_x = 0
+  self.dash_to_y = 0
+  self.dash_hit_enemies = {}
+  self.right_was_down = false
+  self.dash_trail = {}
 end
 
 function PlayerCursor:update(dt)
   -- Don't call parent update since we override everything
   self:update_game_object(dt)
-  
+
   -- Update pulse animation for visibility
   self.pulse_timer = self.pulse_timer + dt * 3
   self.scale = 1.0 + 0.2 * math.sin(self.pulse_timer)
-  
-  self:follow_mouse()
-  -- self:follow_wasd()
-  -- self:enforce_orb_boundary()
+
+  if self.dash_cooldown > 0 then
+    self.dash_cooldown = self.dash_cooldown - dt
+  end
+
+  local right_down = love.mouse.isDown(2)
+  local right_clicked = right_down and not self.right_was_down
+  self.right_was_down = right_down
+
+  if right_clicked and not self.is_dashing and self.dash_cooldown <= 0 then
+    self:start_dash()
+  end
+
+  if self.is_dashing then
+    self:update_dash(dt)
+  else
+    self:follow_mouse()
+  end
+
+  for i = #self.dash_trail, 1, -1 do
+    local node = self.dash_trail[i]
+    node.life = node.life - dt
+    if node.life <= 0 then table.remove(self.dash_trail, i) end
+  end
 
   -- Update attack sensor position
   if self.attack_sensor then
@@ -61,22 +93,112 @@ function PlayerCursor:update(dt)
   end
 end
 
+PLAYER_CURSOR_MAX_SPEED = 200
+PLAYER_CURSOR_ARRIVAL_RADIUS = 60
+PLAYER_DASH_SPEED = 2000
+PLAYER_DASH_MAX_RANGE = 250
+PLAYER_DASH_COOLDOWN = 0.8
+PLAYER_DASH_PATH_RADIUS = 18
+PLAYER_DASH_END_RADIUS = 40
+PLAYER_DASH_PATH_DAMAGE = 12
+PLAYER_DASH_END_DAMAGE = 25
+
 function PlayerCursor:follow_mouse()
+  local dt = love.timer.getDelta()
+  local mouse_x, mouse_y = love.mouse.getPosition()
+  mouse_x = mouse_x / sx
+  mouse_y = mouse_y / sx
+
+  local dx = mouse_x - self.x
+  local dy = mouse_y - self.y
+  local dist = math.sqrt(dx*dx + dy*dy)
+
+  if dist > 0.5 then
+    local speed = PLAYER_CURSOR_MAX_SPEED
+    if dist < PLAYER_CURSOR_ARRIVAL_RADIUS then
+      speed = speed * (dist / PLAYER_CURSOR_ARRIVAL_RADIUS)
+    end
+    local step = speed * dt
+    if step > dist then step = dist end
+    local nx, ny = dx / dist, dy / dist
+    self.x = self.x + nx * step
+    self.y = self.y + ny * step
+
+    self.smooth_vx = (self.smooth_vx or 0) * 0.82 + (nx * step) * 0.18
+    self.smooth_vy = (self.smooth_vy or 0) * 0.82 + (ny * step) * 0.18
+    if self.smooth_vx*self.smooth_vx + self.smooth_vy*self.smooth_vy > 0.25 then
+      self.movement_angle = math.atan2(self.smooth_vy, self.smooth_vx)
+    end
+  end
+
+  self.body:setPosition(self.x, self.y)
+end
+
+function PlayerCursor:start_dash()
   local mouse_x, mouse_y = love.mouse.getPosition()
   mouse_x = mouse_x / sx
   mouse_y = mouse_y / sx
   local dx = mouse_x - self.x
   local dy = mouse_y - self.y
+  local dist = math.sqrt(dx*dx + dy*dy)
+  if dist < 0.5 then return end
 
-  self.smooth_vx = (self.smooth_vx or 0) * 0.82 + dx * 0.18
-  self.smooth_vy = (self.smooth_vy or 0) * 0.82 + dy * 0.18
-  if self.smooth_vx*self.smooth_vx + self.smooth_vy*self.smooth_vy > 0.25 then
-    self.movement_angle = math.atan2(self.smooth_vy, self.smooth_vx)
-  end
+  local range = math.min(dist, PLAYER_DASH_MAX_RANGE)
+  local nx, ny = dx/dist, dy/dist
+  self.dash_from_x = self.x
+  self.dash_from_y = self.y
+  self.dash_to_x = self.x + nx * range
+  self.dash_to_y = self.y + ny * range
+  self.dash_duration = range / PLAYER_DASH_SPEED
+  self.dash_timer = 0
+  self.dash_hit_enemies = {}
+  self.is_dashing = true
+  self.invulnerable = true
+  self.movement_angle = math.atan2(ny, nx)
+end
 
-  self.x = mouse_x
-  self.y = mouse_y
+function PlayerCursor:update_dash(dt)
+  self.dash_timer = self.dash_timer + dt
+  local t = math.min(1, self.dash_timer / self.dash_duration)
+  self.x = self.dash_from_x + (self.dash_to_x - self.dash_from_x) * t
+  self.y = self.dash_from_y + (self.dash_to_y - self.dash_from_y) * t
   self.body:setPosition(self.x, self.y)
+
+  table.insert(self.dash_trail, {x = self.x, y = self.y, life = 0.25, max_life = 0.25})
+
+  self:apply_dash_path_damage()
+
+  if t >= 1 then
+    self:end_dash()
+  end
+end
+
+function PlayerCursor:apply_dash_path_damage()
+  if not main.current then return end
+  local sensor = Circle(self.x, self.y, PLAYER_DASH_PATH_RADIUS)
+  local enemies = main.current.main:get_objects_in_shape(sensor, main.current.enemies)
+  for _, enemy in ipairs(enemies) do
+    if enemy and not enemy.dead and not self.dash_hit_enemies[enemy] then
+      self.dash_hit_enemies[enemy] = true
+      enemy:hit(PLAYER_DASH_PATH_DAMAGE, self, nil, true)
+    end
+  end
+end
+
+function PlayerCursor:end_dash()
+  self.is_dashing = false
+  self.dash_cooldown = PLAYER_DASH_COOLDOWN
+  self.invulnerable = false
+
+  if main.current then
+    local sensor = Circle(self.x, self.y, PLAYER_DASH_END_RADIUS)
+    local enemies = main.current.main:get_objects_in_shape(sensor, main.current.enemies)
+    for _, enemy in ipairs(enemies) do
+      if enemy and not enemy.dead then
+        enemy:hit(PLAYER_DASH_END_DAMAGE, self, nil, true)
+      end
+    end
+  end
 end
 
 function PlayerCursor:enforce_orb_boundary()
@@ -108,6 +230,13 @@ function PlayerCursor:enforce_orb_boundary()
 end
 
 function PlayerCursor:draw()
+  for _, node in ipairs(self.dash_trail) do
+    local a = node.life / node.max_life
+    local c = white[0]:clone()
+    c.a = a * 0.7
+    graphics.circle(node.x, node.y, PLAYER_DASH_PATH_RADIUS * a, c)
+  end
+
   -- Draw a small white circle with glow effect
   graphics.push(self.x, self.y, 0, self.scale, self.scale)
   
