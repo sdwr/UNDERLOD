@@ -453,7 +453,7 @@ function WorldManager:complete_transition()
     
     -- self.current_arena:create_walls()
     self.current_arena:create_door()
-    self.current_arena.spawn_manager:spawn_waves_with_timing()
+    self.current_arena.spawn_manager:change_state('entry_delay')
     
     -- Resume enemy updates and activate enemies
     self.current_arena.enemies_paused = false
