@@ -15,6 +15,8 @@ function WorldManager:init(name)
   -- Sequence stage state (A_0/B_0/C_0 chain through 1-5)
   self.sequence_stages = nil
   self.sequence_index = 1
+  self.weapon_level_bonus = 0
+  self.bonus_procs = {}
   
   -- Camera control
   self.camera_target_x = 0
@@ -41,6 +43,9 @@ self:arena_on_enter()
     if root_data and root_data.sequence then
       self.sequence_stages = root_data.sequence
       self.sequence_index = 1
+      -- Fresh sequence run: clear accumulated bonuses
+      self.weapon_level_bonus = 0
+      self.bonus_procs = {}
     else
       self.sequence_stages = nil
       self.sequence_index = 1
@@ -51,15 +56,7 @@ self:arena_on_enter()
 
   -- Get weapons from stage data or use defaults
   if stage_data and stage_data.weapons then
-    -- Use weapons from stage data
-    self.units = {}
-    for weapon_name, weapon_config in pairs(stage_data.weapons) do
-      table.insert(self.units, {
-        character = weapon_name,
-        level = weapon_config.level or 1,
-        items = weapon_config.items or {}  -- Items are already in the correct format
-      })
-    end
+    self:rebuild_units_from_stage(stage_data)
   elseif self.weapons and #self.weapons > 0 then
     -- Fallback to existing weapon system
     self.units = {}
@@ -202,6 +199,69 @@ function WorldManager:build_level_list_for_active_stage()
     self.level_list = Build_Level_List(NUMBER_OF_ROUNDS)
   end
   return stage_data
+end
+
+function WorldManager:open_upgrade_picker()
+  if not self.current_arena then
+    self:proceed_to_next_substage()
+    return
+  end
+  local existing_perk_names = {}
+  for _, p in ipairs(self.perks or {}) do existing_perk_names[p.name] = true end
+  UpgradeOverlay{
+    group = self.current_arena.ui,
+    world_manager = self,
+    existing_perk_names = existing_perk_names,
+    weapon_level_bonus = self.weapon_level_bonus or 0,
+  }
+end
+
+function WorldManager:apply_upgrade_choice(choice)
+  if not choice then return end
+  if choice.kind == 'perk' and choice.perk_key then
+    local new_perk = Create_Perk(choice.perk_key, 1)
+    if new_perk then
+      table.insert(self.perks, new_perk)
+      if self.perks_panel then self.perks_panel:set_perks(self.perks) end
+    end
+  elseif choice.kind == 'weapon_level' then
+    self.weapon_level_bonus = (self.weapon_level_bonus or 0) + 1
+  elseif choice.kind == 'proc' and choice.proc_name then
+    table.insert(self.bonus_procs, choice.proc_name)
+  end
+end
+
+function WorldManager:proceed_to_next_substage()
+  if not (self.sequence_stages and self.sequence_index < #self.sequence_stages) then return end
+  self.sequence_index = self.sequence_index + 1
+  local stage_data = self:build_level_list_for_active_stage()
+  self:rebuild_units_from_stage(stage_data)
+  self:advance_to_next_level()
+end
+
+function WorldManager:rebuild_units_from_stage(stage_data)
+  self.units = {}
+  if not stage_data or not stage_data.weapons then return end
+  for weapon_name, weapon_config in pairs(stage_data.weapons) do
+    local items = {}
+    if weapon_config.items then
+      for _, it in ipairs(weapon_config.items) do
+        table.insert(items, it)
+      end
+    end
+    if self.bonus_procs and #self.bonus_procs > 0 then
+      local procs_copy = {}
+      for _, p in ipairs(self.bonus_procs) do table.insert(procs_copy, p) end
+      table.insert(items, {procs = procs_copy})
+    end
+    local effective_level = (weapon_config.level or 1) + (self.weapon_level_bonus or 0)
+    if effective_level > WEAPON_MAX_LEVEL then effective_level = WEAPON_MAX_LEVEL end
+    table.insert(self.units, {
+      character = weapon_name,
+      level = effective_level,
+      items = items,
+    })
+  end
 end
 
 function WorldManager:create_arena(level, offset_x)
@@ -626,13 +686,11 @@ end
 
 function WorldManager:transition_to_next_level_buy_screen(delay)
 
-  -- Sequence stage advancement: if more substages remain, chain into the next one
-  -- instead of returning to level select.
+  -- Sequence stage advancement: if more substages remain, show upgrade picker
+  -- then chain into the next substage.
   if self.sequence_stages and self.sequence_index < #self.sequence_stages then
-    self.sequence_index = self.sequence_index + 1
-    self:build_level_list_for_active_stage()
     self.t:after(delay or 1.5, function()
-      self:advance_to_next_level()
+      self:open_upgrade_picker()
     end)
     return
   end
