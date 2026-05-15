@@ -58,8 +58,10 @@ function LevelSelectScreen:on_enter(from, opts)
   -- Load completion data
   system.load_stats()
   if not USER_STATS.stage_progress then USER_STATS.stage_progress = {} end
-  if not USER_STATS.stage_progress['A_1'] then USER_STATS.stage_progress['A_1'] = {} end
-  USER_STATS.stage_progress['A_1'].unlocked = true
+  for _, default_unlock in ipairs({'A_0', 'B_0', 'C_0', 'A_1'}) do
+    if not USER_STATS.stage_progress[default_unlock] then USER_STATS.stage_progress[default_unlock] = {} end
+    USER_STATS.stage_progress[default_unlock].unlocked = true
+  end
   system.save_stats()
 
   -- Create stage grid (5 per row)
@@ -141,7 +143,7 @@ function LevelSelectScreen:create_stage_grid()
   -- Layout constants
   local BUTTON_SIZE = 35
   local BUTTON_SPACING = 10
-  local BUTTONS_PER_ROW = 5
+  local BUTTONS_PER_ROW = 6
   -- Position grid on right side of screen
   local START_X = gw/2 + 20  -- Right side positioning
   local START_Y = 60
@@ -157,7 +159,7 @@ function LevelSelectScreen:create_stage_grid()
 
   -- Create buttons for stages
   local index = 0
-  for i = 1, 15 do  -- Show up to 15 stages
+  for i = 1, 18 do  -- Show up to 18 stages (3 rows of 6: _0 through _5)
     local stage_info = stages[i]
     if stage_info then
       local row = math.floor(index / BUTTONS_PER_ROW)

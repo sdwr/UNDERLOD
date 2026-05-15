@@ -98,7 +98,7 @@ weapon_definitions = {
     base_stats = {
       attack_cooldown = 0.85,
       cast_time = 0,
-      damage = 5,
+      damage = 10,
       attack_range = 50,
     }
   }
