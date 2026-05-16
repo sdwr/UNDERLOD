@@ -30,7 +30,9 @@ attack_cooldowns = {
 
 troop_attack_cooldowns = {
   ['archer'] = attack_cooldowns['fast'],
-  ['laser'] = attack_cooldowns['fast'],
+  -- Laser is a global-range piercing beam, so it's paced out with a 'slow'
+  -- cooldown to make each shot a deliberate choice instead of spam.
+  ['laser'] = attack_cooldowns['slow'],
   ['swordsman'] = attack_cooldowns['very-fast'],
   -- Sword has +50% cooldown vs 'fast' to compensate for the AoE cone hit.
   ['sword'] = attack_cooldowns['fast'] * 1.5,
@@ -132,8 +134,10 @@ enemy_cast_times = {
 TROOP_RANGE = 500
 TROOP_SWORDSMAN_RANGE = 80
 TROOP_SWORD_WEAPON_RANGE = 55
--- Shotgun: shorter than archer (500); rewards positioning to land more pellets.
-TROOP_SHOTGUN_RANGE = 250
+-- Shotgun: much shorter than archer (500). Pellets actually fly to
+-- TROOP_SHOTGUN_RANGE * 1.3 before disappearing, so there's a small
+-- ribbon of "stray hit" range past the engage distance.
+TROOP_SHOTGUN_RANGE = 100
 
 REGULAR_ENEMY_HP = 45
 REGULAR_ENEMY_DAMAGE = 15
@@ -543,10 +547,11 @@ unit_stat_multipliers = {
     -- (~7.9 vs ~11.2); the cone hitting 2+ enemies is the real upside,
     -- and the unit stays tankier than archer to justify the melee commit.
     ['sword'] = { hp = 1.4, dmg = 1.3, def = 1.2, mvspd = 1.05 },
-    -- Shotgun: 5-pellet spread, ~half archer range. Dmg multi is per pellet,
-    -- so max single-target burst at point-blank is 5 * 0.4 * base ≈ 22, with
-    -- most pellets missing past medium range. Slightly tankier than archer.
-    ['shotgun'] = { hp = 1.2, dmg = 0.4, def = 1, mvspd = 1.05 },
+    -- Shotgun: 5-pellet random-spread, very short range (100). Dmg multi is
+    -- per pellet, so max single-target burst at point-blank is 5 * 0.3 * base
+    -- ≈ 16.5 (≈ archer per-shot), with most pellets missing past mid range.
+    -- Tankier than archer to make the close engagement viable.
+    ['shotgun'] = { hp = 1.2, dmg = 0.3, def = 1, mvspd = 1.05 },
 
     ['none'] = { hp = 1, dmg = 1, def = 1, mvspd = 1 },
 }
