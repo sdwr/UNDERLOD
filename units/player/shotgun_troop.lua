@@ -5,7 +5,8 @@
 Shotgun_Troop = Troop:extend()
 
 SHOTGUN_PELLET_COUNT = 5
-SHOTGUN_HALF_SPREAD = math.pi / 8 -- 22.5°, ~45° total cone
+-- Tightened from math.pi/8 -> math.pi/16 (~11.25° half, ~22.5° total cone).
+SHOTGUN_HALF_SPREAD = math.pi / 16
 
 function Shotgun_Troop:init(data)
   self.base_attack_range = TROOP_SHOTGUN_RANGE or 250

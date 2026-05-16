@@ -32,7 +32,7 @@ Try_Cancel_Cast = function(self)
     self:cancel()
   end
   if self.cancel_on_range then
-    if 
+    if
       not (self.unit and self.unit.target)
       or
       Get_Distance_To_Target(self.unit) > self.cancel_range
@@ -40,9 +40,20 @@ Try_Cancel_Cast = function(self)
       self:cancel()
     end
   end
-  if self.cancel_no_target and 
+  if self.cancel_no_target and
     (not self.unit or not self.unit:my_target() or self.unit:my_target().dead == true) then
     self:cancel()
+  end
+
+  -- Kiting: if this spell put the unit into a channel (spell_duration > 0)
+  -- but something has since pulled the unit out of the channeling state
+  -- (e.g. Unit:cancel_cast from a move command), end the spell so the active
+  -- effect (laser beam, etc.) stops attacking too. Use die() instead of
+  -- cancel() because cancel_cast has already run and set the cooldown / state.
+  if self.spell_duration and self.spell_duration > 0
+    and self.unit and not self.unit.dead
+    and self.unit.state ~= unit_states['channeling'] then
+    self:die()
   end
 end
 
