@@ -36,7 +36,9 @@ troop_attack_cooldowns = {
   ['swordsman'] = attack_cooldowns['very-fast'],
   -- Sword has +50% cooldown vs 'fast' to compensate for the AoE cone hit.
   ['sword'] = attack_cooldowns['fast'] * 1.5,
-  ['shotgun'] = attack_cooldowns['fast'],
+  -- Shotgun fires 5 pellets per swing, so the cooldown is one step slower
+  -- ('medium' = 1.5s) to keep its burst DPS in line with the other ranged units.
+  ['shotgun'] = attack_cooldowns['medium'],
   ['default'] = attack_cooldowns['fast']
 }
 -- Enemy type to cooldown mapping (replaces magic numbers)
