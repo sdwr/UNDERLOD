@@ -127,8 +127,9 @@ end
 
 function Archer_Troop:set_character()
   self.attack_sensor = Circle(self.x, self.y, self.base_attack_range)
-  
-  self.infinite_range = true
+
+  -- Archer has a finite max range; only target enemies within attack_range.
+  self.infinite_range = false
 
   self:set_state_functions()
   -- Cast/cooldown values are set in calculate_stats() first run

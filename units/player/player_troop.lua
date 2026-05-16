@@ -146,8 +146,9 @@ function Troop:update(dt)
   -- This is one big if/elseif block. Only ONE of these can run per frame,
   -- which prevents state flickering. The order is based on priority.
 
-  if self.state == unit_states['normal'] or self.state == unit_states['following'] 
-  or self.state == unit_states['idle'] then
+  -- Don't run AI logic while following (kiting): the player commanded movement,
+  -- so units should not auto-acquire targets or start new casts until they stop.
+  if self.state == unit_states['normal'] or self.state == unit_states['idle'] then
     self:update_ai_logic()
   end
 
@@ -262,6 +263,16 @@ function Troop:update_ai_logic()
     self:clear_my_target()
   end
 
+  -- For units with a hard max range (no infinite_range), drop the auto-acquired
+  -- target if it has drifted outside attack range so the unit stops chasing /
+  -- aiming at unreachable enemies. Assigned (player-commanded) targets are kept.
+  if regular_target and not self.infinite_range then
+    if self:distance_to_object(regular_target) > (self.attack_range or 0) then
+      self:clear_my_target()
+      regular_target = nil
+    end
+  end
+
   local cast_target = nil
   if self.assigned_target then
     cast_target = self.assigned_target
@@ -277,7 +288,13 @@ function Troop:update_ai_logic()
       --find target if not already found
       -- pick random in attack range
       -- or closest in aggro range
-      self:set_target(Helper.Target:get_close_enemy(self))
+      local candidate = Helper.Target:get_close_enemy(self)
+      if candidate and not self.infinite_range then
+        if self:distance_to_object(candidate) > (self.attack_range or 0) then
+          candidate = nil
+        end
+      end
+      self:set_target(candidate)
       cast_target = self.target
   end
 
@@ -350,7 +367,7 @@ function Troop:draw()
     self:draw_channeling()
   end
 
-  if not Helper.Unit:cast_off_cooldown(self) then
+  if self.state == unit_states['casting'] then
     self:draw_cooldown_timer()
   end
   if self.bubbled then 
@@ -367,6 +384,54 @@ function Troop:draw()
   -- graphics.circle(self.x, self.y, self.aggro_sensor.rs, yellow[5], 2)
 
   graphics.pop()
+
+  -- Attack timer bar: shows progress toward the next ready attack.
+  -- Fills left→right during cast time, then again during cooldown. Hidden when ready.
+  self:draw_attack_timer_bar()
+end
+
+function Troop:draw_attack_timer_bar()
+  -- Bar progress matches the *actual* readiness check used by Helper.Unit:can_cast,
+  -- which scales the cooldown by closest_enemy_distance_multiplier. Using the raw
+  -- attack_cooldown_timer would make the bar end early (multiplier < 1) or hide
+  -- before the unit is truly ready (multiplier > 1).
+  local is_casting = (self.state == unit_states['casting'])
+
+  local progress = 0
+  local fill_color = white_transparent
+
+  if is_casting then
+    local elapsed = (self.castObject and self.castObject.elapsedTime) or 0
+    local cast_length = (self.castObject and self.castObject.cast_length) or self.cast_time or 0.1
+    if cast_length > 0 then
+      progress = math.clamp(elapsed / cast_length, 0, 1)
+    end
+    fill_color = self.color or white_transparent
+  else
+    local base_cd = self.attack_cooldown or 1
+    local cd_timer = self.attack_cooldown_timer or 0
+    local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier or 1
+    local adjusted_cd = base_cd * distance_multiplier
+    -- elapsed since cooldown started; valid for both positive and negative timer values.
+    local elapsed = base_cd - cd_timer
+    if adjusted_cd <= 0 or elapsed >= adjusted_cd then
+      return -- unit is actually ready, hide the bar
+    end
+    progress = math.clamp(elapsed / adjusted_cd, 0, 1)
+    fill_color = white_transparent
+  end
+
+  local body_size = (self.shape and (self.shape.w or self.shape.rs)) or 8
+  local bar_w = math.max(10, body_size)
+  local bar_h = 2
+  local bar_x = self.x - bar_w / 2
+  local bar_y = self.y + ((self.shape and self.shape.h or body_size) / 2) + 3
+
+  graphics.rectangle(self.x, bar_y + bar_h / 2, bar_w, bar_h, 1, 1, bg[5])
+  if progress > 0 then
+    local fill_w = bar_w * progress
+    graphics.rectangle(bar_x + fill_w / 2, bar_y + bar_h / 2, fill_w, bar_h, 1, 1, fill_color)
+  end
 end
 
 function Troop:draw_distance_glow()
@@ -419,34 +484,19 @@ function Troop:get_attack_volume_multiplier()
 end
 
 function Troop:draw_cooldown_timer()
-  -- Show animation during both casting and cooldown
-  local is_casting = (self.state == unit_states['casting'])
-  local is_cooling = (self.attack_cooldown_timer and self.attack_cooldown_timer > 0)
-  
-  if not is_casting and not is_cooling then return end
+  -- Only show the pulse during the attack cast itself; the cooldown phase
+  -- is communicated by the attack timer bar below the unit.
+  if self.state ~= unit_states['casting'] then return end
 
-  -- --- Configuration ---
   local bodySize = self.shape.rs or self.shape.w / 2 or 5
-  local min_radius_mod = 0.3 -- Smaller min size 
-  local max_radius_mod = 1.2 -- Smaller max size
-  local current_radius = 0
+  local min_radius_mod = 0.3
+  local max_radius_mod = 1.2
 
-  if is_casting then
-      -- PHASE 1: EXPANDING during cast (grows outward)
-      local cast_progress = 1 - ((self.castObject and self.castObject.elapsedTime) or 0) / (self.cast_time or 0.1)
-      cast_progress = math.clamp(cast_progress, 0, 1)
-      current_radius = (min_radius_mod * bodySize) + (max_radius_mod * bodySize - min_radius_mod * bodySize) * cast_progress
-      
-  elseif is_cooling then
-      -- PHASE 2: SHRINKING during cooldown (shrinks inward)  
-      local cooldown_progress = self.attack_cooldown_timer / self.attack_cooldown
-      current_radius = (min_radius_mod * bodySize) + (max_radius_mod * bodySize - min_radius_mod * bodySize) * cooldown_progress
-  end
-  
-  -- Ensure the radius never becomes negative
+  local cast_progress = 1 - ((self.castObject and self.castObject.elapsedTime) or 0) / (self.cast_time or 0.1)
+  cast_progress = math.clamp(cast_progress, 0, 1)
+  local current_radius = (min_radius_mod * bodySize) + (max_radius_mod * bodySize - min_radius_mod * bodySize) * cast_progress
+
   current_radius = math.max(0, current_radius)
-
-  -- Draw the final circle
   graphics.circle(self.x, self.y, current_radius, white_transparent_weak)
 end
 

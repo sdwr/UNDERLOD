@@ -71,6 +71,9 @@ end
 --state is doubling as active state (is moving) and intention (rally point)
 function Team:set_troop_state_to_following()
   for i, troop in ipairs(self.troops) do
+      -- Kiting: a move command cancels any in-progress attack and resets the
+      -- cooldown to 0 (cancel_cast already zeroes attack_cooldown_timer).
+      troop:cancel_cast()
       Helper.Unit:set_state(troop, unit_states['following'])
   end
 end
@@ -110,6 +113,9 @@ function Team:set_rally_point(x, y)
     color = self.color
   }
   for i, troop in ipairs(self.troops) do
+    -- Kiting: rally is also a move command — cancel the in-progress attack
+    -- and reset cooldown so the unit can attack again the moment it stops.
+    troop:cancel_cast()
     troop.rallying = true
 
     if troop.state == unit_states['following'] then
