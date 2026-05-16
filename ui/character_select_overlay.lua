@@ -3,58 +3,109 @@
 CharacterSelectOverlay = Object:extend()
 CharacterSelectOverlay.__class_name = 'CharacterSelectOverlay'
 CharacterSelectOverlay:implement(GameObject)
+
+CHARACTER_SELECT_REROLL_COSTS = {5, 10, 20}
+
+function CharacterSelectOverlay:get_unlocked_pool()
+  local pool = {'archer', 'sword'}
+  if USER_STATS.stompy_defeated and USER_STATS.stompy_defeated >= 1 then
+    table.insert(pool, 'swordsman')
+  end
+  if USER_STATS.dragon_defeated and USER_STATS.dragon_defeated >= 1 then
+    table.insert(pool, 'laser')
+  end
+  return pool
+end
+
+function CharacterSelectOverlay:pick_three()
+  local pool = self:get_unlocked_pool()
+  local picks = {}
+  local available = shallowcopy(pool)
+  for i = 1, 3 do
+    if #available == 0 then
+      available = shallowcopy(pool)
+    end
+    local idx = math.random(1, #available)
+    table.insert(picks, available[idx])
+    table.remove(available, idx)
+  end
+  return picks
+end
+
+function CharacterSelectOverlay:reroll_cost()
+  local idx = math.min(self.times_rerolled + 1, #CHARACTER_SELECT_REROLL_COSTS)
+  return CHARACTER_SELECT_REROLL_COSTS[idx]
+end
+
 function CharacterSelectOverlay:init(args)
   self:init_game_object(args)
   self.cards = {}
+  self.times_rerolled = 0
 
   main.current.choose_character = true
 
-  local unit1 = 'swordsman'
-  local unit2 = 'archer'
-  local unit3 = 'laser'
+  -- auto-pick archer for the very first unit
+  local units_owned = (main.current and main.current.units) and #main.current.units or 0
+  if units_owned == 0 then
+    self.overlay = Overlay{group = self.group, x = gw/2, y = gh/2, w = gw, h = gh}
+    main.current:buy_unit('archer')
+    ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    _G[random:table{'coins1', 'coins2', 'coins3'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    self.t:after(0.01, function() self:die(0) end)
+    return
+  end
 
-  --make overlay (opaque bg)
-  self.overlay = Overlay{
+  self.overlay = Overlay{group = self.group, x = gw/2, y = gh/2, w = gw, h = gh}
+
+  self.card_w = 80
+  self.card_w_between = 20
+  self.card_h = 120
+  self.card_y = gh/2
+
+  self:build_cards(self:pick_three())
+
+  self.reroll_button = CharacterSelectRerollButton{
     group = self.group,
     x = gw/2,
-    y = gh/2,
-    w = gw,
-    h = gh
+    y = gh/2 + self.card_h/2 + 22,
+    parent = self,
   }
 
-  --dimensions for the cards
-  local w = 80
-  local w_between = 20
-  local h = 120
-
-  local x1 = gw/2 - w - w_between
-  local x2 = gw/2
-  local x3 = gw/2 + w + w_between
-  local card_y = gh/2
-
-  local unit1_locked = true
-  local unit3_locked = true
-  
-  if USER_STATS.stompy_defeated >= 1 then
-    unit1_locked = false
-  end
-  if USER_STATS.dragon_defeated >= 1 then
-    unit3_locked = false
-  end
-
-  self.cards[1] = ShopCard{group = self.group, 
-  x = x1, y = card_y, w = w, h = h, 
-  unit = unit1, parent = self, i = 1, locked = unit1_locked}
-
-  self.cards[2] = ShopCard{group = self.group, x = x2, y = card_y, w = w, h = h, unit = unit2, parent = self, i = 2}
-
-  self.cards[3] = ShopCard{group = self.group, 
-  x = x3, y = card_y, w = w, h = h, 
-  unit = unit3, parent = self, i = 3, locked = unit3_locked}
-
-  --disable clicking for the first .25 seconds
   self.interact_with_mouse = false
   self.t:after(0.25, function() self.interact_with_mouse = true end)
+end
+
+function CharacterSelectOverlay:build_cards(picks)
+  if self.cards then
+    for _, c in ipairs(self.cards) do c:die(true) end
+  end
+  self.cards = {}
+
+  local w, h, gap = self.card_w, self.card_h, self.card_w_between
+  local x1 = gw/2 - w - gap
+  local x2 = gw/2
+  local x3 = gw/2 + w + gap
+  local xs = {x1, x2, x3}
+
+  for i = 1, 3 do
+    self.cards[i] = ShopCard{group = self.group,
+      x = xs[i], y = self.card_y, w = w, h = h,
+      unit = picks[i], parent = self, i = i, locked = false}
+  end
+end
+
+function CharacterSelectOverlay:reroll()
+  local cost = self:reroll_cost()
+  if (gold or 0) < cost then
+    error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    return false
+  end
+  gold = gold - cost
+  self.times_rerolled = self.times_rerolled + 1
+  gold2:play{pitch = random:float(0.95, 1.05), volume = 0.3}
+  self:build_cards(self:pick_three())
+  if self.reroll_button then self.reroll_button:refresh_text() end
+  return true
 end
 
 function CharacterSelectOverlay:draw()
@@ -67,10 +118,14 @@ end
 
 function CharacterSelectOverlay:die(index_selected)
   self.dead = true
-  self.overlay:die()
-  for i, card in ipairs(self.cards) do 
+  if self.overlay then self.overlay:die() end
+  for i, card in ipairs(self.cards) do
     local not_selected = index_selected ~= i
-    card:die(not_selected) 
+    card:die(not_selected)
+  end
+  if self.reroll_button then
+    self.reroll_button.dead = true
+    self.reroll_button = nil
   end
 end
 
@@ -191,7 +246,7 @@ function ShopCard:on_mouse_enter()
     type_icon.selected = true
     type_icon.spring:pull(0.1, 200, 10)
   end
-  
+
   -- Show info text for locked cards
   if self.locked then
     local unlock_text = ""
@@ -200,7 +255,7 @@ function ShopCard:on_mouse_enter()
     elseif self.i == 3 then
       unlock_text = "Defeat the Dragon (level 11) to unlock"
     end
-    
+
     if unlock_text ~= "" then
       self.info_text = InfoText{group = self.group, force_update = true}
       self.info_text:activate({
@@ -215,7 +270,7 @@ end
 function ShopCard:on_mouse_exit()
   self.selected = false
   for _, type_icon in ipairs(self.type_icons) do type_icon.selected = false end
-  
+
   -- Remove info text when mouse leaves
   if self.info_text then
     self.info_text:deactivate()
@@ -227,11 +282,79 @@ end
 
 function ShopCard:die(dont_spawn_effect)
   self.dead = true
-  self.character_icon:die(dont_spawn_effect)
+  if self.character_icon then self.character_icon:die(dont_spawn_effect) end
   for _, type_icon in ipairs(self.type_icons) do type_icon:die(dont_spawn_effect) end
   if self.info_text then
     self.info_text:deactivate()
     self.info_text.dead = true
     self.info_text = nil
   end
+end
+
+
+-- Reroll button for the character select overlay. Cost escalates 5 / 10 / 20+.
+CharacterSelectRerollButton = Object:extend()
+CharacterSelectRerollButton.__class_name = 'CharacterSelectRerollButton'
+CharacterSelectRerollButton:implement(GameObject)
+
+function CharacterSelectRerollButton:init(args)
+  self:init_game_object(args)
+  self.shape = Rectangle(self.x, self.y, 70, 18)
+  self.interact_with_mouse = true
+  self:refresh_text()
+end
+
+function CharacterSelectRerollButton:refresh_text()
+  local cost = self.parent:reroll_cost()
+  local prefix = self.selected and '[fgm5]' or '[bg10]'
+  self.text = Text({{text = prefix .. 'reroll: [yellow]' .. cost, font = pixul_font, alignment = 'center'}}, global_text_tags)
+end
+
+function CharacterSelectRerollButton:update(dt)
+  self:update_game_object(dt)
+  if not (self.parent and self.parent.interact_with_mouse) then return end
+
+  if self.selected and input.m1.pressed then
+    local ok = self.parent:reroll()
+    if ok then
+      self.spring:pull(0.2, 200, 10)
+    else
+      self.spring:pull(0.2, 200, 10)
+      if not self.info_text then
+        self.info_text = InfoText{group = self.group}
+        self.info_text:activate({
+          {text = '[fg]not enough gold', font = pixul_font, alignment = 'center'},
+        }, nil, nil, nil, nil, 16, 4, nil, 2)
+        self.info_text.x, self.info_text.y = self.x, self.y - 18
+        self.t:after(1.5, function()
+          if self.info_text then
+            self.info_text:deactivate()
+            self.info_text.dead = true
+            self.info_text = nil
+          end
+        end, 'info_text')
+      end
+    end
+  end
+end
+
+function CharacterSelectRerollButton:draw()
+  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.x)
+    local bgcolor = self.selected and bg[0] or bg[2]
+    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, bgcolor)
+    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 4, 4, bg[1], 2)
+    if self.text then self.text:draw(self.x, self.y) end
+  graphics.pop()
+end
+
+function CharacterSelectRerollButton:on_mouse_enter()
+  ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
+  self.selected = true
+  self.spring:pull(0.2, 200, 10)
+  self:refresh_text()
+end
+
+function CharacterSelectRerollButton:on_mouse_exit()
+  self.selected = false
+  self:refresh_text()
 end

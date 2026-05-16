@@ -20,6 +20,7 @@ require 'helper/spells/v2/launch'
 require 'helper/spells/v2/prevent_casting'
 require 'helper/spells/v2/firewall_angled'
 require 'helper/spells/v2/area_spell'
+require 'helper/spells/v2/sword_swing_spell'
 
 require 'helper/spells/v2/cleave'
 require 'helper/spells/v2/chain_spell'

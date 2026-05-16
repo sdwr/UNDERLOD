@@ -2,12 +2,14 @@ require 'units/player/player_troop'
 require 'units/player/laser_troop'
 require 'units/player/swordsman_troop'
 require 'units/player/archer_troop'
+require 'units/player/sword_weapon_troop'
 
 troop_classes = {
   Troop,
   Laser_Troop,
   Swordsman_Troop,
-  Archer_Troop
+  Archer_Troop,
+  SwordWeapon_Troop
 }
 
 friendly_classes_without_critters = shallowcopy(troop_classes)
@@ -475,6 +477,8 @@ function Create_Troop(args)
     return Swordsman_Troop(args)
   elseif args.character == 'archer' then
     return Archer_Troop(args)
+  elseif args.character == 'sword' then
+    return SwordWeapon_Troop(args)
   else
     return Troop(args)
   end

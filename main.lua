@@ -503,6 +503,7 @@ function init()
     ['pyro'] = 'Pyro',
     ['laser'] = 'Laser',
     ['archer'] = 'Archer',
+    ['sword'] = 'Sword',
     ['bomber'] = 'Bomber',
     ['cannon'] = 'Cannon',
     ['sniper'] = 'Sniper',
@@ -572,6 +573,7 @@ function init()
     ['sniper'] = green[0],
     ['laser'] = blue[0],
     ['archer'] = yellow[0],
+    ['sword'] = white[0],
     ['bomber'] = orange[0],
     ['scout'] = red[0],
     ['cleric'] = green[0],
@@ -637,6 +639,7 @@ function init()
     ['pyro'] = 'red',
     ['laser'] = 'blue',
     ['archer'] = 'yellow',
+    ['sword'] = 'fg',
     ['bomber'] = 'orange',
     ['cannon'] = 'green',
     ['sniper'] = 'green',
@@ -704,6 +707,7 @@ function init()
     ['sniper'] = 'ranger',
     ['laser'] = 'mage',
     ['archer'] = 'ranger',
+    ['sword'] = 'warrior',
     ['bomber'] = 'nuker',
     ['wizard'] = 'mage',
     ['shaman'] = 'mage',
@@ -725,6 +729,7 @@ function init()
     ['sniper'] = '[green]Ranger',
     ['laser'] = '[blue]Mage',
     ['archer'] = '[yellow]Warrior, [green]Ranger',
+    ['sword'] = '[fg]Warrior',
     ['bomber'] = '[red]Nuker, [orange]Builder',
     ['scout'] = '[red]Rogue',
     ['cleric'] = '[green]Healer',
@@ -957,6 +962,7 @@ function init()
     ['swordsman'] = sword,
     ['archer'] = bow2,
     ['laser'] = reticle,
+    ['sword'] = sword,
   }
 
   character_colors = {
@@ -964,6 +970,7 @@ function init()
     ['swordsman'] = white[0],
     ['archer'] = green[0],
     ['laser'] = blue[0],
+    ['sword'] = white[0],
   }
 
   item_stat_lookup = {

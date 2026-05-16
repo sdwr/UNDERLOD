@@ -30,8 +30,9 @@ attack_cooldowns = {
 
 troop_attack_cooldowns = {
   ['archer'] = attack_cooldowns['fast'],
-  ['laser'] = attack_cooldowns['fast'], 
+  ['laser'] = attack_cooldowns['fast'],
   ['swordsman'] = attack_cooldowns['very-fast'],
+  ['sword'] = attack_cooldowns['fast'],
   ['default'] = attack_cooldowns['fast']
 }
 -- Enemy type to cooldown mapping (replaces magic numbers)
@@ -74,6 +75,7 @@ troop_cast_times = {
   ['archer'] = cast_times['medium'],
   ['laser'] = cast_times['instant'],
   ['swordsman'] = cast_times['short'],
+  ['sword'] = cast_times['short'],
   ['default'] = cast_times['instant']
 }
 
@@ -126,6 +128,7 @@ enemy_cast_times = {
 
 TROOP_RANGE = 500
 TROOP_SWORDSMAN_RANGE = 80
+TROOP_SWORD_WEAPON_RANGE = 55
 
 REGULAR_ENEMY_HP = 45
 REGULAR_ENEMY_DAMAGE = 15
@@ -530,6 +533,11 @@ unit_stat_multipliers = {
     ['swordsman'] = { hp = 1.5, dmg = 1.25, def = 1.25, mvspd = 1 },
     ['laser'] = { hp = 1, aspd = 1, dmg = 1, def = 1, mvspd = 1 },
     ['archer'] = { hp = 1.25, dmg = 1.5, def = 1, mvspd = 1 },
+    -- Sword: melee AoE cone. Slightly higher dmg than the rework draft (1.2→1.3)
+    -- so single-target DPS ≈ archer (sword cycle ~1.25s vs archer ~1.47s);
+    -- multi-target the cone is the upside. Tankier than archer to offset the
+    -- need to commit to melee.
+    ['sword'] = { hp = 1.4, dmg = 1.3, def = 1.2, mvspd = 1.05 },
 
     ['none'] = { hp = 1, dmg = 1, def = 1, mvspd = 1 },
 }
