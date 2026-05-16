@@ -32,7 +32,9 @@ troop_attack_cooldowns = {
   ['archer'] = attack_cooldowns['fast'],
   ['laser'] = attack_cooldowns['fast'],
   ['swordsman'] = attack_cooldowns['very-fast'],
-  ['sword'] = attack_cooldowns['fast'],
+  -- Sword has +50% cooldown vs 'fast' to compensate for the AoE cone hit.
+  ['sword'] = attack_cooldowns['fast'] * 1.5,
+  ['shotgun'] = attack_cooldowns['fast'],
   ['default'] = attack_cooldowns['fast']
 }
 -- Enemy type to cooldown mapping (replaces magic numbers)
@@ -76,6 +78,7 @@ troop_cast_times = {
   ['laser'] = cast_times['instant'],
   ['swordsman'] = cast_times['short'],
   ['sword'] = cast_times['short'],
+  ['shotgun'] = cast_times['short'],
   ['default'] = cast_times['instant']
 }
 
@@ -129,6 +132,8 @@ enemy_cast_times = {
 TROOP_RANGE = 500
 TROOP_SWORDSMAN_RANGE = 80
 TROOP_SWORD_WEAPON_RANGE = 55
+-- Shotgun: shorter than archer (500); rewards positioning to land more pellets.
+TROOP_SHOTGUN_RANGE = 250
 
 REGULAR_ENEMY_HP = 45
 REGULAR_ENEMY_DAMAGE = 15
@@ -533,11 +538,15 @@ unit_stat_multipliers = {
     ['swordsman'] = { hp = 1.5, dmg = 1.25, def = 1.25, mvspd = 1 },
     ['laser'] = { hp = 1, aspd = 1, dmg = 1, def = 1, mvspd = 1 },
     ['archer'] = { hp = 1.25, dmg = 1.5, def = 1, mvspd = 1 },
-    -- Sword: melee AoE cone. Slightly higher dmg than the rework draft (1.2→1.3)
-    -- so single-target DPS ≈ archer (sword cycle ~1.25s vs archer ~1.47s);
-    -- multi-target the cone is the upside. Tankier than archer to offset the
-    -- need to commit to melee.
+    -- Sword: melee AoE cone. With cooldown bumped 50% above 'fast' (cycle
+    -- ~1.80s vs archer's ~1.47s) single-target DPS is well below archer
+    -- (~7.9 vs ~11.2); the cone hitting 2+ enemies is the real upside,
+    -- and the unit stays tankier than archer to justify the melee commit.
     ['sword'] = { hp = 1.4, dmg = 1.3, def = 1.2, mvspd = 1.05 },
+    -- Shotgun: 5-pellet spread, ~half archer range. Dmg multi is per pellet,
+    -- so max single-target burst at point-blank is 5 * 0.4 * base ≈ 22, with
+    -- most pellets missing past medium range. Slightly tankier than archer.
+    ['shotgun'] = { hp = 1.2, dmg = 0.4, def = 1, mvspd = 1.05 },
 
     ['none'] = { hp = 1, dmg = 1, def = 1, mvspd = 1 },
 }
