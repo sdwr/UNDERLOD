@@ -146,6 +146,17 @@ WAVE_KILL_QUOTA_CYCLE_DELAY = 2
 -- before advancing, so the player kills more enemies than a single pass.
 WAVE_KILL_QUOTA_MULTIPLIER = 1.5
 
+-- Cinematic level-clear wipe: pre-delay before any straggler enemy dies,
+-- and per-enemy offset so they pop one after another instead of all at
+-- once. Total wipe duration = LEVEL_CLEAR_KILL_DELAY + remaining * offset.
+LEVEL_CLEAR_KILL_DELAY = 1.0
+LEVEL_CLEAR_KILL_OFFSET = 0.04
+
+-- Total time from level_clear() trigger until the arena transitions away.
+-- Should be at least LEVEL_CLEAR_KILL_DELAY + cascade duration so the wipe
+-- is visible.
+LEVEL_CLEAR_TRANSITION_DELAY = 2.5
+
 ITEM_SPAWN_DELAY_INITAL = 0.8
 ITEM_SPAWN_DELAY_OFFSET = 0.5
 

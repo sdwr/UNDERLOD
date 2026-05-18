@@ -706,13 +706,22 @@ function SpawnManager:update(dt)
           end
 
           if self.current_wave_index >= #self.level_data.waves then
-              -- Final wave: clear out any stragglers (path-across walkers,
-              -- enemies still alive when the kill_quota was met) and hand
-              -- off to the level.
+              -- Final wave: schedule a staggered death cascade for any
+              -- remaining stragglers (path-across walkers, enemies still
+              -- alive when the kill_quota was met). 1s pre-delay so the
+              -- "you won" moment has a beat of stillness, then each enemy
+              -- dies a few frames apart for a cinematic wipe.
               local remaining = self.arena.main:get_objects_by_classes(main.current.enemies) or {}
-              for _, e in ipairs(remaining) do
+              local base_delay = LEVEL_CLEAR_KILL_DELAY or 1.0
+              local per_enemy_offset = LEVEL_CLEAR_KILL_OFFSET or 0.04
+              for i, e in ipairs(remaining) do
                 if e and not e.dead then
-                  e.dead = true
+                  local death_time = base_delay + (i - 1) * per_enemy_offset
+                  self.t:after(death_time, function()
+                    if e and not e.dead and e.die then
+                      e:die()
+                    end
+                  end)
                 end
               end
               self:change_state('finished')
@@ -1063,9 +1072,13 @@ end
 
 function Spawn_Enemy_Sound(arena, isBoss)
   if isBoss then
-    alert1:play{pitch = random:float(0.8, 1.2), volume = 1}
+    -- Boss spawn keeps a slightly higher / wider pitch (still notable).
+    alert1:play{pitch = random:float(0.75, 0.9), volume = 1}
   else
-    alert1:play{pitch = random:float(0.8, 1.2), volume = 1}
+    -- Regular spawn: lower and tighter pitch so back-to-back spawns don't
+    -- chirp wildly. Was 0.8-1.2 (40% spread, centered at 1.0); now
+    -- 0.55-0.65 (~16% spread centered low).
+    alert1:play{pitch = random:float(0.55, 0.65), volume = 1}
   end
 end
 

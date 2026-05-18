@@ -30,22 +30,23 @@ function CombatLevel:level_clear()
   if self.progress_bar and self.progress_bar.flash_level_complete then
     self.progress_bar:flash_level_complete()
   end
-    
-  -- self.t:after(1, function()
-  --     Helper.Unit:resurrect_all_teams()
-  --     Helper.Unit:heal_all_teams_to_full()
-  --   end)
-  
-  -- Only create perk selection on perk levels
+
+  -- Defer the actual transition so the staggered death cascade scheduled
+  -- by the spawn manager (LEVEL_CLEAR_KILL_DELAY + per-enemy offsets) has
+  -- time to play out before the arena tears down.
+  local transition_delay = LEVEL_CLEAR_TRANSITION_DELAY or 2.5
+
   if LEVEL_TO_PERKS[self.level] then
-    self.t:after(1, function()
+    self.t:after(transition_delay, function()
       self.perk_overlay = PerkOverlay{
         group = self.ui,
       }
     end)
   else
     -- Auto-transition to buy screen without door opening or character selection
-    main.current:transition_to_next_level_buy_screen()
+    self.t:after(transition_delay, function()
+      main.current:transition_to_next_level_buy_screen()
+    end)
   end
 end
 
