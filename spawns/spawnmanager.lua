@@ -680,35 +680,49 @@ function SpawnManager:update(dt)
       self:change_state('waiting_for_clear')
     end
     
-    -- If all instructions are done, wait for the arena to be clear.
+    -- If all instructions are done, wait for the arena to be clear (or for
+    -- the kill_quota to be met, whichever fits the wave's mode).
     if self.state == 'waiting_for_clear' then
+      local wave_data = self.level_data.waves[self.current_wave_index]
+      local quota = wave_data and wave_data.kill_quota
+      local quota_met = quota and (self.wave_kill_power or 0) >= quota
+
       local enemies = self.arena.main:get_objects_by_classes(main.current.enemies)
-      if #enemies <= 0 and self.pending_spawns <= 0 then
-          -- Check if this was the final wave
+      local enemies_clear = #enemies <= 0
+
+      -- Quota-based waves advance the moment the player hits the kill_power
+      -- target (= the progress bar segment filling). Lingering enemies are
+      -- ignored - if the wave is "done" on the bar, it's done in the manager.
+      -- Non-quota waves keep the original "all dead" gate.
+      local done = quota_met or (not quota and enemies_clear)
+
+      if done and self.pending_spawns <= 0 then
+          -- Snap the bar segment to full so the visual matches the manager's
+          -- decision (some round-power particles may still be in flight).
+          if self.arena and self.arena.progress_bar
+            and self.arena.progress_bar.segments[self.current_wave_index]
+            and self.arena.progress_bar.segments[self.current_wave_index].complete_wave then
+            self.arena.progress_bar.segments[self.current_wave_index]:complete_wave()
+          end
+
           if self.current_wave_index >= #self.level_data.waves then
-              -- For the final wave, we just need all enemies dead
+              -- Final wave: hand off to the level. level_clear is safe to
+              -- call with enemies still alive; the level transition tears
+              -- down the arena anyway.
               self:change_state('finished')
               self.arena:level_clear()
           else
-              -- ===================================================================
-              -- FIX: For intermediate waves, the only condition to advance is that
-              -- all enemies are dead. We no longer check the progress bar here.
-              -- ===================================================================
-              -- Trigger suction effect to pull troops back to spawn locations
-              -- Suction_Troops_To_Spawn_Locations(self.arena)
-              
               self.t:after(0.5, function()
                 -- spawn_mark2:play{pitch = 1, volume = 1.2}
               end)
               -- Ensure wave progress is complete before advancing
               self:complete_wave(self.current_wave_index)
-              
+
               self.current_wave_index = self.current_wave_index + 1
               self.current_instruction_index = 1
               self.wave_kill_power = 0
               self:change_state('between_waves_delay')
               self.timer = TIME_BETWEEN_WAVES
-              -- self:show_wave_complete_text()
           end
         end
       end
