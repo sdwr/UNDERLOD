@@ -88,8 +88,17 @@ function Arena:create_progress_bar()
   
   local level_data = self.level_list and self.level_list[self.level]
   if level_data and level_data.waves then
+    -- Scale segment max by WAVE_KILL_QUOTA_MULTIPLIER so each bar segment fills
+    -- exactly when the spawn manager's wave_kill_power reaches the wave's
+    -- kill_quota (which is also Get_Wave_Power * multiplier). Without this the
+    -- bar visually completes after one pass while the spawn manager keeps
+    -- cycling another half-pass, and the level appears stuck.
     local waves_power = Wave_Types:Get_Waves_Power(level_data.waves)
-    
+    local multiplier = WAVE_KILL_QUOTA_MULTIPLIER or 1
+    for i = 1, #waves_power do
+      waves_power[i] = waves_power[i] * multiplier
+    end
+
     self.progress_bar = ProgressBar{
       group = self.ui, parent = self, w = 300, h = 5,
       x = gw/2, y = LEVEL_MAP_Y_POSITION, offset_x = self.offset_x, offset_y = self.offset_y,

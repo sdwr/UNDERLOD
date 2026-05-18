@@ -192,19 +192,16 @@ function Wave_Types:Get_Waves(level)
   return waves
 end
 
--- Sums every GROUP's spawn count in the wave and stores a kill_quota equal to
--- that total times `multiplier`. Stored as a non-numeric key, so the wave's
--- array-of-instructions semantics are preserved.
+-- Stores wave.kill_quota = Get_Wave_Power(wave) * multiplier. The quota and the
+-- progress bar are both measured in round_power so they stay in lockstep:
+-- when the bar is visually full, the spawn manager's tally has hit the quota
+-- and the wave transitions to waiting_for_clear. Stored as a non-numeric key
+-- so the wave's array-of-instructions semantics are preserved.
 function Wave_Types:Set_Default_Kill_Quota(wave, multiplier)
   if not wave or wave.kill_quota then return end
-  local total = 0
-  for _, instr in ipairs(wave) do
-    if instr[1] == 'GROUP' then
-      total = total + (instr[3] or 1)
-    end
-  end
-  if total > 0 then
-    wave.kill_quota = math.max(1, math.ceil(total * (multiplier or 1.5)))
+  local wave_power = self:Get_Wave_Power(wave)
+  if wave_power > 0 then
+    wave.kill_quota = math.max(1, math.ceil(wave_power * (multiplier or 1.5)))
   end
 end
 

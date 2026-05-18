@@ -583,16 +583,19 @@ function SpawnManager:init(arena)
     self.wave_spawn_delay = 0 -- Track cumulative spawn delay for the current wave
 
     -- Kill quota: when the current wave has a `kill_quota` field, the manager
-    -- keeps re-cycling its spawn instructions until this many enemies have
-    -- been removed (killed or path-walked off the map). Reset per wave.
-    self.wave_kills = 0
+    -- keeps re-cycling its spawn instructions until this much round_power has
+    -- been removed (killed or path-walked off the map). Reset per wave. Using
+    -- round_power (same unit the progress bar uses) keeps the two in lockstep.
+    self.wave_kill_power = 0
 
 end
 
 -- Called from Enemy:die() and the path-across despawn. Counts toward the
--- current wave's kill_quota. Safe to call when there's no quota set.
+-- current wave's kill_quota (measured in round_power). Safe to call when
+-- there's no quota set.
 function SpawnManager:on_enemy_removed(enemy)
-  self.wave_kills = (self.wave_kills or 0) + 1
+  local power = (enemy_to_round_power and enemy_to_round_power[enemy.type]) or 0
+  self.wave_kill_power = (self.wave_kill_power or 0) + power
 end
 
 function SpawnManager:does_spawn_reservation_exist(x, y)
@@ -702,7 +705,7 @@ function SpawnManager:update(dt)
               
               self.current_wave_index = self.current_wave_index + 1
               self.current_instruction_index = 1
-              self.wave_kills = 0
+              self.wave_kill_power = 0
               self:change_state('between_waves_delay')
               self.timer = TIME_BETWEEN_WAVES
               -- self:show_wave_complete_text()
@@ -735,11 +738,20 @@ function SpawnManager:process_next_instruction()
   -- Loop until we explicitly break out (due to a delay or end of wave).
   while true do
       local wave_instructions = self.level_data.waves[self.current_wave_index]
+      local quota = wave_instructions.kill_quota
+
+      -- Early exit: if the wave already has enough kill_power to satisfy its
+      -- quota, stop queueing further spawns and let the existing on-field
+      -- enemies finish out the wave. Without this, kills that happen during a
+      -- cycle pause wouldn't stop the next cycle from starting.
+      if quota and (self.wave_kill_power or 0) >= quota then
+          self:change_state('waiting_for_clear')
+          break
+      end
 
       -- Check if we've finished all instructions for this wave.
       if self.current_instruction_index > #wave_instructions then
-          local quota = wave_instructions.kill_quota
-          if quota and (self.wave_kills or 0) < quota then
+          if quota and (self.wave_kill_power or 0) < quota then
               -- Continuous-spawn mode: the wave declares a kill quota and we
               -- haven't hit it yet. Rewind to the first instruction and add a
               -- short cooldown before the next cycle so the player gets a beat

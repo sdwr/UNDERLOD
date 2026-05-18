@@ -173,16 +173,22 @@ function Enemy:update(dt)
     -- Path-across enemies that have crossed off the opposite edge despawn
     -- silently. We use a buffer past the camera bounds so they don't pop out
     -- of view the instant they touch the edge. Escapes still count toward
-    -- the wave's kill_quota so the level can't soft-lock if the player can't
-    -- intercept them in time.
+    -- the wave's kill_quota AND fill the progress bar (in lockstep) so the
+    -- level can't soft-lock if the player can't intercept them in time.
     if self.currentMovementAction == MOVEMENT_TYPE_PATH_ACROSS then
       local buffer = 80
       if self.x < -buffer or self.x > gw + buffer
         or self.y < -buffer or self.y > gh + buffer then
-        local sm = main.current and main.current.current_arena and main.current.current_arena.spawn_manager
-        if sm and not self._counted_for_quota then
+        local arena = main.current and main.current.current_arena
+        if arena and not self._counted_for_quota then
           self._counted_for_quota = true
-          sm:on_enemy_removed(self)
+          if arena.spawn_manager then
+            arena.spawn_manager:on_enemy_removed(self)
+          end
+          if arena.progress_bar then
+            local power = (enemy_to_round_power and enemy_to_round_power[self.type]) or 0
+            arena.progress_bar:increase_with_particles(power, self.x, self.y)
+          end
         end
         self.dead = true
         return
