@@ -49,10 +49,13 @@ function Shotgun_Troop:create_spelldata()
     -- Pellets disappear at engage range * 1.3, giving a thin ribbon of
     -- "stray hit" past the targeting range.
     max_distance = range * SHOTGUN_PELLET_MAX_DISTANCE_MULT,
-    -- 5 pellets per swing all play the arrow release sound. Drop each pellet
+    -- 5 pellets per swing all play the projectile sound. Drop each pellet
     -- to a fraction of the default (2) so the combined burst is roughly one
-    -- normal arrow rather than five.
-    volume = 0.4,
+    -- normal shot rather than five. Use cannoneer samples instead of the
+    -- "thwip" arrow release for a meatier shotgun blast.
+    volume = 0.5,
+    pitch = 0.95,
+    sound_table = {cannoneer1, cannoneer2},
   }
 end
 

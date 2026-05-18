@@ -81,6 +81,66 @@ function ProgressBar:complete_wave(wave_index)
   end
 end
 
+-- Visual celebration when the whole level finishes. Snaps any partially-
+-- filled segments to full, pulses the bar's spring, brightens each segment,
+-- and bursts a wide spray of particles across the bar.
+function ProgressBar:flash_level_complete()
+  if self.dead then return end
+
+  -- 1. Make sure every segment shows full.
+  for i = 1, #self.segments do
+    local seg = self.segments[i]
+    if seg and not seg.dead then
+      if seg.complete_wave then seg:complete_wave() end
+    end
+  end
+
+  -- 2. Spring pulse on the bar.
+  if self.spring and self.spring.pull then
+    self.spring:pull(0.4, 200, 10)
+  end
+
+  -- 3. Brighten each segment briefly, then ease back.
+  for i = 1, #self.segments do
+    local seg = self.segments[i]
+    if seg and seg.segment_color then
+      local original = {
+        r = seg.segment_color.r,
+        g = seg.segment_color.g,
+        b = seg.segment_color.b,
+      }
+      seg.segment_color.r = math.min(1, original.r * 1.6)
+      seg.segment_color.g = math.min(1, original.g * 1.6)
+      seg.segment_color.b = math.min(1, original.b * 1.6)
+      self.t:tween(0.6, seg.segment_color, original, math.linear)
+      if seg.spring and seg.spring.pull then
+        seg.spring:pull(0.3, 200, 10)
+      end
+    end
+  end
+
+  -- 4. Wide spray of particles across every segment.
+  for i = 1, #self.segments do
+    local seg = self.segments[i]
+    if seg then
+      local cx, cy = seg.x, seg.y
+      for j = 1, 18 do
+        HitParticle{
+          group = main.current.effects,
+          x = cx + random:float(-seg.shape.w / 2, seg.shape.w / 2),
+          y = cy,
+          color = seg.segment_color or yellow[0],
+        }
+      end
+    end
+  end
+
+  -- 5. Audible cue.
+  if spawn_mark2 then
+    spawn_mark2:play{pitch = random:float(1.0, 1.1), volume = 0.7}
+  end
+end
+
 function ProgressBar:die()
   self.dead = true
 end

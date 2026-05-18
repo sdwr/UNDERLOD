@@ -132,8 +132,12 @@ function ArrowProjectile:init(args)
   end
   if self.unit and self.unit.get_attack_volume_multiplier then
     volume = volume * self.unit:get_attack_volume_multiplier()
-  end 
-  table.random({arrow_release1, arrow_release2, arrow_release3}):play{volume= volume, pitch=pitch}
+  end
+  -- Spelldata.sound_table lets a caller swap the per-projectile sound set
+  -- (e.g. the shotgun uses a meatier cannoneer table). Falls back to the
+  -- default arrow-release trio.
+  local sounds = self.sound_table or {arrow_release1, arrow_release2, arrow_release3}
+  table.random(sounds):play{volume = volume, pitch = pitch}
 
   self.already_hit_targets = {}
 end

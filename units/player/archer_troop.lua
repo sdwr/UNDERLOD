@@ -19,6 +19,11 @@ function Archer_Troop:create_spelldata()
     is_troop = true,
     color = blue[0],
     damage = function() return self.dmg end,
+    -- Quieter and higher-pitched than the default arrow release (2 / 1.0).
+    -- At 0.45s cooldown the archer fires often enough that the old sound was
+    -- fatiguing; this keeps the "thwip" present but lighter.
+    volume = 0.6,
+    pitch = 1.4,
   }
 end
 

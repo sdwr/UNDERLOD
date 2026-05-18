@@ -706,9 +706,15 @@ function SpawnManager:update(dt)
           end
 
           if self.current_wave_index >= #self.level_data.waves then
-              -- Final wave: hand off to the level. level_clear is safe to
-              -- call with enemies still alive; the level transition tears
-              -- down the arena anyway.
+              -- Final wave: clear out any stragglers (path-across walkers,
+              -- enemies still alive when the kill_quota was met) and hand
+              -- off to the level.
+              local remaining = self.arena.main:get_objects_by_classes(main.current.enemies) or {}
+              for _, e in ipairs(remaining) do
+                if e and not e.dead then
+                  e.dead = true
+                end
+              end
               self:change_state('finished')
               self.arena:level_clear()
           else
