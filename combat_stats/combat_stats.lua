@@ -140,7 +140,7 @@ enemy_cast_times = {
 
 
 
-TROOP_RANGE = 400
+TROOP_RANGE = 480
 TROOP_SWORDSMAN_RANGE = 80
 TROOP_SWORD_WEAPON_RANGE = 55
 -- Shotgun: much shorter than archer (500). Pellets actually fly to
