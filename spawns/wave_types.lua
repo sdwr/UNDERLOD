@@ -163,12 +163,12 @@ end
 function Wave_Types:Get_Waves(level)
   local waves = {}
   local wave = {}
-  
+
   -- Calculate target power for this level
   local target_power = ROUND_POWER_BY_LEVEL[level] or 3000
   local current_power = 0
   local power_budget = target_power - current_power
-  
+
   -- Determine tier for this level
   local tier = LEVEL_TO_TIER(level)
 
@@ -181,11 +181,31 @@ function Wave_Types:Get_Waves(level)
     })
 
     local wave = self[wave_type](self, level)
+    -- Default the wave kill_quota off its own spawn count so the spawn manager
+    -- cycles the wave's instructions ~1.5x before advancing. Skip for boss
+    -- waves (no GROUPs).
+    Wave_Types:Set_Default_Kill_Quota(wave, WAVE_KILL_QUOTA_MULTIPLIER or 1.5)
 
     table.insert(waves, wave)
   end
-  
+
   return waves
+end
+
+-- Sums every GROUP's spawn count in the wave and stores a kill_quota equal to
+-- that total times `multiplier`. Stored as a non-numeric key, so the wave's
+-- array-of-instructions semantics are preserved.
+function Wave_Types:Set_Default_Kill_Quota(wave, multiplier)
+  if not wave or wave.kill_quota then return end
+  local total = 0
+  for _, instr in ipairs(wave) do
+    if instr[1] == 'GROUP' then
+      total = total + (instr[3] or 1)
+    end
+  end
+  if total > 0 then
+    wave.kill_quota = math.max(1, math.ceil(total * (multiplier or 1.5)))
+  end
 end
 
 --helper fns

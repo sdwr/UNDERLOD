@@ -172,11 +172,18 @@ function Enemy:update(dt)
 
     -- Path-across enemies that have crossed off the opposite edge despawn
     -- silently. We use a buffer past the camera bounds so they don't pop out
-    -- of view the instant they touch the edge.
+    -- of view the instant they touch the edge. Escapes still count toward
+    -- the wave's kill_quota so the level can't soft-lock if the player can't
+    -- intercept them in time.
     if self.currentMovementAction == MOVEMENT_TYPE_PATH_ACROSS then
       local buffer = 80
       if self.x < -buffer or self.x > gw + buffer
         or self.y < -buffer or self.y > gh + buffer then
+        local sm = main.current and main.current.current_arena and main.current.current_arena.spawn_manager
+        if sm and not self._counted_for_quota then
+          self._counted_for_quota = true
+          sm:on_enemy_removed(self)
+        end
         self.dead = true
         return
       end
@@ -657,6 +664,12 @@ function Enemy:die()
   if self.dead then return end
   self.super.die(self)
   self.dead = true
+  -- Notify the spawn manager so it can track progress against wave.kill_quota.
+  local sm = main.current and main.current.current_arena and main.current.current_arena.spawn_manager
+  if sm and not self._counted_for_quota then
+    self._counted_for_quota = true
+    sm:on_enemy_removed(self)
+  end
   _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.5}
   
   -- Drop gold when enemy dies

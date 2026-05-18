@@ -136,6 +136,15 @@ DISTANCE_MULTIPLIER_THRESHOLD_SOUND = 0.7
 DELAY_BEFORE_SUCTION = 1
 TIME_BETWEEN_WAVES = 0.5
 WAVE_SPAWN_WARNING_TIME = 1.25
+-- Pause after a wave finishes its full instruction list, before cycling back
+-- to the start when wave.kill_quota hasn't been met. Gives the player a brief
+-- beat of breathing room between spawn rounds.
+WAVE_KILL_QUOTA_CYCLE_DELAY = 2
+
+-- Default kill_quota for a wave = sum of all GROUP spawn counts times this
+-- multiplier. 1.5 -> the wave's instructions cycle roughly once-and-a-half
+-- before advancing, so the player kills more enemies than a single pass.
+WAVE_KILL_QUOTA_MULTIPLIER = 1.5
 
 ITEM_SPAWN_DELAY_INITAL = 0.8
 ITEM_SPAWN_DELAY_OFFSET = 0.5
