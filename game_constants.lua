@@ -81,9 +81,10 @@ DAMPING_BY_UNIT_CLASS = {
   ['special_enemy'] = 2,
   ['regular_enemy'] = 1,
   ['critter'] = 1,
-  -- Troops bumped 2 -> 8 so they decelerate quickly after the player releases
-  -- the M1 follow command, instead of coasting past the cursor.
-  ['troop'] = 8,
+  -- Troop damping reverted to 2 (was briefly 8, which throttled steering force
+  -- so badly troops couldn't reach the rally point). Explicit idle braking in
+  -- Troop:update handles the "stop fast after move" behaviour instead.
+  ['troop'] = 2,
 }
 
 LAUNCH_DAMPING = 0.1
@@ -91,9 +92,7 @@ LAUNCH_DAMPING = 0.1
 -- Friction constants
 BOSS_FRICTION = 1
 ENEMY_FRICTION = 1
--- Troop friction bumped 1 -> 3 to reinforce the damping change so troops
--- come to rest quickly when no longer being driven.
-TROOP_FRICTION = 3
+TROOP_FRICTION = 1
 
 LAUNCH_PUSH_FORCE_ENEMY = 30
 LAUNCH_PUSH_FORCE_SPECIAL_ENEMY = 50

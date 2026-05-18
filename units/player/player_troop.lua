@@ -201,15 +201,35 @@ function Troop:update(dt)
     end
   end
 
+  -- Quick-stop brake: troops at rest (not following, not rallying, not
+  -- knocked) shed residual velocity quickly so they don't coast past the
+  -- cursor after the player releases M1. This is targeted (only when there's
+  -- no active movement driver) so it doesn't fight the steering force during
+  -- follow / rally / chase.
+  local can_brake =
+    self.state ~= unit_states['following']
+    and not self.rallying
+    and not self.being_knocked_back
+    and not self.is_launching
+  if can_brake then
+    local vx, vy = self:get_velocity()
+    local speed = math.length(vx, vy)
+    if speed > 5 then
+      self:add_deceleration(DECELERATION_WEIGHT)
+    elseif speed > 0 then
+      self:set_velocity(0, 0)
+    end
+  end
+
   -- ===================================================================
   -- 3. FINAL PHYSICS AND POSITIONING (These also always run)
   -- ===================================================================
-  
+
   -- Mark current target for circle drawing
   if self:my_target() then
     self:my_target():add_buff({name = 'targeted', duration = 0.1, color = Helper.Color.yellow})
   end
-  
+
   self.r = self:get_angle()
   self.attack_sensor:move_to(self.x, self.y)
 end
