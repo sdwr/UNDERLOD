@@ -32,9 +32,9 @@ attack_cooldowns = {
 }
 
 troop_attack_cooldowns = {
-  -- Archer dropped 'fast' (1.1s) -> 'very-fast' (0.8s) for a quicker rate
-  -- of fire now that the close-range cooldown buff is gone.
-  ['archer'] = attack_cooldowns['very-fast'],
+  -- Archer is intentionally below 'very-fast' (0.8s) at 0.45s for a
+  -- machine-gun feel paired with the 0.05s cast.
+  ['archer'] = 0.45,
   -- Laser is a global-range piercing beam, so it's paced out with a 'slow'
   -- cooldown to make each shot a deliberate choice instead of spam.
   ['laser'] = attack_cooldowns['slow'],
@@ -83,7 +83,9 @@ cast_times = {
 }
 
 troop_cast_times = {
-  ['archer'] = cast_times['medium'],
+  -- Archer cast time set explicitly to 0.05s (below 'short' 0.15s) so the
+  -- arrow leaves the unit almost instantly after target acquisition.
+  ['archer'] = 0.05,
   ['laser'] = cast_times['instant'],
   ['swordsman'] = cast_times['short'],
   ['sword'] = cast_times['short'],
