@@ -637,9 +637,9 @@ function Unit:draw_launching()
 end
 
 function Unit:draw_targeted()
-  if self:has_buff('targeted') then
-    graphics.circle(self.x, self.y, 2, yellow[0])
-  end
+  -- The small 'targeted' yellow dot (per-troop auto-target marker) was removed.
+  -- The bigger 'player_target' ring still draws — that's the M2 assigned
+  -- team target, which the player intentionally sets.
   if self:has_buff('player_target') then
     graphics.circle(self.x, self.y, self.shape.w/2 / 2 + 3, yellow[0], 1)
   end

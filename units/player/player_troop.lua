@@ -224,11 +224,6 @@ function Troop:update(dt)
   -- 3. FINAL PHYSICS AND POSITIONING (These also always run)
   -- ===================================================================
 
-  -- Mark current target for circle drawing
-  if self:my_target() then
-    self:my_target():add_buff({name = 'targeted', duration = 0.1, color = Helper.Color.yellow})
-  end
-
   self.r = self:get_angle()
   self.attack_sensor:move_to(self.x, self.y)
 end
