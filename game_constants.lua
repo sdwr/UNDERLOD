@@ -81,7 +81,9 @@ DAMPING_BY_UNIT_CLASS = {
   ['special_enemy'] = 2,
   ['regular_enemy'] = 1,
   ['critter'] = 1,
-  ['troop'] = 2,
+  -- Troops bumped 2 -> 8 so they decelerate quickly after the player releases
+  -- the M1 follow command, instead of coasting past the cursor.
+  ['troop'] = 8,
 }
 
 LAUNCH_DAMPING = 0.1
@@ -89,7 +91,9 @@ LAUNCH_DAMPING = 0.1
 -- Friction constants
 BOSS_FRICTION = 1
 ENEMY_FRICTION = 1
-TROOP_FRICTION = 1
+-- Troop friction bumped 1 -> 3 to reinforce the damping change so troops
+-- come to rest quickly when no longer being driven.
+TROOP_FRICTION = 3
 
 LAUNCH_PUSH_FORCE_ENEMY = 30
 LAUNCH_PUSH_FORCE_SPECIAL_ENEMY = 50
@@ -348,7 +352,16 @@ MOVEMENT_TYPE_RANDOM = 'random'
 MOVEMENT_TYPE_FLEE = 'flee'
 MOVEMENT_TYPE_WANDER = 'wander'
 MOVEMENT_TYPE_NONE = 'none'
-MOVEMENT_TYPES = {MOVEMENT_TYPE_SEEK, MOVEMENT_TYPE_LOOSE_SEEK, MOVEMENT_TYPE_SEEK_TO_RANGE, MOVEMENT_TYPE_RANDOM, MOVEMENT_TYPE_FLEE, MOVEMENT_TYPE_NONE}
+-- Walk in a straight line from spawn through the map center to the opposite
+-- edge, then despawn. Used by swarmers as a "creep wave" style movement that
+-- doesn't actively chase the player.
+MOVEMENT_TYPE_PATH_ACROSS = 'path_across'
+
+-- Maximum simultaneously-alive enemies the spawn manager will allow. New
+-- spawn groups are throttled (held in a 'waiting_for_cap' state) until the
+-- live count drops below this threshold.
+MAX_ALIVE_ENEMIES = 40
+MOVEMENT_TYPES = {MOVEMENT_TYPE_SEEK, MOVEMENT_TYPE_LOOSE_SEEK, MOVEMENT_TYPE_SEEK_TO_RANGE, MOVEMENT_TYPE_RANDOM, MOVEMENT_TYPE_FLEE, MOVEMENT_TYPE_NONE, MOVEMENT_TYPE_PATH_ACROSS}
 
 get_movement_type_by_enemy_type = function(enemy_type)
   return enemy_movement_types[enemy_type] or enemy_movement_types['default']
@@ -380,7 +393,10 @@ enemy_movement_types = {
   ['default'] = MOVEMENT_TYPE_SEEK,
   -- Aggressive seekers - chase players directly
   ['slowcharger'] = MOVEMENT_TYPE_SEEK,
-  ['swarmer'] = MOVEMENT_TYPE_LOOSE_SEEK,
+  -- Swarmer was MOVEMENT_TYPE_LOOSE_SEEK (chase player). Defaults to walking
+  -- straight across the map; set MOVEMENT_TYPE_LOOSE_SEEK here (or set the
+  -- per-instance flag aggro_when_close = true) to restore chase behavior.
+  ['swarmer'] = MOVEMENT_TYPE_PATH_ACROSS,
   ['chaser'] = MOVEMENT_TYPE_SEEK,
   ['cleaver'] = MOVEMENT_TYPE_SEEK,
   

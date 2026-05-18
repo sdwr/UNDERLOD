@@ -647,8 +647,17 @@ function SpawnManager:update(dt)
     if self.state == 'processing_wave' then
         self:process_next_instruction()
         -- Only change to waiting_for_clear if we're not in a delay state
+        -- or a cap-throttle state.
         if self.state == 'processing_wave' then
             self:change_state('waiting_for_clear')
+        end
+    end
+
+    -- Throttle: park until the live enemy count drops below the cap, then
+    -- resume processing the wave from where we left off.
+    if self.state == 'waiting_for_cap' then
+        if self:alive_enemy_count() < (MAX_ALIVE_ENEMIES or 9999) then
+            self:change_state('processing_wave')
         end
     end
 
@@ -694,17 +703,23 @@ end
 
 
 -- This function processes all instructions for a wave segment at once.
+function SpawnManager:alive_enemy_count()
+  if not self.arena or not self.arena.main or not main.current.enemies then return 0 end
+  local enemies = self.arena.main:get_objects_by_classes(main.current.enemies)
+  return #enemies
+end
+
 function SpawnManager:process_next_instruction()
-  
+
   -- Reset wave spawn delay for this wave
   self.wave_spawn_delay = 0
-  
+
   -- Get single spawn location for this entire wave (around screen edges, 1/3 toward center)
   local wave_spawn_location = Get_Offscreen_Spawn_Point()
-  
+
   --play spawn sound only once for the wave
   -- Spawn_Enemy_Sound(self.arena, false)
-  
+
   -- Loop until we explicitly break out (due to a delay or end of wave).
   while true do
       local wave_instructions = self.level_data.waves[self.current_wave_index]
@@ -721,6 +736,15 @@ function SpawnManager:process_next_instruction()
       local spawn_type = instruction[4]
 
       if type == 'GROUP' then
+          -- Concurrent enemy cap: hold the next GROUP if the live enemy
+          -- count is already at/over MAX_ALIVE_ENEMIES. We park in a
+          -- 'waiting_for_cap' state and re-enter process_next_instruction
+          -- once the live count drops.
+          if self:alive_enemy_count() >= (MAX_ALIVE_ENEMIES or 9999) then
+              self:change_state('waiting_for_cap')
+              break
+          end
+
           local group_data = {instruction[2], instruction[3], instruction[4]}
           -- Call Spawn_Group with the wave's spawn location
           if spawn_type == 'scatter' then

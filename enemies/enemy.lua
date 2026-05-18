@@ -170,6 +170,18 @@ function Enemy:update(dt)
       self.in_arena_radius = Helper.Unit:in_range_of_player_location(self, ARENA_RADIUS)
     end
 
+    -- Path-across enemies that have crossed off the opposite edge despawn
+    -- silently. We use a buffer past the camera bounds so they don't pop out
+    -- of view the instant they touch the edge.
+    if self.currentMovementAction == MOVEMENT_TYPE_PATH_ACROSS then
+      local buffer = 80
+      if self.x < -buffer or self.x > gw + buffer
+        or self.y < -buffer or self.y > gh + buffer then
+        self.dead = true
+        return
+      end
+    end
+
     if self.being_knocked_back then
       if math.length(self:get_velocity()) < ENEMY_KNOCKBACK_VELOCITY_REGAIN_CONTROL_THRESHOLD then
         Helper.Unit:reset_knockback_variables(self)
@@ -279,6 +291,8 @@ function Enemy:choose_movement_target()
     return self:acquire_target_seek_to_range()
   elseif self.currentMovementAction == MOVEMENT_TYPE_RANDOM then
     return self:acquire_target_random()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_PATH_ACROSS then
+    return self:acquire_target_path_across()
   elseif self.currentMovementAction == MOVEMENT_TYPE_NONE then
     return false -- Stationary enemies don't need movement targets
   end
@@ -287,7 +301,7 @@ end
 function Enemy:update_movement()
   if self.being_knocked_back then return end
   if not self.transition_active then return end
-  
+
   if self.currentMovementAction == MOVEMENT_TYPE_SEEK then
     return self:update_move_seek()
   elseif self.currentMovementAction == MOVEMENT_TYPE_LOOSE_SEEK then
@@ -298,6 +312,8 @@ function Enemy:update_movement()
     return self:update_move_random()
   elseif self.currentMovementAction == MOVEMENT_TYPE_WANDER then
     return self:update_move_wander()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_PATH_ACROSS then
+    return self:update_move_path_across()
   elseif self.currentMovementAction == MOVEMENT_TYPE_NONE then
     return false -- Stationary enemies don't move
   end
@@ -450,6 +466,22 @@ function Enemy:acquire_target_random()
   return true
 end
 
+-- Picks a fixed straight-line heading once, from the enemy's current position
+-- through the map center and out the opposite edge. Re-used every time we
+-- "re-acquire" so the enemy doesn't oscillate.
+function Enemy:acquire_target_path_across()
+  if not self.path_heading then
+    local cx, cy = gw / 2, gh / 2
+    local dx, dy = cx - self.x, cy - self.y
+    if dx == 0 and dy == 0 then
+      self.path_heading = random:float(0, 2 * math.pi)
+    else
+      self.path_heading = math.atan2(dy, dx)
+    end
+  end
+  return true
+end
+
 function Enemy:update_move_wander()
   self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER)
   return true
@@ -510,6 +542,21 @@ function Enemy:update_move_seek_to_range()
     end
   end
   return false
+end
+
+function Enemy:update_move_path_across()
+  if not self.path_heading then
+    self:acquire_target_path_across()
+  end
+  -- Aim a fixed waypoint far ahead along the heading and seek toward it; the
+  -- enemy never reaches it, so this is effectively constant forward motion.
+  local far = 4000
+  local tx = self.x + math.cos(self.path_heading) * far
+  local ty = self.y + math.sin(self.path_heading) * far
+  self:seek_point(tx, ty, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
+  self:rotate_towards_velocity(0.5)
+  self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
+  return true
 end
 
 function Enemy:update_move_random()

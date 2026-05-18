@@ -1685,15 +1685,26 @@ function Unit:pick_action()
     return false
   end
 
-  if self.offscreen or not self.in_arena_radius then
+  -- Default behaviour: if the enemy has wandered offscreen or out of the
+  -- arena radius, force-seek back into play. Skipped for path-across enemies
+  -- since their whole point is to walk through and leave the other side.
+  local default_movement = get_movement_type_by_enemy_type(self.type)
+  local is_path_across = default_movement == MOVEMENT_TYPE_PATH_ACROSS
+  if (self.offscreen or not self.in_arena_radius) and not is_path_across then
     self:set_movement_action(MOVEMENT_TYPE_SEEK, 1)
     return true
   end
-  
-    
-  
+
+  -- Optional per-enemy "aggro when close": even a path-across enemy will
+  -- switch to seeking the nearest troop when within the arena radius. Off by
+  -- default — set self.aggro_when_close = true to re-enable swarmer-style chase.
+  if is_path_across and self.aggro_when_close and self.in_arena_radius then
+    self:set_movement_action(MOVEMENT_TYPE_SEEK, 1)
+    return true
+  end
+
   local attack_options = self.attack_options or {}
-  local movement_options = self.movement_options or {get_movement_type_by_enemy_type(self.type)}
+  local movement_options = self.movement_options or {default_movement}
 
   local viable_attacks = {}
   local viable_movements = {}

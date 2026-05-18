@@ -502,10 +502,15 @@ ZONE_SCALING = function(level)
   return 1
 end
 
+-- Distance-based cooldown buff disabled: troops no longer attack faster when
+-- close to the nearest enemy. Restore the old 0.25 / 0.5 / 0.75 values to
+-- re-enable. The multiplier mechanism (and the closest_enemy_distance_tier
+-- glow + audio hooks) still functions, this just neutralises the cooldown
+-- effect.
 DISTANCE_TIER_TO_COOLDOWN_MULTIPLIER = {
-  [1] = 0.25,
-  [2] = 0.5,
-  [3] = 0.75,
+  [1] = 1,
+  [2] = 1,
+  [3] = 1,
 }
 
 TIER_TO_DISTANCE = {
