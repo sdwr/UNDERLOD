@@ -405,35 +405,22 @@ function Troop:draw()
 end
 
 function Troop:draw_attack_timer_bar()
-  -- Bar progress matches the *actual* readiness check used by Helper.Unit:can_cast,
-  -- which scales the cooldown by closest_enemy_distance_multiplier. Using the raw
-  -- attack_cooldown_timer would make the bar end early (multiplier < 1) or hide
-  -- before the unit is truly ready (multiplier > 1).
-  local is_casting = (self.state == unit_states['casting'])
+  -- Cooldown-only bar (the cast-phase "firing bar" was removed). Progress
+  -- matches the engine's actual readiness check, which scales attack_cooldown
+  -- by closest_enemy_distance_multiplier; using the raw timer would end the
+  -- bar early or hide it before the unit is truly ready.
+  if self.state == unit_states['casting'] then return end
 
-  local progress = 0
-  local fill_color = white_transparent
-
-  if is_casting then
-    local elapsed = (self.castObject and self.castObject.elapsedTime) or 0
-    local cast_length = (self.castObject and self.castObject.cast_length) or self.cast_time or 0.1
-    if cast_length > 0 then
-      progress = math.clamp(elapsed / cast_length, 0, 1)
-    end
-    fill_color = self.color or white_transparent
-  else
-    local base_cd = self.attack_cooldown or 1
-    local cd_timer = self.attack_cooldown_timer or 0
-    local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier or 1
-    local adjusted_cd = base_cd * distance_multiplier
-    -- elapsed since cooldown started; valid for both positive and negative timer values.
-    local elapsed = base_cd - cd_timer
-    if adjusted_cd <= 0 or elapsed >= adjusted_cd then
-      return -- unit is actually ready, hide the bar
-    end
-    progress = math.clamp(elapsed / adjusted_cd, 0, 1)
-    fill_color = white_transparent
+  local base_cd = self.attack_cooldown or 1
+  local cd_timer = self.attack_cooldown_timer or 0
+  local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier or 1
+  local adjusted_cd = base_cd * distance_multiplier
+  -- elapsed since cooldown started; valid for both positive and negative timer values.
+  local elapsed = base_cd - cd_timer
+  if adjusted_cd <= 0 or elapsed >= adjusted_cd then
+    return -- unit is actually ready, hide the bar
   end
+  local progress = math.clamp(elapsed / adjusted_cd, 0, 1)
 
   local body_size = (self.shape and (self.shape.w or self.shape.rs)) or 8
   local bar_w = math.max(10, body_size)
@@ -444,7 +431,7 @@ function Troop:draw_attack_timer_bar()
   graphics.rectangle(self.x, bar_y + bar_h / 2, bar_w, bar_h, 1, 1, bg[5])
   if progress > 0 then
     local fill_w = bar_w * progress
-    graphics.rectangle(bar_x + fill_w / 2, bar_y + bar_h / 2, fill_w, bar_h, 1, 1, fill_color)
+    graphics.rectangle(bar_x + fill_w / 2, bar_y + bar_h / 2, fill_w, bar_h, 1, 1, white_transparent)
   end
 end
 

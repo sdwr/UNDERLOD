@@ -32,7 +32,9 @@ attack_cooldowns = {
 }
 
 troop_attack_cooldowns = {
-  ['archer'] = attack_cooldowns['fast'],
+  -- Archer dropped 'fast' (1.1s) -> 'very-fast' (0.8s) for a quicker rate
+  -- of fire now that the close-range cooldown buff is gone.
+  ['archer'] = attack_cooldowns['very-fast'],
   -- Laser is a global-range piercing beam, so it's paced out with a 'slow'
   -- cooldown to make each shot a deliberate choice instead of spam.
   ['laser'] = attack_cooldowns['slow'],
