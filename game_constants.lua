@@ -257,6 +257,10 @@ DISTANCE_TO_TARGET_FOR_IDLE = 7
 
 IDLE_DECEL_FORCE = 100
 DECELERATION_WEIGHT = 5
+-- Troops use a softer brake than enemies (5) so the post-M1 coast is
+-- visible-but-short rather than a snap-stop. Raise to 4-5 if too floaty,
+-- lower to 1 if you want a longer glide.
+TROOP_IDLE_BRAKE_WEIGHT = 2
 
 MAX_BOSS_FORCE = 1000
 MAX_ENEMY_FORCE = 1000

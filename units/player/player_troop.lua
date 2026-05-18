@@ -201,11 +201,10 @@ function Troop:update(dt)
     end
   end
 
-  -- Quick-stop brake: troops at rest (not following, not rallying, not
-  -- knocked) shed residual velocity quickly so they don't coast past the
-  -- cursor after the player releases M1. This is targeted (only when there's
-  -- no active movement driver) so it doesn't fight the steering force during
-  -- follow / rally / chase.
+  -- Light idle brake: troops at rest (no active movement driver) get a small
+  -- deceleration so they don't coast far past the cursor after M1 release,
+  -- but still glide visibly. Only zeroes the velocity below a 1-unit/sec
+  -- floor to prevent perpetual physics jitter.
   local can_brake =
     self.state ~= unit_states['following']
     and not self.rallying
@@ -214,9 +213,9 @@ function Troop:update(dt)
   if can_brake then
     local vx, vy = self:get_velocity()
     local speed = math.length(vx, vy)
-    if speed > 5 then
-      self:add_deceleration(DECELERATION_WEIGHT)
-    elseif speed > 0 then
+    if speed > 1 then
+      self:add_deceleration(TROOP_IDLE_BRAKE_WEIGHT)
+    else
       self:set_velocity(0, 0)
     end
   end
