@@ -1432,6 +1432,7 @@ function init()
     ['chaser'] = 50,
 
     --special enemies t1
+    ['brute'] = 150,
     ['goblin_archer'] = 150,
     ['archer'] = 150,
     ['burst'] = 150,
@@ -1494,6 +1495,7 @@ function init()
     ['assassin'] = purple[3],
     ['big_goblin_archer'] = green[3],
     ['archer'] = red[3],
+    ['brute'] = red[3],
     ['selfburst'] = orange[3],
     ['slowcharger'] = orange[3],
     ['turret'] = red[3],

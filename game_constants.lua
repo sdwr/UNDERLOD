@@ -421,6 +421,7 @@ enemy_movement_types = {
   -- per-instance flag aggro_when_close = true) to restore chase behavior.
   ['swarmer'] = MOVEMENT_TYPE_PATH_ACROSS,
   ['chaser'] = MOVEMENT_TYPE_SEEK,
+  ['brute'] = MOVEMENT_TYPE_SEEK,
   ['cleaver'] = MOVEMENT_TYPE_SEEK,
   
   -- Ranged units that maintain distance

@@ -27,11 +27,16 @@ function Wave_Types:Create_Normal_Wave(level)
   local num_special_enemies_left = get_num_special_enemies_by_level(level)
   local wave = {}
 
+  local pick_special = function()
+    if level == 1 then return 'brute' end
+    return Get_Random_Special_Enemy(tier)
+  end
+
   --first set
   table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
   --if only 1 speical enemy, save for round 2
   if num_special_enemies_left > 1 then
-    table.insert(wave, {'GROUP', Get_Random_Special_Enemy(tier), 1, 'nil'})
+    table.insert(wave, {'GROUP', pick_special(), 1, 'nil'})
     num_special_enemies_left = num_special_enemies_left - 1
   end
   table.insert(wave, {'DELAY', 1})
@@ -42,11 +47,11 @@ function Wave_Types:Create_Normal_Wave(level)
   --second set
   table.insert(wave, {'GROUP', 'swarmer', SWARMERS_PER_LEVEL(level), 'nil'})
   if num_special_enemies_left > 0 then
-    table.insert(wave, {'GROUP', Get_Random_Special_Enemy(tier), 1, 'close'})
+    table.insert(wave, {'GROUP', pick_special(), 1, 'close'})
     num_special_enemies_left = num_special_enemies_left - 1
   end
   if level <= 2 then
-    table.insert(wave, {'GROUP', 'archer', 1, 'close'})
+    table.insert(wave, {'GROUP', 'brute', 1, 'close'})
   end
 
   if level <= 3 then return wave end

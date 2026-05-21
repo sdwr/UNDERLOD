@@ -576,6 +576,7 @@ enemy_type_to_stats = {
 
     ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
     ['chaser'] = { dmg = 1, mvspd = 1 },
+    ['brute'] = { dmg = 1, mvspd = 1.5, hp = 1.6 },
     ['shooter'] = {},
     
     ['cleaver'] = {  },
