@@ -2,3 +2,4 @@ steam/
 builds/
 .vscode
 .aider*
+.worktrees/

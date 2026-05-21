@@ -147,6 +147,7 @@ TROOP_SWORD_WEAPON_RANGE = 55
 -- TROOP_SHOTGUN_RANGE * 1.3 before disappearing, so there's a small
 -- ribbon of "stray hit" range past the engage distance.
 TROOP_SHOTGUN_RANGE = 100
+TROOP_ARCHER_RANGE = 100
 
 REGULAR_ENEMY_HP = 45
 REGULAR_ENEMY_DAMAGE = 15
