@@ -142,12 +142,12 @@ enemy_cast_times = {
 
 TROOP_RANGE = 400
 TROOP_SWORDSMAN_RANGE = 80
-TROOP_SWORD_WEAPON_RANGE = 55
+TROOP_SWORD_WEAPON_RANGE = 50
 -- Shotgun: much shorter than archer (500). Pellets actually fly to
 -- TROOP_SHOTGUN_RANGE * 1.3 before disappearing, so there's a small
 -- ribbon of "stray hit" range past the engage distance.
-TROOP_SHOTGUN_RANGE = 100
-TROOP_ARCHER_RANGE = 100
+TROOP_SHOTGUN_RANGE = 60
+TROOP_ARCHER_RANGE = 75
 
 REGULAR_ENEMY_HP = 45
 REGULAR_ENEMY_DAMAGE = 15

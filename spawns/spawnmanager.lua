@@ -1073,12 +1073,12 @@ end
 function Spawn_Enemy_Sound(arena, isBoss)
   if isBoss then
     -- Boss spawn keeps a slightly higher / wider pitch (still notable).
-    alert1:play{pitch = random:float(0.75, 0.9), volume = 1}
+    alert1:play{pitch = random:float(0.75, 0.9), volume = 0}
   else
     -- Regular spawn: lower and tighter pitch so back-to-back spawns don't
     -- chirp wildly. Was 0.8-1.2 (40% spread, centered at 1.0); now
     -- 0.55-0.65 (~16% spread centered low).
-    alert1:play{pitch = random:float(0.55, 0.65), volume = 1}
+    alert1:play{pitch = random:float(0.55, 0.65), volume = 0}
   end
 end
 
