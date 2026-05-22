@@ -54,6 +54,11 @@ function Wave_Types:Create_Normal_Wave(level)
     table.insert(wave, {'GROUP', 'brute', 1, 'close'})
   end
 
+  if level == 2 then
+    table.insert(wave, {'DELAY', 2})
+    table.insert(wave, {'GROUP', 'roach', random:int(4, 6), 'distant'})
+  end
+
   if level <= 3 then return wave end
 
   table.insert(wave, {'DELAY', 1})

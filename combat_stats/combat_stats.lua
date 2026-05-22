@@ -32,8 +32,7 @@ attack_cooldowns = {
 }
 
 troop_attack_cooldowns = {
-  -- Archer is intentionally below 'very-fast' (0.8s) at 0.45s for a
-  -- machine-gun feel paired with the 0.05s cast.
+  -- SC2 Marine attack period feel (~0.45s on Faster speed).
   ['archer'] = 0.45,
   -- Laser is a global-range piercing beam, so it's paced out with a 'slow'
   -- cooldown to make each shot a deliberate choice instead of spam.
@@ -106,6 +105,7 @@ enemy_cast_times = {
   ['singlemortar'] = PLANT2_CAST_TIME,
   ['snakearrow'] = GHOST_CAST_TIME,
   ['boomerang'] = ENT_CAST_TIME,
+  ['roach'] = 0.6,
   
   -- Enemies with instant cast (no animation or simple attacks)
   ['stomper'] = cast_times['instant'],
@@ -577,6 +577,7 @@ enemy_type_to_stats = {
     ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
     ['chaser'] = { dmg = 1, mvspd = 1 },
     ['brute'] = { dmg = 1, mvspd = 1.5, hp = 1.6 },
+    ['roach'] = { dmg = 1, mvspd = 1.6, hp = 1 },
     ['shooter'] = {},
     
     ['cleaver'] = {  },

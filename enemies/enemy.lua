@@ -351,7 +351,7 @@ function Enemy:acquire_target_seek_to_range()
   
   -- Calculate distance between enemy and player
   local distance_to_player = math.distance(self.x, self.y, player_location.x, player_location.y)
-  local desired_range = SEEK_TO_RANGE_PLAYER_RADIUS
+  local desired_range = self.seek_to_range_radius or SEEK_TO_RANGE_PLAYER_RADIUS
   
   -- Create circle around enemy with radius = distance to player
   local enemy_radius = SEEK_TO_RANGE_ENEMY_MOVEMENT_RADIUS

@@ -422,6 +422,7 @@ enemy_movement_types = {
   ['swarmer'] = MOVEMENT_TYPE_PATH_ACROSS,
   ['chaser'] = MOVEMENT_TYPE_SEEK,
   ['brute'] = MOVEMENT_TYPE_SEEK,
+  ['roach'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
   ['cleaver'] = MOVEMENT_TYPE_SEEK,
   
   -- Ranged units that maintain distance

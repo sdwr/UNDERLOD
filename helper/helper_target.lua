@@ -1,5 +1,10 @@
 Helper.Target = {}
 
+-- WARNING: routes through Group:get_closest_object_by_class, which filters on
+-- target.fully_onscreen. Only Enemy sets fully_onscreen (enemies/enemy.lua:164);
+-- Troops never set it, so this returns nil when called from an enemy looking
+-- for a friendly target. Use get_random_enemy (no onscreen filter) when an
+-- enemy needs to acquire a troop. See roach.lua / snakearrow.lua for examples.
 function Helper.Target:get_closest_enemy(object, exclude_list)
   local class_list
   if object.faction == 'friendly' then
