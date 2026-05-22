@@ -881,13 +881,17 @@ function Spawn_Group_With_Location(arena, group_data, wave_spawn_location, on_fi
 
     -- This loop initiates all spawn processes with 0.1 second spacing using SpawnManager's delay counter
     local spawn_offsets = {{x = -12, y = -12}, {x = 12, y = -12}, {x = 12, y = 12}, {x = -12, y = 12}, {x = 0, y = 0}}
-    
+
+    -- For path-across-varied movement, compute one heading for the whole group
+    -- so the swarm moves as a unit instead of fanning out individually.
+    local shared_path_heading = Compute_Shared_Path_Heading(type, wave_spawn_location)
+
     for i = 1, amount do
         local offset = spawn_offsets[i % #spawn_offsets + 1]
         local location = {x = wave_spawn_location.x + offset.x, y = wave_spawn_location.y + offset.y}
 
         local create_enemy_action = function()
-            Spawn_Enemy(arena, type, location, offset)
+            Spawn_Enemy(arena, type, location, offset, shared_path_heading)
             arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns - 1
         end
         arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns + 1
@@ -937,6 +941,11 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
     local spawn_type = group_data[3]
     amount = amount or 1
 
+    -- For path-across-varied movement, compute one heading for the whole group
+    -- so the swarm moves as a unit instead of fanning out individually. Use the
+    -- first spawn location as the reference point for the angle-to-center.
+    local shared_path_heading = nil
+
     -- This loop initiates all spawn processes at roughly the same time.
     for i = 1, amount do
         local location
@@ -948,11 +957,15 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
             location = Get_Point_In_Right_Half(arena)
         end
 
+        if not shared_path_heading then
+            shared_path_heading = Compute_Shared_Path_Heading(type, location)
+        end
+
         local create_enemy_action = function()
-            Spawn_Enemy(arena, type, location)
+            Spawn_Enemy(arena, type, location, nil, shared_path_heading)
         end
         arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns + 1
-        
+
         -- Stagger the spawn warnings slightly for a better visual effect.
         Create_Unit_With_Warning(arena, location, WAVE_SPAWN_WARNING_TIME, create_enemy_action, type)
     end
@@ -960,7 +973,7 @@ end
 
 
 -- This function is now just a simple unit factory.
-function Spawn_Enemy(arena, type, location)
+function Spawn_Enemy(arena, type, location, offset, path_heading)
   local data = {}
 
   local special_swarmer_type = nil
@@ -971,14 +984,34 @@ function Spawn_Enemy(arena, type, location)
       special_swarmer_type = SPECIAL_SWARMER_TYPES[random:weighted_pick(unpack(SPECIAL_SWARMER_WEIGHT_BY_TYPE[arena.level]))]
     end
   end
-  
+
   local enemy = Enemy{type = type, group = arena.main,
                       x = location.x, y = location.y,
                       special_swarmer_type = special_swarmer_type,
+                      path_heading = path_heading,
                       level = arena.level, data = data}
 
   Spawn_Enemy_Sound(arena, false)
   Spawn_Enemy_Effect(arena, enemy)
+end
+
+-- Returns a single path-across heading shared by an entire spawn group, or nil
+-- when the enemy type uses a different movement style. Used by Spawn_Group_*
+-- callers so all members of a swarm walk the same direction instead of each
+-- picking its own jittered angle.
+function Compute_Shared_Path_Heading(enemy_type, location)
+  if get_movement_type_by_enemy_type(enemy_type) ~= MOVEMENT_TYPE_PATH_ACROSS_VARIED then
+    return nil
+  end
+  local cx, cy = gw / 2, gh / 2
+  local dx, dy = cx - location.x, cy - location.y
+  local base
+  if dx == 0 and dy == 0 then
+    base = random:float(0, 2 * math.pi)
+  else
+    base = math.atan2(dy, dx)
+  end
+  return base + random:float(-PATH_ACROSS_VARIED_JITTER, PATH_ACROSS_VARIED_JITTER)
 end
 
 function Countdown(arena)

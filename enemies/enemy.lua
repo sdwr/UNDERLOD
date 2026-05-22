@@ -295,6 +295,8 @@ function Enemy:choose_movement_target()
     return self:acquire_target_random()
   elseif self.currentMovementAction == MOVEMENT_TYPE_PATH_ACROSS then
     return self:acquire_target_path_across()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_PATH_ACROSS_VARIED then
+    return self:acquire_target_path_across_varied()
   elseif self.currentMovementAction == MOVEMENT_TYPE_NONE then
     return false -- Stationary enemies don't need movement targets
   end
@@ -315,6 +317,8 @@ function Enemy:update_movement()
   elseif self.currentMovementAction == MOVEMENT_TYPE_WANDER then
     return self:update_move_wander()
   elseif self.currentMovementAction == MOVEMENT_TYPE_PATH_ACROSS then
+    return self:update_move_path_across()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_PATH_ACROSS_VARIED then
     return self:update_move_path_across()
   elseif self.currentMovementAction == MOVEMENT_TYPE_NONE then
     return false -- Stationary enemies don't move
@@ -480,6 +484,24 @@ function Enemy:acquire_target_path_across()
     else
       self.path_heading = math.atan2(dy, dx)
     end
+  end
+  return true
+end
+
+-- Same as path_across but the angle to center is jittered by up to
+-- PATH_ACROSS_VARIED_JITTER radians so a wave of enemies spreads across the
+-- arena instead of all funneling through the middle.
+function Enemy:acquire_target_path_across_varied()
+  if not self.path_heading then
+    local cx, cy = gw / 2, gh / 2
+    local dx, dy = cx - self.x, cy - self.y
+    local base
+    if dx == 0 and dy == 0 then
+      base = random:float(0, 2 * math.pi)
+    else
+      base = math.atan2(dy, dx)
+    end
+    self.path_heading = base + random:float(-PATH_ACROSS_VARIED_JITTER, PATH_ACROSS_VARIED_JITTER)
   end
   return true
 end

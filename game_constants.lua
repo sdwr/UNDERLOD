@@ -380,11 +380,18 @@ MOVEMENT_TYPE_NONE = 'none'
 -- doesn't actively chase the player.
 MOVEMENT_TYPE_PATH_ACROSS = 'path_across'
 
+-- Like PATH_ACROSS but the heading is rotated by a random offset (up to
+-- PATH_ACROSS_VARIED_JITTER radians) off the line to center, so a wave of
+-- enemies fans out across the arena instead of all funneling through the
+-- middle.
+MOVEMENT_TYPE_PATH_ACROSS_VARIED = 'path_across_varied'
+PATH_ACROSS_VARIED_JITTER = math.pi / 3
+
 -- Maximum simultaneously-alive enemies the spawn manager will allow. New
 -- spawn groups are throttled (held in a 'waiting_for_cap' state) until the
 -- live count drops below this threshold.
 MAX_ALIVE_ENEMIES = 40
-MOVEMENT_TYPES = {MOVEMENT_TYPE_SEEK, MOVEMENT_TYPE_LOOSE_SEEK, MOVEMENT_TYPE_SEEK_TO_RANGE, MOVEMENT_TYPE_RANDOM, MOVEMENT_TYPE_FLEE, MOVEMENT_TYPE_NONE, MOVEMENT_TYPE_PATH_ACROSS}
+MOVEMENT_TYPES = {MOVEMENT_TYPE_SEEK, MOVEMENT_TYPE_LOOSE_SEEK, MOVEMENT_TYPE_SEEK_TO_RANGE, MOVEMENT_TYPE_RANDOM, MOVEMENT_TYPE_FLEE, MOVEMENT_TYPE_NONE, MOVEMENT_TYPE_PATH_ACROSS, MOVEMENT_TYPE_PATH_ACROSS_VARIED}
 
 get_movement_type_by_enemy_type = function(enemy_type)
   return enemy_movement_types[enemy_type] or enemy_movement_types['default']
@@ -419,7 +426,7 @@ enemy_movement_types = {
   -- Swarmer was MOVEMENT_TYPE_LOOSE_SEEK (chase player). Defaults to walking
   -- straight across the map; set MOVEMENT_TYPE_LOOSE_SEEK here (or set the
   -- per-instance flag aggro_when_close = true) to restore chase behavior.
-  ['swarmer'] = MOVEMENT_TYPE_PATH_ACROSS,
+  ['swarmer'] = MOVEMENT_TYPE_PATH_ACROSS_VARIED,
   ['chaser'] = MOVEMENT_TYPE_SEEK,
   ['brute'] = MOVEMENT_TYPE_SEEK,
   ['roach'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
