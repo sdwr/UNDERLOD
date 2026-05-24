@@ -17,7 +17,7 @@ TROOP_DAMAGE = 11
 -- Troop base movement speed. Bumped 45 -> 65: at 45 the follow command and
 -- rally-to-center felt sluggish; 65 reads as "moving with intent" without
 -- being twitchy.
-TROOP_MS = 65
+TROOP_MS = 55
 -- Legacy constants (will be replaced)
 TROOP_BASE_COOLDOWN = 1.25
 TROOP_SWORDSMAN_BASE_COOLDOWN = 0.8
@@ -48,6 +48,7 @@ troop_attack_cooldowns = {
 -- Enemy type to cooldown mapping (replaces magic numbers)
 enemy_attack_cooldowns = {
   -- Regular enemies
+  ['roach'] = attack_cooldowns['very-fast'],
   ['goblin_archer'] = attack_cooldowns['fast'],
   ['stomper'] = attack_cooldowns['fast'],
   ['plasma'] = attack_cooldowns['fast'], 
@@ -106,6 +107,8 @@ enemy_cast_times = {
   ['snakearrow'] = GHOST_CAST_TIME,
   ['boomerang'] = ENT_CAST_TIME,
   ['roach'] = 0.6,
+  ['sniper'] = 1.5,
+  ['orb'] = 0.8,
   
   -- Enemies with instant cast (no animation or simple attacks)
   ['stomper'] = cast_times['instant'],
@@ -578,6 +581,8 @@ enemy_type_to_stats = {
     ['chaser'] = { dmg = 1, mvspd = 1 },
     ['brute'] = { dmg = 1, mvspd = 1.5, hp = 1.6 },
     ['roach'] = { dmg = 1, mvspd = 1.6, hp = 1 },
+    ['sniper'] = { dmg = 1, mvspd = 1, hp = 1 },
+    ['orb'] = { dmg = 1, mvspd = 0.8, hp = 1.8 },
     ['shooter'] = {},
     
     ['cleaver'] = {  },

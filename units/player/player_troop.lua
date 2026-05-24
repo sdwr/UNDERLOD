@@ -40,6 +40,12 @@ function Troop:init(args)
   Helper.Unit:set_state(self, unit_states['idle'])
 
   self.offscreen = false
+  -- Several enemy spells (SnakeArrow, bomb area, plasma barrage, etc.) look
+  -- up friendlies via get_objects_in_shape / get_closest_object_by_class,
+  -- both of which filter on .fully_onscreen. Only Enemy sets that in its
+  -- update, so without this troops would never register as targets. Troops
+  -- live in the visible play area, so static true is safe.
+  self.fully_onscreen = true
 end
 
 

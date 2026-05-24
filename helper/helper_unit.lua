@@ -727,6 +727,11 @@ function Helper.Unit:apply_knockback(unit, force, angle, duration, push_invulner
         return
     end
 
+    -- Hard immunity (separate from resistance which is clamped to 0.8 max).
+    if unit.knockback_immune then
+        return
+    end
+
     -- Apply knockback resistance
     local resistance = unit.knockback_resistance or 0
     local final_force = force * (1 - resistance)

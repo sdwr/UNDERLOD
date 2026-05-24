@@ -9,7 +9,19 @@ fns['init_enemy'] = function(self)
 
   self.class = 'special_enemy'
 
+  -- Lock body rotation at the physics level. self.freezerotation gets reset
+  -- to false by Unit:end_cast, so it can't be used to permanently freeze the
+  -- visual angle - set_fixed_rotation locks it for good. Projectile angles
+  -- are computed at fire time from unit->target, so the roach's body angle
+  -- is purely visual anyway.
+  self:set_fixed_rotation(true)
+
+  -- Roaches don't take knockback. knockback_resistance caps at 0.8 in
+  -- calculate_stats, so use the hard-immune flag instead.
+  self.knockback_immune = true
+
   self.baseActionTimer = 1.25
+  self.baseIdleTimer = 0.1
 
   self.move_option_weight = 0
   self.stopChasingInRange = true
@@ -20,30 +32,19 @@ fns['init_enemy'] = function(self)
   -- it under attack_range so the roach is in range to shoot once it arrives.
   self.seek_to_range_radius = self.attack_range - 10
 
-  -- Move-attack-reposition cadence. After firing, attacks_left hits 0 which
-  -- queues NUM_MOVES of MOVEMENT_TYPE_SEEK_TO_RANGE, so the roach repositions
-  -- if the target drifted out of attack_range before shooting again.
-  self.NUM_ATTACKS = 1
-  self.NUM_MOVES = 1
-  self.attacks_left = 0
-  self.moves_left = self.NUM_MOVES
-
+  -- Chase-and-shoot: if any troop is inside attack_range right now, fire;
+  -- otherwise close the gap via SEEK_TO_RANGE. No fixed alternation, so once
+  -- the roach is in range it spams attacks (gated by attack_cooldown) instead
+  -- of always inserting a reposition move between shots.
   self.custom_action_selector = function(self, viable_attacks, viable_movements)
     if self.attack_cooldown_timer > 0 then
       return 'retry', nil
     end
-    if self.moves_left > 0 then
-      self.moves_left = self.moves_left - 1
-      if self.moves_left == 0 then
-        self.attacks_left = self.NUM_ATTACKS
-      end
-      return 'movement', MOVEMENT_TYPE_SEEK_TO_RANGE
-    else
-      self.attacks_left = self.attacks_left - 1
-      if self.attacks_left == 0 then
-        self.moves_left = self.NUM_MOVES
-      end
+    local target = Helper.Target:get_random_enemy(self)
+    if target and self:in_range_of(target) then
       return 'attack', random:table(viable_attacks)
+    else
+      return 'movement', MOVEMENT_TYPE_SEEK_TO_RANGE
     end
   end
 
@@ -77,10 +78,10 @@ fns['draw_enemy'] = function(self)
     self:draw_fallback_animation()
   end
 
-  -- Visible windup ring while casting
+  -- Visible windup ring while casting (small - just enough to telegraph)
   if self.state == unit_states['casting'] and self.castObject then
     local pct = self.castObject:get_cast_percentage() or 0
-    graphics.circle(self.x, self.y, 6 + pct * 8, orange[5], 1)
+    graphics.circle(self.x, self.y, 3 + pct * 4, orange[5], 1)
   end
 end
 

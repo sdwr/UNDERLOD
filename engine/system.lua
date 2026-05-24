@@ -162,10 +162,18 @@ function system.save_run(data)
 end
 
 function system.load_run()
-  local chunk = nil
-  if love.filesystem.getInfo("run.txt") then chunk = love.filesystem.load("run.txt") end
-  if chunk then return chunk()
-  else return {} end
+  if not love.filesystem.getInfo("run.txt") then return {} end
+  local chunk, load_err = love.filesystem.load("run.txt")
+  if not chunk then
+    print("run.txt failed to load: " .. tostring(load_err) .. " - starting fresh")
+    return {}
+  end
+  local ok, result = pcall(chunk)
+  if not ok then
+    print("run.txt failed to execute: " .. tostring(result) .. " - starting fresh")
+    return {}
+  end
+  return result or {}
 end
 
 function system.save_stats()

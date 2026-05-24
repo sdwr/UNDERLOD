@@ -90,7 +90,9 @@ function Laser_Spell:init(args)
   self.laser_aim_width = Helper.Unit:apply_area_size_multiplier(self.unit, self.laser_aim_width)
   self.laser_width = Helper.Unit:apply_area_size_multiplier(self.unit, self.laser_width)
 
-  self.charge_sound = laser_charging:play{volume = 0.15}
+  if not self.silent_charge then
+    self.charge_sound = laser_charging:play{volume = 0.15}
+  end
 
   -- memory
   self.charge_time = 0
@@ -274,7 +276,7 @@ function Laser_Spell:fire_laser()
   else 
     self:try_end_cast()
   end
-  self.charge_sound:stop()
+  if self.charge_sound then self.charge_sound:stop() end
 end
 
 function Laser_Spell:try_damage()
@@ -387,11 +389,11 @@ function Laser_Spell:get_end_location(x, y, targetx, targety)
 end
 
 function Laser_Spell:die()
-  self.charge_sound:stop()
+  if self.charge_sound then self.charge_sound:stop() end
   Laser_Spell.super.die(self)
 end
 
 function Laser_Spell:cancel()
-  self.charge_sound:stop()
+  if self.charge_sound then self.charge_sound:stop() end
   Laser_Spell.super.cancel(self)
 end
