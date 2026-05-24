@@ -175,7 +175,8 @@ function Enemy:update(dt)
     -- progress bar - the bar is "enemies you defeated", not "enemies that
     -- passed through." If a wave's path-across enemies never get intercepted,
     -- the wave will keep cycling until enough are killed.
-    if self.currentMovementAction == MOVEMENT_TYPE_PATH_ACROSS then
+    if self.currentMovementAction == MOVEMENT_TYPE_PATH_ACROSS
+      or self.currentMovementAction == MOVEMENT_TYPE_PATH_ACROSS_VARIED then
       local buffer = 80
       if self.x < -buffer or self.x > gw + buffer
         or self.y < -buffer or self.y > gh + buffer then

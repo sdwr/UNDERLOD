@@ -38,8 +38,9 @@ LEVEL_SPAWN_POOLS = {
     },
   },
   [4] = {
-    basic = {type = 'swarmer', interval = BASIC_CLUMP_INTERVAL},
+    basic = {type = 'swarmer', interval = 3},
     specials = {
+      {type = 'brute', interval = 14, max_alive = 1},
       {type = 'orb', interval = 15, max_alive = 2},
     },
   },

@@ -697,6 +697,9 @@ function Helper.Unit:reset_knockback_variables(unit)
 end
 
 function Helper.Unit:apply_knockback_enemy(unit, force, angle)
+    if unit.knockback_immune then
+        return
+    end
     if math.length(unit:get_velocity()) > ENEMY_KNOCKBACK_VELOCITY_THRESHOLD then
         return
     end

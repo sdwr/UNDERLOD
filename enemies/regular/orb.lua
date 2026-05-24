@@ -47,9 +47,19 @@ fns['init_enemy'] = function(self)
   Set_Enemy_Shape(self, self.size)
 
   self.class = 'special_enemy'
-  self.baseActionTimer = 1.5
+  -- Long action timer so the approach SEEK_TO_RANGE runs uninterrupted until
+  -- the orb actually arrives (update_move_seek_to_range returns false at
+  -- arrival, which still flips to idle naturally).
+  self.baseActionTimer = 30
+  -- No idle gap between picking actions: orb starts moving the instant it
+  -- spawns instead of standing still for the default 0.3s.
+  self.baseIdleTimer = 0
   self.move_option_weight = 0
   self.stopChasingInRange = true
+
+  -- No knockback - orb is a positional threat; getting punted ruins the
+  -- "approach then become a turret" pattern.
+  self.knockback_immune = true
 
   -- Long attack range so the 8-direction burst can sweep most of the arena.
   -- seek_to_range_radius parks the orb just inside the arena rather than
@@ -107,20 +117,22 @@ fns['draw_enemy'] = function(self)
     self:draw_fallback_animation()
   end
 
-  -- Spin only after the orb has finished its approach. The angle is also
-  -- read by OrbBurst at fire time, but advancing it here makes the visual
-  -- spin between shots instead of only jumping per burst.
-  if (self.moves_left or 0) <= 0 then
+  -- Continuous cosmetic spin only while stationary (idle / stopped / casting
+  -- / channeling). During movement the dots are frozen so it reads as
+  -- "approaching" vs "winding up another burst".
+  if self.state ~= unit_states['moving'] then
     local dt = love.timer.getDelta and love.timer.getDelta() or 0
-    self.spin_angle = (self.spin_angle or 0) + self.spin_speed * dt
+    self.cosmetic_spin = (self.cosmetic_spin or 0) + (self.spin_speed or 0) * dt
   end
 
-  -- Four perimeter dots rotating around the orb to visualize the spin and
-  -- telegraph "this thing is winding up another burst soon".
+  -- Four perimeter dots. Base angle = spin_angle (the burst angle, which
+  -- only jumps by exactly half a sector per OrbBurst so consecutive bursts
+  -- bisect the previous ones cleanly). cosmetic_spin adds visible rotation
+  -- without affecting where the next burst fires.
   local body_size = (self.shape and self.shape.w or 18) / 2
   local r = body_size + 4
   for i = 0, 3 do
-    local a = self.spin_angle + (i * math.pi / 2)
+    local a = (self.spin_angle or 0) + (self.cosmetic_spin or 0) + (i * math.pi / 2)
     local px = self.x + math.cos(a) * r
     local py = self.y + math.sin(a) * r
     graphics.circle(px, py, 1.6, yellow[5])
