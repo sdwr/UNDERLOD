@@ -21,48 +21,62 @@ end
 -- pressuring them.
 LEVEL_SPECIAL_FIRST_FIRE = 17
 
+-- Special-pool entries can be either:
+--   {type, at = 0.3, group_size?}         - one-shot at this fraction of the
+--                                            level's kill_quota progress
+--   {type, interval, max_alive, ...}      - recurring timer-based pool
+-- Mix freely. The basic pool is always timer-based (continuous filler).
 LEVEL_SPAWN_POOLS = {
   [1] = {
     basic = {type = 'swarmer', interval = BASIC_CLUMP_INTERVAL},
     specials = {
-      {type = 'brute', interval = 17, max_alive = 2, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
+      {type = 'brute', at = 0.4},
+      {type = 'brute', at = 0.85},
     },
   },
   [2] = {
     basic = {type = 'swarmer', interval = BASIC_CLUMP_INTERVAL},
     specials = {
-      {type = 'roach', interval = 14, max_alive = 6, group_size = function() return random:int(2, 3) end, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
+      {type = 'brute', at = 0.3},
+      {type = 'brute', at = 0.7},
     },
   },
   [3] = {
     basic = {type = 'swarmer', interval = BASIC_CLUMP_INTERVAL},
     specials = {
-      {type = 'roach', interval = 12, max_alive = 4, group_size = 2, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
-      {type = 'sniper', interval = 20, max_alive = 1, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
+      {type = 'roach', at = 0.3, group_size = function() return random:int(2, 3) end},
+      {type = 'sniper', at = 0.55},
+      {type = 'roach', at = 0.8, group_size = function() return random:int(2, 3) end},
     },
   },
   [4] = {
-    basic = {type = 'swarmer', interval = 3},
+    basic = {type = 'swarmer', interval = 4},
     specials = {
-      {type = 'brute', interval = 14, max_alive = 1, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
-      {type = 'orb', interval = 15, max_alive = 2, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
+      {type = 'brute', at = 0.2},
+      {type = 'orb', at = 0.45},
+      {type = 'brute', at = 0.7},
+      {type = 'orb', at = 0.9},
     },
   },
   [5] = {
     basic = {type = 'swarmer', interval = BASIC_CLUMP_INTERVAL},
     specials = {
-      {type = 'snakearrow', interval = 14, max_alive = 2, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
-      {type = 'cleaver', interval = 10, max_alive = 2, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
-      {type = 'mortar', interval = 18, max_alive = 1, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
+      {type = 'cleaver', at = 0.15},
+      {type = 'snakearrow', at = 0.35},
+      {type = 'mortar', at = 0.55},
+      {type = 'cleaver', at = 0.75},
+      {type = 'snakearrow', at = 0.9},
     },
   },
   -- 6 is stompy boss
   [7] = {
     basic = {type = 'swarmer', interval = BASIC_CLUMP_INTERVAL},
     specials = {
-      {type = 'mortar', interval = 14, max_alive = 2, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
-      {type = 'charger', interval = 12, max_alive = 2, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
-      {type = 'burst', interval = 16, max_alive = 1, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
+      {type = 'charger', at = 0.15},
+      {type = 'mortar', at = 0.35},
+      {type = 'burst', at = 0.55},
+      {type = 'charger', at = 0.75},
+      {type = 'mortar', at = 0.9},
     },
   },
 }
@@ -103,9 +117,12 @@ function Build_Level_List(max_level)
       -- round_power = total kill power for gold-per-kill (each kill grants
       -- its enemy_to_round_power as a fraction of this total). kill_quota is
       -- the level-completion gate. Base bumped +500 so even level 1 has
-      -- meaningful length; multiplier ramps 1.5 -> 1.5 + 0.10*(level-1).
+      -- meaningful length; multiplier ramps 1.5 -> 1.5 + 0.10*(level-1) and
+      -- gets a flat +35% from level 2 onward to lengthen mid/late levels
+      -- without inflating the gold-per-kill denominator.
       level_list[i].round_power = (ROUND_POWER_BY_LEVEL[i] or 2000) + 500
       local quota_mult = 1.5 + 0.10 * (i - 1)
+      if i >= 2 then quota_mult = quota_mult * 1.35 end
       level_list[i].kill_quota = math.ceil(level_list[i].round_power * quota_mult)
       level_list[i].waves_power = {level_list[i].kill_quota}
     end

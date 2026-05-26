@@ -48,7 +48,7 @@ troop_attack_cooldowns = {
 -- Enemy type to cooldown mapping (replaces magic numbers)
 enemy_attack_cooldowns = {
   -- Regular enemies
-  ['roach'] = attack_cooldowns['very-fast'],
+  ['roach'] = attack_cooldowns['very-fast'] * 1.4 * 1.2,
   ['orb'] = attack_cooldowns['very-slow'],
   ['goblin_archer'] = attack_cooldowns['fast'],
   ['stomper'] = attack_cooldowns['fast'],

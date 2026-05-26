@@ -592,6 +592,7 @@ end
 function SpawnManager:init_spawn_pools()
   self.basic_pool = nil
   self.special_pools = {}
+  self.special_events = {}
 
   local config = self.level_data and self.level_data.spawn_config
   if not config then return end
@@ -606,19 +607,29 @@ function SpawnManager:init_spawn_pools()
     }
   end
 
+  -- Special config entries can be one of:
+  --   {type, at = 0.3, group_size?}        -> one-shot scheduled event,
+  --                                            fires when kill progress hits `at`
+  --   {type, interval, max_alive, ...}     -> recurring timer-based pool
+  -- Both kinds can coexist in one level.
   for _, pool in ipairs(config.specials or {}) do
-    -- next_fire default: small fraction of the interval so first specials
-    -- don't arrive at exactly t=0 alongside the entry burst of basics.
-    -- first_fire override lets a level config delay a specific pool's
-    -- first spawn (e.g. give the player 10s before the first brute).
-    local first_fire = pool.first_fire or (pool.interval * random:float(0.3, 0.8))
-    table.insert(self.special_pools, {
-      type = pool.type,
-      interval = pool.interval,
-      max_alive = pool.max_alive or 1,
-      group_size = pool.group_size,
-      next_fire = first_fire,
-    })
+    if pool.at then
+      table.insert(self.special_events, {
+        type = pool.type,
+        at = pool.at,
+        group_size = pool.group_size,
+        fired = false,
+      })
+    else
+      local first_fire = pool.first_fire or (pool.interval * random:float(0.3, 0.8))
+      table.insert(self.special_pools, {
+        type = pool.type,
+        interval = pool.interval,
+        max_alive = pool.max_alive or 1,
+        group_size = pool.group_size,
+        next_fire = first_fire,
+      })
+    end
   end
 end
 
@@ -806,6 +817,31 @@ function SpawnManager:tick_spawn_pools(dt)
       pool.next_fire = jittered_interval(pool.interval)
     end
   end
+
+  -- Scheduled events: discrete spawns triggered at fixed kill_quota progress
+  -- (e.g. brute at 30%, brute at 70%). Each event fires exactly once when the
+  -- threshold is crossed. Respects the aggregate special cap but ignores the
+  -- per-pool max_alive (designer chose the moment, trust it).
+  if #self.special_events > 0 then
+    local quota = self.level_data and self.level_data.kill_quota
+    local progress = (quota and quota > 0) and ((self.wave_kill_power or 0) / quota) or 0
+    for _, ev in ipairs(self.special_events) do
+      if not ev.fired and progress >= ev.at and not self:quota_met() then
+        local group_size = ev.group_size or 1
+        if type(group_size) == 'function' then group_size = group_size() end
+        if not specials_capped then
+          self.wave_spawn_delay = 0
+          Spawn_Group_With_Location(self.arena,
+            {ev.type, group_size, 'nil'},
+            Get_Offscreen_Spawn_Point())
+          counts.specials = counts.specials + group_size
+          counts.by_type[ev.type] = (counts.by_type[ev.type] or 0) + group_size
+          specials_capped = counts.specials >= (MAX_ALIVE_SPECIALS or 9999)
+          ev.fired = true
+        end
+      end
+    end
+  end
 end
 
 -- One pass over the alive enemies bucketing by class + per-type counts. Used
@@ -991,8 +1027,19 @@ function Spawn_Enemy(arena, type, location, offset, path_heading)
                       path_heading = path_heading,
                       level = arena.level, data = data}
 
-  Spawn_Enemy_Sound(arena, false)
+  -- Only specials get a spawn cue. Swarmers/regular enemies arrive silently
+  -- so the audio stays clean when a big clump pops in at once.
+  if enemy and enemy.class == 'special_enemy' then
+    Spawn_Special_Sound(arena)
+  end
   Spawn_Enemy_Effect(arena, enemy)
+end
+
+-- Distinct cue for special enemies appearing. Lower pitch + audible volume
+-- so it reads as "something dangerous just arrived" without competing with
+-- the boss alert.
+function Spawn_Special_Sound(arena)
+  alert1:play{pitch = random:float(0.7, 0.85), volume = 0.5}
 end
 
 -- Returns a single path-across heading shared by an entire spawn group, or nil

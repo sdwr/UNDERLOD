@@ -17,8 +17,10 @@ fns['init_enemy'] = function(self)
   self:set_fixed_rotation(true)
 
   -- Roaches don't take knockback. knockback_resistance caps at 0.8 in
-  -- calculate_stats, so use the hard-immune flag instead.
+  -- calculate_stats so the hard-immune flag is required to fully ignore it.
+  -- Both Helper.Unit:apply_knockback and apply_knockback_enemy honor this.
   self.knockback_immune = true
+
 
   self.baseActionTimer = 1.25
   self.baseIdleTimer = 0.1
@@ -62,7 +64,7 @@ fns['init_enemy'] = function(self)
       group = main.current.main,
       color = orange[0],
       damage = function() return self.dmg end,
-      v = 100,
+      v = 55,
       max_distance = self.attack_range * 1.5,
       unit = self,
       source = 'roach',
