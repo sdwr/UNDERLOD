@@ -16,49 +16,53 @@ end
 -- fire on their own jittered timer (skip-on-cap, not queued). LEVEL_SPAWN_POOLS
 -- is indexed by level; non-boss levels beyond the table fall back to the
 -- highest defined entry.
+-- Every special-pool spawn waits 17s before its first fire so the player gets
+-- a uniform breathing-room window at level start before specials begin
+-- pressuring them.
+LEVEL_SPECIAL_FIRST_FIRE = 17
+
 LEVEL_SPAWN_POOLS = {
   [1] = {
     basic = {type = 'swarmer', interval = BASIC_CLUMP_INTERVAL},
     specials = {
-      {type = 'brute', interval = 10, max_alive = 2},
+      {type = 'brute', interval = 17, max_alive = 2, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
     },
   },
   [2] = {
     basic = {type = 'swarmer', interval = BASIC_CLUMP_INTERVAL},
     specials = {
-      {type = 'brute', interval = 14, max_alive = 1},
-      {type = 'roach', interval = 14, max_alive = 6, group_size = function() return random:int(2, 3) end},
+      {type = 'roach', interval = 14, max_alive = 6, group_size = function() return random:int(2, 3) end, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
     },
   },
   [3] = {
     basic = {type = 'swarmer', interval = BASIC_CLUMP_INTERVAL},
     specials = {
-      {type = 'roach', interval = 12, max_alive = 4, group_size = 2},
-      {type = 'sniper', interval = 20, max_alive = 1},
+      {type = 'roach', interval = 12, max_alive = 4, group_size = 2, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
+      {type = 'sniper', interval = 20, max_alive = 1, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
     },
   },
   [4] = {
     basic = {type = 'swarmer', interval = 3},
     specials = {
-      {type = 'brute', interval = 14, max_alive = 1},
-      {type = 'orb', interval = 15, max_alive = 2},
+      {type = 'brute', interval = 14, max_alive = 1, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
+      {type = 'orb', interval = 15, max_alive = 2, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
     },
   },
   [5] = {
     basic = {type = 'swarmer', interval = BASIC_CLUMP_INTERVAL},
     specials = {
-      {type = 'snakearrow', interval = 14, max_alive = 2},
-      {type = 'cleaver', interval = 10, max_alive = 2},
-      {type = 'mortar', interval = 18, max_alive = 1},
+      {type = 'snakearrow', interval = 14, max_alive = 2, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
+      {type = 'cleaver', interval = 10, max_alive = 2, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
+      {type = 'mortar', interval = 18, max_alive = 1, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
     },
   },
   -- 6 is stompy boss
   [7] = {
     basic = {type = 'swarmer', interval = BASIC_CLUMP_INTERVAL},
     specials = {
-      {type = 'mortar', interval = 14, max_alive = 2},
-      {type = 'charger', interval = 12, max_alive = 2},
-      {type = 'burst', interval = 16, max_alive = 1},
+      {type = 'mortar', interval = 14, max_alive = 2, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
+      {type = 'charger', interval = 12, max_alive = 2, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
+      {type = 'burst', interval = 16, max_alive = 1, first_fire = LEVEL_SPECIAL_FIRST_FIRE},
     },
   },
 }

@@ -607,14 +607,17 @@ function SpawnManager:init_spawn_pools()
   end
 
   for _, pool in ipairs(config.specials or {}) do
+    -- next_fire default: small fraction of the interval so first specials
+    -- don't arrive at exactly t=0 alongside the entry burst of basics.
+    -- first_fire override lets a level config delay a specific pool's
+    -- first spawn (e.g. give the player 10s before the first brute).
+    local first_fire = pool.first_fire or (pool.interval * random:float(0.3, 0.8))
     table.insert(self.special_pools, {
       type = pool.type,
       interval = pool.interval,
       max_alive = pool.max_alive or 1,
       group_size = pool.group_size,
-      -- Start at a small fraction of the interval so first specials don't
-      -- arrive at exactly t=0 alongside the entry burst of basics.
-      next_fire = pool.interval * random:float(0.3, 0.8),
+      next_fire = first_fire,
     })
   end
 end

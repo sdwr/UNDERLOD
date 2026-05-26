@@ -442,9 +442,17 @@ ENEMY_LEVEL_SCALING = function(level)
   return scale
 end
 
+-- Post-boss HP multiplier on top of the per-level scaling: enemies get a
+-- step-function bump after each boss is cleared. Caps at 4x.
+function POST_BOSS_HP_MULT(level)
+  if level >= 12 then return 4 end  -- after dragon (level 11)
+  if level >= 7 then return 2 end   -- after stompy (level 6)
+  return 1
+end
+
 SCALED_ENEMY_HP = function(level, base_hp)
   local scale = ENEMY_SCALE_BY_LEVEL[level]
-  return base_hp + (base_hp * 0.2 * scale)
+  return (base_hp + (base_hp * 0.2 * scale)) * POST_BOSS_HP_MULT(level)
 end
 
 SCALED_ENEMY_DAMAGE = function(level, base_dmg)
@@ -494,7 +502,7 @@ BOSS_SCALE_BY_LEVEL =
 
 SCALED_BOSS_HP = function(level, base_hp)
   local scale = BOSS_SCALE_BY_LEVEL[level]
-  return base_hp + (base_hp * 0.8 * scale)
+  return (base_hp + (base_hp * 0.8 * scale)) * POST_BOSS_HP_MULT(level)
 end
 
 SCALED_BOSS_DAMAGE = function(level, base_dmg)
