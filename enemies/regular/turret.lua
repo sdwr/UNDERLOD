@@ -165,7 +165,8 @@ function SingleProjectile:init(args)
     damage = self.damage,
     color = self.color,
     unit = self.unit,
-    source = self.source or 'single_projectile'
+    source = self.source or 'single_projectile',
+    max_distance = self.max_distance,
   }
   
   -- This wrapper object is done

@@ -175,7 +175,8 @@ function Enemy:update(dt)
     -- progress bar - the bar is "enemies you defeated", not "enemies that
     -- passed through." If a wave's path-across enemies never get intercepted,
     -- the wave will keep cycling until enough are killed.
-    if self.currentMovementAction == MOVEMENT_TYPE_PATH_ACROSS then
+    if self.currentMovementAction == MOVEMENT_TYPE_PATH_ACROSS
+      or self.currentMovementAction == MOVEMENT_TYPE_PATH_ACROSS_VARIED then
       local buffer = 80
       if self.x < -buffer or self.x > gw + buffer
         or self.y < -buffer or self.y > gh + buffer then
@@ -295,6 +296,8 @@ function Enemy:choose_movement_target()
     return self:acquire_target_random()
   elseif self.currentMovementAction == MOVEMENT_TYPE_PATH_ACROSS then
     return self:acquire_target_path_across()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_PATH_ACROSS_VARIED then
+    return self:acquire_target_path_across_varied()
   elseif self.currentMovementAction == MOVEMENT_TYPE_NONE then
     return false -- Stationary enemies don't need movement targets
   end
@@ -315,6 +318,8 @@ function Enemy:update_movement()
   elseif self.currentMovementAction == MOVEMENT_TYPE_WANDER then
     return self:update_move_wander()
   elseif self.currentMovementAction == MOVEMENT_TYPE_PATH_ACROSS then
+    return self:update_move_path_across()
+  elseif self.currentMovementAction == MOVEMENT_TYPE_PATH_ACROSS_VARIED then
     return self:update_move_path_across()
   elseif self.currentMovementAction == MOVEMENT_TYPE_NONE then
     return false -- Stationary enemies don't move
@@ -351,7 +356,7 @@ function Enemy:acquire_target_seek_to_range()
   
   -- Calculate distance between enemy and player
   local distance_to_player = math.distance(self.x, self.y, player_location.x, player_location.y)
-  local desired_range = SEEK_TO_RANGE_PLAYER_RADIUS
+  local desired_range = self.seek_to_range_radius or SEEK_TO_RANGE_PLAYER_RADIUS
   
   -- Create circle around enemy with radius = distance to player
   local enemy_radius = SEEK_TO_RANGE_ENEMY_MOVEMENT_RADIUS
@@ -480,6 +485,24 @@ function Enemy:acquire_target_path_across()
     else
       self.path_heading = math.atan2(dy, dx)
     end
+  end
+  return true
+end
+
+-- Same as path_across but the angle to center is jittered by up to
+-- PATH_ACROSS_VARIED_JITTER radians so a wave of enemies spreads across the
+-- arena instead of all funneling through the middle.
+function Enemy:acquire_target_path_across_varied()
+  if not self.path_heading then
+    local cx, cy = gw / 2, gh / 2
+    local dx, dy = cx - self.x, cy - self.y
+    local base
+    if dx == 0 and dy == 0 then
+      base = random:float(0, 2 * math.pi)
+    else
+      base = math.atan2(dy, dx)
+    end
+    self.path_heading = base + random:float(-PATH_ACROSS_VARIED_JITTER, PATH_ACROSS_VARIED_JITTER)
   end
   return true
 end

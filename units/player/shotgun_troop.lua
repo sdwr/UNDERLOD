@@ -56,6 +56,7 @@ function Shotgun_Troop:create_spelldata()
     volume = 0.5,
     pitch = 0.95,
     sound_table = {cannoneer1, cannoneer2},
+    sound_duration = 0.2,
   }
 end
 

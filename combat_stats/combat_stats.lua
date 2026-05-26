@@ -17,7 +17,7 @@ TROOP_DAMAGE = 11
 -- Troop base movement speed. Bumped 45 -> 65: at 45 the follow command and
 -- rally-to-center felt sluggish; 65 reads as "moving with intent" without
 -- being twitchy.
-TROOP_MS = 65
+TROOP_MS = 55
 -- Legacy constants (will be replaced)
 TROOP_BASE_COOLDOWN = 1.25
 TROOP_SWORDSMAN_BASE_COOLDOWN = 0.8
@@ -32,8 +32,7 @@ attack_cooldowns = {
 }
 
 troop_attack_cooldowns = {
-  -- Archer is intentionally below 'very-fast' (0.8s) at 0.45s for a
-  -- machine-gun feel paired with the 0.05s cast.
+  -- SC2 Marine attack period feel (~0.45s on Faster speed).
   ['archer'] = 0.45,
   -- Laser is a global-range piercing beam, so it's paced out with a 'slow'
   -- cooldown to make each shot a deliberate choice instead of spam.
@@ -49,6 +48,8 @@ troop_attack_cooldowns = {
 -- Enemy type to cooldown mapping (replaces magic numbers)
 enemy_attack_cooldowns = {
   -- Regular enemies
+  ['roach'] = attack_cooldowns['very-fast'] * 1.4 * 1.2,
+  ['orb'] = attack_cooldowns['very-slow'],
   ['goblin_archer'] = attack_cooldowns['fast'],
   ['stomper'] = attack_cooldowns['fast'],
   ['plasma'] = attack_cooldowns['fast'], 
@@ -106,6 +107,9 @@ enemy_cast_times = {
   ['singlemortar'] = PLANT2_CAST_TIME,
   ['snakearrow'] = GHOST_CAST_TIME,
   ['boomerang'] = ENT_CAST_TIME,
+  ['roach'] = 0.6,
+  ['sniper'] = 1.5,
+  ['orb'] = 0.8,
   
   -- Enemies with instant cast (no animation or simple attacks)
   ['stomper'] = cast_times['instant'],
@@ -142,11 +146,12 @@ enemy_cast_times = {
 
 TROOP_RANGE = 400
 TROOP_SWORDSMAN_RANGE = 80
-TROOP_SWORD_WEAPON_RANGE = 55
+TROOP_SWORD_WEAPON_RANGE = 50
 -- Shotgun: much shorter than archer (500). Pellets actually fly to
 -- TROOP_SHOTGUN_RANGE * 1.3 before disappearing, so there's a small
 -- ribbon of "stray hit" range past the engage distance.
-TROOP_SHOTGUN_RANGE = 100
+TROOP_SHOTGUN_RANGE = 60
+TROOP_ARCHER_RANGE = 75
 
 REGULAR_ENEMY_HP = 45
 REGULAR_ENEMY_DAMAGE = 15
@@ -437,9 +442,17 @@ ENEMY_LEVEL_SCALING = function(level)
   return scale
 end
 
+-- Post-boss HP multiplier on top of the per-level scaling: enemies get a
+-- step-function bump after each boss is cleared. Caps at 4x.
+function POST_BOSS_HP_MULT(level)
+  if level >= 12 then return 4 end  -- after dragon (level 11)
+  if level >= 7 then return 2 end   -- after stompy (level 6)
+  return 1
+end
+
 SCALED_ENEMY_HP = function(level, base_hp)
   local scale = ENEMY_SCALE_BY_LEVEL[level]
-  return base_hp + (base_hp * 0.2 * scale)
+  return (base_hp + (base_hp * 0.2 * scale)) * POST_BOSS_HP_MULT(level)
 end
 
 SCALED_ENEMY_DAMAGE = function(level, base_dmg)
@@ -489,7 +502,7 @@ BOSS_SCALE_BY_LEVEL =
 
 SCALED_BOSS_HP = function(level, base_hp)
   local scale = BOSS_SCALE_BY_LEVEL[level]
-  return base_hp + (base_hp * 0.8 * scale)
+  return (base_hp + (base_hp * 0.8 * scale)) * POST_BOSS_HP_MULT(level)
 end
 
 SCALED_BOSS_DAMAGE = function(level, base_dmg)
@@ -575,6 +588,10 @@ enemy_type_to_stats = {
 
     ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
     ['chaser'] = { dmg = 1, mvspd = 1 },
+    ['brute'] = { dmg = 1, mvspd = 1.5, hp = 1.6 },
+    ['roach'] = { dmg = 1, mvspd = 1.6, hp = 1 },
+    ['sniper'] = { dmg = 1, mvspd = 1, hp = 1 },
+    ['orb'] = { dmg = 1, mvspd = 0.8, hp = 1.8 },
     ['shooter'] = {},
     
     ['cleaver'] = {  },

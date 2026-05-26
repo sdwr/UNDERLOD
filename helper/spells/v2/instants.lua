@@ -135,9 +135,17 @@ function ArrowProjectile:init(args)
   end
   -- Spelldata.sound_table lets a caller swap the per-projectile sound set
   -- (e.g. the shotgun uses a meatier cannoneer table). Falls back to the
-  -- default arrow-release trio.
+  -- default arrow-release trio. sound_duration optionally hard-stops the
+  -- playing instance after N seconds (used by the shotgun to trim a long
+  -- cannon sample down to a punchy clip without editing the .ogg, which
+  -- other callers still rely on at full length).
   local sounds = self.sound_table or {arrow_release1, arrow_release2, arrow_release3}
-  table.random(sounds):play{volume = volume, pitch = pitch}
+  local sound_instance = table.random(sounds):play{volume = volume, pitch = pitch}
+  if self.sound_duration and sound_instance and sound_instance.stop then
+    self.t:after(self.sound_duration, function()
+      if sound_instance and sound_instance.stop then sound_instance:stop() end
+    end)
+  end
 
   self.already_hit_targets = {}
 end

@@ -71,7 +71,9 @@ function ProgressBar:highest_wave_complete()
 end
 
 function ProgressBar:increase_with_particles(roundPower, x, y)
-  self.segments[self.active_wave]:create_progress_particle(roundPower, x, y)
+  local seg = self.segments[self.active_wave] or self.segments[#self.segments]
+  if not seg then return end
+  seg:create_progress_particle(roundPower, x, y)
 end
 
 function ProgressBar:complete_wave(wave_index)

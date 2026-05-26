@@ -65,6 +65,10 @@ function EnemyProjectile:init(args)
   self.damage = get_dmg_value(self.damage)
   if tostring(self.x) == tostring(0/0) or tostring(self.y) == tostring(0/0) then self.dead = true; return end
   self:set_as_rectangle(self.width, self.height, 'dynamic', 'enemy_projectile')
+
+  self.max_distance = args.max_distance
+  self.start_x = self.x
+  self.start_y = self.y
 end
 
 
@@ -73,6 +77,10 @@ function EnemyProjectile:update(dt)
 
   self:set_angle(self.r)
   self:move_along_angle(self.v, self.r)
+
+  if self.max_distance and math.distance(self.start_x, self.start_y, self.x, self.y) >= self.max_distance then
+    self:die()
+  end
 end
 
 
@@ -110,7 +118,7 @@ end
 
 
 function EnemyProjectile:on_trigger_enter(other, contact)
-  if other:is(Player) or other.is_troop then
+  if (other:is(Player) or other.is_troop) and other.hit then
     self:die(self.x, self.y, nil, random:int(2, 3))
     other:hit(self.damage, self.unit)
 

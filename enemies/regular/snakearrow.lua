@@ -14,6 +14,9 @@ fns['init_enemy'] = function(self)
 
   -- Attack speed now handled by base class
 
+  self.attack_range = 250
+  self.attack_sensor = Circle(self.x, self.y, self.attack_range)
+
   --set attacks
   self.attack_options = {}
 

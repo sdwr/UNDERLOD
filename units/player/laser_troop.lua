@@ -18,6 +18,14 @@ function Laser_Troop:draw_cast_timer()
   Laser_Troop.super.draw_cast_timer(self)
 end
 
+-- The laser's charge happens during the 'channeling' state (inside Laser_Spell,
+-- not as a Cast cast_time). The base cooldown bar only hides during 'casting',
+-- so it would still draw during the visible windup. Hide it here too.
+function Laser_Troop:draw_attack_timer_bar()
+  if self.state == unit_states['channeling'] then return end
+  Laser_Troop.super.draw_attack_timer_bar(self)
+end
+
 
 --conditions to attack should be:
 --1. state is 'normal' (includes has assigned_target)
@@ -65,6 +73,7 @@ function Laser_Troop:setup_cast(cast_target)
       fire_follows_unit = false,
       fade_fire_draw = true,
       fade_in_aim_draw = true,
+      silent_charge = true,
     }
   }
   self:cast(data)
@@ -90,6 +99,7 @@ function Laser_Troop:instant_attack(cast_target)
     fire_follows_unit = true,
     fade_fire_draw = true,
     fade_in_aim_draw = true,
+    silent_charge = true,
   }
 end
 

@@ -29,6 +29,10 @@ function shared_init()
 
   bg_off = Color(46, 46, 46)
   bg_gradient = GradientImage('vertical', Color(128, 128, 128, 0), Color(0, 0, 0, 0.3))
+  -- Level background. 3840x2160 source so it stays crisp on high-res displays;
+  -- drawn at gw/gh scale = 1/8. Only used while in a combat arena (the menu
+  -- and buy screen keep the original checker pattern).
+  level_background_image = Image('newSprites/game-background-3840x2160')
 
   set_status_effect_mask_colors()
 
@@ -92,15 +96,24 @@ function shared_draw(draw_action)
 
   background_canvas:draw_to(function()
     camera:attach()
-    for i = 1, 64 do
-      for j = 1, 18 do
-        if j % 2 == 0 then
-          if i % 2 == 1 then
-            graphics.rectangle2(0 + (i-1)*22, 0 + (j-1)*22, 22, 22, nil, nil, bg_off)
-          end
-        else
-          if i % 2 == 0 then
-            graphics.rectangle2(0 + (i-1)*22, 0 + (j-1)*22, 22, 22, nil, nil, bg_off)
+    -- In combat: use the level background image. Elsewhere (menu, buy screen):
+    -- keep the original checker pattern.
+    local in_combat = main and main.current and main.current.is and main.current:is(WorldManager)
+    if in_combat and level_background_image then
+      local sx_bg = gw / level_background_image.w
+      local sy_bg = gh / level_background_image.h
+      level_background_image:draw(gw/2, gh/2, 0, sx_bg, sy_bg)
+    else
+      for i = 1, 64 do
+        for j = 1, 18 do
+          if j % 2 == 0 then
+            if i % 2 == 1 then
+              graphics.rectangle2(0 + (i-1)*22, 0 + (j-1)*22, 22, 22, nil, nil, bg_off)
+            end
+          else
+            if i % 2 == 0 then
+              graphics.rectangle2(0 + (i-1)*22, 0 + (j-1)*22, 22, 22, nil, nil, bg_off)
+            end
           end
         end
       end

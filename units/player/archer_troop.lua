@@ -1,6 +1,6 @@
 Archer_Troop = Troop:extend()
 function Archer_Troop:init(data)
-  self.base_attack_range = TROOP_RANGE
+  self.base_attack_range = TROOP_ARCHER_RANGE
   Archer_Troop.super.init(self, data)
 
   self.backswing = data.backswing or 0.1

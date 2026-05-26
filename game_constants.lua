@@ -9,9 +9,13 @@ DEBUG_DISTANCE_MULTI = false
 IS_DEMO = false
 DEMO_END_LEVEL = 11
 
+-- Fields copied into run.txt on save and back into state on load. level_list
+-- is intentionally NOT here - it's fully reconstructible from `level` via
+-- Build_Level_List (deterministic given the level number), and including it
+-- forced every spawn-config value to be serializable text. Removed so configs
+-- can carry functions etc. without breaking save/load.
 EXPECTED_SAVE_FIELDS = {
   'level',
-  'level_list',
   'loop',
   'gold',
   'units',
@@ -145,6 +149,17 @@ WAVE_KILL_QUOTA_CYCLE_DELAY = 2
 -- multiplier. 1.5 -> the wave's instructions cycle roughly once-and-a-half
 -- before advancing, so the player kills more enemies than a single pass.
 WAVE_KILL_QUOTA_MULTIPLIER = 1.5
+
+-- Continuous spawn system: ±SPECIAL_SPAWN_JITTER fraction of each pool's
+-- interval is rolled per tick so spawns don't feel metronome-regular.
+-- 0.2 = each spawn fires somewhere in [interval*0.8, interval*1.2].
+SPECIAL_SPAWN_JITTER = 0.2
+
+-- Seconds between swarmer clump spawns in the continuous system. Clump size
+-- itself is SWARMERS_PER_LEVEL(level), same as the old wave instructions.
+-- Tuned so clumps don't pile up faster than the field can drain through
+-- PATH_ACROSS - otherwise the basics cap fills and you get long silent gaps.
+BASIC_CLUMP_INTERVAL = 6
 
 -- Cinematic level-clear wipe: pre-delay before any straggler enemy dies,
 -- and per-enemy offset so they pop one after another instead of all at
@@ -380,11 +395,22 @@ MOVEMENT_TYPE_NONE = 'none'
 -- doesn't actively chase the player.
 MOVEMENT_TYPE_PATH_ACROSS = 'path_across'
 
--- Maximum simultaneously-alive enemies the spawn manager will allow. New
--- spawn groups are throttled (held in a 'waiting_for_cap' state) until the
--- live count drops below this threshold.
-MAX_ALIVE_ENEMIES = 40
-MOVEMENT_TYPES = {MOVEMENT_TYPE_SEEK, MOVEMENT_TYPE_LOOSE_SEEK, MOVEMENT_TYPE_SEEK_TO_RANGE, MOVEMENT_TYPE_RANDOM, MOVEMENT_TYPE_FLEE, MOVEMENT_TYPE_NONE, MOVEMENT_TYPE_PATH_ACROSS}
+-- Like PATH_ACROSS but the heading is rotated by a random offset (up to
+-- PATH_ACROSS_VARIED_JITTER radians) off the line to center, so a wave of
+-- enemies fans out across the arena instead of all funneling through the
+-- middle.
+MOVEMENT_TYPE_PATH_ACROSS_VARIED = 'path_across_varied'
+PATH_ACROSS_VARIED_JITTER = math.pi / 6
+
+-- Maximum simultaneously-alive enemies the spawn manager will allow. Split
+-- by class: basics (regular_enemy, e.g. swarmer) and specials (special_enemy,
+-- e.g. brute, roach). Each pool's per-type cap is on top of these — a spawn
+-- skips on this tick (no queue) when either its class cap or its per-pool
+-- cap is full. MAX_ALIVE_ENEMIES kept as a hard sum ceiling for safety.
+MAX_ALIVE_BASICS = 60
+MAX_ALIVE_SPECIALS = 20
+MAX_ALIVE_ENEMIES = MAX_ALIVE_BASICS + MAX_ALIVE_SPECIALS
+MOVEMENT_TYPES = {MOVEMENT_TYPE_SEEK, MOVEMENT_TYPE_LOOSE_SEEK, MOVEMENT_TYPE_SEEK_TO_RANGE, MOVEMENT_TYPE_RANDOM, MOVEMENT_TYPE_FLEE, MOVEMENT_TYPE_NONE, MOVEMENT_TYPE_PATH_ACROSS, MOVEMENT_TYPE_PATH_ACROSS_VARIED}
 
 get_movement_type_by_enemy_type = function(enemy_type)
   return enemy_movement_types[enemy_type] or enemy_movement_types['default']
@@ -419,8 +445,12 @@ enemy_movement_types = {
   -- Swarmer was MOVEMENT_TYPE_LOOSE_SEEK (chase player). Defaults to walking
   -- straight across the map; set MOVEMENT_TYPE_LOOSE_SEEK here (or set the
   -- per-instance flag aggro_when_close = true) to restore chase behavior.
-  ['swarmer'] = MOVEMENT_TYPE_PATH_ACROSS,
+  ['swarmer'] = MOVEMENT_TYPE_PATH_ACROSS_VARIED,
   ['chaser'] = MOVEMENT_TYPE_SEEK,
+  ['brute'] = MOVEMENT_TYPE_SEEK,
+  ['roach'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['sniper'] = MOVEMENT_TYPE_RANDOM,
+  ['orb'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
   ['cleaver'] = MOVEMENT_TYPE_SEEK,
   
   -- Ranged units that maintain distance

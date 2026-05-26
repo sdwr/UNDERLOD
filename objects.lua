@@ -1690,6 +1690,7 @@ function Unit:pick_action()
   -- since their whole point is to walk through and leave the other side.
   local default_movement = get_movement_type_by_enemy_type(self.type)
   local is_path_across = default_movement == MOVEMENT_TYPE_PATH_ACROSS
+    or default_movement == MOVEMENT_TYPE_PATH_ACROSS_VARIED
   if (self.offscreen or not self.in_arena_radius) and not is_path_across then
     self:set_movement_action(MOVEMENT_TYPE_SEEK, 1)
     return true

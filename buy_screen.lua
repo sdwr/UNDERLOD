@@ -51,7 +51,7 @@ function BuyScreen:on_enter(from)
 
   --decide on enemies for every level here
   --if this is the first level
-  if self.level == 1 or #self.level_list == 0 then
+  if self.level == 1 or not self.level_list or #self.level_list == 0 then
     self:roll_levels()
   end
 

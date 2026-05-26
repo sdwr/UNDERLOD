@@ -697,6 +697,9 @@ function Helper.Unit:reset_knockback_variables(unit)
 end
 
 function Helper.Unit:apply_knockback_enemy(unit, force, angle)
+    if unit.knockback_immune then
+        return
+    end
     if math.length(unit:get_velocity()) > ENEMY_KNOCKBACK_VELOCITY_THRESHOLD then
         return
     end
@@ -724,6 +727,11 @@ function Helper.Unit:apply_knockback(unit, force, angle, duration, push_invulner
     end
 
     if unit.is_launching then
+        return
+    end
+
+    -- Hard immunity (separate from resistance which is clamped to 0.8 max).
+    if unit.knockback_immune then
         return
     end
 

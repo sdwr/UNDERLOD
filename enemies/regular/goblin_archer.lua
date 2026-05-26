@@ -56,9 +56,9 @@ fns['init_enemy'] = function(self)
 
   local shoot = {
     name = 'shoot',
-    viable = function() local target = Helper.Target:get_closest_enemy(self); return target end,
-    oncast = function() 
-      self.target = Helper.Target:get_closest_enemy(self)
+    viable = function() return Helper.Target:get_random_enemy(self) end,
+    oncast = function()
+      self.target = Helper.Target:get_random_enemy(self)
     end,
 
 
