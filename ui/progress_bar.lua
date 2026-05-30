@@ -220,15 +220,11 @@ function ProgressBarSegment:get_progress_location()
 end
 
 function ProgressBarSegment:create_progress_particle(roundPower, x, y)
-  self.t:after(0.3, function()
-    ProgressParticle{
-      group = main.current.main,
-      x = x,
-      y = y,
-      roundPower = roundPower,
-      parent = self, 
-    }
-  end)
+  -- Progress particles have been disabled; the bar now ticks up immediately on
+  -- enemy death instead of waiting for a flying particle to arrive. The
+  -- function is kept (and still called from ProgressBar:increase_with_particles)
+  -- so the existing call site doesn't need to know about the change.
+  self:increase_progress(roundPower)
 end
 
 function ProgressBarSegment:complete_wave()

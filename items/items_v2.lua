@@ -35,26 +35,16 @@ ITEM_SET = {
   DAMAGE = 'damage',
   SUPPORT = 'support',
   SHIELD = 'shield',
-  REFLECT = 'reflect',
   REPEAT = 'repeat',
   STUN = 'stun',
   MULTI_SHOT = 'multi_shot',
-  --elemental transformation
-  FIRE_TO_LIGHTNING = 'fire_to_lightning',
-  COLD_TO_FIRE = 'cold_to_fire',
-  LIGHTNING_TO_COLD = 'lightning_to_cold',
   --elemental boosts
   STONE_COLD = 'stone_cold',
   BLAZIN = 'blazin',
-  --lightning one?
   --flat-stat sets (1/2/4 progression)
   ASPD = 'aspd',
-  HP = 'hp',
-  DEF = 'def',
-  AREA = 'area',
   RANGE = 'range',
   CRIT = 'crit',
-  CDR = 'cdr',
 }
 
 -- Stat definitions
@@ -143,16 +133,6 @@ ITEM_SETS = {
       [1] = 'Creates a frost nova when enemies get close'
     }
   },
-  [ITEM_SET.COLD_TO_FIRE] = {
-    name = 'Frostfire',
-    color = 'blue',
-    bonuses = {
-      [1] = { stats = {}, procs = {'coldToFire'} }
-    },
-    descriptions = {
-      [1] = 'Your cold damage also burns enemies'
-    }
-  },
   [ITEM_SET.FIRE] = {
     name = 'Inferno',
     color = 'red',
@@ -185,16 +165,6 @@ ITEM_SETS = {
     },
     descriptions = {
       [1] = 'You deal more damage to chilled enemies'
-    }
-  },
-  [ITEM_SET.FIRE_TO_LIGHTNING] = {
-    name = 'Fire Bolt',
-    color = 'red',
-    bonuses = {
-      [1] = { procs = {'fireToLightning'} }
-    },
-    descriptions = {
-      [1] = 'Your fire damage also shocks enemies'
     }
   },
   [ITEM_SET.METEOR] = {
@@ -235,28 +205,14 @@ ITEM_SETS = {
       [1] = 'Chance to create a lightning ball on attack'
     }
   },
-  [ITEM_SET.LIGHTNING_TO_COLD] = {
-    name = 'Frost Jolt',
-    color = 'yellow',
-    bonuses = {
-      [1] = { procs = {'lightningToCold'} }
-    },
-    descriptions = {
-      [1] = 'Your lightning damage also chills enemies'
-    }
-  },
   [ITEM_SET.CURSE] = {
     name = 'Curse',
     color = 'purple',
     bonuses = {
-      [1] = { procs = {'curse'} },
-      [2] = { procs = {'curseHeal'} },
-      [3] = { procs = {'curseDamageLink'} }
+      [1] = { procs = {'curse'} }
     },
     descriptions = {
-      [1] = 'Curses nearby enemies, increasing damage taken',
-      [2] = 'Heal a percentage of damage dealt to cursed enemies',
-      [3] = 'Cursed enemies share damage taken'
+      [1] = 'Curses nearby enemies, increasing damage taken'
     }
   },
   -- [ITEM_SET.ATTACK_EFFECTS] = {
@@ -338,48 +294,6 @@ ITEM_SETS = {
       [3] = 'Gain even more attack speed'
     }
   },
-  [ITEM_SET.HP] = {
-    name = 'Vitality',
-    color = 'green',
-    bonuses = {
-      [1] = { stats = {['hp'] = 1} },
-      [2] = { stats = {['hp'] = 2} },
-      [3] = { stats = {['hp'] = 4} }
-    },
-    descriptions = {
-      [1] = 'Gain health',
-      [2] = 'Gain more health',
-      [3] = 'Gain even more health'
-    }
-  },
-  [ITEM_SET.DEF] = {
-    name = 'Bulwark',
-    color = 'blue',
-    bonuses = {
-      [1] = { stats = {['flat_def'] = 1} },
-      [2] = { stats = {['flat_def'] = 2} },
-      [3] = { stats = {['flat_def'] = 4} }
-    },
-    descriptions = {
-      [1] = 'Gain defense',
-      [2] = 'Gain more defense',
-      [3] = 'Gain even more defense'
-    }
-  },
-  [ITEM_SET.AREA] = {
-    name = 'Expanse',
-    color = 'purple',
-    bonuses = {
-      [1] = { stats = {['area_size'] = 1} },
-      [2] = { stats = {['area_size'] = 2} },
-      [3] = { stats = {['area_size'] = 4} }
-    },
-    descriptions = {
-      [1] = 'Gain area size',
-      [2] = 'Gain more area size',
-      [3] = 'Gain even more area size'
-    }
-  },
   [ITEM_SET.RANGE] = {
     name = 'Far Shot',
     color = 'blue',
@@ -408,20 +322,6 @@ ITEM_SETS = {
       [3] = 'Gain even more crit chance'
     }
   },
-  [ITEM_SET.CDR] = {
-    name = 'Haste',
-    color = 'yellow',
-    bonuses = {
-      [1] = { stats = {['cooldown_reduction'] = 1} },
-      [2] = { stats = {['cooldown_reduction'] = 2} },
-      [3] = { stats = {['cooldown_reduction'] = 4} }
-    },
-    descriptions = {
-      [1] = 'Gain cooldown reduction',
-      [2] = 'Gain more cooldown reduction',
-      [3] = 'Gain even more cooldown reduction'
-    }
-  },
   -- [ITEM_SET.SUPPORT] = {
   --   name = 'Support Set',
   --   color = 'green',
@@ -441,20 +341,6 @@ ITEM_SETS = {
     descriptions = {
       [1] = 'Grants you a shield and damage aura',
       -- [2] = 'Shield explodes when destroyed, knocking back nearby enemies'
-    }
-  },
-  [ITEM_SET.REFLECT] = {
-    name = 'Reflect',
-    color = 'green',
-    bonuses = {
-      [1] = { procs = {'retaliate'} },
-      [2] = { procs = {'elementalRetaliate'} },
-      [3] = { procs = {'retaliateNearby'} },
-    },
-    descriptions = {
-      [1] = 'Retaliate with an attack when hit',
-      [2] = 'Retaliate applies elemental effects',
-      [3] = 'Retaliate hits all nearby enemies'
     }
   },
   [ITEM_SET.REPEAT] = {
