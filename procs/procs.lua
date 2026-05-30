@@ -1483,7 +1483,7 @@ function Proc_LightningBall:create_lightning_ball(target)
       x = self.unit.x + (target.x - self.unit.x) * spawn_distance_factor,
       y = self.unit.y + (target.y - self.unit.y) * spawn_distance_factor
   }
-  
+
   -- The rest of the code remains the same
   local travel_direction = {x = target.x - spawn_location.x, y = target.y - spawn_location.y}
   local travel_direction_length = math.sqrt(travel_direction.x^2 + travel_direction.y^2)
@@ -1491,17 +1491,33 @@ function Proc_LightningBall:create_lightning_ball(target)
   local travel_direction_angle = math.atan2(travel_direction_normalized.y, travel_direction_normalized.x)
 
   new_spark:play{pitch = random:float(0.8, 1.2), volume = 0.5}
-  LightningBall{
-    group = main.current.main,
-    x = spawn_location.x, y = spawn_location.y,
-    r = travel_direction_angle,
-    is_troop = self.unit.is_troop,
-    unit = self.unit,
-    duration = 4,
-    damage = self.damage,
-    num_targets = 3,
-    tick_rate = 1,
-  }
+  -- Defer body creation: this is called from inside a Box2D collision
+  -- callback (apply_hit -> onPrimaryHitCallbacks -> here), and Box2D locks
+  -- the world during step(), so creating a new body now triggers an
+  -- IsLocked() assertion. Schedule for next tick instead.
+  local unit = self.unit
+  local damage = self.damage
+  local arena = main.current and main.current.current_arena
+  local schedule = arena and arena.t or (unit and unit.t)
+  local create_action = function()
+    if not unit or unit.dead then return end
+    LightningBall{
+      group = main.current.main,
+      x = spawn_location.x, y = spawn_location.y,
+      r = travel_direction_angle,
+      is_troop = unit.is_troop,
+      unit = unit,
+      duration = 4,
+      damage = damage,
+      num_targets = 3,
+      tick_rate = 1,
+    }
+  end
+  if schedule then
+    schedule:after(0, create_action)
+  else
+    create_action()
+  end
 end
 
 Proc_Shock = Proc:extend()

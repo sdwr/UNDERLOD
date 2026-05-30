@@ -29,16 +29,15 @@ LEVEL_SPECIAL_FIRST_FIRE = 17
 LEVEL_SPAWN_POOLS = {
   [1] = {
     basic = {type = 'swarmer', interval = BASIC_CLUMP_INTERVAL},
-    specials = {
-      {type = 'brute', at = 0.4},
-      {type = 'brute', at = 0.85},
-    },
+    specials = {},
   },
   [2] = {
     basic = {type = 'swarmer', interval = BASIC_CLUMP_INTERVAL},
     specials = {
-      {type = 'brute', at = 0.3},
-      {type = 'brute', at = 0.7},
+      -- Timer-based pool: a slime arrives ~every 15s (jittered by
+      -- SPECIAL_SPAWN_JITTER), starting at the 10s mark, with at most 2 alive
+      -- on the field at once.
+      {type = 'slime', interval = 15, max_alive = 2, first_fire = 10},
     },
   },
   [3] = {

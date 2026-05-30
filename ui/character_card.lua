@@ -12,16 +12,12 @@ Character_Cards = {}
 ALL_CARD_TEXTS = {}
 
 
-function get_item_slot_location(item_slot)
-  local ITEM_SLOT_LOCATIONS = {
-    [ITEM_SLOT.HEAD] = {x = 1, y = 0},
-    [ITEM_SLOT.BODY] = {x = 1, y = 1},
-    [ITEM_SLOT.WEAPON] = {x = 0, y = 1},
-    [ITEM_SLOT.OFFHAND] = {x = 2, y = 1},
-    [ITEM_SLOT.FEET] = {x = 1, y = 2},
-    [ITEM_SLOT.AMULET] = {x = 2, y = 0},
-  }
-  return ITEM_SLOT_LOCATIONS[item_slot]
+-- Items are laid out in a flat 3-col grid, filled left->right, top->bottom.
+ITEM_LIST_COLUMNS = 3
+function get_item_list_location(i)
+  local col = (i - 1) % ITEM_LIST_COLUMNS
+  local row = math.floor((i - 1) / ITEM_LIST_COLUMNS)
+  return {x = col, y = row}
 end
 
 function Refresh_All_Cards_Text()
@@ -91,15 +87,15 @@ function CharacterCard:createItemParts()
 
     for i = 1, MAX_ITEMS do
       if i <= UNIT_LEVEL_TO_NUMBER_OF_ITEMS[self.unit.level] then
-        local item_slot = ITEM_SLOTS_BY_INDEX[i]
-        local location = get_item_slot_location(item_slot)
+        local location = get_item_list_location(i)
         table.insert(self.items, ItemPart{group = self.group,
-            x = item_x + (CHARACTER_CARD_ITEM_X_SPACING*location.x), 
+            x = item_x + (CHARACTER_CARD_ITEM_X_SPACING*location.x),
             y = item_y + (CHARACTER_CARD_ITEM_Y_SPACING*location.y),
             i = i, parent = self})
       end
     end
 end
+
 
 -- This now only creates the static name text.
 function CharacterCard:initText()
@@ -119,18 +115,7 @@ end
 
 -- NEW FUNCTION: Handles creation of elements that need to be refreshed.
 function CharacterCard:cleanupUIElements()
-  -- Clean up buttons
-  if self.unit_stats_icon then
-    if self.unit_stats_icon.die then
-      self.unit_stats_icon:die()
-    else
-      self.unit_stats_icon.dead = true
-    end
-  end
-  
-  if self.last_round_stats_icon then
-    self.last_round_stats_icon.dead = true
-  end
+  -- (No header buttons currently — kept hook for future header UI.)
 
   -- Clean up set bonus elements
   if self.set_bonus_elements then
@@ -147,40 +132,11 @@ function CharacterCard:cleanupUIElements()
 end
 
 function CharacterCard:createUIElements()
-  
     self:createNameText()
 
     -- Ensure old elements are removed before creating new ones to prevent duplicates.
     self:cleanupUIElements()
 
-    -- Create unit stats icon (small button next to class name)
-    self.unit_stats_icon = Button{
-        group = self.group,
-        x = self.x + 35, -- Position to the right of the class name
-        y = self.y - self.h/2 + 10, -- Same y as class name
-        w = 12,
-        h = 12,
-        bg_color = 'bg',
-        fg_color = 'bg10',
-        button_text = 'U',
-        action = function() end -- No action on click, just hover
-    }
-    self.unit_stats_icon.parent = self
-    
-    -- Create last round stats icon (small button to the left of the class name)
-    self.last_round_stats_icon = Button{
-        group = self.group,
-        x = self.x - 35, -- Position to the left of the class name
-        y = self.y - self.h/2 + 10, -- Same y as class name
-        w = 12,
-        h = 12,
-        bg_color = 'bg',
-        fg_color = 'bg10',
-        button_text = 'S',
-        action = function() end -- No action on click, just hover
-    }
-    self.last_round_stats_icon.parent = self
-    
     -- Create set bonus display
     self:create_set_bonus_display()
 end
@@ -192,50 +148,130 @@ function CharacterCard:create_set_bonus_display()
       element.dead = true
     end
   end
-  
+
   self.set_bonus_elements = {}
-  
-  -- Get unit sets
+
   local unit_sets = self:get_unit_sets()
-  
   if #unit_sets == 0 then return end
-  
-  -- Sort sets by name for consistent display
+
   table.sort(unit_sets, function(a, b) return a.name < b.name end)
-  
-  -- Create button elements for each set
-  local y_offset = 0
+
+  -- Layout: 2 columns x up to 4 rows (visible cap = 8 sets per unit).
+  -- Each cell shows the set name truncated to 6 chars on the left and N
+  -- pip circles on the right (filled = current pieces, hollow ring = max).
+  local COLS = 2
+  local CELL_W = 46
+  local CELL_H = 12
+  local COL_SPACING = 48
+  local ROW_SPACING = 13
+  local ANCHOR_X_OFFSET = -((COLS - 1) * COL_SPACING) / 2
+  local ANCHOR_Y = 15
+  local MAX_VISIBLE = 8
+
   for i, set_info in ipairs(unit_sets) do
+    if i > MAX_VISIBLE then break end
 
-    local y_offset = ((i-1) % 2) * 16
-    local x_offset = math.floor((i-1) / 2) * 35
+    local col = (i - 1) % COLS
+    local row = math.floor((i - 1) / COLS)
 
-    
     local max_pieces = 0
     for pieces, _ in pairs(set_info.bonuses) do
       max_pieces = math.max(max_pieces, pieces)
     end
-    
-    local set_color = set_info.color or 'fg'
-    local text = set_info.current_pieces .. ' / ' .. max_pieces
-    
-    local set_button = Button{
+
+    local cell = SetBonusCell{
       group = self.group,
-      x = self.x - 30 + x_offset,
-      y = self.y + 40 + y_offset, -- Move up under character name
-      w = 25,
-      h = 14,
-      bg_color = 'bg',
-      fg_color = set_color, -- Use set color for text
-      button_text = text,
-      action = function() end, -- No action on click, just hover
-      set_info = set_info, -- Store set info for hover
-      no_spring = true -- Disable spring effect
+      x = self.x + ANCHOR_X_OFFSET + col * COL_SPACING,
+      y = self.y + ANCHOR_Y + row * ROW_SPACING,
+      w = CELL_W,
+      h = CELL_H,
+      short_name = set_info.name:sub(1, 5),
+      color_name = set_info.color or 'fg',
+      max_pieces = max_pieces,
+      current_pieces = math.min(set_info.current_pieces, max_pieces),
+      set_info = set_info,
     }
-    set_button.parent = self
-    
-    table.insert(self.set_bonus_elements, set_button)
+    cell.parent = self
+
+    table.insert(self.set_bonus_elements, cell)
   end
+end
+
+
+-- A single set-bonus row drawn on the character card. Left side renders the
+-- 6-char truncated set name (in the set's color). Right side renders
+-- max_pieces circle pips, filled for current_pieces and hollow for the rest.
+SetBonusCell = Object:extend()
+SetBonusCell.__class_name = 'SetBonusCell'
+SetBonusCell:implement(GameObject)
+function SetBonusCell:init(args)
+  self:init_game_object(args)
+  self.w = args.w or 46
+  self.h = args.h or 12
+  self.shape = Rectangle(self.x, self.y, self.w, self.h)
+  self.interact_with_mouse = true
+  self.selected = false
+
+  self.short_name = args.short_name or ''
+  self.color_name = args.color_name or 'fg'
+  self.max_pieces = args.max_pieces or 1
+  self.current_pieces = args.current_pieces or 0
+  self.set_info = args.set_info
+
+  -- Pre-build the name text in the set's color, left-aligned.
+  self.text = Text({{
+    text = '[' .. self.color_name .. ']' .. self.short_name,
+    font = pixul_font,
+    alignment = 'left',
+  }}, global_text_tags)
+end
+
+function SetBonusCell:on_mouse_enter()
+  self.selected = true
+end
+
+function SetBonusCell:on_mouse_exit()
+  self.selected = false
+end
+
+function SetBonusCell:update(dt)
+  self:update_game_object(dt)
+end
+
+function SetBonusCell:draw()
+  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
+
+  -- Cell background; brightens slightly on hover so it reads as interactive.
+  local bg_color = self.selected and bg[5] or bg[0]
+  graphics.rectangle(self.x, self.y, self.w, self.h, 2, 2, bg_color)
+
+  -- Pips on the right. Tightened radius + spacing so the pip block clears
+  -- the 5-char name with a comfortable gap inside a 46px cell.
+  local color_obj = _G[self.color_name] or _G.fg
+  local filled_color = color_obj[0]
+  local hollow_color = color_obj[0]
+  local pip_radius = 1.5
+  local pip_spacing = 4
+  local right_edge = self.x + self.w/2 - 3
+  for i = 1, self.max_pieces do
+    local px = right_edge - (self.max_pieces - i) * pip_spacing
+    if i <= self.current_pieces then
+      graphics.circle(px, self.y + 1, pip_radius, filled_color)
+    else
+      graphics.circle(px, self.y + 1, pip_radius, hollow_color, 1)
+    end
+  end
+
+  -- Name on the left, drawn last so it wins any residual visual overlap
+  -- with the pip block in unusually wide-letter combos.
+  local text_x = self.x - self.w/2 + 3
+  self.text:draw(text_x, self.y + 1, 0, 1, 1)
+
+  graphics.pop()
+end
+
+function SetBonusCell:die()
+  self.dead = true
 end
 
 function CharacterCard:get_unit_sets()
@@ -404,16 +440,7 @@ end
 function CharacterCard:update(dt)
   if self.dead then return end
   self:update_game_object(dt)
-  
-  -- Check unit stats icon hover state
-  if self.unit_stats_icon and self.unit_stats_icon.selected and not self.unit_stats_hovered then
-    self.unit_stats_hovered = true
-    self:show_unit_stats_popup()
-  elseif self.unit_stats_icon and not self.unit_stats_icon.selected and self.unit_stats_hovered then
-    self.unit_stats_hovered = false
-    self:hide_popup()
-  end
-  
+
   -- Check set bonus elements hover state
   self.set_bonus_hovered = false
   if self.set_bonus_elements then
@@ -428,17 +455,6 @@ function CharacterCard:update(dt)
       self:hide_set_bonus_popup()
     end
   end
-  
-  -- Check last round stats icon hover state
-  if self.last_round_stats_icon and self.last_round_stats_icon.selected and not self.last_round_stats_hovered then
-    self.last_round_stats_hovered = true
-    self:show_last_round_stats_popup()
-  elseif self.last_round_stats_icon and not self.last_round_stats_icon.selected and self.last_round_stats_hovered then
-    self.last_round_stats_hovered = false
-    self:hide_last_round_popup()
-  end
-  
-
 end
 
 function CharacterCard:die()
@@ -578,8 +594,8 @@ function ItemPart:update(dt)
     local active = Active_Inventory_Slot
     
     -- Determine what to do based on target
-    if active and not self:isActiveInvSlot() and self.i == active.i then
-      -- Valid target slot of same type
+    if active and not self:isActiveInvSlot() then
+      -- Any slot accepts any item
       if active:hasItem() then
         -- SWAP: Exchange items between slots
         local target_item = active:getItem()
@@ -678,21 +694,7 @@ function ItemPart:draw(y)
 
       local image = find_item_image(item)
       image:draw(self.x, self.y, 0, 0.4, 0.4)
-    elseif item and not self.hide_item_display and self.itemGrabbed then
-      -- When item is grabbed, show empty slot appearance
-      --draw item type icon
-      local item_slot = ITEM_SLOTS_BY_INDEX[self.i]
-      local image = find_item_image(ITEM_SLOTS[item_slot])
-      local color = fg[5]:clone()
-      color.a = 0.5
-      image:draw(self.x, self.y, 0, 0.4, 0.4, 0, 0, color)
-    else
-      --draw item type icon
-      local item_slot = ITEM_SLOTS_BY_INDEX[self.i]
-      local image = find_item_image(ITEM_SLOTS[item_slot])
-      local color = fg[5]:clone()
-      color.a = 0.5
-      image:draw(self.x, self.y, 0, 0.4, 0.4, 0, 0, color)
+    -- empty slot: just the rectangle frame, no per-type icon (slots are untyped now)
     end
     
     if self.colliding_with_mouse and main.current and not Loose_Inventory_Item and not self.just_dropped_item then
@@ -780,113 +782,6 @@ self.spring:pull(0.05, 200, 10)
 end
 
 function CharacterCard:update_button_positions()
-  -- Update unit stats icon position
-  if self.unit_stats_icon then
-    self.unit_stats_icon.x = self.x + 35
-    self.unit_stats_icon.y = self.y - self.h/2 + 10
-  end
-  
-  -- Update last round stats icon position
-  if self.last_round_stats_icon then
-    self.last_round_stats_icon.x = self.x - 35
-    self.last_round_stats_icon.y = self.y - self.h/2 + 10
-  end
-  
-  -- Update level up button position
-  if self.level_up_button then
-    self.level_up_button.x = self.x
-    self.level_up_button.y = self.y - 5
-  end
-  
-
+  -- No header buttons to reposition currently.
 end
 
--- Custom Level Up Button Class
-LevelUpButton = Object:extend()
-LevelUpButton.__class_name = 'LevelUpButton'
-LevelUpButton:implement(GameObject)
-function LevelUpButton:init(args)
-  self:init_game_object(args)
-  self.parent = args.parent
-  self.w = 40
-  self.h = 20
-  self.shape = Rectangle(self.x, self.y, self.w, self.h)
-  self.interact_with_mouse = true
-  self.enabled = true
-  
-  -- Initialize appearance
-  self:update_appearance()
-end
-
-function LevelUpButton:update(dt)
-  self:update_game_object(dt)
-
-  if not self.interact_with_mouse then return end
-  if not self.enabled then return end
-  
-  -- Handle click
-  if self.selected and input.m1.pressed then
-    self.parent:level_up_unit()
-  end
-end
-
-function LevelUpButton:update_appearance()
-  local cost = self.parent:get_level_up_cost()
-  if cost == 999 then
-    self.enabled = false
-  end
-  local can_afford = self.parent:can_afford_level_up()
-  
-  -- Update button appearance based on affordability
-  if can_afford then
-    self.bg_color = bg[10]
-    self.fg_color = yellow[0] -- Yellow outline when affordable
-    self.interact_with_mouse = true -- Enable mouse interaction
-  else
-    self.bg_color = bg[10]
-    self.fg_color = fg[0]
-    self.interact_with_mouse = false -- Disable mouse interaction
-  end
-  
-  -- Update cost text
-  local color_string = can_afford and 'yellow[0]' or 'bg10'
-  self.cost_text = 'Level up: ' .. cost
-  self.text_color = color_string
-end
-
-function LevelUpButton:draw()
-  if not self.enabled then return end
-  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
-  
-  -- Draw button background
-  graphics.rectangle(self.x, self.y, self.w, self.h, 4, 4, self.bg_color)
-  
-  -- Draw button border
-  graphics.rectangle(self.x, self.y, self.w, self.h, 4, 4, self.fg_color, 2)
-  
-  -- Draw plus symbol
-  local plus_text = Text({{text = '[fg]+', font = pixul_font, alignment = 'center'}}, global_text_tags)
-  plus_text:draw(self.x, self.y)
-  
-  -- Draw level up text above the button
-  local level_text = Text({{text = '[' .. self.text_color .. ']' .. self.cost_text, font = pixul_font, alignment = 'center'}}, global_text_tags)
-  level_text:draw(self.x, self.y - 20)
-  
-  graphics.pop()
-end
-
-function LevelUpButton:on_mouse_enter()
-  if self.interact_with_mouse then
-    ui_hover1:play{pitch = random:float(1.3, 1.5), volume = 0.5}
-    self.selected = true
-    self.spring:pull(0.2, 200, 10)
-  end
-end
-
-function LevelUpButton:on_mouse_exit()
-  self.selected = false
-end
-
-function LevelUpButton:die()
-  self.dead = true
-end

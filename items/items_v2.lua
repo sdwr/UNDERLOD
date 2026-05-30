@@ -35,18 +35,16 @@ ITEM_SET = {
   DAMAGE = 'damage',
   SUPPORT = 'support',
   SHIELD = 'shield',
-  REFLECT = 'reflect',
   REPEAT = 'repeat',
   STUN = 'stun',
   MULTI_SHOT = 'multi_shot',
-  --elemental transformation
-  FIRE_TO_LIGHTNING = 'fire_to_lightning',
-  COLD_TO_FIRE = 'cold_to_fire',
-  LIGHTNING_TO_COLD = 'lightning_to_cold',
   --elemental boosts
   STONE_COLD = 'stone_cold',
   BLAZIN = 'blazin',
-  --lightning one?
+  --flat-stat sets (1/2/4 progression)
+  ASPD = 'aspd',
+  RANGE = 'range',
+  CRIT = 'crit',
 }
 
 -- Stat definitions
@@ -55,8 +53,7 @@ ITEM_STATS = {
   ['dmg'] = { name = 'dmg', min = 1, max = 5, increment = 0.1 },
   ['aspd'] = { name = 'aspd', min = 1, max = 5, increment = 0.05 },
   ['hp'] = { name = 'hp', min = 1, max = 5, increment = 0.2 },
-  ['mvspd'] = { name = 'mvspd', min = 1, max = 5, increment = 0.05 },
-  
+
   -- Defensive stats
   ['flat_def'] = { name = 'flat_def', min = 1, max = 5, increment = 0.1 },
   
@@ -88,21 +85,15 @@ ITEM_STATS_THAT_CAN_ROLL_ON_ITEMS = {
   ['dmg'] = { name = 'dmg', min = 1, max = 5, increment = 0.1 },
   ['aspd'] = { name = 'aspd', min = 1, max = 5, increment = 0.05 },
   ['hp'] = { name = 'hp', min = 1, max = 5, increment = 0.2 },
-  ['mvspd'] = { name = 'mvspd', min = 1, max = 5, increment = 0.05 },
 
-  
-  ['flat_def'] = { name = 'flat_def', min = 1, max = 5, increment = 0.1 },
-  
   -- Special stats
   ['area_size'] = { name = 'area_size', min = 1, max = 5, increment = 0.1 },
   ['range'] = { name = 'range', min = 1, max = 5, increment = 0.05 },
   ['repeat_attack_chance'] = { name = 'repeat_attack_chance', min = 1, max = 5, increment = 0.2 },
 
-  
   --advanced stats
   ['crit_chance'] = { name = 'crit_chance', min = 1, max = 5, increment = 0.1 },
   -- ['crit_damage'] = { name = 'crit_damage', min = 1, max = 5, increment = 0.1 },
-  ['cooldown_reduction'] = { name = 'cooldown_reduction', min = 1, max = 5, increment = 0.1 },
 }
 
 ITEM_STATS_DAMAGE_STATS = {
@@ -142,16 +133,6 @@ ITEM_SETS = {
       [1] = 'Creates a frost nova when enemies get close'
     }
   },
-  [ITEM_SET.COLD_TO_FIRE] = {
-    name = 'Frostfire',
-    color = 'blue',
-    bonuses = {
-      [1] = { stats = {}, procs = {'coldToFire'} }
-    },
-    descriptions = {
-      [1] = 'Your cold damage also burns enemies'
-    }
-  },
   [ITEM_SET.FIRE] = {
     name = 'Inferno',
     color = 'red',
@@ -184,16 +165,6 @@ ITEM_SETS = {
     },
     descriptions = {
       [1] = 'You deal more damage to chilled enemies'
-    }
-  },
-  [ITEM_SET.FIRE_TO_LIGHTNING] = {
-    name = 'Fire Bolt',
-    color = 'red',
-    bonuses = {
-      [1] = { procs = {'fireToLightning'} }
-    },
-    descriptions = {
-      [1] = 'Your fire damage also shocks enemies'
     }
   },
   [ITEM_SET.METEOR] = {
@@ -234,28 +205,14 @@ ITEM_SETS = {
       [1] = 'Chance to create a lightning ball on attack'
     }
   },
-  [ITEM_SET.LIGHTNING_TO_COLD] = {
-    name = 'Frost Jolt',
-    color = 'yellow',
-    bonuses = {
-      [1] = { procs = {'lightningToCold'} }
-    },
-    descriptions = {
-      [1] = 'Your lightning damage also chills enemies'
-    }
-  },
   [ITEM_SET.CURSE] = {
     name = 'Curse',
     color = 'purple',
     bonuses = {
-      [1] = { procs = {'curse'} },
-      [2] = { procs = {'curseHeal'} },
-      [3] = { procs = {'curseDamageLink'} }
+      [1] = { procs = {'curse'} }
     },
     descriptions = {
-      [1] = 'Curses nearby enemies, increasing damage taken',
-      [2] = 'Heal a percentage of damage dealt to cursed enemies',
-      [3] = 'Cursed enemies share damage taken'
+      [1] = 'Curses nearby enemies, increasing damage taken'
     }
   },
   -- [ITEM_SET.ATTACK_EFFECTS] = {
@@ -315,12 +272,54 @@ ITEM_SETS = {
     bonuses = {
       [1] = { stats = {['dmg'] = 1} },
       [2] = { stats = {['dmg'] = 2} },
-      [3] = { stats = {['dmg'] = 5} }
+      [3] = { stats = {['dmg'] = 4} }
     },
     descriptions = {
       [1] = 'Gain damage',
       [2] = 'Gain more damage',
       [3] = 'Gain even more damage'
+    }
+  },
+  [ITEM_SET.ASPD] = {
+    name = 'Frenzy',
+    color = 'orange',
+    bonuses = {
+      [1] = { stats = {['aspd'] = 1} },
+      [2] = { stats = {['aspd'] = 2} },
+      [3] = { stats = {['aspd'] = 4} }
+    },
+    descriptions = {
+      [1] = 'Gain attack speed',
+      [2] = 'Gain more attack speed',
+      [3] = 'Gain even more attack speed'
+    }
+  },
+  [ITEM_SET.RANGE] = {
+    name = 'Far Shot',
+    color = 'blue',
+    bonuses = {
+      [1] = { stats = {['range'] = 1} },
+      [2] = { stats = {['range'] = 2} },
+      [3] = { stats = {['range'] = 4} }
+    },
+    descriptions = {
+      [1] = 'Gain range',
+      [2] = 'Gain more range',
+      [3] = 'Gain even more range'
+    }
+  },
+  [ITEM_SET.CRIT] = {
+    name = 'Precision',
+    color = 'red',
+    bonuses = {
+      [1] = { stats = {['crit_chance'] = 1} },
+      [2] = { stats = {['crit_chance'] = 2} },
+      [3] = { stats = {['crit_chance'] = 4} }
+    },
+    descriptions = {
+      [1] = 'Gain crit chance',
+      [2] = 'Gain more crit chance',
+      [3] = 'Gain even more crit chance'
     }
   },
   -- [ITEM_SET.SUPPORT] = {
@@ -342,20 +341,6 @@ ITEM_SETS = {
     descriptions = {
       [1] = 'Grants you a shield and damage aura',
       -- [2] = 'Shield explodes when destroyed, knocking back nearby enemies'
-    }
-  },
-  [ITEM_SET.REFLECT] = {
-    name = 'Reflect',
-    color = 'green',
-    bonuses = {
-      [1] = { procs = {'retaliate'} },
-      [2] = { procs = {'elementalRetaliate'} },
-      [3] = { procs = {'retaliateNearby'} },
-    },
-    descriptions = {
-      [1] = 'Retaliate with an attack when hit',
-      [2] = 'Retaliate applies elemental effects',
-      [3] = 'Retaliate hits all nearby enemies'
     }
   },
   [ITEM_SET.REPEAT] = {
@@ -409,7 +394,7 @@ ITEM_RARITIES = {
     cost = 2,
     min_stat_value = 1,
     max_stat_value = 2,
-    set_chance = 0,
+    set_chance = 1,
     color = 'grey'
   },
   [ITEM_RARITY.RARE] = {
@@ -426,7 +411,7 @@ ITEM_RARITIES = {
     min_stat_value = 2,
     max_stat_value = 4,
     set_chance = 1,
-    second_set_chance = 0,
+    second_set_chance = 1,
     color = 'purple'
   },
   [ITEM_RARITY.LEGENDARY] = {
@@ -556,23 +541,24 @@ function create_random_item(level, exclude_rarity)
     end
 
     for i = 1, set_count do
-      local set_key = get_random_set()
-      if not table.contains(item.sets, set_key) then
+      -- Retry until we find a set not already on this item, with a safety bail
+      -- in case the set pool is somehow too small.
+      local set_key = nil
+      for attempt = 1, 20 do
+        local candidate = get_random_set()
+        if not table.contains(item.sets, candidate) then
+          set_key = candidate
+          break
+        end
+      end
+      if set_key then
         table.insert(item.sets, set_key)
       end
     end
   end
   
-  if rarity_def.max_stat_value > 0 and #item.sets < 2 
-  and not (rarity == ITEM_RARITY.RARE and level <= 3) then
-    local stat_name = roll_stat_for_type(item_slot)
-    
-    -- Generate stat
-    local stat_value = math.random(rarity_def.min_stat_value, rarity_def.max_stat_value)
+  -- Items no longer roll flat stats on top of sets; sets are the entire payload.
 
-    item.stats[stat_name] = stat_value + (item.stats[stat_name] or 0)
-  end
-  
   -- Set colors based on sets only (rarity color is used as tier color)
   item.colors = {}
   

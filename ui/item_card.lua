@@ -158,14 +158,7 @@ function ItemCard:buy_item_to_slot(item_part, unit)
     Create_Info_Text('slot occupied', self, 'error')
     return false
   end
-  
-  -- Check if item fits in this slot type
-  local required_slot_index = ITEM_SLOTS[self.item.slot].index
-  if slot_index ~= required_slot_index then
-    Create_Info_Text('wrong slot type for ' .. self.item.name, self, 'error')
-    return false
-  end
-  
+
   -- Check gold (same as existing)
   if gold < self.cost then
     Create_Info_Text('not enough gold', self, 'error')
@@ -333,7 +326,7 @@ function ItemCard:update(dt)
         
     elseif not unit or not slot_index then
       self:remove_set_bonus_tooltip()
-      Create_Info_Text('no empty ' .. ITEM_SLOTS[self.item.slot].name .. ' slots - right click to sell', self, 'error')
+      Create_Info_Text('no empty slots - right click to sell', self, 'error')
 
     elseif gold < self.cost then
       self:remove_set_bonus_tooltip()

@@ -60,8 +60,11 @@ enemy_attack_cooldowns = {
   ['charger'] = attack_cooldowns['slow'],
   ['summoner'] = attack_cooldowns['slow'],
   ['seeker'] = attack_cooldowns['very-slow'],
-  
-  -- Bosses  
+  -- Slime pauses ~6s between 8-way pulses so the player has time to leave the
+  -- previous pulse's danger zone before the next windup.
+  ['slime'] = 6.0,
+
+  -- Bosses
   ['stompy'] = attack_cooldowns['fast'],
   ['dragon'] = attack_cooldowns['fast'],
   ['heigan'] = attack_cooldowns['fast'],
@@ -110,6 +113,8 @@ enemy_cast_times = {
   ['roach'] = 0.6,
   ['sniper'] = 1.5,
   ['orb'] = 0.8,
+  -- Visible windup before slime pulse fires so the player can read it.
+  ['slime'] = 0.5,
   
   -- Enemies with instant cast (no animation or simple attacks)
   ['stomper'] = cast_times['instant'],
@@ -590,6 +595,7 @@ enemy_type_to_stats = {
     ['chaser'] = { dmg = 1, mvspd = 1 },
     ['brute'] = { dmg = 1, mvspd = 1.5, hp = 1.6 },
     ['roach'] = { dmg = 1, mvspd = 1.6, hp = 1 },
+    ['slime'] = { dmg = 1, mvspd = 0.7, hp = 1.4 },
     ['sniper'] = { dmg = 1, mvspd = 1, hp = 1 },
     ['orb'] = { dmg = 1, mvspd = 0.8, hp = 1.8 },
     ['shooter'] = {},

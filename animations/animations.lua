@@ -905,6 +905,7 @@ enemy_type_to_size = {
   ['orb'] = 'special',
   ['roach'] = 'regular_big',
   ['sniper'] = 'special',
+  ['slime'] = 'large',
   ['spawner'] = 'special',
   ['spread'] = 'special',
   ['stomper'] = 'special',

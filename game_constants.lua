@@ -34,7 +34,7 @@ system.load_stats()
 
 --gold
 --note that HoG econ check is in arena.lua (gain_gold)
-STARTING_GOLD = 5.0
+STARTING_GOLD = 9.0
 GOLD_PER_ROUND = 6
 GOLD_FOR_BOSS_ROUND = {10, 15, 20, 25}
 INTEREST_AMOUNT = 0.1
@@ -201,18 +201,19 @@ LEVEL_TO_PERKS = {
   [23] = true,
 }
 
+-- Leveling up unlocks item slots, not troops. Keep troop count flat across levels.
 UNIT_LEVEL_TO_NUMBER_OF_TROOPS = {
   [0] = 3,
   [1] = 3,
-  [2] = 4,
-  [3] = 5,
-  [4] = 6,
-  [5] = 7,
+  [2] = 3,
+  [3] = 3,
+  [4] = 3,
+  [5] = 3,
 }
 
 MAX_ITEMS = 6
 
---allow 6 items per level for now
+-- Every unit gets the full six item slots regardless of level.
 UNIT_LEVEL_TO_NUMBER_OF_ITEMS = {
   [1] = 6,
   [2] = 6,
@@ -424,6 +425,7 @@ enemy_corner_radius_by_size = {
   ['swarmer'] = 3,
   ['regular_big'] = 3,
   ['special'] = 3,
+  ['large'] = 3,
   ['huge'] = 3,
   ['stompy'] = 10,
   ['heigan'] = 10,
@@ -449,6 +451,7 @@ enemy_movement_types = {
   ['chaser'] = MOVEMENT_TYPE_SEEK,
   ['brute'] = MOVEMENT_TYPE_SEEK,
   ['roach'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['slime'] = MOVEMENT_TYPE_PATH_ACROSS,
   ['sniper'] = MOVEMENT_TYPE_RANDOM,
   ['orb'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
   ['cleaver'] = MOVEMENT_TYPE_SEEK,
