@@ -171,6 +171,10 @@ MINIBOSS_DAMAGE = 20
 MINIBOSS_MS = 50
 
 BOSS_HP = 1400
+
+BOSS_HP_MULT_BY_TYPE = {
+  ['stompy'] = 3,
+}
 BOSS_DAMAGE = 20
 BOSS_MS = 70
 
@@ -590,6 +594,7 @@ unit_stat_multipliers = {
 
 enemy_type_to_stats = {
     ['swarmer'] = { dmg = 0.5, hp = 0.6, mvspd = 0.7},
+    ['hunter_swarmer'] = { dmg = 0.6, hp = 1.4, mvspd = 1.1 },
 
     ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
     ['chaser'] = { dmg = 1, mvspd = 1 },
@@ -770,6 +775,12 @@ _set_unit_base_stats = function(unit)
         unit.base_hp = SCALED_BOSS_HP(level, BOSS_HP)
         unit.base_dmg = SCALED_BOSS_DAMAGE(level, BOSS_DAMAGE)
         unit.base_mvspd = SCALED_BOSS_MS(level, BOSS_MS)
+
+        -- Per-boss HP multiplier on top of the generic boss scaling. Stompy
+        -- (the first boss) gets 3x because the new ground-pound moveset is
+        -- meant to be a longer fight than the old charge/mortar pattern.
+        local boss_hp_mult = BOSS_HP_MULT_BY_TYPE[unit.type] or 1
+        unit.base_hp = unit.base_hp * boss_hp_mult
 
         unit.baseline_hp = unit.base_hp
     end

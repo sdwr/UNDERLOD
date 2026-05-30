@@ -1388,3 +1388,58 @@ function GoldItem:draw()
     graphics.circle(self.x, self.y, self.shape.rs, self.color)
   graphics.pop()
 end
+
+-- One-shot spell that spawns hunter_swarmer enemies in a ring around the
+-- caster. Used by Stompy's summon attack. Body creation is deferred to next
+-- frame because instantspell casts run inside the unit's update step where
+-- physics may be locked.
+SummonHunters_Spell = Object:extend()
+SummonHunters_Spell.__class_name = 'SummonHunters_Spell'
+SummonHunters_Spell:implement(GameObject)
+function SummonHunters_Spell:init(args)
+  self:init_game_object(args)
+
+  self.num_hunters = self.num_hunters or 5
+  self.spawn_radius = self.spawn_radius or 28
+  local parent = self.parent
+  local num = self.num_hunters
+  local radius = self.spawn_radius
+  local level = (parent and parent.level) or 1
+  local cx = (parent and parent.x) or self.x
+  local cy = (parent and parent.y) or self.y
+
+  pop2:play{pitch = random:float(0.9, 1.1), volume = 0.6}
+  spawn1:play{pitch = random:float(0.9, 1.1), volume = 0.25}
+
+  local arena = main.current and main.current.current_arena
+  local schedule = arena and arena.t
+  local spawn_action = function()
+    if parent and parent.dead then return end
+    for i = 1, num do
+      local angle = (i / num) * 2 * math.pi
+      local sx = cx + math.cos(angle) * radius
+      local sy = cy + math.sin(angle) * radius
+      local enemy = Enemy{
+        type = 'hunter_swarmer',
+        group = main.current.main,
+        x = sx, y = sy,
+        level = level,
+        parent = parent,
+      }
+      if Spawn_Enemy_Effect and main.current then
+        Spawn_Enemy_Effect(main.current, enemy)
+      end
+    end
+  end
+  if schedule then
+    schedule:after(0, spawn_action)
+  else
+    spawn_action()
+  end
+
+  self.dead = true
+end
+function SummonHunters_Spell:update(dt) end
+function SummonHunters_Spell:draw() end
+function SummonHunters_Spell:die() self.dead = true
+end

@@ -103,36 +103,23 @@ fns['init_enemy'] = function(self)
     }
   }
 
-  local charge = {
-    name = 'charge',
+  local summon = {
+    name = 'summon',
     viable = function() return true end,
-
-    cast_length = 0.1,
-    oncast = function() 
-      self.target = Helper.Target:get_random_enemy(self)
-      if self.target then
-        self:rotate_towards_object(self.target, 1)
-      end
-    end,
+    instantspell = true,
+    cast_length = GOLEM_CAST_TIME,
     cast_sound = usurer1,
     cast_volume = 2,
-    spellclass = Launch_Spell,
+    oncast = function() end,
+    spellclass = SummonHunters_Spell,
     spelldata = {
       group = main.current.main,
-      team = "enemy",
-      charge_duration = GOLEM_CAST_TIME,
-      spell_duration = GOLEM_CAST_TIME + 0.75,
-      impulse_magnitude = 700,
-      cancel_on_death = true,
-      keep_original_angle = true,
-      draw_under_units = true,
-      show_charge_line = true,
-      play_charge_sound = true,
+      team = 'enemy',
       x = self.x,
       y = self.y,
-      color = red[0],
-      damage = function() return self.dmg end,
-      parent = self
+      num_hunters = 5,
+      spawn_radius = 28,
+      parent = self,
     }
   }
 
@@ -155,8 +142,8 @@ fns['init_enemy'] = function(self)
 
   table.insert(self.attack_options, stomp)
   table.insert(self.attack_options, mortar)
-  table.insert(self.attack_options, avalanche)
-  table.insert(self.attack_options, charge)
+  table.insert(self.attack_options, summon)
+  -- table.insert(self.attack_options, avalanche)
   -- table.insert(self.attack_options, prevent_casting)
 
 end

@@ -38,6 +38,7 @@ require 'enemies/regular/orb'
 require 'enemies/regular/roach'
 require 'enemies/regular/sniper'
 require 'enemies/regular/swarmer'
+require 'enemies/regular/hunter_swarmer'
 require 'enemies/regular/slime'
 
 require 'enemies/miniboss/bigstomper'

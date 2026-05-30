@@ -925,7 +925,8 @@ enemy_type_to_size = {
   ['aim_spread'] = 'special',
   
   ['swarmer'] = 'swarmer',
-  
+  ['hunter_swarmer'] = 'swarmer',
+
   -- Minibosses
   ['bigstomper'] = 'huge',
   

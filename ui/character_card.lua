@@ -160,9 +160,9 @@ function CharacterCard:create_set_bonus_display()
   -- Each cell shows the set name truncated to 6 chars on the left and N
   -- pip circles on the right (filled = current pieces, hollow ring = max).
   local COLS = 2
-  local CELL_W = 46
+  local CELL_W = 48
   local CELL_H = 12
-  local COL_SPACING = 48
+  local COL_SPACING = 50
   local ROW_SPACING = 13
   local ANCHOR_X_OFFSET = -((COLS - 1) * COL_SPACING) / 2
   local ANCHOR_Y = 15
@@ -218,20 +218,45 @@ function SetBonusCell:init(args)
   self.current_pieces = args.current_pieces or 0
   self.set_info = args.set_info
 
-  -- Pre-build the name text in the set's color, left-aligned.
+  -- Pre-build the name text in the set's color, left-aligned. Cache its
+  -- rendered width so draw() can pin the text to the cell's true left edge
+  -- (Text:draw treats its x as the text-box center, not the left edge).
   self.text = Text({{
     text = '[' .. self.color_name .. ']' .. self.short_name,
     font = pixul_font,
     alignment = 'left',
   }}, global_text_tags)
+  self.text_width = self.text.w or pixul_font:get_text_width(self.short_name)
 end
 
 function SetBonusCell:on_mouse_enter()
   self.selected = true
+
+  -- Highlight every item slot on this card that contributes to this set.
+  if self.parent and self.parent.items and self.set_info then
+    local key = self.set_info.key
+    for _, item_part in ipairs(self.parent.items) do
+      local item = item_part:getItem()
+      if item and item.sets then
+        for _, set_key in ipairs(item.sets) do
+          if set_key == key then
+            item_part:highlight()
+            break
+          end
+        end
+      end
+    end
+  end
 end
 
 function SetBonusCell:on_mouse_exit()
   self.selected = false
+
+  if self.parent and self.parent.items then
+    for _, item_part in ipairs(self.parent.items) do
+      item_part:unhighlight()
+    end
+  end
 end
 
 function SetBonusCell:update(dt)
@@ -242,30 +267,42 @@ function SetBonusCell:draw()
   graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
 
   -- Cell background; brightens slightly on hover so it reads as interactive.
-  local bg_color = self.selected and bg[5] or bg[0]
+  local bg_color = (self.selected or self.highlighted) and bg[5] or bg[0]
   graphics.rectangle(self.x, self.y, self.w, self.h, 2, 2, bg_color)
 
-  -- Pips on the right. Tightened radius + spacing so the pip block clears
-  -- the 5-char name with a comfortable gap inside a 46px cell.
+  -- Yellow frame when an item part is being hovered and this cell tracks one
+  -- of that item's sets (matches the yellow frame applied to ItemPart in the
+  -- inverse direction).
+  if self.highlighted then
+    graphics.rectangle(self.x, self.y, self.w, self.h, 2, 2, yellow[0], 1)
+  end
+
+  local cell_left = self.x - self.w/2
+
+  -- Name on the left. Text:draw takes the center of the text box, so to put
+  -- the left edge of the text at cell_left + 3, the center sits at
+  -- (cell_left + 3) + text_width/2.
+  local text_left = cell_left + 3
+  self.text:draw(text_left + self.text_width/2, self.y + 1, 0, 1, 1)
+
+  -- Pips immediately follow the name with a small gap, growing rightward.
+  -- Larger radius (2) and slightly tighter spacing so a "full" pip reads as
+  -- a real dot rather than a single pixel.
   local color_obj = _G[self.color_name] or _G.fg
   local filled_color = color_obj[0]
   local hollow_color = color_obj[0]
-  local pip_radius = 1.5
-  local pip_spacing = 4
-  local right_edge = self.x + self.w/2 - 3
+  local pip_radius = 2
+  local pip_spacing = 5
+  local pip_gap = 3
+  local first_pip_x = text_left + self.text_width + pip_gap + pip_radius
   for i = 1, self.max_pieces do
-    local px = right_edge - (self.max_pieces - i) * pip_spacing
+    local px = first_pip_x + (i - 1) * pip_spacing
     if i <= self.current_pieces then
       graphics.circle(px, self.y + 1, pip_radius, filled_color)
     else
       graphics.circle(px, self.y + 1, pip_radius, hollow_color, 1)
     end
   end
-
-  -- Name on the left, drawn last so it wins any residual visual overlap
-  -- with the pip block in unusually wide-letter combos.
-  local text_x = self.x - self.w/2 + 3
-  self.text:draw(text_x, self.y + 1, 0, 1, 1)
 
   graphics.pop()
 end
@@ -408,6 +445,9 @@ function CharacterCard:show_set_bonus_popup_for_set(set_info)
   
   self.set_bonus_popup = InfoText{group = main.current.ui_top or self.group, force_update = false}
   self.set_bonus_popup:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
+  -- Anchor at the shared popup position. With buy_screen/perk_overlay now set
+  -- to the bottom-of-screen slot, this lands over the item-card row alongside
+  -- the item tooltip and other popups.
   local pos = Get_UI_Popup_Position()
   self.set_bonus_popup.x = pos.x
   self.set_bonus_popup.y = pos.y
@@ -672,6 +712,9 @@ function ItemPart:draw(y)
     -- Use V2 item tier_color if available, otherwise fall back to item_to_color
     -- But show default color when item is grabbed
     local tier_color = (item and not self.itemGrabbed and not self.hide_item_display) and (item.tier_color or item_to_color(item)) or grey[0]
+    -- When a set-bonus cell is being hovered, items contributing to that set
+    -- get a yellow frame so they pop against the rest of the inventory.
+    if self.highlighted then tier_color = yellow[0] end
     graphics.rectangle(self.x, self.y, self.w+4, self.h+4, 3, 3, tier_color)
     graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, bg[5])
 
@@ -727,20 +770,39 @@ function ItemPart:on_mouse_enter()
   self.spring:pull(0.2, 200, 10)
 
   self:create_tooltip()
+
+  -- Highlight every set-bonus cell on this card whose set this item belongs to.
+  local item = self:getItem()
+  if item and item.sets and self.parent and self.parent.set_bonus_elements then
+    for _, set_key in ipairs(item.sets) do
+      for _, cell in ipairs(self.parent.set_bonus_elements) do
+        if cell.set_info and cell.set_info.key == set_key then
+          cell.highlighted = true
+        end
+      end
+    end
+  end
 end
 
 --BUG: calls as soon as entered sometimes
 function ItemPart:on_mouse_exit()
   self.selected = false
-  
+
   -- Re-enable interaction if it was disabled from dropping an item
   if self.just_dropped_item then
     self.just_dropped_item = false
   end
-  
-  if self.tooltip then 
-    self.tooltip:die() 
+
+  if self.tooltip then
+    self.tooltip:die()
     self.tooltip = nil
+  end
+
+  -- Clear any set-bonus highlights this item turned on.
+  if self.parent and self.parent.set_bonus_elements then
+    for _, cell in ipairs(self.parent.set_bonus_elements) do
+      cell.highlighted = false
+    end
   end
 end
 

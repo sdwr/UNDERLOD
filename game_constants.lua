@@ -448,6 +448,7 @@ enemy_movement_types = {
   -- straight across the map; set MOVEMENT_TYPE_LOOSE_SEEK here (or set the
   -- per-instance flag aggro_when_close = true) to restore chase behavior.
   ['swarmer'] = MOVEMENT_TYPE_PATH_ACROSS_VARIED,
+  ['hunter_swarmer'] = MOVEMENT_TYPE_SEEK,
   ['chaser'] = MOVEMENT_TYPE_SEEK,
   ['brute'] = MOVEMENT_TYPE_SEEK,
   ['roach'] = MOVEMENT_TYPE_SEEK_TO_RANGE,

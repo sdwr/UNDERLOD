@@ -1426,6 +1426,7 @@ function init()
 
   enemy_to_round_power = {
     ['swarmer'] = 25,
+    ['hunter_swarmer'] = 0,
 
     ['shooter'] = 50,
     ['seeker'] = 50,
@@ -1477,6 +1478,7 @@ function init()
 
   enemy_to_color = {
     ['swarmer'] = grey[0],
+    ['hunter_swarmer'] = grey[0],
     ['shooter'] = grey[0],
     ['seeker'] = grey[0],
     ['chaser'] = grey[0],
