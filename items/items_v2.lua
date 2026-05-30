@@ -47,6 +47,14 @@ ITEM_SET = {
   STONE_COLD = 'stone_cold',
   BLAZIN = 'blazin',
   --lightning one?
+  --flat-stat sets (1/2/4 progression)
+  ASPD = 'aspd',
+  HP = 'hp',
+  DEF = 'def',
+  AREA = 'area',
+  RANGE = 'range',
+  CRIT = 'crit',
+  CDR = 'cdr',
 }
 
 -- Stat definitions
@@ -55,8 +63,7 @@ ITEM_STATS = {
   ['dmg'] = { name = 'dmg', min = 1, max = 5, increment = 0.1 },
   ['aspd'] = { name = 'aspd', min = 1, max = 5, increment = 0.05 },
   ['hp'] = { name = 'hp', min = 1, max = 5, increment = 0.2 },
-  ['mvspd'] = { name = 'mvspd', min = 1, max = 5, increment = 0.05 },
-  
+
   -- Defensive stats
   ['flat_def'] = { name = 'flat_def', min = 1, max = 5, increment = 0.1 },
   
@@ -88,21 +95,15 @@ ITEM_STATS_THAT_CAN_ROLL_ON_ITEMS = {
   ['dmg'] = { name = 'dmg', min = 1, max = 5, increment = 0.1 },
   ['aspd'] = { name = 'aspd', min = 1, max = 5, increment = 0.05 },
   ['hp'] = { name = 'hp', min = 1, max = 5, increment = 0.2 },
-  ['mvspd'] = { name = 'mvspd', min = 1, max = 5, increment = 0.05 },
 
-  
-  ['flat_def'] = { name = 'flat_def', min = 1, max = 5, increment = 0.1 },
-  
   -- Special stats
   ['area_size'] = { name = 'area_size', min = 1, max = 5, increment = 0.1 },
   ['range'] = { name = 'range', min = 1, max = 5, increment = 0.05 },
   ['repeat_attack_chance'] = { name = 'repeat_attack_chance', min = 1, max = 5, increment = 0.2 },
 
-  
   --advanced stats
   ['crit_chance'] = { name = 'crit_chance', min = 1, max = 5, increment = 0.1 },
   -- ['crit_damage'] = { name = 'crit_damage', min = 1, max = 5, increment = 0.1 },
-  ['cooldown_reduction'] = { name = 'cooldown_reduction', min = 1, max = 5, increment = 0.1 },
 }
 
 ITEM_STATS_DAMAGE_STATS = {
@@ -315,12 +316,110 @@ ITEM_SETS = {
     bonuses = {
       [1] = { stats = {['dmg'] = 1} },
       [2] = { stats = {['dmg'] = 2} },
-      [3] = { stats = {['dmg'] = 5} }
+      [3] = { stats = {['dmg'] = 4} }
     },
     descriptions = {
       [1] = 'Gain damage',
       [2] = 'Gain more damage',
       [3] = 'Gain even more damage'
+    }
+  },
+  [ITEM_SET.ASPD] = {
+    name = 'Frenzy',
+    color = 'orange',
+    bonuses = {
+      [1] = { stats = {['aspd'] = 1} },
+      [2] = { stats = {['aspd'] = 2} },
+      [3] = { stats = {['aspd'] = 4} }
+    },
+    descriptions = {
+      [1] = 'Gain attack speed',
+      [2] = 'Gain more attack speed',
+      [3] = 'Gain even more attack speed'
+    }
+  },
+  [ITEM_SET.HP] = {
+    name = 'Vitality',
+    color = 'green',
+    bonuses = {
+      [1] = { stats = {['hp'] = 1} },
+      [2] = { stats = {['hp'] = 2} },
+      [3] = { stats = {['hp'] = 4} }
+    },
+    descriptions = {
+      [1] = 'Gain health',
+      [2] = 'Gain more health',
+      [3] = 'Gain even more health'
+    }
+  },
+  [ITEM_SET.DEF] = {
+    name = 'Bulwark',
+    color = 'blue',
+    bonuses = {
+      [1] = { stats = {['flat_def'] = 1} },
+      [2] = { stats = {['flat_def'] = 2} },
+      [3] = { stats = {['flat_def'] = 4} }
+    },
+    descriptions = {
+      [1] = 'Gain defense',
+      [2] = 'Gain more defense',
+      [3] = 'Gain even more defense'
+    }
+  },
+  [ITEM_SET.AREA] = {
+    name = 'Expanse',
+    color = 'purple',
+    bonuses = {
+      [1] = { stats = {['area_size'] = 1} },
+      [2] = { stats = {['area_size'] = 2} },
+      [3] = { stats = {['area_size'] = 4} }
+    },
+    descriptions = {
+      [1] = 'Gain area size',
+      [2] = 'Gain more area size',
+      [3] = 'Gain even more area size'
+    }
+  },
+  [ITEM_SET.RANGE] = {
+    name = 'Far Shot',
+    color = 'blue',
+    bonuses = {
+      [1] = { stats = {['range'] = 1} },
+      [2] = { stats = {['range'] = 2} },
+      [3] = { stats = {['range'] = 4} }
+    },
+    descriptions = {
+      [1] = 'Gain range',
+      [2] = 'Gain more range',
+      [3] = 'Gain even more range'
+    }
+  },
+  [ITEM_SET.CRIT] = {
+    name = 'Precision',
+    color = 'red',
+    bonuses = {
+      [1] = { stats = {['crit_chance'] = 1} },
+      [2] = { stats = {['crit_chance'] = 2} },
+      [3] = { stats = {['crit_chance'] = 4} }
+    },
+    descriptions = {
+      [1] = 'Gain crit chance',
+      [2] = 'Gain more crit chance',
+      [3] = 'Gain even more crit chance'
+    }
+  },
+  [ITEM_SET.CDR] = {
+    name = 'Haste',
+    color = 'yellow',
+    bonuses = {
+      [1] = { stats = {['cooldown_reduction'] = 1} },
+      [2] = { stats = {['cooldown_reduction'] = 2} },
+      [3] = { stats = {['cooldown_reduction'] = 4} }
+    },
+    descriptions = {
+      [1] = 'Gain cooldown reduction',
+      [2] = 'Gain more cooldown reduction',
+      [3] = 'Gain even more cooldown reduction'
     }
   },
   -- [ITEM_SET.SUPPORT] = {
@@ -409,7 +508,7 @@ ITEM_RARITIES = {
     cost = 2,
     min_stat_value = 1,
     max_stat_value = 2,
-    set_chance = 0,
+    set_chance = 1,
     color = 'grey'
   },
   [ITEM_RARITY.RARE] = {
@@ -426,7 +525,7 @@ ITEM_RARITIES = {
     min_stat_value = 2,
     max_stat_value = 4,
     set_chance = 1,
-    second_set_chance = 0,
+    second_set_chance = 1,
     color = 'purple'
   },
   [ITEM_RARITY.LEGENDARY] = {
@@ -556,23 +655,24 @@ function create_random_item(level, exclude_rarity)
     end
 
     for i = 1, set_count do
-      local set_key = get_random_set()
-      if not table.contains(item.sets, set_key) then
+      -- Retry until we find a set not already on this item, with a safety bail
+      -- in case the set pool is somehow too small.
+      local set_key = nil
+      for attempt = 1, 20 do
+        local candidate = get_random_set()
+        if not table.contains(item.sets, candidate) then
+          set_key = candidate
+          break
+        end
+      end
+      if set_key then
         table.insert(item.sets, set_key)
       end
     end
   end
   
-  if rarity_def.max_stat_value > 0 and #item.sets < 2 
-  and not (rarity == ITEM_RARITY.RARE and level <= 3) then
-    local stat_name = roll_stat_for_type(item_slot)
-    
-    -- Generate stat
-    local stat_value = math.random(rarity_def.min_stat_value, rarity_def.max_stat_value)
+  -- Items no longer roll flat stats on top of sets; sets are the entire payload.
 
-    item.stats[stat_name] = stat_value + (item.stats[stat_name] or 0)
-  end
-  
   -- Set colors based on sets only (rarity color is used as tier color)
   item.colors = {}
   

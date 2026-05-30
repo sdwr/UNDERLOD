@@ -54,11 +54,11 @@ ITEM_SLOTS_BY_INDEX = {
 -- Item type definitions with preferred stats
 ITEM_SLOTS_PREFERRED_STATS = {
   [ITEM_SLOT.HEAD] = {
-    preferred_stats = {'aspd', 'hp'},
+    preferred_stats = {'aspd', 'crit_chance'},
     preferred_chance = 1
   },
   [ITEM_SLOT.BODY] = {
-    preferred_stats = {'hp', 'aspd'},
+    preferred_stats = {'aspd', 'area_size'},
     preferred_chance = 1
   },
   [ITEM_SLOT.WEAPON] = {
@@ -70,11 +70,11 @@ ITEM_SLOTS_PREFERRED_STATS = {
     preferred_chance = 1
   },
   [ITEM_SLOT.FEET] = {
-    preferred_stats = {'mvspd', 'aspd'},
+    preferred_stats = {'aspd', 'range'},
     preferred_chance = 1
   },
   [ITEM_SLOT.AMULET] = {
-    preferred_stats = {'crit_chance', 'cooldown_reduction', 'repeat_attack_chance'},
+    preferred_stats = {'crit_chance', 'repeat_attack_chance'},
     preferred_chance = 1
   }
 }

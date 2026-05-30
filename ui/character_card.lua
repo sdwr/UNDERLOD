@@ -12,16 +12,12 @@ Character_Cards = {}
 ALL_CARD_TEXTS = {}
 
 
-function get_item_slot_location(item_slot)
-  local ITEM_SLOT_LOCATIONS = {
-    [ITEM_SLOT.HEAD] = {x = 1, y = 0},
-    [ITEM_SLOT.BODY] = {x = 1, y = 1},
-    [ITEM_SLOT.WEAPON] = {x = 0, y = 1},
-    [ITEM_SLOT.OFFHAND] = {x = 2, y = 1},
-    [ITEM_SLOT.FEET] = {x = 1, y = 2},
-    [ITEM_SLOT.AMULET] = {x = 2, y = 0},
-  }
-  return ITEM_SLOT_LOCATIONS[item_slot]
+-- Items are laid out in a flat 3-col grid, filled left->right, top->bottom.
+ITEM_LIST_COLUMNS = 3
+function get_item_list_location(i)
+  local col = (i - 1) % ITEM_LIST_COLUMNS
+  local row = math.floor((i - 1) / ITEM_LIST_COLUMNS)
+  return {x = col, y = row}
 end
 
 function Refresh_All_Cards_Text()
@@ -91,14 +87,56 @@ function CharacterCard:createItemParts()
 
     for i = 1, MAX_ITEMS do
       if i <= UNIT_LEVEL_TO_NUMBER_OF_ITEMS[self.unit.level] then
-        local item_slot = ITEM_SLOTS_BY_INDEX[i]
-        local location = get_item_slot_location(item_slot)
+        local location = get_item_list_location(i)
         table.insert(self.items, ItemPart{group = self.group,
-            x = item_x + (CHARACTER_CARD_ITEM_X_SPACING*location.x), 
+            x = item_x + (CHARACTER_CARD_ITEM_X_SPACING*location.x),
             y = item_y + (CHARACTER_CARD_ITEM_Y_SPACING*location.y),
             i = i, parent = self})
       end
     end
+end
+
+-- Level up support --------------------------------------------------------
+-- Returns the gold cost to go from the unit's current level to the next,
+-- or 999 (sentinel meaning "disabled") if already at max level.
+function CharacterCard:get_level_up_cost()
+  local lvl = self.unit.level or 1
+  return UNIT_LEVEL_TO_LEVELUP_COST[lvl] or 999
+end
+
+function CharacterCard:can_afford_level_up()
+  local cost = self:get_level_up_cost()
+  if cost == 999 then return false end
+  return (gold or 0) >= cost
+end
+
+function CharacterCard:level_up_unit()
+  if not self:can_afford_level_up() then return end
+
+  local cost = self:get_level_up_cost()
+  gold = gold - cost
+  self.unit.level = (self.unit.level or 1) + 1
+
+  -- Spawn the newly-unlocked item slot(s). createItemParts only inserts slots
+  -- not yet present, but to be safe we just append slots that exist in the
+  -- level table but not in self.items.
+  local item_x = self.x + CHARACTER_CARD_ITEM_X
+  local item_y = self.y + CHARACTER_CARD_ITEM_Y
+  local cap = UNIT_LEVEL_TO_NUMBER_OF_ITEMS[self.unit.level] or #self.items
+  for i = #self.items + 1, cap do
+    local location = get_item_list_location(i)
+    table.insert(self.items, ItemPart{group = self.group,
+        x = item_x + (CHARACTER_CARD_ITEM_X_SPACING*location.x),
+        y = item_y + (CHARACTER_CARD_ITEM_Y_SPACING*location.y),
+        i = i, parent = self})
+  end
+
+  -- Refresh header text/button to show new level and new cost.
+  self:cleanupUIElements()
+  self:createUIElements()
+
+  level_up1:play{volume = 0.6}
+  if main.current and main.current.save_run then main.current:save_run() end
 end
 
 -- This now only creates the static name text.
@@ -120,16 +158,13 @@ end
 -- NEW FUNCTION: Handles creation of elements that need to be refreshed.
 function CharacterCard:cleanupUIElements()
   -- Clean up buttons
-  if self.unit_stats_icon then
-    if self.unit_stats_icon.die then
-      self.unit_stats_icon:die()
+  if self.level_up_button then
+    if self.level_up_button.die then
+      self.level_up_button:die()
     else
-      self.unit_stats_icon.dead = true
+      self.level_up_button.dead = true
     end
-  end
-  
-  if self.last_round_stats_icon then
-    self.last_round_stats_icon.dead = true
+    self.level_up_button = nil
   end
 
   -- Clean up set bonus elements
@@ -147,40 +182,20 @@ function CharacterCard:cleanupUIElements()
 end
 
 function CharacterCard:createUIElements()
-  
+
     self:createNameText()
 
     -- Ensure old elements are removed before creating new ones to prevent duplicates.
     self:cleanupUIElements()
 
-    -- Create unit stats icon (small button next to class name)
-    self.unit_stats_icon = Button{
+    -- Create the level-up button in the header (replaces the old U/S stat buttons).
+    self.level_up_button = LevelUpButton{
         group = self.group,
-        x = self.x + 35, -- Position to the right of the class name
-        y = self.y - self.h/2 + 10, -- Same y as class name
-        w = 12,
-        h = 12,
-        bg_color = 'bg',
-        fg_color = 'bg10',
-        button_text = 'U',
-        action = function() end -- No action on click, just hover
+        x = self.x + 35, -- right side of the header, same as the old U button
+        y = self.y - self.h/2 + 10,
+        parent = self,
     }
-    self.unit_stats_icon.parent = self
-    
-    -- Create last round stats icon (small button to the left of the class name)
-    self.last_round_stats_icon = Button{
-        group = self.group,
-        x = self.x - 35, -- Position to the left of the class name
-        y = self.y - self.h/2 + 10, -- Same y as class name
-        w = 12,
-        h = 12,
-        bg_color = 'bg',
-        fg_color = 'bg10',
-        button_text = 'S',
-        action = function() end -- No action on click, just hover
-    }
-    self.last_round_stats_icon.parent = self
-    
+
     -- Create set bonus display
     self:create_set_bonus_display()
 end
@@ -404,16 +419,12 @@ end
 function CharacterCard:update(dt)
   if self.dead then return end
   self:update_game_object(dt)
-  
-  -- Check unit stats icon hover state
-  if self.unit_stats_icon and self.unit_stats_icon.selected and not self.unit_stats_hovered then
-    self.unit_stats_hovered = true
-    self:show_unit_stats_popup()
-  elseif self.unit_stats_icon and not self.unit_stats_icon.selected and self.unit_stats_hovered then
-    self.unit_stats_hovered = false
-    self:hide_popup()
+
+  -- Keep the level-up button's affordability state in sync with current gold.
+  if self.level_up_button and self.level_up_button.update_appearance then
+    self.level_up_button:update_appearance()
   end
-  
+
   -- Check set bonus elements hover state
   self.set_bonus_hovered = false
   if self.set_bonus_elements then
@@ -428,17 +439,6 @@ function CharacterCard:update(dt)
       self:hide_set_bonus_popup()
     end
   end
-  
-  -- Check last round stats icon hover state
-  if self.last_round_stats_icon and self.last_round_stats_icon.selected and not self.last_round_stats_hovered then
-    self.last_round_stats_hovered = true
-    self:show_last_round_stats_popup()
-  elseif self.last_round_stats_icon and not self.last_round_stats_icon.selected and self.last_round_stats_hovered then
-    self.last_round_stats_hovered = false
-    self:hide_last_round_popup()
-  end
-  
-
 end
 
 function CharacterCard:die()
@@ -578,8 +578,8 @@ function ItemPart:update(dt)
     local active = Active_Inventory_Slot
     
     -- Determine what to do based on target
-    if active and not self:isActiveInvSlot() and self.i == active.i then
-      -- Valid target slot of same type
+    if active and not self:isActiveInvSlot() then
+      -- Any slot accepts any item
       if active:hasItem() then
         -- SWAP: Exchange items between slots
         local target_item = active:getItem()
@@ -678,21 +678,7 @@ function ItemPart:draw(y)
 
       local image = find_item_image(item)
       image:draw(self.x, self.y, 0, 0.4, 0.4)
-    elseif item and not self.hide_item_display and self.itemGrabbed then
-      -- When item is grabbed, show empty slot appearance
-      --draw item type icon
-      local item_slot = ITEM_SLOTS_BY_INDEX[self.i]
-      local image = find_item_image(ITEM_SLOTS[item_slot])
-      local color = fg[5]:clone()
-      color.a = 0.5
-      image:draw(self.x, self.y, 0, 0.4, 0.4, 0, 0, color)
-    else
-      --draw item type icon
-      local item_slot = ITEM_SLOTS_BY_INDEX[self.i]
-      local image = find_item_image(ITEM_SLOTS[item_slot])
-      local color = fg[5]:clone()
-      color.a = 0.5
-      image:draw(self.x, self.y, 0, 0.4, 0.4, 0, 0, color)
+    -- empty slot: just the rectangle frame, no per-type icon (slots are untyped now)
     end
     
     if self.colliding_with_mouse and main.current and not Loose_Inventory_Item and not self.just_dropped_item then
@@ -780,25 +766,11 @@ self.spring:pull(0.05, 200, 10)
 end
 
 function CharacterCard:update_button_positions()
-  -- Update unit stats icon position
-  if self.unit_stats_icon then
-    self.unit_stats_icon.x = self.x + 35
-    self.unit_stats_icon.y = self.y - self.h/2 + 10
-  end
-  
-  -- Update last round stats icon position
-  if self.last_round_stats_icon then
-    self.last_round_stats_icon.x = self.x - 35
-    self.last_round_stats_icon.y = self.y - self.h/2 + 10
-  end
-  
-  -- Update level up button position
+  -- Header-anchored level-up button.
   if self.level_up_button then
-    self.level_up_button.x = self.x
-    self.level_up_button.y = self.y - 5
+    self.level_up_button.x = self.x + 35
+    self.level_up_button.y = self.y - self.h/2 + 10
   end
-  
-
 end
 
 -- Custom Level Up Button Class
@@ -808,12 +780,13 @@ LevelUpButton:implement(GameObject)
 function LevelUpButton:init(args)
   self:init_game_object(args)
   self.parent = args.parent
-  self.w = 40
-  self.h = 20
+  -- Sized to sit in the small card header next to the name text.
+  self.w = 22
+  self.h = 12
   self.shape = Rectangle(self.x, self.y, self.w, self.h)
   self.interact_with_mouse = true
   self.enabled = true
-  
+
   -- Initialize appearance
   self:update_appearance()
 end
@@ -834,44 +807,39 @@ function LevelUpButton:update_appearance()
   local cost = self.parent:get_level_up_cost()
   if cost == 999 then
     self.enabled = false
+  else
+    self.enabled = true
   end
   local can_afford = self.parent:can_afford_level_up()
-  
-  -- Update button appearance based on affordability
+
   if can_afford then
     self.bg_color = bg[10]
-    self.fg_color = yellow[0] -- Yellow outline when affordable
-    self.interact_with_mouse = true -- Enable mouse interaction
+    self.fg_color = yellow[0]
+    self.interact_with_mouse = true
   else
     self.bg_color = bg[10]
     self.fg_color = fg[0]
-    self.interact_with_mouse = false -- Disable mouse interaction
+    self.interact_with_mouse = false
   end
-  
-  -- Update cost text
+
   local color_string = can_afford and 'yellow[0]' or 'bg10'
-  self.cost_text = 'Level up: ' .. cost
+  -- Compact inline label, e.g. "+5g".
+  self.cost_text = '+' .. cost .. 'g'
   self.text_color = color_string
 end
 
 function LevelUpButton:draw()
   if not self.enabled then return end
   graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
-  
-  -- Draw button background
-  graphics.rectangle(self.x, self.y, self.w, self.h, 4, 4, self.bg_color)
-  
-  -- Draw button border
-  graphics.rectangle(self.x, self.y, self.w, self.h, 4, 4, self.fg_color, 2)
-  
-  -- Draw plus symbol
-  local plus_text = Text({{text = '[fg]+', font = pixul_font, alignment = 'center'}}, global_text_tags)
-  plus_text:draw(self.x, self.y)
-  
-  -- Draw level up text above the button
-  local level_text = Text({{text = '[' .. self.text_color .. ']' .. self.cost_text, font = pixul_font, alignment = 'center'}}, global_text_tags)
-  level_text:draw(self.x, self.y - 20)
-  
+
+  -- Button background + border.
+  graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, self.bg_color)
+  graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, self.fg_color, 1)
+
+  -- Single inline cost label.
+  local label = Text({{text = '[' .. self.text_color .. ']' .. self.cost_text, font = pixul_font, alignment = 'center'}}, global_text_tags)
+  label:draw(self.x, self.y)
+
   graphics.pop()
 end
 

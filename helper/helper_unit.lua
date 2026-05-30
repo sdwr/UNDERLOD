@@ -1014,24 +1014,25 @@ function Helper.Unit:resurrect_troop(team, troop, location, invulnerable_duratio
 end
 
 function Helper.Unit:find_available_inventory_slot(units, item)
-  local slot_index = ITEM_SLOTS[item.slot].index
-
-  if not slot_index then
-    print('ERROR: cannot find slot for item type', item.slot)
-    return nil, nil
-  end
-
+  -- Slots are untyped: walk each unit's list up to its level cap and return the first empty index.
   for _, unit in ipairs(units) do
-    if Helper.Unit:unit_has_open_inventory_slot(unit, slot_index) then
-      return unit, slot_index
+    local capacity = UNIT_LEVEL_TO_NUMBER_OF_ITEMS[unit.level] or 0
+    for i = 1, capacity do
+      if not unit.items[i] then
+        return unit, i
+      end
     end
   end
   return nil, nil
 end
 
 function Helper.Unit:unit_has_open_inventory_slot(unit, slot_index)
-  if not unit.items[slot_index] then
-    return true
+  if slot_index then
+    return not unit.items[slot_index]
+  end
+  local capacity = UNIT_LEVEL_TO_NUMBER_OF_ITEMS[unit.level] or 0
+  for i = 1, capacity do
+    if not unit.items[i] then return true end
   end
   return false
 end

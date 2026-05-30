@@ -34,7 +34,7 @@ system.load_stats()
 
 --gold
 --note that HoG econ check is in arena.lua (gain_gold)
-STARTING_GOLD = 5.0
+STARTING_GOLD = 9.0
 GOLD_PER_ROUND = 6
 GOLD_FOR_BOSS_ROUND = {10, 15, 20, 25}
 INTEREST_AMOUNT = 0.1
@@ -201,23 +201,23 @@ LEVEL_TO_PERKS = {
   [23] = true,
 }
 
+-- Leveling up unlocks item slots, not troops. Keep troop count flat across levels.
 UNIT_LEVEL_TO_NUMBER_OF_TROOPS = {
   [0] = 3,
   [1] = 3,
-  [2] = 4,
-  [3] = 5,
-  [4] = 6,
-  [5] = 7,
+  [2] = 3,
+  [3] = 3,
+  [4] = 3,
+  [5] = 3,
 }
 
 MAX_ITEMS = 6
 
---allow 6 items per level for now
 UNIT_LEVEL_TO_NUMBER_OF_ITEMS = {
-  [1] = 6,
-  [2] = 6,
-  [3] = 6,
-  [4] = 6,
+  [1] = 2,
+  [2] = 3,
+  [3] = 4,
+  [4] = 5,
   [5] = 6,
 }
 
