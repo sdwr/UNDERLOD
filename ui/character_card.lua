@@ -807,20 +807,11 @@ function ItemPart:on_mouse_exit()
 end
 
 function ItemPart:create_tooltip()
-  if not self:hasItem() then return end
-
-  if self.tooltip then
-    self.tooltip:die()
-    self.tooltip = nil
-  end
-
-  local pos = Get_UI_Popup_Position()
-  self.tooltip = ItemTooltip{
-    group = main.current.ui_top or self.group,
-    item = self:getItem(),
-    x = pos.x, 
-    y = pos.y,
-  }
+  -- Item tooltip on the unit card has been disabled. Hovering an item still
+  -- triggers set-bonus highlighting on the card, and the set-bonus cells have
+  -- their own popup on hover. Existing remove_tooltip / dead-tooltip cleanup
+  -- code stays in place so any leftover tooltip from older state still dies
+  -- on mouse-out.
 end
 
 function ItemPart:remove_tooltip()

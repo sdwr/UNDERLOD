@@ -56,6 +56,10 @@ function ItemCard:create_set_bonus_elements()
 
   for _, set_key in pairs(self.sets) do
     local set_def = ITEM_SETS[set_key]
+    -- Item rolled with a set that has since been removed from ITEM_SETS
+    -- (e.g. an older save's stone_cold/blazin reference). Skip silently
+    -- rather than crashing the buy screen.
+    if not set_def then goto continue end
     local color = set_def.color or 'orange'
 
     local text = set_def.name
@@ -76,6 +80,7 @@ function ItemCard:create_set_bonus_elements()
 
     table.insert(self.set_bonus_elements, set_button)
     i = i + 1
+    ::continue::
   end
 end
 
@@ -86,8 +91,9 @@ function ItemCard:create_stats_text()
   if self.sets then
     for _, set_key in pairs(self.sets) do
       local set_def = ITEM_SETS[set_key]
-      local color = set_def.color or 'orange'
-      table.insert(stats_lines, {text = '', font = pixul_font, alignment = 'center'})
+      if set_def then
+        table.insert(stats_lines, {text = '', font = pixul_font, alignment = 'center'})
+      end
     end
   end
 
@@ -472,11 +478,39 @@ end
 
 function ItemCard:on_mouse_enter()
   ItemCard.super.on_mouse_enter(self)
+
+  -- Light up every set-bonus cell on every unit card whose set this shop item
+  -- contributes to. Mirrors ItemPart's same-card behaviour, but spans all
+  -- units since a shop item can be bought onto any of them.
+  if self.item and self.item.sets and Character_Cards then
+    for _, set_key in ipairs(self.item.sets) do
+      for _, card in ipairs(Character_Cards) do
+        if card.set_bonus_elements then
+          for _, cell in ipairs(card.set_bonus_elements) do
+            if cell.set_info and cell.set_info.key == set_key then
+              cell.highlighted = true
+            end
+          end
+        end
+      end
+    end
+  end
 end
 
 function ItemCard:on_mouse_exit()
   ItemCard.super.on_mouse_exit(self)
   self:remove_set_bonus_tooltip()
+
+  -- Clear set-bonus highlights on every unit card. Idempotent and cheap.
+  if Character_Cards then
+    for _, card in ipairs(Character_Cards) do
+      if card.set_bonus_elements then
+        for _, cell in ipairs(card.set_bonus_elements) do
+          cell.highlighted = false
+        end
+      end
+    end
+  end
 end
 
 function ItemCard:die()

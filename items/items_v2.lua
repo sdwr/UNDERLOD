@@ -38,9 +38,6 @@ ITEM_SET = {
   REPEAT = 'repeat',
   STUN = 'stun',
   MULTI_SHOT = 'multi_shot',
-  --elemental boosts
-  STONE_COLD = 'stone_cold',
-  BLAZIN = 'blazin',
   --flat-stat sets (1/2/4 progression)
   ASPD = 'aspd',
   RANGE = 'range',
@@ -145,26 +142,6 @@ ITEM_SETS = {
       [1] = 'Adds fire damage to attacks - burning enemies explode',
       [2] = 'Adds more fire damage to attacks',
       [3] = 'Burning enemies create a volcano on death'
-    }
-  },
-  [ITEM_SET.BLAZIN] = {
-    name = 'Blazing',
-    color = 'red',
-    bonuses = {
-      [1] = { stats = {}, procs = {'blazin'} }
-    },
-    descriptions = {
-      [1] = 'Increases attack speed per burning enemy'
-    }
-  },
-  [ITEM_SET.STONE_COLD] = {
-    name = 'Stone Cold',
-    color = 'blue',
-    bonuses = {
-      [1] = { procs = {'stonecold'} }
-    },
-    descriptions = {
-      [1] = 'You deal more damage to chilled enemies'
     }
   },
   [ITEM_SET.METEOR] = {

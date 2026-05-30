@@ -1,0 +1,77 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>UNDERLOD balance curve</title>
+<style>
+body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 24px auto;
+       padding: 0 16px; background: #f8f8fa; color: #222; }
+h1 { margin-top: 0; }
+.meta { color: #666; margin-bottom: 24px; }
+img { width: 100%; max-width: 1100px; display: block; margin: 16px 0; border: 1px solid #ddd; background: white; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; margin-top: 24px; }
+th, td { border: 1px solid #ddd; padding: 4px 8px; text-align: right; }
+th { background: #eef; }
+tr.boss td { background: #fff6e0; font-weight: 600; }
+.legend { color: #555; font-size: 13px; margin: 8px 0 20px; }
+</style></head><body>
+<h1>UNDERLOD balance curve</h1>
+<div class="meta">buy_rate=1.0 &middot; trials=500 &middot;
+  starting_gold=9.0 &middot; rounds=25</div>
+
+<h2>1. Gold flow</h2>
+<img src="balance_curve_1_gold.png" alt="gold flow">
+
+<h2>2. Items and stat multipliers (Monte Carlo averaged)</h2>
+<div class="legend">Per round, MC=trials samples of how the items-so-far roll their sets are taken; we average the resulting dmg/aspd/crit/repeat across samples. So these curves are <em>expected</em> values given the actual ITEM_SETS data, not best-case or worst-case.</div>
+<img src="balance_curve_2_items.png" alt="items">
+
+<h2>3. Player DPS vs enemy HP per round</h2>
+<div class="legend">"Total kill HP" = every enemy you have to kill in the round (sum). "Onscreen burst" = expected peak HP you'll see at once (clump-cadence model). "Onscreen cap" = theoretical max bounded by MAX_ALIVE caps.</div>
+<img src="balance_curve_3_dps_vs_hp.png" alt="dps vs hp">
+
+<h2>4. Clear time proxy</h2>
+<img src="balance_curve_4_clear_time.png" alt="clear time">
+
+<h2>Per-round table</h2>
+<table>
+<thead><tr>
+<th>L</th><th>tier</th><th>gold</th><th>inc</th><th>spent</th>
+<th>buy</th><th>cum</th><th>dmgM</th><th>aspM</th><th>crit</th>
+<th>rep</th><th>elem</th><th>DPS</th><th>totHP</th><th>burst</th><th>cap</th><th>clr(s)</th>
+</tr></thead>
+<tbody>
+<tr><td>1</td><td>1.0</td><td>15.0</td><td>6</td><td>7.8</td><td>3</td><td>3</td><td>0.02</td><td>0.01</td><td>0.02</td><td>0.03</td><td>0.06</td><td>61.9</td><td>675</td><td>545</td><td>8300</td><td>10.9</td></tr><tr><td>2</td><td>1.0</td><td>13.2</td><td>6</td><td>7.8</td><td>3</td><td>6</td><td>0.05</td><td>0.02</td><td>0.04</td><td>0.09</td><td>0.11</td><td>84.9</td><td>810</td><td>573</td><td>8300</td><td>9.5</td></tr><tr><td>3</td><td>1.0</td><td>11.4</td><td>6</td><td>7.8</td><td>3</td><td>9</td><td>0.06</td><td>0.03</td><td>0.08</td><td>0.15</td><td>0.16</td><td>114.6</td><td>1785</td><td>910</td><td>8300</td><td>15.6</td></tr><tr><td>4</td><td>1.0</td><td>9.6</td><td>6</td><td>7.8</td><td>3</td><td>12</td><td>0.10</td><td>0.05</td><td>0.11</td><td>0.18</td><td>0.23</td><td>155.6</td><td>2304</td><td>1200</td><td>9960</td><td>14.8</td></tr><tr><td>5</td><td>1.0</td><td>7.8</td><td>6</td><td>7.8</td><td>3</td><td>15</td><td>0.14</td><td>0.07</td><td>0.13</td><td>0.23</td><td>0.30</td><td>212.4</td><td>2970</td><td>1476</td><td>9960</td><td>14.0</td></tr><tr class="boss"><td>6</td><td>1.5</td><td>10.0</td><td>10</td><td>7.2</td><td>2</td><td>17</td><td>0.14</td><td>0.08</td><td>0.16</td><td>0.29</td><td>0.35</td><td>262.5</td><td>5820</td><td>5280</td><td>14160</td><td>22.2</td></tr><tr><td>7</td><td>1.5</td><td>8.8</td><td>6</td><td>7.2</td><td>2</td><td>19</td><td>0.18</td><td>0.09</td><td>0.20</td><td>0.36</td><td>0.42</td><td>365.8</td><td>8862</td><td>5069</td><td>23240</td><td>24.2</td></tr><tr><td>8</td><td>1.5</td><td>7.6</td><td>6</td><td>7.2</td><td>2</td><td>21</td><td>0.22</td><td>0.11</td><td>0.22</td><td>0.36</td><td>0.42</td><td>412.0</td><td>9240</td><td>5267</td><td>23240</td><td>22.4</td></tr><tr><td>9</td><td>1.5</td><td>6.4</td><td>6</td><td>3.6</td><td>1</td><td>22</td><td>0.22</td><td>0.11</td><td>0.23</td><td>0.43</td><td>0.46</td><td>462.3</td><td>10794</td><td>5829</td><td>23240</td><td>23.3</td></tr><tr><td>10</td><td>1.5</td><td>8.8</td><td>6</td><td>7.2</td><td>2</td><td>24</td><td>0.25</td><td>0.12</td><td>0.25</td><td>0.44</td><td>0.50</td><td>556.0</td><td>12768</td><td>7113</td><td>26560</td><td>23.0</td></tr><tr class="boss"><td>11</td><td>2.0</td><td>16.6</td><td>15</td><td>14.4</td><td>3</td><td>27</td><td>0.30</td><td>0.14</td><td>0.30</td><td>0.49</td><td>0.56</td><td>732.6</td><td>9280</td><td>7120</td><td>29360</td><td>12.7</td></tr><tr><td>12</td><td>2.0</td><td>8.2</td><td>6</td><td>4.8</td><td>1</td><td>28</td><td>0.29</td><td>0.16</td><td>0.30</td><td>0.52</td><td>0.60</td><td>828.7</td><td>23712</td><td>18598</td><td>53120</td><td>28.6</td></tr><tr><td>13</td><td>2.0</td><td>9.4</td><td>6</td><td>4.8</td><td>1</td><td>29</td><td>0.32</td><td>0.17</td><td>0.34</td><td>0.58</td><td>0.64</td><td>1009.6</td><td>26676</td><td>19629</td><td>59760</td><td>26.4</td></tr><tr><td>14</td><td>2.0</td><td>10.6</td><td>6</td><td>9.6</td><td>2</td><td>31</td><td>0.35</td><td>0.17</td><td>0.34</td><td>0.59</td><td>0.67</td><td>1131.2</td><td>29700</td><td>18960</td><td>59760</td><td>26.3</td></tr><tr><td>15</td><td>2.0</td><td>7.0</td><td>6</td><td>4.8</td><td>1</td><td>32</td><td>0.38</td><td>0.18</td><td>0.35</td><td>0.59</td><td>0.70</td><td>1241.0</td><td>29700</td><td>17728</td><td>59760</td><td>23.9</td></tr><tr class="boss"><td>16</td><td>2.5</td><td>22.2</td><td>20</td><td>19.5</td><td>3</td><td>35</td><td>0.43</td><td>0.21</td><td>0.42</td><td>0.64</td><td>0.78</td><td>1732.0</td><td>21800</td><td>16824</td><td>72000</td><td>12.6</td></tr><tr><td>17</td><td>2.5</td><td>8.7</td><td>6</td><td>6.5</td><td>1</td><td>36</td><td>0.44</td><td>0.22</td><td>0.44</td><td>0.67</td><td>0.80</td><td>1890.8</td><td>29640</td><td>15280</td><td>66400</td><td>15.7</td></tr><tr><td>18</td><td>2.5</td><td>8.2</td><td>6</td><td>6.5</td><td>1</td><td>37</td><td>0.46</td><td>0.22</td><td>0.45</td><td>0.66</td><td>0.81</td><td>2017.9</td><td>29640</td><td>15280</td><td>66400</td><td>14.7</td></tr><tr><td>19</td><td>2.5</td><td>7.7</td><td>6</td><td>6.5</td><td>1</td><td>38</td><td>0.46</td><td>0.23</td><td>0.45</td><td>0.70</td><td>0.82</td><td>2055.8</td><td>36300</td><td>18040</td><td>73040</td><td>17.7</td></tr><tr><td>20</td><td>2.5</td><td>7.2</td><td>6</td><td>6.5</td><td>1</td><td>39</td><td>0.50</td><td>0.23</td><td>0.45</td><td>0.72</td><td>0.86</td><td>2410.8</td><td>39600</td><td>19680</td><td>79680</td><td>16.4</td></tr><tr class="boss"><td>21</td><td>2.5</td><td>25.7</td><td>25</td><td>19.5</td><td>3</td><td>42</td><td>0.53</td><td>0.25</td><td>0.51</td><td>0.75</td><td>0.88</td><td>2886.1</td><td>25040</td><td>18560</td><td>85280</td><td>8.7</td></tr><tr><td>22</td><td>2.5</td><td>12.2</td><td>6</td><td>6.5</td><td>1</td><td>43</td><td>0.52</td><td>0.28</td><td>0.53</td><td>0.77</td><td>0.94</td><td>3168.0</td><td>35568</td><td>18336</td><td>79680</td><td>11.2</td></tr><tr><td>23</td><td>2.5</td><td>11.7</td><td>6</td><td>6.5</td><td>1</td><td>44</td><td>0.53</td><td>0.27</td><td>0.53</td><td>0.81</td><td>0.96</td><td>3431.6</td><td>38532</td><td>19864</td><td>86320</td><td>11.2</td></tr><tr><td>24</td><td>2.5</td><td>11.2</td><td>6</td><td>6.5</td><td>1</td><td>45</td><td>0.53</td><td>0.27</td><td>0.55</td><td>0.81</td><td>0.96</td><td>3511.3</td><td>42900</td><td>21320</td><td>86320</td><td>12.2</td></tr><tr class="boss"><td>25</td><td>2.5</td><td>10.7</td><td>6</td><td>6.5</td><td>1</td><td>46</td><td>0.54</td><td>0.28</td><td>0.56</td><td>0.79</td><td>0.97</td><td>3578.7</td><td>26660</td><td>19640</td><td>91920</td><td>7.4</td></tr>
+</tbody></table>
+
+<details style="margin-top: 24px"><summary>Raw text table</summary>
+<pre style="background:#fff;padding:12px;overflow:auto">UNDERLOD balance curve  (buy_rate=1.0, trials=500)
+
+  L  tier   gold  inc  spent  buy  cum  dmgM  aspM  crit   rep  elem     DPS     totHP     burst       cap  clr(s)
+------------------------------------------------------------------------------------------------------------------
+  1  1.0   15.0    6    7.8    3    3  0.02  0.01  0.02  0.03  0.06    61.9       675       545      8300    10.9
+  2  1.0   13.2    6    7.8    3    6  0.05  0.02  0.04  0.09  0.11    84.9       810       573      8300     9.5
+  3  1.0   11.4    6    7.8    3    9  0.06  0.03  0.08  0.15  0.16   114.6      1785       910      8300    15.6
+  4  1.0    9.6    6    7.8    3   12  0.10  0.05  0.11  0.18  0.23   155.6      2304      1200      9960    14.8
+  5  1.0    7.8    6    7.8    3   15  0.14  0.07  0.13  0.23  0.30   212.4      2970      1476      9960    14.0
+  6* 1.5   10.0   10    7.2    2   17  0.14  0.08  0.16  0.29  0.35   262.5      5820      5280     14160    22.2
+  7  1.5    8.8    6    7.2    2   19  0.18  0.09  0.20  0.36  0.42   365.8      8862      5069     23240    24.2
+  8  1.5    7.6    6    7.2    2   21  0.22  0.11  0.22  0.36  0.42   412.0      9240      5267     23240    22.4
+  9  1.5    6.4    6    3.6    1   22  0.22  0.11  0.23  0.43  0.46   462.3     10794      5829     23240    23.3
+ 10  1.5    8.8    6    7.2    2   24  0.25  0.12  0.25  0.44  0.50   556.0     12768      7113     26560    23.0
+ 11* 2.0   16.6   15   14.4    3   27  0.30  0.14  0.30  0.49  0.56   732.6      9280      7120     29360    12.7
+ 12  2.0    8.2    6    4.8    1   28  0.29  0.16  0.30  0.52  0.60   828.7     23712     18598     53120    28.6
+ 13  2.0    9.4    6    4.8    1   29  0.32  0.17  0.34  0.58  0.64  1009.6     26676     19629     59760    26.4
+ 14  2.0   10.6    6    9.6    2   31  0.35  0.17  0.34  0.59  0.67  1131.2     29700     18960     59760    26.3
+ 15  2.0    7.0    6    4.8    1   32  0.38  0.18  0.35  0.59  0.70  1241.0     29700     17728     59760    23.9
+ 16* 2.5   22.2   20   19.5    3   35  0.43  0.21  0.42  0.64  0.78  1732.0     21800     16824     72000    12.6
+ 17  2.5    8.7    6    6.5    1   36  0.44  0.22  0.44  0.67  0.80  1890.8     29640     15280     66400    15.7
+ 18  2.5    8.2    6    6.5    1   37  0.46  0.22  0.45  0.66  0.81  2017.9     29640     15280     66400    14.7
+ 19  2.5    7.7    6    6.5    1   38  0.46  0.23  0.45  0.70  0.82  2055.8     36300     18040     73040    17.7
+ 20  2.5    7.2    6    6.5    1   39  0.50  0.23  0.45  0.72  0.86  2410.8     39600     19680     79680    16.4
+ 21* 2.5   25.7   25   19.5    3   42  0.53  0.25  0.51  0.75  0.88  2886.1     25040     18560     85280     8.7
+ 22  2.5   12.2    6    6.5    1   43  0.52  0.28  0.53  0.77  0.94  3168.0     35568     18336     79680    11.2
+ 23  2.5   11.7    6    6.5    1   44  0.53  0.27  0.53  0.81  0.96  3431.6     38532     19864     86320    11.2
+ 24  2.5   11.2    6    6.5    1   45  0.53  0.27  0.55  0.81  0.96  3511.3     42900     21320     86320    12.2
+ 25* 2.5   10.7    6    6.5    1   46  0.54  0.28  0.56  0.79  0.97  3578.7     26660     19640     91920     7.4
+
+* = boss round | totHP = sum HP to clear | burst = expected peak HP onscreen</pre>
+</details>
+</body></html>
