@@ -159,7 +159,7 @@ SPECIAL_SPAWN_JITTER = 0.2
 -- itself is SWARMERS_PER_LEVEL(level), same as the old wave instructions.
 -- Tuned so clumps don't pile up faster than the field can drain through
 -- PATH_ACROSS - otherwise the basics cap fills and you get long silent gaps.
-BASIC_CLUMP_INTERVAL = 6
+BASIC_CLUMP_INTERVAL = 4
 
 -- Cinematic level-clear wipe: pre-delay before any straggler enemy dies,
 -- and per-enemy offset so they pop one after another instead of all at
@@ -408,7 +408,7 @@ PATH_ACROSS_VARIED_JITTER = math.pi / 6
 -- e.g. brute, roach). Each pool's per-type cap is on top of these — a spawn
 -- skips on this tick (no queue) when either its class cap or its per-pool
 -- cap is full. MAX_ALIVE_ENEMIES kept as a hard sum ceiling for safety.
-MAX_ALIVE_BASICS = 60
+MAX_ALIVE_BASICS = 90
 MAX_ALIVE_SPECIALS = 20
 MAX_ALIVE_ENEMIES = MAX_ALIVE_BASICS + MAX_ALIVE_SPECIALS
 MOVEMENT_TYPES = {MOVEMENT_TYPE_SEEK, MOVEMENT_TYPE_LOOSE_SEEK, MOVEMENT_TYPE_SEEK_TO_RANGE, MOVEMENT_TYPE_RANDOM, MOVEMENT_TYPE_FLEE, MOVEMENT_TYPE_NONE, MOVEMENT_TYPE_PATH_ACROSS, MOVEMENT_TYPE_PATH_ACROSS_VARIED}
