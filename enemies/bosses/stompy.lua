@@ -90,8 +90,8 @@ fns['init_enemy'] = function(self)
     instantspell = true,
     cast_length = GOLEM_CAST_TIME,
     cast_sound = usurer1,
-    cast_volume = 2,
-    oncast = function() turret_hit_wall2:play{volume = 0.9} end,
+    cast_volume = 1,
+    oncast = function() turret_hit_wall2:play{volume = 0.5} end,
     spellclass = Avalanche,
     spelldata = {
       group = main.current.main,
@@ -143,7 +143,7 @@ fns['init_enemy'] = function(self)
   table.insert(self.attack_options, stomp)
   table.insert(self.attack_options, mortar)
   table.insert(self.attack_options, summon)
-  -- table.insert(self.attack_options, avalanche)
+  table.insert(self.attack_options, avalanche)
   -- table.insert(self.attack_options, prevent_casting)
 
 end

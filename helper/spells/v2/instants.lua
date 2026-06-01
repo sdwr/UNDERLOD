@@ -413,20 +413,59 @@ function Avalanche:init(args)
   self:init_game_object(args)
   if not self.group.world then self.dead = true; return end
   self.color = grey[0]
-  self.rs = self.rs or 25
   self.damage = get_dmg_value(self.damage)
 
-  self.timesToCast = 15
+  -- Tunables -------------------------------------------------------------
+  -- The avalanche fires concentric rings of Stomp areas centred on the boss.
+  -- Each ring places `num_spokes` stomps at evenly spaced angles, and each
+  -- successive ring sits `ring_step` further from the boss. The inner ring
+  -- is sized so its stomps touch around the boss (no gap to hide in), and
+  -- the chord between adjacent stomps grows with radius so outer rings
+  -- form discrete radial spokes the player can run between.
+  local num_spokes = 8
+  local num_rings = 6
+  local stomp_rs = 22
+  local boss_half_w = (self.unit and self.unit.shape and self.unit.shape.w or 46) / 2
+  local inner_radius = boss_half_w + stomp_rs * 0.9
+  local ring_step = stomp_rs * 1.5
+  local wave_delay = 0.8
+  local charge_time = 0.9
+  -------------------------------------------------------------------------
 
+  -- Rotate the spoke set by a random fraction of a slice each cast so the
+  -- same angles aren't always lit up across multiple avalanches.
+  local origin_angle = random:float(0, 2 * math.pi / num_spokes)
 
-  self.t:every(0.7, function()
-    if not self.unit then self:die(); return end
-    if self.unit and self.unit.dead then self:die(); return end
-    local x, y = math.random(self.rs, gw - self.rs), math.random(self.rs, gh - self.rs)
-    Stomp{group = main.current.main, unit = self.unit, team = self.team, x = x, y = y,
-      rs = self.rs, color = self.color, damage = self.damage, chargeTime = 1.5, knockback = true, 
-      parent = self}
-  end, self.timesToCast, function() self:die() end, 'avalanche')
+  for ring = 1, num_rings do
+    local ring_radius = inner_radius + (ring - 1) * ring_step
+    self.t:after((ring - 1) * wave_delay, function()
+      if not self.unit or self.unit.dead then return end
+      for spoke = 1, num_spokes do
+        local angle = origin_angle + (spoke - 1) * (2 * math.pi / num_spokes)
+        local x = self.unit.x + math.cos(angle) * ring_radius
+        local y = self.unit.y + math.sin(angle) * ring_radius
+        Stomp{
+          group = main.current.main,
+          unit = self.unit,
+          team = self.team,
+          x = x, y = y,
+          rs = stomp_rs,
+          color = self.color,
+          damage = self.damage,
+          chargeTime = charge_time,
+          knockback = true,
+          -- Quieter than default (0.5); 8 stomps fire simultaneously per ring
+          -- so the orb1 cue stacks into a loud chord at default volume.
+          sound_volume = 0.2,
+          parent = self,
+        }
+      end
+    end)
+  end
+
+  -- Self-destruct after the last ring's stomps have charged + impacted.
+  local total_duration = (num_rings - 1) * wave_delay + charge_time + 0.5
+  self.t:after(total_duration, function() self:die() end)
 
   Helper.Unit:set_state(self.unit, unit_states['idle'])
 end

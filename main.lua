@@ -1858,7 +1858,7 @@ function open_options(self)
         ui_switch1:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
         b.spring:pull(0.2, 200, 10)
         b.selected = true
-        current_new_game_plus = math.clamp(current_new_game_plus - 1, 0, 5)
+        current_new_game_plus = math.clamp(current_new_game_plus - 1, 0, 7)
         state.current_new_game_plus = current_new_game_plus
         self.ng_t.text:set_text({ { text = '[bg10]current: ' .. current_new_game_plus, font = pixul_font, alignment = 'center' } })
         max_units = MAX_UNITS

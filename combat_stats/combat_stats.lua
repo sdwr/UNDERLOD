@@ -173,7 +173,7 @@ MINIBOSS_MS = 50
 BOSS_HP = 1400
 
 BOSS_HP_MULT_BY_TYPE = {
-  ['stompy'] = 3,
+  ['stompy'] = 4.2,
 }
 BOSS_DAMAGE = 20
 BOSS_MS = 70

@@ -36,18 +36,11 @@ function CombatLevel:level_clear()
   -- time to play out before the arena tears down.
   local transition_delay = LEVEL_CLEAR_TRANSITION_DELAY or 2.5
 
-  if LEVEL_TO_PERKS[self.level] then
-    self.t:after(transition_delay, function()
-      self.perk_overlay = PerkOverlay{
-        group = self.ui,
-      }
-    end)
-  else
-    -- Auto-transition to buy screen without door opening or character selection
-    self.t:after(transition_delay, function()
-      main.current:transition_to_next_level_buy_screen()
-    end)
-  end
+  -- Perk selection screen removed from the game path.
+  -- All levels go straight to the buy screen after clear.
+  self.t:after(transition_delay, function()
+    main.current:transition_to_next_level_buy_screen()
+  end)
 end
 
 function CombatLevel:create_floor_items()

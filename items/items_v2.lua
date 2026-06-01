@@ -32,16 +32,11 @@ ITEM_SET = {
   LASER = 'laser',
   BLOODLUST = 'bloodlust',
   SPLASH = 'splash',
-  DAMAGE = 'damage',
   SUPPORT = 'support',
   SHIELD = 'shield',
   REPEAT = 'repeat',
   STUN = 'stun',
   MULTI_SHOT = 'multi_shot',
-  --flat-stat sets (1/2/4 progression)
-  ASPD = 'aspd',
-  RANGE = 'range',
-  CRIT = 'crit',
 }
 
 -- Stat definitions
@@ -65,10 +60,10 @@ ITEM_STATS = {
   ['gold'] = { name = 'gold', min = 1, max = 5, increment = 1 },
   ['heal'] = { name = 'heal', min = 1, max = 5, increment = 0.05 },
   
-  -- Elemental stats
-  ['fire_damage'] = { name = 'fire_damage', min = 1, max = 5, increment = 0.1 },
-  ['lightning_damage'] = { name = 'lightning_damage', min = 1, max = 5, increment = 0.1 },
-  ['cold_damage'] = { name = 'cold_damage', min = 1, max = 5, increment = 0.1 },
+  -- Elemental stats (flat damage; sets are the only source)
+  ['fire_damage'] = { name = 'fire_damage', min = 1, max = 5, increment = 1 },
+  ['lightning_damage'] = { name = 'lightning_damage', min = 1, max = 5, increment = 1 },
+  ['cold_damage'] = { name = 'cold_damage', min = 1, max = 5, increment = 1 },
   
   -- Advanced stats
   ['crit_chance'] = { name = 'crit_chance', min = 1, max = 5, increment = 0.1 },
@@ -110,9 +105,9 @@ ITEM_SETS = {
     name = 'Frost',
     color = 'blue',
     bonuses = {
-      [1] = { stats = {['cold_damage'] = 1} },
-      [2] = { stats = {['cold_damage'] = 1}, procs = {'frostfield'} },
-      [3] = { stats = {['cold_damage'] = 2}, procs = {'shatterlance'} }
+      [1] = { stats = {['cold_damage'] = 5} },
+      [2] = { stats = {['cold_damage'] = 5}, procs = {'frostfield'} },
+      [3] = { stats = {['cold_damage'] = 10}, procs = {'shatterlance'} }
     },
     descriptions = {
       [1] = 'Adds cold damage to attacks',
@@ -134,9 +129,9 @@ ITEM_SETS = {
     name = 'Inferno',
     color = 'red',
     bonuses = {
-        [1] = { stats = {['fire_damage'] = 1}, procs = {'burnexplode'} },
-        [2] = { stats = {['fire_damage'] = 1} },
-        [3] = { stats = {['fire_damage'] = 2}, procs = {'volcano'} }
+        [1] = { stats = {['fire_damage'] = 5}, procs = {'burnexplode'} },
+        [2] = { stats = {['fire_damage'] = 5} },
+        [3] = { stats = {['fire_damage'] = 10}, procs = {'volcano'} }
     },
     descriptions = {
       [1] = 'Adds fire damage to attacks - burning enemies explode',
@@ -162,9 +157,9 @@ ITEM_SETS = {
     name = 'Storm',
     color = 'yellow',
     bonuses = {
-      [1] = { stats = {['lightning_damage'] = 1} },
-      [2] = { stats = {['lightning_damage'] = 1}, procs = {'shock'} },
-      [3] = { stats = {['lightning_damage'] = 2} }
+      [1] = { stats = {['lightning_damage'] = 5} },
+      [2] = { stats = {['lightning_damage'] = 5}, procs = {'shock'} },
+      [3] = { stats = {['lightning_damage'] = 10} }
     },
     descriptions = {
       [1] = 'Adds lightning damage to attacks',
@@ -243,62 +238,6 @@ ITEM_SETS = {
       -- [3] = 'Attacks splash in an even larger area'
     }
   },
-  [ITEM_SET.DAMAGE] = {
-    name = 'Damage',
-    color = 'red',
-    bonuses = {
-      [1] = { stats = {['dmg'] = 1} },
-      [2] = { stats = {['dmg'] = 2} },
-      [3] = { stats = {['dmg'] = 4} }
-    },
-    descriptions = {
-      [1] = 'Gain damage',
-      [2] = 'Gain more damage',
-      [3] = 'Gain even more damage'
-    }
-  },
-  [ITEM_SET.ASPD] = {
-    name = 'Frenzy',
-    color = 'orange',
-    bonuses = {
-      [1] = { stats = {['aspd'] = 1} },
-      [2] = { stats = {['aspd'] = 2} },
-      [3] = { stats = {['aspd'] = 4} }
-    },
-    descriptions = {
-      [1] = 'Gain attack speed',
-      [2] = 'Gain more attack speed',
-      [3] = 'Gain even more attack speed'
-    }
-  },
-  [ITEM_SET.RANGE] = {
-    name = 'Far Shot',
-    color = 'blue',
-    bonuses = {
-      [1] = { stats = {['range'] = 1} },
-      [2] = { stats = {['range'] = 2} },
-      [3] = { stats = {['range'] = 4} }
-    },
-    descriptions = {
-      [1] = 'Gain range',
-      [2] = 'Gain more range',
-      [3] = 'Gain even more range'
-    }
-  },
-  [ITEM_SET.CRIT] = {
-    name = 'Precision',
-    color = 'red',
-    bonuses = {
-      [1] = { stats = {['crit_chance'] = 1} },
-      [2] = { stats = {['crit_chance'] = 2} },
-      [3] = { stats = {['crit_chance'] = 4} }
-    },
-    descriptions = {
-      [1] = 'Gain crit chance',
-      [2] = 'Gain more crit chance',
-      [3] = 'Gain even more crit chance'
-    }
-  },
   -- [ITEM_SET.SUPPORT] = {
   --   name = 'Support Set',
   --   color = 'green',
@@ -322,7 +261,7 @@ ITEM_SETS = {
   },
   [ITEM_SET.REPEAT] = {
     name = 'Repeat',
-    color = 'green',
+    color = 'yellow',
     bonuses = {
       [1] = { stats = {['repeat_attack_chance'] = 1} },
       [2] = { stats = {['repeat_attack_chance'] = 2} },
@@ -336,7 +275,7 @@ ITEM_SETS = {
   },
   [ITEM_SET.MULTI_SHOT] = {
     name = 'Multi-Shot',
-    color = 'green',
+    color = 'brown',
     bonuses = {
       [1] = { procs = {'multishot'} },
       [2] = { procs = {'multishotFullDamage'} },
@@ -565,4 +504,84 @@ function convert_v2_item_to_legacy(v2_item)
     -- Add any other fields needed for legacy compatibility
   }
   return legacy_item
+end
+
+-- ============================================================
+-- Team meta color system
+-- Items of a given color, totalled across every troop on the
+-- team, grant a team-wide stat multiplier at fixed thresholds.
+-- Bonus applies to every unit unconditionally.
+-- ============================================================
+META_COLORS = {'red', 'yellow', 'blue', 'brown', 'purple'}
+
+META_COLOR_TO_STAT = {
+  red    = 'dmg',
+  yellow = 'aspd',
+  blue   = 'crit_chance',
+  brown  = 'range',
+  purple = 'mvspd',
+}
+
+META_COLOR_LABEL = {
+  red    = 'damage',
+  yellow = 'attack speed',
+  blue   = 'crit',
+  brown  = 'range',
+  purple = 'move speed',
+}
+
+META_THRESHOLDS = {
+  {count = 3, bonus = 0.10},
+  {count = 6, bonus = 0.20},
+  {count = 8, bonus = 0.40},
+}
+
+function get_team_units()
+  if main and main.current and main.current.units then
+    return main.current.units
+  end
+  if buyScreen and buyScreen.units then
+    return buyScreen.units
+  end
+  return {}
+end
+
+function count_team_meta_colors(units)
+  local counts = {red = 0, yellow = 0, blue = 0, brown = 0, purple = 0}
+  if not units then return counts end
+  for _, u in ipairs(units) do
+    if u and u.items then
+      for _, item in pairs(u.items) do
+        if item and item.colors then
+          for _, color in ipairs(item.colors) do
+            if counts[color] ~= nil then
+              counts[color] = counts[color] + 1
+            end
+          end
+        end
+      end
+    end
+  end
+  return counts
+end
+
+function get_meta_bonus_for_count(count)
+  local bonus = 0
+  for _, t in ipairs(META_THRESHOLDS) do
+    if count >= t.count then bonus = t.bonus end
+  end
+  return bonus
+end
+
+function get_team_meta_stats(units)
+  local counts = count_team_meta_colors(units)
+  local stats = {}
+  for _, color in ipairs(META_COLORS) do
+    local bonus = get_meta_bonus_for_count(counts[color])
+    if bonus > 0 then
+      local stat = META_COLOR_TO_STAT[color]
+      stats[stat] = (stats[stat] or 0) + bonus
+    end
+  end
+  return stats
 end

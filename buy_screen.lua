@@ -37,6 +37,7 @@ function BuyScreen:on_exit()
   self.restart_button = nil
   self.level_button = nil
   self.perks_panel = nil
+  self.meta_panel = nil
 end
 
 function BuyScreen:on_enter(from)
@@ -81,10 +82,9 @@ function BuyScreen:on_enter(from)
     self.perks = {}
   end
 
-  -- Create perks panel
-  self.perks_panel = PerksPanel{
+  -- Team-wide meta column (replaces the old perks panel UI).
+  self.meta_panel = MetaPanel{
     group = self.ui,
-    perks = self.perks
   }
 
   self:create_tutorial_popup()
@@ -306,17 +306,18 @@ function BuyScreen:quit_tutorial()
   self.in_tutorial = false
 end
 
--- Perk management functions
+-- Perk management functions (UI panel disabled; data path kept intact).
 function BuyScreen:add_perk(perk)
-  if self.perks_panel:add_perk(perk) then
-    self:save_run()
-    return true
-  end
-  return false
+  self.perks = self.perks or {}
+  if #self.perks >= 5 then return false end
+  table.insert(self.perks, perk)
+  self:save_run()
+  return true
 end
 
 function BuyScreen:remove_perk(index)
-  if self.perks_panel:remove_perk(index) then
+  if self.perks and self.perks[index] then
+    table.remove(self.perks, index)
     self:save_run()
     return true
   end
@@ -325,9 +326,6 @@ end
 
 function BuyScreen:set_perks(perks)
   self.perks = perks or {}
-  if self.perks_panel then
-    self.perks_panel:set_perks(self.perks)
-  end
   self:save_run()
 end
 

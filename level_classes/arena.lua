@@ -397,7 +397,7 @@ end
 function Arena:endless()
   if self.clicked_loop then return end
   self.clicked_loop = true
-  if current_new_game_plus >= 5 then current_new_game_plus = 5
+  if current_new_game_plus >= 7 then current_new_game_plus = 7
   else current_new_game_plus = current_new_game_plus - 1 end
   if current_new_game_plus < 0 then current_new_game_plus = 0 end
   self.loop = self.loop + 1
@@ -698,12 +698,12 @@ function Arena:on_win()
         ItemCard{group = self.ui, x = 120 + (i-1)*30, y = 20, w = ITEM_CARD_WIDTH, h = ITEM_CARD_HEIGHT, sx = 0.75, sy = 0.75, force_update = true, passive = passive.passive , level = passive.level, xp = passive.xp, parent = self}
       end
 
-      if current_new_game_plus == 6 then
+      if current_new_game_plus == 8 then
         if current_new_game_plus == new_game_plus then
-          new_game_plus = 5
+          new_game_plus = 7
           state.new_game_plus = new_game_plus
         end
-        current_new_game_plus = 5
+        current_new_game_plus = 7
         state.current_new_game_plus = current_new_game_plus
         max_units = MAX_UNITS
 
@@ -759,7 +759,7 @@ function Arena:on_win()
       system.save_state()
     end
 
-    if current_new_game_plus == 6 then
+    if current_new_game_plus == 8 then
       state.achievement_new_game_5 = true
       system.save_state()
     end

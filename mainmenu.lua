@@ -133,41 +133,61 @@ function MainMenu:on_enter(from)
     end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
   end}
 
-  self.arena_run_button_hard = Button{group = self.main_ui, x = 160, y = gh/2 - 10, force_update = true, button_text = 'hard', fg_color = 'bg10', bg_color = 'bg', action = function(b)
-    -- Check if the final boss has been defeated
-    if not USER_STATS or not USER_STATS.final_boss_defeated or USER_STATS.final_boss_defeated < 1 then
-      -- Show info text that hard mode is locked
-      if not self.hard_mode_locked_info then
-        self.hard_mode_locked_info = InfoText{group = self.ui}
+  -- NG+ selector (replaces the old 'hard' button). Plays at the currently
+  -- selected NG+ level when the normal button is pressed. Each level adds
+  -- +10% enemy hp and dmg; the next level unlocks automatically by winning.
+  local NG_PLUS_MAX = 7
+
+  local function refresh_ng_label()
+    if self.ng_plus_label and self.ng_plus_label.text then
+      self.ng_plus_label.text:set_text({{text = '[bg10]NG+' .. tostring(current_new_game_plus or 0), font = pixul_font, alignment = 'center'}})
+    end
+  end
+
+  local function ng_locked_toast()
+    if not self.ng_plus_locked_info then
+      self.ng_plus_locked_info = InfoText{group = self.ui}
+    end
+    self.ng_plus_locked_info:activate({
+      {text = '[fg]beat NG+' .. tostring(new_game_plus or 0) .. ' to unlock', font = pixul_font, alignment = 'center'},
+    }, nil, nil, nil, nil, 16, 4, nil, 2)
+    self.ng_plus_locked_info.x, self.ng_plus_locked_info.y = gw/2, gh/2 + 10
+    self.t:after(2, function()
+      if self.ng_plus_locked_info then
+        self.ng_plus_locked_info:deactivate()
+        self.ng_plus_locked_info.dead = true
+        self.ng_plus_locked_info = nil
       end
-      self.hard_mode_locked_info:activate({
-        {text = '[fg]beat normal mode to unlock', font = pixul_font, alignment = 'center'},
-      }, nil, nil, nil, nil, 16, 4, nil, 2)
-      self.hard_mode_locked_info.x, self.hard_mode_locked_info.y = gw/2, gh/2 + 10
-      
-      -- Auto-hide the info text after 2 seconds
-      self.t:after(2, function() 
-        if self.hard_mode_locked_info then 
-          self.hard_mode_locked_info:deactivate()
-          self.hard_mode_locked_info.dead = true
-          self.hard_mode_locked_info = nil 
-        end 
-      end, 'hard_mode_locked_info')
-      
-      -- Play error sound
-      error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    end, 'ng_plus_locked_info')
+    error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+  end
+
+  self.ng_plus_down_button = Button{group = self.main_ui, x = 152, y = gh/2 - 10, w = 18, force_update = true, button_text = '-', fg_color = 'fg', bg_color = 'bg', action = function(b)
+    if (current_new_game_plus or 0) <= 0 then return end
+    ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    b.spring:pull(0.2, 200, 10)
+    b.selected = true
+    current_new_game_plus = math.clamp((current_new_game_plus or 0) - 1, 0, NG_PLUS_MAX)
+    state.current_new_game_plus = current_new_game_plus
+    refresh_ng_label()
+  end}
+
+  self.ng_plus_label = Text2{group = self.main_ui, x = 183, y = gh/2 - 10, force_update = true,
+    lines = {{text = '[bg10]NG+' .. tostring(current_new_game_plus or 0), font = pixul_font, alignment = 'center'}}}
+
+  self.ng_plus_up_button = Button{group = self.main_ui, x = 215, y = gh/2 - 10, w = 18, force_update = true, button_text = '+', fg_color = 'fg', bg_color = 'bg', action = function(b)
+    local target = (current_new_game_plus or 0) + 1
+    if target > NG_PLUS_MAX then return end
+    ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    b.spring:pull(0.2, 200, 10)
+    b.selected = true
+    if target > (new_game_plus or 0) then
+      ng_locked_toast()
       return
     end
-    
-    -- If unlocked, proceed with normal hard mode transition
-    state.difficulty = 'hard'
-    ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-    ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-    ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
-    TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
-      self.transitioning = true
-      Start_New_Run_And_Go_To_Buy_Screen()
-    end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']starting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
+    current_new_game_plus = target
+    state.current_new_game_plus = current_new_game_plus
+    refresh_ng_label()
   end}
 
   self.achievements_panel = AchievementsPanel{group = self.ui}
@@ -235,6 +255,32 @@ function MainMenu:on_exit()
 end
 
 
+-- Greys out the - / + NG+ buttons when they have nothing to do.
+-- - is dead at 0; + is dead at the hard cap or when the next level is locked.
+function MainMenu:refresh_ng_button_states()
+  local NG_PLUS_MAX = 7
+  local cur = current_new_game_plus or 0
+  local maxu = new_game_plus or 0
+
+  local function apply(button, glyph, disabled)
+    if not button or not button.text then return end
+    button.ng_disabled = disabled
+    local color
+    if disabled then
+      color = 'fgm7'
+    elseif button.selected then
+      color = 'fgm5'
+    else
+      color = 'fg'
+    end
+    button.text:set_text({{text = '[' .. color .. ']' .. glyph, font = pixul_font, alignment = 'center'}})
+  end
+
+  apply(self.ng_plus_down_button, '-', cur <= 0)
+  apply(self.ng_plus_up_button, '+', cur >= NG_PLUS_MAX or cur >= maxu)
+end
+
+
 function MainMenu:update(dt)
   if main_song_instance:isStopped() then
     main_song_instance = title_music:play{volume = 1}
@@ -258,6 +304,7 @@ function MainMenu:update(dt)
     self.options_ui:update(dt*slow_amount)
     self.effects:update(dt*slow_amount)
     self.main_ui:update(dt*slow_amount)
+    self:refresh_ng_button_states()
     if self.title_text then self.title_text:update(dt) end
     if self.new_game_label then self.new_game_label:update(dt) end
     self.ui:update(dt*slow_amount)

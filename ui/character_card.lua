@@ -157,8 +157,8 @@ function CharacterCard:create_set_bonus_display()
   table.sort(unit_sets, function(a, b) return a.name < b.name end)
 
   -- Layout: 2 columns x up to 4 rows (visible cap = 8 sets per unit).
-  -- Each cell shows the set name truncated to 6 chars on the left and N
-  -- pip circles on the right (filled = current pieces, hollow ring = max).
+  -- Cell shows the set name (truncated to 5 chars) on the left and N pip
+  -- circles on the right (filled = current pieces, hollow ring = max).
   local COLS = 2
   local CELL_W = 48
   local CELL_H = 12

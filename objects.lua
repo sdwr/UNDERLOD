@@ -957,6 +957,7 @@ function Unit:calculate_stats(first_run)
   self:add_stats(self:process_items_to_stats())
   self:add_stats(self:process_set_bonuses_to_stats())
   self:add_stats(self:preprocess_perks_to_stats())
+  self:add_stats(self:process_team_meta_to_stats())
 
 
 
@@ -2257,6 +2258,11 @@ function Unit:process_items_to_stats()
   end
   
   return processed_stats
+end
+
+function Unit:process_team_meta_to_stats()
+  if not get_team_meta_stats then return {} end
+  return get_team_meta_stats(get_team_units())
 end
 
 function Unit:process_set_bonuses_to_stats()

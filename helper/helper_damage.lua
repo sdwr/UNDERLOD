@@ -364,7 +364,7 @@ function Helper.Damage:process_physical_to_elemental(unit, actual_damage, from)
   -- Apply each elemental type as separate converted hits
   for _, elementalType in ipairs(ELEMENTAL_EFFECT_TYPES) do
     if elemental_stats[elementalType] > 0 then
-      local elemental_damage = actual_damage * elemental_stats[elementalType]
+      local elemental_damage = elemental_stats[elementalType]
       Helper.Damage:apply_hit(unit, elemental_damage, from, elementalType, false, {
         isChained = true,
         isElementalConversion = true,
