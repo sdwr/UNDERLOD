@@ -5,6 +5,12 @@
 ITEM_PART_WIDTH = 18
 ITEM_PART_HEIGHT = 18
 
+-- ItemPart dimensions when shown on the CharacterCard (wide pill with
+-- set name text instead of an icon). Kept separate from ITEM_PART_WIDTH
+-- so floor-item -> slot animations and ItemCard math still work.
+CARD_ITEM_PART_WIDTH = 44
+CARD_ITEM_PART_HEIGHT = 14
+
 -- Card dimensions (ItemCard, PerkCard)
 CARD_WIDTH = 60
 CARD_HEIGHT = 80

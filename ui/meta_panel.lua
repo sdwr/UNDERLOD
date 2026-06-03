@@ -41,6 +41,9 @@ end
 
 function MetaPanel:update(dt)
   self:update_game_object(dt)
+  -- Counts only need to be computed once per frame; each row reads from
+  -- here instead of walking the full team for itself.
+  self.counts = count_team_meta_colors(get_team_units())
 end
 
 function MetaPanel:draw()
@@ -58,14 +61,6 @@ MetaRow = Object:extend()
 MetaRow.__class_name = 'MetaRow'
 MetaRow:implement(GameObject)
 
-local color_globals = {
-  red    = function() return red    end,
-  yellow = function() return yellow end,
-  blue   = function() return blue   end,
-  brown  = function() return brown  end,
-  purple = function() return purple end,
-}
-
 function MetaRow:init(args)
   self:init_game_object(args)
   self.color_name = args.color_name
@@ -75,20 +70,17 @@ function MetaRow:init(args)
   self.interact_with_mouse = true
   self.parent = args.parent
   self.spring:pull(0.1, 200, 10)
+
+  -- Resolve once: the color global doesn't change, and draw() reads it
+  -- twice per frame.
+  local c = _G[self.color_name]
+  self.color = (c and c[0]) or fg[0]
 end
 
 function MetaRow:current_count()
-  local counts = count_team_meta_colors(get_team_units())
+  local counts = self.parent and self.parent.counts
+  if not counts then return 0 end
   return counts[self.color_name] or 0
-end
-
-function MetaRow:active_tier_index()
-  local n = self:current_count()
-  local idx = 0
-  for i, t in ipairs(META_THRESHOLDS) do
-    if n >= t.count then idx = i end
-  end
-  return idx
 end
 
 function MetaRow:update(dt)
@@ -96,35 +88,41 @@ function MetaRow:update(dt)
   self.shape:move_to(self.x, self.y)
 end
 
-function MetaRow:swatch_color()
-  local getter = color_globals[self.color_name]
-  if getter and getter() then return getter()[0] end
-  return fg[0]
-end
-
 function MetaRow:draw()
   graphics.push(self.x, self.y, 0, self.sx * self.spring.x, self.sy * self.spring.x)
 
     local swatch_x = self.x - self.w/2 + SWATCH_SIZE/2
-    graphics.rectangle(swatch_x, self.y, SWATCH_SIZE, SWATCH_SIZE, 3, 3, self:swatch_color())
+    graphics.rectangle(swatch_x, self.y, SWATCH_SIZE, SWATCH_SIZE, 3, 3, self.color)
 
-    self:draw_tier_pips()
+    self:draw_pips()
 
   graphics.pop()
 end
 
-function MetaRow:draw_tier_pips()
-  local active = self:active_tier_index()
-  local pip_w, pip_h, pip_spacing = 6, 6, 3
+-- One pip per item up to the top threshold, arranged in rows of 3/3/2.
+-- Filling matches the team's current count of items of this color.
+MetaRow.PIP_ROWS = {3, 3, 2}
 
-  -- Pips sit just to the right of the swatch.
-  local start_x = self.x - self.w/2 + SWATCH_SIZE + 6 + pip_w/2
+function MetaRow:draw_pips()
+  local count = self:current_count()
+  local pip_w, pip_h = 5, 5
+  local h_spacing, v_spacing = 2, 2
+  local rows = MetaRow.PIP_ROWS
 
-  for i, _ in ipairs(META_THRESHOLDS) do
-    local pip_x = start_x + (i - 1) * (pip_w + pip_spacing)
-    graphics.rectangle(pip_x, self.y, pip_w, pip_h, 1, 1, bg[5])
-    if i <= active then
-      graphics.rectangle(pip_x, self.y, pip_w, pip_h, 1, 1, self:swatch_color())
+  -- Block centered vertically on self.y, anchored just right of the swatch.
+  local block_h = #rows * pip_h + (#rows - 1) * v_spacing
+  local top_y = self.y - block_h/2 + pip_h/2
+  local left_x = self.x - self.w/2 + SWATCH_SIZE + 6 + pip_w/2
+
+  local filled_color = self.color
+  local pip_idx = 0
+  for row_i, n in ipairs(rows) do
+    local row_y = top_y + (row_i - 1) * (pip_h + v_spacing)
+    for col_i = 1, n do
+      pip_idx = pip_idx + 1
+      local pip_x = left_x + (col_i - 1) * (pip_w + h_spacing)
+      local color = pip_idx <= count and filled_color or bg[5]
+      graphics.rectangle(pip_x, row_y, pip_w, pip_h, 1, 1, color)
     end
   end
 end

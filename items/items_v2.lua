@@ -327,7 +327,6 @@ ITEM_RARITIES = {
     min_stat_value = 2,
     max_stat_value = 4,
     set_chance = 1,
-    second_set_chance = 1,
     color = 'purple'
   },
   [ITEM_RARITY.LEGENDARY] = {
@@ -448,28 +447,11 @@ function create_random_item(level, exclude_rarity)
     tags = {} -- Empty tags for compatibility with existing system
   }
 
-  -- Determine if item has sets
+  -- Items roll at most one set.
   if random:float(0, 1) < rarity_def.set_chance then
-    -- Add 1-2 sets for higher rarities
-    local set_count = 1
-    if rarity_def.second_set_chance and random:float(0, 1) < rarity_def.second_set_chance then
-      set_count = 2
-    end
-
-    for i = 1, set_count do
-      -- Retry until we find a set not already on this item, with a safety bail
-      -- in case the set pool is somehow too small.
-      local set_key = nil
-      for attempt = 1, 20 do
-        local candidate = get_random_set()
-        if not table.contains(item.sets, candidate) then
-          set_key = candidate
-          break
-        end
-      end
-      if set_key then
-        table.insert(item.sets, set_key)
-      end
+    local candidate = get_random_set()
+    if candidate then
+      table.insert(item.sets, candidate)
     end
   end
   

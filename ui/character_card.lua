@@ -73,14 +73,15 @@ function CharacterCard:init(args)
     --texts
     self:initText()
 
-    self.set_bonus_hovered = false
-
     -- FIX: The call to Refresh_All_Cards_Text() has been removed from here.
     -- It should be called once, AFTER all cards have been created.
     
     if self.spawn_effect then SpawnEffect{group = main.current.world_ui, x = self.x, y = self.y, color = self.character_color} end
 end
 
+-- ItemParts on the character card are wide pills with the set name inside
+-- instead of a square icon. Initial positions don't matter — layout_item_parts
+-- overrides (x, y) every frame. Sizes live in ui_constants.lua.
 function CharacterCard:createItemParts()
     local item_x = self.x + CHARACTER_CARD_ITEM_X
     local item_y = self.y + CHARACTER_CARD_ITEM_Y
@@ -91,6 +92,7 @@ function CharacterCard:createItemParts()
         table.insert(self.items, ItemPart{group = self.group,
             x = item_x + (CHARACTER_CARD_ITEM_X_SPACING*location.x),
             y = item_y + (CHARACTER_CARD_ITEM_Y_SPACING*location.y),
+            w = CARD_ITEM_PART_WIDTH, h = CARD_ITEM_PART_HEIGHT,
             i = i, parent = self})
       end
     end
@@ -113,226 +115,33 @@ function CharacterCard:createNameText()
   self.name_text = Text({{text = class_text, font = pixul_font, alignment = 'center'}}, global_text_tags)
 end
 
--- NEW FUNCTION: Handles creation of elements that need to be refreshed.
 function CharacterCard:cleanupUIElements()
-  -- (No header buttons currently — kept hook for future header UI.)
-
-  -- Clean up set bonus elements
-  if self.set_bonus_elements then
-    for _, element in ipairs(self.set_bonus_elements) do
-      element.dead = true
-    end
-    self.set_bonus_elements = {}
+  if self.inventory_count_text then
+    self.inventory_count_text.dead = true
+    self.inventory_count_text = nil
+    self.inventory_count_last = nil
   end
-  
-  -- Clean up popups
+
   self:hide_popup()
-  self:hide_set_bonus_popup()
   self:hide_last_round_popup()
 end
 
 function CharacterCard:createUIElements()
-    self:createNameText()
-
-    -- Ensure old elements are removed before creating new ones to prevent duplicates.
-    self:cleanupUIElements()
-
-    -- Create set bonus display
-    self:create_set_bonus_display()
+  self:createNameText()
+  self:cleanupUIElements()
+  -- inventory_count_text is built lazily on the first refresh, so we don't
+  -- duplicate the format string here.
 end
 
-function CharacterCard:create_set_bonus_display()
-  -- Remove old set bonus elements
-  if self.set_bonus_elements then
-    for _, element in ipairs(self.set_bonus_elements) do
-      element.dead = true
+function CharacterCard:current_item_count()
+  local n = 0
+  if self.unit and self.unit.items then
+    for _, item in pairs(self.unit.items) do
+      if item then n = n + 1 end
     end
   end
-
-  self.set_bonus_elements = {}
-
-  local unit_sets = self:get_unit_sets()
-  if #unit_sets == 0 then return end
-
-  table.sort(unit_sets, function(a, b) return a.name < b.name end)
-
-  -- Layout: 2 columns x up to 4 rows (visible cap = 8 sets per unit).
-  -- Cell shows the set name (truncated to 5 chars) on the left and N pip
-  -- circles on the right (filled = current pieces, hollow ring = max).
-  local COLS = 2
-  local CELL_W = 48
-  local CELL_H = 12
-  local COL_SPACING = 50
-  local ROW_SPACING = 13
-  local ANCHOR_X_OFFSET = -((COLS - 1) * COL_SPACING) / 2
-  local ANCHOR_Y = 15
-  local MAX_VISIBLE = 8
-
-  for i, set_info in ipairs(unit_sets) do
-    if i > MAX_VISIBLE then break end
-
-    local col = (i - 1) % COLS
-    local row = math.floor((i - 1) / COLS)
-
-    local max_pieces = 0
-    for pieces, _ in pairs(set_info.bonuses) do
-      max_pieces = math.max(max_pieces, pieces)
-    end
-
-    local cell = SetBonusCell{
-      group = self.group,
-      x = self.x + ANCHOR_X_OFFSET + col * COL_SPACING,
-      y = self.y + ANCHOR_Y + row * ROW_SPACING,
-      w = CELL_W,
-      h = CELL_H,
-      short_name = set_info.name:sub(1, 5),
-      color_name = set_info.color or 'fg',
-      max_pieces = max_pieces,
-      current_pieces = math.min(set_info.current_pieces, max_pieces),
-      set_info = set_info,
-    }
-    cell.parent = self
-
-    table.insert(self.set_bonus_elements, cell)
-  end
+  return n
 end
-
-
--- A single set-bonus row drawn on the character card. Left side renders the
--- 6-char truncated set name (in the set's color). Right side renders
--- max_pieces circle pips, filled for current_pieces and hollow for the rest.
-SetBonusCell = Object:extend()
-SetBonusCell.__class_name = 'SetBonusCell'
-SetBonusCell:implement(GameObject)
-function SetBonusCell:init(args)
-  self:init_game_object(args)
-  self.w = args.w or 46
-  self.h = args.h or 12
-  self.shape = Rectangle(self.x, self.y, self.w, self.h)
-  self.interact_with_mouse = true
-  self.selected = false
-
-  self.short_name = args.short_name or ''
-  self.color_name = args.color_name or 'fg'
-  self.max_pieces = args.max_pieces or 1
-  self.current_pieces = args.current_pieces or 0
-  self.set_info = args.set_info
-
-  -- Pre-build the name text in the set's color, left-aligned. Cache its
-  -- rendered width so draw() can pin the text to the cell's true left edge
-  -- (Text:draw treats its x as the text-box center, not the left edge).
-  self.text = Text({{
-    text = '[' .. self.color_name .. ']' .. self.short_name,
-    font = pixul_font,
-    alignment = 'left',
-  }}, global_text_tags)
-  self.text_width = self.text.w or pixul_font:get_text_width(self.short_name)
-end
-
-function SetBonusCell:on_mouse_enter()
-  self.selected = true
-
-  -- Highlight every item slot on this card that contributes to this set.
-  if self.parent and self.parent.items and self.set_info then
-    local key = self.set_info.key
-    for _, item_part in ipairs(self.parent.items) do
-      local item = item_part:getItem()
-      if item and item.sets then
-        for _, set_key in ipairs(item.sets) do
-          if set_key == key then
-            item_part:highlight()
-            break
-          end
-        end
-      end
-    end
-  end
-end
-
-function SetBonusCell:on_mouse_exit()
-  self.selected = false
-
-  if self.parent and self.parent.items then
-    for _, item_part in ipairs(self.parent.items) do
-      item_part:unhighlight()
-    end
-  end
-end
-
-function SetBonusCell:update(dt)
-  self:update_game_object(dt)
-end
-
-function SetBonusCell:draw()
-  graphics.push(self.x, self.y, 0, self.spring.x, self.spring.y)
-
-  -- Cell background; brightens slightly on hover so it reads as interactive.
-  local bg_color = (self.selected or self.highlighted) and bg[5] or bg[0]
-  graphics.rectangle(self.x, self.y, self.w, self.h, 2, 2, bg_color)
-
-  -- Yellow frame when an item part is being hovered and this cell tracks one
-  -- of that item's sets (matches the yellow frame applied to ItemPart in the
-  -- inverse direction).
-  if self.highlighted then
-    graphics.rectangle(self.x, self.y, self.w, self.h, 2, 2, yellow[0], 1)
-  end
-
-  local cell_left = self.x - self.w/2
-
-  -- Name on the left. Text:draw takes the center of the text box, so to put
-  -- the left edge of the text at cell_left + 3, the center sits at
-  -- (cell_left + 3) + text_width/2.
-  local text_left = cell_left + 3
-  self.text:draw(text_left + self.text_width/2, self.y + 1, 0, 1, 1)
-
-  -- Pips immediately follow the name with a small gap, growing rightward.
-  -- Larger radius (2) and slightly tighter spacing so a "full" pip reads as
-  -- a real dot rather than a single pixel.
-  local color_obj = _G[self.color_name] or _G.fg
-  local filled_color = color_obj[0]
-  local hollow_color = color_obj[0]
-  local pip_radius = 2
-  local pip_spacing = 5
-  local pip_gap = 3
-  local first_pip_x = text_left + self.text_width + pip_gap + pip_radius
-  for i = 1, self.max_pieces do
-    local px = first_pip_x + (i - 1) * pip_spacing
-    if i <= self.current_pieces then
-      graphics.circle(px, self.y + 1, pip_radius, filled_color)
-    else
-      graphics.circle(px, self.y + 1, pip_radius, hollow_color, 1)
-    end
-  end
-
-  graphics.pop()
-end
-
-function SetBonusCell:die()
-  self.dead = true
-end
-
-function CharacterCard:get_unit_sets()
-  local sets = {}
-  local set_counts = Helper.Unit:count_unit_set_pieces(self.unit)
-  
-  -- Build set info
-  for set_key, count in pairs(set_counts) do
-    local set_def = ITEM_SETS[set_key]
-    if set_def then
-      table.insert(sets, {
-        name = set_def.name,
-        key = set_key,
-        current_pieces = count,
-        bonuses = set_def.bonuses,
-        color = set_def.color,
-        descriptions = set_def.descriptions
-      })
-    end
-  end
-  
-  return sets
-end
-
 
 function CharacterCard:show_last_round_stats_popup()
   -- Get all units to compare stats
@@ -437,33 +246,10 @@ function CharacterCard:show_unit_stats_popup()
   self.popup.y = self.y - self.h/2 + 60
 end
 
-function CharacterCard:show_set_bonus_popup_for_set(set_info)
-  local set_count = Helper.Unit:get_unit_set_count(self.unit, set_info.key)
-  local text_lines = DrawUtils.build_set_bonus_tooltip_text(set_info, set_count)
-
-  self:hide_set_bonus_popup()
-  
-  self.set_bonus_popup = InfoText{group = main.current.ui_top or self.group, force_update = false}
-  self.set_bonus_popup:activate(text_lines, nil, nil, nil, nil, 16, 4, nil, 2)
-  -- Anchor at the shared popup position. With buy_screen/perk_overlay now set
-  -- to the bottom-of-screen slot, this lands over the item-card row alongside
-  -- the item tooltip and other popups.
-  local pos = Get_UI_Popup_Position()
-  self.set_bonus_popup.x = pos.x
-  self.set_bonus_popup.y = pos.y
-end
-
 function CharacterCard:hide_popup()
   if self.popup then
     self.popup:deactivate()
     self.popup = nil
-  end
-end
-
-function CharacterCard:hide_set_bonus_popup()
-  if self.set_bonus_popup then
-    self.set_bonus_popup:deactivate()
-    self.set_bonus_popup = nil
   end
 end
 
@@ -474,6 +260,11 @@ function CharacterCard:draw()
   --draw text
   self.name_text:draw(self.x, self.y - (self.h/2) + 10)
 
+  -- x/6 inventory count, sitting just above the bottom edge of the card.
+  if self.inventory_count_text then
+    self.inventory_count_text:draw(self.x, self.y + self.h/2 - 8)
+  end
+
   graphics.pop()
 end
   
@@ -481,19 +272,81 @@ function CharacterCard:update(dt)
   if self.dead then return end
   self:update_game_object(dt)
 
-  -- Check set bonus elements hover state
-  self.set_bonus_hovered = false
-  if self.set_bonus_elements then
-    for _, element in ipairs(self.set_bonus_elements) do
-      if element.selected then
-        self:show_set_bonus_popup_for_set(element.set_info)
-        self.set_bonus_hovered = true
-        break
+  -- Item layout: vertical list grouped by the displayed set, duplicates stack
+  -- horizontally on the same row. Recomputed every frame so add/sell/swap
+  -- show up immediately without an explicit refresh.
+  self:layout_item_parts()
+  self:refresh_inventory_count_text()
+end
+
+-- Walks unit.items, builds one row per displayed set, and positions the
+-- corresponding ItemParts horizontally on that row. ItemParts whose slot is
+-- empty are flagged hidden so they neither draw nor accept mouse hits;
+-- interact_with_mouse alone keeps them out of hover/click without any
+-- shape-parking or tooltip-killing busywork in the per-frame loop.
+function CharacterCard:layout_item_parts()
+  if not self.items or not self.unit or not self.unit.items then return end
+
+  for _, part in ipairs(self.items) do
+    part.hidden = true
+    part.interact_with_mouse = false
+  end
+
+  -- One ordered list of {key=..., indices={...}} per visible group. Walking
+  -- unit.items in slot order means a linear scan to find an existing group
+  -- (max MAX_ITEMS groups) — cheaper and shorter than parallel key+order
+  -- tables.
+  local groups = {}
+  for idx = 1, MAX_ITEMS do
+    local item = self.unit.items[idx]
+    if item then
+      local key = (item.sets and item.sets[1]) or '_no_set'
+      local group
+      for _, g in ipairs(groups) do
+        if g.key == key then group = g; break end
+      end
+      if not group then
+        group = {key = key, indices = {}}
+        table.insert(groups, group)
+      end
+      table.insert(group.indices, idx)
+    end
+  end
+
+  local row_spacing = 17
+  local col_spacing = CARD_ITEM_PART_WIDTH + 2
+  local first_row_y = self.y - self.h/2 + 28
+  local row_left = self.x - self.w/2 + 6
+
+  for row_i, group in ipairs(groups) do
+    local row_y = first_row_y + (row_i - 1) * row_spacing
+    for col_i, slot_index in ipairs(group.indices) do
+      local part = self.items[slot_index]
+      if part then
+        part.hidden = false
+        part.interact_with_mouse = true
+        part.x = row_left + (col_i - 1) * col_spacing + CARD_ITEM_PART_WIDTH/2
+        part.y = row_y
+        if part.shape then part.shape:move_to(part.x, part.y) end
       end
     end
-    if not self.set_bonus_hovered then
-      self:hide_set_bonus_popup()
-    end
+  end
+end
+
+-- Lazily creates the count text, and only fires set_text when the count
+-- actually changes — avoids a fresh table literal + two garbage strings
+-- per card per frame.
+function CharacterCard:refresh_inventory_count_text()
+  local count = self:current_item_count()
+  if not self.inventory_count_text then
+    self.inventory_count_text = Text({{text = '[bg10]' .. count .. '/' .. MAX_ITEMS, font = pixul_font, alignment = 'center'}}, global_text_tags)
+    table.insert(ALL_CARD_TEXTS, self.inventory_count_text)
+    self.inventory_count_last = count
+    return
+  end
+  if count ~= self.inventory_count_last then
+    self.inventory_count_text:set_text({{text = '[bg10]' .. count .. '/' .. MAX_ITEMS, font = pixul_font, alignment = 'center'}})
+    self.inventory_count_last = count
   end
 end
 
@@ -517,13 +370,12 @@ ItemPart.__class_name = 'ItemPart'
 ItemPart:implement(GameObject)
 function ItemPart:init(args)
   self:init_game_object(args)
-  self.shape = Rectangle(self.x, self.y, self.sx * 20, self.sy * 20)
+  self.w = args.w or ITEM_PART_WIDTH
+  self.h = args.h or ITEM_PART_HEIGHT
+  self.shape = Rectangle(self.x, self.y, self.sx * (self.w + 2), self.sy * (self.h + 2))
   self.interact_with_mouse = true
   self.itemGrabbed = false
   self.info_text = nil
-
-  self.h = ITEM_PART_HEIGHT
-  self.w = ITEM_PART_WIDTH
 
   self.spring:pull(0.2, 200, 10)
   self.just_created = true
@@ -701,43 +553,37 @@ function ItemPart:update(dt)
   self.shape:move_to(self.x, self.y)
 end
 
-function ItemPart:draw(y)
-  if y then
-    print("what is y doing here!?")
-    print(y)
-  end
+function ItemPart:draw()
+  if self.hidden then return end
   if not self.parent.grabbed then
     graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
     local item = self.parent.unit.items[self.i]
     -- Use V2 item tier_color if available, otherwise fall back to item_to_color
     -- But show default color when item is grabbed
     local tier_color = (item and not self.itemGrabbed and not self.hide_item_display) and (item.tier_color or item_to_color(item)) or grey[0]
-    -- When a set-bonus cell is being hovered, items contributing to that set
-    -- get a yellow frame so they pop against the rest of the inventory.
+    -- When a meta-color row is being hovered, items contributing to that
+    -- color get a yellow frame so they pop against the rest of the inventory.
     if self.highlighted then tier_color = yellow[0] end
     graphics.rectangle(self.x, self.y, self.w+4, self.h+4, 3, 3, tier_color)
     graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, bg[5])
 
     if item and not self.hide_item_display and not self.itemGrabbed then
-      -- draw item background colors (duplicated from itemCard code)
-      if item.colors then
-        local num_colors = #item.colors
-        local color_h = self.h / num_colors
-        for i, color_name in ipairs(item.colors) do
-          --make a copy of the color so we can change the alpha
-          local color = _G[color_name]
-          color = color[0]:clone()
-          color.a = 0.6
-          --find the y midpoint of the rectangle
-          local y = (self.y - self.h/2) + ((i-1) * color_h) + (color_h/2)
-  
-          graphics.rectangle(self.x, y, self.w, color_h, 2, 2, color)
-        end
+      -- Cache the tinted color + truncated label keyed by the item itself;
+      -- this draw runs every frame per visible part, and item identity only
+      -- changes on add/swap/sell.
+      if self.cached_item ~= item then
+        local set_key = item.sets and item.sets[1]
+        local set_def = set_key and ITEM_SETS[set_key]
+        local color_name = set_def and set_def.color or 'grey'
+        local tint = (_G[color_name] or grey)[0]:clone()
+        tint.a = 0.6
+        self.cached_tint = tint
+        self.cached_label = (set_def and set_def.name or '-'):sub(1, 8)
+        self.cached_item = item
       end
 
-      local image = find_item_image(item)
-      image:draw(self.x, self.y, 0, 0.4, 0.4)
-    -- empty slot: just the rectangle frame, no per-type icon (slots are untyped now)
+      graphics.rectangle(self.x, self.y, self.w, self.h, 2, 2, self.cached_tint)
+      graphics.print_centered(self.cached_label, pixul_font, self.x, self.y, 0, 1, 1, 0, 0, fg[0])
     end
     
     if self.colliding_with_mouse and main.current and not Loose_Inventory_Item and not self.just_dropped_item then
@@ -770,18 +616,6 @@ function ItemPart:on_mouse_enter()
   self.spring:pull(0.2, 200, 10)
 
   self:create_tooltip()
-
-  -- Highlight every set-bonus cell on this card whose set this item belongs to.
-  local item = self:getItem()
-  if item and item.sets and self.parent and self.parent.set_bonus_elements then
-    for _, set_key in ipairs(item.sets) do
-      for _, cell in ipairs(self.parent.set_bonus_elements) do
-        if cell.set_info and cell.set_info.key == set_key then
-          cell.highlighted = true
-        end
-      end
-    end
-  end
 end
 
 --BUG: calls as soon as entered sometimes
@@ -797,21 +631,18 @@ function ItemPart:on_mouse_exit()
     self.tooltip:die()
     self.tooltip = nil
   end
-
-  -- Clear any set-bonus highlights this item turned on.
-  if self.parent and self.parent.set_bonus_elements then
-    for _, cell in ipairs(self.parent.set_bonus_elements) do
-      cell.highlighted = false
-    end
-  end
 end
 
 function ItemPart:create_tooltip()
-  -- Item tooltip on the unit card has been disabled. Hovering an item still
-  -- triggers set-bonus highlighting on the card, and the set-bonus cells have
-  -- their own popup on hover. Existing remove_tooltip / dead-tooltip cleanup
-  -- code stays in place so any leftover tooltip from older state still dies
-  -- on mouse-out.
+  if self.tooltip then return end
+  local item = self:getItem()
+  if not item then return end
+  self.tooltip = SetBonusTooltip{
+    group = main.current.ui_top or self.group,
+    item = item,
+    x = self.x,
+    y = self.y - 40,
+  }
 end
 
 function ItemPart:remove_tooltip()
