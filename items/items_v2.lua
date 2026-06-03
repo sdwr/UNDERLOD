@@ -15,12 +15,14 @@ ITEM_TYPE = {
 ITEM_RARITY = {
   COMMON = 'common',
   RARE = 'rare',
-  EPIC = 'epic',
-  LEGENDARY = 'legendary'
 }
 
 -- Item Sets
 ITEM_SET = {
+  DAMAGE = 'damage',
+  ASPD = 'aspd',
+  RANGE = 'range_set',
+  CRIT = 'crit',
   COLD = 'cold',
   FROST_NOVA = 'frost_nova',
   FIRE = 'fire',
@@ -99,11 +101,73 @@ ITEM_STATS_DAMAGE_STATS = {
 
 ITEM_SET_POWER_BUDGET = 1
 
--- Set definitions with bonuses
+-- Set definitions with bonuses. Each set is tagged with `rarity` (common or
+-- rare). Items roll a set from the pool matching their own rarity.
 ITEM_SETS = {
+  [ITEM_SET.DAMAGE] = {
+    name = 'Power',
+    color = 'red',
+    rarity = ITEM_RARITY.COMMON,
+    bonuses = {
+      [1] = { stats = {['dmg'] = 1} },
+      [2] = { stats = {['dmg'] = 3} },
+      [3] = { stats = {['dmg'] = 5} },
+    },
+    descriptions = {
+      [1] = '+10% damage',
+      [2] = '+30% damage',
+      [3] = '+50% damage',
+    }
+  },
+  [ITEM_SET.ASPD] = {
+    name = 'Swift',
+    color = 'yellow',
+    rarity = ITEM_RARITY.COMMON,
+    bonuses = {
+      [1] = { stats = {['aspd'] = 1} },
+      [2] = { stats = {['aspd'] = 3} },
+      [3] = { stats = {['aspd'] = 5} },
+    },
+    descriptions = {
+      [1] = '+5% attack speed',
+      [2] = '+15% attack speed',
+      [3] = '+25% attack speed',
+    }
+  },
+  [ITEM_SET.RANGE] = {
+    name = 'Reach',
+    color = 'brown',
+    rarity = ITEM_RARITY.COMMON,
+    bonuses = {
+      [1] = { stats = {['range'] = 1} },
+      [2] = { stats = {['range'] = 3} },
+      [3] = { stats = {['range'] = 5} },
+    },
+    descriptions = {
+      [1] = '+5% range',
+      [2] = '+15% range',
+      [3] = '+25% range',
+    }
+  },
+  [ITEM_SET.CRIT] = {
+    name = 'Precision',
+    color = 'blue',
+    rarity = ITEM_RARITY.COMMON,
+    bonuses = {
+      [1] = { stats = {['crit_chance'] = 1} },
+      [2] = { stats = {['crit_chance'] = 3} },
+      [3] = { stats = {['crit_chance'] = 5} },
+    },
+    descriptions = {
+      [1] = '+10% crit chance',
+      [2] = '+30% crit chance',
+      [3] = '+50% crit chance',
+    }
+  },
   [ITEM_SET.COLD] = {
     name = 'Frost',
     color = 'blue',
+    rarity = ITEM_RARITY.COMMON,
     bonuses = {
       [1] = { stats = {['cold_damage'] = 5} },
       [2] = { stats = {['cold_damage'] = 5}, procs = {'frostfield'} },
@@ -118,6 +182,7 @@ ITEM_SETS = {
   [ITEM_SET.FROST_NOVA] = {
     name = 'Frost Nova',
     color = 'blue',
+    rarity = ITEM_RARITY.RARE,
     bonuses = {
       [1] = { stats = {}, procs = {'frostnova'} }
     },
@@ -128,6 +193,7 @@ ITEM_SETS = {
   [ITEM_SET.FIRE] = {
     name = 'Inferno',
     color = 'red',
+    rarity = ITEM_RARITY.COMMON,
     bonuses = {
         [1] = { stats = {['fire_damage'] = 5}, procs = {'burnexplode'} },
         [2] = { stats = {['fire_damage'] = 5} },
@@ -142,6 +208,7 @@ ITEM_SETS = {
   [ITEM_SET.METEOR] = {
     name = 'Meteor',
     color = 'red',
+    rarity = ITEM_RARITY.RARE,
     bonuses = {
       [1] = { procs = {'meteor'} },
       [2] = { procs = {'meteorSizeBoost'} },
@@ -156,6 +223,7 @@ ITEM_SETS = {
   [ITEM_SET.SHOCK] = {
     name = 'Storm',
     color = 'yellow',
+    rarity = ITEM_RARITY.COMMON,
     bonuses = {
       [1] = { stats = {['lightning_damage'] = 5} },
       [2] = { stats = {['lightning_damage'] = 5}, procs = {'shock'} },
@@ -170,6 +238,7 @@ ITEM_SETS = {
   [ITEM_SET.LIGHTNING_BALL] = {
     name = 'Lightning',
     color = 'yellow',
+    rarity = ITEM_RARITY.RARE,
     bonuses = {
       [1] = { procs = {'lightningball'} }
     },
@@ -180,6 +249,7 @@ ITEM_SETS = {
   [ITEM_SET.CURSE] = {
     name = 'Curse',
     color = 'purple',
+    rarity = ITEM_RARITY.RARE,
     bonuses = {
       [1] = { procs = {'curse'} }
     },
@@ -213,6 +283,7 @@ ITEM_SETS = {
   [ITEM_SET.BLOODLUST] = {
     name = 'Bloodlust',
     color = 'purple',
+    rarity = ITEM_RARITY.RARE,
     bonuses = {
       [1] = { procs = {'bloodlust'} },
       [2] = { procs = {'bloodlustSpeedBoost'} },
@@ -227,6 +298,7 @@ ITEM_SETS = {
   [ITEM_SET.SPLASH] = {
     name = 'Splash',
     color = 'brown',
+    rarity = ITEM_RARITY.RARE,
     bonuses = {
       [1] = { procs = {'splash'} },
       [2] = { procs = {'splashSizeBoost'} },
@@ -250,6 +322,7 @@ ITEM_SETS = {
   [ITEM_SET.SHIELD] = {
     name = 'Radiance',
     color = 'red',
+    rarity = ITEM_RARITY.RARE,
     bonuses = {
       [1] = { procs = {'shield', 'radiance'} },
       -- [2] = { procs = {'shieldexplode'} },
@@ -262,6 +335,7 @@ ITEM_SETS = {
   [ITEM_SET.REPEAT] = {
     name = 'Repeat',
     color = 'yellow',
+    rarity = ITEM_RARITY.RARE,
     bonuses = {
       [1] = { stats = {['repeat_attack_chance'] = 1} },
       [2] = { stats = {['repeat_attack_chance'] = 2} },
@@ -276,6 +350,7 @@ ITEM_SETS = {
   [ITEM_SET.MULTI_SHOT] = {
     name = 'Multi-Shot',
     color = 'brown',
+    rarity = ITEM_RARITY.RARE,
     bonuses = {
       [1] = { procs = {'multishot'} },
       [2] = { procs = {'multishotFullDamage'} },
@@ -321,22 +396,6 @@ ITEM_RARITIES = {
     set_chance = 1,
     color = 'blue'
   },
-  [ITEM_RARITY.EPIC] = {
-    name = 'Epic',
-    cost = 6,
-    min_stat_value = 2,
-    max_stat_value = 4,
-    set_chance = 1,
-    color = 'purple'
-  },
-  [ITEM_RARITY.LEGENDARY] = {
-    name = 'Legendary',
-    cost = 10,
-    min_stat_value = 3,
-    max_stat_value = 4,
-    set_chance = 1,
-    color = 'orange'
-  }
 }
 
 -- Helper function to get random item type
@@ -352,8 +411,8 @@ end
 function get_random_rarity(level, exclude_rarity)
   local tier = LEVEL_TO_TIER(level)
 
-  local rarities = {ITEM_RARITY.COMMON, ITEM_RARITY.RARE, ITEM_RARITY.EPIC, ITEM_RARITY.LEGENDARY}
-  local weights = TIER_TO_ITEM_RARITY_WEIGHTS[tier] or {1, 0, 0, 0}
+  local rarities = {ITEM_RARITY.COMMON, ITEM_RARITY.RARE}
+  local weights = TIER_TO_ITEM_RARITY_WEIGHTS[tier] or {1, 0}
 
   if exclude_rarity then
    local rarity_index = table.find(rarities, exclude_rarity)
@@ -369,11 +428,14 @@ function get_random_rarity(level, exclude_rarity)
   return rarities[random:weighted_pick(unpack(weights))] or rarities[1]
 end
 
--- Helper function to get random set
-function get_random_set()
+-- Helper function to get random set. Pass `rarity` to constrain the pool to
+-- sets tagged with that rarity; nil returns any set (legacy).
+function get_random_set(rarity)
   local set_keys = {}
-  for set_name, _ in pairs(ITEM_SETS) do
-    table.insert(set_keys, set_name)
+  for set_name, set_def in pairs(ITEM_SETS) do
+    if not rarity or set_def.rarity == rarity then
+      table.insert(set_keys, set_name)
+    end
   end
   return random:table(set_keys)
 end
@@ -447,9 +509,10 @@ function create_random_item(level, exclude_rarity)
     tags = {} -- Empty tags for compatibility with existing system
   }
 
-  -- Items roll at most one set.
+  -- Items roll at most one set, drawn from the pool matching this item's
+  -- rarity (common items get common sets, rare items get rare sets).
   if random:float(0, 1) < rarity_def.set_chance then
-    local candidate = get_random_set()
+    local candidate = get_random_set(rarity)
     if candidate then
       table.insert(item.sets, candidate)
     end

@@ -63,7 +63,7 @@ function Archer_Troop:instant_attack_at_angle(angle, damage_multi)
   ArrowProjectile(spelldata)
 end
 
-function Archer_Troop:multishot(angle)
+function Archer_Troop:multishot(angle, target)
   local angle1 = angle + MULTISHOT_ANGLE_OFFSET
   local angle2 = angle - MULTISHOT_ANGLE_OFFSET
 

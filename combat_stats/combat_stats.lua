@@ -265,11 +265,12 @@ LEVEL_TO_TIER = function(level)
   return tier
 end
 
+-- Weights are {common, rare}.
 TIER_TO_ITEM_RARITY_WEIGHTS = {
-  [1] = {0.7, 0.3, 0, 0},
-  [1.5] = {0.35, 0.5, 0.15, 0},
-  [2] = {0.2, 0.4, 0.3, 0.1},
-  [2.5] = {0, 0.25, 0.5, 0.25},
+  [1] = {0.85, 0.15},
+  [1.5] = {0.65, 0.35},
+  [2] = {0.45, 0.55},
+  [2.5] = {0.25, 0.75},
 }
 
 CHANCE_OF_SPECIAL_VS_NORMAL_ENEMY = 0.7

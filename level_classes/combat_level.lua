@@ -31,16 +31,21 @@ function CombatLevel:level_clear()
     self.progress_bar:flash_level_complete()
   end
 
-  -- Defer the actual transition so the staggered death cascade scheduled
-  -- by the spawn manager (LEVEL_CLEAR_KILL_DELAY + per-enemy offsets) has
-  -- time to play out before the arena tears down.
+  -- Wait until every enemy from the staggered death cascade (scheduled by
+  -- SpawnManager — LEVEL_CLEAR_KILL_DELAY + per-enemy offsets) has actually
+  -- died before transitioning. Poll every 0.1s, then hold the original
+  -- transition_delay as a post-cascade beat for the wipe/flash to settle.
   local transition_delay = LEVEL_CLEAR_TRANSITION_DELAY or 2.5
-
-  -- Perk selection screen removed from the game path.
-  -- All levels go straight to the buy screen after clear.
-  self.t:after(transition_delay, function()
-    main.current:transition_to_next_level_buy_screen()
-  end)
+  local poll_id = 'level_clear_wait_for_enemies'
+  self.t:every(0.1, function()
+    local enemies = self.main:get_objects_by_classes(main.current.enemies) or {}
+    if #enemies == 0 then
+      self.t:cancel(poll_id)
+      self.t:after(transition_delay, function()
+        main.current:transition_to_next_level_buy_screen()
+      end)
+    end
+  end, nil, nil, poll_id)
 end
 
 function CombatLevel:create_floor_items()

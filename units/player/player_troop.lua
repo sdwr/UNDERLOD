@@ -49,6 +49,23 @@ function Troop:init(args)
 end
 
 
+-- Default multishot for target-based troops (laser, swordsman, sword_weapon).
+-- Projectile troops (archer, shotgun) override this to fan extras at offset angles.
+function Troop:multishot(angle, target)
+  if not target or target.dead then return end
+
+  local proc = Get_Static_Proc(self, 'multishot')
+  local damage_multi = proc and proc:get_damage_multi() or 1
+
+  self:instant_attack(target, damage_multi)
+  self:instant_attack(target, damage_multi)
+
+  if Get_Static_Proc(self, 'extraMultishot') then
+    self:instant_attack(target, damage_multi)
+    self:instant_attack(target, damage_multi)
+  end
+end
+
 --called in oncastfinish for all troops
 function Troop:stretch_on_attack()
   local stretch_factor = 0.4

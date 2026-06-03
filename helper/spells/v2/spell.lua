@@ -182,12 +182,13 @@ end
 function Cast:try_multishot()
   if not self.unit then return end
   if not Has_Static_Proc(self.unit, 'multishot') then return end
+  if not self.unit.multishot then return end
 
   local unit = self.unit
   local target = self.target
   local angle_to_target = math.atan2(target.y - unit.y, target.x - unit.x)
 
-  unit:multishot(angle_to_target)
+  unit:multishot(angle_to_target, target)
 end
 
 -- only repeat instant spells, no channeling spells

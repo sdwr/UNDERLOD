@@ -69,14 +69,15 @@ function Swordsman_Troop:setup_cast(cast_target)
     self.castObject = Cast(cast_data)
 end
 
-function Swordsman_Troop:instant_attack(cast_target)
+function Swordsman_Troop:instant_attack(cast_target, damage_multi)
+  damage_multi = damage_multi or 1
   Area_Spell{
     group = main.current.effects,
     sound = self.play_attack_sound,
     target = cast_target,
     on_attack_callbacks = false,
     unit = self,
-    damage = function() return self.dmg end,
+    damage = function() return self.dmg * damage_multi end,
     radius = self.base_attack_area,
     duration = 0.2,
     damage_ticks = false,

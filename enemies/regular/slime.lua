@@ -1,11 +1,11 @@
 -- Slime: a special enemy that crosses the arena center on a straight path,
 -- leaves a purple slime trail behind, and stops periodically while fully
--- on-screen to fire an 8-way projectile pulse. Projectiles fade out over
--- their 125-unit travel and then vanish.
+-- on-screen to fire an 8-way projectile pulse. Projectiles travel at full
+-- opacity and pop out at their max range.
 
 -- ============================================================================
--- SlimeBullet: a single radial projectile from the slime pulse. Fades alpha
--- linearly across its 125-unit lifetime and dies on impact or at max range.
+-- SlimeBullet: a single radial projectile from the slime pulse. Holds full
+-- alpha across its 125-unit lifetime and dies on impact or at max range.
 -- ============================================================================
 SlimeBullet = Object:extend()
 SlimeBullet.__class_name = 'SlimeBullet'
@@ -40,10 +40,6 @@ function SlimeBullet:update(dt)
 
   local moved = math.sqrt((self.x - prev_x)^2 + (self.y - prev_y)^2)
   self.distance = self.distance - moved
-
-  -- Linear fade from base_alpha down to 0 across the full travel.
-  local t = math.max(0, self.distance / self.start_distance)
-  self.color.a = self.base_alpha * t
 
   if self.distance <= 0 then
     self:die()
@@ -183,7 +179,7 @@ fns['init_enemy'] = function(self)
       opacity = 0.3,
       line_width = 0,
       tick_rate = 0.5,
-      duration = 15,
+      duration = 30,
       pick_shape = 'circle',
       parent = self,
       floor_effect = 'poison',

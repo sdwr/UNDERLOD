@@ -331,6 +331,30 @@ function CharacterCard:layout_item_parts()
       end
     end
   end
+
+  -- Drop-target zone: while an item is being dragged from another card, expose
+  -- the first empty slot here so the player has a visible landing spot. The
+  -- slot itself does the drop_target_glow pulse in ItemPart:draw.
+  if Loose_Inventory_Item
+     and Loose_Inventory_Item.parent
+     and Loose_Inventory_Item.parent.parent ~= self then
+    local empty_idx = nil
+    for idx = 1, MAX_ITEMS do
+      if self.items[idx] and not self.unit.items[idx] then
+        empty_idx = idx
+        break
+      end
+    end
+    if empty_idx then
+      local part = self.items[empty_idx]
+      local row_y = first_row_y + #groups * row_spacing
+      part.hidden = false
+      part.interact_with_mouse = true
+      part.x = row_left + CARD_ITEM_PART_WIDTH/2
+      part.y = row_y
+      if part.shape then part.shape:move_to(part.x, part.y) end
+    end
+  end
 end
 
 -- Lazily creates the count text, and only fires set_text when the count
@@ -462,12 +486,25 @@ function ItemPart:update(dt)
     end
   else
     self.interact_with_mouse = true
-    
+
     if self.colliding_with_mouse then
       Active_Inventory_Slot = self
     elseif Active_Inventory_Slot == self then
       Active_Inventory_Slot = nil
     end
+  end
+
+  -- Drop-target glow: while a Loose_Inventory_Item is in flight, any empty
+  -- slot on a *different* card lights up so the player can see where the
+  -- item can land. Source card's empty slots are intentionally excluded —
+  -- moving within the same unit is the trivial case.
+  if Loose_Inventory_Item and not self.hidden and not self:hasItem()
+     and Loose_Inventory_Item.parent ~= self
+     and Loose_Inventory_Item.parent
+     and Loose_Inventory_Item.parent.parent ~= self.parent then
+    self.drop_target_glow = true
+  else
+    self.drop_target_glow = false
   end
 
   if input.m1.pressed and self.colliding_with_mouse and self:hasItem() and not Loose_Inventory_Item then
@@ -564,6 +601,14 @@ function ItemPart:draw()
     -- When a meta-color row is being hovered, items contributing to that
     -- color get a yellow frame so they pop against the rest of the inventory.
     if self.highlighted then tier_color = yellow[0] end
+    -- Drop-target glow: pulse a green border on empty slots across other
+    -- units while an item is mid-drag, indicating valid drop locations.
+    if self.drop_target_glow then
+      local pulse = 0.6 + 0.4 * math.abs(math.sin(love.timer.getTime() * 4))
+      local glow = green[0]:clone()
+      glow.a = pulse
+      tier_color = glow
+    end
     graphics.rectangle(self.x, self.y, self.w+4, self.h+4, 3, 3, tier_color)
     graphics.rectangle(self.x, self.y, self.w, self.h, 3, 3, bg[5])
 

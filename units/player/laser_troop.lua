@@ -79,7 +79,8 @@ function Laser_Troop:setup_cast(cast_target)
   self:cast(data)
 end
 
-function Laser_Troop:instant_attack(cast_target)
+function Laser_Troop:instant_attack(cast_target, damage_multi)
+  damage_multi = damage_multi or 1
   Laser_Spell{
     group = main.current.effects,
     target = cast_target,
@@ -87,7 +88,7 @@ function Laser_Troop:instant_attack(cast_target)
     unit = self,
     spell_duration = 10,
     color = blue[0],
-    damage = function() return self.dmg end,
+    damage = function() return self.dmg * damage_multi end,
     reduce_pierce_damage = true,
     lasermode = 'target',
     laser_aim_width = 1,

@@ -122,7 +122,7 @@ function Build_Level_List(max_level)
       level_list[i].round_power = (ROUND_POWER_BY_LEVEL[i] or 2000) + 500
       local quota_mult = 1.5 + 0.10 * (i - 1)
       if i >= 2 then quota_mult = quota_mult * 1.35 end
-      level_list[i].kill_quota = math.ceil(level_list[i].round_power * quota_mult * 3)
+      level_list[i].kill_quota = math.ceil(level_list[i].round_power * quota_mult * 1.5)
       level_list[i].waves_power = {level_list[i].kill_quota}
     end
   end

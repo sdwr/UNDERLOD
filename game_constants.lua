@@ -164,13 +164,13 @@ BASIC_CLUMP_INTERVAL = 2
 -- Cinematic level-clear wipe: pre-delay before any straggler enemy dies,
 -- and per-enemy offset so they pop one after another instead of all at
 -- once. Total wipe duration = LEVEL_CLEAR_KILL_DELAY + remaining * offset.
-LEVEL_CLEAR_KILL_DELAY = 1.0
+LEVEL_CLEAR_KILL_DELAY = 0.3
 LEVEL_CLEAR_KILL_OFFSET = 0.04
 
--- Total time from level_clear() trigger until the arena transitions away.
--- Should be at least LEVEL_CLEAR_KILL_DELAY + cascade duration so the wipe
--- is visible.
-LEVEL_CLEAR_TRANSITION_DELAY = 2.5
+-- Post-cascade beat before the arena transitions away. Polling in
+-- combat_level:level_clear() already waits for the cascade to finish, so this
+-- is pure buffer for the wipe/flash to settle.
+LEVEL_CLEAR_TRANSITION_DELAY = 0.8
 
 ITEM_SPAWN_DELAY_INITAL = 0.8
 ITEM_SPAWN_DELAY_OFFSET = 0.5

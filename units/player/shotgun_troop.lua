@@ -93,20 +93,45 @@ function Shotgun_Troop:setup_cast(cast_target)
   self.castObject = Cast(data)
 end
 
-function Shotgun_Troop:fire_pellet_at_angle(angle)
+function Shotgun_Troop:fire_pellet_at_angle(angle, damage_multi)
   local spelldata = self:create_spelldata()
   spelldata.on_attack_callbacks = false
   spelldata.unit = self
   spelldata.angle = angle
+  if damage_multi and damage_multi ~= 1 then
+    spelldata.damage = function() return self.dmg * damage_multi end
+  end
   ArrowProjectile(spelldata)
 end
 
-function Shotgun_Troop:instant_attack(cast_target)
+function Shotgun_Troop:instant_attack(cast_target, damage_multi)
   if not cast_target or cast_target.dead then return end
   local angle_to_target = math.atan2(cast_target.y - self.y, cast_target.x - self.x)
   for _ = 1, self.num_pellets do
     local angle = angle_to_target + random:float(-self.half_spread, self.half_spread)
-    self:fire_pellet_at_angle(angle)
+    self:fire_pellet_at_angle(angle, damage_multi)
+  end
+end
+
+-- Fire two extra pellet fans angled off the main shot, mirroring the archer's
+-- multishot fan but using shotgun spread instead of a single projectile.
+function Shotgun_Troop:multishot(angle, target)
+  local proc = Get_Static_Proc(self, 'multishot')
+  local damage_multi = proc and proc:get_damage_multi() or 1
+
+  local function fire_fan(center)
+    for _ = 1, self.num_pellets do
+      local a = center + random:float(-self.half_spread, self.half_spread)
+      self:fire_pellet_at_angle(a, damage_multi)
+    end
+  end
+
+  fire_fan(angle + MULTISHOT_ANGLE_OFFSET)
+  fire_fan(angle - MULTISHOT_ANGLE_OFFSET)
+
+  if Get_Static_Proc(self, 'extraMultishot') then
+    fire_fan(angle + MULTISHOT_ANGLE_OFFSET / 2)
+    fire_fan(angle - MULTISHOT_ANGLE_OFFSET / 2)
   end
 end
 

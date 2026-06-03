@@ -96,11 +96,14 @@ function SwordWeapon_Troop:setup_cast(cast_target)
   self.castObject = Cast(cast_data)
 end
 
-function SwordWeapon_Troop:instant_attack(cast_target)
+function SwordWeapon_Troop:instant_attack(cast_target, damage_multi)
   local spelldata = self:create_spelldata(cast_target)
   spelldata.on_attack_callbacks = false
   spelldata.unit = self
   spelldata.target = cast_target
+  if damage_multi and damage_multi ~= 1 then
+    spelldata.damage = function() return self.dmg * damage_multi end
+  end
   Sword_Swing_Spell(spelldata)
 end
 
