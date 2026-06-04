@@ -1461,6 +1461,7 @@ function init()
     ['plasma'] = 200,
     ['big_goblin_archer'] = 200,
     ['slowcharger'] = 200,
+    ['tank'] = 100,
     --special enemies t2
     ['firewall_caster'] = 250,
     ['spread'] = 250,
@@ -1507,6 +1508,7 @@ function init()
     ['selfburst'] = orange[3],
     ['slowcharger'] = orange[3],
     ['turret'] = red[3],
+    ['tank'] = red[3],
   }
 
   DAMAGE_TYPE_TO_COLOR = {

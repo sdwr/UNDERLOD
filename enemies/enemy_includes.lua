@@ -40,6 +40,7 @@ require 'enemies/regular/sniper'
 require 'enemies/regular/swarmer'
 require 'enemies/regular/hunter_swarmer'
 require 'enemies/regular/slime'
+require 'enemies/regular/tank'
 
 require 'enemies/miniboss/bigstomper'
 

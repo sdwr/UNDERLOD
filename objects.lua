@@ -947,6 +947,10 @@ function Unit:calculate_stats(first_run)
           self.class_hp_m = amt
         elseif stat == buff_types['status_resist'] then
           self.status_resist = amt
+        elseif stat == 'knockback_resistance' then
+          -- Per-type override of the class default set just above. Stored
+          -- as an absolute value (not a multiplier), then clamped later.
+          self.knockback_resistance = amt
         end
       end
     end

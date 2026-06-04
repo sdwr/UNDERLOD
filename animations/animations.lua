@@ -926,6 +926,7 @@ enemy_type_to_size = {
   
   ['swarmer'] = 'swarmer',
   ['hunter_swarmer'] = 'swarmer',
+  ['tank'] = 'block',
 
   -- Minibosses
   ['bigstomper'] = 'huge',

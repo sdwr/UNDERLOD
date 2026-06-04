@@ -457,10 +457,12 @@ ENEMY_LEVEL_SCALING = function(level)
 end
 
 -- Post-boss HP multiplier on top of the per-level scaling: enemies get a
--- step-function bump after each boss is cleared. Caps at 4x.
+-- step-function bump after each boss is cleared. Both T2 and T3 softened to
+-- match the gentler T2 swarmer count scaling; T3 sits just above T2 instead
+-- of doubling again.
 function POST_BOSS_HP_MULT(level)
-  if level >= 12 then return 4 end  -- after dragon (level 11)
-  if level >= 7 then return 2 end   -- after stompy (level 6)
+  if level >= 12 then return 1.7 end -- after dragon (level 11)
+  if level >= 7 then return 1.4 end  -- after stompy (level 6)
   return 1
 end
 
@@ -480,7 +482,15 @@ SCALED_ENEMY_MS = function(level, base_ms)
 end
 
 function SWARMERS_PER_LEVEL(level)
-  return math.min(30, 8 + (level * 2))
+  local count = math.min(30, 8 + (level * 2))
+  -- T2 (between stompy at L6 and dragon at L11) was pushing roughly 2x the
+  -- baseline swarmer count, which felt overloaded alongside the new T2
+  -- special mix. Scale by 1.4/2.0 so T2 clumps land closer to the intended
+  -- 1.4x multiplier of the L1 baseline.
+  if level >= 7 and level <= 10 then
+    count = math.floor(count * 0.7)
+  end
+  return count
 end
 
 function SPECIAL_ENEMIES_PER_LEVEL(level)
@@ -600,6 +610,12 @@ unit_stat_multipliers = {
 enemy_type_to_stats = {
     ['swarmer'] = { dmg = 0.5, hp = 0.6, mvspd = 0.7},
     ['hunter_swarmer'] = { dmg = 0.6, hp = 1.4, mvspd = 1.1 },
+    -- Tank: slow, chunky body. No attacks, just contact pressure. hp=0.8
+    -- on special_enemy base (280) lands ~625 HP at L7 once level/post-boss
+    -- scaling kicks in - a real soak target you have to commit damage to.
+    -- Full knockback immunity is set via `knockback_immune` in tank.lua's
+    -- init_enemy (knockback_resistance caps at 0.8 so a flag is required).
+    ['tank'] = { dmg = 1, hp = 0.8, mvspd = 0.6 },
 
     ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
     ['chaser'] = { dmg = 1, mvspd = 1 },

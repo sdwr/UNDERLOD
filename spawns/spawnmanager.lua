@@ -604,6 +604,13 @@ function SpawnManager:init_spawn_pools()
       -- First clump fires quickly (0-2s) so the player isn't staring at an
       -- empty arena; subsequent clumps use the full jittered interval.
       next_fire = random:float(0, 2),
+      -- Optional periodic substitution: every Nth basic spawn fires a
+      -- `replace_type` group instead of the normal clump. Used by T2 to
+      -- mix tanks into the swarmer cadence without a parallel pool.
+      replace_type = config.basic.replace_type,
+      replace_every = config.basic.replace_every,
+      replace_group_size = config.basic.replace_group_size or 1,
+      spawn_count = 0,
     }
   end
 
@@ -770,22 +777,36 @@ function SpawnManager:tick_spawn_pools(dt)
     if self.basic_pool.next_fire <= 0 then
       if not basics_capped and not self:quota_met() then
         self.wave_spawn_delay = 0
-        local clump_size = SWARMERS_PER_LEVEL(self.arena.level)
+        self.basic_pool.spawn_count = self.basic_pool.spawn_count + 1
         local location = Get_Offscreen_Spawn_Point()
-        -- First basic clump of the level marches straight through center
-        -- (no jitter) so the opening wave feels deliberate. Subsequent
-        -- clumps get the usual PATH_ACROSS_VARIED jitter.
-        local heading_override = nil
-        if not self.basic_pool.first_spawned then
-          local dx, dy = (gw / 2) - location.x, (gh / 2) - location.y
-          if dx ~= 0 or dy ~= 0 then
-            heading_override = math.atan2(dy, dx)
+
+        -- Periodic substitution: every Nth basic tick, fire `replace_type`
+        -- (e.g. a tank) instead of the normal swarmer clump.
+        local should_replace = self.basic_pool.replace_type
+          and self.basic_pool.replace_every and self.basic_pool.replace_every > 0
+          and (self.basic_pool.spawn_count % self.basic_pool.replace_every == 0)
+
+        if should_replace then
+          Spawn_Group_With_Location(self.arena,
+            {self.basic_pool.replace_type, self.basic_pool.replace_group_size, 'nil'},
+            location)
+        else
+          local clump_size = SWARMERS_PER_LEVEL(self.arena.level)
+          -- First basic clump of the level marches straight through center
+          -- (no jitter) so the opening wave feels deliberate. Subsequent
+          -- clumps get the usual PATH_ACROSS_VARIED jitter.
+          local heading_override = nil
+          if not self.basic_pool.first_spawned then
+            local dx, dy = (gw / 2) - location.x, (gh / 2) - location.y
+            if dx ~= 0 or dy ~= 0 then
+              heading_override = math.atan2(dy, dx)
+            end
+            self.basic_pool.first_spawned = true
           end
-          self.basic_pool.first_spawned = true
+          Spawn_Group_With_Location(self.arena,
+            {self.basic_pool.type, clump_size, 'nil'},
+            location, nil, heading_override)
         end
-        Spawn_Group_With_Location(self.arena,
-          {self.basic_pool.type, clump_size, 'nil'},
-          location, nil, heading_override)
       end
       self.basic_pool.next_fire = jittered_interval(self.basic_pool.interval)
     end

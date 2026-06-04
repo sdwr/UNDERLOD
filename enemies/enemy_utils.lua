@@ -4,6 +4,7 @@ enemy_size_to_xy = {
   regular = {x = 10, y = 10},
   swarmer = {x = 14, y = 7},
   regular_big = {x = 16, y = 12},
+  block = {x = 24, y = 24},
   special = {x = 18, y = 18},
   large = {x = 24, y = 24},
   huge = {x = 36, y = 24},

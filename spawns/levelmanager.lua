@@ -67,18 +67,56 @@ LEVEL_SPAWN_POOLS = {
       {type = 'snakearrow', at = 0.9},
     },
   },
-  -- 6 is stompy boss
-  [7] = {
-    basic = {type = 'swarmer', interval = BASIC_CLUMP_INTERVAL},
-    specials = {
-      {type = 'charger', at = 0.15},
-      {type = 'mortar', at = 0.35},
-      {type = 'burst', at = 0.55},
-      {type = 'charger', at = 0.75},
-      {type = 'mortar', at = 0.9},
-    },
-  },
+  -- 6 is stompy boss. Levels 7-10 (T2) are built below from a shared pool.
 }
+
+-- T2 (between stompy at level 6 and dragon at level 11) draws its specials
+-- from a fixed pool: snakearrow / mortar / slime / roach. Each level gets a
+-- few picks from the pool with deterministic-per-level seeding so the same
+-- level number always rolls the same mix (safe across save/load) but every
+-- level feels different from its neighbors.
+local T2_SPECIAL_POOL = {'snakearrow', 'mortar', 'slime', 'roach'}
+
+local function build_t2_specials(level)
+  local rng = Random(level * 7919)
+  local fractions = {0.2, 0.5, 0.8}
+  local specials = {}
+  local slime_added = false
+  for _, frac in ipairs(fractions) do
+    local t = rng:table(T2_SPECIAL_POOL)
+    if t == 'slime' then
+      -- Slime is timer-based (recurring) like on level 2 — collapse multiple
+      -- slime rolls into a single pool so we don't double up.
+      if not slime_added then
+        table.insert(specials, {type = 'slime', interval = 15, max_alive = 2, first_fire = 10})
+        slime_added = true
+      end
+    else
+      local entry = {type = t, at = frac}
+      if t == 'roach' then
+        entry.group_size = function() return random:int(2, 3) end
+      end
+      table.insert(specials, entry)
+    end
+  end
+  return specials
+end
+
+for _, lvl in ipairs({7, 8, 9, 10}) do
+  LEVEL_SPAWN_POOLS[lvl] = {
+    basic = {
+      type = 'swarmer',
+      interval = BASIC_CLUMP_INTERVAL,
+      -- Every 4th basic tick, fire a single tank instead of a swarmer clump.
+      -- Tank is a tanky melee approacher with no attacks; mixed in to break
+      -- the swarmer cadence between stompy and dragon.
+      replace_type = 'tank',
+      replace_every = 4,
+      replace_group_size = 1,
+    },
+    specials = build_t2_specials(lvl),
+  }
+end
 
 local function get_spawn_config_for_level(level)
   if LEVEL_SPAWN_POOLS[level] then return LEVEL_SPAWN_POOLS[level] end
