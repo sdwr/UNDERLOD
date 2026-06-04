@@ -9,6 +9,9 @@ fns['init_enemy'] = function(self)
 
   self.class = 'special_enemy'
 
+  -- Holds its position to aim; bullets shouldn't shove it off-aim mid-windup.
+  self.knockback_immune = true
+
   -- Drifts around the arena randomly; doesn't need to approach since the
   -- 400-range shot covers basically the whole map.
   self.baseActionTimer = 1.5

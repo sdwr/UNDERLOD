@@ -42,7 +42,7 @@ fns['init_enemy'] = function(self)
     name = 'stomp',
     viable = function() return self:get_random_object_in_shape(self.attack_sensor, main.current.friendlies) end,
     oncast = function() end,
-    cast_length = 0.1,
+    cast_length = 0.45,
     cast_sound = usurer1,
     cast_volume = 2,
 

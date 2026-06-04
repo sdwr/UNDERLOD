@@ -501,7 +501,17 @@ function Group:set_as_physics_world(meter, xg, yg, tags)
     function(fa, fb, c) --presolve
       local oa, ob = self:get_object_by_id(fa:getUserData()), self:get_object_by_id(fb:getUserData())
       if oa and ob then
-        --pass
+        -- Projectile-vs-knockback_immune: kill Box2D's collision impulse for
+        -- this step so the bullet doesn't physically shove the target. Damage
+        -- still resolves because begincontact has already fired before
+        -- presolve runs; only the push is dropped.
+        local function is_projectile(o)
+          return o and (o.tag == 'projectile' or o.tag == 'enemy_projectile')
+        end
+        if (oa.knockback_immune and is_projectile(ob))
+           or (ob.knockback_immune and is_projectile(oa)) then
+          c:setEnabled(false)
+        end
       end
     end
   )
