@@ -35,7 +35,18 @@ system.load_stats()
 --gold
 --note that HoG econ check is in arena.lua (gain_gold)
 STARTING_GOLD = 9.0
-GOLD_PER_ROUND = 6
+-- Per-round end-of-round gold by level band. Combines with the per-kill gold
+-- in GOLD_GAINED_BY_LEVEL for total round income. Tuned so the player can't
+-- fully equip two units by the first boss (L6).
+-- Total per-round income (GOLD_PER_ROUND + GOLD_GAINED_BY_LEVEL):
+--   L1-5: 2+2=4    L6-10: 3+3=6    L11-15: 5+4=9    L16-20: 6+5=11    L21+: 8+6=14
+GOLD_PER_ROUND = function(level)
+  if level <= 5 then return 2 end
+  if level <= 10 then return 3 end
+  if level <= 15 then return 5 end
+  if level <= 20 then return 6 end
+  return 8
+end
 GOLD_FOR_BOSS_ROUND = {10, 15, 20, 25}
 INTEREST_AMOUNT = 0.1
 MAX_INTEREST = 3
@@ -161,16 +172,18 @@ SPECIAL_SPAWN_JITTER = 0.2
 -- PATH_ACROSS - otherwise the basics cap fills and you get long silent gaps.
 BASIC_CLUMP_INTERVAL = 2
 
--- Cinematic level-clear wipe: pre-delay before any straggler enemy dies,
--- and per-enemy offset so they pop one after another instead of all at
--- once. Total wipe duration = LEVEL_CLEAR_KILL_DELAY + remaining * offset.
-LEVEL_CLEAR_KILL_DELAY = 0.3
+-- Cinematic level-clear wipe: pre-delay before the first straggler dies,
+-- then enemies are spread evenly across LEVEL_CLEAR_CASCADE_DURATION so the
+-- wipe is the same length whether 5 or 100 enemies are left. KILL_OFFSET is
+-- legacy and unused now.
+LEVEL_CLEAR_KILL_DELAY = 0.0
+LEVEL_CLEAR_CASCADE_DURATION = 0.5
 LEVEL_CLEAR_KILL_OFFSET = 0.04
 
 -- Post-cascade beat before the arena transitions away. Polling in
 -- combat_level:level_clear() already waits for the cascade to finish, so this
 -- is pure buffer for the wipe/flash to settle.
-LEVEL_CLEAR_TRANSITION_DELAY = 0.8
+LEVEL_CLEAR_TRANSITION_DELAY = 0.25
 
 ITEM_SPAWN_DELAY_INITAL = 0.8
 ITEM_SPAWN_DELAY_OFFSET = 0.5

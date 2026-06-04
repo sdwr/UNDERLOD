@@ -42,7 +42,7 @@ function CombatLevel:level_clear()
     if #enemies == 0 then
       self.t:cancel(poll_id)
       self.t:after(transition_delay, function()
-        main.current:transition_to_next_level_buy_screen()
+        main.current:transition_to_next_level_buy_screen(0)
       end)
     end
   end, nil, nil, poll_id)

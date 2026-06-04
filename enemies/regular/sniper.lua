@@ -32,7 +32,7 @@ fns['init_enemy'] = function(self)
       group = main.current.main,
       color = purple[5],
       damage = function() return self.dmg end,
-      v = 120,
+      v = 260,
       width = 22,
       height = 6,
       unit = self,
@@ -53,6 +53,13 @@ fns['draw_enemy'] = function(self)
   if self.state == unit_states['casting'] and self.castObject then
     local pct = self.castObject:get_cast_percentage() or 0
     graphics.circle(self.x, self.y, 8 + pct * 14, purple[5], 1)
+
+    -- Red dashed targeting line to the locked target so the player can see
+    -- where the shot is going to land and reposition before it fires.
+    local target = self.target
+    if target and not target.dead then
+      graphics.dashed_line(self.x, self.y, target.x, target.y, 4, 3, red[0], 1)
+    end
   end
 end
 

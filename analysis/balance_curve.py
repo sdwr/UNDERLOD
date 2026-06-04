@@ -40,7 +40,20 @@ from dataclasses import dataclass
 # game_constants.lua
 NUMBER_OF_ROUNDS = 25
 STARTING_GOLD = 9.0
-GOLD_PER_ROUND = 6
+def GOLD_PER_ROUND(level: int) -> int:
+    if level <= 5: return 2
+    if level <= 10: return 3
+    if level <= 15: return 5
+    if level <= 20: return 6
+    return 8
+def GOLD_GAINED_BY_LEVEL(level: int) -> int:
+    # Per-round gold from enemy kills (gold_counter.lua now uses kill_quota as
+    # the denominator, so the band value ≈ actual round drops).
+    if level <= 5: return 2
+    if level <= 10: return 3
+    if level <= 15: return 4
+    if level <= 20: return 5
+    return 6
 BOSS_ROUNDS = [6, 11, 16, 21, 25]
 GOLD_FOR_BOSS_ROUND = {6: 10, 11: 15, 16: 20, 21: 25}  # round 25 unspecified
 
@@ -467,7 +480,9 @@ def simulate(cfg: SimConfig) -> list[RoundState]:
     rows: list[RoundState] = []
 
     for level in range(1, NUMBER_OF_ROUNDS + 1):
-        income = GOLD_FOR_BOSS_ROUND.get(level, GOLD_PER_ROUND)
+        # Boss rounds use their fixed bonus AND still drop per-kill gold;
+        # non-boss rounds sum the end-of-round constant + kill drops.
+        income = GOLD_FOR_BOSS_ROUND.get(level, GOLD_PER_ROUND(level)) + GOLD_GAINED_BY_LEVEL(level)
         gold_at_shop = gold + income
 
         avg_cost = expected_shop_cost(level)

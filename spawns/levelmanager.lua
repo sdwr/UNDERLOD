@@ -122,7 +122,12 @@ function Build_Level_List(max_level)
       level_list[i].round_power = (ROUND_POWER_BY_LEVEL[i] or 2000) + 500
       local quota_mult = 1.5 + 0.10 * (i - 1)
       if i >= 2 then quota_mult = quota_mult * 1.35 end
-      level_list[i].kill_quota = math.ceil(level_list[i].round_power * quota_mult * 1.5)
+      -- L4+ kill quotas were rising too fast (original L4 ~5832, L5 ~6926).
+      -- Trim 35% off L4 and every subsequent non-boss level. The 35% scales
+      -- every L4+ quota uniformly, so the per-level ramp from L4 onward is
+      -- preserved (just shifted down).
+      local quota_scale = (i >= 4) and 0.65 or 1.0
+      level_list[i].kill_quota = math.ceil(level_list[i].round_power * quota_mult * 1.5 * quota_scale)
       level_list[i].waves_power = {level_list[i].kill_quota}
     end
   end

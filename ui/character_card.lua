@@ -685,6 +685,7 @@ function ItemPart:create_tooltip()
   self.tooltip = SetBonusTooltip{
     group = main.current.ui_top or self.group,
     item = item,
+    unit = self.parent and self.parent.unit,
     x = self.x,
     y = self.y - 40,
   }

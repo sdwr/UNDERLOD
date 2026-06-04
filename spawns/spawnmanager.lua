@@ -723,14 +723,18 @@ function SpawnManager:update(dt)
           self.arena.progress_bar.segments[1]:complete_wave()
         end
 
-        -- Final cascade: staggered death for stragglers (path-across walkers,
-        -- enemies alive when the quota landed). Same timing as the old system.
+        -- Final cascade: staggered death for stragglers. Total cascade length
+        -- is fixed (LEVEL_CLEAR_CASCADE_DURATION) regardless of how many
+        -- enemies are left — deaths get spread evenly across that window so
+        -- 5 enemies and 100 enemies both wrap in roughly the same time.
         local remaining = self.arena.main:get_objects_by_classes(main.current.enemies) or {}
-        local base_delay = LEVEL_CLEAR_KILL_DELAY or 1.0
-        local per_enemy_offset = LEVEL_CLEAR_KILL_OFFSET or 0.04
+        local base_delay = LEVEL_CLEAR_KILL_DELAY or 0.3
+        local cascade_duration = LEVEL_CLEAR_CASCADE_DURATION or 0.5
+        local total = #remaining
         for i, e in ipairs(remaining) do
           if e and not e.dead then
-            local death_time = base_delay + (i - 1) * per_enemy_offset
+            local frac = (total > 1) and ((i - 1) / (total - 1)) or 0
+            local death_time = base_delay + frac * cascade_duration
             self.t:after(death_time, function()
               if e and not e.dead and e.die then
                 e:die()

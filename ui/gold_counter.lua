@@ -74,8 +74,12 @@ function GoldCounter:add_round_power(round_power, source_x, source_y)
   if not level_list then return end
 
   local total_round_gold = GOLD_GAINED_BY_LEVEL[level] or 10
-  local total_round_power = level_list[level].round_power or 500
-  
+  -- Use kill_quota as the denominator so total gold-per-round ≈ total_round_gold
+  -- (small overshoot from the cascade is fine). Previously this used
+  -- round_power, which is ~2.25x smaller than the quota and inflated the
+  -- effective gold-per-kill by the same factor.
+  local total_round_power = (level_list[level].kill_quota or level_list[level].round_power) or 500
+
   local percent_of_round_power = (round_power * 1.0) / total_round_power
   local gold_to_add = percent_of_round_power * total_round_gold
 

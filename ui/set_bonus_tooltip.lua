@@ -10,6 +10,7 @@ local SET_SPACING = 12
 function SetBonusTooltip:init(args)
   self:init_game_object(args)
   self.item = args.item
+  self.unit = args.unit
   if not self.item then self.dead = true; return end
 
   -- Animation and positioning
@@ -33,54 +34,61 @@ end
 
 function SetBonusTooltip:build_text_lines()
   self.text_lines = {}
-  
+
   -- Get all sets this item belongs to
   local item_sets = self:get_item_sets()
-  
+
   if #item_sets == 0 then
     table.insert(self.text_lines, {text = '[fg]No set bonuses', font = pixul_font, alignment = 'center'})
     return
   end
-  
+
   -- Sort sets by name for consistent display
   table.sort(item_sets, function(a, b) return a.name < b.name end)
-  
-  for _, set_info in pairs(item_sets) do
-    -- Set name header
+
+  -- Count current pieces per set for the equipping unit (if any). Drives
+  -- per-row colouring (reached vs unreached) and the "X/N" header suffix.
+  local set_counts = (self.unit and Helper.Unit:count_unit_set_pieces(self.unit)) or {}
+
+  for set_index, set_info in ipairs(item_sets) do
     local set_color = set_info.color or 'fg'
-    table.insert(self.text_lines, {
-      text = '[' .. set_color .. ']' .. set_info.name:upper(), 
-      font = pixul_font, 
-      alignment = 'center'
-    })
-    
-    -- Set bonuses
+    local current = set_counts[set_info.key or set_info.name] or 0
+    local max_threshold = 0
+    if set_info.bonuses then
+      for i = 1, MAX_SET_BONUS_PIECES do
+        if set_info.bonuses[i] then max_threshold = i end
+      end
+    end
+
+    -- Header: SETNAME (current/max) when we know the unit's count.
+    local header = '[' .. set_color .. ']' .. set_info.name:upper()
+    if self.unit and max_threshold > 0 then
+      header = header .. ' [fg](' .. current .. '/' .. max_threshold .. ')'
+    end
+    table.insert(self.text_lines, {text = header, font = pixul_font, alignment = 'center'})
+
     if set_info.bonuses and set_info.descriptions then
       for i = 1, MAX_SET_BONUS_PIECES do
         if set_info.bonuses[i] then
-        
           local bonus = set_info.bonuses[i]
           local desc_text = set_info.descriptions[i]
-          
-          local stat_text = nil
-          if bonus.stats then
-            stat_text = self:get_bonus_stat_text(bonus.stats)
-          end
-
-          local color = 'fgm2'
+          local stat_text = bonus.stats and self:get_bonus_stat_text(bonus.stats) or nil
           local bonus_text = desc_text or stat_text or ""
+
+          local is_reached = current >= i
+          -- Reached rows pop in the set's colour; unreached stay dim grey.
+          local color = is_reached and set_color or 'fgm2'
+
           table.insert(self.text_lines, {
-            text = '[' .. color .. ']' .. i .. ': ' .. bonus_text, 
-            font = pixul_font, 
+            text = '[' .. color .. ']' .. i .. ': ' .. bonus_text,
+            font = pixul_font,
             alignment = 'left'
           })
-
         end
       end
     end
-    
-    -- Add spacing between sets
-    if _ < #item_sets then
+
+    if set_index < #item_sets then
       table.insert(self.text_lines, {text = '', font = pixul_font, alignment = 'center'})
     end
   end
@@ -113,17 +121,21 @@ end
 
 function SetBonusTooltip:get_item_sets()
   local sets = {}
-  
-  -- Get all sets this item belongs to
+
+  -- Get all sets this item belongs to. Each entry is a shallow copy of the
+  -- set def with `key` attached so build_text_lines can look the unit's
+  -- piece count up in set_counts (which is keyed by item.sets entries).
   if self.item and self.item.sets then
     for _, set_key in ipairs(self.item.sets) do
       local set_def = ITEM_SETS[set_key]
       if set_def then
-        table.insert(sets, set_def)
+        local entry = {key = set_key}
+        for k, v in pairs(set_def) do entry[k] = v end
+        table.insert(sets, entry)
       end
     end
   end
-  
+
   return sets
 end
 
