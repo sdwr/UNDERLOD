@@ -22,6 +22,12 @@ function Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects,
     return
   end
 
+  -- Brief, mild time slowdown when a troop takes a hit. Skipped for sources that opt out
+  -- (e.g. Area_Spell tick damage like the slime trail / poison pools). Stacks via hit_slow.
+  if unit.is_troop and not hitOptions.noHitSlow then
+    hit_slow()
+  end
+
   -- ===================================================================
   -- CONDITIONAL LOGIC BASED ON HIT TYPE FLAGS
   -- ===================================================================
@@ -104,13 +110,17 @@ end
 -- INDIRECT HIT
 -- Area effects, explosions, environmental damage that can't chain
 -- ===================================================================
-function Helper.Damage:indirect_hit(unit, damage, from, damageType, playHitEffects)
-  Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects, {
+function Helper.Damage:indirect_hit(unit, damage, from, damageType, playHitEffects, extraOptions)
+  local hitOptions = {
     isPrimary = false,
     isChained = false,
     canProcOnHit = false,
     applyKnockback = false,
-  })
+  }
+  if extraOptions then
+    for k, v in pairs(extraOptions) do hitOptions[k] = v end
+  end
+  Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects, hitOptions)
 end
 
 -- ===================================================================

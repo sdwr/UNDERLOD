@@ -920,7 +920,7 @@ function GoButton:update(dt)
 
         local current_run = Collect_Save_Data_From_State(self.parent)
         main:go_to('world_manager', current_run)
-      end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']level ' .. tostring(self.parent.level) .. '/' .. tostring(25*(self.parent.loop+1)), font = pixul_font, alignment = 'center'}}, global_text_tags)}
+      end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']level ' .. tostring(self.parent.level) .. '/' .. tostring(NUMBER_OF_ROUNDS*(self.parent.loop+1)), font = pixul_font, alignment = 'center'}}, global_text_tags)}
     end
 
     if input.enter.pressed then self.selected = false end

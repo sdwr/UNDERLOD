@@ -176,6 +176,7 @@ BOSS_HP = 1400
 
 BOSS_HP_MULT_BY_TYPE = {
   ['stompy'] = 3.36,
+  ['dragon'] = 2.5,
 }
 BOSS_DAMAGE = 20
 BOSS_MS = 70

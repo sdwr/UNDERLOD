@@ -710,18 +710,22 @@ function Arena:on_run_complete()
       },
     }
 
-    -- Restart starts a new run at the freshly-incremented NG+ tier.
+    -- Winning the final boss kicks back to the main menu rather than
+    -- auto-starting a fresh run. The next run begins from the menu.
     Button{group = self.ui,
       x = gw/2 + self.offset_x, y = gh - 30 + self.offset_y,
       force_update = true,
-      button_text = 'new run',
+      button_text = 'main menu',
       fg_color = 'yellowm5',
       bg_color = 'yellow',
       action = function()
         ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
         TransitionEffect{group = main.transitions, x = gw/2, y = gh/2,
           color = state.dark_transitions and bg[-2] or fg[0],
-          transition_action = function() Start_New_Run_And_Go_To_Buy_Screen() end,
+          transition_action = function()
+            main:add(MainMenu 'main_menu')
+            main:go_to('main_menu')
+          end,
         }
       end,
     }

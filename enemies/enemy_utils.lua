@@ -24,12 +24,18 @@ function Get_Enemy_Default_Size(enemy_type)
   return 'regular' -- Default fallback
 end
 
-Set_Enemy_Shape = function(enemy, size)
+Set_Enemy_Shape = function(enemy, size, shape)
   local xy = enemy_size_to_xy[size]
   if not xy then
     print('could not find enemy size: ' .. size)
     xy = enemy_size_to_xy['regular']
   end
 
-  enemy:set_as_rectangle(xy.x, xy.y, 'dynamic', 'enemy')
+  if shape == 'circle' then
+    -- Largest half-axis as the radius so the circle covers the existing footprint.
+    local rs = math.max(xy.x, xy.y) / 2
+    enemy:set_as_circle(rs, 'dynamic', 'enemy')
+  else
+    enemy:set_as_rectangle(xy.x, xy.y, 'dynamic', 'enemy')
+  end
 end

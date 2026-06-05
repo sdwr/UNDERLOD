@@ -116,7 +116,8 @@ function Area_Spell:apply_damage()
                 if self.apply_primary_hit_to_target and target == self.target then
                     Helper.Damage:primary_hit(target, self.damage, self.unit, self.damage_type, true)
                 elseif not self.is_chained then
-                    Helper.Damage:indirect_hit(target, self.damage, self.unit, self.damage_type, true)
+                    Helper.Damage:indirect_hit(target, self.damage, self.unit, self.damage_type, true,
+                        self.damage_ticks and {noHitSlow = true} or nil)
                 else
                     Helper.Damage:chained_hit(target, self.damage, self.unit, self.damage_type, true)
                 end

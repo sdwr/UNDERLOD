@@ -24,7 +24,7 @@ fns['init_enemy'] = function(self)
 
   --create shape
   self.color = grey[0]:clone()
-  Set_Enemy_Shape(self, self.size)
+  Set_Enemy_Shape(self, self.size, 'circle')
 
   self.class = 'boss'
 
@@ -148,7 +148,12 @@ fns['init_enemy'] = function(self)
 
 end
 
-fns['draw_enemy'] = function(self)   
+fns['draw_enemy'] = function(self)
+  -- Hitbox ring drawn first so it reads as ground-shadow underneath the body.
+  if self.shape and self.shape.rs then
+    graphics.circle(self.x, self.y, self.shape.rs, fg[0], 1)
+  end
+
   local animation_success = self:draw_animation(self.state, self.x, self.y, 0, 1, 1)
 
   if not animation_success then

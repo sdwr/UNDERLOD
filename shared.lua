@@ -1048,6 +1048,25 @@ function slow(amount, duration, tween_method)
   trigger:tween(duration, _G, {slow_amount = 1}, tween_method, function() slow_amount = 1 end, 'slow')
 end
 
+-- Shorter/slighter version of slow() used when a troop takes a hit.
+-- Stacking model: each call multiplies the current slow_amount by HIT_SLOW_FACTOR and
+-- restarts a tween back to 1 over HIT_SLOW_DURATION, sharing the 'slow' trigger tag so
+-- the latest call's recovery wins. Rapid hits compound (0.92 * 0.92 ~= 0.85, etc.) and
+-- the recovery keeps getting pushed out as long as hits keep landing.
+-- HIT_SLOW_FLOOR prevents shortening a stronger active slow (e.g. death slow at 0.25):
+-- if slow_amount is already below the floor we leave it alone. Once it tweens back past
+-- the floor, hit-slows resume.
+HIT_SLOW_FACTOR = 0.92
+HIT_SLOW_DURATION = 0.18
+HIT_SLOW_FLOOR = 0.6
+
+function hit_slow()
+  if slow_amount < HIT_SLOW_FLOOR then return end
+  slow_amount = slow_amount * HIT_SLOW_FACTOR
+  trigger:tween(HIT_SLOW_DURATION, _G, {slow_amount = 1}, math.cubic_in_out,
+    function() slow_amount = 1 end, 'slow')
+end
+
 
 
 

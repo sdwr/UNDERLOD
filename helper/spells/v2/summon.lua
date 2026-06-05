@@ -36,8 +36,24 @@ function Summon_Spell:spawn()
       local offset = SpawnGlobals.spawn_offsets[i % #SpawnGlobals.spawn_offsets]
       local x, y = self.x + offset.x, self.y + offset.y
       if Can_Spawn(2, {x = x, y = y}) then
-          local enemy = EnemyCritter{group = main.current.main, x = x, y = y, color = grey[0], r = random:float(0, 2*math.pi), 
+          local enemy = EnemyCritter{group = main.current.main, x = x, y = y, color = grey[0], r = random:float(0, 2*math.pi),
           v = 10, parent = self.unit}
+          Spawn_Enemy_Effect(main.current, enemy)
+      end
+    end
+  elseif self.summonType == 'swarmer' then
+    -- Ring spawn (same shape as stompy's SummonHunters_Spell). enemy_type
+    -- defaults to plain 'swarmer'; callers can pass e.g. 'hunter_swarmer'.
+    local num = self.summonAmount or 4
+    local radius = self.spawn_radius or 25
+    local enemy_type = self.enemy_type or 'swarmer'
+    local level = (self.unit and self.unit.level) or 1
+    for i = 1, num do
+      local angle = (i / num) * 2 * math.pi
+      local sx = self.x + math.cos(angle) * radius
+      local sy = self.y + math.sin(angle) * radius
+      if Can_Spawn(3, {x = sx, y = sy}) then
+          local enemy = Enemy{type = enemy_type, group = main.current.main, x = sx, y = sy, level = level, parent = self.unit}
           Spawn_Enemy_Effect(main.current, enemy)
       end
     end

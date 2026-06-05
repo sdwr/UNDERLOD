@@ -23,9 +23,13 @@ function Breathe_Fire:init(args)
   self.follow_target = self.follow_target
   self.rotation_speed = self.rotation_speed or 5  -- degrees per second
 
-  local target = self.unit:my_target()
-  self.directionx = target.x - self.unit.x
-  self.directiony = target.y - self.unit.y
+  -- Honor a direction supplied via spelldata (used by the dragon's preview
+  -- wedge so the breath fires along the same vector the player just saw).
+  if not (self.directionx and self.directiony) then
+    local target = self.unit:my_target()
+    self.directionx = target.x - self.unit.x
+    self.directiony = target.y - self.unit.y
+  end
 
   --memory
   self.next_tick = 0
