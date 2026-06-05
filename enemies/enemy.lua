@@ -16,6 +16,20 @@ function Enemy:init(args)
   self.size = self.size or enemy_type_to_size[self.type]
   self.init_enemy(self)
 
+  -- Specials (special_enemy/miniboss/boss) draw over normal swarmers and pass through them.
+  if self.class == 'special_enemy' or self.class == 'boss' or self.class == 'miniboss' then
+    self.z_index = 1
+  end
+  self._sep_comparator = function(other)
+    local self_special = self.class == 'special_enemy' or self.class == 'boss' or self.class == 'miniboss'
+    local other_special = other.class == 'special_enemy' or other.class == 'boss' or other.class == 'miniboss'
+    local self_normal_swarmer = self.type == 'swarmer' and not self.special_swarmer_type
+    local other_normal_swarmer = other.type == 'swarmer' and not other.special_swarmer_type
+    if self_special and other_normal_swarmer then return false end
+    if self_normal_swarmer and other_special then return false end
+    return true
+  end
+
   -- NG+ scaling: every level adds +10% to enemy base hp and dmg, baked
   -- into base stats so calculate_stats picks it up and any later recalc
   -- preserves the scaling.
@@ -542,7 +556,7 @@ function Enemy:update_move_seek()
 
   -- 3. Apply final steering adjustments in all active cases.
   self:rotate_towards_velocity(0.5)
-  self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
+  self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT, self._sep_comparator)
 
   -- 4. Return true because the movement action is successfully ongoing.
   return true
@@ -557,7 +571,7 @@ function Enemy:update_move_loose_seek()
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
       self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER)
       self:rotate_towards_velocity(0.5)
-      self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
+      self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT, self._sep_comparator)
       return true
     end
   end
@@ -572,7 +586,7 @@ function Enemy:update_move_seek_to_range()
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type) or SEEK_WEIGHT)
       self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER)
       self:rotate_towards_velocity(0.5)
-      self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
+      self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT, self._sep_comparator)
       return true
     end
   end
@@ -590,7 +604,7 @@ function Enemy:update_move_path_across()
   local ty = self.y + math.sin(self.path_heading) * far
   self:seek_point(tx, ty, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
   self:rotate_towards_velocity(0.5)
-  self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
+  self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT, self._sep_comparator)
   return true
 end
 
@@ -601,7 +615,7 @@ function Enemy:update_move_random()
     else
       self:seek_point(self.target_location.x, self.target_location.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
       self:rotate_towards_velocity(1)
-      self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT)
+      self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT, self._sep_comparator)
       return true
     end
   end

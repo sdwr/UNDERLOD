@@ -42,7 +42,13 @@ function CombatLevel:level_clear()
     if #enemies == 0 then
       self.t:cancel(poll_id)
       self.t:after(transition_delay, function()
-        main.current:transition_to_next_level_buy_screen(0)
+        -- Last level: show the run-complete screen instead of transitioning
+        -- to a buy screen that doesn't exist.
+        if self.level >= NUMBER_OF_ROUNDS then
+          self:on_run_complete()
+        else
+          main.current:transition_to_next_level_buy_screen(0)
+        end
       end)
     end
   end, nil, nil, poll_id)

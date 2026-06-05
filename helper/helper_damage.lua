@@ -250,11 +250,10 @@ function Helper.Damage:apply_hit_effects(unit, damage, playHitEffects)
     if not unit.spritesheet then
       HitCircle{group = main.current.effects, x = unit.x, y = unit.y}:scale_down(0.3):change_color(0.5, unit.color)
     end
-    
-    -- Player troop specific: camera shake
-    if unit.is_troop then
-      camera:shake(1, 0.5)
-    end
+
+    -- Troop camera shake is fired unconditionally in Troop:hit so collision
+    -- damage (which calls with playHitEffects=false) also shakes - keep this
+    -- block from double-stacking.
   end
 end
 

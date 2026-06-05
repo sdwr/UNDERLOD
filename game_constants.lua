@@ -63,7 +63,10 @@ REROLL_COST = function (times_rerolled)
 end
 
 
-NUMBER_OF_ROUNDS = 25
+-- Game currently ends at L11 (dragon, 2nd boss). NG+ unlocks on completion.
+-- Most data tables (ROUND_POWER_BY_LEVEL, GOLD_GAINED_BY_LEVEL, etc.) still
+-- hold entries up to 25 - those past NUMBER_OF_ROUNDS are simply unreachable.
+NUMBER_OF_ROUNDS = 11
 BOSS_ROUND_POWER = 1000
 BOSS_ROUNDS = {6, 11, 16, 21, 25}
 LEVELS_TO_HEAL_ON_CLEAR = BOSS_ROUNDS

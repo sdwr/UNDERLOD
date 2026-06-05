@@ -1648,7 +1648,12 @@ function open_options(self)
         b)
       trigger:tween(0.25, _G, { slow_amount = 1 }, math.linear, function()
         slow_amount = 1
-        self.paused = false
+        if self.unpause_arena then
+          -- WorldManager: also clears arena.paused so arena.main et al. tick again.
+          self:unpause_arena()
+        else
+          self.paused = false
+        end
         if self.paused_t1 then
           self.paused_t1.dead = true; self.paused_t1 = nil
         end

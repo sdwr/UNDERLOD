@@ -747,10 +747,6 @@ function Unit:update_buffs(dt)
       end 
     end
 
-    if k == 'chill' then
-      self:freeze_gauge_fill(CHILL_FREEZE_GAUGE_FILL_PER_SECOND * dt)
-    end
-
     --on buff end
     if v.duration and v.duration < 0 then
       if k == 'bash_cd' then

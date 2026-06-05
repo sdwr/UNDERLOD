@@ -4,7 +4,9 @@ Troop:implement(Physics)
 function Troop:init(args)
   self.class = 'troop'
   self.faction = 'friendly'
-  self.size = unit_size['medium-plus']
+  self.size = unit_size['medium']
+  -- Collider stays at self.size; draw uses display_size for a larger visual.
+  self.display_size = 14
   self.is_troop = true
   self.target_rally = nil
   self.backswing = 0.2
@@ -391,7 +393,7 @@ function Troop:draw()
   -- color = color:lighten(SELECTED_PLAYER_LIGHTEN)
 
   --draw unit model (rectangle not circle??)
-  graphics.rectangle(self.x, self.y, self.shape.w*.66, self.shape.h*.66, 3, 3, self.hfx.hit.f and fg[0] or self.color)
+  graphics.rectangle(self.x, self.y, self.display_size*.66, self.display_size*.66, 3, 3, self.hfx.hit.f and fg[0] or self.color)
 
   -- if not self.selected then
   --   graphics.rectangle(self.x, self.y, 3, 3, 1, 1, self.color)
@@ -408,13 +410,13 @@ function Troop:draw()
     self:draw_cooldown_timer()
   end
   if self.bubbled then 
-    graphics.circle(self.x, self.y, self.shape.w, yellow_transparent_weak)
+    graphics.circle(self.x, self.y, self.display_size, yellow_transparent_weak)
   end
   --not going very transparent
   if self:isShielded() then
     local color = yellow[5]:clone()
     color.a = 0.3
-    graphics.circle(self.x, self.y, self.shape.w*0.6, color)
+    graphics.circle(self.x, self.y, self.display_size*0.6, color)
   end
 
   --draw aggro sensor
@@ -445,11 +447,11 @@ function Troop:draw_attack_timer_bar()
   end
   local progress = math.clamp(elapsed / adjusted_cd, 0, 1)
 
-  local body_size = (self.shape and (self.shape.w or self.shape.rs)) or 8
+  local body_size = self.display_size or (self.shape and (self.shape.w or self.shape.rs)) or 8
   local bar_w = math.max(10, body_size)
   local bar_h = 2
   local bar_x = self.x - bar_w / 2
-  local bar_y = self.y + ((self.shape and self.shape.h or body_size) / 2) + 3
+  local bar_y = self.y + (body_size / 2) + 3
 
   graphics.rectangle(self.x, bar_y + bar_h / 2, bar_w, bar_h, 1, 1, bg[5])
   if progress > 0 then
@@ -477,7 +479,7 @@ function Troop:draw_distance_glow()
     glow_color_2.a = glow_intensity * 0.5
     
     -- Draw glow rings
-    local body_size = self.shape.w / 2
+    local body_size = (self.display_size or self.shape.w) / 2
     graphics.circle(self.x, self.y, body_size, glow_color, 2)
     graphics.circle(self.x, self.y, body_size + 2, glow_color_2, 2)
   end
@@ -512,7 +514,7 @@ function Troop:draw_cooldown_timer()
   -- is communicated by the attack timer bar below the unit.
   if self.state ~= unit_states['casting'] then return end
 
-  local bodySize = self.shape.rs or self.shape.w / 2 or 5
+  local bodySize = (self.display_size and self.display_size / 2) or self.shape.rs or self.shape.w / 2 or 5
   local min_radius_mod = 0.3
   local max_radius_mod = 1.2
 
@@ -557,8 +559,11 @@ end
 function Troop:hit(damage, from, damageType, playHitEffects, cannotProcOnHit)
   -- Mark this unit as a troop for the damage helper
   self.is_troop = true
-  -- Use the indirect hit function (current behavior)
-  table.random({player_hit1, player_hit2}):play{pitch = random:float(0.95, 1.05), volume = 0.5}
+  -- Consistent hit feedback on every damage source (projectiles, spells, AoEs,
+  -- collisions). helper_damage shakes too but only when playHitEffects is set,
+  -- which leaves collision damage silent.
+  table.random({player_hit1, player_hit2}):play{pitch = random:float(0.95, 1.05), volume = 0.85}
+  camera:shake(2, 0.15)
   Helper.Damage:indirect_hit(self, damage, from, damageType, playHitEffects)
 end
 

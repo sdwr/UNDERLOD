@@ -1013,13 +1013,68 @@ function Helper.Unit:resurrect_troop(team, troop, location, invulnerable_duratio
   return troop
 end
 
+-- A "1/1 set" is one whose ITEM_SETS entry only defines the [1] bonus tier —
+-- additional copies don't stack, so buying duplicates is mostly wasted slots.
+function Helper.Unit:is_one_piece_set(set_key)
+  local set_def = ITEM_SETS and ITEM_SETS[set_key]
+  if not set_def or not set_def.bonuses then return false end
+  if not set_def.bonuses[1] then return false end
+  for k, _ in pairs(set_def.bonuses) do
+    if k ~= 1 then return false end
+  end
+  return true
+end
+
+-- Returns the set_keys on `item` that are 1/1 sets. Empty list if the item
+-- has no 1/1 set (or no set at all).
+function Helper.Unit:get_one_piece_sets_on_item(item)
+  local out = {}
+  if not item or not item.sets then return out end
+  for _, set_key in ipairs(item.sets) do
+    if Helper.Unit:is_one_piece_set(set_key) then
+      table.insert(out, set_key)
+    end
+  end
+  return out
+end
+
+-- True iff `item` has a 1/1 set AND every unit already owns at least one
+-- piece of it. Used by buy flow to block duplicate purchases that would
+-- land on a unit that already has the (un-stackable) effect.
+function Helper.Unit:item_one_piece_blocked(units, item)
+  local locked = Helper.Unit:get_one_piece_sets_on_item(item)
+  if #locked == 0 then return false end
+  for _, set_key in ipairs(locked) do
+    local all_have = true
+    for _, unit in ipairs(units) do
+      local counts = Helper.Unit:count_unit_set_pieces(unit)
+      if (counts[set_key] or 0) == 0 then all_have = false; break end
+    end
+    if all_have then return true end
+  end
+  return false
+end
+
 function Helper.Unit:find_available_inventory_slot(units, item)
+  -- 1/1 set carriers get skipped: a duplicate would do nothing, so walk to the
+  -- next unit instead. If every unit already owns the set the loop finishes
+  -- with no match and the caller falls into the blocked-purchase path.
+  local locked = item and Helper.Unit:get_one_piece_sets_on_item(item) or {}
   -- Slots are untyped: walk each unit's list up to its level cap and return the first empty index.
   for _, unit in ipairs(units) do
-    local capacity = UNIT_LEVEL_TO_NUMBER_OF_ITEMS[unit.level] or 0
-    for i = 1, capacity do
-      if not unit.items[i] then
-        return unit, i
+    local skip = false
+    if #locked > 0 then
+      local counts = Helper.Unit:count_unit_set_pieces(unit)
+      for _, set_key in ipairs(locked) do
+        if (counts[set_key] or 0) > 0 then skip = true; break end
+      end
+    end
+    if not skip then
+      local capacity = UNIT_LEVEL_TO_NUMBER_OF_ITEMS[unit.level] or 0
+      for i = 1, capacity do
+        if not unit.items[i] then
+          return unit, i
+        end
       end
     end
   end

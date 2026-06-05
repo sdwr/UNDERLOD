@@ -1995,10 +1995,10 @@ end
 Proc_Frostnova = Proc:extend()
 function Proc_Frostnova:init(args)
     self.triggers = {PROC_ON_TICK}
-    self.scope = 'troop'
+    -- Team scope: one shared state machine emits one centered pulse per cycle.
+    self.scope = 'team'
     Proc_Frostnova.super.init(self, args)
 
-    -- Define the proc's properties from data
     self.damage = (self.data.damage or 10) * (self.data.damageMulti or 1)
     self.damageType = self.data.damageType or DAMAGE_TYPE_COLD
     self.radius_boost = self.data.radius_boost or 3
@@ -2008,20 +2008,41 @@ function Proc_Frostnova:init(args)
     self.chillDuration = self.data.chillDuration or 3
     self.color = self.data.color or blue[0]
 
-    -- Cooldown and wind-up values
     self.baseCooldown = 5
     self.adjustedCooldown = Helper.Unit:apply_cooldown_reduction(self, self.baseCooldown)
     self.cancel_cooldown = self.data.cancel_cooldown or 0.3
-    self.procDelay = self.data.procDelay or 0.75 -- This is the wind-up duration
+    self.procDelay = self.data.procDelay or 0.75
 
-    -- State machine setup
-    self.state = 'ready'       -- Possible states: 'ready', 'winding_up', 'on_cooldown'
+    self.state = 'ready'
     self.windup_timer = 0
     self.cooldown_timer = 0
-    
-    -- This will hold the visual effect object
-    self.proc_display_area = nil 
+
+    self.proc_display_area = nil
+    self.center_x = 0
+    self.center_y = 0
     self.attack_sensor = Circle(0, 0, self.radius)
+    self.last_tick_time = nil
+end
+
+function Proc_Frostnova:get_living_troops()
+    if not self.team or not self.team.troops then return {} end
+    local living = {}
+    for _, troop in ipairs(self.team.troops) do
+        if troop and not troop.dead then
+            table.insert(living, troop)
+        end
+    end
+    return living
+end
+
+function Proc_Frostnova:compute_center(living)
+    if #living == 0 then return nil, nil end
+    local sx, sy = 0, 0
+    for _, troop in ipairs(living) do
+        sx = sx + troop.x
+        sy = sy + troop.y
+    end
+    return sx / #living, sy / #living
 end
 
 -- ===================================================================
@@ -2030,49 +2051,55 @@ end
 -- ===================================================================
 function Proc_Frostnova:onTick(dt)
     Proc_Frostnova.super.onTick(self, dt)
-    if not self.unit or self.unit.dead then return end
 
-    self.attack_sensor:move_to(self.unit.x, self.unit.y)
+    -- Dedup: the proc is in every troop's onTickProcs, so onTick fires N times per frame.
+    if self.last_tick_time == Helper.Time.time then return end
+    self.last_tick_time = Helper.Time.time
 
-    -- STATE: ON COOLDOWN
+    local living = self:get_living_troops()
+    if #living == 0 then
+        if self.state == 'winding_up' then
+            self.state = 'on_cooldown'
+            self.cooldown_timer = self.cancel_cooldown
+            self:destroy_proc_display_area()
+        end
+        return
+    end
+
+    local cx, cy = self:compute_center(living)
+    self.center_x, self.center_y = cx, cy
+    self.attack_sensor:move_to(cx, cy)
+
     if self.state == 'on_cooldown' then
         self.cooldown_timer = self.cooldown_timer - dt
         if self.cooldown_timer <= 0 then
             self.state = 'ready'
         end
 
-    -- STATE: READY
     elseif self.state == 'ready' then
         if #main.current.main:get_objects_in_shape(self.attack_sensor, main.current.enemies, nil) > 0 then
-            -- Enemy found! Transition to the winding_up state.
             self.state = 'winding_up'
             self.windup_timer = self.procDelay
             alert1:play{pitch = random:float(0.8, 1.2), volume = 0.6}
-            
-            -- Create a new visual effect for this wind-up.
             self:create_proc_display_area()
         end
 
-    -- STATE: WINDING UP
     elseif self.state == 'winding_up' then
-        -- 1. Check for cancellation (no enemies left in range)
         if #main.current.main:get_objects_in_shape(self.attack_sensor, main.current.enemies, nil) == 0 then
             self.state = 'on_cooldown'
             self.cooldown_timer = self.cancel_cooldown
-            self:destroy_proc_display_area() -- Destroy the visual effect
+            self:destroy_proc_display_area()
             return
         end
 
-        -- 2. If not cancelled, update the wind-up timer and visual.
         self.windup_timer = self.windup_timer - dt
         self:update_proc_display()
 
-        -- 3. Check for successful cast.
         if self.windup_timer <= 0 then
             self:cast()
             self.state = 'on_cooldown'
             self.cooldown_timer = self.adjustedCooldown
-            self:destroy_proc_display_area() -- Destroy the visual effect
+            self:destroy_proc_display_area()
         end
     end
 end
@@ -2082,17 +2109,19 @@ end
 -- ===================================================================
 
 function Proc_Frostnova:create_proc_display_area()
-    -- If an old one somehow exists, destroy it first.
     self:destroy_proc_display_area()
+
+    -- Spell:init touches .unit for freeze-rotation handling; pick any live troop.
+    local owner = self.team and self.team:get_first_alive_troop() or nil
 
     self.proc_display_area = Area_Spell{
         group = main.current.effects,
-        unit = self.unit,
-        follow_unit = true,
-        x = self.unit.x, y = self.unit.y,
+        unit = owner,
+        follow_unit = false,
+        x = self.center_x, y = self.center_y,
         pick_shape = 'circle',
-        radius = 0, -- Start with a radius of 0
-        duration = self.procDelay, -- Give it a lifetime just longer than the wind-up
+        radius = 0,
+        duration = self.procDelay,
         color = self.color,
         opacity = 0.08,
         damage = 0,
@@ -2103,11 +2132,14 @@ end
 
 function Proc_Frostnova:update_proc_display()
     if self.proc_display_area and not self.proc_display_area.dead then
-        local progress = 1 - (self.windup_timer / self.procDelay) -- Progress from 0 to 1
-        progress = math.max(0, math.min(1, progress)) -- Clamp progress to prevent errors
-        
+        local progress = 1 - (self.windup_timer / self.procDelay)
+        progress = math.max(0, math.min(1, progress))
         self.proc_display_area.radius = (self.radius + self.radius_boost) * progress
-
+        self.proc_display_area.x = self.center_x
+        self.proc_display_area.y = self.center_y
+        if self.proc_display_area.shape and self.proc_display_area.shape.move_to then
+            self.proc_display_area.shape:move_to(self.center_x, self.center_y)
+        end
     end
 end
 
@@ -2126,19 +2158,33 @@ function Proc_Frostnova:cast()
     self:destroy_proc_display_area()
     glass_shatter:play{pitch = random:float(0.8, 1.2), volume = 0.8}
 
+    local credit = self.team and self.team:get_first_alive_troop() or nil
+    local total_radius = self.radius + self.radius_boost
+
     Area_Spell{
         group = main.current.effects,
-        unit = self.unit,
-        x = self.unit.x, y = self.unit.y,
+        unit = credit,
+        x = self.center_x, y = self.center_y,
         pick_shape = 'circle',
         damage = self.damage,
         damage_type = self.damageType,
-        r = self.radius + self.radius_boost, 
-        duration = self.duration, 
+        r = total_radius,
+        radius = total_radius,
+        duration = self.duration,
         color = self.color,
-        is_troop = self.unit.is_troop,
+        is_troop = true,
         floor_effect = 'frostnova',
     }
+
+    -- Apply chill directly so the slow lands even when the damage-side path
+    -- (apply_hit) bails out for an enemy (offscreen, push-invulnerable, etc).
+    local chill_sensor = Circle(self.center_x, self.center_y, total_radius)
+    local enemies = main.current.main:get_objects_in_shape(chill_sensor, main.current.enemies)
+    for _, enemy in ipairs(enemies) do
+        if enemy and not enemy.dead and enemy.chill then
+            enemy:chill(self.damage, credit)
+        end
+    end
 end
 
 Proc_Firenova = Proc:extend()

@@ -77,6 +77,8 @@ function FloorItem:init(args)
     else
       if gold < self.cost then
         Create_Info_Text('not enough gold to buy item', self, 'error')
+      elseif Helper.Unit:item_one_piece_blocked(main.current.units, self.item) then
+        Create_Info_Text('already have this set', self, 'error')
       else
         Create_Info_Text('no empty slots - right click to sell', self)
       end
@@ -306,11 +308,19 @@ function FloorItem:purchase_item()
     end
   end
   
-  -- Add item to first available slot
+  -- Add item to first available slot. find_available_inventory_slot already
+  -- skips units that already own a 1/1 set this item carries, so the natural
+  -- "place onto first unit without it" behaviour falls out automatically.
+  -- If it returns nothing, decide whether that's a 1/1-saturation block
+  -- (every unit already owns it) or just no empty slots.
   local try_purchase = main.current:put_in_first_available_inventory_slot(self.item)
   if not try_purchase then
     self:remove_tooltip()
-    Create_Info_Text('no empty slots - right click to sell', self, 'error')
+    if Helper.Unit:item_one_piece_blocked(main.current.units, self.item) then
+      Create_Info_Text('already have this set', self, 'error')
+    else
+      Create_Info_Text('no empty slots - right click to sell', self, 'error')
+    end
     return false
   end
 

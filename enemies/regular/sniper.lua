@@ -1,5 +1,9 @@
 local fns = {}
 
+-- Last N seconds of the windup, during which the shot angle is committed and
+-- the player can dodge by moving the locked troop out of the line.
+local SNIPER_AIM_LOCK_TIME = 0.75
+
 fns['init_enemy'] = function(self)
   self.data = self.data or {}
   self.icon = 'sniper'
@@ -57,12 +61,23 @@ fns['draw_enemy'] = function(self)
     local pct = self.castObject:get_cast_percentage() or 0
     graphics.circle(self.x, self.y, 8 + pct * 14, purple[5], 1)
 
-    -- Red dashed targeting line to the locked target so the player can see
-    -- where the shot is going to land and reposition before it fires.
-    local target = self.target
-    if target and not target.dead then
-      graphics.dashed_line(self.x, self.y, target.x, target.y, 4, 3, red[0], 1)
+    -- Swap cast.target to a static snapshot so SingleProjectile (which reads
+    -- target.x/y at fire time) shoots at the locked position, not the live one.
+    local remaining = (self.castObject.cast_length or 0) - (self.castObject.elapsedTime or 0)
+    if remaining <= SNIPER_AIM_LOCK_TIME and not self.locked_target then
+      local t = self.castObject.target
+      if t and t.x and t.y then
+        self.locked_target = {x = t.x, y = t.y}
+        self.castObject.target = self.locked_target
+      end
     end
+
+    local aim = self.locked_target or self.target
+    if aim and (aim.dead == nil or not aim.dead) then
+      graphics.dashed_line(self.x, self.y, aim.x, aim.y, 4, 3, red[0], 1)
+    end
+  elseif self.locked_target then
+    self.locked_target = nil
   end
 end
 

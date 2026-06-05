@@ -656,6 +656,78 @@ function Arena:demo_end()
   end)
 end
 
+-- End-of-run screen shown when the player beats the final boss currently in
+-- the game (NUMBER_OF_ROUNDS = 11). All-yellow, wavy animated text. Bumps
+-- current_new_game_plus, unlocks the next NG+ tier if applicable, and offers
+-- a Restart button that starts a fresh run at the new NG+.
+function Arena:on_run_complete()
+  if self.run_complete then return end
+  self.run_complete = true
+  self.won = true
+  locked_state = false
+
+  -- Track whether this win unlocks a new NG+ tier (player reached the cap).
+  local newly_unlocked = (current_new_game_plus == new_game_plus)
+  if newly_unlocked then
+    new_game_plus = new_game_plus + 1
+    state.new_game_plus = new_game_plus
+  end
+  current_new_game_plus = current_new_game_plus + 1
+  state.current_new_game_plus = current_new_game_plus
+  max_units = MAX_UNITS
+
+  system.save_run()
+  system.save_state()
+
+  -- Slow time and music to settle the moment, matching on_win().
+  trigger:tween(1, _G, {slow_amount = 0}, math.linear, function() slow_amount = 0 end, 'slow_amount')
+  trigger:tween(1, _G, {music_slow_amount = 0}, math.linear, function() music_slow_amount = 0 end, 'music_slow_amount')
+
+  -- Headline: yellow, wavy, big font.
+  self.win_text = Text2{group = self.ui,
+    x = gw/2 + self.offset_x, y = gh/2 - 30 + self.offset_y,
+    force_update = true,
+    lines = {
+      {text = '[wavy_mid, yellow]you win!', font = fat_font, alignment = 'center'},
+    },
+  }
+
+  -- NG+ status appears a beat later so the headline has room to land.
+  trigger:after(1.2, function()
+    local ng_line
+    if newly_unlocked then
+      ng_line = '[wavy_mid, yellow]NG+' .. tostring(current_new_game_plus) .. ' unlocked!'
+    else
+      ng_line = '[wavy_mid, yellow]NG+' .. tostring(current_new_game_plus) .. ' continues...'
+    end
+
+    self.win_text2 = Text2{group = self.ui,
+      x = gw/2 + self.offset_x, y = gh/2 + 15 + self.offset_y,
+      force_update = true,
+      lines = {
+        {text = ng_line, font = pixul_font, alignment = 'center', height_multiplier = 1.5},
+        {text = '[wavy_mid, yellow]thanks for playing!', font = pixul_font, alignment = 'center', height_multiplier = 2.0},
+      },
+    }
+
+    -- Restart starts a new run at the freshly-incremented NG+ tier.
+    Button{group = self.ui,
+      x = gw/2 + self.offset_x, y = gh - 30 + self.offset_y,
+      force_update = true,
+      button_text = 'new run',
+      fg_color = 'yellowm5',
+      bg_color = 'yellow',
+      action = function()
+        ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+        TransitionEffect{group = main.transitions, x = gw/2, y = gh/2,
+          color = state.dark_transitions and bg[-2] or fg[0],
+          transition_action = function() Start_New_Run_And_Go_To_Buy_Screen() end,
+        }
+      end,
+    }
+  end)
+end
+
 --on game win (beat final boss)
 function Arena:on_win()
   self:gain_gold(ARENA_TRANSITION_TIME)

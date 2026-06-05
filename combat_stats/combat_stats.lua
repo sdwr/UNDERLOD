@@ -52,9 +52,11 @@ enemy_attack_cooldowns = {
   ['orb'] = attack_cooldowns['very-slow'],
   ['goblin_archer'] = attack_cooldowns['fast'],
   ['stomper'] = attack_cooldowns['fast'],
-  ['plasma'] = attack_cooldowns['fast'], 
+  ['plasma'] = attack_cooldowns['fast'],
   ['spread'] = attack_cooldowns['fast'],
-  ['mortar'] = attack_cooldowns['fast'],
+  -- Mortar's heavy lob is hard to dodge when it spams; +1.5s on top of
+  -- 'fast' (1.1s) gives the player a real beat between shells.
+  ['mortar'] = attack_cooldowns['fast'] + 1.5,
   ['arcspread'] = attack_cooldowns['medium'],
   ['cleaver'] = attack_cooldowns['slow'],
   ['charger'] = attack_cooldowns['slow'],
@@ -111,7 +113,7 @@ enemy_cast_times = {
   ['snakearrow'] = GHOST_CAST_TIME,
   ['boomerang'] = ENT_CAST_TIME,
   ['roach'] = 0.6,
-  ['sniper'] = 2.5,
+  ['sniper'] = 3.25,
   ['orb'] = 0.8,
   -- Visible windup before slime pulse fires so the player can read it.
   ['slime'] = 0.5,
@@ -343,8 +345,8 @@ SPECIAL_SWARMER_WEIGHT_BY_TYPE = {
   [6] = {0},
   [7] = {0},
   [8] = {0},
-  [9] = {5},
-  [10] = {5},
+  [9] = {0},
+  [10] = {0},
   [11] = {0},
   [12] = {0},
   [13] = {0},

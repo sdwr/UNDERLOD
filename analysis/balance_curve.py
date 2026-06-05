@@ -38,7 +38,7 @@ from dataclasses import dataclass
 # ===========================================================================
 
 # game_constants.lua
-NUMBER_OF_ROUNDS = 25
+NUMBER_OF_ROUNDS = 11  # game currently ends at L11 (dragon, 2nd boss)
 STARTING_GOLD = 9.0
 def GOLD_PER_ROUND(level: int) -> int:
     if level <= 5: return 2

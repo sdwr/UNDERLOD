@@ -121,6 +121,9 @@ function EnemyProjectile:on_trigger_enter(other, contact)
   if (other:is(Player) or other.is_troop) and other.hit then
     self:die(self.x, self.y, nil, random:int(2, 3))
     other:hit(self.damage, self.unit)
+    if other.is_troop and other.push then
+      other:push(LAUNCH_PUSH_FORCE_ENEMY, self.r, nil, KNOCKBACK_DURATION_ENEMY)
+    end
 
   elseif other:is(Critter) then
     self:die(self.x, self.y, nil, random:int(2, 3))
