@@ -924,6 +924,7 @@ function GoButton:update(dt)
           gold = gold,
           times_rerolled = self.parent.times_rerolled,
           units = CrashLog.snapshot_units(self.parent.units),
+          meta = CrashLog.snapshot_meta(self.parent.units),
           passives = self.parent.passives,
           perks = self.parent.perks,
         })

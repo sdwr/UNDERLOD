@@ -190,40 +190,81 @@ end
 -- Snapshot helpers
 -- ============================================================
 
--- Compact, safe summary of the player's units. Just character, level, and
--- item names per slot — no functions or runtime references.
+-- Compact, safe summary of the player's units. Each unit contributes:
+--   character, level, items[1..6] = name, item_colors[1..6] = csv of colors.
+-- Keeping arrays dense so the JSON encoder treats them as arrays.
 function CrashLog.snapshot_units(units)
   local out = {}
   if type(units) ~= "table" then return out end
   for i, u in ipairs(units) do
     if type(u) == "table" then
-      local items = {}
+      local items, item_colors = {}, {}
       if type(u.items) == "table" then
         for s = 1, 6 do
           local it = u.items[s]
           if type(it) == "table" then
             items[s] = it.name or it.key or "?"
+            if type(it.colors) == "table" then
+              item_colors[s] = table.concat(it.colors, ",")
+            else
+              item_colors[s] = ""
+            end
           else
-            -- keep array dense so json encoder treats this as an array of 6
             items[s] = ""
+            item_colors[s] = ""
           end
         end
       else
-        for s = 1, 6 do items[s] = "" end
+        for s = 1, 6 do items[s] = ""; item_colors[s] = "" end
       end
       out[i] = {
         character = u.character,
         level = u.level,
         items = items,
+        item_colors = item_colors,
       }
     end
   end
   return out
 end
 
+-- Team-wide meta state: per-color item counts, active tier (0..N) per color,
+-- and effective stat bonuses. Pulled from items_v2 helpers if present, with
+-- safe fallbacks so a refactor of that file can't break telemetry.
+function CrashLog.snapshot_meta(units)
+  local out = { colors = {}, tiers = {}, bonuses = {} }
+  if type(units) ~= "table" then return out end
+
+  -- color counts
+  if count_team_meta_colors then
+    local ok, counts = pcall(count_team_meta_colors, units)
+    if ok and type(counts) == "table" then out.colors = counts end
+  end
+
+  -- active tier (index into META_THRESHOLDS) per color
+  if META_THRESHOLDS and out.colors then
+    for color, n in pairs(out.colors) do
+      local tier = 0
+      for ti, t in ipairs(META_THRESHOLDS) do
+        if n >= t.count then tier = ti end
+      end
+      out.tiers[color] = tier
+    end
+  end
+
+  -- effective stat bonuses (e.g. {dmg=0.2, aspd=0.1})
+  if get_team_meta_stats then
+    local ok, stats = pcall(get_team_meta_stats, units)
+    if ok and type(stats) == "table" then out.bonuses = stats end
+  end
+
+  return out
+end
+
 -- Snapshot the arena/level state for level-end events. Pulls just the
 -- fields we want to ship — never the live combat objects.
 function CrashLog.snapshot_level(arena, outcome, extra)
+  local units = arena and arena.units
   local payload = {
     outcome = outcome, -- "win", "loss", "run_complete"
     level = arena and arena.level,
@@ -232,7 +273,8 @@ function CrashLog.snapshot_level(arena, outcome, extra)
     difficulty = state and state.difficulty,
     time_elapsed = arena and arena.time_elapsed,
     gold = gold,
-    units = CrashLog.snapshot_units(arena and arena.units),
+    units = CrashLog.snapshot_units(units),
+    meta = CrashLog.snapshot_meta(units),
     damage_dealt = arena and arena.damage_dealt,
     damage_taken = arena and arena.damage_taken,
   }
