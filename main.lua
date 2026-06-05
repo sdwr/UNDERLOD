@@ -1,4 +1,5 @@
 require 'save_game'
+require 'crash_log'
 require 'engine'
 require 'shared'
 require 'utils'
@@ -45,6 +46,7 @@ end
 function init()
   shared_init()
   SpawnGlobals.Init()
+  CrashLog.init()
 
   math.randomseed(os.time())
 
@@ -1705,6 +1707,9 @@ function open_options(self)
         if self.show_damage_numbers_button then
           self.show_damage_numbers_button.dead = true; self.show_damage_numbers_button = nil
         end
+        if self.crash_logging_button then
+          self.crash_logging_button.dead = true; self.crash_logging_button = nil
+        end
         if self.ng_plus_plus_button then
           self.ng_plus_plus_button.dead = true; self.ng_plus_plus_button = nil
         end
@@ -1855,8 +1860,16 @@ function open_options(self)
 
       state.show_combat_controls = not state.show_combat_controls
       show_combat_controls = state.show_combat_controls
-      
+
       b:set_text('show combat controls: ' .. tostring(state.show_combat_controls and 'yes' or 'no'))
+    end }
+
+    self.crash_logging_button = Button { group = self.options_ui, x = gw / 2, y = gh - 65, w = 200, force_update = true,
+      button_text = '[bg10]send anonymous data: ' .. tostring(CrashLog.is_enabled() and 'yes' or 'no'),
+      fg_color = 'bg10', bg_color = 'bg', action = function(b)
+      ui_switch1:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
+      CrashLog.set_enabled(not CrashLog.is_enabled())
+      b:set_text('send anonymous data: ' .. tostring(CrashLog.is_enabled() and 'yes' or 'no'))
     end }
 
     if self:is(MainMenu) then
@@ -1962,6 +1975,9 @@ function close_options(self, remain_paused)
     if self.show_combat_controls_button then
       self.show_combat_controls_button.dead = true; self.show_combat_controls_button = nil
     end
+    if self.crash_logging_button then
+      self.crash_logging_button.dead = true; self.crash_logging_button = nil
+    end
     if self.quit_button then
       self.quit_button.dead = true; self.quit_button = nil
     end
@@ -2020,4 +2036,75 @@ function cleanup_global_cursor()
     global_custom_cursor = nil
   end
   input:set_mouse_visible(true)
+end
+
+
+-- Full-screen dim layer that sits behind the crash-consent prompt so the
+-- modal reads as distinct from the main menu it overlays.
+CrashConsentBackdrop = Object:extend()
+CrashConsentBackdrop.__class_name = 'CrashConsentBackdrop'
+CrashConsentBackdrop:implement(GameObject)
+function CrashConsentBackdrop:init(args)
+  self:init_game_object(args)
+end
+function CrashConsentBackdrop:update(dt)
+  self:update_game_object(dt)
+end
+function CrashConsentBackdrop:draw()
+  local color = bg[-2]:clone()
+  color.a = 0.85
+  graphics.rectangle(gw / 2, gh / 2, gw, gh, nil, nil, color)
+end
+
+-- Crash-log consent prompt. Shown once on the main menu if the user has
+-- never been asked. Renders into self.options_ui so it gets the same
+-- no-camera UI layer as the options menu.
+function open_crash_consent(self)
+  self.paused = true
+  self.crash_consent_active = true
+
+  -- Backdrop is added first so the Group draws it underneath the text/buttons.
+  self.crash_consent_backdrop = CrashConsentBackdrop { group = self.options_ui, x = gw / 2, y = gh / 2 }
+
+  self.crash_consent_title = Text2 { group = self.options_ui, x = gw / 2, y = gh / 2 - 55,
+    lines = { { text = '[wavy_mid, fg]help improve UNDERLOD', font = pixul_font, alignment = 'center' } } }
+
+  self.crash_consent_body_1 = Text2 { group = self.options_ui, x = gw / 2, y = gh / 2 - 30,
+    lines = { { text = '[bg10]send anonymous crash reports and gameplay data?', font = pixul_font, alignment = 'center' } } }
+
+  self.crash_consent_body_2 = Text2 { group = self.options_ui, x = gw / 2, y = gh / 2 - 15,
+    lines = { { text = '[bg10]includes level, items, and win/loss. no personal data.', font = pixul_font, alignment = 'center' } } }
+
+  self.crash_consent_body_3 = Text2 { group = self.options_ui, x = gw / 2, y = gh / 2,
+    lines = { { text = '[bg10]you can change this in options.', font = pixul_font, alignment = 'center' } } }
+
+  local function close_consent(accepted)
+    CrashLog.set_enabled(accepted)
+    CrashLog.set_prompted()
+    self.crash_consent_active = false
+    self.paused = false
+    if self.crash_consent_backdrop then self.crash_consent_backdrop.dead = true; self.crash_consent_backdrop = nil end
+    if self.crash_consent_title then self.crash_consent_title.dead = true; self.crash_consent_title = nil end
+    if self.crash_consent_body_1 then self.crash_consent_body_1.dead = true; self.crash_consent_body_1 = nil end
+    if self.crash_consent_body_2 then self.crash_consent_body_2.dead = true; self.crash_consent_body_2 = nil end
+    if self.crash_consent_body_3 then self.crash_consent_body_3.dead = true; self.crash_consent_body_3 = nil end
+    if self.crash_consent_accept then self.crash_consent_accept.dead = true; self.crash_consent_accept = nil end
+    if self.crash_consent_decline then self.crash_consent_decline.dead = true; self.crash_consent_decline = nil end
+  end
+
+  -- Decline (red) on the left, accept (green) on the right; ~140px apart so
+  -- they don't read as a single bar.
+  self.crash_consent_decline = Button { group = self.options_ui, x = gw / 2 - 70, y = gh / 2 + 30,
+    force_update = true, button_text = 'no thanks', fg_color = 'redm5', bg_color = 'red',
+    action = function(b)
+      ui_switch1:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
+      close_consent(false)
+    end }
+
+  self.crash_consent_accept = Button { group = self.options_ui, x = gw / 2 + 70, y = gh / 2 + 30,
+    force_update = true, button_text = 'yes, send data', fg_color = 'greenm5', bg_color = 'green',
+    action = function(b)
+      ui_switch1:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
+      close_consent(true)
+    end }
 end

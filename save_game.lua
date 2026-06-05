@@ -6,6 +6,9 @@ function Start_New_Run()
   Clear_User_Stats()
   run_time = 0
 
+  -- new telemetry run id; lets events from this run be stitched together
+  if CrashLog and CrashLog.new_run_id then CrashLog.new_run_id() end
+
   -- Initialize state with all expected fields
   for _, field in ipairs(EXPECTED_SAVE_FIELDS) do
     state[field] = data[field]

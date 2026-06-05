@@ -369,6 +369,10 @@ function Arena:die()
     self.died = true
     locked_state = false
     system.save_run()
+
+    if CrashLog and CrashLog.log_event then
+      CrashLog.log_event('level_end', CrashLog.snapshot_level(self, 'loss'))
+    end
     self.t:tween(2, self, {main_slow_amount = 0}, math.linear, function() self.main_slow_amount = 0 end)
     self.t:tween(2, _G, {music_slow_amount = 0}, math.linear, function() music_slow_amount = 0 end)
     self.died_text = Text2{group = self.ui, x = gw/2 + self.offset_x, y = gh/2 - 32 + self.offset_y, lines = {
@@ -666,6 +670,10 @@ function Arena:on_run_complete()
   self.won = true
   locked_state = false
 
+  if CrashLog and CrashLog.log_event then
+    CrashLog.log_event('level_end', CrashLog.snapshot_level(self, 'run_complete'))
+  end
+
   -- Track whether this win unlocks a new NG+ tier (player reached the cap).
   local newly_unlocked = (current_new_game_plus == new_game_plus)
   if newly_unlocked then
@@ -740,6 +748,10 @@ function Arena:on_win()
     -- input:set_mouse_visible(true)
     self.won = true
     locked_state = false
+
+    if CrashLog and CrashLog.log_event then
+      CrashLog.log_event('level_end', CrashLog.snapshot_level(self, 'run_complete'))
+    end
 
     if current_new_game_plus == new_game_plus then
       new_game_plus = new_game_plus + 1

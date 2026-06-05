@@ -161,6 +161,13 @@ function BaseLevel:quit()
   if self.died then return end
 
   self.quitting = true
+
+  if CrashLog and CrashLog.log_event then
+    CrashLog.log_event('level_end', CrashLog.snapshot_level(self, 'win', {
+      boss = Is_Boss_Level and Is_Boss_Level(self.level) or false,
+    }))
+  end
+
   if IS_DEMO and self.level == DEMO_END_LEVEL then
     print('end of demo')
     self:demo_end()

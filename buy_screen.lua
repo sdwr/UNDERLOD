@@ -914,6 +914,21 @@ function GoButton:update(dt)
       ui_transition1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
       self.transitioning = true
       buyScreen:save_run()
+
+      if CrashLog and CrashLog.log_event then
+        CrashLog.log_event('buy_screen_end', {
+          level = self.parent.level,
+          loop = self.parent.loop,
+          ng_plus = current_new_game_plus,
+          difficulty = state.difficulty,
+          gold = gold,
+          times_rerolled = self.parent.times_rerolled,
+          units = CrashLog.snapshot_units(self.parent.units),
+          passives = self.parent.passives,
+          perks = self.parent.perks,
+        })
+      end
+
       TransitionEffect{group = main.transitions, x = self.x, y = self.y, color = state.dark_transitions and bg[-2] or character_colors[random:table(self.parent.units).character], transition_action = function()
 
         main:add(WorldManager'world_manager')

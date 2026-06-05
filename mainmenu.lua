@@ -225,6 +225,11 @@ function MainMenu:on_enter(from)
     ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     system.open_url('https://discord.gg/Yjk2Q5gDqA')
   end}]]--
+
+  -- First-launch consent prompt for crash log uploads.
+  if CrashLog and not CrashLog.has_prompted() then
+    open_crash_consent(self)
+  end
 end
 
 
@@ -286,7 +291,7 @@ function MainMenu:update(dt)
     main_song_instance = title_music:play{volume = 1}
   end
 
-  if input.escape.pressed then
+  if input.escape.pressed and not self.crash_consent_active then
     if not self.paused then
       open_options(self)
     else
