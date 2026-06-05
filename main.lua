@@ -1642,10 +1642,6 @@ function open_options(self)
       --pass
     end
 
-    if self:is(MainMenu) then
-      self.ng_t = Text2 { group = self.options_ui, x = gw / 2 + 63, y = gh - 50, lines = { { text = '[bg10]current: ' .. current_new_game_plus, font = pixul_font, alignment = 'center' } } }
-    end
-
     self.resume_button = Button { group = self.options_ui, x = gw / 2, y = gh - 225, force_update = true, button_text = self:is(MainMenu) and 'main menu (esc)' or 'resume game (esc)', fg_color = 'bg10', bg_color = 'bg', action = function(
         b)
       trigger:tween(0.25, _G, { slow_amount = 1 }, math.linear, function()
@@ -1661,9 +1657,6 @@ function open_options(self)
         end
         if self.paused_t2 then
           self.paused_t2.dead = true; self.paused_t2 = nil
-        end
-        if self.ng_t then
-          self.ng_t.dead = true; self.ng_t = nil
         end
         if self.resume_button then
           self.resume_button.dead = true; self.resume_button = nil
@@ -1701,20 +1694,11 @@ function open_options(self)
         if self.screen_shake_button then
           self.screen_shake_button.dead = true; self.screen_shake_button = nil
         end
-        if self.show_combat_controls_button then
-          self.show_combat_controls_button.dead = true; self.show_combat_controls_button = nil
-        end
         if self.show_damage_numbers_button then
           self.show_damage_numbers_button.dead = true; self.show_damage_numbers_button = nil
         end
         if self.crash_logging_button then
           self.crash_logging_button.dead = true; self.crash_logging_button = nil
-        end
-        if self.ng_plus_plus_button then
-          self.ng_plus_plus_button.dead = true; self.ng_plus_plus_button = nil
-        end
-        if self.ng_plus_minus_button then
-          self.ng_plus_minus_button.dead = true; self.ng_plus_minus_button = nil
         end
         if self.main_menu_button then
           self.main_menu_button.dead = true; self.main_menu_button = nil
@@ -1854,49 +1838,15 @@ function open_options(self)
       b:set_text('show damage numbers: ' .. tostring(state.show_damage_numbers or 'off'))
     end }
 
-    self.show_combat_controls_button = Button { group = self.options_ui, x = gw / 2, y = gh - 80, force_update = true, button_text = '[bg10]show combat controls: ' .. tostring(state.show_combat_controls and 'yes' or 'no'),
-      fg_color = 'bg10', bg_color = 'bg', action = function(b)
-      ui_switch1:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
-
-      state.show_combat_controls = not state.show_combat_controls
-      show_combat_controls = state.show_combat_controls
-
-      b:set_text('show combat controls: ' .. tostring(state.show_combat_controls and 'yes' or 'no'))
-    end }
-
-    self.crash_logging_button = Button { group = self.options_ui, x = gw / 2, y = gh - 65, w = 200, force_update = true,
+    -- Bumped up from gh - 65 to gh - 80 (the slot the removed "show combat
+    -- controls" toggle used to occupy).
+    self.crash_logging_button = Button { group = self.options_ui, x = gw / 2, y = gh - 80, w = 200, force_update = true,
       button_text = '[bg10]send anonymous data: ' .. tostring(CrashLog.is_enabled() and 'yes' or 'no'),
       fg_color = 'bg10', bg_color = 'bg', action = function(b)
       ui_switch1:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
       CrashLog.set_enabled(not CrashLog.is_enabled())
       b:set_text('send anonymous data: ' .. tostring(CrashLog.is_enabled() and 'yes' or 'no'))
     end }
-
-    if self:is(MainMenu) then
-      self.ng_plus_minus_button = Button { group = self.options_ui, x = gw / 2 - 58, y = gh - 50, force_update = true, button_text = 'NG+ down', fg_color = 'bg10', bg_color = 'bg', action = function(
-          b)
-        ui_switch1:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
-        b.spring:pull(0.2, 200, 10)
-        b.selected = true
-        current_new_game_plus = math.clamp(current_new_game_plus - 1, 0, 7)
-        state.current_new_game_plus = current_new_game_plus
-        self.ng_t.text:set_text({ { text = '[bg10]current: ' .. current_new_game_plus, font = pixul_font, alignment = 'center' } })
-        max_units = MAX_UNITS
-        system.save_run()
-      end }
-
-      self.ng_plus_plus_button = Button { group = self.options_ui, x = gw / 2 + 5, y = gh - 50, force_update = true, button_text = 'NG+ up', fg_color = 'bg10', bg_color = 'bg', action = function(
-          b)
-        ui_switch1:play { pitch = random:float(0.95, 1.05), volume = 0.5 }
-        b.spring:pull(0.2, 200, 10)
-        b.selected = true
-        current_new_game_plus = math.clamp(current_new_game_plus + 1, 0, new_game_plus)
-        state.current_new_game_plus = current_new_game_plus
-        self.ng_t.text:set_text({ { text = '[bg10]current: ' .. current_new_game_plus, font = pixul_font, alignment = 'center' } })
-        max_units = MAX_UNITS
-        system.save_run()
-      end }
-    end
 
     if not self:is(MainMenu) then
       self.main_menu_button = Button { group = self.options_ui, x = gw / 2, y = gh - 50, force_update = true, button_text = 'main menu', fg_color = 'bg10', bg_color = 'bg', action = function(
@@ -1932,9 +1882,6 @@ function close_options(self, remain_paused)
     end
     if self.paused_t2 then
       self.paused_t2.dead = true; self.paused_t2 = nil
-    end
-    if self.ng_t then
-      self.ng_t.dead = true; self.ng_t = nil
     end
     if self.resume_button then
       self.resume_button.dead = true; self.resume_button = nil
@@ -1972,20 +1919,11 @@ function close_options(self, remain_paused)
     if self.show_damage_numbers_button then
       self.show_damage_numbers_button.dead = true; self.show_damage_numbers_button = nil
     end
-    if self.show_combat_controls_button then
-      self.show_combat_controls_button.dead = true; self.show_combat_controls_button = nil
-    end
     if self.crash_logging_button then
       self.crash_logging_button.dead = true; self.crash_logging_button = nil
     end
     if self.quit_button then
       self.quit_button.dead = true; self.quit_button = nil
-    end
-    if self.ng_plus_plus_button then
-      self.ng_plus_plus_button.dead = true; self.ng_plus_plus_button = nil
-    end
-    if self.ng_plus_minus_button then
-      self.ng_plus_minus_button.dead = true; self.ng_plus_minus_button = nil
     end
     if self.main_menu_button then
       self.main_menu_button.dead = true; self.main_menu_button = nil

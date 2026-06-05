@@ -914,7 +914,7 @@ end
 function FireWall:try_damage(unit)
   if not table.contains(self.damaged_units, unit) then
     table.insert(self.damaged_units, unit)
-    player_hit1:play{pitch = random:float(0.95, 1.05), volume = 1.2}
+    player_hit1:play{pitch = random:float(0.95, 1.05), volume = 1.8}
 
     local push_angle = self.angle
     local knockback_duration = KNOCKBACK_DURATION_ENEMY
@@ -1258,7 +1258,8 @@ function LightningBall:init(args)
     self:create_sparks()
 
     -- Behavior Properties
-    self.damage = self.damage or 15
+    -- 0.5x scalar applied centrally so any future caller inherits the nerf.
+    self.damage = (self.damage or 15) * 0.5
     self.shock_duration = self.shock_duration or 3
     self.speed = self.speed or 30
     self.duration = self.duration or 4
@@ -1336,7 +1337,7 @@ function LightningBall:find_and_shock_targets()
     end
     
     if targets_shocked_this_tick > 0 then
-      spark2:play{pitch = random:float(0.8, 1.2), volume = 0.6}
+      spark2:play{pitch = random:float(0.8, 1.2), volume = 0.3}
     end
 end
 

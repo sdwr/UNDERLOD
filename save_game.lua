@@ -173,6 +173,17 @@ function Create_Blank_Game_Stats()
   stats.max_wow_items_on_unit = 0
   stats.max_20cost_items_on_unit = 0
 
+  -- Meta-color totals (highest concurrent count ever held by the team for
+  -- each item color). Drives the meta_<color>_<n> achievements.
+  stats.max_meta_red = 0
+  stats.max_meta_yellow = 0
+  stats.max_meta_blue = 0
+  stats.max_meta_brown = 0
+  stats.max_meta_purple = 0
+
+  -- Highest NG+ tier ever beaten. -1 = no run completed yet.
+  stats.max_ng_plus_completed = -1
+
   return stats
 end
 

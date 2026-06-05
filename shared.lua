@@ -44,7 +44,9 @@ function shared_init()
   sfx = SoundTag()
   sfx.volume = state.sfx_volume or 0.5
   music = SoundTag()
-  music.volume = state.music_volume or 0.5
+  -- Music currently disabled (menu + in-game). Re-enable by restoring
+  -- `state.music_volume or 0.5` (and removing the override below).
+  music.volume = 0
 
   if state.show_combat_controls == true then
     state.show_combat_controls = true

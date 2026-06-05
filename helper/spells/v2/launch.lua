@@ -85,7 +85,7 @@ function Launch_Spell:fire()
     if self.charge_sound then
       self.charge_sound:stop()
     end
-    player_hit1:play{volume = 0.6}
+    player_hit1:play{volume = 0.9}
 
     self:die()
 end

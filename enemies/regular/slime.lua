@@ -52,7 +52,12 @@ end
 function SlimeBullet:check_hits()
   local friendlies = main.current.main:get_objects_in_shape(self.shape, main.current.friendlies)
   if #friendlies > 0 then
-    friendlies[1]:hit(self.damage, self.unit, nil, true, true)
+    local target = friendlies[1]
+    target:hit(self.damage, self.unit, nil, true, true)
+    if target.push and not target.dead then
+      -- Knock the troop along the bullet's travel direction.
+      target:push(LAUNCH_PUSH_FORCE_ENEMY, self.r, nil, KNOCKBACK_DURATION_ENEMY)
+    end
     self:die()
   end
 end
@@ -183,6 +188,14 @@ fns['init_enemy'] = function(self)
       pick_shape = 'circle',
       parent = self,
       floor_effect = 'poison',
+      -- Area_Spell hits troops via Helper.Damage:chained_hit, which skips the
+      -- Troop:hit() audio path. Play the player-hit sound here so trail ticks
+      -- aren't silent.
+      on_hit_callback = function(spell, target, from)
+        if target and target.is_troop and not target.dead then
+          table.random({player_hit1, player_hit2}):play{pitch = random:float(0.95, 1.05), volume = 0.9}
+        end
+      end,
     }
   end)
 end

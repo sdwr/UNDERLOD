@@ -674,6 +674,15 @@ function Arena:on_run_complete()
     CrashLog.log_event('level_end', CrashLog.snapshot_level(self, 'run_complete'))
   end
 
+  -- Record the NG+ tier just completed before we bump current_new_game_plus
+  -- for the next run. Drives the ng_plus_<n> achievements.
+  if USER_STATS then
+    local completed = current_new_game_plus or 0
+    if (USER_STATS.max_ng_plus_completed or -1) < completed then
+      USER_STATS.max_ng_plus_completed = completed
+    end
+  end
+
   -- Track whether this win unlocks a new NG+ tier (player reached the cap).
   local newly_unlocked = (current_new_game_plus == new_game_plus)
   if newly_unlocked then
@@ -683,6 +692,8 @@ function Arena:on_run_complete()
   current_new_game_plus = current_new_game_plus + 1
   state.current_new_game_plus = current_new_game_plus
   max_units = MAX_UNITS
+
+  if Check_All_Achievements then Check_All_Achievements() end
 
   system.save_run()
   system.save_state()

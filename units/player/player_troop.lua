@@ -562,7 +562,7 @@ function Troop:hit(damage, from, damageType, playHitEffects, cannotProcOnHit)
   -- Consistent hit feedback on every damage source (projectiles, spells, AoEs,
   -- collisions). helper_damage shakes too but only when playHitEffects is set,
   -- which leaves collision damage silent.
-  table.random({player_hit1, player_hit2}):play{pitch = random:float(0.95, 1.05), volume = 0.85}
+  table.random({player_hit1, player_hit2}):play{pitch = random:float(0.95, 1.05), volume = 1.275}
   camera:shake(2, 0.15)
   Helper.Damage:indirect_hit(self, damage, from, damageType, playHitEffects)
 end

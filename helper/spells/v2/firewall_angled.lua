@@ -201,7 +201,7 @@ function EnemyFirewall:on_hit(unit)
     
     unit:hit(self.damage, self.unit, nil, true, true)
     
-    player_hit1:play{pitch = random:float(0.95, 1.05), volume = 1.2}
+    player_hit1:play{pitch = random:float(0.95, 1.05), volume = 1.8}
     
     local push_angle = self.angle
     local knockback_duration = KNOCKBACK_DURATION_ENEMY

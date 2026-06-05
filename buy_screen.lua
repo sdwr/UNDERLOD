@@ -143,9 +143,10 @@ end
 function BuyScreen:on_item_purchased(unit, slot_index, item)
   -- Refresh character cards to show the new item
   Refresh_All_Cards_Text()
-  
-  -- You can add additional logic here if needed
-  -- For example, play a specific sound, show a notification, etc.
+
+  -- Recompute meta counts so the meta_<color>_<n> achievements unlock as
+  -- soon as the item lands instead of waiting for the next level/buy screen.
+  if Check_All_Achievements then Check_All_Achievements() end
 end
 
 

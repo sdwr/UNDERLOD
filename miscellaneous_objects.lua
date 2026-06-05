@@ -1529,7 +1529,7 @@ function Critter:on_collision_enter(other, contact)
     self:bounce(contact:getNormal())
   elseif table.any(main.current.enemies, function(v) return other:is(v) end) then
     
-    player_hit1:play{pitch = random:float(0.95, 1.05), volume = 1.3}
+    player_hit1:play{pitch = random:float(0.95, 1.05), volume = 1.95}
     
     local push_force_reduction = 0.13
     local duration = KNOCKBACK_DURATION_ENEMY
