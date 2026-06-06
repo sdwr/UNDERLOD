@@ -40,7 +40,21 @@ function Start_New_Run_And_Go_To_Buy_Screen()
   -- Common logic to start a new run and transition to buy screen
   local new_run = Start_New_Run()
   Save_Run(new_run)
-  
+
+  Go_To_Buy_Screen()
+end
+
+-- Debug-only entry point: starts a fresh run with the debug arena as the
+-- current level, then routes through the normal buy screen so the player
+-- can pick units/items before launching. Reuses Start_New_Run() so all the
+-- per-run init (Clear_User_Stats, run_time reset, telemetry new-run-id)
+-- runs the same way as a normal new game — then patches level to the
+-- debug entry. Triggered by the "debug" main-menu button.
+function Start_Debug_Run_And_Go_To_Buy_Screen()
+  local new_run = Start_New_Run()
+  new_run.level = DEBUG_LEVEL_NUMBER
+  state.level = DEBUG_LEVEL_NUMBER
+  Save_Run(new_run)
   Go_To_Buy_Screen()
 end
 

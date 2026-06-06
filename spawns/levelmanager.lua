@@ -11,114 +11,114 @@ function Is_Boss_Level(level)
   end
 end
 
--- Continuous-spawn config per level. Each level picks a basic enemy that fills
--- the field on a steady clump cadence and one or more special pools that each
--- fire on their own jittered timer (skip-on-cap, not queued). LEVEL_SPAWN_POOLS
--- is indexed by level; non-boss levels beyond the table fall back to the
--- highest defined entry.
--- Every special-pool spawn waits 17s before its first fire so the player gets
--- a uniform breathing-room window at level start before specials begin
--- pressuring them.
-LEVEL_SPECIAL_FIRST_FIRE = 17
+-- Per-level spawn config. Each level has:
+--   basic        - the continuous swarmer clump filler (+ optional tank
+--                  substitution via replace_type/replace_every).
+--   special_pool - a flat list of special enemy types. The SpawnManager draws
+--                  one at random each time the dynamic cadence fires (see
+--                  SPECIAL_CADENCE_* in game_constants). Omit/empty for no
+--                  specials. Per-type group sizes are handled centrally by
+--                  Special_Cadence_Group_Size (roach in 2-3s, linker as a
+--                  tethered pair, everything else single).
+-- Boss levels are handled separately and have no entry here.
+-- (The legacy timer/`at`-event `specials` field is still honored by the
+-- SpawnManager and is used by the debug arena, but campaign levels use
+-- special_pool exclusively.)
 
--- Special-pool entries can be either:
---   {type, at = 0.3, group_size?}         - one-shot at this fraction of the
---                                            level's kill_quota progress
---   {type, interval, max_alive, ...}      - recurring timer-based pool
--- Mix freely. The basic pool is always timer-based (continuous filler).
-LEVEL_SPAWN_POOLS = {
-  [1] = {
-    basic = {type = 'swarmer', interval = BASIC_CLUMP_INTERVAL},
-    specials = {},
-  },
-  [2] = {
-    basic = {type = 'swarmer', interval = BASIC_CLUMP_INTERVAL},
-    specials = {
-      -- Timer-based pool: a slime arrives ~every 15s (jittered by
-      -- SPECIAL_SPAWN_JITTER), starting at the 10s mark, with at most 2 alive
-      -- on the field at once.
-      {type = 'slime', interval = 15, max_alive = 2, first_fire = 10},
-    },
-  },
-  [3] = {
-    basic = {type = 'swarmer', interval = BASIC_CLUMP_INTERVAL},
-    specials = {
-      {type = 'roach', at = 0.3, group_size = function() return random:int(2, 3) end},
-      {type = 'sniper', at = 0.55},
-      {type = 'roach', at = 0.8, group_size = function() return random:int(2, 3) end},
-    },
-  },
-  [4] = {
-    basic = {type = 'swarmer', interval = BASIC_CLUMP_INTERVAL},
-    specials = {
-      {type = 'brute', at = 0.2},
-      {type = 'orb', at = 0.45},
-      {type = 'brute', at = 0.7},
-      {type = 'orb', at = 0.9},
-    },
-  },
-  [5] = {
-    basic = {type = 'swarmer', interval = BASIC_CLUMP_INTERVAL},
-    specials = {
-      {type = 'cleaver', at = 0.15},
-      {type = 'snakearrow', at = 0.35},
-      {type = 'mortar', at = 0.55},
-      {type = 'cleaver', at = 0.75},
-      {type = 'snakearrow', at = 0.9},
-    },
-  },
-  -- 6 is stompy boss. Levels 7-10 (T2) are built below from a shared pool.
+-- Tier-2 draw pool (L7-L10, between stompy at L6 and dragon at L11). Wide and
+-- varied so the back third doesn't feel like recycled early levels; includes
+-- the four custom enemies.
+local T2_SPECIAL_POOL = {
+  'snakearrow', 'mortar', 'roach', 'cleaver', 'brute', 'orb', 'boomerang',
+  'sniper', 'plasma', 'slime',
+  'splitter', 'pulse_walker', 'drone_carrier', 'linker',
 }
 
--- T2 (between stompy at level 6 and dragon at level 11) draws its specials
--- from a fixed pool: snakearrow / mortar / slime / roach. Each level gets a
--- few picks from the pool with deterministic-per-level seeding so the same
--- level number always rolls the same mix (safe across save/load) but every
--- level feels different from its neighbors.
-local T2_SPECIAL_POOL = {'snakearrow', 'mortar', 'slime', 'roach'}
+-- Early-game pool. L2/L3 draw a random 2 of these per run; L4/L5 use all 3.
+local EARLY_SPECIAL_POOL = {'slime', 'roach', 'sniper'}
 
-local function build_t2_specials(level)
-  local rng = Random(level * 7919)
-  local fractions = {0.2, 0.5, 0.8}
-  local specials = {}
-  local slime_added = false
-  for _, frac in ipairs(fractions) do
-    local t = rng:table(T2_SPECIAL_POOL)
-    if t == 'slime' then
-      -- Slime is timer-based (recurring) like on level 2 — collapse multiple
-      -- slime rolls into a single pool so we don't double up.
-      if not slime_added then
-        table.insert(specials, {type = 'slime', interval = 15, max_alive = 2, first_fire = 10})
-        slime_added = true
-      end
-    else
-      local entry = {type = t, at = frac}
-      if t == 'roach' then
-        entry.group_size = function() return random:int(2, 3) end
-      end
-      table.insert(specials, entry)
-    end
+-- Pull n distinct entries from pool at random (no mutation of pool).
+local function pick_random_subset(pool, n)
+  local copy = {}
+  for _, v in ipairs(pool) do table.insert(copy, v) end
+  local result = {}
+  for _ = 1, math.min(n, #copy) do
+    table.insert(result, table.remove(copy, random:int(1, #copy)))
   end
-  return specials
+  return result
 end
+
+LEVEL_SPAWN_POOLS = {
+  [1] = {
+    -- Tanks now appear from level 1: every 5th basic clump is swapped for a
+    -- single tank, introducing the knockback-immune wall enemy immediately.
+    basic = {
+      type = 'swarmer',
+      interval = BASIC_CLUMP_INTERVAL,
+      replace_type = 'tank',
+      replace_every = 5,
+      replace_group_size = 1,
+    },
+    special_pool = {},
+  },
+  -- 2 and 3 are built per-run in get_spawn_config_for_level (random 2-of-3).
+  [4] = {
+    basic = {
+      type = 'swarmer',
+      interval = BASIC_CLUMP_INTERVAL,
+      replace_type = 'tank',
+      replace_every = 6,
+      replace_group_size = 1,
+    },
+    special_pool = {'slime', 'roach', 'sniper'},
+  },
+  [5] = {
+    basic = {
+      type = 'swarmer',
+      interval = BASIC_CLUMP_INTERVAL,
+      replace_type = 'tank',
+      replace_every = 6,
+      replace_group_size = 1,
+    },
+    special_pool = {'slime', 'roach', 'sniper'},
+  },
+  -- 6 is stompy boss. 7-10 (T2) are built below from the shared T2 pool.
+}
 
 for _, lvl in ipairs({7, 8, 9, 10}) do
   LEVEL_SPAWN_POOLS[lvl] = {
     basic = {
       type = 'swarmer',
       interval = BASIC_CLUMP_INTERVAL,
-      -- Every 4th basic tick, fire a single tank instead of a swarmer clump.
-      -- Tank is a tanky melee approacher with no attacks; mixed in to break
-      -- the swarmer cadence between stompy and dragon.
+      -- Every 4th basic tick fires a single tank instead of a swarmer clump.
       replace_type = 'tank',
       replace_every = 4,
       replace_group_size = 1,
     },
-    specials = build_t2_specials(lvl),
+    special_pool = T2_SPECIAL_POOL,
   }
 end
 
+-- Per-type spawn group size for the dynamic cadence. Each group member counts
+-- toward the cadence's "specials on screen" increment.
+function Special_Cadence_Group_Size(enemy_type)
+  if enemy_type == 'roach' then return random:int(2, 3) end
+  -- Linkers spawn as a tethered pair so the beam has two endpoints.
+  if enemy_type == 'linker' then return 2 end
+  return 1
+end
+
 local function get_spawn_config_for_level(level)
+  -- L2/L3: random 2-of-3 from the early pool, re-rolled each time the level
+  -- list is built (i.e. per run). Built fresh here so the randomization isn't
+  -- frozen at file-load time.
+  if level == 2 or level == 3 then
+    return {
+      basic = {type = 'swarmer', interval = BASIC_CLUMP_INTERVAL},
+      special_pool = pick_random_subset(EARLY_SPECIAL_POOL, 2),
+    }
+  end
+
   if LEVEL_SPAWN_POOLS[level] then return LEVEL_SPAWN_POOLS[level] end
   -- Pick the highest defined level <= this one as a fallback so later levels
   -- aren't empty if they haven't been authored yet.
@@ -129,11 +129,90 @@ local function get_spawn_config_for_level(level)
   return best or LEVEL_SPAWN_POOLS[1]
 end
 
+-- Debug arena: a non-shipping level for inspecting every special enemy in
+-- isolation. Reachable via the hidden "debug" button on the main menu. Each
+-- special arrives on its own timer pool with `interval` huge enough that it
+-- effectively fires once (max_alive = 1 prevents pile-up), staggered by
+-- DEBUG_SPAWN_STAGGER seconds so they walk on one at a time.
+DEBUG_LEVEL_NUMBER = 30
+DEBUG_SPAWN_STAGGER = 4
+
+local DEBUG_SPECIAL_TYPES = {
+  -- Roughly the order of appearance in the normal campaign, then the
+  -- unused-but-functional specials, then the four custom additions.
+  'slime', 'roach', 'sniper', 'brute', 'orb', 'cleaver', 'snakearrow', 'mortar',
+  'bomb', 'selfburst', 'burst', 'arcspread', 'aim_spread',
+  'singlemortar', 'line_mortar', 'boomerang', 'plasma',
+  'archer', 'goblin_archer', 'big_goblin_archer',
+  'firewall_caster', 'turret', 'shooter', 'spawner', 'tank',
+  -- Custom specials added in this pass:
+  'splitter', 'pulse_walker', 'drone_carrier', 'linker',
+}
+
+function Build_Debug_Level_Entry()
+  local specials = {}
+  local delay = DEBUG_SPAWN_STAGGER
+  local total_power = 0
+  for _, t in ipairs(DEBUG_SPECIAL_TYPES) do
+    local entry = {
+      type = t,
+      interval = 99999, -- effectively one-shot
+      max_alive = 1,
+      first_fire = delay,
+    }
+    local count = 1
+    if t == 'linker' then
+      -- Linkers pair up at spawn time; deploy two from this pool.
+      entry.group_size = 2
+      entry.max_alive = 2
+      count = 2
+    end
+    table.insert(specials, entry)
+
+    -- Tally the round_power this pool will contribute when its members die.
+    -- kill_quota = sum across all pools so the level only completes once the
+    -- player has actually cleared the field (instead of a hard-coded
+    -- infinite quota where it never ends).
+    total_power = total_power + (enemy_to_round_power[t] or 0) * count
+    if t == 'splitter' then
+      -- Splitter bursts into 3 swarmers on death — include their power so
+      -- the quota only completes after the splits are cleared too.
+      total_power = total_power + 3 * (enemy_to_round_power['swarmer'] or 0)
+    end
+
+    delay = delay + DEBUG_SPAWN_STAGGER
+  end
+
+  return {
+    level = DEBUG_LEVEL_NUMBER,
+    -- round_power is the divisor for gold-per-kill (each kill grants its
+    -- enemy_to_round_power as a fraction of this total). Match it to the
+    -- kill_quota so gold-per-kill curves like a normal level.
+    round_power = total_power,
+    color = grey[0],
+    environmental_hazards = {},
+    spawn_config = {
+      -- Specials-only — no basic swarmer pool so the arena stays uncluttered
+      -- and each enemy is easy to study in isolation.
+      specials = specials,
+    },
+    -- Quota = exact sum of every expected enemy's round_power, so the
+    -- progress bar fills naturally as the player clears the field and the
+    -- level only completes when the last expected enemy is dead.
+    kill_quota = total_power,
+    waves_power = {total_power},
+  }
+end
+
 function Build_Level_List(max_level)
   local level_list = {}
   for i = 1, max_level do
       level_list[i] = {level = i, round_power = 0, color = grey[0], environmental_hazards = {}}
   end
+  -- Inject the debug entry so WorldManager can index level_list[DEBUG_LEVEL_NUMBER]
+  -- when the run is started via Start_Debug_Run. Harmless for normal play (the
+  -- level_map only iterates 1..NUMBER_OF_ROUNDS).
+  level_list[DEBUG_LEVEL_NUMBER] = Build_Debug_Level_Entry()
 
   for i = 1, max_level do
     if Is_Boss_Level(i) then

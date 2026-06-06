@@ -74,7 +74,14 @@ fns['draw_enemy'] = function(self)
 
     local aim = self.locked_target or self.target
     if aim and (aim.dead == nil or not aim.dead) then
-      graphics.dashed_line(self.x, self.y, aim.x, aim.y, 4, 3, red[0], 1)
+      -- Extend the aim line past the target to the screen edge so the player
+      -- reads the full shot trajectory, not just sniper -> target. Project
+      -- along the aim angle a distance >= the screen diagonal.
+      local angle = math.atan2(aim.y - self.y, aim.x - self.x)
+      local reach = math.sqrt(gw * gw + gh * gh)
+      local end_x = self.x + math.cos(angle) * reach
+      local end_y = self.y + math.sin(angle) * reach
+      graphics.dashed_line(self.x, self.y, end_x, end_y, 4, 3, red[0], 1)
     end
   elseif self.locked_target then
     self.locked_target = nil

@@ -594,8 +594,18 @@ function SpawnManager:init_spawn_pools()
   self.special_pools = {}
   self.special_events = {}
 
+  -- Dynamic cadence state (campaign levels). nil pool = no cadence spawns.
+  self.special_pool = nil
+  self.special_cadence_next_fire = nil
+
   local config = self.level_data and self.level_data.spawn_config
   if not config then return end
+
+  -- New-style flat draw pool: the cadence picks one type at random each fire.
+  if config.special_pool and #config.special_pool > 0 then
+    self.special_pool = config.special_pool
+    self.special_cadence_next_fire = SPECIAL_CADENCE_INITIAL or 5
+  end
 
   if config.basic then
     self.basic_pool = {
@@ -864,6 +874,41 @@ function SpawnManager:tick_spawn_pools(dt)
           specials_capped = counts.specials >= (MAX_ALIVE_SPECIALS or 9999)
           ev.fired = true
         end
+      end
+    end
+  end
+
+  -- Dynamic cadence (campaign levels). Single global timer that draws one
+  -- random type from special_pool each fire. The delay to the NEXT fire is
+  -- computed here, at the moment of this fire: base + increment * (cycle
+  -- specials currently alive + the group just queued). Tanks come from the
+  -- basic pool and are excluded from the count.
+  if self.special_pool and self.special_cadence_next_fire then
+    self.special_cadence_next_fire = self.special_cadence_next_fire - dt
+    if self.special_cadence_next_fire <= 0 then
+      if not self:quota_met() and not specials_capped then
+        local enemy_type = random:table(self.special_pool)
+        local group_size = Special_Cadence_Group_Size(enemy_type)
+
+        self.wave_spawn_delay = 0
+        Spawn_Group_With_Location(self.arena,
+          {enemy_type, group_size, 'nil'},
+          Get_Offscreen_Spawn_Point())
+
+        -- Reflect the just-queued spawns in the running counts.
+        counts.specials = counts.specials + group_size
+        counts.by_type[enemy_type] = (counts.by_type[enemy_type] or 0) + group_size
+        specials_capped = counts.specials >= (MAX_ALIVE_SPECIALS or 9999)
+
+        -- Cycle specials alive = all specials minus tanks (basic-pool filler).
+        local cycle_alive = counts.specials - (counts.by_type['tank'] or 0)
+        local base = SPECIAL_CADENCE_BASE or 5
+        local inc = SPECIAL_CADENCE_INCREMENT or 3
+        self.special_cadence_next_fire = base + inc * math.max(cycle_alive, 0)
+      else
+        -- Quota met or field full: re-check soon without advancing the big
+        -- delay, so we resume the moment there's room.
+        self.special_cadence_next_fire = 1
       end
     end
   end

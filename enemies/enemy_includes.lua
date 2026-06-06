@@ -41,6 +41,10 @@ require 'enemies/regular/swarmer'
 require 'enemies/regular/hunter_swarmer'
 require 'enemies/regular/slime'
 require 'enemies/regular/tank'
+require 'enemies/regular/splitter'
+require 'enemies/regular/pulse_walker'
+require 'enemies/regular/drone_carrier'
+require 'enemies/regular/linker'
 
 require 'enemies/miniboss/bigstomper'
 

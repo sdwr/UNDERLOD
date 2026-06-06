@@ -928,6 +928,12 @@ enemy_type_to_size = {
   ['hunter_swarmer'] = 'swarmer',
   ['tank'] = 'block',
 
+  -- Custom specials added alongside the L1-L11 cleanup. See enemies/regular/*.
+  ['splitter'] = 'special',
+  ['pulse_walker'] = 'special',
+  ['drone_carrier'] = 'special',
+  ['linker'] = 'special',
+
   -- Minibosses
   ['bigstomper'] = 'huge',
   
