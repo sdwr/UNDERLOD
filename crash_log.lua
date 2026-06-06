@@ -128,6 +128,16 @@ local function ensure_install_id()
   end
 end
 
+-- A short, stable, random "player" hash per install. Distinct from the longer
+-- install_id: it's a compact tag (8 hex chars) included on every event so the
+-- dashboard can group/sort runs by player.
+local function ensure_player_hash()
+  if state and not state.telemetry_player_hash then
+    state.telemetry_player_hash = string.format("%08x", math.random(0, 0xffffffff))
+    if system and system.save_state then system.save_state() end
+  end
+end
+
 -- A run id rolled at run start (Start_New_Run) so all events from one playthrough
 -- can be stitched together server-side. Stored on state so it survives
 -- buy_screen <-> arena transitions.
@@ -154,6 +164,7 @@ local function envelope(event_type, payload)
     game = "UNDERLOD",
     version = CrashLog.GAME_VERSION,
     install = state and state.telemetry_install_id or "anon",
+    player = state and state.telemetry_player_hash or "anon",
     run = (state and state.telemetry_run_id) or nil,
     time = os.date("!%Y-%m-%dT%H:%M:%SZ"),
     os = (love.system and love.system.getOS and love.system.getOS()) or "unknown",
@@ -392,6 +403,7 @@ function CrashLog.init()
     migrate()
     if state.telemetry_enabled == nil then state.telemetry_enabled = false end
     ensure_install_id()
+    ensure_player_hash()
   end
 
   -- In some LÖVE 11.x builds only love.errhand is defined here (the renamed
