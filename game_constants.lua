@@ -169,6 +169,19 @@ WAVE_KILL_QUOTA_MULTIPLIER = 1.5
 -- 0.2 = each spawn fires somewhere in [interval*0.8, interval*1.2].
 SPECIAL_SPAWN_JITTER = 0.2
 
+-- Dynamic special-spawn cadence (campaign levels). The first special of a
+-- level arrives SPECIAL_CADENCE_INITIAL seconds in. Each subsequent spawn is
+-- scheduled at the moment the current one fires: the delay to the next is
+-- SPECIAL_CADENCE_BASE + SPECIAL_CADENCE_INCREMENT * (cycle specials alive,
+-- counting the group just queued). So spawns space out as the field fills
+-- and tighten back up as the player clears it. Tanks (basic-pool filler) are
+-- excluded from the count. Example with base 5 / increment 3:
+--   t=5 first; +5+3*1=8 -> t=13; if still alive +5+3*2=11 -> t=24,
+--   but if the first died, +5+3*1=8 -> t=21.
+SPECIAL_CADENCE_INITIAL = 5
+SPECIAL_CADENCE_BASE = 5
+SPECIAL_CADENCE_INCREMENT = 3
+
 -- Seconds between swarmer clump spawns in the continuous system. Clump size
 -- itself is SWARMERS_PER_LEVEL(level), same as the old wave instructions.
 -- Tuned so clumps don't pile up faster than the field can drain through

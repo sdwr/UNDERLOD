@@ -57,7 +57,11 @@ enemy_attack_cooldowns = {
   -- Mortar's heavy lob is hard to dodge when it spams; +1.5s on top of
   -- 'fast' (1.1s) gives the player a real beat between shells.
   ['mortar'] = attack_cooldowns['fast'] + 1.5,
-  ['arcspread'] = attack_cooldowns['medium'],
+  -- Arcspread fires a 4-arc fan that blankets a wide area; at the old
+  -- 'medium' (1.5s) cadence it was overtuned — near-constant pressure with
+  -- little room to dodge between volleys. Pushed well past 'very-slow' to
+  -- ~5s so each fan reads as a discrete, dodgeable event.
+  ['arcspread'] = attack_cooldowns['very-slow'] + 1.0,
   ['cleaver'] = attack_cooldowns['slow'],
   ['charger'] = attack_cooldowns['slow'],
   ['summoner'] = attack_cooldowns['slow'],
@@ -469,18 +473,27 @@ function POST_BOSS_HP_MULT(level)
   return 1
 end
 
+-- ENEMY_SCALE_BY_LEVEL only defines entries 1..25 but enemies can spawn at
+-- higher logical levels (e.g. the debug arena lives at DEBUG_LEVEL_NUMBER).
+-- Clamp to the highest defined scale so the SCALED_* helpers never multiply
+-- by nil. ENEMY_LEVEL_SCALING already does this defensively; do the same
+-- here.
+local function _scale_for(level)
+  return ENEMY_SCALE_BY_LEVEL[level] or ENEMY_SCALE_BY_LEVEL[#ENEMY_SCALE_BY_LEVEL] or 0
+end
+
 SCALED_ENEMY_HP = function(level, base_hp)
-  local scale = ENEMY_SCALE_BY_LEVEL[level]
+  local scale = _scale_for(level)
   return (base_hp + (base_hp * 0.2 * scale)) * POST_BOSS_HP_MULT(level)
 end
 
 SCALED_ENEMY_DAMAGE = function(level, base_dmg)
-  local scale = ENEMY_SCALE_BY_LEVEL[level]
+  local scale = _scale_for(level)
   return base_dmg + (base_dmg * 0.1 * scale)
 end
 
 SCALED_ENEMY_MS = function(level, base_ms)
-  local scale = ENEMY_SCALE_BY_LEVEL[level]
+  local scale = _scale_for(level)
   return base_ms + (base_ms * 0.03 * scale)
 end
 

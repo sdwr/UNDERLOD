@@ -1473,6 +1473,12 @@ function init()
     ['summoner'] = 300,
     ['assassin'] = 300,
 
+    --custom specials (T2-ish power)
+    ['splitter'] = 200,
+    ['pulse_walker'] = 250,
+    ['drone_carrier'] = 250,
+    ['linker'] = 200,
+
     --bosses
     ['stompy'] = BOSS_ROUND_POWER,
     ['dragon'] = BOSS_ROUND_POWER,
@@ -1511,6 +1517,12 @@ function init()
     ['slowcharger'] = orange[3],
     ['turret'] = red[3],
     ['tank'] = red[3],
+
+    -- Custom specials
+    ['splitter'] = green[3],
+    ['pulse_walker'] = yellow[3],
+    ['drone_carrier'] = blue[3],
+    ['linker'] = blue[3],
   }
 
   DAMAGE_TYPE_TO_COLOR = {
