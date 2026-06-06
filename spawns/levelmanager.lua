@@ -153,7 +153,10 @@ function Build_Debug_Level_Entry()
   local specials = {}
   local delay = DEBUG_SPAWN_STAGGER
   local total_power = 0
-  for _, t in ipairs(DEBUG_SPECIAL_TYPES) do
+  -- Spawn one of each special, but in a random order each run (shuffle a copy
+  -- so the source list keeps its documented ordering).
+  local spawn_order = table.shuffle(table.copy(DEBUG_SPECIAL_TYPES))
+  for _, t in ipairs(spawn_order) do
     local entry = {
       type = t,
       interval = 99999, -- effectively one-shot

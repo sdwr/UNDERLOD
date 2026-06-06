@@ -712,7 +712,7 @@ function Enemy:die()
     self._counted_for_quota = true
     sm:on_enemy_removed(self)
   end
-  _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.6, 0.8), volume = 0.5}
+  _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.6, 0.8), volume = 0.25}
   
   -- Drop gold when enemy dies
   if main.current and main.current.gold_counter then

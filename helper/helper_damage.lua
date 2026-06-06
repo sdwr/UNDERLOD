@@ -190,7 +190,7 @@ function Helper.Damage:deal_damage(unit, damage)
             Helper.Damage:chained_hit(target, damage_to_deal, spell.caster, DAMAGE_TYPE_PHYSICAL, false)
           end,
           on_bounce = function(spell, from_target, to_target)
-            wizard1:play{pitch = random:float(0.9, 1.1), volume = 0.2}
+            wizard1:play{pitch = random:float(0.9, 1.1), volume = 0.1}
             -- The CurseLine effect is a separate, temporary object.
             CurseLine{
               group = main.current.effects,
@@ -250,14 +250,17 @@ end
 -- Handles visual and audio effects when a unit is hit
 -- ===================================================================
 function Helper.Damage:apply_hit_effects(unit, damage, playHitEffects)
-  
+
   -- Calculate hit strength for visual effects
   local hitStrength = (damage * 1.0) / unit.max_hp
   hitStrength = math.min(hitStrength, 0.5)
   hitStrength = math.remap(hitStrength, 0, 0.5, 1, 1.4)
-  
+
   -- Apply hit flash effect
   if playHitEffects then
+    if unit.isEnemy then
+      player_hit2:play{pitch = random:float(1.85, 2.15), volume = 0.22}
+    end
     if unit.isBoss then
       unit.hfx:use('hit', 0.01, 200, 20, 0.1)
     else
@@ -527,7 +530,7 @@ function Helper.Damage:apply_death_effects(unit, from)
       slow(0.25, 1)
       magic_die1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     else
-      _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.5}
+      _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.25}
     end
   end
 end

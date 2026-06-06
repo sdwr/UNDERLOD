@@ -95,7 +95,7 @@ function EnemyCritter:die(x, y, r, n)
   for i = 1, n do HitParticle{group = main.current.effects, x = x, y = y, r = random:float(0, 2*math.pi), color = self.color} end
   HitCircle{group = main.current.effects, x = x, y = y}:scale_down()
   self.dead = true
-  _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.5}
+  _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.9, 1.1), volume = 0.25}
   critter2:play{pitch = random:float(0.95, 1.05), volume = 0.2}
 end
 

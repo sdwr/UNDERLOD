@@ -208,7 +208,7 @@ function ProgressBarSegment:increase_progress(amount)
     self:complete_wave()
   end
 
-  alert1:play{pitch = random:float(0.95, 1.05), volume = 0.6}
+  alert1:play{pitch = random:float(0.95, 1.05), volume = 0.2}
 
   self:create_particles()
 end
