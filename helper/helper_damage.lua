@@ -34,6 +34,14 @@ function Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects,
   if isPrimary then
     -- Only primary hits can crit and stun
     damage = Helper.Damage:roll_crit(from, damage)
+    -- Resonance set: +RESONANCE_DAMAGE_PER_ELEMENT per distinct elemental
+    -- affliction (burn/chill/shock) currently on the target, from any source.
+    if from and Has_Static_Proc(from, 'resonance') and unit.count_elemental_afflictions then
+      local elements = unit:count_elemental_afflictions()
+      if elements > 0 then
+        damage = damage * (1 + RESONANCE_DAMAGE_PER_ELEMENT * elements)
+      end
+    end
     if Helper.Damage:roll_stun(from) then
       unit:stun()
     end
@@ -330,6 +338,10 @@ function Helper.Damage:apply_elemental_effects(unit, actual_damage, damageType, 
   end
 
   if damageType == DAMAGE_TYPE_LIGHTNING then
+    -- Lightning shocks the enemy it hits (increases damage taken). This is the
+    -- inherent Storm-set effect, applied on every lightning hit.
+    unit:shock(from)
+
     local lightning_chance = 0
     if hitOptions.isPrimary then
       lightning_chance = 0.3

@@ -1558,3 +1558,173 @@ function Critter:on_trigger_enter(other, contact)
     other:hit(self.dmg, self)
   end]]--
 end
+
+-- =================================================================================
+-- FriendlyTurret (Garrison set)
+-- A stationary friendly unit that shoots the nearest enemy and can be destroyed
+-- by enemy attacks/collisions. Spawned and capped by Proc_Turret. Registered in
+-- friendly_classes (units.lua) so enemies target/hit it via the standard pipeline.
+-- is_troop is left false so it doesn't trigger troop-only hit/death time-slows;
+-- its projectiles are flagged is_troop=true explicitly so they hit enemies.
+-- =================================================================================
+FriendlyTurret = Unit:extend()
+FriendlyTurret:implement(GameObject)
+FriendlyTurret:implement(Physics)
+function FriendlyTurret:init(args)
+  self.faction = 'friendly'
+  self.is_troop = false
+  self.class = 'friendly_turret'
+
+  self:init_game_object(args)
+  if tostring(self.x) == tostring(0/0) or tostring(self.y) == tostring(0/0) then self.dead = true; return end
+
+  self.size = args.size or 12
+  self.level = args.level or 1
+  self.color = args.color or brown[0]
+
+  -- Combat stats set directly (turrets don't use items/perks/calculate_stats).
+  self.max_hp = args.hp or TURRET_HP
+  self.hp = self.max_hp
+  self.baseline_hp = self.max_hp
+  self.dmg = args.damage or TURRET_DAMAGE
+  self.attack_range = args.range or TURRET_RANGE
+  self.attack_cooldown = args.attack_cooldown or TURRET_ATTACK_COOLDOWN
+  self.projectile_speed = args.projectile_speed or TURRET_PROJECTILE_SPEED
+  self.dmg_type = DAMAGE_TYPE_PHYSICAL
+
+  -- Minimal unit state needed by the shared damage pipeline / draw.
+  self.state = unit_states['idle']
+  self.buffs = {}
+  self.toggles = {}
+  self.shielded = 0
+  self.crit_chance = 0
+  self.crit_mult = BASE_CRIT_MULT
+  self.def = 0
+  self.stun_cooldown = 0
+  self.hfx:add('hit', 1)
+
+  -- The turret lives in main.current.friendlies, so the engine's per-frame
+  -- unit loops (state functions, hitbox points, target flags) run on it. This
+  -- sets up state_change/always_run functions, points, death_function, etc.
+  -- The default 'idle' always-run is a no-op, so the static turret stays put.
+  Helper.Unit:add_custom_variables_to_unit(self)
+
+  -- Empty proc/callback lists so onGotHit/onDeath callbacks don't index nil.
+  _set_unit_item_config(self)
+
+  -- Static body: holds position but still collides with enemies.
+  self:set_as_rectangle(self.size, self.size, 'static', 'troop')
+
+  self.hp_bar = HPBar{group = main.current.effects, parent = self}
+
+  self.attack_sensor = Circle(self.x, self.y, self.attack_range)
+  self.attack_timer = math.random() * self.attack_cooldown
+
+  self.total_damage_dealt = 0
+  self.kills = 0
+  self.time_alive = 0
+end
+
+function FriendlyTurret:update(dt)
+  -- Bail before super.update: a replaced turret has self.dead set and its
+  -- hp_bar nil'd, and Unit:update calls hide_hp() which would index it.
+  if self.dead then return end
+  FriendlyTurret.super.update(self, dt)
+  self.attack_sensor:move_to(self.x, self.y)
+
+  -- Find the nearest enemy once per frame; use it for both aiming and firing.
+  local target = self:get_nearest_enemy()
+  if target then
+    self.aim_angle = math.atan2(target.y - self.y, target.x - self.x)
+  end
+
+  self.attack_timer = self.attack_timer - dt
+  if self.attack_timer <= 0 and target then
+    self:shoot(target)
+    self.attack_timer = self.attack_cooldown
+  end
+end
+
+function FriendlyTurret:get_nearest_enemy()
+  local candidates = main.current.main:get_objects_in_shape(self.attack_sensor, main.current.enemies)
+  local best, best_d
+  for _, e in ipairs(candidates) do
+    if e and not e.dead then
+      local d = self:distance_to_object(e)
+      if not best_d or d < best_d then best, best_d = e, d end
+    end
+  end
+  return best
+end
+
+function FriendlyTurret:shoot(target)
+  ArrowProjectile{
+    group = main.current.main,
+    unit = self,
+    target = target,
+    damage = self.dmg,
+    is_troop = true,
+    speed = self.projectile_speed,
+    color = self.color,
+  }
+end
+
+function FriendlyTurret:hit(damage, from, damageType, playHitEffects, cannotProcOnHit)
+  Helper.Damage:indirect_hit(self, damage, from, damageType, playHitEffects)
+end
+
+-- Turrets are bolted down: ignore all knockback so the static body is never
+-- handed a velocity impulse.
+function FriendlyTurret:push(f, r, push_invulnerable, duration)
+end
+
+-- Take contact damage when an enemy rams the turret (the friendly's own
+-- collision handler is what applies enemy contact damage in this engine).
+function FriendlyTurret:on_collision_enter(other, contact)
+  if table.any(main.current.enemies, function(v) return other:is(v) end) then
+    local dmg = REGULAR_PUSH_DAMAGE
+    if other:is(Boss) then
+      dmg = BOSS_PUSH_DAMAGE
+    elseif other.class == 'special_enemy' then
+      dmg = SPECIAL_PUSH_DAMAGE
+    end
+    -- Delay the hit to avoid mutating the box2d world during a contact callback.
+    self.t:after(0, function()
+      if self and not self.dead then
+        self:hit(dmg, other, nil, true, false)
+      end
+    end)
+  end
+end
+
+function FriendlyTurret:draw()
+  local hit_f = self.hfx.hit and self.hfx.hit.f
+  local sx = (self.hfx.hit and self.hfx.hit.x) or 1
+  local body = hit_f and fg[0] or self.color
+  local a = self.aim_angle or -math.pi / 2
+  local s = self.size
+
+  graphics.push(self.x, self.y, 0, sx, sx)
+    -- Barrel: rotates around the turret centre to point at the current target.
+    graphics.push(self.x, self.y, a)
+      graphics.rectangle(self.x + s * 0.46, self.y, s * 0.6, s * 0.3, 1, 1, body)
+    graphics.pop()
+
+    -- Round base with a dark rim.
+    graphics.circle(self.x, self.y, s * 0.46, body)
+    graphics.circle(self.x, self.y, s * 0.46, fg[-4], 1)
+
+    -- Glowing core.
+    graphics.circle(self.x, self.y, s * 0.2, hit_f and fg[0] or yellow[5])
+  graphics.pop()
+end
+
+function FriendlyTurret:die()
+  if self.dead then return end
+  self.dead = true
+  if self.hp_bar then self.hp_bar.dead = true; self.hp_bar = nil end
+  for i = 1, random:int(3, 4) do
+    HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.color}
+  end
+  HitCircle{group = main.current.effects, x = self.x, y = self.y, rs = 12}:scale_down(0.3):change_color(0.5, self.color)
+end

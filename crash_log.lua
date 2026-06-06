@@ -193,6 +193,22 @@ end
 -- Compact, safe summary of the player's units. Each unit contributes:
 --   character, level, items[1..6] = name, item_colors[1..6] = csv of colors.
 -- Keeping arrays dense so the JSON encoder treats them as arrays.
+-- The item's identity is its set (e.g. "Frost"), not its slot (e.g. "amulet").
+-- Report the set's display name, joining if an item somehow has several, and
+-- fall back to the slot name only when an item has no set. Guarded so a missing
+-- ITEM_SETS can never break telemetry.
+local function item_label(it)
+  if type(it.sets) == "table" and #it.sets > 0 then
+    local names = {}
+    for _, set_key in ipairs(it.sets) do
+      local set_def = ITEM_SETS and ITEM_SETS[set_key]
+      names[#names + 1] = (set_def and set_def.name) or set_key
+    end
+    if #names > 0 then return table.concat(names, "+") end
+  end
+  return it.name or it.key or "?"
+end
+
 function CrashLog.snapshot_units(units)
   local out = {}
   if type(units) ~= "table" then return out end
@@ -203,7 +219,7 @@ function CrashLog.snapshot_units(units)
         for s = 1, 6 do
           local it = u.items[s]
           if type(it) == "table" then
-            items[s] = it.name or it.key or "?"
+            items[s] = item_label(it)
             if type(it.colors) == "table" then
               item_colors[s] = table.concat(it.colors, ",")
             else
@@ -378,12 +394,18 @@ function CrashLog.init()
     ensure_install_id()
   end
 
-  local default_handler = love.errorhandler
-  function love.errorhandler(msg)
+  -- In some LÖVE 11.x builds only love.errhand is defined here (the renamed
+  -- love.errorhandler is still nil at this point). Fall back to it, otherwise
+  -- our wrapper returns nil and LÖVE's boot loop quits silently with no error
+  -- screen. Wrap both names so whichever boot prefers chains to the original.
+  local default_handler = love.errorhandler or love.errhand
+  local function handler(msg)
     local tb = debug.traceback(tostring(msg), 2)
     pcall(CrashLog.handle_error, msg, tb)
     if default_handler then return default_handler(msg) end
   end
+  love.errorhandler = handler
+  love.errhand = handler
 
   pcall(CrashLog.flush_queue)
 end

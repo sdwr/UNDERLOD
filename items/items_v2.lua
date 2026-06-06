@@ -39,12 +39,19 @@ ITEM_SET = {
   REPEAT = 'repeat',
   STUN = 'stun',
   MULTI_SHOT = 'multi_shot',
+  HEFT = 'heft',
+  TREASURY = 'treasury',
+  RESONANCE = 'resonance',
+  ORBITAL = 'orbital',
+  MEND = 'mend',
+  TURRET = 'turret',
 }
 
 -- Stat definitions
 ITEM_STATS = {
   -- Core stats
   ['dmg'] = { name = 'dmg', min = 1, max = 5, increment = 0.1 },
+  ['flat_dmg'] = { name = 'flat_dmg', min = 1, max = 5, increment = 1 },
   ['aspd'] = { name = 'aspd', min = 1, max = 5, increment = 0.05 },
   ['hp'] = { name = 'hp', min = 1, max = 5, increment = 0.2 },
 
@@ -170,13 +177,13 @@ ITEM_SETS = {
     rarity = ITEM_RARITY.COMMON,
     bonuses = {
       [1] = { stats = {['cold_damage'] = 5} },
-      [2] = { stats = {['cold_damage'] = 5}, procs = {'frostfield'} },
-      [3] = { stats = {['cold_damage'] = 10}, procs = {'shatterlance'} }
+      [2] = { stats = {['cold_damage'] = 7} },
+      [3] = { stats = {['cold_damage'] = 10} }
     },
     descriptions = {
-      [1] = 'Adds cold damage to attacks',
-      [2] = 'Freezing an enemy creates a frostfield',
-      [3] = 'Attacking a frozen target shatters them'
+      [1] = '+5 cold damage per hit; cold attacks slow enemies',
+      [2] = '+7 cold damage per hit',
+      [3] = '+10 cold damage per hit'
     }
   },
   [ITEM_SET.FROST_NOVA] = {
@@ -195,14 +202,14 @@ ITEM_SETS = {
     color = 'red',
     rarity = ITEM_RARITY.COMMON,
     bonuses = {
-        [1] = { stats = {['fire_damage'] = 5}, procs = {'burnexplode'} },
-        [2] = { stats = {['fire_damage'] = 5} },
-        [3] = { stats = {['fire_damage'] = 10}, procs = {'volcano'} }
+        [1] = { stats = {['fire_damage'] = 5} },
+        [2] = { stats = {['fire_damage'] = 7} },
+        [3] = { stats = {['fire_damage'] = 10} }
     },
     descriptions = {
-      [1] = 'Adds fire damage to attacks - burning enemies explode',
-      [2] = 'Adds more fire damage to attacks',
-      [3] = 'Burning enemies create a volcano on death'
+      [1] = '+5 fire damage per hit; fire attacks burn enemies over time',
+      [2] = '+7 fire damage per hit',
+      [3] = '+10 fire damage per hit'
     }
   },
   [ITEM_SET.METEOR] = {
@@ -226,13 +233,13 @@ ITEM_SETS = {
     rarity = ITEM_RARITY.COMMON,
     bonuses = {
       [1] = { stats = {['lightning_damage'] = 5} },
-      [2] = { stats = {['lightning_damage'] = 5}, procs = {'shock'} },
+      [2] = { stats = {['lightning_damage'] = 7} },
       [3] = { stats = {['lightning_damage'] = 10} }
     },
     descriptions = {
-      [1] = 'Adds lightning damage to attacks',
-      [2] = 'Lightning shocks enemies, increasing damage taken',
-      [3] = 'Adds more lightning damage to attacks'
+      [1] = '+5 lightning damage per hit; lightning makes enemies take more damage',
+      [2] = '+7 lightning damage per hit',
+      [3] = '+10 lightning damage per hit'
     }
   },
   [ITEM_SET.LIGHTNING_BALL] = {
@@ -360,6 +367,102 @@ ITEM_SETS = {
       [1] = 'Shoot extra attacks at an angle (for 25% damage)',
       [2] = 'Your multi-shot attacks deal 50% damage',
       [3] = 'Shoot an extra 2 attacks'
+    }
+  },
+  -- Flat physical damage. Unlike Power (a % multiplier), this raises the
+  -- per-hit floor, so it shines on fast/multi-hit units early and naturally
+  -- tapers off as % scaling takes over. Cumulative totals: +3 / +8 / +16.
+  [ITEM_SET.HEFT] = {
+    name = 'Heft',
+    color = 'red',
+    rarity = ITEM_RARITY.COMMON,
+    bonuses = {
+      [1] = { stats = {['flat_dmg'] = 3} },
+      [2] = { stats = {['flat_dmg'] = 5} },
+      [3] = { stats = {['flat_dmg'] = 8} },
+    },
+    descriptions = {
+      [1] = '+3 flat damage to every hit',
+      [2] = '+8 flat damage to every hit',
+      [3] = '+16 flat damage to every hit',
+    }
+  },
+  -- Economy: doubles your team's interest rate (1 gold per 5 saved instead
+  -- of 1 per 10) and raises the interest cap. 1/1 set - extra copies do
+  -- nothing, so one piece anywhere on the team is enough.
+  [ITEM_SET.TREASURY] = {
+    name = 'Treasury',
+    color = 'purple',
+    rarity = ITEM_RARITY.RARE,
+    bonuses = {
+      [1] = { procs = {'treasury'} },
+    },
+    descriptions = {
+      [1] = 'Earn 1 interest gold per 5 saved (instead of 10), and a higher cap',
+    }
+  },
+  -- Elemental synergy: bonus damage per distinct elemental affliction
+  -- (burn/chill/shock) on the target, from any ally. Rewards rainbow
+  -- elemental teams. 1/1 set.
+  [ITEM_SET.RESONANCE] = {
+    name = 'Resonance',
+    color = 'purple',
+    rarity = ITEM_RARITY.RARE,
+    bonuses = {
+      [1] = { procs = {'resonance'} },
+    },
+    descriptions = {
+      [1] = '+15% damage per element afflicting the target (burn/chill/shock)',
+    }
+  },
+  -- Orbitals: damaging orbs that rotate around the unit. 3-tier: more orbs,
+  -- then bigger/harder-hitting orbs.
+  [ITEM_SET.ORBITAL] = {
+    name = 'Orbit',
+    color = 'blue',
+    rarity = ITEM_RARITY.RARE,
+    bonuses = {
+      [1] = { procs = {'orbital'} },
+      [2] = { procs = {'orbitalExtra'} },
+      [3] = { procs = {'orbitalPower'} },
+    },
+    descriptions = {
+      [1] = 'A damaging orb rotates around you',
+      [2] = 'Gain a second orb',
+      [3] = 'Orbs are larger and hit harder',
+    }
+  },
+  -- Support: periodically chain-heals injured allies. 2/2 set, tier 2 makes
+  -- the heal stronger and bounce further.
+  [ITEM_SET.MEND] = {
+    name = 'Mend',
+    color = 'green',
+    rarity = ITEM_RARITY.RARE,
+    bonuses = {
+      [1] = { procs = {'chainheal'} },
+      [2] = { procs = {'chainhealBoost'} },
+    },
+    descriptions = {
+      [1] = 'Periodically send a healing chain through injured allies',
+      [2] = 'Healing chains are stronger and reach more allies',
+    }
+  },
+  -- Summon: periodically drops a stationary turret that shoots enemies and
+  -- can be destroyed. 3-tier raises the active cap to 1/2/3; a new drop past
+  -- the cap replaces the oldest turret.
+  [ITEM_SET.TURRET] = {
+    name = 'Garrison',
+    color = 'brown',
+    rarity = ITEM_RARITY.RARE,
+    bonuses = {
+      [1] = { procs = {'turret'} },
+      [2] = { procs = {'turret2'} },
+      [3] = { procs = {'turret3'} },
+    },
+    descriptions = {
+      [1] = 'Periodically deploy a turret (max 1; replaces the oldest)',
+      [2] = 'Deploy up to 2 turrets',
+      [3] = 'Deploy up to 3 turrets',
     }
   },
   -- [ITEM_SET.STUN] = {

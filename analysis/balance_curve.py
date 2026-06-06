@@ -55,6 +55,7 @@ def GOLD_GAINED_BY_LEVEL(level: int) -> int:
     if level <= 20: return 5
     return 6
 BOSS_ROUNDS = [6, 11, 16, 21, 25]
+# combat_stats.lua GOLD_FOR_BOSS_ROUND is indexed by boss order: 1st->10, etc.
 GOLD_FOR_BOSS_ROUND = {6: 10, 11: 15, 16: 20, 21: 25}  # round 25 unspecified
 
 # combat_stats.lua  -- enemy base stats
@@ -78,18 +79,19 @@ BOSS_SCALE_BY_LEVEL = [
 ]
 
 # game_constants.lua: alive caps + clump cadence.
-MAX_ALIVE_BASICS = 60
+MAX_ALIVE_BASICS = 180
 MAX_ALIVE_SPECIALS = 20
 BASIC_CLUMP_INTERVAL = 6.0
 WAVE_KILL_QUOTA_MULTIPLIER = 1.5
 
 
-def post_boss_hp_mult(level: int) -> int:
+def post_boss_hp_mult(level: int) -> float:
+    # combat_stats.lua POST_BOSS_HP_MULT (softened from the old 2x/4x steps).
     if level >= 12:
-        return 4
+        return 1.7
     if level >= 7:
-        return 2
-    return 1
+        return 1.4
+    return 1.0
 
 
 def scaled_enemy_hp(level: int, base_hp: int) -> float:
@@ -102,7 +104,12 @@ def scaled_boss_hp(level: int, base_hp: int) -> float:
 
 
 def swarmers_per_level(level: int) -> int:
-    return min(30, 8 + level * 2)
+    # combat_stats.lua SWARMERS_PER_LEVEL: T2 (L7-10) clump count is scaled
+    # down by 0.7 so it lands closer to the intended 1.4x of the L1 baseline.
+    count = min(30, 8 + level * 2)
+    if 7 <= level <= 10:
+        count = int(count * 0.7)
+    return count
 
 
 def num_specials_per_level(level: int) -> int:
@@ -180,15 +187,15 @@ def onscreen_hp_estimate(level: int, team_dps_value: float) -> tuple[float, floa
 # Shop / purchase model
 # ===========================================================================
 
-# items_v2.lua
-ITEM_COST_BY_RARITY = {"common": 2, "rare": 4, "epic": 6, "legendary": 10}
+# items_v2.lua ITEM_RARITIES -- only common/rare exist now (epic/legendary removed).
+ITEM_COST_BY_RARITY = {"common": 2, "rare": 4}
 
-# combat_stats.lua  TIER_TO_ITEM_RARITY_WEIGHTS (C, R, E, L)
+# combat_stats.lua  TIER_TO_ITEM_RARITY_WEIGHTS (common, rare)
 RARITY_WEIGHTS_BY_TIER = {
-    1.0: (0.70, 0.30, 0.00, 0.00),
-    1.5: (0.35, 0.50, 0.15, 0.00),
-    2.0: (0.20, 0.40, 0.30, 0.10),
-    2.5: (0.00, 0.25, 0.50, 0.25),
+    1.0: (0.85, 0.15),
+    1.5: (0.65, 0.35),
+    2.0: (0.45, 0.55),
+    2.5: (0.25, 0.75),
 }
 
 
@@ -203,7 +210,7 @@ def level_to_tier(level: int) -> float:
 
 
 SHOP_SLOTS = 3
-RARITIES_ORDERED = ("common", "rare", "epic", "legendary")
+RARITIES_ORDERED = ("common", "rare")
 
 
 def shop_rarity_weights(level: int) -> tuple[float, float, float, float]:
@@ -222,85 +229,81 @@ def expected_shop_cost(level: int) -> float:
 # whose required-count <= owned count and adds them all).
 # ===========================================================================
 
-# Per-stat increments from ITEM_STATS in items_v2.lua.
+# Per-stat increments from ITEM_STATS in items_v2.lua. NOTE: elemental stats
+# use increment=1 and are applied as FLAT per-hit damage (a separate non-crit
+# hit), NOT as a multiplier -- see compute_team_dps.
 STAT_INCREMENT = {
     "dmg": 0.10,
+    "flat_dmg": 1.0,
     "aspd": 0.05,
     "crit_chance": 0.10,
     "repeat_attack_chance": 0.20,
-    "fire_damage": 0.10,
-    "lightning_damage": 0.10,
-    "cold_damage": 0.10,
+    "fire_damage": 1.0,
+    "lightning_damage": 1.0,
+    "cold_damage": 1.0,
     "range": 0.05,
 }
 
-# Each set: per-piece-count tier gives (stats_dict_added, list_of_procs_added).
+# Each set: {"rarity", "tiers": [(stats_dict_added, list_of_procs_added), ...]}.
 # A unit owning N pieces gets the SUM of every tier where required <= N.
+# Raw stat numbers mirror ITEM_SETS in items_v2.lua exactly. Sets roll only
+# from the pool matching the item's rarity (common item -> common set, etc.).
 ACTIVE_SETS = {
-    "cold": [
-        ({"cold_damage": 1}, []),
-        ({"cold_damage": 1}, ["frostfield"]),
-        ({"cold_damage": 2}, ["shatterlance"]),
-    ],
-    "frost_nova": [({}, ["frostnova"])],
-    "fire": [
-        ({"fire_damage": 1}, ["burnexplode"]),
-        ({"fire_damage": 1}, []),
-        ({"fire_damage": 2}, ["volcano"]),
-    ],
-    "meteor": [
-        ({}, ["meteor"]),
-        ({}, ["meteorSizeBoost"]),
-        ({}, ["meteorDamageBoost"]),
-    ],
-    "shock": [
-        ({"lightning_damage": 1}, []),
-        ({"lightning_damage": 1}, ["shock"]),
-        ({"lightning_damage": 2}, []),
-    ],
-    "lightning_ball": [({}, ["lightningball"])],
-    "curse": [({}, ["curse"])],
-    "bloodlust": [
-        ({}, ["bloodlust"]),
-        ({}, ["bloodlustSpeedBoost"]),
-    ],
-    "splash": [
-        ({}, ["splash"]),
-        ({}, ["splashSizeBoost"]),
-    ],
-    "damage": [
-        ({"dmg": 1}, []),
-        ({"dmg": 2}, []),
-        ({"dmg": 4}, []),
-    ],
-    "aspd": [
-        ({"aspd": 1}, []),
-        ({"aspd": 2}, []),
-        ({"aspd": 4}, []),
-    ],
-    "range": [
-        ({"range": 1}, []),
-        ({"range": 2}, []),
-        ({"range": 4}, []),
-    ],
-    "crit": [
-        ({"crit_chance": 1}, []),
-        ({"crit_chance": 2}, []),
-        ({"crit_chance": 4}, []),
-    ],
-    "shield": [({}, ["shield", "radiance"])],
-    "repeat": [
+    # --- common pool (items_v2.lua rarity = COMMON) ---
+    "damage": {"rarity": "common", "tiers": [
+        ({"dmg": 1}, []), ({"dmg": 3}, []), ({"dmg": 5}, [])]},
+    "aspd": {"rarity": "common", "tiers": [
+        ({"aspd": 1}, []), ({"aspd": 3}, []), ({"aspd": 5}, [])]},
+    "range": {"rarity": "common", "tiers": [
+        ({"range": 1}, []), ({"range": 3}, []), ({"range": 5}, [])]},
+    "crit": {"rarity": "common", "tiers": [
+        ({"crit_chance": 1}, []), ({"crit_chance": 3}, []), ({"crit_chance": 5}, [])]},
+    # Elemental sets are now pure flat-damage with inherent status effects
+    # (cold slows, fire burns, lightning shocks = +dmg taken). No procs.
+    "cold": {"rarity": "common", "tiers": [
+        ({"cold_damage": 5}, []),
+        ({"cold_damage": 7}, []),
+        ({"cold_damage": 10}, [])]},
+    "fire": {"rarity": "common", "tiers": [
+        ({"fire_damage": 5}, []),
+        ({"fire_damage": 7}, []),
+        ({"fire_damage": 10}, [])]},
+    "shock": {"rarity": "common", "tiers": [
+        ({"lightning_damage": 5}, []),
+        ({"lightning_damage": 7}, []),
+        ({"lightning_damage": 10}, [])]},
+    "heft": {"rarity": "common", "tiers": [
+        ({"flat_dmg": 3}, []), ({"flat_dmg": 5}, []), ({"flat_dmg": 8}, [])]},
+    # --- rare pool (items_v2.lua rarity = RARE) ---
+    "frost_nova": {"rarity": "rare", "tiers": [({}, ["frostnova"])]},
+    "meteor": {"rarity": "rare", "tiers": [
+        ({}, ["meteor"]), ({}, ["meteorSizeBoost"]), ({}, ["meteorDamageBoost"])]},
+    "lightning_ball": {"rarity": "rare", "tiers": [({}, ["lightningball"])]},
+    "curse": {"rarity": "rare", "tiers": [({}, ["curse"])]},
+    "bloodlust": {"rarity": "rare", "tiers": [
+        ({}, ["bloodlust"]), ({}, ["bloodlustSpeedBoost"])]},
+    "splash": {"rarity": "rare", "tiers": [
+        ({}, ["splash"]), ({}, ["splashSizeBoost"])]},
+    "shield": {"rarity": "rare", "tiers": [({}, ["shield", "radiance"])]},
+    "repeat": {"rarity": "rare", "tiers": [
         ({"repeat_attack_chance": 1}, []),
         ({"repeat_attack_chance": 2}, []),
-        ({"repeat_attack_chance": 4}, []),
-    ],
-    "multi_shot": [
-        ({}, ["multishot"]),
-        ({}, ["multishotFullDamage"]),
-        ({}, ["extraMultishot"]),
-    ],
+        ({"repeat_attack_chance": 4}, [])]},
+    "multi_shot": {"rarity": "rare", "tiers": [
+        ({}, ["multishot"]), ({}, ["multishotFullDamage"]), ({}, ["extraMultishot"])]},
+    "treasury": {"rarity": "rare", "tiers": [({}, ["treasury"])]},
+    "resonance": {"rarity": "rare", "tiers": [({}, ["resonance"])]},
+    "orbital": {"rarity": "rare", "tiers": [
+        ({}, ["orbital"]), ({}, ["orbitalExtra"]), ({}, ["orbitalPower"])]},
+    "mend": {"rarity": "rare", "tiers": [
+        ({}, ["chainheal"]), ({}, ["chainhealBoost"])]},
+    "turret": {"rarity": "rare", "tiers": [
+        ({}, ["turret"]), ({}, ["turret2"]), ({}, ["turret3"])]},
 }
-ACTIVE_SET_NAMES = list(ACTIVE_SETS.keys())
+SET_NAMES_BY_RARITY = {
+    rarity: [name for name, d in ACTIVE_SETS.items() if d["rarity"] == rarity]
+    for rarity in ("common", "rare")
+}
 
 # Estimated multiplicative DPS contribution per proc. These are NOT in the
 # Lua source - they're scoping assumptions, clearly factored so you can tune.
@@ -320,13 +323,28 @@ PROC_DPS_MULTIPLIER = {
     "meteorDamageBoost":   0.15,
     "bloodlust":           0.10,   # snowballing aspd on kill
     "bloodlustSpeedBoost": 0.02,
-    "splash":              0.20,   # ranged AoE on every hit
-    "splashSizeBoost":     0.05,
-    "multishot":           0.25,   # extra shots @ 25% damage = +25%
-    "multishotFullDamage": 0.25,   # multishot now full damage (extra +25%)
-    "extraMultishot":      0.50,   # two more shots (= +50% if full damage)
+    "splash":              0.30,   # AoE @ 40% of hit on every primary hit
+    "splashSizeBoost":     0.10,
+    # Multishot fires TWO extra projectiles (archer_troop.lua), at fixed
+    # angle offsets -- so these are swarm-DPS estimates (near 0 vs a lone
+    # boss). base = 2 shots @25% = +50%; full-dmg = 2 @50% (extra +50%);
+    # extraMultishot = +2 more shots.
+    "multishot":           0.50,
+    "multishotFullDamage": 0.50,
+    "extraMultishot":      1.00,
     "shield":              0.0,    # defensive
     "radiance":            0.05,   # passive aura
+    # new sets
+    "treasury":            0.0,    # economy, no direct DPS
+    "resonance":           0.20,   # +15%/element vs afflicted targets (team-dependent)
+    "orbital":             0.10,   # one rotating damage orb
+    "orbitalExtra":        0.08,   # second orb
+    "orbitalPower":        0.10,   # bigger/harder orbs
+    "chainheal":           0.0,    # sustain, no DPS
+    "chainhealBoost":      0.0,
+    "turret":              0.15,   # a stationary auto-shooter
+    "turret2":             0.12,
+    "turret3":             0.12,
 }
 
 
@@ -344,9 +362,15 @@ def crit_to_dps_mult(crit_chance_frac: float) -> float:
 
 TROOP_DAMAGE = 11
 NUM_TROOPS = 3
-# Archer default class: dmg mult 1.5, attack cooldown 'fast' = 1.1s.
+# Archer default class (the modelled party): dmg mult 1.5
+# (unit_stat_multipliers), attack cooldown 0.45s + cast 0.05s -> 0.50s cycle.
+# Troops do NOT scale dmg/hp with their own level (dmgMod/hpMod in
+# objects.lua:calculate_stats are dead code), so base-per-troop is constant
+# and all growth comes from items.
 BASE_DMG_PER_TROOP = TROOP_DAMAGE * 1.5
-BASE_ATTACK_COOLDOWN = 1.1
+BASE_ATTACK_COOLDOWN = 0.45
+BASE_CAST_TIME = 0.05
+BASE_ATTACK_CYCLE = BASE_ATTACK_COOLDOWN + BASE_CAST_TIME
 
 
 def compute_team_dps(item_rarity_history: list[str]) -> tuple[float, dict]:
@@ -356,16 +380,17 @@ def compute_team_dps(item_rarity_history: list[str]) -> tuple[float, dict]:
     """
     pieces_by_set: dict[str, int] = defaultdict(int)
     for rarity in item_rarity_history:
-        set_count = 2 if rarity == "epic" else 1
-        # Sample without replacement so an epic doesn't roll the same set twice.
-        sets_for_item = random.sample(ACTIVE_SET_NAMES, k=set_count)
-        for s in sets_for_item:
-            pieces_by_set[s] += 1
+        # Each item rolls exactly one set, drawn ONLY from the pool matching
+        # its own rarity (items_v2.lua get_random_set(rarity)).
+        pool = SET_NAMES_BY_RARITY.get(rarity, [])
+        if not pool:
+            continue
+        pieces_by_set[random.choice(pool)] += 1
 
     stat_totals: dict[str, float] = defaultdict(float)
     procs_active: set[str] = set()
     for set_name, count in pieces_by_set.items():
-        tiers = ACTIVE_SETS[set_name]
+        tiers = ACTIVE_SETS[set_name]["tiers"]
         # Cumulative: apply every tier whose required-count (1,2,3) <= count.
         for tier_index, (stats, procs) in enumerate(tiers, start=1):
             if count >= tier_index:
@@ -379,31 +404,37 @@ def compute_team_dps(item_rarity_history: list[str]) -> tuple[float, dict]:
     aspd_m = stat_totals.get("aspd", 0.0)
     crit_frac = stat_totals.get("crit_chance", 0.0)
     repeat_frac = min(1.0, stat_totals.get("repeat_attack_chance", 0.0))
-    # Per helper/helper_damage.lua:367, each elemental damage stat is a
-    # MULTIPLIER on the physical hit: every attack spawns an extra hit of
-    # (actual_damage * fire_damage_stat) as fire, same for cold/lightning.
-    # So total per-attack damage = physical * (1 + fire + cold + lightning).
-    fire_mult = stat_totals.get("fire_damage", 0.0)
-    cold_mult = stat_totals.get("cold_damage", 0.0)
-    lightning_mult = stat_totals.get("lightning_damage", 0.0)
-    elemental_mult = fire_mult + cold_mult + lightning_mult
+    # helper_damage.lua: each elemental damage stat fires a SEPARATE flat hit
+    # per attack (process_physical_to_elemental). It is NOT a multiplier and
+    # does NOT crit (roll_crit only runs on isPrimary). So it adds flat damage
+    # per attack that does not scale with dmg% -- strong early, falls off late.
+    elemental_flat = (stat_totals.get("fire_damage", 0.0)
+                      + stat_totals.get("cold_damage", 0.0)
+                      + stat_totals.get("lightning_damage", 0.0))
 
-    physical_per_hit = BASE_DMG_PER_TROOP * (1 + dmg_m)
-    eff_damage = physical_per_hit * (1 + elemental_mult)
-    eff_cd = BASE_ATTACK_COOLDOWN / max(0.05, 1 + aspd_m)
+    # flat_dmg (Heft) adds to buff_dmg_a, i.e. inside (base + a) * (1 + dmg%),
+    # so it benefits from dmg% and crit -- unlike the elemental flat hits.
+    flat_dmg = stat_totals.get("flat_dmg", 0.0)
+    physical_per_hit = (BASE_DMG_PER_TROOP + flat_dmg) * (1 + dmg_m)
+    crit_mult = crit_to_dps_mult(crit_frac)
+    # Physical crits; flat elemental does not.
+    per_attack_damage = physical_per_hit * crit_mult + elemental_flat
+    eff_cycle = BASE_ATTACK_CYCLE / max(0.05, 1 + aspd_m)
+
     proc_dps_mult = 1.0
     for p in procs_active:
         proc_dps_mult *= 1 + PROC_DPS_MULTIPLIER.get(p, 0.0)
-    crit_mult = crit_to_dps_mult(crit_frac)
     repeat_mult = 1 + repeat_frac
 
-    per_troop_dps = (eff_damage / eff_cd) * crit_mult * repeat_mult * proc_dps_mult
+    per_troop_dps = (per_attack_damage / eff_cycle) * repeat_mult * proc_dps_mult
     team_dps_value = NUM_TROOPS * per_troop_dps
 
+    # Report elemental as its effective share of base-hit DPS for the table.
+    elem_share = elemental_flat / max(1e-6, BASE_DMG_PER_TROOP)
     debug = {
         "dmg_m": dmg_m, "aspd_m": aspd_m,
         "crit": crit_frac, "repeat": repeat_frac,
-        "elem": elemental_mult,
+        "elem": elem_share,
         "procs": len(procs_active),
     }
     return team_dps_value, debug
@@ -412,9 +443,7 @@ def compute_team_dps(item_rarity_history: list[str]) -> tuple[float, dict]:
 def expected_team_dps(item_rarity_history: list[str], trials: int) -> tuple[float, dict]:
     if not item_rarity_history:
         # No items: only base.
-        eff_damage = BASE_DMG_PER_TROOP
-        eff_cd = BASE_ATTACK_COOLDOWN
-        base_dps = NUM_TROOPS * eff_damage / eff_cd
+        base_dps = NUM_TROOPS * BASE_DMG_PER_TROOP / BASE_ATTACK_CYCLE
         return base_dps, {"dmg_m": 0, "aspd_m": 0, "crit": 0,
                           "repeat": 0, "elem": 0, "procs": 0}
 

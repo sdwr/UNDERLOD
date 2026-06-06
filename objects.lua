@@ -347,10 +347,13 @@ function Unit:config_physics_object()
     self:set_as_steerable(self.max_v, MAX_ENEMY_FORCE, 4*math.pi, 4)
 
   elseif self.class == 'troop' then
+    -- Collider can be smaller than the drawn body (self.collider_size); fall
+    -- back to self.size for units that don't set it.
+    local cs = self.collider_size or self.size
     if self.ghost == true then
-      self:set_as_rectangle(self.size, self.size,'dynamic', 'ghost')
+      self:set_as_rectangle(cs, cs,'dynamic', 'ghost')
     else
-      self:set_as_rectangle(self.size, self.size,'dynamic', 'troop')
+      self:set_as_rectangle(cs, cs,'dynamic', 'troop')
     end
 
     self:set_damping(get_damping_by_unit_class(self.class))
@@ -1249,11 +1252,9 @@ function Unit:burn_explode(from)
 end
 
 --SHOCK SYSTEM
+-- Lightning damage shocks enemies (increases damage taken) directly now -
+-- this is the inherent effect of the Storm set, no proc required.
 function Unit:shock(from)
-  if not Does_Static_Proc_Exist('shock') then
-    return
-  end
-
   local shockBuff = {name = 'shock', color = yellow[0], duration = SHOCK_DURATION, maxDuration = SHOCK_DURATION, stats = {buff_def_m = SHOCK_DEF_REDUCTION}}
 
   self:remove_buff('shock')
@@ -2125,6 +2126,8 @@ function Unit:add_stats(stats_list)
   for stat_name, amount in pairs(stats_list) do
     if stat_name == buff_types['dmg'] then
       self.buff_dmg_m = self.buff_dmg_m + amount
+    elseif stat_name == buff_types['flat_dmg'] then
+      self.buff_dmg_a = self.buff_dmg_a + amount
     elseif stat_name == buff_types['hp'] then
       self.buff_hp_m = self.buff_hp_m + amount
     elseif stat_name == buff_types['mvspd'] then

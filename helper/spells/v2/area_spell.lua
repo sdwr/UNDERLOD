@@ -281,3 +281,75 @@ function Knockback_Area_Spell:apply_damage()
         target:push(self.knockback_force, angle, false, self.knockback_duration)
     end
 end
+
+-- =================================================================================
+-- OrbitalOrb (Orbit set)
+-- A small damaging orb that rotates around its owning unit. Lightweight: no
+-- physics body and no Area_Spell machinery, so it tracks the unit's centre
+-- exactly each frame (no momentum/lag) and does its own contact damage with a
+-- per-enemy cooldown. Lives until the unit dies / round ends.
+-- =================================================================================
+OrbitalOrb = Object:extend()
+OrbitalOrb.__class_name = 'OrbitalOrb'
+OrbitalOrb:implement(GameObject)
+function OrbitalOrb:init(args)
+    self:init_game_object(args)
+
+    self.unit = args.unit
+    self.orbit_radius = args.orbit_radius or ORBITAL_RADIUS
+    self.orbit_speed = args.orbit_speed or ORBITAL_SPEED
+    self.orbit_angle = args.orbit_angle or 0
+    self.hit_radius = args.hit_radius or ORBITAL_ORB_RADIUS
+    self.damage = args.damage or ORBITAL_DAMAGE
+    self.tick_rate = args.tick_rate or ORBITAL_TICK_RATE
+    self.color = args.color or blue[0]
+
+    self.shape = Circle(self.x, self.y, self.hit_radius)
+    self.hit_cooldowns = {}  -- target.id -> seconds until it can be hit again
+
+    self.x, self.y = self:position()
+    self.shape:move_to(self.x, self.y)
+end
+
+-- Position is always a pure function of the unit's CURRENT centre and the
+-- current angle - no velocity, no smoothing, no stored offset. So the orb is
+-- rigidly glued to the unit (no momentum / lag).
+function OrbitalOrb:position()
+    local u = self.unit
+    return u.x + math.cos(self.orbit_angle) * self.orbit_radius,
+           u.y + math.sin(self.orbit_angle) * self.orbit_radius
+end
+
+function OrbitalOrb:update(dt)
+    self:update_game_object(dt)
+    if not self.unit or self.unit.dead then self.dead = true; return end
+
+    self.orbit_angle = self.orbit_angle + self.orbit_speed * dt
+    self.x, self.y = self:position()
+    self.shape:move_to(self.x, self.y)
+
+    for id, t in pairs(self.hit_cooldowns) do
+        local nt = t - dt
+        self.hit_cooldowns[id] = nt > 0 and nt or nil
+    end
+
+    local targets = main.current.main:get_objects_in_shape(self.shape, main.current.enemies)
+    for _, e in ipairs(targets) do
+        if e and not e.dead and not self.hit_cooldowns[e.id] then
+            Helper.Damage:chained_hit(e, self.damage, self.unit, DAMAGE_TYPE_PHYSICAL, true)
+            self.hit_cooldowns[e.id] = self.tick_rate
+        end
+    end
+end
+
+function OrbitalOrb:draw()
+    if not self.unit or self.unit.dead then return end
+    -- Recompute from the unit's live position at draw time (after all groups
+    -- have updated this frame) so the orb never trails the unit.
+    local x, y = self:position()
+    graphics.circle(x, y, self.hit_radius, self.color)
+end
+
+function OrbitalOrb:die()
+    self.dead = true
+end

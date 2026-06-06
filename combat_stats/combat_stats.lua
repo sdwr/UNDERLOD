@@ -236,6 +236,40 @@ BASE_CRIT_MULT = 2
 
 SHOCK_DEF_REDUCTION = -0.2
 
+-- Resonance set: bonus damage per distinct elemental affliction on the target.
+RESONANCE_DAMAGE_PER_ELEMENT = 0.15
+
+-- Treasury set: improved interest (1 gold per N saved) and a raised cap.
+TREASURY_INTEREST_PER = 5
+TREASURY_MAX_INTEREST = 6
+
+-- Orbital set: rotating damage orbs around a unit.
+ORBITAL_BASE_COUNT = 1
+ORBITAL_EXTRA_COUNT = 1          -- added by orbitalExtra (tier 2)
+ORBITAL_RADIUS = 52             -- orbit distance from the unit
+ORBITAL_ORB_RADIUS = 4         -- hit/draw radius of each orb (small)
+ORBITAL_ORB_RADIUS_BOOST = 1.5  -- orbitalPower (tier 3) size multiplier
+ORBITAL_SPEED = 1.5             -- radians/sec
+ORBITAL_DAMAGE = 8
+ORBITAL_DAMAGE_BOOST = 1.8      -- orbitalPower (tier 3) damage multiplier
+ORBITAL_TICK_RATE = 0.25        -- min seconds between hits on the same enemy
+
+-- Mend set: periodic chain-heal of injured allies.
+MEND_INTERVAL = 5
+MEND_HEAL_AMOUNT = 18
+MEND_HEAL_AMOUNT_BOOST = 36     -- chainhealBoost (tier 2)
+MEND_MAX_CHAINS = 3
+MEND_MAX_CHAINS_BOOST = 5       -- chainhealBoost (tier 2)
+MEND_RANGE = 80
+
+-- Garrison set: periodic destructible turrets.
+TURRET_DROP_INTERVAL = 6
+TURRET_HP = 80
+TURRET_DAMAGE = 9
+TURRET_ATTACK_COOLDOWN = 0.8
+TURRET_RANGE = 130
+TURRET_PROJECTILE_SPEED = 160
+
 REPEAT_ATTACK_DELAY = 0.15
 
 BOSS_LEVELS = {6, 11, 16, 21}
@@ -708,6 +742,7 @@ unit_size = {
 
 buff_types = {
     ['dmg'] = 'dmg',
+    ['flat_dmg'] = 'flat_dmg',
     ['aspd'] = 'aspd',
     ['flat_def'] = 'flat_def',
     ['percent_def'] = 'percent_def',

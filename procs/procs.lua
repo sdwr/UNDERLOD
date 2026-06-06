@@ -2388,6 +2388,262 @@ end
 
 
 
+-- =====================================================================
+-- Treasury set (economy): marker only. Interest is computed in arena.lua
+-- by scanning item.sets, so this proc just needs to exist for the set.
+-- =====================================================================
+Proc_Treasury = Proc:extend()
+function Proc_Treasury:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'team'
+  Proc_Treasury.super.init(self, args)
+end
+
+-- =====================================================================
+-- Resonance set: marker. The damage pipeline (helper_damage.lua) checks
+-- Has_Static_Proc(from, 'resonance') on primary hits and scales damage by
+-- the number of distinct elemental afflictions on the target.
+-- =====================================================================
+Proc_Resonance = Proc:extend()
+function Proc_Resonance:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'team'
+  Proc_Resonance.super.init(self, args)
+end
+
+-- =====================================================================
+-- Orbit set: rotating damage orbs around each unit. Per-troop scope so
+-- every unit gets its own orbs. orbitalExtra adds an orb; orbitalPower
+-- makes orbs bigger and hit harder.
+-- =====================================================================
+-- Uses onTick (not onRoundStart, which is currently not wired up) and
+-- lazily spawns its orbs the first time it ticks.
+Proc_Orbital = Proc:extend()
+function Proc_Orbital:init(args)
+  self.triggers = {PROC_ON_TICK}
+  self.scope = 'troop'
+  -- Set before super.init: addTriggers may call self:die() immediately when
+  -- a troop-scope proc is first created at team level (unit == nil), and die()
+  -- iterates self.orbs.
+  self.orbs = {}
+  self.spawned = false
+  Proc_Orbital.super.init(self, args)
+end
+
+function Proc_Orbital:onTick(dt, from)
+  Proc_Orbital.super.onTick(self, dt)
+  if self.spawned then return end
+  if not self.unit or self.unit.dead then return end
+  self.spawned = true
+  self:spawn_orbs()
+end
+
+function Proc_Orbital:spawn_orbs()
+  local count = ORBITAL_BASE_COUNT
+  if Has_Static_Proc(self.unit, 'orbitalExtra') then
+    count = count + ORBITAL_EXTRA_COUNT
+  end
+
+  local orb_radius = ORBITAL_ORB_RADIUS
+  local damage = ORBITAL_DAMAGE
+  if Has_Static_Proc(self.unit, 'orbitalPower') then
+    orb_radius = orb_radius * ORBITAL_ORB_RADIUS_BOOST
+    damage = damage * ORBITAL_DAMAGE_BOOST
+  end
+
+  -- Random base phase per unit so different units' orbs don't all line up at
+  -- the same angle (which reads as "clumped" when units bunch together).
+  local base_angle = random:float(0, 2 * math.pi)
+  for i = 1, count do
+    local orb = OrbitalOrb{
+      group = main.current.effects,
+      unit = self.unit,
+      x = self.unit.x, y = self.unit.y,
+      hit_radius = orb_radius,
+      damage = damage,
+      color = blue[0],
+      orbit_radius = ORBITAL_RADIUS,
+      orbit_speed = ORBITAL_SPEED,
+      -- Evenly spaced around the unit, offset by the unit's base phase.
+      orbit_angle = base_angle + (i - 1) * (2 * math.pi / count),
+    }
+    table.insert(self.orbs, orb)
+  end
+end
+
+function Proc_Orbital:die()
+  Proc_Orbital.super.die(self)
+  for _, orb in ipairs(self.orbs or {}) do
+    if orb and not orb.dead then orb:die() end
+  end
+  self.orbs = {}
+end
+
+Proc_OrbitalExtra = Proc:extend()
+function Proc_OrbitalExtra:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'troop'
+  Proc_OrbitalExtra.super.init(self, args)
+end
+
+Proc_OrbitalPower = Proc:extend()
+function Proc_OrbitalPower:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'troop'
+  Proc_OrbitalPower.super.init(self, args)
+end
+
+-- =====================================================================
+-- Mend set: periodically send a chain-heal through injured allies.
+-- Team scope so it fires once per interval. chainhealBoost (tier 2) makes
+-- the heal stronger and bounce further.
+-- =====================================================================
+Proc_ChainHeal = Proc:extend()
+function Proc_ChainHeal:init(args)
+  self.triggers = {PROC_ON_TICK}
+  self.scope = 'team'
+  Proc_ChainHeal.super.init(self, args)
+  self.adjustedTickInterval = MEND_INTERVAL
+  self.tick_timer = math.random() * (MEND_INTERVAL / 2)
+end
+
+function Proc_ChainHeal:onTick(dt, from)
+  Proc_ChainHeal.super.onTick(self, dt)
+  if not self.team then return end
+  if not self.team:is_first_alive_troop(from) then return end
+
+  self.tick_timer = self.tick_timer + dt
+  if self.tick_timer < self.adjustedTickInterval then return end
+  self.tick_timer = 0
+  self:cast_heal(from)
+end
+
+function Proc_ChainHeal:get_most_injured()
+  local best, best_missing
+  if self.team and self.team.troops then
+    for _, t in ipairs(self.team.troops) do
+      if t and not t.dead and t.hp and t.max_hp and t.hp < t.max_hp then
+        local missing = t.max_hp - t.hp
+        if not best_missing or missing > best_missing then best, best_missing = t, missing end
+      end
+    end
+  end
+  return best
+end
+
+function Proc_ChainHeal:cast_heal(from)
+  local target = self:get_most_injured()
+  if not target then return end
+
+  local heal_amount = MEND_HEAL_AMOUNT
+  local max_chains = MEND_MAX_CHAINS
+  if Has_Static_Proc(from, 'chainhealBoost') then
+    heal_amount = MEND_HEAL_AMOUNT_BOOST
+    max_chains = MEND_MAX_CHAINS_BOOST
+  end
+
+  ChainHeal{
+    group = main.current.main,
+    parent = from,
+    target = target,
+    is_troop = true,
+    heal_amount = heal_amount,
+    max_chains = max_chains,
+    range = MEND_RANGE,
+    -- Pass a real Color: ChainHeal's default is a plain table and HealLine
+    -- calls :clone() on it, which would crash.
+    color = green[0],
+  }
+end
+
+Proc_ChainHealBoost = Proc:extend()
+function Proc_ChainHealBoost:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'team'
+  Proc_ChainHealBoost.super.init(self, args)
+end
+
+-- =====================================================================
+-- Garrison set: periodically deploy a destructible turret. Team scope so
+-- it fires once per interval and shares one active-turret pool. turret2/
+-- turret3 raise the active cap to 2/3; dropping past the cap removes the
+-- oldest turret first.
+-- =====================================================================
+Proc_Turret = Proc:extend()
+function Proc_Turret:init(args)
+  self.triggers = {PROC_ON_TICK}
+  self.scope = 'team'
+  -- Set before super.init in case addTriggers calls die() during init.
+  self.tick_timer = TURRET_DROP_INTERVAL * 0.5
+  self.turrets = {}
+  Proc_Turret.super.init(self, args)
+end
+
+function Proc_Turret:onTick(dt, from)
+  Proc_Turret.super.onTick(self, dt)
+  if not self.team then return end
+  if not self.team:is_first_alive_troop(from) then return end
+
+  -- Drop references to turrets that have died.
+  for i = #self.turrets, 1, -1 do
+    if not self.turrets[i] or self.turrets[i].dead then table.remove(self.turrets, i) end
+  end
+
+  self.tick_timer = self.tick_timer + dt
+  if self.tick_timer < TURRET_DROP_INTERVAL then return end
+  self.tick_timer = 0
+  self:drop_turret(from)
+end
+
+function Proc_Turret:get_max_turrets(from)
+  if Has_Static_Proc(from, 'turret3') then return 3 end
+  if Has_Static_Proc(from, 'turret2') then return 2 end
+  return 1
+end
+
+function Proc_Turret:drop_turret(from)
+  local max = self:get_max_turrets(from)
+  -- At cap: retire the oldest turret before deploying the new one.
+  while #self.turrets >= max do
+    local oldest = table.remove(self.turrets, 1)
+    if oldest and not oldest.dead then oldest:die() end
+  end
+
+  local angle = random:float(0, 2 * math.pi)
+  local dist = random:float(6, 16)
+  local turret = FriendlyTurret{
+    group = main.current.main,
+    x = from.x + math.cos(angle) * dist,
+    y = from.y + math.sin(angle) * dist,
+    level = from.level,
+    color = brown[0],
+  }
+  table.insert(self.turrets, turret)
+end
+
+function Proc_Turret:die()
+  Proc_Turret.super.die(self)
+  for _, t in ipairs(self.turrets or {}) do
+    if t and not t.dead then t:die() end
+  end
+  self.turrets = {}
+end
+
+Proc_Turret2 = Proc:extend()
+function Proc_Turret2:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'team'
+  Proc_Turret2.super.init(self, args)
+end
+
+Proc_Turret3 = Proc:extend()
+function Proc_Turret3:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'team'
+  Proc_Turret3.super.init(self, args)
+end
+
+
 proc_name_to_class = {
   ['reroll'] = Proc_Reroll,
   ['reset'] = Proc_Reset,
@@ -2482,7 +2738,19 @@ proc_name_to_class = {
   -- elemental procs
   ['triforce'] = Proc_Triforce,
   ['eledmg'] = Proc_Eledmg,
-  ['elevamp'] = Proc_Elevamp
+  ['elevamp'] = Proc_Elevamp,
+
+  -- new sets
+  ['treasury'] = Proc_Treasury,
+  ['resonance'] = Proc_Resonance,
+  ['orbital'] = Proc_Orbital,
+  ['orbitalExtra'] = Proc_OrbitalExtra,
+  ['orbitalPower'] = Proc_OrbitalPower,
+  ['chainheal'] = Proc_ChainHeal,
+  ['chainhealBoost'] = Proc_ChainHealBoost,
+  ['turret'] = Proc_Turret,
+  ['turret2'] = Proc_Turret2,
+  ['turret3'] = Proc_Turret3,
 }
 
 

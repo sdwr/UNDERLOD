@@ -5,8 +5,11 @@ function Troop:init(args)
   self.class = 'troop'
   self.faction = 'friendly'
   self.size = unit_size['medium']
-  -- Collider stays at self.size; draw uses display_size for a larger visual.
+  -- display_size drives the drawn body; collider_size drives the physics
+  -- hitbox. The hitbox is kept smaller than the visual so troops don't snag
+  -- on enemies (config_physics_object uses collider_size for the body).
   self.display_size = 14
+  self.collider_size = 5
   self.is_troop = true
   self.target_rally = nil
   self.backswing = 0.2

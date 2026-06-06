@@ -34,7 +34,9 @@ system.load_stats()
 
 --gold
 --note that HoG econ check is in arena.lua (gain_gold)
-STARTING_GOLD = 9.0
+-- Bumped 9 -> 14 (+5) to compensate for unit purchases now costing a flat
+-- 10 each (was 5 for the first unit). See buy_card_cost in buy_screen.lua.
+STARTING_GOLD = 14.0
 -- Per-round end-of-round gold by level band. Combines with the per-kill gold
 -- in GOLD_GAINED_BY_LEVEL for total round income. Tuned so the player can't
 -- fully equip two units by the first boss (L6).
@@ -193,7 +195,7 @@ BASIC_CLUMP_INTERVAL = 2
 -- wipe is the same length whether 5 or 100 enemies are left. KILL_OFFSET is
 -- legacy and unused now.
 LEVEL_CLEAR_KILL_DELAY = 0.0
-LEVEL_CLEAR_CASCADE_DURATION = 0.5
+LEVEL_CLEAR_CASCADE_DURATION = 1.5
 LEVEL_CLEAR_KILL_OFFSET = 0.04
 
 -- Post-cascade beat before the arena transitions away. Polling in

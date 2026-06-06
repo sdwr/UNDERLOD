@@ -984,6 +984,7 @@ function init()
 
   item_stat_lookup = {
     ['dmg'] = 'damage',
+    ['flat_dmg'] = 'flat damage',
     ['mvspd'] = 'move',
     ['aspd'] = 'aspeed',
     ['hp'] = 'hp',
@@ -1020,6 +1021,7 @@ function init()
   item_stat_display_order = {
     --core offensive stats
     'dmg',
+    'flat_dmg',
     'aspd',
     'repeat_attack_chance',
     'range',

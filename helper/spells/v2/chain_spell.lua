@@ -214,7 +214,7 @@ function ChainHeal:init(args)
   self.heal_amount = args.heal_amount or 10
   self.time_between_bounces = args.time_between_bounces or 0.3
   self.is_troop = args.is_troop or false
-  self.color = args.color or {0.2, 0.9, 0.3, 1} -- Healing green
+  self.color = args.color or green[0] -- Healing green
 
   -- Define the targeting logic to ONLY hit friendlies.
   local target_classes
