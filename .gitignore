@@ -3,3 +3,5 @@ builds/
 .vscode
 .aider*
 .worktrees/
+__pycache__/
+*.pyc
