@@ -31,7 +31,7 @@ end
 local T2_SPECIAL_POOL = {
   'snakearrow', 'mortar', 'roach', 'cleaver', 'brute', 'orb', 'boomerang',
   'sniper', 'plasma', 'slime',
-  'splitter', 'pulse_walker', 'drone_carrier', 'linker',
+  'splitter', 'pulse_walker', 'drone_carrier',
 }
 
 -- Early-game pool. L2/L3 draw a random 2 of these per run; L4/L5 use all 3.

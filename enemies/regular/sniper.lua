@@ -51,7 +51,18 @@ fns['init_enemy'] = function(self)
 end
 
 fns['draw_enemy'] = function(self)
-  local animation_success = self:draw_animation()
+  -- During the early part of the windup, draw the idle/normal animation; only
+  -- switch to the attack/casting animation once the aim has locked (last
+  -- SNIPER_AIM_LOCK_TIME seconds). The locked dashed line already telegraphs
+  -- the shot - the attack pose is reserved for the imminent fire.
+  local draw_state = self.state
+  if self.state == unit_states['casting'] and self.castObject then
+    local remaining = (self.castObject.cast_length or 0) - (self.castObject.elapsedTime or 0)
+    if remaining > SNIPER_AIM_LOCK_TIME then
+      draw_state = unit_states['normal']
+    end
+  end
+  local animation_success = DrawAnimations.draw_enemy_animation(self, draw_state, self.x, self.y, 0)
   if not animation_success then
     self:draw_fallback_animation()
   end
