@@ -1097,19 +1097,21 @@ function Spawn_Enemy(arena, type, location, offset, path_heading)
                       path_heading = path_heading,
                       level = arena.level, data = data}
 
-  -- Only specials get a spawn cue. Swarmers/regular enemies arrive silently
-  -- so the audio stays clean when a big clump pops in at once.
+  -- Specials get the louder danger cue; everything else gets a very faint
+  -- spawn tick so a wave has a soft presence without cluttering the mix when
+  -- a whole clump pops in at once.
   if enemy and enemy.class == 'special_enemy' then
     Spawn_Special_Sound(arena)
+  else
+    spawn1:play{pitch = random:float(0.9, 1.1), volume = 0.08}
   end
   Spawn_Enemy_Effect(arena, enemy)
 end
 
--- Distinct cue for special enemies appearing. Lower pitch + audible volume
--- so it reads as "something dangerous just arrived" without competing with
--- the boss alert.
+-- Distinct cue for special enemies appearing. A low-pitched chime so it reads
+-- as "something dangerous just arrived" without competing with the boss alert.
 function Spawn_Special_Sound(arena)
-  alert1:play{pitch = random:float(0.7, 0.85), volume = 0.5}
+  spawn_mark1:play{pitch = random:float(0.65, 0.8), volume = 0.5}
 end
 
 -- Returns a single path-across heading shared by an entire spawn group, or nil

@@ -314,9 +314,13 @@ function CharacterCard:layout_item_parts()
   end
 
   local row_spacing = 17
-  local col_spacing = CARD_ITEM_PART_WIDTH + 2
   local first_row_y = self.y - self.h/2 + 28
   local row_left = self.x - self.w/2 + 6
+  -- First copy of a set is a full pill with the set name; extra copies stack
+  -- to its right as thin full-height tabs so they never run off the card edge.
+  local pill_w = CARD_ITEM_PART_WIDTH
+  local tab_w = 8
+  local tab_gap = 1
 
   for row_i, group in ipairs(groups) do
     local row_y = first_row_y + (row_i - 1) * row_spacing
@@ -325,7 +329,17 @@ function CharacterCard:layout_item_parts()
       if part then
         part.hidden = false
         part.interact_with_mouse = true
-        part.x = row_left + (col_i - 1) * col_spacing + CARD_ITEM_PART_WIDTH/2
+        if col_i == 1 then
+          part.tab_mode = false
+          self:set_item_part_width(part, pill_w)
+          part.x = row_left + pill_w/2
+        else
+          part.tab_mode = true
+          self:set_item_part_width(part, tab_w)
+          local tab_n = col_i - 1
+          local tab_left = row_left + pill_w + tab_gap + (tab_n - 1) * (tab_w + tab_gap)
+          part.x = tab_left + tab_w/2
+        end
         part.y = row_y
         if part.shape then part.shape:move_to(part.x, part.y) end
       end
@@ -350,11 +364,21 @@ function CharacterCard:layout_item_parts()
       local row_y = first_row_y + #groups * row_spacing
       part.hidden = false
       part.interact_with_mouse = true
+      part.tab_mode = false
+      self:set_item_part_width(part, CARD_ITEM_PART_WIDTH)
       part.x = row_left + CARD_ITEM_PART_WIDTH/2
       part.y = row_y
       if part.shape then part.shape:move_to(part.x, part.y) end
     end
   end
+end
+
+-- Resizes an ItemPart's draw + hit width, rebuilding its shape only when the
+-- target width actually changes so we're not allocating a polygon every frame.
+function CharacterCard:set_item_part_width(part, w)
+  if part.w == w then return end
+  part.w = w
+  part.shape = Rectangle(part.x, part.y, part.sx * (part.w + 2), part.sy * (part.h + 2))
 end
 
 -- Lazily creates the count text, and only fires set_text when the count
@@ -628,7 +652,10 @@ function ItemPart:draw()
       end
 
       graphics.rectangle(self.x, self.y, self.w, self.h, 2, 2, self.cached_tint)
-      graphics.print_centered(self.cached_label, pixul_font, self.x, self.y, 0, 1, 1, 0, 0, fg[0])
+      -- Extra copies render as thin tabs: keep the set tint, drop the word.
+      if not self.tab_mode then
+        graphics.print_centered(self.cached_label, pixul_font, self.x, self.y, 0, 1, 1, 0, 0, fg[0])
+      end
     end
     
     if self.colliding_with_mouse and main.current and not Loose_Inventory_Item and not self.just_dropped_item then
