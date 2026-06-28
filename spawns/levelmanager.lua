@@ -130,12 +130,12 @@ local function get_spawn_config_for_level(level)
 end
 
 -- Debug arena: a non-shipping level for inspecting every special enemy in
--- isolation. Reachable via the hidden "debug" button on the main menu. Each
--- special arrives on its own timer pool with `interval` huge enough that it
--- effectively fires once (max_alive = 1 prevents pile-up), staggered by
--- DEBUG_SPAWN_STAGGER seconds so they walk on one at a time.
+-- isolation. Reachable via the "debug" button on the main menu. Nothing spawns
+-- on a timer; instead the player presses DEBUG_SPAWN_KEY to spawn the next
+-- enemy in a randomized "one of each special" queue, one at a time, with an
+-- on-screen prompt telling them which key to press and what spawns next.
 DEBUG_LEVEL_NUMBER = 30
-DEBUG_SPAWN_STAGGER = 4
+DEBUG_SPAWN_KEY = 'f5'
 
 local DEBUG_SPECIAL_TYPES = {
   -- Roughly the order of appearance in the normal campaign, then the
@@ -150,40 +150,29 @@ local DEBUG_SPECIAL_TYPES = {
 }
 
 function Build_Debug_Level_Entry()
-  local specials = {}
-  local delay = DEBUG_SPAWN_STAGGER
+  local queue = {}
   local total_power = 0
-  -- Spawn one of each special, but in a random order each run (shuffle a copy
-  -- so the source list keeps its documented ordering).
+  -- One of each special, in a random order each run (shuffle a copy so the
+  -- source list keeps its documented ordering). These are spawned manually,
+  -- one queue entry per DEBUG_SPAWN_KEY press, rather than on timers.
   local spawn_order = table.shuffle(table.copy(DEBUG_SPECIAL_TYPES))
   for _, t in ipairs(spawn_order) do
-    local entry = {
-      type = t,
-      interval = 99999, -- effectively one-shot
-      max_alive = 1,
-      first_fire = delay,
-    }
     local count = 1
     if t == 'linker' then
-      -- Linkers pair up at spawn time; deploy two from this pool.
-      entry.group_size = 2
-      entry.max_alive = 2
+      -- Linkers pair up at spawn time; deploy two so the tether is visible.
       count = 2
     end
-    table.insert(specials, entry)
+    table.insert(queue, {type = t, count = count})
 
-    -- Tally the round_power this pool will contribute when its members die.
-    -- kill_quota = sum across all pools so the level only completes once the
-    -- player has actually cleared the field (instead of a hard-coded
-    -- infinite quota where it never ends).
+    -- Tally the round_power this entry contributes when its members die.
+    -- kill_quota = sum across the queue so the level only completes once the
+    -- player has actually spawned and cleared every special.
     total_power = total_power + (enemy_to_round_power[t] or 0) * count
     if t == 'splitter' then
       -- Splitter bursts into 3 swarmers on death — include their power so
       -- the quota only completes after the splits are cleared too.
       total_power = total_power + 3 * (enemy_to_round_power['swarmer'] or 0)
     end
-
-    delay = delay + DEBUG_SPAWN_STAGGER
   end
 
   return {
@@ -194,11 +183,10 @@ function Build_Debug_Level_Entry()
     round_power = total_power,
     color = grey[0],
     environmental_hazards = {},
-    spawn_config = {
-      -- Specials-only — no basic swarmer pool so the arena stays uncluttered
-      -- and each enemy is easy to study in isolation.
-      specials = specials,
-    },
+    -- No auto pools: the SpawnManager spawns straight from debug_spawn_queue
+    -- on key press instead, so the arena stays empty until the player acts.
+    spawn_config = {specials = {}},
+    debug_spawn_queue = queue,
     -- Quota = exact sum of every expected enemy's round_power, so the
     -- progress bar fills naturally as the player clears the field and the
     -- level only completes when the last expected enemy is dead.

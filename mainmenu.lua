@@ -205,6 +205,19 @@ function MainMenu:on_enter(from)
     love.event.quit()
   end}
 
+  -- Debug entry point: starts a fresh run on the debug-arena level and
+  -- routes through the buy screen so the player can still pick units and
+  -- items before launching. Sits just below the quit button in the main
+  -- button column.
+  self.debug_button = Button{group = self.main_ui, x = 43, y = gh/2 + 100, force_update = true, button_text = 'debug', fg_color = 'bg10', bg_color = 'bg', action = function(b)
+    ui_transition2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
+      self.transitioning = true
+      Start_Debug_Run_And_Go_To_Buy_Screen()
+    end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']debug arena...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
+  end}
+
   -- hide for now (achievement test button)
   -- self.unlock_button = Button{group = self.main_ui, x = 40, y = gh/2  + 100, force_update = true, button_text ='unlock', fg_color = 'bg10', bg_color='bg', action = function(b)
     

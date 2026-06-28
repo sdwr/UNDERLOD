@@ -684,12 +684,21 @@ function Unit:draw_cast_timer()
     if self.castObject then
       pct = self.castObject:get_cast_percentage()
     else
-      local pct = time / self.castTime
+      pct = time / self.castTime
     end
+    if pct >= 1 then return end
+
     local bodySize = self.shape.rs or self.shape.w/2 or 5
-    local rs = pct * bodySize
-    if pct < 1 then
-      graphics.circle(self.x, self.y, rs, white_transparent)
+
+    if self.class == 'special_enemy' then
+      -- Unified special-enemy windup ring: a hollow ring that contracts from an
+      -- outer radius down to the unit's body as the cast charges, snapping onto
+      -- the body at the moment of fire. This is the only attack telegraph.
+      local outer = bodySize * 2.6
+      local rs = bodySize + (outer - bodySize) * (1 - pct)
+      graphics.circle(self.x, self.y, rs, self.color or fg[0], 1)
+    else
+      graphics.circle(self.x, self.y, pct * bodySize, white_transparent)
     end
   end
 end

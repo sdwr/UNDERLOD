@@ -1038,6 +1038,20 @@ function Helper.Unit:get_one_piece_sets_on_item(item)
   return out
 end
 
+-- Returns the set_keys on `item` that DO stack (multi-piece sets — anything
+-- that isn't a 1/1 set). Buying another copy of one of these grows the set
+-- bonus, so the buy flow prefers to pile it onto a unit that already owns it.
+function Helper.Unit:get_stacking_sets_on_item(item)
+  local out = {}
+  if not item or not item.sets then return out end
+  for _, set_key in ipairs(item.sets) do
+    if not Helper.Unit:is_one_piece_set(set_key) then
+      table.insert(out, set_key)
+    end
+  end
+  return out
+end
+
 -- True iff `item` has a 1/1 set AND every unit already owns at least one
 -- piece of it. Used by buy flow to block duplicate purchases that would
 -- land on a unit that already has the (un-stackable) effect.
@@ -1060,25 +1074,69 @@ function Helper.Unit:find_available_inventory_slot(units, item)
   -- next unit instead. If every unit already owns the set the loop finishes
   -- with no match and the caller falls into the blocked-purchase path.
   local locked = item and Helper.Unit:get_one_piece_sets_on_item(item) or {}
-  -- Slots are untyped: walk each unit's list up to its level cap and return the first empty index.
-  for _, unit in ipairs(units) do
-    local skip = false
-    if #locked > 0 then
-      local counts = Helper.Unit:count_unit_set_pieces(unit)
-      for _, set_key in ipairs(locked) do
-        if (counts[set_key] or 0) > 0 then skip = true; break end
+  -- Multi-piece (stacking) sets on this item: extra copies DO add up.
+  local stacking = item and Helper.Unit:get_stacking_sets_on_item(item) or {}
+
+  local function unit_skipped(unit)
+    if #locked == 0 then return false end
+    local counts = Helper.Unit:count_unit_set_pieces(unit)
+    for _, set_key in ipairs(locked) do
+      if (counts[set_key] or 0) > 0 then return true end
+    end
+    return false
+  end
+
+  -- Slots are untyped: first empty index up to the unit's level cap, or nil.
+  local function first_open_slot(unit)
+    local capacity = UNIT_LEVEL_TO_NUMBER_OF_ITEMS[unit.level] or 0
+    for i = 1, capacity do
+      if not unit.items[i] then return i end
+    end
+    return nil
+  end
+
+  -- Pass 1: stacking. If the item belongs to a stacking set, send it to the
+  -- eligible, open-slotted unit that already holds the most pieces of that set
+  -- so the bonus climbs instead of being scattered across the party.
+  if #stacking > 0 then
+    local best_unit, best_slot, best_pieces = nil, nil, 0
+    for _, unit in ipairs(units) do
+      if not unit_skipped(unit) then
+        local slot = first_open_slot(unit)
+        if slot then
+          local counts = Helper.Unit:count_unit_set_pieces(unit)
+          local pieces = 0
+          for _, set_key in ipairs(stacking) do
+            pieces = math.max(pieces, counts[set_key] or 0)
+          end
+          if pieces > best_pieces then
+            best_unit, best_slot, best_pieces = unit, slot, pieces
+          end
+        end
       end
     end
-    if not skip then
-      local capacity = UNIT_LEVEL_TO_NUMBER_OF_ITEMS[unit.level] or 0
-      for i = 1, capacity do
-        if not unit.items[i] then
-          return unit, i
+    if best_unit then return best_unit, best_slot end
+  end
+
+  -- Pass 2: default. Spread items out — give this one to the eligible unit with
+  -- the fewest items so far (first such unit wins ties, preserving list order).
+  local best_unit, best_slot, best_count = nil, nil, nil
+  for _, unit in ipairs(units) do
+    if not unit_skipped(unit) then
+      local slot = first_open_slot(unit)
+      if slot then
+        local capacity = UNIT_LEVEL_TO_NUMBER_OF_ITEMS[unit.level] or 0
+        local count = 0
+        for i = 1, capacity do
+          if unit.items[i] then count = count + 1 end
+        end
+        if best_count == nil or count < best_count then
+          best_unit, best_slot, best_count = unit, slot, count
         end
       end
     end
   end
-  return nil, nil
+  return best_unit, best_slot
 end
 
 function Helper.Unit:unit_has_open_inventory_slot(unit, slot_index)

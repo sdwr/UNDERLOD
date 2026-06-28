@@ -264,6 +264,12 @@ function Arena:update(dt)
     -- Update spawn manager
     if self.spawn_manager then
       self.spawn_manager:update(dt)
+
+      -- Debug arena: spawn the next queued enemy on each key press.
+      if self.spawn_manager.debug_spawn_queue
+        and input[DEBUG_SPAWN_KEY] and input[DEBUG_SPAWN_KEY].pressed then
+        self.spawn_manager:debug_spawn_next()
+      end
     end
   end
 end
@@ -352,14 +358,41 @@ end
 
 function Arena:draw()
   self:draw_game_object()
-  
+
   -- Draw arena groups
   self.floor:draw()
   self.effects:draw_floor_effects()
   self.main:draw()
   self.post_main:draw()
-  self.effects:draw()  
+  self.effects:draw()
   self.ui:draw()
+
+  self:draw_debug_spawn_text()
+end
+
+-- Debug arena only: prompt telling the player which key to press and which
+-- enemy it will spawn next. Silent (returns early) on every normal level.
+function Arena:draw_debug_spawn_text()
+  local sm = self.spawn_manager
+  if not sm or not sm.debug_spawn_queue then return end
+
+  local key = string.upper(DEBUG_SPAWN_KEY)
+  local nxt = sm:debug_next_spawn()
+  local line
+  if nxt then
+    local label = nxt.type
+    if nxt.count and nxt.count > 1 then label = label .. ' x' .. nxt.count end
+    line = 'press [' .. key .. '] to spawn: ' .. label
+  else
+    line = 'all enemies spawned'
+  end
+
+  -- Arena bound fields (self.y1/self.mid_x) are only set by create_walls, which
+  -- is currently disabled, so derive the position from the global bounds. Sit a
+  -- third of the way down the arena, clear of the progress bar up top.
+  local x = gw/2 + self.offset_x
+  local y = TOP_BOUND + self.offset_y + (BOTTOM_BOUND - TOP_BOUND) / 3
+  graphics.print_centered(line, pixul_font, x, y, 0, 1, 1, nil, nil, fg[0])
 end
 
 function Arena:die()

@@ -137,12 +137,7 @@ fns['draw_enemy'] = function(self)
     local py = self.y + math.sin(a) * r
     graphics.circle(px, py, 1.6, yellow[5])
   end
-
-  -- Windup ring during cast so the player can read the timing.
-  if self.state == unit_states['casting'] and self.castObject then
-    local pct = self.castObject:get_cast_percentage() or 0
-    graphics.circle(self.x, self.y, body_size + 2 + pct * 6, yellow[5], 1)
-  end
+  -- Windup ring is drawn by the shared Unit:draw_cast_timer.
 end
 
 enemy_to_class['orb'] = fns

@@ -1,7 +1,7 @@
 local fns = {}
 
 -- Last N seconds of the windup, during which the shot angle is committed and
--- the player can dodge by moving the locked troop out of the line.
+-- the player can dodge by moving the locked troop out of the shot path.
 local SNIPER_AIM_LOCK_TIME = 0.75
 
 fns['init_enemy'] = function(self)
@@ -53,8 +53,8 @@ end
 fns['draw_enemy'] = function(self)
   -- During the early part of the windup, draw the idle/normal animation; only
   -- switch to the attack/casting animation once the aim has locked (last
-  -- SNIPER_AIM_LOCK_TIME seconds). The locked dashed line already telegraphs
-  -- the shot - the attack pose is reserved for the imminent fire.
+  -- SNIPER_AIM_LOCK_TIME seconds), reserving the attack pose for the imminent
+  -- fire. The windup ring itself is drawn by the shared Unit:draw_cast_timer.
   local draw_state = self.state
   if self.state == unit_states['casting'] and self.castObject then
     local remaining = (self.castObject.cast_length or 0) - (self.castObject.elapsedTime or 0)
@@ -67,13 +67,9 @@ fns['draw_enemy'] = function(self)
     self:draw_fallback_animation()
   end
 
-  -- Big windup ring while charging the snipe shot
+  -- Swap cast.target to a static snapshot so SingleProjectile (which reads
+  -- target.x/y at fire time) shoots at the locked position, not the live one.
   if self.state == unit_states['casting'] and self.castObject then
-    local pct = self.castObject:get_cast_percentage() or 0
-    graphics.circle(self.x, self.y, 8 + pct * 14, purple[5], 1)
-
-    -- Swap cast.target to a static snapshot so SingleProjectile (which reads
-    -- target.x/y at fire time) shoots at the locked position, not the live one.
     local remaining = (self.castObject.cast_length or 0) - (self.castObject.elapsedTime or 0)
     if remaining <= SNIPER_AIM_LOCK_TIME and not self.locked_target then
       local t = self.castObject.target
@@ -81,18 +77,6 @@ fns['draw_enemy'] = function(self)
         self.locked_target = {x = t.x, y = t.y}
         self.castObject.target = self.locked_target
       end
-    end
-
-    local aim = self.locked_target or self.target
-    if aim and (aim.dead == nil or not aim.dead) then
-      -- Extend the aim line past the target to the screen edge so the player
-      -- reads the full shot trajectory, not just sniper -> target. Project
-      -- along the aim angle a distance >= the screen diagonal.
-      local angle = math.atan2(aim.y - self.y, aim.x - self.x)
-      local reach = math.sqrt(gw * gw + gh * gh)
-      local end_x = self.x + math.cos(angle) * reach
-      local end_y = self.y + math.sin(angle) * reach
-      graphics.dashed_line(self.x, self.y, end_x, end_y, 4, 3, red[0], 1)
     end
   elseif self.locked_target then
     self.locked_target = nil

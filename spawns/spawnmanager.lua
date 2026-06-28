@@ -594,6 +594,11 @@ function SpawnManager:init_spawn_pools()
   self.special_pools = {}
   self.special_events = {}
 
+  -- Debug arena: manual key-driven queue (see Build_Debug_Level_Entry). nil
+  -- queue = normal level. The queue is spawned one entry per key press.
+  self.debug_spawn_queue = self.level_data and self.level_data.debug_spawn_queue
+  self.debug_spawn_index = 1
+
   -- Dynamic cadence state (campaign levels). nil pool = no cadence spawns.
   self.special_pool = nil
   self.special_cadence_next_fire = nil
@@ -770,6 +775,25 @@ function SpawnManager:quota_met()
   local quota = self.level_data and self.level_data.kill_quota
   if not quota then return false end
   return (self.wave_kill_power or 0) >= quota
+end
+
+-- Debug arena helpers. debug_next_spawn returns the queue entry that the next
+-- key press will spawn (or nil when the queue is exhausted), used by the arena
+-- to draw the "press KEY to spawn TYPE" prompt. debug_spawn_next actually
+-- spawns it and advances the queue; only active once the level is spawning.
+function SpawnManager:debug_next_spawn()
+  if not self.debug_spawn_queue then return nil end
+  return self.debug_spawn_queue[self.debug_spawn_index]
+end
+
+function SpawnManager:debug_spawn_next()
+  if self.state ~= 'spawning' then return end
+  local entry = self:debug_next_spawn()
+  if not entry then return end
+  Spawn_Group_With_Location(self.arena,
+    {entry.type, entry.count or 1, 'nil'},
+    Get_Offscreen_Spawn_Point())
+  self.debug_spawn_index = self.debug_spawn_index + 1
 end
 
 -- Tick each pool's timer once per update. Pools that fire and successfully
