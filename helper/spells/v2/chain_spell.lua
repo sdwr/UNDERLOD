@@ -178,6 +178,11 @@ function ChainLightning:init(args)
     on_hit = function(spell, target)
       -- 'spell' is the ChainLightning instance. 'self' would also work here.
       Helper.Damage:chained_hit(target, self.damage, self.caster, self.damageType, false)
+      -- Shock every chained target (DAMAGE_TYPE_SHOCK deals HP damage via the
+      -- chained-hit path but doesn't apply the shock buff itself).
+      if target and not target.dead and target.shock then
+        target:shock(self.caster)
+      end
     end,
 
     -- on_bounce: This function creates the visual and audio effects between targets.

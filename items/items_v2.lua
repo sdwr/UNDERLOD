@@ -235,18 +235,18 @@ ITEM_SETS = {
   },
   [ITEM_SET.SHOCK] = {
     name = 'Storm',
-    summary = '+shock damage',
+    summary = 'chain lightning',
     color = 'yellow',
     rarity = ITEM_RARITY.COMMON,
     bonuses = {
-      [1] = { stats = {['lightning_damage'] = 5} },
-      [2] = { stats = {['lightning_damage'] = 7} },
-      [3] = { stats = {['lightning_damage'] = 10} }
+      [1] = { procs = {'shock'} },
+      [2] = { procs = {'shock2'} },
+      [3] = { procs = {'shock3'} },
     },
     descriptions = {
-      [1] = '+5 lightning damage per hit; lightning makes enemies take more damage',
-      [2] = '+7 lightning damage per hit',
-      [3] = '+10 lightning damage per hit'
+      [1] = 'Chance on hit to chain lightning to 3 targets, shocking each',
+      [2] = 'Chains to more targets, more often',
+      [3] = 'Chains to even more targets, more often',
     }
   },
   [ITEM_SET.LIGHTNING_BALL] = {

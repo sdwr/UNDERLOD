@@ -341,8 +341,7 @@ function Helper.Damage:apply_elemental_effects(unit, actual_damage, damageType, 
   end
 
   if damageType == DAMAGE_TYPE_LIGHTNING then
-    -- Lightning shocks the enemy it hits (increases damage taken). This is the
-    -- inherent Storm-set effect, applied on every lightning hit.
+    -- Lightning shocks the enemy it hits (increases damage taken).
     unit:shock(from)
 
     local lightning_chance = 0

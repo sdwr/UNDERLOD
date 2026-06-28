@@ -1520,13 +1520,64 @@ function Proc_LightningBall:create_lightning_ball(target)
   end
 end
 
+-- Storm set: a chance, when an attack lands, to fire a lightning jump that
+-- damages and shocks a chain of targets (the struck enemy plus nearby jumps).
+-- No flat damage or shock on hits where it doesn't proc. Triggered on hit (not
+-- on attack) so it fires when the projectile actually connects, not when it's
+-- fired. shock2/shock3 are tier markers that raise the chance and jump count.
 Proc_Shock = Proc:extend()
 function Proc_Shock:init(args)
+  self.triggers = {PROC_ON_HIT}
+  self.scope = 'troop'
+  Proc_Shock.super.init(self, args)
+  self.color = yellow[0]
+end
+
+function Proc_Shock:get_chance(from)
+  if Has_Static_Proc(from, 'shock3') then return 0.35 end
+  if Has_Static_Proc(from, 'shock2') then return 0.30 end
+  return 0.25
+end
+
+-- Total targets the chain hits, counting the struck enemy. Tier 1 = 3 (2 jumps).
+function Proc_Shock:get_max_targets(from)
+  if Has_Static_Proc(from, 'shock3') then return 5 end
+  if Has_Static_Proc(from, 'shock2') then return 4 end
+  return 3
+end
+
+function Proc_Shock:onHit(target, damage, damageType)
+  Proc_Shock.super.onHit(self, target, damage, damageType)
+  local from = self.unit
+  if not from or not target or target.dead then return end
+  if math.random() >= self:get_chance(from) then return end
+
+  ChainLightning{
+    group = main.current.main,
+    target = target,
+    parent = from,
+    range = SHOCK_PROC_RANGE,
+    max_chains = self:get_max_targets(from),
+    damage = SHOCK_PROC_DAMAGE,
+    damageType = DAMAGE_TYPE_SHOCK,
+    color = yellow[0],
+    is_troop = from.is_troop,
+  }
+end
+
+-- Storm tier markers; the work is done by Proc_Shock reading these.
+Proc_Shock2 = Proc:extend()
+function Proc_Shock2:init(args)
   self.triggers = {PROC_STATIC}
   self.scope = 'troop'
+  Proc_Shock2.super.init(self, args)
+end
 
-  Proc_Shock.super.init(self, args)
-  
+Proc_Shock3 = Proc:extend()
+function Proc_Shock3:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'troop'
+  Proc_Shock3.super.init(self, args)
 end
 
 --elemental transformation
@@ -2704,6 +2755,8 @@ proc_name_to_class = {
   ['shieldexplode'] = Proc_ShieldExplode,
   ['lightningball'] = Proc_LightningBall,
   ['shock'] = Proc_Shock,
+  ['shock2'] = Proc_Shock2,
+  ['shock3'] = Proc_Shock3,
   --red procs
   ['burnexplode'] = Proc_BurnExplode,
   ['volcano'] = Proc_Volcano,
