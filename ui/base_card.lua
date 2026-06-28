@@ -127,9 +127,11 @@ function BaseCard:draw_base_card()
   -- Border
   graphics.rectangle(self.x, self.y, width, height, 6, 6, self.tier_color, 2)
 
-  -- Cost text at top
+  -- Cost text at top (subclasses can nudge it via cost_offset_x/y)
   if self.cost_text then
-    self.cost_text:draw(self.x + width/2 - 5, self.y - height/2 + 10)
+    local ox = self.cost_offset_x or (width/2 - 5)
+    local oy = self.cost_offset_y or (-height/2 + 10)
+    self.cost_text:draw(self.x + ox, self.y + oy)
   end
   
   -- Image in center-top area

@@ -113,6 +113,7 @@ ITEM_SET_POWER_BUDGET = 1
 ITEM_SETS = {
   [ITEM_SET.DAMAGE] = {
     name = 'Power',
+    summary = '+%damage',
     color = 'red',
     rarity = ITEM_RARITY.COMMON,
     bonuses = {
@@ -158,6 +159,7 @@ ITEM_SETS = {
   },
   [ITEM_SET.CRIT] = {
     name = 'Precision',
+    summary = '+crit chance',
     color = 'blue',
     rarity = ITEM_RARITY.COMMON,
     bonuses = {
@@ -173,6 +175,7 @@ ITEM_SETS = {
   },
   [ITEM_SET.COLD] = {
     name = 'Frost',
+    summary = '+cold damage',
     color = 'blue',
     rarity = ITEM_RARITY.COMMON,
     bonuses = {
@@ -188,6 +191,7 @@ ITEM_SETS = {
   },
   [ITEM_SET.FROST_NOVA] = {
     name = 'Frost Nova',
+    summary = 'frost nova',
     color = 'blue',
     rarity = ITEM_RARITY.RARE,
     bonuses = {
@@ -199,6 +203,7 @@ ITEM_SETS = {
   },
   [ITEM_SET.FIRE] = {
     name = 'Inferno',
+    summary = '+fire damage',
     color = 'red',
     rarity = ITEM_RARITY.COMMON,
     bonuses = {
@@ -214,6 +219,7 @@ ITEM_SETS = {
   },
   [ITEM_SET.METEOR] = {
     name = 'Meteor',
+    summary = 'meteors',
     color = 'red',
     rarity = ITEM_RARITY.RARE,
     bonuses = {
@@ -229,6 +235,7 @@ ITEM_SETS = {
   },
   [ITEM_SET.SHOCK] = {
     name = 'Storm',
+    summary = '+shock damage',
     color = 'yellow',
     rarity = ITEM_RARITY.COMMON,
     bonuses = {
@@ -244,6 +251,7 @@ ITEM_SETS = {
   },
   [ITEM_SET.LIGHTNING_BALL] = {
     name = 'Lightning',
+    summary = 'lightning ball',
     color = 'yellow',
     rarity = ITEM_RARITY.RARE,
     bonuses = {
@@ -255,6 +263,7 @@ ITEM_SETS = {
   },
   [ITEM_SET.CURSE] = {
     name = 'Curse',
+    summary = 'curse enemies',
     color = 'purple',
     rarity = ITEM_RARITY.RARE,
     bonuses = {
@@ -289,6 +298,7 @@ ITEM_SETS = {
   -- },
   [ITEM_SET.BLOODLUST] = {
     name = 'Bloodlust',
+    summary = '+aspeed on kill',
     color = 'purple',
     rarity = ITEM_RARITY.RARE,
     bonuses = {
@@ -304,6 +314,7 @@ ITEM_SETS = {
   },
   [ITEM_SET.SPLASH] = {
     name = 'Splash',
+    summary = 'attacks splash',
     color = 'brown',
     rarity = ITEM_RARITY.RARE,
     bonuses = {
@@ -328,6 +339,7 @@ ITEM_SETS = {
   -- },
   [ITEM_SET.SHIELD] = {
     name = 'Radiance',
+    summary = 'shield + aura',
     color = 'red',
     rarity = ITEM_RARITY.RARE,
     bonuses = {
@@ -341,6 +353,7 @@ ITEM_SETS = {
   },
   [ITEM_SET.REPEAT] = {
     name = 'Repeat',
+    summary = 'repeat chance',
     color = 'yellow',
     rarity = ITEM_RARITY.RARE,
     bonuses = {
@@ -356,6 +369,7 @@ ITEM_SETS = {
   },
   [ITEM_SET.MULTI_SHOT] = {
     name = 'Multi-Shot',
+    summary = 'extra shots',
     color = 'brown',
     rarity = ITEM_RARITY.RARE,
     bonuses = {
@@ -392,6 +406,7 @@ ITEM_SETS = {
   -- nothing, so one piece anywhere on the team is enough.
   [ITEM_SET.TREASURY] = {
     name = 'Treasury',
+    summary = '+interest',
     color = 'purple',
     rarity = ITEM_RARITY.RARE,
     bonuses = {
@@ -406,6 +421,7 @@ ITEM_SETS = {
   -- elemental teams. 1/1 set.
   [ITEM_SET.RESONANCE] = {
     name = 'Resonance',
+    summary = '+%damage per element',
     color = 'purple',
     rarity = ITEM_RARITY.RARE,
     bonuses = {
@@ -419,6 +435,7 @@ ITEM_SETS = {
   -- then bigger/harder-hitting orbs.
   [ITEM_SET.ORBITAL] = {
     name = 'Orbit',
+    summary = 'damaging orbs',
     color = 'blue',
     rarity = ITEM_RARITY.RARE,
     bonuses = {
@@ -436,6 +453,7 @@ ITEM_SETS = {
   -- the heal stronger and bounce further.
   [ITEM_SET.MEND] = {
     name = 'Mend',
+    summary = 'heal allies',
     color = 'green',
     rarity = ITEM_RARITY.RARE,
     bonuses = {
@@ -452,6 +470,7 @@ ITEM_SETS = {
   -- the cap replaces the oldest turret.
   [ITEM_SET.TURRET] = {
     name = 'Garrison',
+    summary = 'deploy turrets',
     color = 'brown',
     rarity = ITEM_RARITY.RARE,
     bonuses = {

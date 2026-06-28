@@ -5,8 +5,8 @@ ItemCard = BaseCard:extend()
 function ItemCard:init(args)
   -- Set up item-specific properties before calling super
   self.item = args.item
-  args.image = find_item_image(self.item)
-  args.colors = self.item.colors
+  args.image = nil  -- item cards no longer show the icon; set name/summary instead
+  args.colors = nil  -- no colored stripe on the top half
   args.tier_color = self.item.tier_color or item_to_color(self.item)
   args.name = self.item.name
   
@@ -32,28 +32,37 @@ function ItemCard:init(args)
   self.current_scale = 1
   self.shrink_threshold_y = gh/2 - 25 + 80 -- Character card Y + some buffer
 
-  -- Create cost text
+  -- Create cost text, pinned to the very top-right corner
   if self.cost > 0 then
     self.cost_text = Text({{text = '[yellow]' .. self.cost, font = pixul_font, alignment = 'center'}}, global_text_tags)
+    self.cost_offset_x = self.w/2 - 5
+    self.cost_offset_y = -self.h/2 + 6
   end
 
-  -- Set bonus elements
+  -- Set bonus elements (hoverable title buttons) + per-set summary text
   self.set_bonus_elements = {}
+  self.set_defs = {}
+  self.set_keys = {}
+  self.set_desc_texts = {}
+  self.set_layout = {}
   if self.sets then
     self:create_set_bonus_elements()
   end
   self.set_button_hovered = false
 
-  -- Create stats text
-  self:create_stats_text()
-  
+  -- Setless items (or items whose sets were removed) fall back to the old stat
+  -- line so the card isn't blank; set items use the name/summary/x-of-x layout.
+  if #self.set_bonus_elements == 0 then
+    self:create_stats_text()
+  else
+    self:layout_set_summaries()
+  end
+
   -- Play creation effect
   self:creation_effect()
 end
 
 function ItemCard:create_set_bonus_elements()
-  local i = 0
-
   for _, set_key in pairs(self.sets) do
     local set_def = ITEM_SETS[set_key]
     -- Item rolled with a set that has since been removed from ITEM_SETS
@@ -62,26 +71,113 @@ function ItemCard:create_set_bonus_elements()
     if not set_def then goto continue end
     local color = set_def.color or 'orange'
 
-    local text = set_def.name
-
     local set_button = Button{
       group = self.group,
       parent = self,
-      x = 0, -- Position relative to ItemCard center
-      y = 10 + i*20, -- Position relative to ItemCard center
+      x = 0, -- positioned each frame in update()
+      y = 0,
       bg_color = 'bg',
       selected_bg_color = fg[-5],
-      fg_color = set_def.color or 'orange',
+      fg_color = color,
       button_text = set_def.name or "unknown set",
       action = function() end, -- No action on click, just hover
       set_info = set_def, -- Store set info for hover
+      set_key = set_key, -- Used to compute the expected-after-purchase tier
       no_spring = true, -- Keep no_spring since we'll handle positioning manually
     }
 
     table.insert(self.set_bonus_elements, set_button)
-    i = i + 1
+    table.insert(self.set_defs, set_def)
+    table.insert(self.set_keys, set_key)
+
+    -- Terse summary ("+fire", "+damage"). Full per-tier breakdown still shows
+    -- in the hover tooltip on the title. Same color for every item.
+    local idx = #self.set_bonus_elements
+    local summary = self:build_set_summary(set_def)
+    local lines = {}
+    for _, line in ipairs(self:wrap_text(summary, self.w - 8, pixul_font)) do
+      table.insert(lines, {text = '[fg]' .. line, font = pixul_font, alignment = 'center'})
+    end
+    self.set_desc_texts[idx] = (#lines > 0) and Text(lines, global_text_tags) or nil
     ::continue::
   end
+end
+
+-- A very short blurb for the set: prefer a stat-based form built from the set's
+-- bonus stats ("+fire", "+damage", "+crit"); fall back to the first clause of
+-- the tier-1 description for proc-only sets that grant no flat stats.
+function ItemCard:build_set_summary(set_def)
+  -- An authored `summary` on the set wins (see ITEM_SETS).
+  if set_def.summary then return set_def.summary end
+
+  local names, seen = {}, {}
+  for _, tier in pairs(set_def.bonuses or {}) do
+    if tier.stats then
+      for key, _ in pairs(tier.stats) do
+        local dn = (item_stat_lookup and item_stat_lookup[key]) or key
+        if not seen[dn] then seen[dn] = true; table.insert(names, dn) end
+      end
+    end
+  end
+  if #names > 0 then
+    return '+' .. table.concat(names, ', ')
+  end
+
+  local d = (set_def.descriptions and set_def.descriptions[1]) or ''
+  return (d:match('^[^;,(]+') or d):gsub('%s+$', '')
+end
+
+-- Vertical offsets (relative to card center) for each set's title button and
+-- its summary text. Titles stack from just below the cost; the summary block is
+-- centered in the room between the titles and the bottom x/x. Used by both
+-- update() (button position) and draw() (summary position) so they stay aligned.
+function ItemCard:layout_set_summaries()
+  local n = #self.set_bonus_elements
+  local title_h = 9
+
+  -- Titles stacked from the top.
+  local y = -self.h/2 + 14
+  for i = 1, n do
+    self.set_layout[i] = {title_dy = y + title_h/2}
+    y = y + title_h + 1
+  end
+  local titles_bottom = y
+
+  -- Center the summary text(s) in the gap between the titles and the x/x.
+  local xx_top = self.h/2 - 12
+  local total_desc_h = 0
+  for i = 1, n do
+    local desc = self.set_desc_texts[i]
+    total_desc_h = total_desc_h + (desc and desc.h or 0)
+  end
+  local dy = (titles_bottom + xx_top) / 2 - total_desc_h/2
+  for i = 1, n do
+    local desc = self.set_desc_texts[i]
+    local dh = desc and desc.h or 0
+    self.set_layout[i].desc_dy = dy + dh/2
+    dy = dy + dh
+  end
+end
+
+-- x/x for a set: the tier this purchase would land on (max pieces any unit
+-- already owns + 1) over the set's full size. 1/3 when nobody owns it, 2/3
+-- when a unit already has one piece, etc.
+function ItemCard:compute_set_progress(set_key, set_def)
+  local denom = 0
+  local tiers = set_def.descriptions or set_def.bonuses or {}
+  for k, _ in pairs(tiers) do
+    if type(k) == 'number' and k > denom then denom = k end
+  end
+
+  local max_existing = 0
+  if self.parent and self.parent.units then
+    for _, unit in ipairs(self.parent.units) do
+      local c = Helper.Unit:count_unit_set_pieces(unit)[set_key] or 0
+      if c > max_existing then max_existing = c end
+    end
+  end
+
+  return math.min(max_existing + 1, denom), denom
 end
 
 function ItemCard:create_stats_text()
@@ -382,11 +478,13 @@ function ItemCard:update(dt)
     self:remove_set_bonus_tooltip()
   end
 
-  -- Update set button positions to move with the ItemCard, accounting for scaling
+  -- Update set title button positions to move with the ItemCard (top of the
+  -- card, below the cost), accounting for grab scaling.
   for i, set_button in ipairs(self.set_bonus_elements) do
+    local layout = self.set_layout[i]
     local base_x = self.x
-    local base_y = self.y + 10 + (i-1)*20
-    
+    local base_y = self.y + (layout and layout.title_dy or 0)
+
     -- If grabbed and scaling, apply the same scaling offset as in draw method
     if self.grabbed and self.current_scale < 1.0 then
       local mouse_x, mouse_y = camera:get_mouse_position()
@@ -395,11 +493,24 @@ function ItemCard:update(dt)
       base_x = base_x + scale_offset_x
       base_y = base_y + scale_offset_y
     end
-    
+
     set_button.x = base_x
     set_button.y = base_y
     if set_button.shape then
       set_button.shape:move_to(set_button.x, set_button.y)
+    end
+  end
+
+  -- Recompute the x/x for the primary set each frame (buying onto a unit from a
+  -- sibling card changes the count while this card is still on screen). The
+  -- current count is yellow, the denominator neutral; only rebuilt on change.
+  if self.set_keys[1] then
+    self.progress_num, self.progress_denom = self:compute_set_progress(self.set_keys[1], self.set_defs[1])
+    local str = self.progress_num .. '/' .. self.progress_denom
+    if str ~= self.progress_str then
+      self.progress_str = str
+      if self.progress_text then self.progress_text.dead = true end
+      self.progress_text = Text({{text = '[yellow]' .. self.progress_num .. '[fg]/' .. self.progress_denom, font = pixul_font, alignment = 'center'}}, global_text_tags)
     end
   end
 
@@ -417,7 +528,7 @@ function ItemCard:update(dt)
   if not self.grabbed then
     for _, set_button in ipairs(self.set_bonus_elements) do
       if set_button.selected then
-        self:show_set_bonus_tooltip(set_button.set_info)
+        self:show_set_bonus_tooltip(set_button.set_info, set_button.set_key)
         self.set_button_hovered = true
       end
     end
@@ -429,10 +540,16 @@ function ItemCard:update(dt)
 
 end
 
-function ItemCard:show_set_bonus_tooltip(set_info)
+function ItemCard:show_set_bonus_tooltip(set_info, set_key)
   if self.dead then return end
-  
-  local text_lines = DrawUtils.build_set_bonus_tooltip_text(set_info)
+
+  -- Preview the tier this purchase would reach: the expected after-buy bonuses
+  -- are colored the set color, the rest greyed (same as the card's x/x).
+  local pieces = 0
+  if set_key then
+    pieces = (self:compute_set_progress(set_key, set_info))
+  end
+  local text_lines = DrawUtils.build_set_bonus_tooltip_text(set_info, pieces)
 
   self:remove_set_bonus_tooltip()
 
@@ -474,6 +591,34 @@ function ItemCard:draw()
     -- Normal drawing
     self:draw_base_card()
   end
+
+  self:draw_set_summaries()
+end
+
+-- Per-set summary description under each title, plus the x/x set progress at the
+-- bottom. Drawn in screen space (like the title buttons), so skipped while the
+-- card is shrinking into a slot to avoid full-size text floating over it.
+function ItemCard:draw_set_summaries()
+  if #self.set_bonus_elements == 0 then return end
+  if self.flying_to_slot then return end
+  if self.current_scale and self.current_scale < 0.999 then return end
+
+  -- Draw inside the card's spring transform so the text wiggles with the card
+  -- on hover, just like the cost.
+  graphics.push(self.x, self.y, 0, self.sx*self.spring.x, self.sy*self.spring.x)
+
+  for i, layout in pairs(self.set_layout) do
+    local desc = self.set_desc_texts[i]
+    if desc and layout.desc_dy then
+      desc:draw(self.x, self.y + layout.desc_dy)
+    end
+  end
+
+  if self.progress_text then
+    self.progress_text:draw(self.x, self.y + self.h/2 - 6)
+  end
+
+  graphics.pop()
 end
 
 function ItemCard:on_mouse_enter()
@@ -519,7 +664,15 @@ function ItemCard:die()
   for _, set_button in ipairs(self.set_bonus_elements) do
     set_button.dead = true
   end
-  
+  for _, t in pairs(self.set_desc_texts or {}) do
+    t.dead = true
+  end
+  self.set_desc_texts = {}
+  if self.progress_text then
+    self.progress_text.dead = true
+    self.progress_text = nil
+  end
+
   -- Call parent die method
   ItemCard.super.die(self)
 end
