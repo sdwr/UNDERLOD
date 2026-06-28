@@ -623,6 +623,9 @@ function SpawnManager:init_spawn_pools()
       -- `replace_type` group instead of the normal clump. Used by T2 to
       -- mix tanks into the swarmer cadence without a parallel pool.
       replace_type = config.basic.replace_type,
+      -- Optional: a list of types; each replacement slot picks one at random.
+      -- Takes precedence over replace_type when set.
+      replace_pool = config.basic.replace_pool,
       replace_every = config.basic.replace_every,
       replace_group_size = config.basic.replace_group_size or 1,
       spawn_count = 0,
@@ -816,13 +819,17 @@ function SpawnManager:tick_spawn_pools(dt)
 
         -- Periodic substitution: every Nth basic tick, fire `replace_type`
         -- (e.g. a tank) instead of the normal swarmer clump.
-        local should_replace = self.basic_pool.replace_type
+        local should_replace = (self.basic_pool.replace_type or self.basic_pool.replace_pool)
           and self.basic_pool.replace_every and self.basic_pool.replace_every > 0
           and (self.basic_pool.spawn_count % self.basic_pool.replace_every == 0)
 
         if should_replace then
+          -- replace_pool (random per slot) wins over a single replace_type.
+          local replace_type = self.basic_pool.replace_pool
+            and random:table(self.basic_pool.replace_pool)
+            or self.basic_pool.replace_type
           Spawn_Group_With_Location(self.arena,
-            {self.basic_pool.replace_type, self.basic_pool.replace_group_size, 'nil'},
+            {replace_type, self.basic_pool.replace_group_size, 'nil'},
             location)
         else
           local clump_size = SWARMERS_PER_LEVEL(self.arena.level)

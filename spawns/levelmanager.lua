@@ -30,9 +30,14 @@ end
 -- the four custom enemies.
 local T2_SPECIAL_POOL = {
   'snakearrow', 'mortar', 'roach', 'cleaver', 'brute', 'orb', 'boomerang',
-  'sniper', 'plasma', 'slime',
+  'sniper', 'plasma',
   'splitter', 'pulse_walker', 'drone_carrier',
 }
+
+-- From level 3 on, each "tank" slot in the basic pool randomly deploys a tank
+-- or a slime (slimes no longer come from the special cadence). L1/L2 use plain
+-- tanks only.
+local TANK_SLIME_REPLACE = {'tank', 'slime'}
 
 LEVEL_SPAWN_POOLS = {
   [1] = {
@@ -52,21 +57,21 @@ LEVEL_SPAWN_POOLS = {
     basic = {
       type = 'swarmer',
       interval = BASIC_CLUMP_INTERVAL,
-      replace_type = 'tank',
+      replace_pool = TANK_SLIME_REPLACE,
       replace_every = 6,
       replace_group_size = 1,
     },
-    special_pool = {'slime', 'roach', 'sniper'},
+    special_pool = {'roach', 'sniper'},
   },
   [5] = {
     basic = {
       type = 'swarmer',
       interval = BASIC_CLUMP_INTERVAL,
-      replace_type = 'tank',
+      replace_pool = TANK_SLIME_REPLACE,
       replace_every = 6,
       replace_group_size = 1,
     },
-    special_pool = {'slime', 'roach', 'sniper'},
+    special_pool = {'roach', 'sniper'},
   },
   -- 6 is stompy boss. 7-10 (T2) are built below from the shared T2 pool.
 }
@@ -76,8 +81,8 @@ for _, lvl in ipairs({7, 8, 9, 10}) do
     basic = {
       type = 'swarmer',
       interval = BASIC_CLUMP_INTERVAL,
-      -- Every 4th basic tick fires a single tank instead of a swarmer clump.
-      replace_type = 'tank',
+      -- Every 4th basic tick fires a tank or slime instead of a swarmer clump.
+      replace_pool = TANK_SLIME_REPLACE,
       replace_every = 4,
       replace_group_size = 1,
     },
@@ -95,7 +100,8 @@ function Special_Cadence_Group_Size(enemy_type)
 end
 
 local function get_spawn_config_for_level(level)
-  -- Hand-authored early levels: L2 introduces only slimes, L3 adds snipers.
+  -- Hand-authored early levels: L2 is swarmers + tanks only; L3 adds snipers as
+  -- a special and starts mixing slimes into the tank slots.
   if level == 2 then
     return {
       basic = {
@@ -105,7 +111,7 @@ local function get_spawn_config_for_level(level)
         replace_every = 5,
         replace_group_size = 1,
       },
-      special_pool = {'slime'},
+      special_pool = {},
     }
   end
 
@@ -114,11 +120,11 @@ local function get_spawn_config_for_level(level)
       basic = {
         type = 'swarmer',
         interval = BASIC_CLUMP_INTERVAL,
-        replace_type = 'tank',
+        replace_pool = TANK_SLIME_REPLACE,
         replace_every = 5,
         replace_group_size = 1,
       },
-      special_pool = {'slime', 'sniper'},
+      special_pool = {'sniper'},
     }
   end
 

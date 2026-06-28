@@ -361,34 +361,37 @@ end
 function ItemCard:start_buy_animation(target_item_part, unit, slot_index)
   -- Handle purchase transaction immediately
   self:handle_purchase_transaction()
-  
-  -- Set flag on target ItemPart to hide display (item not assigned yet)
+
+  -- Assign the item to the slot NOW, not when the fly-in animation finishes.
+  -- Otherwise a second quick purchase runs find_available_inventory_slot while
+  -- this slot still reads empty, picks it too, and overwrites this item. The
+  -- ItemPart stays hidden during the flight; the callback just reveals it.
+  unit.items[slot_index] = self.item
   target_item_part.hide_item_display = true
-  
+
   -- Disable mouse interaction during animation
   self.interact_with_mouse = false
   self.flying_to_slot = true
-  
+
   -- Animate towards the target slot
   local duration = 0.2
   self.t:tween(duration, self, {
-    x = target_item_part.x, 
+    x = target_item_part.x,
     y = target_item_part.y,
     sx = ITEM_PART_WIDTH / self.w,
     sy = ITEM_PART_HEIGHT / self.h
   }, math.out_cubic, function()
-    -- Animation complete - now assign the item
-    unit.items[slot_index] = self.item
+    -- Animation complete - reveal the item and fire the effects.
     target_item_part.hide_item_display = false
-    
+
     -- Create particle effect at the target slot
     target_item_part:create_item_added_effect(self.item)
-    
+
     -- Notify buy screen that an item was purchased
     if self.parent.on_item_purchased then
       self.parent:on_item_purchased(unit, slot_index, self.item)
     end
-    
+
     self:die()
   end)
 end

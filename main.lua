@@ -1437,6 +1437,7 @@ function init()
     ['chaser'] = 50,
 
     --special enemies t1
+    ['slime'] = 100,
     ['brute'] = 150,
     ['goblin_archer'] = 150,
     ['archer'] = 150,

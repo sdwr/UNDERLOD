@@ -531,12 +531,12 @@ SCALED_ENEMY_MS = function(level, base_ms)
   return base_ms + (base_ms * 0.03 * scale)
 end
 
--- Swarmer clump size per level. The opening (L1-3) holds at the L1 baseline of
--- 10; from L4 the ramp adds +2 every two levels (boss levels carry the prior
--- value and spawn no swarmers anyway), so it climbs gently:
---   L1-3:10  L4-5:12  L7-8:14  L9-10:16  L12-13:18  L14-15:20 ...
+-- Swarmer clump size per level. The opening eases in (L2 at 0.9x the L1 base,
+-- L3 back at 1.0x); from L4 the ramp adds +2 every two levels (boss levels
+-- carry the prior value and spawn no swarmers anyway), so it climbs gently:
+--   L1:10  L2:9  L3:10  L4-5:12  L7-8:14  L9-10:16  L12-13:18  L14-15:20 ...
 local SWARMER_CLUMP_BY_LEVEL = {
-  10, 10, 10,          -- L1-3  opening
+  10, 9, 10,           -- L1-3  opening (L2 = 0.9x L1)
   12, 12, 12,          -- L4-5  (L6 stompy)
   14, 14, 16, 16, 16,  -- L7-8, L9-10  (L11 dragon)
   18, 18, 20, 20, 20,  -- L12-13, L14-15  (L16 heigan)

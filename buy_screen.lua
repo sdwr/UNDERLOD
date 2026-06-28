@@ -373,10 +373,16 @@ function BuyScreen:set_party()
   end
 
 
-  --center single unit, otherwise start on the left
-
+  -- 0-1 units keep the original centered layout. With 2+ units, fill
+  -- left-to-right (1, 2, 3) so the buy card sits to their right instead of
+  -- wrapping around to the left side when the second unit is bought.
   local x = gw/2 - CHARACTER_CARD_WIDTH - CHARACTER_CARD_SPACING - 15
-  local card_order = {[1] = 2, [2] = 3, [3] = 1}
+  local card_order
+  if #self.units >= 2 then
+    card_order = {[1] = 1, [2] = 2, [3] = 3}
+  else
+    card_order = {[1] = 2, [2] = 3, [3] = 1}
+  end
 
   for i, unit in ipairs(self.units) do
     local card_index = card_order[i]

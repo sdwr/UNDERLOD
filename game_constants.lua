@@ -177,11 +177,11 @@ SPECIAL_SPAWN_JITTER = 0.2
 -- SPECIAL_CADENCE_BASE + SPECIAL_CADENCE_INCREMENT * (cycle specials alive,
 -- counting the group just queued). So spawns space out as the field fills
 -- and tighten back up as the player clears it. Tanks (basic-pool filler) are
--- excluded from the count. Example with base 5 / increment 3:
---   t=5 first; +5+3*1=8 -> t=13; if still alive +5+3*2=11 -> t=24,
---   but if the first died, +5+3*1=8 -> t=21.
+-- excluded from the count. Example with base 7 / increment 3:
+--   t=5 first; +7+3*1=10 -> t=15; if still alive +7+3*2=13 -> t=28,
+--   but if the first died, +7+3*1=10 -> t=25.
 SPECIAL_CADENCE_INITIAL = 5
-SPECIAL_CADENCE_BASE = 5
+SPECIAL_CADENCE_BASE = 7
 SPECIAL_CADENCE_INCREMENT = 3
 
 -- Seconds between swarmer clump spawns in the continuous system. Clump size
