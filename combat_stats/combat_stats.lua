@@ -531,16 +531,21 @@ SCALED_ENEMY_MS = function(level, base_ms)
   return base_ms + (base_ms * 0.03 * scale)
 end
 
+-- Swarmer clump size per level. The opening (L1-3) holds at the L1 baseline of
+-- 10; from L4 the ramp adds +2 every two levels (boss levels carry the prior
+-- value and spawn no swarmers anyway), so it climbs gently:
+--   L1-3:10  L4-5:12  L7-8:14  L9-10:16  L12-13:18  L14-15:20 ...
+local SWARMER_CLUMP_BY_LEVEL = {
+  10, 10, 10,          -- L1-3  opening
+  12, 12, 12,          -- L4-5  (L6 stompy)
+  14, 14, 16, 16, 16,  -- L7-8, L9-10  (L11 dragon)
+  18, 18, 20, 20, 20,  -- L12-13, L14-15  (L16 heigan)
+  22, 22, 24, 24,      -- L17-18, L19-20
+  26, 26, 28, 28, 30,  -- L21-22, L23-24, L25
+}
+
 function SWARMERS_PER_LEVEL(level)
-  local count = math.min(30, 8 + (level * 2))
-  -- T2 (between stompy at L6 and dragon at L11) was pushing roughly 2x the
-  -- baseline swarmer count, which felt overloaded alongside the new T2
-  -- special mix. Scale by 1.4/2.0 so T2 clumps land closer to the intended
-  -- 1.4x multiplier of the L1 baseline.
-  if level >= 7 and level <= 10 then
-    count = math.floor(count * 0.7)
-  end
-  return count
+  return SWARMER_CLUMP_BY_LEVEL[level] or 30
 end
 
 function SPECIAL_ENEMIES_PER_LEVEL(level)

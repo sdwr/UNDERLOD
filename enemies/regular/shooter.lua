@@ -118,7 +118,9 @@ end
 
 
 function EnemyProjectile:on_trigger_enter(other, contact)
-  if (other:is(Player) or other.is_troop) and other.hit then
+  -- friendly_turret is a deployable ally (is_troop is false so it doesn't count
+  -- toward win/loss), but it should still take enemy projectile damage.
+  if (other:is(Player) or other.is_troop or other.class == 'friendly_turret') and other.hit then
     self:die(self.x, self.y, nil, random:int(2, 3))
     other:hit(self.damage, self.unit)
     if other.is_troop and other.push then

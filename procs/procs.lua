@@ -2566,7 +2566,7 @@ end
 -- =====================================================================
 -- Garrison set: periodically deploy a destructible turret. Team scope so
 -- it fires once per interval and shares one active-turret pool. turret2/
--- turret3 raise the active cap to 2/3; dropping past the cap removes the
+-- turret3 raise the active cap to 3/4; dropping past the cap removes the
 -- oldest turret first.
 -- =====================================================================
 Proc_Turret = Proc:extend()
@@ -2576,13 +2576,29 @@ function Proc_Turret:init(args)
   -- Set before super.init in case addTriggers calls die() during init.
   self.tick_timer = TURRET_DROP_INTERVAL * 0.5
   self.turrets = {}
+  self.armed = false
   Proc_Turret.super.init(self, args)
+end
+
+-- True once at least one enemy is on the field. Mirrors the turret's own enemy
+-- lookup (main.current.main + the main.current.enemies class list).
+function Proc_Turret:enemies_present()
+  local cur = main.current
+  if not cur or not cur.main or not cur.enemies then return false end
+  return #cur.main:get_objects_by_classes(cur.enemies) > 0
 end
 
 function Proc_Turret:onTick(dt, from)
   Proc_Turret.super.onTick(self, dt)
   if not self.team then return end
   if not self.team:is_first_alive_troop(from) then return end
+
+  -- Hold fire until enemies have started spawning; the tick_timer (seeded at
+  -- half the interval) only advances from there, so the first turret lands a
+  -- few seconds after enemies appear rather than at the level's countdown.
+  if not self.armed then
+    if self:enemies_present() then self.armed = true else return end
+  end
 
   -- Drop references to turrets that have died.
   for i = #self.turrets, 1, -1 do
@@ -2596,9 +2612,9 @@ function Proc_Turret:onTick(dt, from)
 end
 
 function Proc_Turret:get_max_turrets(from)
-  if Has_Static_Proc(from, 'turret3') then return 3 end
-  if Has_Static_Proc(from, 'turret2') then return 2 end
-  return 1
+  if Has_Static_Proc(from, 'turret3') then return 4 end
+  if Has_Static_Proc(from, 'turret2') then return 3 end
+  return 2
 end
 
 function Proc_Turret:drop_turret(from)
@@ -2618,6 +2634,7 @@ function Proc_Turret:drop_turret(from)
     level = from.level,
     color = brown[0],
   }
+  metal_click:play{pitch = random:float(0.95, 1.05), volume = 1}
   table.insert(self.turrets, turret)
 end
 

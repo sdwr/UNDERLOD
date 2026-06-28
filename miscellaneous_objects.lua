@@ -1567,6 +1567,24 @@ end
 -- is_troop is left false so it doesn't trigger troop-only hit/death time-slows;
 -- its projectiles are flagged is_troop=true explicitly so they hit enemies.
 -- =================================================================================
+-- Draws its target during the floor pass so the target renders beneath troops
+-- and enemies (which live in / on top of the main group). The target keeps its
+-- physics + update in main but is flagged hidden there so it isn't drawn twice.
+TurretUnderlay = Object:extend()
+TurretUnderlay.__class_name = 'TurretUnderlay'
+TurretUnderlay:implement(GameObject)
+function TurretUnderlay:init(args)
+  self:init_game_object(args)
+  self.target = args.target
+end
+function TurretUnderlay:update(dt)
+  self:update_game_object(dt)
+  if not self.target or self.target.dead then self.dead = true end
+end
+function TurretUnderlay:draw()
+  if self.target and not self.target.dead then self.target:draw() end
+end
+
 FriendlyTurret = Unit:extend()
 FriendlyTurret:implement(GameObject)
 FriendlyTurret:implement(Physics)
@@ -1616,6 +1634,11 @@ function FriendlyTurret:init(args)
   self:set_as_rectangle(self.size, self.size, 'static', 'troop')
 
   self.hp_bar = HPBar{group = main.current.effects, parent = self}
+
+  -- Render beneath troops and enemies: stay in main for physics/update but draw
+  -- during the floor pass via a proxy so units stand in front of the turret.
+  self.hidden = true
+  self.underlay = TurretUnderlay{group = main.current.floor, target = self}
 
   self.attack_sensor = Circle(self.x, self.y, self.attack_range)
   self.attack_timer = math.random() * self.attack_cooldown

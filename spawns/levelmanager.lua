@@ -34,20 +34,6 @@ local T2_SPECIAL_POOL = {
   'splitter', 'pulse_walker', 'drone_carrier',
 }
 
--- Early-game pool. L2/L3 draw a random 2 of these per run; L4/L5 use all 3.
-local EARLY_SPECIAL_POOL = {'slime', 'roach', 'sniper'}
-
--- Pull n distinct entries from pool at random (no mutation of pool).
-local function pick_random_subset(pool, n)
-  local copy = {}
-  for _, v in ipairs(pool) do table.insert(copy, v) end
-  local result = {}
-  for _ = 1, math.min(n, #copy) do
-    table.insert(result, table.remove(copy, random:int(1, #copy)))
-  end
-  return result
-end
-
 LEVEL_SPAWN_POOLS = {
   [1] = {
     -- Tanks now appear from level 1: every 5th basic clump is swapped for a
@@ -109,13 +95,30 @@ function Special_Cadence_Group_Size(enemy_type)
 end
 
 local function get_spawn_config_for_level(level)
-  -- L2/L3: random 2-of-3 from the early pool, re-rolled each time the level
-  -- list is built (i.e. per run). Built fresh here so the randomization isn't
-  -- frozen at file-load time.
-  if level == 2 or level == 3 then
+  -- Hand-authored early levels: L2 introduces only slimes, L3 adds snipers.
+  if level == 2 then
     return {
-      basic = {type = 'swarmer', interval = BASIC_CLUMP_INTERVAL},
-      special_pool = pick_random_subset(EARLY_SPECIAL_POOL, 2),
+      basic = {
+        type = 'swarmer',
+        interval = BASIC_CLUMP_INTERVAL,
+        replace_type = 'tank',
+        replace_every = 5,
+        replace_group_size = 1,
+      },
+      special_pool = {'slime'},
+    }
+  end
+
+  if level == 3 then
+    return {
+      basic = {
+        type = 'swarmer',
+        interval = BASIC_CLUMP_INTERVAL,
+        replace_type = 'tank',
+        replace_every = 5,
+        replace_group_size = 1,
+      },
+      special_pool = {'slime', 'sniper'},
     }
   end
 
@@ -223,19 +226,21 @@ function Build_Level_List(max_level)
 
       -- round_power = total kill power for gold-per-kill (each kill grants
       -- its enemy_to_round_power as a fraction of this total). kill_quota is
-      -- the level-completion gate. Base bumped +500 so even level 1 has
-      -- meaningful length; multiplier ramps 1.5 -> 1.5 + 0.10*(level-1) and
-      -- gets a flat +35% from level 2 onward to lengthen mid/late levels
-      -- without inflating the gold-per-kill denominator.
+      -- the level-completion gate. round_power (the gold-per-kill denominator)
+      -- still ramps per level; only the enemy COUNT below is flattened early.
       level_list[i].round_power = (ROUND_POWER_BY_LEVEL[i] or 2000) + 500
-      local quota_mult = 1.5 + 0.10 * (i - 1)
-      if i >= 2 then quota_mult = quota_mult * 1.35 end
-      -- L4+ kill quotas were rising too fast (original L4 ~5832, L5 ~6926).
-      -- Trim 35% off L4 and every subsequent non-boss level. The 35% scales
-      -- every L4+ quota uniformly, so the per-level ramp from L4 onward is
-      -- preserved (just shifted down).
-      local quota_scale = (i >= 4) and 0.65 or 1.0
-      level_list[i].kill_quota = math.ceil(level_list[i].round_power * quota_mult * 1.5 * quota_scale)
+
+      -- Enemy count (kill_quota). Levels 1-3 all use level 1's count so the
+      -- opening stays gentle; the per-level +15% lengthening and the L4 trim
+      -- both start at level 4. Multiplier ramps 1.5 -> 1.5 + 0.10*(level-1).
+      local quota_level = (i <= 3) and 1 or i
+      local quota_round_power = (ROUND_POWER_BY_LEVEL[quota_level] or 2000) + 500
+      local quota_mult = 1.5 + 0.10 * (quota_level - 1)
+      if quota_level >= 4 then quota_mult = quota_mult * 1.15 end
+      -- L4+ kill quotas were rising too fast; trim 35% off L4 and every
+      -- subsequent non-boss level (uniform, so the L4+ ramp is preserved).
+      local quota_scale = (quota_level >= 4) and 0.65 or 1.0
+      level_list[i].kill_quota = math.ceil(quota_round_power * quota_mult * 1.5 * quota_scale)
       level_list[i].waves_power = {level_list[i].kill_quota}
     end
   end

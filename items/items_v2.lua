@@ -466,7 +466,7 @@ ITEM_SETS = {
     }
   },
   -- Summon: periodically drops a stationary turret that shoots enemies and
-  -- can be destroyed. 3-tier raises the active cap to 1/2/3; a new drop past
+  -- can be destroyed. 3-tier raises the active cap to 2/3/4; a new drop past
   -- the cap replaces the oldest turret.
   [ITEM_SET.TURRET] = {
     name = 'Garrison',
@@ -479,9 +479,9 @@ ITEM_SETS = {
       [3] = { procs = {'turret3'} },
     },
     descriptions = {
-      [1] = 'Periodically deploy a turret (max 1; replaces the oldest)',
-      [2] = 'Deploy up to 2 turrets',
-      [3] = 'Deploy up to 3 turrets',
+      [1] = 'Periodically deploy turrets (max 2; replaces the oldest)',
+      [2] = 'Deploy up to 3 turrets',
+      [3] = 'Deploy up to 4 turrets',
     }
   },
   -- [ITEM_SET.STUN] = {
