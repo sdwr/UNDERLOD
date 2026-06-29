@@ -18,7 +18,7 @@ fns['init_enemy'] = function(self)
 
   -- Drifts around the arena randomly; doesn't need to approach since the
   -- 400-range shot covers basically the whole map.
-  self.baseActionTimer = 1.5
+  self.baseActionTimer = 3
   self.move_option_weight = 0.4
   self.stopChasingInRange = true
 
@@ -39,7 +39,7 @@ fns['init_enemy'] = function(self)
       group = main.current.main,
       color = purple[5],
       damage = function() return self.dmg end,
-      v = 260,
+      v = 150,
       width = 22,
       height = 6,
       unit = self,
@@ -80,6 +80,28 @@ fns['draw_enemy'] = function(self)
     end
   elseif self.locked_target then
     self.locked_target = nil
+  end
+
+  -- Targeting line telegraph in the laser enemy's aim style: a red line that
+  -- runs the full length of the shot path and intensifies/widens as the windup
+  -- charges, snapping to full opacity + width once the aim locks.
+  if self.state == unit_states['casting'] and self.castObject then
+    local t = self.castObject.target
+    if t and t.x and t.y then
+      local dir = math.atan2(t.y - self.y, t.x - self.x)
+      -- Extend past the arena bounds so the beam spans the whole screen.
+      local far = gw + gh
+      local ex = self.x + math.cos(dir) * far
+      local ey = self.y + math.sin(dir) * far
+      local cast_length = self.castObject.cast_length or 1
+      local elapsed = self.castObject.elapsedTime or 0
+      local charge = math.clamp(elapsed / cast_length, 0, 1)
+      local locked = (cast_length - elapsed) <= SNIPER_AIM_LOCK_TIME
+      local line_color = red[0]:clone()
+      line_color.a = locked and 0.85 or (0.4 * charge)
+      local width = locked and 3 or math.max(0.5, 3 * charge)
+      graphics.line(self.x, self.y, ex, ey, line_color, width)
+    end
   end
 end
 

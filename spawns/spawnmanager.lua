@@ -115,6 +115,10 @@ function SpawnGlobals.Init()
 
   SpawnGlobals.last_spawn_point = nil
 
+  -- Rolling history of recent enemy spawn points for weighted placement. See
+  -- Get_Offscreen_Spawn_Point / Record_Spawn_Point.
+  SpawnGlobals.recent_spawns = {}
+
   SpawnGlobals.get_spawn_marker = function(index)
     local spawn_index = index % ((#SpawnGlobals.spawn_markers) - 1)
     local spawn_marker = SpawnGlobals.spawn_markers[spawn_index]
@@ -175,27 +179,79 @@ function Get_Spawn_Point(rs, location)
   return nil
 end
 
-function Get_Offscreen_Spawn_Point()
-  local x, y
-
-  -- Choose which edge to spawn from (top, bottom, left, right)
+-- One random point just off a random edge (top/bottom/left/right).
+function Get_Random_Offscreen_Point()
+  local off = SpawnGlobals.offscreen_spawn_offset
   local edge = random:int(1, 4)
-
   if edge == 1 then -- Top edge
-    x = random:int(-SpawnGlobals.offscreen_spawn_offset, gw + SpawnGlobals.offscreen_spawn_offset)
-    y = -SpawnGlobals.offscreen_spawn_offset -- Just off the top edge
+    return {x = random:int(-off, gw + off), y = -off}
   elseif edge == 2 then -- Bottom edge
-    x = random:int(-SpawnGlobals.offscreen_spawn_offset, gw + SpawnGlobals.offscreen_spawn_offset)
-    y = gh + SpawnGlobals.offscreen_spawn_offset -- Just off the bottom edge
+    return {x = random:int(-off, gw + off), y = gh + off}
   elseif edge == 3 then -- Left edge
-    x = -SpawnGlobals.offscreen_spawn_offset -- Just off the left edge
-    y = random:int(-SpawnGlobals.offscreen_spawn_offset, gh + SpawnGlobals.offscreen_spawn_offset)
+    return {x = -off, y = random:int(-off, gh + off)}
   else -- Right edge
-    x = gw + SpawnGlobals.offscreen_spawn_offset -- Just off the right edge
-    y = random:int(-SpawnGlobals.offscreen_spawn_offset, gh + SpawnGlobals.offscreen_spawn_offset)
+    return {x = gw + off, y = random:int(-off, gh + off)}
+  end
+end
+
+-- Push a chosen spawn point onto the rolling history, trimmed to the last
+-- SPAWN_WEIGHT_HISTORY entries (oldest dropped).
+function Record_Spawn_Point(p)
+  local hist = SpawnGlobals.recent_spawns
+  if not hist then hist = {}; SpawnGlobals.recent_spawns = hist end
+  hist[#hist + 1] = {x = p.x, y = p.y}
+  local max = SPAWN_WEIGHT_HISTORY or 4
+  while #hist > max do table.remove(hist, 1) end
+end
+
+-- Distance from a point to the nearest spawn in the recent history. Large when
+-- the candidate sits in open space the recent spawns haven't covered.
+local function dist_to_nearest_recent(p)
+  local hist = SpawnGlobals.recent_spawns
+  if not hist or #hist == 0 then return nil end
+  local best = math.huge
+  for i = 1, #hist do
+    local h = hist[i]
+    local d = math.distance(p.x, p.y, h.x, h.y)
+    if d < best then best = d end
+  end
+  return best
+end
+
+-- Weighted offscreen spawn point: sample several random edge points and pick
+-- one with probability proportional to (distance to nearest recent spawn)^EXP,
+-- so spawns drift toward the spaces farthest from recent activity. Records the
+-- chosen point in the history (covers all enemy spawns since they all route
+-- through here). Falls back to pure random when history is empty.
+function Get_Offscreen_Spawn_Point()
+  local hist = SpawnGlobals.recent_spawns
+  if not hist or #hist == 0 then
+    local p = Get_Random_Offscreen_Point()
+    Record_Spawn_Point(p)
+    return p
   end
 
-  return {x = x, y = y}
+  local n = SPAWN_WEIGHT_CANDIDATES or 10
+  local exp = SPAWN_WEIGHT_EXPONENT or 2
+  local best_p, best_weight, total = nil, 0, 0
+  local chosen = nil
+  for i = 1, n do
+    local cand = Get_Random_Offscreen_Point()
+    local d = dist_to_nearest_recent(cand) or 1
+    local w = d ^ exp
+    total = total + w
+    -- Reservoir-style weighted pick: each candidate replaces the current
+    -- choice with probability w / running_total, yielding a draw proportional
+    -- to weight in a single pass.
+    if random:float(0, 1) < w / total then
+      chosen = cand
+    end
+    if w > best_weight then best_p, best_weight = cand, w end
+  end
+
+  chosen = chosen or best_p or Get_Random_Offscreen_Point()
+  Record_Spawn_Point(chosen)
+  return chosen
 end
 
 function Outside_Arena(location)
@@ -593,6 +649,9 @@ function SpawnManager:init_spawn_pools()
   self.basic_pool = nil
   self.special_pools = {}
   self.special_events = {}
+
+  -- Fresh spawn-placement history each level so weighting doesn't carry over.
+  SpawnGlobals.recent_spawns = {}
 
   -- Debug arena: manual key-driven queue (see Build_Debug_Level_Entry). nil
   -- queue = normal level. The queue is spawned one entry per key press.
@@ -1019,7 +1078,7 @@ function Spawn_Group_With_Location(arena, group_data, wave_spawn_location, on_fi
     -- }
 
     -- This loop initiates all spawn processes with 0.1 second spacing using SpawnManager's delay counter
-    local spawn_offsets = {{x = -12, y = -12}, {x = 12, y = -12}, {x = 12, y = 12}, {x = -12, y = 12}, {x = 0, y = 0}}
+    local spawn_offsets = {{x = -18, y = -18}, {x = 18, y = -18}, {x = 18, y = 18}, {x = -18, y = 18}, {x = 0, y = 0}}
 
     -- For path-across-varied movement, compute one heading for the whole group
     -- so the swarm moves as a unit instead of fanning out individually.

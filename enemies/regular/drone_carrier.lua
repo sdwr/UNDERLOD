@@ -25,8 +25,10 @@ function HomingDrone:init(args)
 
   self.speed = self.speed or 80
   -- Lifetime instead of max-distance — homing path length is unpredictable.
-  self.lifetime = self.lifetime or 4
-  self.turn_rate = self.turn_rate or 2.4 -- radians/sec; slow enough to dodge
+  self.lifetime = self.lifetime or 3
+  -- radians/sec. At speed 80 this is a ~67px turn radius, loose enough that a
+  -- sidestep makes the drone overshoot and loop back instead of tracking you.
+  self.turn_rate = self.turn_rate or 1.2
 
   -- Initial heading: toward the target if we have one, else random.
   if self.target and self.target.x and self.target.y then
@@ -121,7 +123,7 @@ function DroneDeploy:init(args)
       damage = self.damage,
       unit = self.unit,
       speed = 80,
-      lifetime = 4,
+      lifetime = 3,
     }
   end
   if scout1 then

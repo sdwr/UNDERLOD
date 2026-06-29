@@ -309,7 +309,7 @@ TROOP_WANDER_DISTANCE = 50
 TROOP_WANDER_JITTER = 5
 
 -- Enemy steering behavior constants
-ENEMY_SEPARATION_RADIUS = 5.75
+ENEMY_SEPARATION_RADIUS = 7
 ENEMY_SEPARATION_WEIGHT = 10
 
 ENEMY_CRITTER_SEPARATION_RADIUS = 8
@@ -448,6 +448,16 @@ PATH_ACROSS_VARIED_JITTER = math.pi / 6
 MAX_ALIVE_BASICS = 180
 MAX_ALIVE_SPECIALS = 20
 MAX_ALIVE_ENEMIES = MAX_ALIVE_BASICS + MAX_ALIVE_SPECIALS
+
+-- Weighted offscreen spawn placement. Every enemy spawn (basics, specials,
+-- events, cadence) picks SPAWN_WEIGHT_CANDIDATES random edge points and chooses
+-- one via weighted random, where each candidate's weight is its distance to the
+-- nearest of the last SPAWN_WEIGHT_HISTORY spawns raised to SPAWN_WEIGHT_EXPONENT.
+-- Higher exponent biases harder toward open space (2 => a candidate twice as far
+-- is ~4x as likely); 0 would be pure random.
+SPAWN_WEIGHT_HISTORY = 4
+SPAWN_WEIGHT_CANDIDATES = 10
+SPAWN_WEIGHT_EXPONENT = 2
 MOVEMENT_TYPES = {MOVEMENT_TYPE_SEEK, MOVEMENT_TYPE_LOOSE_SEEK, MOVEMENT_TYPE_SEEK_TO_RANGE, MOVEMENT_TYPE_RANDOM, MOVEMENT_TYPE_FLEE, MOVEMENT_TYPE_NONE, MOVEMENT_TYPE_PATH_ACROSS, MOVEMENT_TYPE_PATH_ACROSS_VARIED}
 
 get_movement_type_by_enemy_type = function(enemy_type)

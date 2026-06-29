@@ -53,7 +53,7 @@ function Shotgun_Troop:create_spelldata()
     -- to a fraction of the default (2) so the combined burst is roughly one
     -- normal shot rather than five. Use cannoneer samples instead of the
     -- "thwip" arrow release for a meatier shotgun blast.
-    volume = 0.5,
+    volume = 0.25,
     pitch = 0.95,
     sound_table = {cannoneer1, cannoneer2},
     sound_duration = 0.2,
