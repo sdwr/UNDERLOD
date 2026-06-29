@@ -185,10 +185,15 @@ SPECIAL_CADENCE_BASE = 7
 SPECIAL_CADENCE_INCREMENT = 3
 
 -- Seconds between swarmer clump spawns in the continuous system. Clump size
--- itself is SWARMERS_PER_LEVEL(level), same as the old wave instructions.
--- Tuned so clumps don't pile up faster than the field can drain through
--- PATH_ACROSS - otherwise the basics cap fills and you get long silent gaps.
-BASIC_CLUMP_INTERVAL = 2
+-- itself is SWARMERS_PER_LEVEL(level). At 3.1s full-size clumps arrive less
+-- often than the original 2.0, thinning sustained swarmer density.
+BASIC_CLUMP_INTERVAL = 3.1
+
+-- Density throttle: the basic clump interval stretches as the field fills toward
+-- MAX_ALIVE_BASICS so spawns ease off before slamming into the hard cap. At an
+-- empty field the multiplier is 1x; at the cap it's (1 + this). 3 => up to
+-- 4x the interval (3.1s -> ~12.4s) when the arena is packed.
+BASIC_CLUMP_DENSITY_THROTTLE = 3
 
 -- Cinematic level-clear wipe: pre-delay before the first straggler dies,
 -- then enemies are spread evenly across LEVEL_CLEAR_CASCADE_DURATION so the
@@ -477,10 +482,8 @@ enemy_movement_types = {
   ['default'] = MOVEMENT_TYPE_SEEK,
   -- Aggressive seekers - chase players directly
   ['slowcharger'] = MOVEMENT_TYPE_SEEK,
-  -- Swarmer was MOVEMENT_TYPE_LOOSE_SEEK (chase player). Defaults to walking
-  -- straight across the map; set MOVEMENT_TYPE_LOOSE_SEEK here (or set the
-  -- per-instance flag aggro_when_close = true) to restore chase behavior.
-  ['swarmer'] = MOVEMENT_TYPE_PATH_ACROSS_VARIED,
+  -- Grey basic swarmers seek the player directly.
+  ['swarmer'] = MOVEMENT_TYPE_SEEK,
   ['hunter_swarmer'] = MOVEMENT_TYPE_SEEK,
   ['tank'] = MOVEMENT_TYPE_SEEK,
   ['chaser'] = MOVEMENT_TYPE_SEEK,

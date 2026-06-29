@@ -21,6 +21,10 @@ fns['init_enemy'] = function(self)
   self.stopChasingInRange = false
   self.haltOnPlayerContact = true
 
+  -- Reduce the wander "jitter" added on top of the seek by 40% so grey
+  -- swarmers track the player more directly.
+  self.seek_wander_mult = 0.6
+
   self.class = 'regular_enemy'
   self.baseIdleTimer = 0
 

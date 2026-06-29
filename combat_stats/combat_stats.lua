@@ -17,7 +17,7 @@ TROOP_DAMAGE = 11
 -- Troop base movement speed. Bumped 45 -> 65: at 45 the follow command and
 -- rally-to-center felt sluggish; 65 reads as "moving with intent" without
 -- being twitchy.
-TROOP_MS = 55
+TROOP_MS = 60
 -- Legacy constants (will be replaced)
 TROOP_BASE_COOLDOWN = 1.25
 TROOP_SWORDSMAN_BASE_COOLDOWN = 0.8
@@ -670,7 +670,7 @@ enemy_type_to_stats = {
     -- scaling kicks in - a real soak target you have to commit damage to.
     -- Full knockback immunity is set via `knockback_immune` in tank.lua's
     -- init_enemy (knockback_resistance caps at 0.8 so a flag is required).
-    ['tank'] = { dmg = 1, hp = 0.8, mvspd = 0.6 },
+    ['tank'] = { dmg = 1, hp = 0.8, mvspd = 1.1 },
 
     ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
     ['chaser'] = { dmg = 1, mvspd = 1 },

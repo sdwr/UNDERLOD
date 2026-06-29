@@ -551,7 +551,7 @@ function Enemy:update_move_seek()
       -- We are OUT of range, OR we are not supposed to stop.
       -- In either case, we must seek the target.
       self:seek_point(self.target.x, self.target.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
-      self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER) -- Add a little variation to the seek.
+      self:wander(ENEMY_WANDER_RADIUS, ENEMY_WANDER_DISTANCE, ENEMY_WANDER_JITTER, self.seek_wander_mult or 1) -- Add a little variation to the seek.
   end
 
   -- 3. Apply final steering adjustments in all active cases.

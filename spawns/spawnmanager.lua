@@ -616,9 +616,10 @@ function SpawnManager:init_spawn_pools()
     self.basic_pool = {
       type = config.basic.type,
       interval = config.basic.interval or BASIC_CLUMP_INTERVAL,
-      -- First clump fires quickly (0-2s) so the player isn't staring at an
-      -- empty arena; subsequent clumps use the full jittered interval.
-      next_fire = random:float(0, 2),
+      -- First clump fires almost immediately (0-0.5s) so the first enemies
+      -- land just after the progress bar finishes its fade-in (the 1.25s spawn
+      -- warning bridges the gap); subsequent clumps use the full interval.
+      next_fire = random:float(0, 0.5),
       -- Optional periodic substitution: every Nth basic spawn fires a
       -- `replace_type` group instead of the normal clump. Used by T2 to
       -- mix tanks into the swarmer cadence without a parallel pool.
@@ -849,7 +850,11 @@ function SpawnManager:tick_spawn_pools(dt)
             location, nil, heading_override)
         end
       end
-      self.basic_pool.next_fire = jittered_interval(self.basic_pool.interval)
+      -- Density throttle: stretch the next interval as the field fills toward
+      -- the basics cap, so the cadence eases off instead of hammering the cap.
+      local density = math.min(counts.basics / (MAX_ALIVE_BASICS or 9999), 1)
+      local throttle = 1 + density * (BASIC_CLUMP_DENSITY_THROTTLE or 0)
+      self.basic_pool.next_fire = jittered_interval(self.basic_pool.interval * throttle)
     end
   end
 

@@ -29,7 +29,7 @@ end
 -- varied so the back third doesn't feel like recycled early levels; includes
 -- the four custom enemies.
 local T2_SPECIAL_POOL = {
-  'snakearrow', 'mortar', 'roach', 'cleaver', 'brute', 'orb', 'boomerang',
+  'snakearrow', 'mortar', 'cleaver', 'brute', 'orb', 'boomerang',
   'sniper', 'plasma',
   'splitter', 'pulse_walker', 'drone_carrier',
 }
@@ -61,7 +61,7 @@ LEVEL_SPAWN_POOLS = {
       replace_every = 6,
       replace_group_size = 1,
     },
-    special_pool = {'roach', 'sniper'},
+    special_pool = {'sniper'},
   },
   [5] = {
     basic = {
@@ -71,7 +71,7 @@ LEVEL_SPAWN_POOLS = {
       replace_every = 6,
       replace_group_size = 1,
     },
-    special_pool = {'roach', 'sniper'},
+    special_pool = {'sniper'},
   },
   -- 6 is stompy boss. 7-10 (T2) are built below from the shared T2 pool.
 }
