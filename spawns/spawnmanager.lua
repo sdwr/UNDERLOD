@@ -665,8 +665,19 @@ function SpawnManager:init_spawn_pools()
   -- Small-special pool: own timer + cap, separate budget from specials.
   self.small_special_pool = nil
 
+  -- D: unified power-paced director. When present it supersedes the legacy
+  -- basic/special/small pools below.
+  self.spawn_director = nil
+
   local config = self.level_data and self.level_data.spawn_config
   if not config then return end
+
+  -- D: when a director config is present it drives spawning; the legacy pool
+  -- blocks below are guarded by their own config fields (which director levels
+  -- omit), so they simply don't run. The events layer is parsed for both.
+  if config.spawn_director then
+    self:init_spawn_director(config.spawn_director)
+  end
 
   -- Small-special pool config: { types = {...}, interval?, max_alive? }.
   if config.small_special and config.small_special.types
@@ -719,7 +730,7 @@ function SpawnManager:init_spawn_pools()
         group_size = pool.group_size,
         fired = false,
       })
-    else
+    elseif not self.spawn_director then
       local first_fire = pool.first_fire or (pool.interval * random:float(0.3, 0.8))
       table.insert(self.special_pools, {
         type = pool.type,
@@ -873,12 +884,222 @@ function SpawnManager:debug_spawn_next()
   self.debug_spawn_index = self.debug_spawn_index + 1
 end
 
+-- Build the director runtime from a level's spawn_director config. Tuning falls
+-- back to the SPAWN_DIRECTOR_* globals when not overridden per level.
+function SpawnManager:init_spawn_director(cfg)
+  self.spawn_director = {
+    setpoints = cfg.setpoints or {},
+    special_pool = cfg.special_pool or {},
+    ceilings = cfg.ceilings,
+    ceiling_mult = cfg.ceiling_mult or SPAWN_DIRECTOR_CEILING_MULT,
+    ramp_from = (cfg.ramp and cfg.ramp.from) or SPAWN_DIRECTOR_RAMP_FROM,
+    ramp_to = (cfg.ramp and cfg.ramp.to) or SPAWN_DIRECTOR_RAMP_TO,
+    global_cap = cfg.global_cap or SPAWN_DIRECTOR_GLOBAL_CAP,
+    fill_gain = cfg.fill_gain, fill_exp = cfg.fill_exp,
+    creep_gain = cfg.creep_gain, creep_exp = cfg.creep_exp,
+    rate_max = cfg.rate_max, rate_min = cfg.rate_min, rate_exp = cfg.rate_exp,
+    next_fire = random:float(0, 0.5),
+    -- Per-type in-flight count: spawns queued but not yet alive (still in their
+    -- spawn-warning window). Counted toward slot population so the director
+    -- doesn't re-pick a slot and overshoot its cap before the first one lands.
+    pending = {},
+  }
+end
+
+-- Weighted roll for a swarmer group from SWARMER_GROUP_MIX. Returns the size and
+-- whether the group should scatter (each member at its own random point).
+function roll_swarmer_group_size()
+  local mix = SWARMER_GROUP_MIX or {{weight = 1, min = 1, max = 1}}
+  local total = 0
+  for _, e in ipairs(mix) do total = total + (e.weight or 1) end
+  local r = random:float(0, total)
+  for _, e in ipairs(mix) do
+    r = r - (e.weight or 1)
+    if r <= 0 then return random:int(e.min or 1, e.max or 1), e.scatter end
+  end
+  return 1, false
+end
+
+-- Alive count for a director slot. 'special' is a category (all special_enemy
+-- minus tanks, which are their own slot; small_archers are already excluded
+-- from counts.specials). Everything else is a concrete type.
+function SpawnManager:director_slot_alive(slot, counts)
+  local pending = (self.spawn_director and self.spawn_director.pending) or {}
+  if slot == 'special' then
+    local p = 0
+    for _, t in ipairs((self.spawn_director and self.spawn_director.special_pool) or {}) do
+      p = p + (pending[t] or 0)
+    end
+    return math.max(0, (counts.specials or 0) - (counts.by_type['tank'] or 0)) + p
+  end
+  return (counts.by_type[slot] or 0) + (pending[slot] or 0)
+end
+
+-- Representative power for a slot (used for the budget/pacing math). The
+-- 'special' category uses the average power of its pool.
+function SpawnManager:director_slot_power(slot, d)
+  if slot == 'special' then
+    local pool = d.special_pool or {}
+    if #pool == 0 then return 150 end
+    local sum = 0
+    for _, t in ipairs(pool) do sum = sum + ((enemy_to_round_power and enemy_to_round_power[t]) or 0) end
+    return sum / #pool
+  end
+  return (enemy_to_round_power and enemy_to_round_power[slot]) or 50
+end
+
+-- Resolve a picked slot into (enemy_type, group_size, power_cost). Swarmers roll
+-- a group size from the mix (clamped to ceiling headroom); 'special' draws a
+-- random type; concrete slots spawn one.
+function SpawnManager:director_resolve_spawn(slot, counts, d, ramp)
+  if slot == 'swarmer' then
+    local alive = self:director_slot_alive('swarmer', counts)
+    local sp = math.max(1, (d.setpoints['swarmer'] or 1) * ramp)
+    local ceil = (d.ceilings and d.ceilings['swarmer'])
+      or math.ceil(sp * (d.ceiling_mult or SPAWN_DIRECTOR_CEILING_MULT))
+    local headroom = math.max(1, ceil - alive)
+    local size, scatter = roll_swarmer_group_size()
+    local gs = math.max(1, math.min(size, headroom))
+    return 'swarmer', gs, scatter
+  elseif slot == 'special' then
+    local pool = d.special_pool or {}
+    if #pool == 0 then return nil end
+    local etype = random:table(pool)
+    return etype, Special_Cadence_Group_Size(etype)
+  end
+  return slot, 1
+end
+
+-- Director tick: maintain a per-slot target population, spawning whatever is
+-- most lacking, paced by the power spawned. See game_constants SPAWN_DIRECTOR_*.
+function SpawnManager:tick_spawn_director(dt, counts)
+  local d = self.spawn_director
+  d.next_fire = (d.next_fire or 0) - dt
+  if d.next_fire > 0 then return end
+
+  local total_alive = (counts.basics or 0) + (counts.specials or 0) + (counts.small_specials or 0)
+  if self:quota_met() or total_alive >= (d.global_cap or SPAWN_DIRECTOR_GLOBAL_CAP or 9999) then
+    d.next_fire = SPAWN_DIRECTOR_INTERVAL_MIN or 0.2
+    return
+  end
+
+  -- Ramp setpoints by kill-quota progress.
+  local quota = self.level_data and self.level_data.kill_quota
+  local progress = (quota and quota > 0) and math.min((self.wave_kill_power or 0) / quota, 1) or 0
+  local ramp = d.ramp_from + (d.ramp_to - d.ramp_from) * progress
+
+  -- Per-slot weights (fractional-deficit below setpoint, slow creep above).
+  local weights, total_w = {}, 0
+  for slot, base_sp in pairs(d.setpoints) do
+    local sp = math.max(1, base_sp * ramp)
+    local alive = self:director_slot_alive(slot, counts)
+    local ceil = (d.ceilings and d.ceilings[slot])
+      or math.ceil(sp * (d.ceiling_mult or SPAWN_DIRECTOR_CEILING_MULT))
+    local w = 0
+    if alive < ceil then
+      if alive < sp then
+        local f = alive / sp
+        w = (d.fill_gain or SPAWN_DIRECTOR_FILL_GAIN) * (1 - f) ^ (d.fill_exp or SPAWN_DIRECTOR_FILL_EXP)
+      else
+        local c = (alive - sp) / math.max(1, ceil - sp)
+        w = (d.creep_gain or SPAWN_DIRECTOR_CREEP_GAIN) * (1 - c) ^ (d.creep_exp or SPAWN_DIRECTOR_CREEP_EXP)
+      end
+    end
+    if w > 0 then weights[slot] = w; total_w = total_w + w end
+  end
+
+  if total_w > 0 then
+    -- Weighted-random slot pick -> resolve -> spawn.
+    local r, chosen = random:float(0, total_w), nil
+    for slot, w in pairs(weights) do
+      r = r - w
+      if r <= 0 then chosen = slot; break end
+    end
+    chosen = chosen or next(weights)
+
+    local etype, group_size, scatter = self:director_resolve_spawn(chosen, counts, d, ramp)
+    if etype and group_size and group_size > 0 then
+      self.wave_spawn_delay = 0
+      if scatter then
+        -- Scatter: each swarmer at its own pure-random offscreen point (not the
+        -- weighted placement), so the group fans in from all sides and these
+        -- many cheap spawns don't flood the weighted history used by specials.
+        for i = 1, group_size do
+          Spawn_Group_With_Location(self.arena, {etype, 1, 'nil'}, Get_Random_Offscreen_Point())
+        end
+      else
+        Spawn_Group_With_Location(self.arena, {etype, group_size, 'nil'}, Get_Offscreen_Spawn_Point())
+      end
+      -- Track the in-flight spawn until it materializes (after the spawn warning),
+      -- so the next ticks count it toward the slot and don't overshoot the cap.
+      d.pending[etype] = (d.pending[etype] or 0) + group_size
+      local et, gs = etype, group_size
+      self.arena.t:after((WAVE_SPAWN_WARNING_TIME or 1.25) + 0.15, function()
+        d.pending[et] = math.max(0, (d.pending[et] or 0) - gs)
+      end)
+    end
+  end
+
+  -- Cooldown is a function of the level's TOTAL power fill (alive + in-flight vs
+  -- this level's setpoint power), NOT the unit just spawned. Empty level ->
+  -- INTERVAL_MIN (fast); at/above setpoint -> INTERVAL_MAX (trickle). Self-
+  -- regulating and responsive: kills drop the fill and shorten the next
+  -- cooldown. RATE_EXP shapes the curve (>1 = stays fast until near setpoint).
+  local alive_power = 0
+  for t, n in pairs(counts.by_type) do
+    alive_power = alive_power + n * ((enemy_to_round_power and enemy_to_round_power[t]) or 0)
+  end
+  for t, p in pairs(d.pending) do
+    alive_power = alive_power + p * ((enemy_to_round_power and enemy_to_round_power[t]) or 0)
+  end
+  local setpoint_power = 0
+  for slot, base_sp in pairs(d.setpoints) do
+    setpoint_power = setpoint_power + math.max(1, base_sp * ramp) * self:director_slot_power(slot, d)
+  end
+  local fill = (setpoint_power > 0) and math.min(alive_power / setpoint_power, 1) or 1
+  local cd_min = SPAWN_DIRECTOR_INTERVAL_MIN or 0.2
+  local cd_max = SPAWN_DIRECTOR_INTERVAL_MAX or 8
+  local cd = cd_min + (cd_max - cd_min) * (fill ^ (d.rate_exp or SPAWN_DIRECTOR_RATE_EXP or 1.5))
+  local j = SPAWN_DIRECTOR_JITTER or 0
+  d.next_fire = cd * (1 + random:float(-j, j))
+end
+
+-- Scheduled events: discrete spawns at fixed kill_quota progress (e.g. brute at
+-- 30%). Each fires once. Shared by the director and legacy spawn paths.
+function SpawnManager:tick_special_events(counts)
+  if #self.special_events == 0 then return end
+  local specials_capped = (counts.specials or 0) >= (MAX_ALIVE_SPECIALS or 9999)
+  local quota = self.level_data and self.level_data.kill_quota
+  local progress = (quota and quota > 0) and ((self.wave_kill_power or 0) / quota) or 0
+  for _, ev in ipairs(self.special_events) do
+    if not ev.fired and progress >= ev.at and not self:quota_met() and not specials_capped then
+      local group_size = ev.group_size or 1
+      if type(group_size) == 'function' then group_size = group_size() end
+      self.wave_spawn_delay = 0
+      Spawn_Group_With_Location(self.arena, {ev.type, group_size, 'nil'}, Get_Offscreen_Spawn_Point())
+      counts.specials = (counts.specials or 0) + group_size
+      counts.by_type[ev.type] = (counts.by_type[ev.type] or 0) + group_size
+      specials_capped = counts.specials >= (MAX_ALIVE_SPECIALS or 9999)
+      ev.fired = true
+    end
+  end
+end
+
 -- Tick each pool's timer once per update. Pools that fire and successfully
 -- spawn reset to a freshly jittered interval. Pools blocked by cap STILL
 -- reset their timer - skip-on-cap, no queueing. This is what creates the
 -- "kill before next spawn or it stacks" pressure.
 function SpawnManager:tick_spawn_pools(dt)
   local counts = self:count_alive_by_class()
+
+  -- D: unified power-paced director. Runs in place of the legacy pools when the
+  -- level config provides spawn_director; the authored events layer still runs.
+  if self.spawn_director then
+    self:tick_spawn_director(dt, counts)
+    self:tick_special_events(counts)
+    return
+  end
+
   local basics_capped = counts.basics >= (MAX_ALIVE_BASICS or 9999)
   local specials_capped = counts.specials >= (MAX_ALIVE_SPECIALS or 9999)
 
@@ -907,21 +1128,9 @@ function SpawnManager:tick_spawn_pools(dt)
             location)
         else
           local clump_size = SWARMERS_PER_LEVEL(self.arena.level)
-          local btype = self.basic_pool.type
-          if not self.basic_pool.first_spawned then
-            -- Opening: spawn OPENING_SWARMER_CLUMP_COUNT clumps staggered by
-            -- OPENING_SWARMER_CLUMP_STAGGER, each at its own weighted point.
-            self.basic_pool.first_spawned = true
-            Spawn_Group_With_Location(self.arena, {btype, clump_size, 'nil'}, location)
-            for k = 1, (OPENING_SWARMER_CLUMP_COUNT or 1) - 1 do
-              self.arena.t:after(k * (OPENING_SWARMER_CLUMP_STAGGER or 0.5), function()
-                if self.arena.spawn_manager and self.arena.spawn_manager:quota_met() then return end
-                Spawn_Group_With_Location(self.arena, {btype, clump_size, 'nil'}, Get_Offscreen_Spawn_Point())
-              end)
-            end
-          else
-            Spawn_Group_With_Location(self.arena, {btype, clump_size, 'nil'}, location)
-          end
+          Spawn_Group_With_Location(self.arena,
+            {self.basic_pool.type, clump_size, 'nil'},
+            location)
         end
       end
       -- Density throttle: stretch the next interval as the field fills toward
@@ -981,30 +1190,8 @@ function SpawnManager:tick_spawn_pools(dt)
     end
   end
 
-  -- Scheduled events: discrete spawns triggered at fixed kill_quota progress
-  -- (e.g. brute at 30%, brute at 70%). Each event fires exactly once when the
-  -- threshold is crossed. Respects the aggregate special cap but ignores the
-  -- per-pool max_alive (designer chose the moment, trust it).
-  if #self.special_events > 0 then
-    local quota = self.level_data and self.level_data.kill_quota
-    local progress = (quota and quota > 0) and ((self.wave_kill_power or 0) / quota) or 0
-    for _, ev in ipairs(self.special_events) do
-      if not ev.fired and progress >= ev.at and not self:quota_met() then
-        local group_size = ev.group_size or 1
-        if type(group_size) == 'function' then group_size = group_size() end
-        if not specials_capped then
-          self.wave_spawn_delay = 0
-          Spawn_Group_With_Location(self.arena,
-            {ev.type, group_size, 'nil'},
-            Get_Offscreen_Spawn_Point())
-          counts.specials = counts.specials + group_size
-          counts.by_type[ev.type] = (counts.by_type[ev.type] or 0) + group_size
-          specials_capped = counts.specials >= (MAX_ALIVE_SPECIALS or 9999)
-          ev.fired = true
-        end
-      end
-    end
-  end
+  -- Scheduled events (brute at 30%, etc.) — shared helper, also used by D.
+  self:tick_special_events(counts)
 
   -- Dynamic cadence (campaign levels). Single global timer that draws one
   -- random type from special_pool each fire. The delay to the NEXT fire is

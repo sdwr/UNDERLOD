@@ -34,62 +34,47 @@ local T2_SPECIAL_POOL = {
   'splitter', 'pulse_walker', 'drone_carrier',
 }
 
--- From level 3 on, each "tank" slot in the basic pool randomly deploys a tank
--- or a slime (slimes no longer come from the special cadence). L1/L2 use plain
--- tanks only.
-local TANK_SLIME_REPLACE = {'tank', 'slime'}
-
+-- D: per-level spawn_director configs. setpoints = ideal alive count per slot
+-- (swarmer / tank / small_archer / special category). The director maintains
+-- these, paced by power; tuning falls back to the SPAWN_DIRECTOR_* globals.
 LEVEL_SPAWN_POOLS = {
   [1] = {
-    -- Tanks now appear from level 1: every 5th basic clump is swapped for a
-    -- single tank, introducing the knockback-immune wall enemy immediately.
-    basic = {
-      type = 'swarmer',
-      interval = BASIC_CLUMP_INTERVAL,
-      replace_type = 'tank',
-      replace_every = 5,
-      replace_group_size = 1,
+    spawn_director = {
+      setpoints = { swarmer = 40, tank = 1 },
     },
-    special_pool = {},
   },
-  -- 2 and 3 are built per-run in get_spawn_config_for_level (random 2-of-3).
-  [4] = {
-    basic = {
-      type = 'swarmer',
-      interval = BASIC_CLUMP_INTERVAL,
-      replace_pool = TANK_SLIME_REPLACE,
-      replace_every = 6,
-      replace_group_size = 1,
+  [2] = {
+    spawn_director = {
+      setpoints = { swarmer = 50, tank = 2 },
     },
-    special_pool = {'sniper'},
-    small_special = { types = {'small_archer'}, interval = 10, max_alive = 3 },
+  },
+  [3] = {
+    spawn_director = {
+      setpoints = { swarmer = 50, tank = 2, special = 1 },
+      special_pool = {'sniper', 'slime'},
+    },
+  },
+  [4] = {
+    spawn_director = {
+      setpoints = { swarmer = 60, tank = 1, special = 1, small_archer = 2 },
+      special_pool = {'sniper', 'slime'},
+    },
   },
   [5] = {
-    basic = {
-      type = 'swarmer',
-      interval = BASIC_CLUMP_INTERVAL,
-      replace_pool = TANK_SLIME_REPLACE,
-      replace_every = 6,
-      replace_group_size = 1,
+    spawn_director = {
+      setpoints = { swarmer = 60, tank = 2, special = 1, small_archer = 2 },
+      special_pool = {'sniper', 'slime'},
     },
-    special_pool = {'sniper'},
-    small_special = { types = {'small_archer'}, interval = 10, max_alive = 3 },
   },
   -- 6 is stompy boss. 7-10 (T2) are built below from the shared T2 pool.
 }
 
 for _, lvl in ipairs({7, 8, 9, 10}) do
   LEVEL_SPAWN_POOLS[lvl] = {
-    basic = {
-      type = 'swarmer',
-      interval = BASIC_CLUMP_INTERVAL,
-      -- Every 4th basic tick fires a tank or slime instead of a swarmer clump.
-      replace_pool = TANK_SLIME_REPLACE,
-      replace_every = 4,
-      replace_group_size = 1,
+    spawn_director = {
+      setpoints = { swarmer = 60, tank = 2, special = 4, small_archer = 3 },
+      special_pool = T2_SPECIAL_POOL,
     },
-    special_pool = T2_SPECIAL_POOL,
-    small_special = { types = {'small_archer'}, interval = 9, max_alive = 4 },
   }
 end
 
@@ -103,34 +88,6 @@ function Special_Cadence_Group_Size(enemy_type)
 end
 
 local function get_spawn_config_for_level(level)
-  -- Hand-authored early levels: L2 is swarmers + tanks only; L3 adds snipers as
-  -- a special and starts mixing slimes into the tank slots.
-  if level == 2 then
-    return {
-      basic = {
-        type = 'swarmer',
-        interval = BASIC_CLUMP_INTERVAL,
-        replace_type = 'tank',
-        replace_every = 5,
-        replace_group_size = 1,
-      },
-      special_pool = {},
-    }
-  end
-
-  if level == 3 then
-    return {
-      basic = {
-        type = 'swarmer',
-        interval = BASIC_CLUMP_INTERVAL,
-        replace_pool = TANK_SLIME_REPLACE,
-        replace_every = 5,
-        replace_group_size = 1,
-      },
-      special_pool = {'sniper'},
-    }
-  end
-
   if LEVEL_SPAWN_POOLS[level] then return LEVEL_SPAWN_POOLS[level] end
   -- Pick the highest defined level <= this one as a fallback so later levels
   -- aren't empty if they haven't been authored yet.

@@ -464,6 +464,57 @@ MAX_ALIVE_SMALL_SPECIALS = 3
 -- Default seconds between small-special spawns (per-level configs may override).
 SMALL_SPECIAL_INTERVAL = 10
 
+-- ============================================================================
+-- Spawn director (D): power-paced homeostatic spawner. A level's spawn_director
+-- config gives a per-slot setpoint (ideal alive count). One queue spawns
+-- whichever slot is most lacking (weighted by fractional deficit) and paces the
+-- next spawn by the POWER just spawned / a drip-rate, so cheap singles don't
+-- starve the queue. Slots are concrete types (swarmer, tank, small_archer) or
+-- the 'special' category (draws a random type from special_pool). See
+-- SpawnManager:tick_spawn_director.
+-- ============================================================================
+-- Per-slot ceiling = ceil(setpoint * mult) unless overridden per slot.
+SPAWN_DIRECTOR_CEILING_MULT = 1.75
+-- Hard total-alive cap (performance backstop): halts all director spawns.
+SPAWN_DIRECTOR_GLOBAL_CAP = 200
+-- Per-slot weight curve. Below setpoint the weight is the ABSOLUTE deficit
+-- (setpoint - alive) ^ FILL_EXP, so picks go where the most bodies are missing
+-- (swarmers, with their big setpoint, dominate over small-setpoint tanks).
+-- FILL_EXP = 1 -> pick chance proportional to bodies needed; >1 biases harder
+-- toward the most-depleted slot (but can starve small slots of ever appearing).
+-- Above setpoint: small fractional creep toward the ceiling (CREEP_GAIN keeps it
+-- well under any below-setpoint weight so under-cap slots always win).
+SPAWN_DIRECTOR_FILL_GAIN = 1.0
+SPAWN_DIRECTOR_FILL_EXP = 1
+SPAWN_DIRECTOR_CREEP_GAIN = 0.15
+SPAWN_DIRECTOR_CREEP_EXP = 2.0
+-- Pacing: the cooldown between spawns is a function of the level's TOTAL power
+-- fill (alive + in-flight power / setpoint power), not the unit just spawned.
+--   fill = 0 (empty)        -> INTERVAL_MIN  (fast fill)
+--   fill >= 1 (at setpoint) -> INTERVAL_MAX  (slow trickle)
+--   cooldown = lerp(MIN, MAX, fill ^ RATE_EXP)
+-- RATE_EXP shapes the curve: >1 keeps it near MIN until close to setpoint then
+-- slows sharply (aggressive when low). Self-regulating: kills drop the fill and
+-- shorten the next cooldown, so it's responsive without per-unit cost spikes.
+SPAWN_DIRECTOR_INTERVAL_MIN = 0.2
+SPAWN_DIRECTOR_INTERVAL_MAX = 6
+SPAWN_DIRECTOR_RATE_EXP = 2
+SPAWN_DIRECTOR_JITTER = 0.25
+-- (Unused since pacing went fill-based; kept so per-level overrides don't error.)
+SPAWN_DIRECTOR_RATE_MAX = 250
+SPAWN_DIRECTOR_RATE_MIN = 30
+-- Setpoints scale by lerp(FROM, TO, kill-quota progress) over the level.
+SPAWN_DIRECTOR_RAMP_FROM = 0.8
+SPAWN_DIRECTOR_RAMP_TO = 1.2
+-- Swarmer group mix: weighted roll, clamped to ceiling headroom. No singles
+-- (they waste a director cycle on one body); the common case is a 4-6 group
+-- that SCATTERS (each member at its own random offscreen point, fanning in from
+-- all sides), with occasional clustered 8-12 waves at a weighted point.
+SWARMER_GROUP_MIX = {
+  { weight = 5, min = 4, max = 6, scatter = true },
+  { weight = 2, min = 8, max = 12 },
+}
+
 -- Weighted offscreen spawn placement. Every enemy spawn (basics, specials,
 -- events, cadence) picks SPAWN_WEIGHT_CANDIDATES random edge points and chooses
 -- one via weighted random, where each candidate's weight is its distance to the
