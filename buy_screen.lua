@@ -1229,7 +1229,9 @@ end
 function LooseItem:move_item_to_slot(target_item_part, on_complete, create_hit_effect, duration)
   -- Set flag on target ItemPart to hide display during animation
   target_item_part.hide_item_display = true
-  
+  -- Tie the hide to this flier so the slot self-heals if we die before arriving.
+  target_item_part.incoming_flier = self
+
   -- Disable interaction during animation
   self.interact_with_mouse = false
   self.flying_to_slot = true

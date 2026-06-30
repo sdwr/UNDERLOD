@@ -240,6 +240,10 @@ function ItemCard:find_item_part_at_position(x, y)
 end
 
 function ItemCard:handle_purchase_transaction()
+  -- One-shot: mark this card spent so a second quick click during the fly-out
+  -- animation can't buy it again (double-buy).
+  self.purchased = true
+
   -- Handle the gold transaction and bookkeeping
   gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
   gold = gold - self.cost
@@ -252,6 +256,9 @@ function ItemCard:handle_purchase_transaction()
 end
 
 function ItemCard:buy_item_to_slot(item_part, unit)
+  -- Guard against a second purchase from the same card (double-buy).
+  if self.purchased or self.flying_to_slot then return false end
+
   -- Use the same logic as the existing buy_item but for a specific slot
   local slot_index = item_part.i
   
@@ -325,6 +332,9 @@ function ItemCard:update_scale_based_on_position()
 end
 
 function ItemCard:buy_item()
+  -- Guard against a second purchase from the same card (double-buy).
+  if self.purchased or self.flying_to_slot then return end
+
   -- Use Helper.Unit to find available slot
   local unit, slot_index = Helper.Unit:find_available_inventory_slot(self.parent.units, self.item)
   
@@ -368,6 +378,8 @@ function ItemCard:start_buy_animation(target_item_part, unit, slot_index)
   -- ItemPart stays hidden during the flight; the callback just reveals it.
   unit.items[slot_index] = self.item
   target_item_part.hide_item_display = true
+  -- Tie the hide to this flier so the slot self-heals if we die before arriving.
+  target_item_part.incoming_flier = self
 
   -- Disable mouse interaction during animation
   self.interact_with_mouse = false
@@ -413,7 +425,8 @@ function ItemCard:update(dt)
   if self.dead then return end
   ItemCard.super.update(self, dt)
 
-  if input.m1.pressed and self.colliding_with_mouse and not self.grabbed then
+  if input.m1.pressed and self.colliding_with_mouse and not self.grabbed
+     and not self.purchased and not self.flying_to_slot then
     -- Check if the purchase is possible
     local unit, slot_index = Helper.Unit:find_available_inventory_slot(self.parent.units, self.item)
     

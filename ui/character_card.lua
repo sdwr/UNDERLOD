@@ -502,6 +502,15 @@ end
 function ItemPart:update(dt)
   self:update_game_object(dt)
 
+  -- Self-heal a stuck-hidden slot. hide_item_display is only meant to last while
+  -- an item is flying INTO this slot; the flier clears it on arrival. If that
+  -- flier is gone (finished, or orphaned by a fast buy / reroll), reveal the
+  -- slot so a filled slot never keeps rendering as a blank pill.
+  if self.hide_item_display and (not self.incoming_flier or self.incoming_flier.dead) then
+    self.hide_item_display = false
+    self.incoming_flier = nil
+  end
+
   -- Disable interaction only when item is hidden
   if self.hide_item_display then
     self.interact_with_mouse = false
