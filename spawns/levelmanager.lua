@@ -62,6 +62,7 @@ LEVEL_SPAWN_POOLS = {
       replace_group_size = 1,
     },
     special_pool = {'sniper'},
+    small_special = { types = {'small_archer'}, interval = 10, max_alive = 3 },
   },
   [5] = {
     basic = {
@@ -72,6 +73,7 @@ LEVEL_SPAWN_POOLS = {
       replace_group_size = 1,
     },
     special_pool = {'sniper'},
+    small_special = { types = {'small_archer'}, interval = 10, max_alive = 3 },
   },
   -- 6 is stompy boss. 7-10 (T2) are built below from the shared T2 pool.
 }
@@ -87,6 +89,7 @@ for _, lvl in ipairs({7, 8, 9, 10}) do
       replace_group_size = 1,
     },
     special_pool = T2_SPECIAL_POOL,
+    small_special = { types = {'small_archer'}, interval = 9, max_alive = 4 },
   }
 end
 

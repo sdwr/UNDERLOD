@@ -1702,7 +1702,10 @@ function Unit:pick_action()
   local default_movement = get_movement_type_by_enemy_type(self.type)
   local is_path_across = default_movement == MOVEMENT_TYPE_PATH_ACROSS
     or default_movement == MOVEMENT_TYPE_PATH_ACROSS_VARIED
-  if (self.offscreen or not self.in_arena_radius) and not is_path_across then
+  -- holds_position units (e.g. small_archer) manage their own approach to a
+  -- fixed park point and must not be force-seeked toward the player.
+  if (self.offscreen or not self.in_arena_radius) and not is_path_across
+    and not self.holds_position then
     self:set_movement_action(MOVEMENT_TYPE_SEEK, 1)
     return true
   end

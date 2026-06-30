@@ -51,6 +51,8 @@ enemy_attack_cooldowns = {
   ['roach'] = attack_cooldowns['very-fast'] * 1.4 * 1.2,
   ['orb'] = attack_cooldowns['very-slow'],
   ['goblin_archer'] = attack_cooldowns['fast'],
+  -- Small archer: one aimed shot every ~3s (the "every few seconds" poke).
+  ['small_archer'] = 3.0,
   ['stomper'] = attack_cooldowns['fast'],
   ['plasma'] = attack_cooldowns['fast'],
   ['spread'] = attack_cooldowns['fast'],
@@ -110,6 +112,7 @@ enemy_cast_times = {
   ['goblin_archer'] = GOBLIN2_CAST_TIME,
   ['big_goblin_archer'] = GOBLIN2_CAST_TIME,
   ['archer'] = GOBLIN2_CAST_TIME,
+  ['small_archer'] = GOBLIN2_CAST_TIME,
   ['cleaver'] = SLIME_CAST_TIME,
   ['burst'] = LICH_CAST_TIME,
   ['selfburst'] = ROCKSLIME_CAST_TIME,
@@ -671,6 +674,9 @@ enemy_type_to_stats = {
     -- Full knockback immunity is set via `knockback_immune` in tank.lua's
     -- init_enemy (knockback_resistance caps at 0.8 so a flag is required).
     ['tank'] = { dmg = 1, hp = 0.8, mvspd = 1.1 },
+
+    -- Small archer: squishy ranged poke. special_enemy base scaled way down.
+    ['small_archer'] = { dmg = 0.5, hp = 0.4, mvspd = 0.9 },
 
     ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
     ['chaser'] = { dmg = 1, mvspd = 1 },

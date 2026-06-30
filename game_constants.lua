@@ -189,6 +189,12 @@ SPECIAL_CADENCE_INCREMENT = 3
 -- often than the original 2.0, thinning sustained swarmer density.
 BASIC_CLUMP_INTERVAL = 3.1
 
+-- Opening burst: the very first basic spawn of a level fires this many swarmer
+-- clumps, staggered by OPENING_SWARMER_CLUMP_STAGGER seconds, each at its own
+-- weighted offscreen point. After this the normal cadence takes over.
+OPENING_SWARMER_CLUMP_COUNT = 3
+OPENING_SWARMER_CLUMP_STAGGER = 0.5
+
 -- Density throttle: the basic clump interval stretches as the field fills toward
 -- MAX_ALIVE_BASICS so spawns ease off before slamming into the hard cap. At an
 -- empty field the multiplier is 1x; at the cap it's (1 + this). 3 => up to
@@ -449,6 +455,15 @@ MAX_ALIVE_BASICS = 180
 MAX_ALIVE_SPECIALS = 20
 MAX_ALIVE_ENEMIES = MAX_ALIVE_BASICS + MAX_ALIVE_SPECIALS
 
+-- "Small-special" group: squishy ranged units (e.g. small_archer) that ride on
+-- the special_enemy physics/stats class but get their own spawn budget and cap,
+-- independent of MAX_ALIVE_SPECIALS. SMALL_SPECIAL_TYPES tags which enemy types
+-- belong to this category for counting/weighting.
+SMALL_SPECIAL_TYPES = { ['small_archer'] = true }
+MAX_ALIVE_SMALL_SPECIALS = 3
+-- Default seconds between small-special spawns (per-level configs may override).
+SMALL_SPECIAL_INTERVAL = 10
+
 -- Weighted offscreen spawn placement. Every enemy spawn (basics, specials,
 -- events, cadence) picks SPAWN_WEIGHT_CANDIDATES random edge points and chooses
 -- one via weighted random, where each candidate's weight is its distance to the
@@ -508,6 +523,7 @@ enemy_movement_types = {
   ['big_goblin_archer'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
   ['goblin_archer'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
   ['archer'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['small_archer'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
   ['seeker'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
   ['mortar'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
   ['singlemortar'] = MOVEMENT_TYPE_SEEK_TO_RANGE,

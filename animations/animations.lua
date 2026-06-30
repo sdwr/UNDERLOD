@@ -901,6 +901,7 @@ enemy_type_to_size = {
   ['shooter'] = 'regular',
   ['goblin_archer'] = 'regular',
   ['archer'] = 'special',
+  ['small_archer'] = 'regular',
   ['brute'] = 'special',
   ['orb'] = 'special',
   ['roach'] = 'regular_big',

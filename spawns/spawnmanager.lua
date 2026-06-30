@@ -662,8 +662,22 @@ function SpawnManager:init_spawn_pools()
   self.special_pool = nil
   self.special_cadence_next_fire = nil
 
+  -- Small-special pool: own timer + cap, separate budget from specials.
+  self.small_special_pool = nil
+
   local config = self.level_data and self.level_data.spawn_config
   if not config then return end
+
+  -- Small-special pool config: { types = {...}, interval?, max_alive? }.
+  if config.small_special and config.small_special.types
+    and #config.small_special.types > 0 then
+    self.small_special_pool = {
+      types = config.small_special.types,
+      interval = config.small_special.interval or SMALL_SPECIAL_INTERVAL,
+      max_alive = config.small_special.max_alive or MAX_ALIVE_SMALL_SPECIALS,
+      next_fire = random:float(0.5, (config.small_special.interval or SMALL_SPECIAL_INTERVAL)),
+    }
+  end
 
   -- New-style flat draw pool: the cadence picks one type at random each fire.
   if config.special_pool and #config.special_pool > 0 then
@@ -893,20 +907,21 @@ function SpawnManager:tick_spawn_pools(dt)
             location)
         else
           local clump_size = SWARMERS_PER_LEVEL(self.arena.level)
-          -- First basic clump of the level marches straight through center
-          -- (no jitter) so the opening wave feels deliberate. Subsequent
-          -- clumps get the usual PATH_ACROSS_VARIED jitter.
-          local heading_override = nil
+          local btype = self.basic_pool.type
           if not self.basic_pool.first_spawned then
-            local dx, dy = (gw / 2) - location.x, (gh / 2) - location.y
-            if dx ~= 0 or dy ~= 0 then
-              heading_override = math.atan2(dy, dx)
-            end
+            -- Opening: spawn OPENING_SWARMER_CLUMP_COUNT clumps staggered by
+            -- OPENING_SWARMER_CLUMP_STAGGER, each at its own weighted point.
             self.basic_pool.first_spawned = true
+            Spawn_Group_With_Location(self.arena, {btype, clump_size, 'nil'}, location)
+            for k = 1, (OPENING_SWARMER_CLUMP_COUNT or 1) - 1 do
+              self.arena.t:after(k * (OPENING_SWARMER_CLUMP_STAGGER or 0.5), function()
+                if self.arena.spawn_manager and self.arena.spawn_manager:quota_met() then return end
+                Spawn_Group_With_Location(self.arena, {btype, clump_size, 'nil'}, Get_Offscreen_Spawn_Point())
+              end)
+            end
+          else
+            Spawn_Group_With_Location(self.arena, {btype, clump_size, 'nil'}, location)
           end
-          Spawn_Group_With_Location(self.arena,
-            {self.basic_pool.type, clump_size, 'nil'},
-            location, nil, heading_override)
         end
       end
       -- Density throttle: stretch the next interval as the field fills toward
@@ -945,6 +960,24 @@ function SpawnManager:tick_spawn_pools(dt)
         specials_capped = counts.specials >= (MAX_ALIVE_SPECIALS or 9999)
       end
       pool.next_fire = jittered_interval(pool.interval)
+    end
+  end
+
+  -- Small-specials: single pool on its own timer and cap, independent of the
+  -- specials budget. Draws one type at random from the pool's list each fire.
+  if self.small_special_pool then
+    local sp = self.small_special_pool
+    sp.next_fire = sp.next_fire - dt
+    if sp.next_fire <= 0 then
+      local small_capped = counts.small_specials >= (sp.max_alive or MAX_ALIVE_SMALL_SPECIALS or 9999)
+      if not self:quota_met() and not small_capped then
+        local etype = random:table(sp.types)
+        self.wave_spawn_delay = 0
+        Spawn_Group_With_Location(self.arena, {etype, 1, 'nil'}, Get_Offscreen_Spawn_Point())
+        counts.small_specials = counts.small_specials + 1
+        counts.by_type[etype] = (counts.by_type[etype] or 0) + 1
+      end
+      sp.next_fire = jittered_interval(sp.interval)
     end
   end
 
@@ -1013,12 +1046,16 @@ end
 -- by tick_spawn_pools so each tick costs one enemy iteration instead of one
 -- per pool.
 function SpawnManager:count_alive_by_class()
-  local counts = {basics = 0, specials = 0, by_type = {}}
+  local counts = {basics = 0, specials = 0, small_specials = 0, by_type = {}}
   if not self.arena or not self.arena.main or not main.current.enemies then return counts end
   local enemies = self.arena.main:get_objects_by_classes(main.current.enemies)
   for _, e in ipairs(enemies) do
     if not e.dead then
-      if e.class == 'special_enemy' then
+      -- Small-specials share the special_enemy class but get their own budget,
+      -- so they're counted separately and excluded from the specials tally.
+      if SMALL_SPECIAL_TYPES and SMALL_SPECIAL_TYPES[e.type] then
+        counts.small_specials = counts.small_specials + 1
+      elseif e.class == 'special_enemy' then
         counts.specials = counts.specials + 1
       else
         counts.basics = counts.basics + 1
