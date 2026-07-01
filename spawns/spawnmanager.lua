@@ -637,6 +637,9 @@ function SpawnManager:init(arena)
     self.wave_spawn_delay = 0
     -- kill_power tally across the whole level (matches level.kill_quota).
     self.wave_kill_power = 0
+    -- Seconds spent in the 'spawning' state; drives the opening grace window
+    -- (SPAWN_DIRECTOR_OPENING_GRACE) that holds back non-swarmer slots.
+    self.spawning_elapsed = 0
 
     self:init_spawn_pools()
 end
@@ -806,6 +809,7 @@ function SpawnManager:update(dt)
     end
 
     if self.state == 'spawning' then
+      self.spawning_elapsed = (self.spawning_elapsed or 0) + dt
       self:tick_spawn_pools(dt)
       if self:quota_met() and self.pending_spawns <= 0 then
         self:change_state('waiting_for_clear')
@@ -898,7 +902,10 @@ function SpawnManager:init_spawn_director(cfg)
     fill_gain = cfg.fill_gain, fill_exp = cfg.fill_exp,
     creep_gain = cfg.creep_gain, creep_exp = cfg.creep_exp,
     rate_max = cfg.rate_max, rate_min = cfg.rate_min, rate_exp = cfg.rate_exp,
+    -- Specials-queue timer (swarmers run on their own lane timer below).
     next_fire = random:float(0, 0.5),
+    -- Swarmer-lane timer: first clump lands almost immediately.
+    swarmer_next_fire = random:float(0, 0.5),
     -- Per-type in-flight count: spawns queued but not yet alive (still in their
     -- spawn-warning window). Counted toward slot population so the director
     -- doesn't re-pick a slot and overshoot its cap before the first one lands.
@@ -970,6 +977,76 @@ function SpawnManager:director_resolve_spawn(slot, counts, d, ramp)
   return slot, 1
 end
 
+-- Spawn a resolved (etype, group_size, scatter) pick and track it as pending
+-- until it materializes (after the spawn warning), so subsequent ticks count
+-- it toward its slot and don't overshoot the cap. Shared by the swarmer lane
+-- and the specials queue.
+function SpawnManager:director_spawn(etype, group_size, scatter)
+  local d = self.spawn_director
+  self.wave_spawn_delay = 0
+  if scatter then
+    -- Scatter: each swarmer at its own pure-random offscreen point (not the
+    -- weighted placement), so the group fans in from all sides and these
+    -- many cheap spawns don't flood the weighted history used by specials.
+    for i = 1, group_size do
+      Spawn_Group_With_Location(self.arena, {etype, 1, 'nil'}, Get_Random_Offscreen_Point())
+    end
+  else
+    Spawn_Group_With_Location(self.arena, {etype, group_size, 'nil'}, Get_Offscreen_Spawn_Point())
+  end
+  d.pending[etype] = (d.pending[etype] or 0) + group_size
+  self.arena.t:after((WAVE_SPAWN_WARNING_TIME or 1.25) + 0.15, function()
+    d.pending[etype] = math.max(0, (d.pending[etype] or 0) - group_size)
+  end)
+end
+
+-- Swarmer lane: swarmers spawn on their own clump cadence (SWARMER_LANE_* in
+-- game_constants) instead of competing in the specials queue, so the chaff
+-- rhythm reads as a steady heartbeat independent of special timing. Keeps the
+-- director machinery: setpoint ramp, ceiling skip, group mix, pending
+-- tracking and weighted placement.
+function SpawnManager:tick_swarmer_lane(dt, counts)
+  local d = self.spawn_director
+  if not d.setpoints['swarmer'] then return end
+  d.swarmer_next_fire = (d.swarmer_next_fire or 0) - dt
+  if d.swarmer_next_fire > 0 then return end
+
+  local retry = SWARMER_LANE_RETRY or 0.5
+  local total_alive = (counts.basics or 0) + (counts.specials or 0) + (counts.small_specials or 0)
+  if self:quota_met() or total_alive >= (d.global_cap or SPAWN_DIRECTOR_GLOBAL_CAP or 9999) then
+    d.swarmer_next_fire = retry
+    return
+  end
+
+  local quota = self.level_data and self.level_data.kill_quota
+  local progress = (quota and quota > 0) and math.min((self.wave_kill_power or 0) / quota, 1) or 0
+  local ramp = d.ramp_from + (d.ramp_to - d.ramp_from) * progress
+
+  local sp = math.max(1, d.setpoints['swarmer'] * ramp)
+  local alive = self:director_slot_alive('swarmer', counts)
+  local ceiling = (d.ceilings and d.ceilings['swarmer'])
+    or math.ceil(sp * (d.ceiling_mult or SPAWN_DIRECTOR_CEILING_MULT))
+  if alive >= ceiling then
+    d.swarmer_next_fire = retry
+    return
+  end
+
+  local etype, group_size, scatter = self:director_resolve_spawn('swarmer', counts, d, ramp)
+  if etype and group_size and group_size > 0 then
+    self:director_spawn(etype, group_size, scatter)
+  end
+
+  -- Adaptive-lite cadence: full interval once the swarm (incl. the clump just
+  -- queued) reaches CATCHUP_FRACTION of setpoint, shrinking toward
+  -- CATCHUP_MULT of it on a thin field so level openings fill fast.
+  local fill = math.min((alive + (group_size or 0)) / sp, 1)
+  local catchup = SWARMER_LANE_CATCHUP_MULT or 0.5
+  local frac = SWARMER_LANE_CATCHUP_FRACTION or 0.5
+  local mult = catchup + (1 - catchup) * math.min(fill / frac, 1)
+  local j = SPAWN_DIRECTOR_JITTER or 0
+  d.swarmer_next_fire = (SWARMER_LANE_INTERVAL or 3.1) * mult * (1 + random:float(-j, j))
+end
+
 -- Director tick: maintain a per-slot target population, spawning whatever is
 -- most lacking, paced by the power spawned. See game_constants SPAWN_DIRECTOR_*.
 function SpawnManager:tick_spawn_director(dt, counts)
@@ -989,30 +1066,41 @@ function SpawnManager:tick_spawn_director(dt, counts)
   local ramp = d.ramp_from + (d.ramp_to - d.ramp_from) * progress
 
   -- Per-slot weights (fractional-deficit below setpoint, slow creep above).
+  -- Swarmers are NOT in this queue — they spawn on their own cadence in
+  -- tick_swarmer_lane. They stay in d.setpoints for the tank gate and for the
+  -- whole-field pacing math below, so special timing still responds to how
+  -- packed the swarm is.
   local weights, total_w = {}, 0
   for slot, base_sp in pairs(d.setpoints) do
-    local sp = math.max(1, base_sp * ramp)
-    local alive = self:director_slot_alive(slot, counts)
-    local ceil = (d.ceilings and d.ceilings[slot])
-      or math.ceil(sp * (d.ceiling_mult or SPAWN_DIRECTOR_CEILING_MULT))
-    local w = 0
-    if alive < ceil then
-      if alive < sp then
-        local f = alive / sp
-        w = (d.fill_gain or SPAWN_DIRECTOR_FILL_GAIN) * (1 - f) ^ (d.fill_exp or SPAWN_DIRECTOR_FILL_EXP)
-      else
-        local c = (alive - sp) / math.max(1, ceil - sp)
-        w = (d.creep_gain or SPAWN_DIRECTOR_CREEP_GAIN) * (1 - c) ^ (d.creep_exp or SPAWN_DIRECTOR_CREEP_EXP)
+    if slot ~= 'swarmer' then
+      local sp = math.max(1, base_sp * ramp)
+      local alive = self:director_slot_alive(slot, counts)
+      local ceil = (d.ceilings and d.ceilings[slot])
+        or math.ceil(sp * (d.ceiling_mult or SPAWN_DIRECTOR_CEILING_MULT))
+      local w = 0
+      if alive < ceil then
+        if alive < sp then
+          local f = alive / sp
+          w = (d.fill_gain or SPAWN_DIRECTOR_FILL_GAIN) * (1 - f) ^ (d.fill_exp or SPAWN_DIRECTOR_FILL_EXP)
+        else
+          local c = (alive - sp) / math.max(1, ceil - sp)
+          w = (d.creep_gain or SPAWN_DIRECTOR_CREEP_GAIN) * (1 - c) ^ (d.creep_exp or SPAWN_DIRECTOR_CREEP_EXP)
+        end
       end
+      -- Tanks escort the swarm: gate them behind swarmer presence so a tank that
+      -- dies on a thin field isn't immediately re-picked into a solo rush.
+      if slot == 'tank' and w > 0 and d.setpoints['swarmer'] then
+        local sw_sp = math.max(1, d.setpoints['swarmer'] * ramp)
+        local sw_alive = self:director_slot_alive('swarmer', counts)
+        if sw_alive < (SPAWN_DIRECTOR_TANK_SWARM_GATE or 0.5) * sw_sp then w = 0 end
+      end
+      -- Opening grace: nothing in this queue (specials incl. tanks, small
+      -- archers) spawns during the first seconds of the level.
+      if (self.spawning_elapsed or 0) < (SPAWN_DIRECTOR_OPENING_GRACE or 0) then
+        w = 0
+      end
+      if w > 0 then weights[slot] = w; total_w = total_w + w end
     end
-    -- Tanks escort the swarm: gate them behind swarmer presence so a tank that
-    -- dies on a thin field isn't immediately re-picked into a solo rush.
-    if slot == 'tank' and w > 0 and d.setpoints['swarmer'] then
-      local sw_sp = math.max(1, d.setpoints['swarmer'] * ramp)
-      local sw_alive = self:director_slot_alive('swarmer', counts)
-      if sw_alive < (SPAWN_DIRECTOR_TANK_SWARM_GATE or 0.5) * sw_sp then w = 0 end
-    end
-    if w > 0 then weights[slot] = w; total_w = total_w + w end
   end
 
   if total_w > 0 then
@@ -1026,24 +1114,7 @@ function SpawnManager:tick_spawn_director(dt, counts)
 
     local etype, group_size, scatter = self:director_resolve_spawn(chosen, counts, d, ramp)
     if etype and group_size and group_size > 0 then
-      self.wave_spawn_delay = 0
-      if scatter then
-        -- Scatter: each swarmer at its own pure-random offscreen point (not the
-        -- weighted placement), so the group fans in from all sides and these
-        -- many cheap spawns don't flood the weighted history used by specials.
-        for i = 1, group_size do
-          Spawn_Group_With_Location(self.arena, {etype, 1, 'nil'}, Get_Random_Offscreen_Point())
-        end
-      else
-        Spawn_Group_With_Location(self.arena, {etype, group_size, 'nil'}, Get_Offscreen_Spawn_Point())
-      end
-      -- Track the in-flight spawn until it materializes (after the spawn warning),
-      -- so the next ticks count it toward the slot and don't overshoot the cap.
-      d.pending[etype] = (d.pending[etype] or 0) + group_size
-      local et, gs = etype, group_size
-      self.arena.t:after((WAVE_SPAWN_WARNING_TIME or 1.25) + 0.15, function()
-        d.pending[et] = math.max(0, (d.pending[et] or 0) - gs)
-      end)
+      self:director_spawn(etype, group_size, scatter)
     end
   end
 
@@ -1099,9 +1170,12 @@ end
 function SpawnManager:tick_spawn_pools(dt)
   local counts = self:count_alive_by_class()
 
-  -- D: unified power-paced director. Runs in place of the legacy pools when the
-  -- level config provides spawn_director; the authored events layer still runs.
+  -- D: power-paced director. Runs in place of the legacy pools when the level
+  -- config provides spawn_director; the authored events layer still runs.
+  -- Swarmers tick first on their own lane so their pending spawns are visible
+  -- to the specials queue's whole-field pacing in the same frame.
   if self.spawn_director then
+    self:tick_swarmer_lane(dt, counts)
     self:tick_spawn_director(dt, counts)
     self:tick_special_events(counts)
     return

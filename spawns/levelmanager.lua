@@ -40,13 +40,13 @@ local T2_SPECIAL_POOL = {
 LEVEL_SPAWN_POOLS = {
   [1] = {
     spawn_director = {
-      setpoints = { swarmer = 22, tank = 1 },
+      -- small_archer from the very start (after the opening grace window) so
+      -- even L1 has one thing a kiting archer can't ignore.
+      setpoints = { swarmer = 22, tank = 1, small_archer = 1 },
     },
   },
   [2] = {
     spawn_director = {
-      -- small_archer introduced here (squishy 3s poke) so minute one isn't
-      -- pure chaff-and-tank — one thing that forces movement.
       setpoints = { swarmer = 30, tank = 2, small_archer = 1 },
     },
   },

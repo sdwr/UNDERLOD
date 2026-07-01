@@ -509,6 +509,10 @@ SPAWN_DIRECTOR_RAMP_TO = 1.2
 -- Tanks only spawn once swarmers are at least this fraction of their setpoint,
 -- so tanks read as escorts embedded in the mass rather than solo rushers.
 SPAWN_DIRECTOR_TANK_SWARM_GATE = 0.5
+-- Opening grace: for this many seconds after spawning starts, only the basic
+-- swarmer slot may fire — specials (incl. tanks) and small archers hold back
+-- so every level opens as pure chaff before the pressure pieces arrive.
+SPAWN_DIRECTOR_OPENING_GRACE = 7
 -- Swarmer group mix: weighted roll, clamped to ceiling headroom. No singles
 -- (they waste a director cycle on one body); the common case is a 4-6 group
 -- that SCATTERS (each member at its own random offscreen point, fanning in from
@@ -517,6 +521,17 @@ SWARMER_GROUP_MIX = {
   { weight = 2, min = 4, max = 6, scatter = true },
   { weight = 4, min = 8, max = 12 },
 }
+
+-- Swarmer lane: swarmers spawn on their own clump cadence instead of through
+-- the director's shared queue (specials/tanks/small archers keep the queue).
+-- Adaptive-lite: a fire is skipped at the ceiling, and the interval shrinks
+-- toward INTERVAL * CATCHUP_MULT while the swarm is below CATCHUP_FRACTION of
+-- its setpoint, so level openings still fill fast but the steady state is a
+-- readable ~3s clump heartbeat. Jitter reuses SPAWN_DIRECTOR_JITTER.
+SWARMER_LANE_INTERVAL = 3.1
+SWARMER_LANE_CATCHUP_MULT = 0.5
+SWARMER_LANE_CATCHUP_FRACTION = 0.5
+SWARMER_LANE_RETRY = 0.5
 
 -- Weighted offscreen spawn placement. Every enemy spawn (basics, specials,
 -- events, cadence) picks SPAWN_WEIGHT_CANDIDATES random edge points and chooses
