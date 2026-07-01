@@ -1438,21 +1438,24 @@ function init()
 
     --special enemies t1
     ['slime'] = 100,
-    ['brute'] = 150,
+    -- T2 draw-pool members normalized to 200 so the director's pool-average
+    -- power is exact and run-to-run pressure doesn't swing with the random mix
+    -- (brute/sniper/orb/cleaver/snakearrow/mortar were 150-300).
+    ['brute'] = 200,
     ['goblin_archer'] = 150,
     ['archer'] = 150,
     ['small_archer'] = 75,
     ['roach'] = 200,
-    ['sniper'] = 250,
-    ['orb'] = 300,
+    ['sniper'] = 200,
+    ['orb'] = 200,
     ['burst'] = 150,
     ['turret'] = 150,
-    ['cleaver'] = 150,
+    ['cleaver'] = 200,
     ['selfburst'] = 150,
-    ['snakearrow'] = 150,
+    ['snakearrow'] = 200,
 
     --special enemies t1.5
-    ['mortar'] = 300,
+    ['mortar'] = 200,
     ['singlemortar'] = 300,
     ['line_mortar'] = 300,
     ['aim_spread'] = 300,
@@ -1477,10 +1480,10 @@ function init()
     ['summoner'] = 300,
     ['assassin'] = 300,
 
-    --custom specials (T2-ish power)
+    --custom specials (T2-ish power) — T2 pool members held at 200 (see above).
     ['splitter'] = 200,
-    ['pulse_walker'] = 250,
-    ['drone_carrier'] = 250,
+    ['pulse_walker'] = 200,
+    ['drone_carrier'] = 200,
     ['linker'] = 200,
 
     --bosses

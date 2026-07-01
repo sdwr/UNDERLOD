@@ -1068,18 +1068,18 @@ end
 -- 30%). Each fires once. Shared by the director and legacy spawn paths.
 function SpawnManager:tick_special_events(counts)
   if #self.special_events == 0 then return end
-  local specials_capped = (counts.specials or 0) >= (MAX_ALIVE_SPECIALS or 9999)
   local quota = self.level_data and self.level_data.kill_quota
   local progress = (quota and quota > 0) and ((self.wave_kill_power or 0) / quota) or 0
   for _, ev in ipairs(self.special_events) do
-    if not ev.fired and progress >= ev.at and not self:quota_met() and not specials_capped then
+    -- Scheduled beats bypass the specials cap: a moment authored for `at` should
+    -- arrive on time, not drift to whenever the field happens to have room.
+    if not ev.fired and progress >= ev.at and not self:quota_met() then
       local group_size = ev.group_size or 1
       if type(group_size) == 'function' then group_size = group_size() end
       self.wave_spawn_delay = 0
       Spawn_Group_With_Location(self.arena, {ev.type, group_size, 'nil'}, Get_Offscreen_Spawn_Point())
       counts.specials = (counts.specials or 0) + group_size
       counts.by_type[ev.type] = (counts.by_type[ev.type] or 0) + group_size
-      specials_capped = counts.specials >= (MAX_ALIVE_SPECIALS or 9999)
       ev.fired = true
     end
   end
@@ -1543,8 +1543,9 @@ end
 
 function Spawn_Enemy_Sound(arena, isBoss)
   if isBoss then
-    -- Boss spawn keeps a slightly higher / wider pitch (still notable).
-    alert1:play{pitch = random:float(0.75, 0.9), volume = 0}
+    -- Boss spawn: audible alert (volume was 0 — a leftover mute that killed the
+    -- boss's audio telegraph).
+    alert1:play{pitch = random:float(0.75, 0.9), volume = 1}
   else
     -- Regular spawn: lower and tighter pitch so back-to-back spawns don't
     -- chirp wildly. Was 0.8-1.2 (40% spread, centered at 1.0); now
@@ -1567,14 +1568,15 @@ function Create_Unit_With_Warning(arena, location, warning_time, creation_callba
     spawn_radius = enemy_width / 4
   end
 
-  -- 1. Create the visual warning marker immediately.
-  -- We get a reference to it so we can destroy it manually later.
-  -- local warning_marker = AnimatedSpawnCircle{
-  --     group = arena.floor, x = location.x, y = location.y,
-  --     duration = 1000, -- Give it a long duration so it doesn't fade early
-  --     expected_spawn_time = warning_time,
-  --     enemy_type = enemy_type
-  -- }
+  -- 1. Create the visual warning marker (flashing red exclamation) so onscreen
+  -- spawns — especially the boss at boss_spawn_point — telegraph before they
+  -- appear. Auto-dies at warning_time, right as the spawn attempt begins.
+  AnimatedSpawnCircle{
+    group = arena.floor, x = location.x, y = location.y,
+    duration = warning_time,
+    expected_spawn_time = warning_time,
+    enemy_type = enemy_type,
+  }
 
   -- 2. After the initial warning time, start checking if the space is clear.
   arena.t:after(warning_time, function()

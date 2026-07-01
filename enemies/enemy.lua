@@ -204,6 +204,10 @@ function Enemy:update(dt)
       local buffer = 80
       if self.x < -buffer or self.x > gw + buffer
         or self.y < -buffer or self.y > gh + buffer then
+        -- Escaped: never counts toward kill_quota. Setting dead here already
+        -- bypasses Enemy:die (the only on_enemy_removed caller); flag it too so
+        -- a future refactor that routes despawns through die() can't count them.
+        self._counted_for_quota = true
         self.dead = true
         return
       end
