@@ -5,3 +5,4 @@ builds/
 .worktrees/
 __pycache__/
 *.pyc
+replays/*.json

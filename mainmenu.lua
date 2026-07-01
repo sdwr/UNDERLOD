@@ -218,6 +218,17 @@ function MainMenu:on_enter(from)
     end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']debug arena...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
   end}
 
+  -- Replay capture toggle: when on, every combat level writes a stats replay
+  -- JSON to <save_dir>/replays (see replay_recorder.lua). Persisted on
+  -- state.save_replays. Sits to the right of the debug button.
+  local replay_label = function() return 'replay: ' .. (state.save_replays and 'on' or 'off') end
+  self.replay_button = Button{group = self.main_ui, x = 113, y = gh/2 + 100, w = 70, force_update = true, button_text = replay_label(), fg_color = 'bg10', bg_color = 'bg', action = function(b)
+    state.save_replays = not state.save_replays
+    system.save_state()
+    ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    b:set_text(replay_label())
+  end}
+
   -- hide for now (achievement test button)
   -- self.unlock_button = Button{group = self.main_ui, x = 40, y = gh/2  + 100, force_update = true, button_text ='unlock', fg_color = 'bg10', bg_color='bg', action = function(b)
     

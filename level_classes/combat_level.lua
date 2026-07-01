@@ -25,6 +25,9 @@ end
 function CombatLevel:level_clear()
   spawn_mark2:play{pitch = 1, volume = 0.8}
   Helper.Unit:update_units_with_combat_data(self)
+  if ReplayRecorder then
+    ReplayRecorder.finalize(self, (self.level >= NUMBER_OF_ROUNDS) and 'run_complete' or 'win')
+  end
   -- Flash the progress bar (spring pulse, brighten, particles) so the level
   -- completion reads clearly.
   if self.progress_bar and self.progress_bar.flash_level_complete then

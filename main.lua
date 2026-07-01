@@ -1,5 +1,6 @@
 require 'save_game'
 require 'crash_log'
+require 'replay_recorder'
 require 'engine'
 require 'shared'
 require 'utils'

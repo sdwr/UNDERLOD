@@ -167,6 +167,7 @@ function BaseLevel:quit()
       boss = Is_Boss_Level and Is_Boss_Level(self.level) or false,
     }))
   end
+  if ReplayRecorder then ReplayRecorder.finalize(self, 'win') end
 
   if IS_DEMO and self.level == DEMO_END_LEVEL then
     print('end of demo')

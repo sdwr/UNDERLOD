@@ -89,6 +89,9 @@ encode = function(v, depth)
   return '"<' .. tv .. '>"'
 end
 
+-- Shared JSON encoder (also used by ReplayRecorder).
+CrashLog.encode = function(v) return encode(v) end
+
 -- ============================================================
 -- Consent + persistence
 -- ============================================================

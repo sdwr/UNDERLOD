@@ -271,6 +271,8 @@ function Arena:update(dt)
         self.spawn_manager:debug_spawn_next()
       end
     end
+
+    if ReplayRecorder then ReplayRecorder.update(self, dt) end
   end
 end
 
@@ -406,6 +408,7 @@ function Arena:die()
     if CrashLog and CrashLog.log_event then
       CrashLog.log_event('level_end', CrashLog.snapshot_level(self, 'loss'))
     end
+    if ReplayRecorder then ReplayRecorder.finalize(self, 'loss') end
     self.t:tween(2, self, {main_slow_amount = 0}, math.linear, function() self.main_slow_amount = 0 end)
     self.t:tween(2, _G, {music_slow_amount = 0}, math.linear, function() music_slow_amount = 0 end)
     self.died_text = Text2{group = self.ui, x = gw/2 + self.offset_x, y = gh/2 - 32 + self.offset_y, lines = {

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>UNDERLOD replay viewer</title>
+<style>
+  :root {
+    --bg: #17141f; --panel: #211d2c; --panel2: #2a2537; --fg: #e8e4f0;
+    --dim: #9a92ad; --line: #3a3450;
+    --c1: #ffd166; --c2: #ef476f; --c3: #06d6a0; --c4: #66b3ff;
+    --c5: #c792ea; --c6: #f78c6c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 14px/1.45 'Segoe UI', system-ui, sans-serif; }
+  header { padding: 14px 22px; background: var(--panel); border-bottom: 1px solid var(--line);
+           display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  header h1 { font-size: 17px; margin: 0; letter-spacing: 2px; }
+  header .hint { color: var(--dim); font-size: 12px; }
+  #drop { border: 1px dashed var(--dim); border-radius: 6px; padding: 5px 12px;
+          color: var(--dim); cursor: pointer; font-size: 12px; }
+  #drop.hot { border-color: var(--c1); color: var(--c1); }
+  #layout { display: flex; min-height: calc(100vh - 55px); }
+  #sidebar { width: 265px; flex: none; background: var(--panel); border-right: 1px solid var(--line);
+             padding: 10px; overflow-y: auto; }
+  #sidebar .file { padding: 7px 9px; border-radius: 6px; cursor: pointer; margin-bottom: 4px;
+                   font-size: 12.5px; word-break: break-all; }
+  #sidebar .file:hover { background: var(--panel2); }
+  #sidebar .file.active { background: var(--panel2); outline: 1px solid var(--line); }
+  #sidebar .file .meta { color: var(--dim); font-size: 11px; }
+  #sidebar .file .win { color: var(--c3); } #sidebar .file .loss { color: var(--c2); }
+  #main { flex: 1; padding: 18px 24px; overflow-x: hidden; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .chip { background: var(--panel); border: 1px solid var(--line); border-radius: 20px;
+          padding: 4px 12px; font-size: 12.5px; }
+  .chip b { color: var(--c1); font-weight: 600; }
+  .chip.win b { color: var(--c3); } .chip.loss b { color: var(--c2); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(430px, 1fr)); gap: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+  .card h2 { font-size: 13px; margin: 0 0 8px; color: var(--dim); text-transform: uppercase;
+             letter-spacing: 1px; font-weight: 600; }
+  svg text { font: 10.5px 'Segoe UI', sans-serif; fill: var(--dim); }
+  svg .axis { stroke: var(--line); stroke-width: 1; }
+  svg .quota { stroke: var(--c2); stroke-dasharray: 5 4; stroke-width: 1; opacity: .7; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 11.5px; color: var(--dim); margin-top: 4px; }
+  .legend i { display: inline-block; width: 10px; height: 3px; vertical-align: middle; margin-right: 5px; }
+  table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+  th, td { text-align: left; padding: 5px 10px 5px 0; border-bottom: 1px solid var(--line); }
+  th { color: var(--dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; }
+  td.num, th.num { text-align: right; }
+  .unit-name { color: var(--c1); font-weight: 600; }
+  .troop-row td { color: var(--dim); font-size: 11.5px; border-bottom: none; padding-top: 1px; padding-bottom: 1px; }
+  .items span { display: inline-block; background: var(--panel2); border-radius: 4px;
+                padding: 2px 8px; margin: 2px 4px 2px 0; font-size: 11.5px; }
+  .items .sets { color: var(--dim); font-size: 10px; }
+  #empty { color: var(--dim); margin-top: 60px; text-align: center; }
+  #empty code { background: var(--panel); padding: 2px 8px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>UNDERLOD REPLAYS</h1>
+  <label id="drop" for="filepick">open / drop replay .json files</label>
+  <input id="filepick" type="file" accept=".json" multiple style="display:none">
+  <span class="hint" id="srchint"></span>
+</header>
+<div id="layout">
+  <nav id="sidebar"></nav>
+  <div id="main">
+    <div id="empty">
+      <p>No replays loaded.</p>
+      <p>Serve this folder over HTTP (e.g. <code>python -m http.server</code> in the repo,
+      then open <code>/replays/viewer.html</code>) to auto-list files,<br>
+      or use the button above / drag files anywhere onto the page.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const replays = [];        // {name, data}
+let activeIdx = -1;
+
+const $ = s => document.querySelector(s);
+const el = (tag, attrs = {}, ...kids) => {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') n.className = v; else if (k === 'html') n.innerHTML = v;
+    else n.setAttribute(k, v);
+  }
+  for (const k of kids) n.append(k);
+  return n;
+};
+const fmt = (x, d = 1) => (x == null) ? '—' : (+x).toFixed(d).replace(/\.0+$/, '');
+const fmtDur = s => s == null ? '—' : (s >= 60 ? `${Math.floor(s / 60)}m ${Math.round(s % 60)}s` : `${fmt(s)}s`);
+
+// ---------- loading ----------
+function addReplay(name, data) {
+  if (!data || !Array.isArray(data.samples)) return;
+  const activeName = activeIdx >= 0 ? replays[activeIdx]?.name : null;
+  const i = replays.findIndex(r => r.name === name);
+  if (i >= 0) replays[i] = {name, data}; else replays.push({name, data});
+  replays.sort((a, b) => a.name < b.name ? 1 : -1);   // newest first (timestamped names)
+  activeIdx = activeName ? replays.findIndex(r => r.name === activeName) : -1;
+  renderSidebar();
+  if (activeIdx < 0) select(0);
+}
+
+function loadFiles(fileList) {
+  for (const f of fileList) {
+    if (!f.name.endsWith('.json')) continue;
+    f.text().then(t => { try { addReplay(f.name, JSON.parse(t)); } catch (e) { console.warn(f.name, e); } });
+  }
+}
+$('#filepick').addEventListener('change', e => loadFiles(e.target.files));
+document.addEventListener('dragover', e => { e.preventDefault(); $('#drop').classList.add('hot'); });
+document.addEventListener('dragleave', () => $('#drop').classList.remove('hot'));
+document.addEventListener('drop', e => {
+  e.preventDefault(); $('#drop').classList.remove('hot');
+  loadFiles(e.dataTransfer.files);
+});
+
+// Served over HTTP: parse this directory's index page for replay .json links.
+async function autoDiscover() {
+  if (location.protocol === 'file:') { $('#srchint').textContent = 'file:// mode — auto-listing unavailable'; return; }
+  try {
+    const html = await (await fetch('.', {cache: 'no-store'})).text();
+    const names = [...html.matchAll(/href="(replay_[^"]+\.json)"/g)].map(m => decodeURIComponent(m[1]));
+    $('#srchint').textContent = names.length ? `${names.length} file(s) found in folder` : 'no replay files in folder yet';
+    for (const n of names) {
+      try { addReplay(n, await (await fetch(n, {cache: 'no-store'})).json()); } catch (e) { console.warn(n, e); }
+    }
+  } catch (e) { $('#srchint').textContent = 'auto-listing failed — load files manually'; }
+}
+autoDiscover();
+
+// ---------- sidebar ----------
+function renderSidebar() {
+  const nav = $('#sidebar');
+  nav.replaceChildren();
+  replays.forEach((r, i) => {
+    const d = r.data;
+    const div = el('div', {class: 'file' + (i === activeIdx ? ' active' : '')});
+    div.append(el('div', {}, r.name.replace(/^replay_/, '').replace(/\.json$/, '')));
+    const outcomeCls = d.success ? 'win' : 'loss';
+    div.append(el('div', {class: 'meta', html:
+      `L${d.level ?? '?'} · <span class="${outcomeCls}">${d.outcome ?? '?'}</span> · ${fmtDur(d.duration)}`}));
+    div.onclick = () => select(i);
+    nav.append(div);
+  });
+}
+function select(i) { activeIdx = i; renderSidebar(); renderMain(replays[i]); }
+
+// ---------- charts ----------
+function chart(series, opts = {}) {
+  // series: [{label, color, pts: [[x,y],...]}]; opts: {hline, hlineLabel, yFmt}
+  const W = 460, H = 190, L = 46, R = 10, T = 12, B = 26;
+  const pts = series.flatMap(s => s.pts).filter(p => p[1] != null);
+  if (!pts.length) return el('div', {class: 'legend'}, 'no data');
+  let xMax = Math.max(...pts.map(p => p[0]), 1);
+  let yMax = Math.max(...pts.map(p => p[1]), opts.hline ?? 0, 1) * 1.08;
+  const X = x => L + (x / xMax) * (W - L - R);
+  const Y = y => H - B - (y / yMax) * (H - T - B);
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.style.width = '100%';
+  const add = (name, attrs, text) => {
+    const n = document.createElementNS('http://www.w3.org/2000/svg', name);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+    if (text != null) n.textContent = text;
+    svg.append(n); return n;
+  };
+  // axes + ticks
+  add('line', {x1: L, y1: T, x2: L, y2: H - B, class: 'axis'});
+  add('line', {x1: L, y1: H - B, x2: W - R, y2: H - B, class: 'axis'});
+  const yF = opts.yFmt || (v => v >= 1000 ? (v / 1000).toFixed(1) + 'k' : Math.round(v));
+  for (let i = 0; i <= 4; i++) {
+    const v = yMax * i / 4;
+    add('line', {x1: L - 3, y1: Y(v), x2: W - R, y2: Y(v), class: 'axis', opacity: i ? .35 : 1});
+    add('text', {x: L - 6, y: Y(v) + 3.5, 'text-anchor': 'end'}, yF(v));
+  }
+  const xstep = xMax > 300 ? 60 : xMax > 120 ? 30 : xMax > 40 ? 10 : 5;
+  for (let x = 0; x <= xMax; x += xstep) {
+    add('text', {x: X(x), y: H - B + 14, 'text-anchor': 'middle'}, x + 's');
+  }
+  if (opts.hline != null && opts.hline <= yMax) {
+    add('line', {x1: L, y1: Y(opts.hline), x2: W - R, y2: Y(opts.hline), class: 'quota'});
+    add('text', {x: W - R, y: Y(opts.hline) - 4, 'text-anchor': 'end', fill: 'var(--c2)'}, opts.hlineLabel || '');
+  }
+  for (const s of series) {
+    const path = s.pts.filter(p => p[1] != null).map((p, i) => (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ' ' + Y(p[1]).toFixed(1)).join(' ');
+    if (!path) continue;
+    add('path', {d: path, fill: 'none', stroke: s.color, 'stroke-width': 2, 'stroke-linejoin': 'round'});
+    for (const p of s.pts) {
+      if (p[1] == null) continue;
+      const c = add('circle', {cx: X(p[0]), cy: Y(p[1]), r: 2.4, fill: s.color});
+      add('title', {}, '');
+      c.append(Object.assign(document.createElementNS('http://www.w3.org/2000/svg', 'title'),
+        {textContent: `${s.label} @ ${p[0]}s: ${fmt(p[1])}`}));
+    }
+  }
+  const wrap = el('div');
+  wrap.append(svg);
+  const legend = el('div', {class: 'legend'});
+  for (const s of series) legend.append(el('span', {html: `<i style="background:${s.color}"></i>${s.label}`}));
+  if (opts.hline != null) legend.append(el('span', {html: `<i style="background:var(--c2);height:1px"></i>${opts.hlineLabel}`}));
+  wrap.append(legend);
+  return wrap;
+}
+
+// ---------- main panel ----------
+function renderMain(r) {
+  const main = $('#main');
+  main.replaceChildren();
+  const d = r.data, S = d.samples || [];
+  const pts = key => S.map(s => [s.t, s[key] ?? null]);
+
+  const chips = el('div', {class: 'chips'});
+  const chip = (label, val, cls = '') => chips.append(el('span', {class: 'chip ' + cls, html: `${label} <b>${val}</b>`}));
+  chip('level', d.level ?? '?');
+  chip('outcome', d.outcome ?? '?', d.success ? 'win' : 'loss');
+  chip('duration', fmtDur(d.duration));
+  chip('NG+', d.ng_plus ?? 0);
+  if (d.difficulty) chip('difficulty', d.difficulty);
+  if (d.kill_quota != null) chip('kill quota', d.kill_quota);
+  if (d.gold != null) chip('gold', d.gold);
+  if (d.loop) chip('loop', d.loop);
+  chip('saved', (d.saved_at || '').replace('T', ' ').replace('Z', ' UTC'));
+  main.append(chips);
+
+  const grid = el('div', {class: 'grid'});
+  main.append(grid);
+  const card = (title, body) => { const c = el('div', {class: 'card'}); c.append(el('h2', {}, title), body); grid.append(c); return c; };
+
+  card('Round power', chart([
+    {label: 'alive on field', color: 'var(--c1)', pts: pts('alive_round_power')},
+    {label: 'killed (cumulative)', color: 'var(--c3)', pts: pts('killed_round_power')},
+  ], {hline: d.kill_quota, hlineLabel: 'kill quota'}));
+
+  card('Enemies alive', chart([
+    {label: 'onscreen', color: 'var(--c4)', pts: pts('enemies_onscreen')},
+    {label: 'offscreen', color: 'var(--c6)', pts: pts('enemies_offscreen')},
+  ]));
+
+  card('Player total HP', chart([
+    {label: 'troop hp (sum)', color: 'var(--c3)', pts: pts('player_hp')},
+  ]));
+
+  card('Closest enemy distance', chart([
+    {label: 'px to nearest enemy', color: 'var(--c5)', pts: pts('closest_enemy_distance')},
+  ]));
+
+  // units table
+  const tbl = el('table');
+  tbl.append(el('tr', {html: '<th>unit</th><th class="num">lv</th><th class="num">dps</th>' +
+    '<th class="num">damage</th><th class="num">kills</th><th class="num">idle</th><th class="num">idle %</th>'}));
+  for (const u of d.units || []) {
+    const idlePct = d.duration ? (100 * (u.idle_time || 0) / ((u.troops?.length || 1) * d.duration)) : null;
+    tbl.append(el('tr', {html:
+      `<td class="unit-name">${u.character}</td><td class="num">${u.level ?? ''}</td>` +
+      `<td class="num">${fmt(u.dps)}</td><td class="num">${u.damage_dealt ?? 0}</td>` +
+      `<td class="num">${u.kills ?? 0}</td><td class="num">${fmtDur(u.idle_time)}</td>` +
+      `<td class="num">${idlePct == null ? '—' : fmt(idlePct) + '%'}</td>`}));
+    (u.troops || []).forEach((t, i) => {
+      tbl.append(el('tr', {class: 'troop-row', html:
+        `<td style="padding-left:18px">troop ${i + 1}${t.died ? ' ✝' : ''}</td><td></td><td></td><td></td><td></td>` +
+        `<td class="num">${fmtDur(t.idle_time)}</td><td></td>`}));
+    });
+  }
+  card('Units — dps & idle time', tbl);
+
+  // loadout
+  const lo = el('div');
+  for (const u of d.loadout || []) {
+    const row = el('div', {class: 'items', style: 'margin-bottom:8px'});
+    row.append(el('span', {class: 'unit-name', style: 'background:none;padding-right:6px'},
+      `${u.character} (lv${u.level ?? '?'})`));
+    for (const it of u.items || []) {
+      row.append(el('span', {html: `${it.name}${it.sets ? ` <span class="sets">${it.sets}</span>` : ''}`}));
+    }
+    if (!(u.items || []).length) row.append(el('span', {class: 'sets'}, 'no items'));
+    lo.append(row);
+  }
+  if (d.perks?.length) {
+    const row = el('div', {class: 'items'});
+    row.append(el('span', {class: 'unit-name', style: 'background:none;padding-right:6px'}, 'perks'));
+    for (const p of d.perks) row.append(el('span', {}, typeof p === 'string' ? p : (p.name ?? JSON.stringify(p))));
+    lo.append(row);
+  }
+  card('Loadout', lo);
+}
+</script>
+</body>
+</html>
