@@ -511,8 +511,8 @@ SPAWN_DIRECTOR_RAMP_TO = 1.2
 -- that SCATTERS (each member at its own random offscreen point, fanning in from
 -- all sides), with occasional clustered 8-12 waves at a weighted point.
 SWARMER_GROUP_MIX = {
-  { weight = 5, min = 4, max = 6, scatter = true },
-  { weight = 2, min = 8, max = 12 },
+  { weight = 2, min = 4, max = 6, scatter = true },
+  { weight = 4, min = 8, max = 12 },
 }
 
 -- Weighted offscreen spawn placement. Every enemy spawn (basics, specials,
