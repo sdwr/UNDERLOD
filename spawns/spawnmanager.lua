@@ -1005,6 +1005,13 @@ function SpawnManager:tick_spawn_director(dt, counts)
         w = (d.creep_gain or SPAWN_DIRECTOR_CREEP_GAIN) * (1 - c) ^ (d.creep_exp or SPAWN_DIRECTOR_CREEP_EXP)
       end
     end
+    -- Tanks escort the swarm: gate them behind swarmer presence so a tank that
+    -- dies on a thin field isn't immediately re-picked into a solo rush.
+    if slot == 'tank' and w > 0 and d.setpoints['swarmer'] then
+      local sw_sp = math.max(1, d.setpoints['swarmer'] * ramp)
+      local sw_alive = self:director_slot_alive('swarmer', counts)
+      if sw_alive < (SPAWN_DIRECTOR_TANK_SWARM_GATE or 0.5) * sw_sp then w = 0 end
+    end
     if w > 0 then weights[slot] = w; total_w = total_w + w end
   end
 

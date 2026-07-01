@@ -40,29 +40,31 @@ local T2_SPECIAL_POOL = {
 LEVEL_SPAWN_POOLS = {
   [1] = {
     spawn_director = {
-      setpoints = { swarmer = 40, tank = 1 },
+      setpoints = { swarmer = 22, tank = 1 },
     },
   },
   [2] = {
     spawn_director = {
-      setpoints = { swarmer = 50, tank = 2 },
+      -- small_archer introduced here (squishy 3s poke) so minute one isn't
+      -- pure chaff-and-tank — one thing that forces movement.
+      setpoints = { swarmer = 30, tank = 2, small_archer = 1 },
     },
   },
   [3] = {
     spawn_director = {
-      setpoints = { swarmer = 50, tank = 2, special = 1 },
+      setpoints = { swarmer = 40, tank = 2, special = 1 },
       special_pool = {'sniper', 'slime'},
     },
   },
   [4] = {
     spawn_director = {
-      setpoints = { swarmer = 60, tank = 1, special = 1, small_archer = 2 },
+      setpoints = { swarmer = 48, tank = 1, special = 1, small_archer = 2 },
       special_pool = {'sniper', 'slime'},
     },
   },
   [5] = {
     spawn_director = {
-      setpoints = { swarmer = 60, tank = 2, special = 1, small_archer = 2 },
+      setpoints = { swarmer = 48, tank = 2, special = 1, small_archer = 2 },
       special_pool = {'sniper', 'slime'},
     },
   },
@@ -72,7 +74,7 @@ LEVEL_SPAWN_POOLS = {
 for _, lvl in ipairs({7, 8, 9, 10}) do
   LEVEL_SPAWN_POOLS[lvl] = {
     spawn_director = {
-      setpoints = { swarmer = 60, tank = 2, special = 4, small_archer = 3 },
+      setpoints = { swarmer = 48, tank = 2, special = 4, small_archer = 3 },
       special_pool = T2_SPECIAL_POOL,
     },
   }

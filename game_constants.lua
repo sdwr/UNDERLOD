@@ -506,6 +506,9 @@ SPAWN_DIRECTOR_RATE_MIN = 30
 -- Setpoints scale by lerp(FROM, TO, kill-quota progress) over the level.
 SPAWN_DIRECTOR_RAMP_FROM = 0.8
 SPAWN_DIRECTOR_RAMP_TO = 1.2
+-- Tanks only spawn once swarmers are at least this fraction of their setpoint,
+-- so tanks read as escorts embedded in the mass rather than solo rushers.
+SPAWN_DIRECTOR_TANK_SWARM_GATE = 0.5
 -- Swarmer group mix: weighted roll, clamped to ceiling headroom. No singles
 -- (they waste a director cycle on one body); the common case is a 4-6 group
 -- that SCATTERS (each member at its own random offscreen point, fanning in from

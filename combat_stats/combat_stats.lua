@@ -666,14 +666,14 @@ unit_stat_multipliers = {
 }
 
 enemy_type_to_stats = {
-    ['swarmer'] = { dmg = 0.5, hp = 0.6, mvspd = 0.7},
+    ['swarmer'] = { dmg = 0.5, hp = 0.6, mvspd = 1.3},
     ['hunter_swarmer'] = { dmg = 0.6, hp = 1.4, mvspd = 1.1 },
     -- Tank: slow, chunky body. No attacks, just contact pressure. hp=0.8
     -- on special_enemy base (280) lands ~625 HP at L7 once level/post-boss
     -- scaling kicks in - a real soak target you have to commit damage to.
     -- Full knockback immunity is set via `knockback_immune` in tank.lua's
     -- init_enemy (knockback_resistance caps at 0.8 so a flag is required).
-    ['tank'] = { dmg = 1, hp = 0.8, mvspd = 1.1 },
+    ['tank'] = { dmg = 1, hp = 0.8, mvspd = 0.6 },
 
     -- Small archer: squishy ranged poke. special_enemy base scaled way down.
     ['small_archer'] = { dmg = 0.5, hp = 0.4, mvspd = 0.9 },
