@@ -14,10 +14,9 @@ ROUND_POWER_TO_GOLD = 100
 --stat constants
 TROOP_HP = 100
 TROOP_DAMAGE = 11
--- Troop base movement speed. Bumped 45 -> 65: at 45 the follow command and
--- rally-to-center felt sluggish; 65 reads as "moving with intent" without
--- being twitchy.
-TROOP_MS = 60
+-- Troop base movement speed. Fast: the whole game is paced around short
+-- (10-15s) levels, so repositioning has to be near-instant.
+TROOP_MS = 100
 -- Legacy constants (will be replaced)
 TROOP_BASE_COOLDOWN = 1.25
 TROOP_SWORDSMAN_BASE_COOLDOWN = 0.8
@@ -650,16 +649,16 @@ unit_stat_multipliers = {
 }
 
 enemy_type_to_stats = {
-    -- hp trimmed 0.6 -> 0.42 (-30%) alongside the swarmer-lane cadence work:
-    -- clumps arrive as readable waves, so individual bodies die faster.
-    ['swarmer'] = { dmg = 0.5, hp = 0.42, mvspd = 1.3},
+    -- hp 0.28 => 12.6 HP at L1: dies to one archer shot (16.5 dmg - def 25
+    -- => 13.2 effective) through L3; level scaling makes it 2 shots from L4.
+    ['swarmer'] = { dmg = 0.5, hp = 0.28, mvspd = 1.3},
     ['hunter_swarmer'] = { dmg = 0.6, hp = 1.4, mvspd = 1.1 },
-    -- Tank: slow, chunky body. No attacks, just contact pressure. hp=0.8
-    -- on special_enemy base (280) lands ~625 HP at L7 once level/post-boss
-    -- scaling kicks in - a real soak target you have to commit damage to.
+    -- Tank: slow, chunky body. No attacks, just contact pressure. hp=0.4
+    -- on special_enemy base (280) = 112 HP at L1, ~220 at L7 with
+    -- level/post-boss scaling - a soak target you have to commit damage to.
     -- Full knockback immunity is set via `knockback_immune` in tank.lua's
     -- init_enemy (knockback_resistance caps at 0.8 so a flag is required).
-    ['tank'] = { dmg = 1, hp = 0.8, mvspd = 0.6 },
+    ['tank'] = { dmg = 1, hp = 0.4, mvspd = 0.6 },
 
     -- Small archer: squishy ranged poke. special_enemy base scaled way down.
     ['small_archer'] = { dmg = 0.5, hp = 0.4, mvspd = 0.9 },

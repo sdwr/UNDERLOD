@@ -178,18 +178,18 @@ end
 -- kill_quota: level-completion gate — cumulative killed round_power needed
 --   to clear the level.
 LEVEL_PACING = {
-  [1]  = { round_power = 900,  kill_quota = 1520 },
-  [2]  = { round_power = 1100, kill_quota = 1520 },
-  [3]  = { round_power = 1300, kill_quota = 1520 },
-  [4]  = { round_power = 1600, kill_quota = 2420 },
-  [5]  = { round_power = 1800, kill_quota = 2880 },
-  [7]  = { round_power = 2200, kill_quota = 3890 },
-  [8]  = { round_power = 2400, kill_quota = 4440 },
-  [9]  = { round_power = 2600, kill_quota = 5030 },
-  [10] = { round_power = 2800, kill_quota = 5650 },
+  [1]  = { round_power = 900,  kill_quota = 1020 },
+  [2]  = { round_power = 1100, kill_quota = 1020 },
+  [3]  = { round_power = 1300, kill_quota = 1020 },
+  [4]  = { round_power = 1600, kill_quota = 1620 },
+  [5]  = { round_power = 1800, kill_quota = 1930 },
+  [7]  = { round_power = 2200, kill_quota = 2610 },
+  [8]  = { round_power = 2400, kill_quota = 2970 },
+  [9]  = { round_power = 2600, kill_quota = 3370 },
+  [10] = { round_power = 2800, kill_quota = 3790 },
 }
 -- Fallback for any level past the authored rows.
-LEVEL_PACING_DEFAULT = { round_power = 2800, kill_quota = 5650 }
+LEVEL_PACING_DEFAULT = { round_power = 2800, kill_quota = 3790 }
 
 function Build_Level_List(max_level)
   local level_list = {}

@@ -150,7 +150,7 @@ DISTANCE_MULTIPLIER_THRESHOLD_SOUND = 0.7
 
 DELAY_BEFORE_SUCTION = 1
 TIME_BETWEEN_WAVES = 0.5
-WAVE_SPAWN_WARNING_TIME = 1.25
+WAVE_SPAWN_WARNING_TIME = 0.75
 -- Pause after a wave finishes its full instruction list, before cycling back
 -- to the start when wave.kill_quota hasn't been met. Gives the player a brief
 -- beat of breathing room between spawn rounds.
@@ -494,7 +494,7 @@ SPAWN_DIRECTOR_FILL_EXP = 1
 -- slows sharply (aggressive when low). Self-regulating: kills drop the fill and
 -- shorten the next cooldown, so it's responsive without per-unit cost spikes.
 SPAWN_DIRECTOR_INTERVAL_MIN = 0.2
-SPAWN_DIRECTOR_INTERVAL_MAX = 6
+SPAWN_DIRECTOR_INTERVAL_MAX = 2
 SPAWN_DIRECTOR_RATE_EXP = 2
 SPAWN_DIRECTOR_JITTER = 0.25
 -- (Unused since pacing went fill-based; kept so per-level overrides don't error.)
@@ -511,7 +511,7 @@ SPAWN_DIRECTOR_TANK_SWARM_GATE = 0.5
 -- Opening grace: for this many seconds after spawning starts, only the basic
 -- swarmer slot may fire — specials (incl. tanks) and small archers hold back
 -- so every level opens as pure chaff before the pressure pieces arrive.
-SPAWN_DIRECTOR_OPENING_GRACE = 7
+SPAWN_DIRECTOR_OPENING_GRACE = 2
 -- Swarmer group mix: weighted roll, clamped to ceiling headroom. No singles
 -- (they waste a director cycle on one body); the common case is a 4-6 group
 -- that SCATTERS (each member at its own random offscreen point, fanning in from
@@ -528,7 +528,7 @@ SWARMER_GROUP_MIX = {
 -- refill pressure scales linearly with the setpoint as levels grow. The math
 -- (documentation/spawn_tuning.md §2) integrates the catch-up curve's early
 -- speedup. Per-level override: spawn_director.fill_time.
-SWARMER_LANE_FILL_TIME = 8
+SWARMER_LANE_FILL_TIME = 2
 SWARMER_LANE_TARGET_FILL = 0.8
 -- Catch-up curve: the interval scales by c + (1-c)*min(fill/frac, 1) —
 -- half-length on an empty field, full length from half-setpoint up. Fires are
@@ -542,8 +542,8 @@ SWARMER_LANE_OVERFILL_SLOWDOWN = 2
 -- Safety clamp on the derived interval (floor guards huge late setpoints,
 -- ceiling keeps tiny/debug setpoints from feeling dead), and the recheck
 -- delay when a fire is skipped at the ceiling.
-SWARMER_LANE_INTERVAL_MIN = 1.2
-SWARMER_LANE_INTERVAL_MAX = 6.5
+SWARMER_LANE_INTERVAL_MIN = 0.4
+SWARMER_LANE_INTERVAL_MAX = 2.5
 SWARMER_LANE_RETRY = 0.5
 
 -- Weighted offscreen spawn placement. Every enemy spawn (basics, specials,
