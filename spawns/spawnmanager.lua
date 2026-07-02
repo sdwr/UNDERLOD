@@ -1859,9 +1859,32 @@ function SpawnManager:spawn_boss_immediately()
     -- Set boss to idle but inactive
     Helper.Unit:set_state(boss, unit_states['idle'])
     boss.idleTimer = 1 -- Longer idle time
-    
+
     -- Set as active boss for level manager
     LevelManager.activeBoss = boss
+
+    -- Boss intro: the title card plays first, the boss pops in partway
+    -- through, and it stays frozen (no actions, no animation) until the card
+    -- has fully faded out.
+    boss.hidden = true
+    boss.transition_active = false
+    boss.intro_frozen = true
+
+    BossTitleCard{group = self.arena.ui, boss_name = boss_name}
+
+    local arena = self.arena
+    arena.t:after(BOSS_POP_IN_DELAY, function()
+      if boss.dead then return end
+      boss.hidden = false
+      Spawn_Enemy_Effect(arena, boss)
+      Spawn_Enemy_Sound(arena, true)
+      camera:shake(4, 0.4)
+    end)
+    arena.t:after(BOSS_TITLE_CARD_DURATION + BOSS_TITLE_CARD_FADE_OUT, function()
+      if boss.dead then return end
+      boss.intro_frozen = nil
+      boss.transition_active = true
+    end)
   end
 end
 

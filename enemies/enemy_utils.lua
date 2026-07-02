@@ -9,7 +9,9 @@ enemy_size_to_xy = {
   large = {x = 24, y = 24},
   huge = {x = 36, y = 24},
 
-  stompy = {x = 46, y = 46},
+  -- Sprite scale derives from shape.w (see calculate_enemy_scale), so growing
+  -- this grows the visual too. Attack radii are fixed constants and unaffected.
+  stompy = {x = 56, y = 56},
   heigan = {x = 40, y = 60},
   boss = {x = 60, y = 60},
 }

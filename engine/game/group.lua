@@ -127,6 +127,19 @@ function Group:draw(scroll_factor_x, scroll_factor_y)
   if self.camera then self.camera:detach() end
 end
 
+-- Draws the ground layer of objects that define a draw_ground() method
+-- (AoE telegraphs, decals). Called by the arena before the main unit pass so
+-- these always render underneath units.
+function Group:draw_ground_effects()
+  if self.camera then self.camera:attach() end
+  for _, object in ipairs(self.objects) do
+    if object.draw_ground and not object.hidden and not object.dead then
+      object:draw_ground()
+    end
+  end
+  if self.camera then self.camera:detach() end
+end
+
 function Group:draw_floor_effects()
   if #self.objects == 0 then return end
     
@@ -501,15 +514,20 @@ function Group:set_as_physics_world(meter, xg, yg, tags)
     function(fa, fb, c) --presolve
       local oa, ob = self:get_object_by_id(fa:getUserData()), self:get_object_by_id(fb:getUserData())
       if oa and ob then
-        -- Projectile-vs-knockback_immune: kill Box2D's collision impulse for
-        -- this step so the bullet doesn't physically shove the target. Damage
-        -- still resolves because begincontact has already fired before
-        -- presolve runs; only the push is dropped.
+        -- Projectile-vs-unit: kill Box2D's collision impulse for this step so
+        -- bullets never physically shove troops or enemies. Damage still
+        -- resolves because begincontact has already fired before presolve
+        -- runs; only the push is dropped. All real knockback goes through the
+        -- explicit push/apply_knockback APIs, which respect knockback_immune,
+        -- the boss guard in Enemy:push, and knockback_resistance.
         local function is_projectile(o)
-          return o and (o.tag == 'projectile' or o.tag == 'enemy_projectile')
+          return o.tag == 'projectile' or o.tag == 'enemy_projectile'
         end
-        if (oa.knockback_immune and is_projectile(ob))
-           or (ob.knockback_immune and is_projectile(oa)) then
+        local function is_unit(o)
+          return o.tag == 'troop' or o.tag == 'enemy'
+        end
+        if (is_projectile(oa) and is_unit(ob))
+           or (is_projectile(ob) and is_unit(oa)) then
           c:setEnabled(false)
         end
       end

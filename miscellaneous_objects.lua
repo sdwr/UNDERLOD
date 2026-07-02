@@ -627,6 +627,14 @@ function Stomp:init(args)
     self.impact_color = yellow[0]:clone()
     self.impact_color.a = 0.5
 
+    -- Ground gradient colors: a soft pool over the full impact area plus an
+    -- edge-weighted fill that grows with charge progress.
+    self.pool_inner = self.color:clone(); self.pool_inner.a = 0.26
+    self.pool_outer = self.color:clone(); self.pool_outer.a = 0.03
+    self.fill_inner = self.color:clone(); self.fill_inner.a = 0.12
+    self.fill_outer = self.color:clone(); self.fill_outer.a = 0.34
+    self.flash_color = fg[0]:clone()
+
     -- Properties for the charging animation
     self.current_color = self.color:clone()
     self.circle_thickness = 4
@@ -725,46 +733,111 @@ function Stomp:recover()
     if self.parent and self.parent.state == 'frozen' then self.parent.state = 'normal' end
 end
 
--- ===================================================================
--- REFACTORED DRAW FUNCTION
--- ===================================================================
-function Stomp:draw()
-    if self.hidden then return end
-
+-- Ground layer: drawn by the arena's ground-effect pass so the telegraph sits
+-- under units.
+function Stomp:draw_ground()
     graphics.push(self.x, self.y, self.r + (self.vr or 0), self.spring.x, self.spring.x)
 
     if self.visual_phase == "charging" then
-        -- Draw the outer circle (the main effect)
-        local outer_circle = function() 
-            graphics.circle(self.x, self.y, self.outer_radius, self.current_color) 
-        end
-        
-        -- Draw an inner circle with the background color to create the "hollow" effect.
-        -- This is a simple masking technique.
-        local inner_circle = function() 
-            graphics.circle(self.x, self.y, self.inner_radius, self.current_color) 
-        end
-        
-        -- Draw the outline on top.
-        if self.show_inner_circle then
-            graphics.draw_with_mask(outer_circle, inner_circle, true)
-        else
-            graphics.circle(self.x, self.y, self.outer_radius, self.current_color, self.circle_thickness)
+        local rs = self.attack_sensor.rs
+        local pulse = 1 + 0.03*math.sin(8*self.currentTime)
+        -- Soft pool over the full impact area.
+        graphics.gradient_circle(self.x, self.y, rs*pulse, self.pool_inner, self.pool_outer)
+
+        -- Edge-weighted fill growing with charge progress so the expanding
+        -- boundary reads as a countdown.
+        local progress = math.min(self.currentTime/(self.chargeTime or 1), 1)
+        graphics.gradient_circle(self.x, self.y, rs*progress, self.fill_inner, self.fill_outer)
+
+        -- Rim: soft glow halo around the ring, brightening as the charge
+        -- completes. current_color and the radii are driven by the charge tweens.
+        local rim_r = (self.outer_radius + self.inner_radius)/2
+        local glow_w = 4 + 2*progress
+        local glow_edge = self.current_color:clone(); glow_edge.a = 0
+        local glow_peak = self.current_color:clone(); glow_peak.a = 0.08 + 0.14*progress
+        graphics.gradient_annulus(self.x, self.y, math.max(rim_r - glow_w, 0), rim_r, glow_edge, glow_peak)
+        graphics.gradient_annulus(self.x, self.y, rim_r, rim_r + glow_w, glow_peak, glow_edge)
+
+        -- Crisp core ring.
+        local thickness = math.max(self.outer_radius - self.inner_radius, 1)
+        graphics.circle(self.x, self.y, rim_r, self.current_color, thickness)
+
+        -- Slow rotating dashes for a hint of motion.
+        local spin = self.currentTime*(0.8 + 1.0*progress)
+        local dash_color = self.white_color:clone()
+        dash_color.a = 0.15 + 0.2*progress
+        for i = 0, 2 do
+          local a0 = spin + i*(2*math.pi/3)
+          graphics.arc('open', self.x, self.y, rim_r, a0, a0 + 0.45, dash_color, 2)
         end
 
     elseif self.visual_phase == "impact" then
-        -- 5. Draw the expanding yellow impact circle.
-        if self.knockback then
-            graphics.circle(self.x, self.y, self.impact_radius, self.impact_color, 4)
-        else
-            graphics.circle(self.x, self.y, self.attack_sensor.rs, self.current_color)
-        end
+        -- Bright ground flash that fades as the impact ring expands.
+        local n = 1 - math.min(self.impact_radius/self.attack_sensor.rs, 1)
+        local flash_inner = self.flash_color:clone(); flash_inner.a = 0.25 + 0.4*n
+        local flash_outer = self.flash_color:clone(); flash_outer.a = 0
+        graphics.gradient_circle(self.x, self.y, self.attack_sensor.rs, flash_inner, flash_outer)
+
+        -- White rim burst that fades with the flash.
+        local rim_edge = self.flash_color:clone(); rim_edge.a = 0
+        local rim_peak = self.flash_color:clone(); rim_peak.a = 0.35*n
+        graphics.gradient_annulus(self.x, self.y, self.attack_sensor.rs - 6, self.attack_sensor.rs, rim_edge, rim_peak)
     end
-    
-    -- Reset graphics state to avoid affecting other objects
+
     graphics.pop()
 end
 
+function Stomp:draw()
+    if self.hidden then return end
+    -- Only the knockback shockwave ring draws over units; the telegraph and
+    -- impact flash live in draw_ground.
+    if self.visual_phase == "impact" and self.knockback then
+        graphics.push(self.x, self.y, self.r + (self.vr or 0), self.spring.x, self.spring.x)
+        graphics.circle(self.x, self.y, self.impact_radius, self.impact_color, 4)
+        graphics.pop()
+    end
+end
+
+
+
+-- One-shot ground impact flash: bright gradient pool + rim burst that fade out
+-- over duration, with an optional expanding shockwave ring (impact_ring) drawn
+-- over units. For spells whose object dies the moment they deal damage (e.g.
+-- Stomp_Spell), so the hit still leaves a visible mark.
+GroundFlash = Object:extend()
+GroundFlash.__class_name = 'GroundFlash'
+GroundFlash:implement(GameObject)
+function GroundFlash:init(args)
+  self:init_game_object(args)
+  self.rs = self.rs or 40
+  self.duration = self.duration or 0.3
+  self.elapsed = 0
+  self.color = (self.color or fg[0]):clone()
+  self.ring_color = (self.ring_color or yellow[0]):clone()
+end
+
+function GroundFlash:update(dt)
+  self:update_game_object(dt)
+  self.elapsed = self.elapsed + dt
+  if self.elapsed >= self.duration then self.dead = true end
+end
+
+function GroundFlash:draw_ground()
+  local n = 1 - math.min(self.elapsed/self.duration, 1)
+  local inner = self.color:clone(); inner.a = 0.5*n
+  local outer = self.color:clone(); outer.a = 0
+  graphics.gradient_circle(self.x, self.y, self.rs, inner, outer)
+  local rim_peak = self.color:clone(); rim_peak.a = 0.35*n
+  graphics.gradient_annulus(self.x, self.y, self.rs - 6, self.rs, outer, rim_peak)
+end
+
+function GroundFlash:draw()
+  if not self.impact_ring then return end
+  local n = 1 - math.min(self.elapsed/self.duration, 1)
+  local ring_color = self.ring_color:clone()
+  ring_color.a = 0.7*n
+  graphics.circle(self.x, self.y, self.rs*(1 - n), ring_color, 3)
+end
 
 
 Mortar = Object:extend()

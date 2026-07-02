@@ -348,6 +348,7 @@ end
 
 function MainMenu:draw()
   self.floor:draw()
+  self.main:draw_ground_effects()
   self.main:draw()
   self.post_main:draw()
   self.effects:draw()

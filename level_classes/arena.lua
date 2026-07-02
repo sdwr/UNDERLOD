@@ -364,6 +364,7 @@ function Arena:draw()
   -- Draw arena groups
   self.floor:draw()
   self.effects:draw_floor_effects()
+  self.main:draw_ground_effects()
   self.main:draw()
   self.post_main:draw()
   self.effects:draw()

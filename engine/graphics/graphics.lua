@@ -259,6 +259,65 @@ function graphics.ellipse(x, y, rx, ry, color, line_width)
 end
 
 
+-- Draws a circle of radius r centered on x, y, filled with a radial gradient
+-- going from inner_color at the center to outer_color at the rim. Alpha is
+-- respected on both colors, so passing the same color with different alphas
+-- gives a soft ground-glow. A single unit-circle mesh is cached and retinted
+-- per call.
+local gradient_circle_mesh
+local GRADIENT_CIRCLE_SEGMENTS = 48
+function graphics.gradient_circle(x, y, r, inner_color, outer_color)
+  if not gradient_circle_mesh then
+    local vertices = {{0, 0, 0, 0, 1, 1, 1, 1}}
+    for i = 0, GRADIENT_CIRCLE_SEGMENTS do
+      local angle = (i/GRADIENT_CIRCLE_SEGMENTS)*2*math.pi
+      table.insert(vertices, {math.cos(angle), math.sin(angle), 0, 0, 1, 1, 1, 1})
+    end
+    gradient_circle_mesh = love.graphics.newMesh(vertices, 'fan', 'stream')
+  end
+  gradient_circle_mesh:setVertexAttribute(1, 3, inner_color.r, inner_color.g, inner_color.b, inner_color.a)
+  for i = 2, GRADIENT_CIRCLE_SEGMENTS + 2 do
+    gradient_circle_mesh:setVertexAttribute(i, 3, outer_color.r, outer_color.g, outer_color.b, outer_color.a)
+  end
+  local _r, g, b, a = love.graphics.getColor()
+  love.graphics.setColor(1, 1, 1, 1)
+  love.graphics.draw(gradient_circle_mesh, x, y, 0, r, r)
+  love.graphics.setColor(_r, g, b, a)
+end
+
+
+-- Draws a ring band between radii r1 and r2 centered on x, y, blending from
+-- inner_color at r1 to outer_color at r2. Two of these back to back (fade in,
+-- fade out) make a soft glow around a ring outline. A single strip mesh is
+-- cached and reshaped/retinted per call.
+local gradient_annulus_mesh
+local GRADIENT_ANNULUS_SEGMENTS = 48
+function graphics.gradient_annulus(x, y, r1, r2, inner_color, outer_color)
+  if r2 <= 0 or r2 <= r1 then return end
+  if not gradient_annulus_mesh then
+    local vertices = {}
+    for i = 0, GRADIENT_ANNULUS_SEGMENTS do
+      local angle = (i/GRADIENT_ANNULUS_SEGMENTS)*2*math.pi
+      table.insert(vertices, {math.cos(angle), math.sin(angle), 0, 0, 1, 1, 1, 1})
+      table.insert(vertices, {math.cos(angle), math.sin(angle), 0, 0, 1, 1, 1, 1})
+    end
+    gradient_annulus_mesh = love.graphics.newMesh(vertices, 'strip', 'stream')
+  end
+  local ratio = math.max(r1/r2, 0)
+  for i = 0, GRADIENT_ANNULUS_SEGMENTS do
+    local angle = (i/GRADIENT_ANNULUS_SEGMENTS)*2*math.pi
+    local vi = 2*i + 1
+    gradient_annulus_mesh:setVertexAttribute(vi, 1, ratio*math.cos(angle), ratio*math.sin(angle))
+    gradient_annulus_mesh:setVertexAttribute(vi, 3, inner_color.r, inner_color.g, inner_color.b, inner_color.a)
+    gradient_annulus_mesh:setVertexAttribute(vi + 1, 3, outer_color.r, outer_color.g, outer_color.b, outer_color.a)
+  end
+  local _r, g, b, a = love.graphics.getColor()
+  love.graphics.setColor(1, 1, 1, 1)
+  love.graphics.draw(gradient_annulus_mesh, x, y, 0, r2, r2)
+  love.graphics.setColor(_r, g, b, a)
+end
+
+
 -- Sets the currently active shader, the passed in argument should be a Shader object.
 function graphics.set_shader(shader)
   if not shader then love.graphics.setShader()

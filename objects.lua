@@ -2067,6 +2067,11 @@ function HPBar:init(args)
   self.hidden = true
   if self.isBoss then
     self.hidden = false
+    -- Fade in as the boss title card fades out.
+    self.alpha = 0
+    self.t:after(BOSS_TITLE_CARD_DURATION or 0, function()
+      self.t:tween(0.8, self, {alpha = 1}, math.linear)
+    end)
   end
 
   self.last_hp = self.parent.hp
@@ -2114,9 +2119,14 @@ function HPBar:draw()
     local h = 10
     local x = gw/2 - w/2
     local y = 20
-    graphics.line(x, y, x + w, y, bg[-3], h)
-    graphics.line(x, y, x + n*w, y, red[0], h)
-    skull:draw(x + n*w, y, 0, 0.4, 0.4)
+    local a = self.alpha or 1
+    if a <= 0 then return end
+    local bg_color = bg[-3]:clone(); bg_color.a = a
+    local fill_color = red[0]:clone(); fill_color.a = a
+    local skull_color = white[0]:clone(); skull_color.a = a
+    graphics.line(x, y, x + w, y, bg_color, h)
+    graphics.line(x, y, x + n*w, y, fill_color, h)
+    skull:draw(x + n*w, y, 0, 0.4, 0.4, nil, nil, skull_color)
   else
     if p.hp < p.max_hp then
       graphics.push(p.x, p.y, 0, p.hfx.hit.x, p.hfx.hit.x)

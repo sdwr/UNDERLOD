@@ -95,6 +95,10 @@ function Enemy:update_animation(dt)
   if self.state == unit_states['stunned'] then
     return
   end
+  -- Boss intro: hold the current frame while the title card plays.
+  if self.intro_frozen then
+    return
+  end
 
   if self.spritesheet and self.spritesheet[self.state] then
     local animation = self.spritesheet[self.state][1]
