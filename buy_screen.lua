@@ -394,9 +394,9 @@ function BuyScreen:set_party()
   local num_cards = #Character_Cards
   local buy_card_index = num_cards + 1
   local buy_card_order = card_order[buy_card_index]
-  -- Flat 10 gold per unit (was 5*(n+1): 5/10/15). Starting gold bumped +5
-  -- (see STARTING_GOLD) so the first unit is still affordable at level 1.
-  local buy_card_cost = 10
+  -- Flat 6 gold per unit (was 5*(n+1): 5/10/15). STARTING_GOLD covers the
+  -- first unit with a little left over.
+  local buy_card_cost = 6
 
   if #Character_Cards < 3 then
     table.insert(Character_Cards, CharacterCardBuy{group = self.main, x = x + (buy_card_order-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, i = buy_card_index, parent = self,

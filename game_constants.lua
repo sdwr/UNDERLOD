@@ -34,9 +34,9 @@ system.load_stats()
 
 --gold
 --note that HoG econ check is in arena.lua (gain_gold)
--- Covers the flat 10-gold first unit (see buy_card_cost in buy_screen.lua)
--- with a little left over. Was 14, trimmed to 12.
-STARTING_GOLD = 12
+-- Covers the flat 6-gold first unit (see buy_card_cost in buy_screen.lua)
+-- with a little left over.
+STARTING_GOLD = 8
 -- Flat end-of-round gold. The old per-kill trickle (GOLD_GAINED_BY_LEVEL,
 -- fractional gold per enemy) is gone — this is the whole non-boss payout,
 -- with interest/pickups/treasury on top. Boss rounds pay GOLD_FOR_BOSS_ROUND
@@ -248,8 +248,8 @@ ITEM_SELL_XP = 2
 MAX_UNIT_LEVEL = 3
 -- XP needed at the current level to reach the next one.
 UNIT_XP_TO_NEXT_LEVEL = {
-  [1] = 6,
-  [2] = 8,
+  [1] = 4,
+  [2] = 6,
 }
 
 MAX_ITEMS = 6
