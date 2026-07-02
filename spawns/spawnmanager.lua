@@ -822,6 +822,14 @@ function SpawnManager:update(dt)
     end
 
     if self.state == 'waiting_for_clear' then
+      -- Death wins the race: the quota can still complete AFTER the player
+      -- dies (lingering burns/effects keep killing enemies and counting kill
+      -- power), which used to trigger level_clear -> buy screen on top of
+      -- the death screen. A dead run never clears.
+      if self.arena.died then
+        self:change_state('finished')
+        return
+      end
       local enemies = self.arena.main:get_objects_by_classes(main.current.enemies)
       local enemies_clear = #enemies <= 0
       -- For non-boss levels we advance the moment the kill_power target is

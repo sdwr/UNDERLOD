@@ -23,11 +23,39 @@ function CombatLevel:on_character_selected(character)
 end
 
 function CombatLevel:level_clear()
+  -- Win/lose exclusivity: if the player died first, the clear is void; once
+  -- the clear starts, level_cleared suppresses any later death (see
+  -- Arena:die) so a projectile landing during the cascade can't show the
+  -- death screen mid-win.
+  if self.died then return end
+  self.level_cleared = true
+
   spawn_mark2:play{pitch = 1, volume = 0.8}
   Helper.Unit:update_units_with_combat_data(self)
   if ReplayRecorder then
     ReplayRecorder.finalize(self, (self.level >= NUMBER_OF_ROUNDS) and 'run_complete' or 'win')
   end
+
+  -- Win bookkeeping. This used to live in BaseLevel:quit(), which the
+  -- level_clear flow never calls (dead door-era path) — so wins were never
+  -- telemetered and boss-defeat stats never counted. The final level skips
+  -- the 'win' event because on_run_complete logs 'run_complete' for it.
+  if CrashLog and CrashLog.log_event and self.level < NUMBER_OF_ROUNDS then
+    CrashLog.log_event('level_end', CrashLog.snapshot_level(self, 'win', {
+      boss = Is_Boss_Level and Is_Boss_Level(self.level) or false,
+    }))
+  end
+  if Is_Boss_Level(self.level) then
+    if self.level == 6 then USER_STATS.stompy_defeated = USER_STATS.stompy_defeated + 1
+    elseif self.level == 11 then USER_STATS.dragon_defeated = USER_STATS.dragon_defeated + 1
+    elseif self.level == 16 then USER_STATS.heigan_defeated = USER_STATS.heigan_defeated + 1
+    elseif self.level == 21 then USER_STATS.final_boss_defeated = USER_STATS.final_boss_defeated + 1
+    end
+  end
+  if Stats_Level_Complete then Stats_Level_Complete() end
+  if Stats_Max_Gold then Stats_Max_Gold() end
+  system.save_stats()
+  if Check_All_Achievements then Check_All_Achievements() end
   -- Flash the progress bar (spring pulse, brighten, particles) so the level
   -- completion reads clearly.
   if self.progress_bar and self.progress_bar.flash_level_complete then
@@ -45,6 +73,8 @@ function CombatLevel:level_clear()
     if #enemies == 0 then
       self.t:cancel(poll_id)
       self.t:after(transition_delay, function()
+        -- Belt and braces: never transition a dead run.
+        if self.died then return end
         -- Last level: show the run-complete screen instead of transitioning
         -- to a buy screen that doesn't exist.
         if self.level >= NUMBER_OF_ROUNDS then

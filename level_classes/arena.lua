@@ -398,7 +398,9 @@ function Arena:draw_debug_spawn_text()
 end
 
 function Arena:die()
-  if not self.died_text and not self.won and not self.arena_clear_text then
+  -- level_cleared: the quota completed first (combat_level:level_clear), so
+  -- the win claimed the level — deaths during the clear cascade are ignored.
+  if not self.died_text and not self.won and not self.arena_clear_text and not self.level_cleared then
     -- input:set_mouse_visible(true)
     self.t:cancel('divine_punishment')
     self.died = true
