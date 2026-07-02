@@ -25,61 +25,63 @@ end
 -- SpawnManager and is used by the debug arena, but campaign levels use
 -- special_pool exclusively.)
 
--- Tier-2 draw pool (L7-L10, between stompy at L6 and dragon at L11). Wide and
--- varied so the back third doesn't feel like recycled early levels; includes
--- the four custom enemies.
-local T2_SPECIAL_POOL = {
-  'snakearrow', 'mortar', 'cleaver', 'brute', 'orb', 'boomerang',
-  'sniper', 'plasma',
-  'splitter', 'pulse_walker', 'drone_carrier',
-}
+-- BENCHED: specials are being reworked into larger one-per-level miniboss
+-- style enemies (see pulsar); no level draws from this pool right now. Kept
+-- for reference / the debug arena still spawns one of each special.
+-- Old T2 draw pool (L7-L10): 'snakearrow', 'mortar', 'cleaver', 'brute',
+-- 'orb', 'boomerang', 'sniper', 'plasma', 'splitter', 'pulse_walker',
+-- 'drone_carrier'.
 
 -- D: per-level spawn_director configs. setpoints = ideal alive count per slot
 -- (swarmer / tank / small_archer / special category). The director maintains
 -- these, paced by power; tuning falls back to the SPAWN_DIRECTOR_* globals.
+-- Non-swarmer setpoints are hard caps: those slots never spawn above them.
 -- Optional per-level overrides: fill_time (seconds for the swarmer lane to
 -- fill to SWARMER_LANE_TARGET_FILL of setpoint — lower = hotter opening),
--- ramp = {from=, to=} (front-load with from > to). See
+-- ramp = {from=, to=} (swarmer lane only; front-load with from > to). See
 -- documentation/spawn_tuning.md.
 LEVEL_SPAWN_POOLS = {
   [1] = {
     spawn_director = {
       -- small_archer from the very start (after the opening grace window) so
       -- even L1 has one thing a kiting archer can't ignore.
-      setpoints = { swarmer = 22, tank = 1, small_archer = 1 },
+      setpoints = { swarmer = 15, tank = 1, small_archer = 1 },
     },
   },
   [2] = {
     spawn_director = {
-      setpoints = { swarmer = 30, tank = 2, small_archer = 1 },
+      setpoints = { swarmer = 15, tank = 2, small_archer = 1 },
+    },
+    -- One-shot miniboss-style special: fires once at 30% kill progress.
+    -- Spawns offscreen and walks to a nearby park point.
+    specials = {
+      {type = 'pulsar', at = 0.3},
     },
   },
   [3] = {
     spawn_director = {
-      setpoints = { swarmer = 40, tank = 2, special = 1 },
-      special_pool = {'sniper', 'slime'},
+      setpoints = { swarmer = 20, tank = 2 },
     },
   },
   [4] = {
     spawn_director = {
-      setpoints = { swarmer = 48, tank = 1, special = 1, small_archer = 2 },
-      special_pool = {'sniper', 'slime'},
+      setpoints = { swarmer = 22, tank = 1, small_archer = 2 },
     },
   },
   [5] = {
     spawn_director = {
-      setpoints = { swarmer = 48, tank = 2, special = 1, small_archer = 2 },
-      special_pool = {'sniper', 'slime'},
+      setpoints = { swarmer = 22, tank = 2, small_archer = 2 },
     },
   },
-  -- 6 is stompy boss. 7-10 (T2) are built below from the shared T2 pool.
+  -- 6 is stompy boss. 7-10 (T2) are built below.
 }
 
+-- T2 levels: specials removed pending the miniboss-special rework (pulsar);
+-- swarmer/tank/small_archer lanes only for now.
 for _, lvl in ipairs({7, 8, 9, 10}) do
   LEVEL_SPAWN_POOLS[lvl] = {
     spawn_director = {
-      setpoints = { swarmer = 48, tank = 2, special = 4, small_archer = 3 },
-      special_pool = T2_SPECIAL_POOL,
+      setpoints = { swarmer = 48, tank = 2, small_archer = 3 },
     },
   }
 end
@@ -119,7 +121,7 @@ local DEBUG_SPECIAL_TYPES = {
   'bomb', 'selfburst', 'burst', 'arcspread', 'aim_spread',
   'singlemortar', 'line_mortar', 'boomerang', 'plasma',
   'archer', 'goblin_archer', 'big_goblin_archer',
-  'firewall_caster', 'turret', 'shooter', 'spawner', 'tank',
+  'firewall_caster', 'turret', 'shooter', 'spawner', 'tank', 'pulsar',
   -- Custom specials added in this pass:
   'splitter', 'pulse_walker', 'drone_carrier', 'linker',
 }

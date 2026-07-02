@@ -182,13 +182,7 @@ SPECIAL_CADENCE_INCREMENT = 3
 -- Seconds between swarmer clump spawns in the continuous system. Clump size
 -- itself is SWARMERS_PER_LEVEL(level). At 3.1s full-size clumps arrive less
 -- often than the original 2.0, thinning sustained swarmer density.
-BASIC_CLUMP_INTERVAL = 3.1
-
--- Opening burst: the very first basic spawn of a level fires this many swarmer
--- clumps, staggered by OPENING_SWARMER_CLUMP_STAGGER seconds, each at its own
--- weighted offscreen point. After this the normal cadence takes over.
-OPENING_SWARMER_CLUMP_COUNT = 3
-OPENING_SWARMER_CLUMP_STAGGER = 0.5
+BASIC_CLUMP_INTERVAL = 2.8
 
 -- Density throttle: the basic clump interval stretches as the field fills toward
 -- MAX_ALIVE_BASICS so spawns ease off before slamming into the hard cap. At an
@@ -478,21 +472,19 @@ SMALL_SPECIAL_INTERVAL = 10
 -- the 'special' category (draws a random type from special_pool). See
 -- SpawnManager:tick_spawn_director.
 -- ============================================================================
--- Per-slot ceiling = ceil(setpoint * mult) unless overridden per slot.
+-- Swarmer ceiling = ceil(ramped setpoint * mult) unless overridden per slot
+-- (spawn_director.ceilings). Only the swarmer lane has a ceiling; every other
+-- slot caps hard at its setpoint and never spawns above it.
 SPAWN_DIRECTOR_CEILING_MULT = 1.75
 -- Hard total-alive cap (performance backstop): halts all director spawns.
 SPAWN_DIRECTOR_GLOBAL_CAP = 200
--- Per-slot weight curve. Below setpoint the weight is the ABSOLUTE deficit
--- (setpoint - alive) ^ FILL_EXP, so picks go where the most bodies are missing
--- (swarmers, with their big setpoint, dominate over small-setpoint tanks).
--- FILL_EXP = 1 -> pick chance proportional to bodies needed; >1 biases harder
--- toward the most-depleted slot (but can starve small slots of ever appearing).
--- Above setpoint: small fractional creep toward the ceiling (CREEP_GAIN keeps it
--- well under any below-setpoint weight so under-cap slots always win).
+-- Specials-queue weight curve. Below setpoint a slot's weight is the
+-- FRACTIONAL deficit (1 - alive/setpoint) ^ FILL_EXP, so slots compete on how
+-- empty they are, not how many bodies they need. FILL_EXP = 1 -> pick chance
+-- proportional to emptiness; >1 biases harder toward the most-depleted slot.
+-- At or above setpoint the weight is zero.
 SPAWN_DIRECTOR_FILL_GAIN = 1.0
 SPAWN_DIRECTOR_FILL_EXP = 1
-SPAWN_DIRECTOR_CREEP_GAIN = 0.15
-SPAWN_DIRECTOR_CREEP_EXP = 2.0
 -- Pacing: the cooldown between spawns is a function of the level's TOTAL power
 -- fill (alive + in-flight power / setpoint power), not the unit just spawned.
 --   fill = 0 (empty)        -> INTERVAL_MIN  (fast fill)
@@ -508,7 +500,9 @@ SPAWN_DIRECTOR_JITTER = 0.25
 -- (Unused since pacing went fill-based; kept so per-level overrides don't error.)
 SPAWN_DIRECTOR_RATE_MAX = 250
 SPAWN_DIRECTOR_RATE_MIN = 30
--- Setpoints scale by lerp(FROM, TO, kill-quota progress) over the level.
+-- The SWARMER setpoint scales by lerp(FROM, TO, kill-quota progress) over the
+-- level. Non-swarmer setpoints are fixed counts and don't ramp (fractional
+-- tanks make no sense).
 SPAWN_DIRECTOR_RAMP_FROM = 0.8
 SPAWN_DIRECTOR_RAMP_TO = 1.2
 -- Tanks only spawn once swarmers are at least this fraction of their setpoint,
@@ -524,7 +518,7 @@ SPAWN_DIRECTOR_OPENING_GRACE = 7
 -- all sides), with occasional clustered 8-12 waves at a weighted point.
 SWARMER_GROUP_MIX = {
   { weight = 2, min = 4, max = 6, scatter = true },
-  { weight = 4, min = 8, max = 12 },
+  { weight = 4, min = 4, max = 6 },
 }
 
 -- Swarmer lane: swarmers spawn on their own clump cadence instead of through
@@ -541,6 +535,10 @@ SWARMER_LANE_TARGET_FILL = 0.8
 -- skipped entirely at the ceiling. Jitter reuses SPAWN_DIRECTOR_JITTER.
 SWARMER_LANE_CATCHUP_MULT = 0.5
 SWARMER_LANE_CATCHUP_FRACTION = 0.5
+-- Above setpoint the interval stretches linearly, up to (1 + this)x at the
+-- ceiling, so overshoot toward the ceiling is a slow drift rather than
+-- full-rate spawning.
+SWARMER_LANE_OVERFILL_SLOWDOWN = 2
 -- Safety clamp on the derived interval (floor guards huge late setpoints,
 -- ceiling keeps tiny/debug setpoints from feeling dead), and the recheck
 -- delay when a fire is skipped at the ceiling.
@@ -601,6 +599,7 @@ enemy_movement_types = {
   ['slime'] = MOVEMENT_TYPE_PATH_ACROSS,
   ['sniper'] = MOVEMENT_TYPE_RANDOM,
   ['orb'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
+  ['pulsar'] = MOVEMENT_TYPE_SEEK_TO_RANGE,
   ['cleaver'] = MOVEMENT_TYPE_SEEK,
   
   -- Ranged units that maintain distance

@@ -725,13 +725,15 @@ function SpawnManager:init_spawn_pools()
   -- Special config entries can be one of:
   --   {type, at = 0.3, group_size?}        -> one-shot scheduled event,
   --                                            fires when kill progress hits `at`
+  --   {type, at_window = {0.3, 0.5}}       -> one-shot event at a threshold
+  --                                            rolled inside the window per level
   --   {type, interval, max_alive, ...}     -> recurring timer-based pool
-  -- Both kinds can coexist in one level.
+  -- All kinds can coexist in one level.
   for _, pool in ipairs(config.specials or {}) do
-    if pool.at then
+    if pool.at or pool.at_window then
       table.insert(self.special_events, {
         type = pool.type,
-        at = pool.at,
+        at = pool.at or random:float(pool.at_window[1], pool.at_window[2]),
         group_size = pool.group_size,
         fired = false,
       })
@@ -910,7 +912,6 @@ function SpawnManager:init_spawn_director(cfg)
     ramp_to = (cfg.ramp and cfg.ramp.to) or SPAWN_DIRECTOR_RAMP_TO,
     global_cap = cfg.global_cap or SPAWN_DIRECTOR_GLOBAL_CAP,
     fill_gain = cfg.fill_gain, fill_exp = cfg.fill_exp,
-    creep_gain = cfg.creep_gain, creep_exp = cfg.creep_exp,
     rate_max = cfg.rate_max, rate_min = cfg.rate_min, rate_exp = cfg.rate_exp,
     -- Specials-queue timer (swarmers run on their own lane timer below).
     next_fire = random:float(0, 0.5),
@@ -1009,7 +1010,11 @@ function SpawnManager:director_resolve_spawn(slot, counts, d, ramp, force_cluste
     local pool = d.special_pool or {}
     if #pool == 0 then return nil end
     local etype = random:table(pool)
-    return etype, Special_Cadence_Group_Size(etype)
+    -- Specials cap hard at their setpoint: clamp the group so a multi-spawn
+    -- type can't overshoot it (min 1 so a fire always produces something).
+    local headroom = math.max(1,
+      (d.setpoints['special'] or 1) - self:director_slot_alive('special', counts))
+    return etype, math.min(Special_Cadence_Group_Size(etype), headroom)
   end
   return slot, 1
 end
@@ -1032,9 +1037,14 @@ function SpawnManager:director_spawn(etype, group_size, scatter)
     Spawn_Group_With_Location(self.arena, {etype, group_size, 'nil'}, Get_Offscreen_Spawn_Point())
   end
   d.pending[etype] = (d.pending[etype] or 0) + group_size
-  self.arena.t:after((WAVE_SPAWN_WARNING_TIME or 1.25) + 0.15, function()
-    d.pending[etype] = math.max(0, (d.pending[etype] or 0) - group_size)
-  end)
+  -- Group members materialize 0.1s apart (wave_spawn_delay stagger), so
+  -- release each pending slot as its member lands, not the whole group at
+  -- the first landing — otherwise big clumps undercount for up to a second.
+  for i = 1, group_size do
+    self.arena.t:after((WAVE_SPAWN_WARNING_TIME or 1.25) + (i - 1) * 0.1 + 0.15, function()
+      d.pending[etype] = math.max(0, (d.pending[etype] or 0) - 1)
+    end)
+  end
 end
 
 -- Swarmer lane: swarmers spawn on their own clump cadence (SWARMER_LANE_* in
@@ -1102,6 +1112,16 @@ function SpawnManager:tick_swarmer_lane(dt, counts)
   -- on a thin field so openings and post-wipe recoveries fill fast.
   local fill = math.min((alive + (group_size or 0)) / sp, 1)
   local mult = catchup + (1 - catchup) * math.min(fill / frac, 1)
+
+  -- Above setpoint the lane slows way down instead of firing at full rate
+  -- until the ceiling: the interval stretches linearly up to
+  -- (1 + OVERFILL_SLOWDOWN)x at the ceiling, so overshoot is a slow drift.
+  local over = (alive + (group_size or 0)) - sp
+  if over > 0 then
+    local of = math.min(over / math.max(ceiling - sp, 1), 1)
+    mult = mult * (1 + of * (SWARMER_LANE_OVERFILL_SLOWDOWN or 2))
+  end
+
   local j = SPAWN_DIRECTOR_JITTER or 0
   d.swarmer_next_fire = base * mult * (1 + random:float(-j, j))
 end
@@ -1124,7 +1144,10 @@ function SpawnManager:tick_spawn_director(dt, counts)
   local progress = (quota and quota > 0) and math.min((self.wave_kill_power or 0) / quota, 1) or 0
   local ramp = d.ramp_from + (d.ramp_to - d.ramp_from) * progress
 
-  -- Per-slot weights (fractional-deficit below setpoint, slow creep above).
+  -- Per-slot weights: fractional deficit below setpoint, zero at or above it.
+  -- Non-swarmer slots use their FIXED setpoint — the ramp doesn't apply
+  -- (fractional tanks make no sense) and they never spawn past setpoint; only
+  -- the swarmer lane may exceed its own.
   -- Swarmers are NOT in this queue — they spawn on their own cadence in
   -- tick_swarmer_lane. They stay in d.setpoints for the tank gate and for the
   -- whole-field pacing math below, so special timing still responds to how
@@ -1132,19 +1155,12 @@ function SpawnManager:tick_spawn_director(dt, counts)
   local weights, total_w = {}, 0
   for slot, base_sp in pairs(d.setpoints) do
     if slot ~= 'swarmer' then
-      local sp = math.max(1, base_sp * ramp)
+      local sp = base_sp
       local alive = self:director_slot_alive(slot, counts)
-      local ceil = (d.ceilings and d.ceilings[slot])
-        or math.ceil(sp * (d.ceiling_mult or SPAWN_DIRECTOR_CEILING_MULT))
       local w = 0
-      if alive < ceil then
-        if alive < sp then
-          local f = alive / sp
-          w = (d.fill_gain or SPAWN_DIRECTOR_FILL_GAIN) * (1 - f) ^ (d.fill_exp or SPAWN_DIRECTOR_FILL_EXP)
-        else
-          local c = (alive - sp) / math.max(1, ceil - sp)
-          w = (d.creep_gain or SPAWN_DIRECTOR_CREEP_GAIN) * (1 - c) ^ (d.creep_exp or SPAWN_DIRECTOR_CREEP_EXP)
-        end
+      if alive < sp then
+        local f = alive / sp
+        w = (d.fill_gain or SPAWN_DIRECTOR_FILL_GAIN) * (1 - f) ^ (d.fill_exp or SPAWN_DIRECTOR_FILL_EXP)
       end
       -- Tanks escort the swarm: gate them behind swarmer presence so a tank that
       -- dies on a thin field isn't immediately re-picked into a solo rush.
@@ -1191,7 +1207,9 @@ function SpawnManager:tick_spawn_director(dt, counts)
   end
   local setpoint_power = 0
   for slot, base_sp in pairs(d.setpoints) do
-    setpoint_power = setpoint_power + math.max(1, base_sp * ramp) * self:director_slot_power(slot, d)
+    -- Only the swarmer setpoint ramps; specials are fixed counts.
+    local sp = (slot == 'swarmer') and math.max(1, base_sp * ramp) or base_sp
+    setpoint_power = setpoint_power + sp * self:director_slot_power(slot, d)
   end
   local fill = (setpoint_power > 0) and math.min(alive_power / setpoint_power, 1) or 1
   local cd_min = SPAWN_DIRECTOR_INTERVAL_MIN or 0.2
@@ -1529,9 +1547,9 @@ function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
         local create_enemy_action = function()
             Spawn_Enemy(arena, type, location, nil, shared_path_heading)
         end
-        arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns + 1
 
         -- Stagger the spawn warnings slightly for a better visual effect.
+        -- Create_Unit_With_Warning handles the pending_spawns bookkeeping.
         Create_Unit_With_Warning(arena, location, WAVE_SPAWN_WARNING_TIME, create_enemy_action, type)
     end
 end
@@ -1702,6 +1720,11 @@ function Create_Unit_With_Warning(arena, location, warning_time, creation_callba
   local check_again_delay = 0.25
   local spawn_radius = 10
   local enemy_size = enemy_type_to_size[enemy_type]
+
+  -- This function owns the pending_spawns pair: incremented here, decremented
+  -- after the spawn lands. Callers must NOT increment themselves (Spawn_Boss
+  -- and Spawn_Critters didn't, which used to drive the counter negative).
+  arena.spawn_manager.pending_spawns = arena.spawn_manager.pending_spawns + 1
 
   if enemy_size then
     local enemy_width = enemy_size_to_xy[enemy_size].x
