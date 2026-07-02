@@ -143,36 +143,85 @@ end
 
 -- Draw status effect overlays using the same mask-based approach as sprite animations
 function Enemy:draw_fallback_status_effects()
-  -- Determine status effect mask color (same priority order as in DrawAnimations.draw_enemy_animation)
-  local mask_color = nil
-  if self.buffs['chill'] then
-    mask_color = CHILL_MASK_COLOR
-  elseif self.buffs['freeze'] then
-    mask_color = FREEZE_MASK_COLOR
-  elseif self.buffs['stunned'] then
-    mask_color = STUN_MASK_COLOR
-  elseif self.buffs['burn'] then
-    mask_color = BURN_MASK_COLOR
-  end
-  
-  -- Apply status effect overlay if present
+  local mask_color = get_status_tint_color(self)
+
   if mask_color ~= nil then
     graphics.push(self.x, self.y, self.r or 0, self.hfx.hit.x, self.hfx.hit.x)
-    
+
     if self.type == 'dragon' then
-      -- Dragon triangle with status effect overlay
       local points = self:make_regular_polygon(3, (self.shape.w / 2) / 60 * 70, self:get_angle())
       graphics.polygon(points, mask_color)
     else
-      -- Rectangle with status effect overlay
       local corner_radius = get_enemy_corner_radius(self)
       graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, corner_radius, corner_radius, mask_color)
     end
-    
+
+    graphics.pop()
+  end
+
+  if self.buffs['curse'] then
+    graphics.push(self.x, self.y, self.r or 0, self.hfx.hit.x, self.hfx.hit.x)
+
+    if self.type == 'dragon' then
+      local points = self:make_regular_polygon(3, (self.shape.w / 2) / 60 * 70 + 2, self:get_angle())
+      graphics.polygon(points, CURSE_OUTLINE_COLOR, 2)
+    else
+      local corner_radius = get_enemy_corner_radius(self)
+      graphics.rectangle(self.x, self.y, self.shape.w + 3, self.shape.h + 3, corner_radius, corner_radius, CURSE_OUTLINE_COLOR, 2)
+    end
+
     graphics.pop()
   end
 end
 
+-- particle accents layer on top of tints so multiple statuses read at once:
+-- embers = burn, frost motes = chill/freeze, sparks = shock
+function Enemy:update_status_particles(dt)
+  if self.offscreen then return end
+  if not self.buffs then return end
+
+  self.status_particle_timers = self.status_particle_timers or {burn = 0, chill = 0, shock = 0}
+  local timers = self.status_particle_timers
+  local w, h = self.shape.w, self.shape.h
+
+  if self.buffs['burn'] then
+    timers.burn = timers.burn - dt
+    if timers.burn <= 0 then
+      timers.burn = random:float(0.1, 0.2)
+      HitParticle{group = main.current.effects,
+        x = self.x + random:float(-w/3, w/3), y = self.y + random:float(-h/3, h/3),
+        r = -math.pi/2 + random:float(-0.4, 0.4), v = random:float(20, 45),
+        w = random:float(2.5, 4), duration = random:float(0.3, 0.5),
+        color = BURN_PARTICLE_COLORS[random:bool(60) and 1 or 2]}
+    end
+  end
+
+  if self.buffs['chill'] or self.buffs['freeze'] then
+    timers.chill = timers.chill - dt
+    if timers.chill <= 0 then
+      timers.chill = random:float(0.25, 0.45)
+      HitParticle{group = main.current.effects,
+        x = self.x + random:float(-w/2, w/2), y = self.y + random:float(-h/2, h/2),
+        r = -math.pi/2 + random:float(-0.3, 0.3), v = random:float(8, 18),
+        w = random:float(2.5, 3.5), duration = random:float(0.5, 0.8),
+        color = CHILL_PARTICLE_COLOR}
+    end
+  end
+
+  if self.buffs['shock'] then
+    timers.shock = timers.shock - dt
+    if timers.shock <= 0 then
+      timers.shock = random:float(0.15, 0.35)
+      for i = 1, random:int(1, 2) do
+        HitParticle{group = main.current.effects,
+          x = self.x + random:float(-w/2, w/2), y = self.y + random:float(-h/2, h/2),
+          r = random:float(0, 2*math.pi), v = random:float(80, 140),
+          w = random:float(2.5, 3.5), duration = random:float(0.12, 0.2),
+          color = SHOCK_PARTICLE_COLOR}
+      end
+    end
+  end
+end
 
 --set castcooldown and in the enemy file (init)
 function Enemy:update(dt)
@@ -181,6 +230,7 @@ function Enemy:update(dt)
 
     self:onTickCallbacks(dt)
     self:update_buffs(dt)
+    self:update_status_particles(dt)
 
     self:update_animation(dt)
 

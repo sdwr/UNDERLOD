@@ -1294,7 +1294,8 @@ end
 -- Lightning damage shocks enemies (increases damage taken) directly now -
 -- this is the inherent effect of the Storm set, no proc required.
 function Unit:shock(from)
-  local shockBuff = {name = 'shock', color = yellow[0], duration = SHOCK_DURATION, maxDuration = SHOCK_DURATION, stats = {buff_def_m = SHOCK_DEF_REDUCTION}}
+  -- no buff color: shock displays via spark particles, not a buff ring
+  local shockBuff = {name = 'shock', duration = SHOCK_DURATION, maxDuration = SHOCK_DURATION, stats = {buff_def_m = SHOCK_DEF_REDUCTION}}
 
   self:remove_buff('shock')
   self:add_buff(shockBuff)
@@ -1573,7 +1574,7 @@ function Unit:start_curse(from)
   local delay = random:float(0.1, 0.4)
   
   -- Create curse data
-  local curseBuff = {name = 'curse', from = from, duration = 10, damage_taken = 0, color = purple[0], stats = {percent_def = -0.4}}
+  local curseBuff = {name = 'curse', from = from, duration = 10, damage_taken = 0, stats = {percent_def = -0.4}}
   
   -- Apply curse debuff and create visual effect after delay
   self.t:after(delay, function()
@@ -1598,7 +1599,7 @@ function Unit:start_curse(from)
 end
 
 function Unit:curse(from)
-  local curseBuff = {name = 'curse', from = from, duration = 10, damage_taken = 0, color = purple[0], stats = {percent_def = -0.4}}
+  local curseBuff = {name = 'curse', from = from, duration = 10, damage_taken = 0, stats = {percent_def = -0.4}}
   self:remove_curse()
   self:add_buff(curseBuff)
 end

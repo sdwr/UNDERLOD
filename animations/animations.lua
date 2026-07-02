@@ -19,6 +19,10 @@ STUN_MASK_COLOR = nil
 KNOCKBACK_MASK_COLOR = nil
 
 BURN_MASK_COLOR = nil
+CURSE_OUTLINE_COLOR = nil
+
+-- one steady tint at a time: control states win, then chill, then burn
+STATUS_TINT_PRIORITY = nil
 
 function set_status_effect_mask_colors()
   CHILL_MASK_COLOR = blue[0]:clone()
@@ -31,6 +35,31 @@ function set_status_effect_mask_colors()
   BURN_MASK_COLOR.a = 0.5
   KNOCKBACK_MASK_COLOR = red[0]:clone()
   KNOCKBACK_MASK_COLOR.a = 0.9
+  CURSE_OUTLINE_COLOR = purple[0]:clone()
+  CURSE_OUTLINE_COLOR.a = 0.6
+
+  BURN_PARTICLE_COLORS = {red[0]:clone(), orange[0]:clone()}
+  BURN_PARTICLE_COLORS[1].a = 0.5
+  BURN_PARTICLE_COLORS[2].a = 0.5
+  CHILL_PARTICLE_COLOR = blue[5]:clone()
+  CHILL_PARTICLE_COLOR.a = 0.5
+  SHOCK_PARTICLE_COLOR = yellow[0]:clone()
+  SHOCK_PARTICLE_COLOR.a = 0.5
+
+  STATUS_TINT_PRIORITY = {
+    {'freeze', FREEZE_MASK_COLOR},
+    {'stunned', STUN_MASK_COLOR},
+    {'chill', CHILL_MASK_COLOR},
+    {'burn', BURN_MASK_COLOR},
+  }
+end
+
+function get_status_tint_color(unit)
+  if not unit.buffs or not STATUS_TINT_PRIORITY then return nil end
+  for _, entry in ipairs(STATUS_TINT_PRIORITY) do
+    if unit.buffs[entry[1]] then return entry[2] end
+  end
+  return nil
 end
 
 --boss sprites

@@ -289,7 +289,7 @@ function ChainCurse:init(args)
   self.source = args.source or args.parent
   self.range = args.range or 50
   self.is_troop = args.is_troop or false
-  self.curse_data = args.curse_data or {name = 'curse', duration = 3, color = purple[0], stats = {percent_def = -0.4}}
+  self.curse_data = args.curse_data or {name = 'curse', duration = 3, stats = {percent_def = -0.4}}
   self.primary_color = args.primary_color or purple[-3] -- Dark purple
   self.secondary_color = args.secondary_color or black[0] -- Black
 

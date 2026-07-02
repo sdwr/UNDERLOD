@@ -74,6 +74,45 @@ function DrawAnimations.draw_specific_animation(unit, anim_set, x, y, r, scale_x
   return true -- Indicate success
 end
 
+-- Draw the sprite's silhouette outline via the shader's outline path.
+-- Unlike the disabled outline in draw_specific_animation, this sends thickness
+-- in whole texels and texture_size as the full spritesheet dimensions, which is
+-- the space texture_coords live in.
+function DrawAnimations.draw_sprite_outline(unit, anim_set, x, y, r, scale_x, scale_y, outline_color)
+  if not anim_set or not anim_set[1] or not anim_set[2] then
+    return false
+  end
+
+  local animation = anim_set[1]
+  local image = anim_set[2]
+  local frame_width, frame_height = animation:getDimensions()
+  local frame_center_x, frame_center_y = frame_width / 2, frame_height / 2
+  local screen_x, screen_y = world_to_screen(x, y)
+  local screen_scale = sx
+
+  table.insert(full_res_character_draws, function()
+    hit_effect_shader:set()
+
+    hit_effect_shader:send("use_outline", true)
+    hit_effect_shader:send("use_flash", false)
+    hit_effect_shader:send("outline_color", {outline_color.r, outline_color.g, outline_color.b, 1.0})
+    hit_effect_shader:send("flash_color", {1.0, 1.0, 1.0, 0.0})
+    hit_effect_shader:send("outline_thickness", 1)
+    hit_effect_shader:send("texture_size", {image.image:getDimensions()})
+
+    love.graphics.setColor(1, 1, 1, outline_color.a or 1)
+
+    local hfx_scale = (unit.hfx and unit.hfx.hit.x) or 1.0
+    graphics.push(screen_x, screen_y, r or 0, hfx_scale, hfx_scale)
+      animation:draw(image.image, screen_x, screen_y, 0, scale_x * screen_scale, scale_y * screen_scale, frame_center_x, frame_center_y)
+    graphics.pop()
+
+    love.graphics.setColor(1, 1, 1, 1)
+    hit_effect_shader:unset()
+  end)
+  return true
+end
+
 -- Draw enemy animation with spritesheet, buffs, and status effects
 function DrawAnimations.draw_enemy_animation(enemy, state, x, y, r)
   -- Safety checks from Helper.Unit
@@ -105,23 +144,17 @@ function DrawAnimations.draw_enemy_animation(enemy, state, x, y, r)
   local scale_x = base_scale_x * direction
   local scale_y = base_scale_y
 
+  -- Curse outline queues before the base sprite so only the rim shows
+  if enemy.buffs['curse'] then
+    DrawAnimations.draw_sprite_outline(enemy, anim_set, x, y, r, scale_x, scale_y, CURSE_OUTLINE_COLOR)
+  end
+
   -- Draw the base animation using the helper function
   local draw_success = DrawAnimations.draw_specific_animation(enemy, anim_set, x, y, r, scale_x, scale_y, 1.0, nil, true, true)
-  
+
   if draw_success then
-
-    
     -- Add status effect overlays
-    local mask_color = nil
-    if enemy.buffs['freeze'] then
-      mask_color = FREEZE_MASK_COLOR
-    elseif enemy.buffs['stunned'] then
-      mask_color = STUN_MASK_COLOR
-
-    elseif enemy.buffs['burn'] then
-      mask_color = BURN_MASK_COLOR
-    end
-
+    local mask_color = get_status_tint_color(enemy)
     if mask_color ~= nil then
       DrawAnimations.draw_specific_animation(enemy, anim_set, x, y, r, scale_x, scale_y, mask_color.a, mask_color, true, false)
     end
