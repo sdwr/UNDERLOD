@@ -37,6 +37,10 @@ local T2_SPECIAL_POOL = {
 -- D: per-level spawn_director configs. setpoints = ideal alive count per slot
 -- (swarmer / tank / small_archer / special category). The director maintains
 -- these, paced by power; tuning falls back to the SPAWN_DIRECTOR_* globals.
+-- Optional per-level overrides: fill_time (seconds for the swarmer lane to
+-- fill to SWARMER_LANE_TARGET_FILL of setpoint — lower = hotter opening),
+-- ramp = {from=, to=} (front-load with from > to). See
+-- documentation/spawn_tuning.md.
 LEVEL_SPAWN_POOLS = {
   [1] = {
     spawn_director = {

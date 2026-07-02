@@ -666,7 +666,9 @@ unit_stat_multipliers = {
 }
 
 enemy_type_to_stats = {
-    ['swarmer'] = { dmg = 0.5, hp = 0.6, mvspd = 1.3},
+    -- hp trimmed 0.6 -> 0.42 (-30%) alongside the swarmer-lane cadence work:
+    -- clumps arrive as readable waves, so individual bodies die faster.
+    ['swarmer'] = { dmg = 0.5, hp = 0.42, mvspd = 1.3},
     ['hunter_swarmer'] = { dmg = 0.6, hp = 1.4, mvspd = 1.1 },
     -- Tank: slow, chunky body. No attacks, just contact pressure. hp=0.8
     -- on special_enemy base (280) lands ~625 HP at L7 once level/post-boss

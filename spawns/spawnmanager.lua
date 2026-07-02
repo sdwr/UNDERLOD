@@ -906,6 +906,9 @@ function SpawnManager:init_spawn_director(cfg)
     next_fire = random:float(0, 0.5),
     -- Swarmer-lane timer: first clump lands almost immediately.
     swarmer_next_fire = random:float(0, 0.5),
+    -- Per-level override of SWARMER_LANE_FILL_TIME (seconds to fill the
+    -- swarm to TARGET_FILL of setpoint from an empty field).
+    fill_time = cfg.fill_time,
     -- Per-type in-flight count: spawns queued but not yet alive (still in their
     -- spawn-warning window). Counted toward slot population so the director
     -- doesn't re-pick a slot and overshoot its cap before the first one lands.
@@ -913,10 +916,34 @@ function SpawnManager:init_spawn_director(cfg)
   }
 end
 
+-- Weighted average clump size from SWARMER_GROUP_MIX. Feeds the swarmer
+-- lane's fill-time interval math, so retuning the mix (burstiness) keeps the
+-- fill-time promise intact: bigger clumps = longer gaps, same throughput.
+function swarmer_mix_avg_size()
+  local mix = SWARMER_GROUP_MIX or {{weight = 1, min = 1, max = 1}}
+  local total_w, sum = 0, 0
+  for _, e in ipairs(mix) do
+    local w = e.weight or 1
+    total_w = total_w + w
+    sum = sum + w * ((e.min or 1) + (e.max or 1)) / 2
+  end
+  if total_w <= 0 then return 1 end
+  return sum / total_w
+end
+
 -- Weighted roll for a swarmer group from SWARMER_GROUP_MIX. Returns the size and
 -- whether the group should scatter (each member at its own random point).
-function roll_swarmer_group_size()
+-- force_clustered restricts the roll to non-scatter entries (used for a
+-- level's opening clump).
+function roll_swarmer_group_size(force_clustered)
   local mix = SWARMER_GROUP_MIX or {{weight = 1, min = 1, max = 1}}
+  if force_clustered then
+    local clustered = {}
+    for _, e in ipairs(mix) do
+      if not e.scatter then clustered[#clustered + 1] = e end
+    end
+    if #clustered > 0 then mix = clustered end
+  end
   local total = 0
   for _, e in ipairs(mix) do total = total + (e.weight or 1) end
   local r = random:float(0, total)
@@ -958,14 +985,14 @@ end
 -- Resolve a picked slot into (enemy_type, group_size, power_cost). Swarmers roll
 -- a group size from the mix (clamped to ceiling headroom); 'special' draws a
 -- random type; concrete slots spawn one.
-function SpawnManager:director_resolve_spawn(slot, counts, d, ramp)
+function SpawnManager:director_resolve_spawn(slot, counts, d, ramp, force_clustered)
   if slot == 'swarmer' then
     local alive = self:director_slot_alive('swarmer', counts)
     local sp = math.max(1, (d.setpoints['swarmer'] or 1) * ramp)
     local ceil = (d.ceilings and d.ceilings['swarmer'])
       or math.ceil(sp * (d.ceiling_mult or SPAWN_DIRECTOR_CEILING_MULT))
     local headroom = math.max(1, ceil - alive)
-    local size, scatter = roll_swarmer_group_size()
+    local size, scatter = roll_swarmer_group_size(force_clustered)
     local gs = math.max(1, math.min(size, headroom))
     return 'swarmer', gs, scatter
   elseif slot == 'special' then
@@ -1031,20 +1058,42 @@ function SpawnManager:tick_swarmer_lane(dt, counts)
     return
   end
 
-  local etype, group_size, scatter = self:director_resolve_spawn('swarmer', counts, d, ramp)
+  -- The level's first swarmer spawn is always a clustered clump (never the
+  -- scatter roll) so the opening reads as a wave, not lone stragglers.
+  local first = not d.swarmer_lane_fired
+  local etype, group_size, scatter = self:director_resolve_spawn('swarmer', counts, d, ramp, first)
   if etype and group_size and group_size > 0 then
     self:director_spawn(etype, group_size, scatter)
+    d.swarmer_lane_fired = true
   end
 
-  -- Adaptive-lite cadence: full interval once the swarm (incl. the clump just
-  -- queued) reaches CATCHUP_FRACTION of setpoint, shrinking toward
-  -- CATCHUP_MULT of it on a thin field so level openings fill fast.
-  local fill = math.min((alive + (group_size or 0)) / sp, 1)
+  -- Base interval derived from the fill-time goal: reach TARGET_FILL of the
+  -- (ramped) setpoint within fill_time seconds from an empty field. M is the
+  -- integral of the catch-up curve over [0, target], pricing in the cheap
+  -- early fires, so the goal holds despite the speedup. Full math in
+  -- documentation/spawn_tuning.md §2. Recomputed per fire, so the ramp
+  -- tightens the cadence over the level automatically.
   local catchup = SWARMER_LANE_CATCHUP_MULT or 0.5
   local frac = SWARMER_LANE_CATCHUP_FRACTION or 0.5
+  local target = SWARMER_LANE_TARGET_FILL or 0.8
+  local M
+  if target <= frac then
+    M = catchup * target + (1 - catchup) * target * target / (2 * frac)
+  else
+    M = target - frac * (1 - catchup) / 2
+  end
+  local fill_time = d.fill_time or SWARMER_LANE_FILL_TIME or 8
+  local base = fill_time * swarmer_mix_avg_size() / (sp * M)
+  base = math.clamp(base,
+    SWARMER_LANE_INTERVAL_MIN or 1.2, SWARMER_LANE_INTERVAL_MAX or 6.5)
+
+  -- Catch-up: full interval once the swarm (incl. the clump just queued)
+  -- reaches CATCHUP_FRACTION of setpoint, shrinking toward CATCHUP_MULT of it
+  -- on a thin field so openings and post-wipe recoveries fill fast.
+  local fill = math.min((alive + (group_size or 0)) / sp, 1)
   local mult = catchup + (1 - catchup) * math.min(fill / frac, 1)
   local j = SPAWN_DIRECTOR_JITTER or 0
-  d.swarmer_next_fire = (SWARMER_LANE_INTERVAL or 3.1) * mult * (1 + random:float(-j, j))
+  d.swarmer_next_fire = base * mult * (1 + random:float(-j, j))
 end
 
 -- Director tick: maintain a per-slot target population, spawning whatever is

@@ -524,13 +524,23 @@ SWARMER_GROUP_MIX = {
 
 -- Swarmer lane: swarmers spawn on their own clump cadence instead of through
 -- the director's shared queue (specials/tanks/small archers keep the queue).
--- Adaptive-lite: a fire is skipped at the ceiling, and the interval shrinks
--- toward INTERVAL * CATCHUP_MULT while the swarm is below CATCHUP_FRACTION of
--- its setpoint, so level openings still fill fast but the steady state is a
--- readable ~3s clump heartbeat. Jitter reuses SPAWN_DIRECTOR_JITTER.
-SWARMER_LANE_INTERVAL = 3.1
+-- The base interval is DERIVED from a fill-time goal — reach TARGET_FILL of
+-- the swarmer setpoint within FILL_TIME seconds from an empty field — so
+-- refill pressure scales linearly with the setpoint as levels grow. The math
+-- (documentation/spawn_tuning.md §2) integrates the catch-up curve's early
+-- speedup. Per-level override: spawn_director.fill_time.
+SWARMER_LANE_FILL_TIME = 8
+SWARMER_LANE_TARGET_FILL = 0.8
+-- Catch-up curve: the interval scales by c + (1-c)*min(fill/frac, 1) —
+-- half-length on an empty field, full length from half-setpoint up. Fires are
+-- skipped entirely at the ceiling. Jitter reuses SPAWN_DIRECTOR_JITTER.
 SWARMER_LANE_CATCHUP_MULT = 0.5
 SWARMER_LANE_CATCHUP_FRACTION = 0.5
+-- Safety clamp on the derived interval (floor guards huge late setpoints,
+-- ceiling keeps tiny/debug setpoints from feeling dead), and the recheck
+-- delay when a fire is skipped at the ceiling.
+SWARMER_LANE_INTERVAL_MIN = 1.2
+SWARMER_LANE_INTERVAL_MAX = 6.5
 SWARMER_LANE_RETRY = 0.5
 
 -- Weighted offscreen spawn placement. Every enemy spawn (basics, specials,
