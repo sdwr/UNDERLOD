@@ -530,6 +530,9 @@ end
 --and have a popup with the place the gold is from ('interest', 'heart of gold')
 --should have round end gold here too
 function Arena:gain_gold(duration)
+  -- Pay out once per level, whichever end-of-level path fires first.
+  if self.gold_granted then return end
+  self.gold_granted = true
 
   self.gold_events = {}
   self.bonus_gold = 0
@@ -537,6 +540,15 @@ function Arena:gain_gold(duration)
   self.total_interest = 0
   self.gold_gained = self.gold_gained or 0
   self.gold_picked_up = self.gold_picked_up or 0
+
+  -- In the WorldManager flow the team roster and floor-gold pickups live on
+  -- main.current (the WorldManager), not on the level itself.
+  local starting_units = self.starting_units
+    or (main.current and main.current.starting_units) or {}
+  if main.current and main.current ~= self and (main.current.gold_picked_up or 0) > 0 then
+    self.gold_picked_up = self.gold_picked_up + main.current.gold_picked_up
+    main.current.gold_picked_up = 0
+  end
 
   local event = nil
 
@@ -555,7 +567,7 @@ function Arena:gain_gold(duration)
   table.insert(self.gold_events, event)
 
   self.has_treasury = false
-  for _, unit in ipairs(self.starting_units) do
+  for _, unit in ipairs(starting_units) do
     for _, item in pairs(unit.items) do
       if item.name == 'heartofgold' then
         event = {type = 'bonus gold', amount = item.stats.gold}
@@ -614,15 +626,13 @@ function Arena:process_gold_event()
   end
   local event = table.remove(self.gold_events, 1)
 
-  gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
-
   local plusgold = 0
   local plusgoldtext = nil
 
   if event.type == 'gained' then
     plusgold = event.amount
     plusgoldtext = '[wavy_mid, yellow[0]]' .. tostring(plusgold) .. ' ' .. event.type
-  elseif event.type == 'picked_up' then
+  elseif event.type == 'picked up' then
     plusgold = event.amount
     plusgoldtext = '[wavy_mid, yellow[0]]' .. tostring(plusgold) .. ' ' .. event.type
   elseif event.type == 'bonus gold' then
@@ -646,11 +656,12 @@ function Arena:process_gold_event()
   self:draw_gold(plusgold, plusgoldtext)
   self:randomize_plusgold_text_offset()
 
+  -- Only events that actually grant gold make noise; the start/final
+  -- bookkeeping events were playing the same sound for nothing.
   if plusgold > 0 then
     gold = gold + plusgold
+    gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
   end
-
-
 end
 
 --we want to show the gained gold, and the total gold

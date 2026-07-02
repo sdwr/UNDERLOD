@@ -160,14 +160,16 @@ enemy_cast_times = {
 
 
 
+-- Laser is infinite_range; 400 already spans most of the map so it's exempt
+-- from the ~1.27x troop range bump below.
 TROOP_RANGE = 400
-TROOP_SWORDSMAN_RANGE = 80
-TROOP_SWORD_WEAPON_RANGE = 50
--- Shotgun: much shorter than archer (500). Pellets actually fly to
+TROOP_SWORDSMAN_RANGE = 100
+TROOP_SWORD_WEAPON_RANGE = 63
+-- Shotgun: much shorter than archer. Pellets actually fly to
 -- TROOP_SHOTGUN_RANGE * 1.3 before disappearing, so there's a small
 -- ribbon of "stray hit" range past the engage distance.
-TROOP_SHOTGUN_RANGE = 60
-TROOP_ARCHER_RANGE = 75
+TROOP_SHOTGUN_RANGE = 76
+TROOP_ARCHER_RANGE = 95
 
 REGULAR_ENEMY_HP = 45
 REGULAR_ENEMY_DAMAGE = 15
@@ -444,38 +446,6 @@ ROUND_POWER_BY_LEVEL = {
   [23] = 2800,
   [24] = 2900,
   [25] = 3000,
-}
-
--- Total gold dropped by enemies across a round (gold-per-kill is proportional
--- to enemy power / kill_quota). With the kill_quota denominator fix in
--- gold_counter.lua, these values are now ~= actual gold earned per round
--- (plus a small overshoot from the level-clear cascade).
-GOLD_GAINED_BY_LEVEL = {
-  [1] = 2,
-  [2] = 2,
-  [3] = 2,
-  [4] = 2,
-  [5] = 2,
-  [6] = 3,
-  [7] = 3,
-  [8] = 3,
-  [9] = 3,
-  [10] = 3,
-  [11] = 4,
-  [12] = 4,
-  [13] = 4,
-  [14] = 4,
-  [15] = 4,
-  [16] = 5,
-  [17] = 5,
-  [18] = 5,
-  [19] = 5,
-  [20] = 5,
-  [21] = 6,
-  [22] = 6,
-  [23] = 6,
-  [24] = 6,
-  [25] = 6,
 }
 
 MAX_NORMAL_ENEMY_GROUP_SIZE_BY_TIER = {

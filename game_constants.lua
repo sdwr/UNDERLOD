@@ -34,20 +34,15 @@ system.load_stats()
 
 --gold
 --note that HoG econ check is in arena.lua (gain_gold)
--- Bumped 9 -> 14 (+5) to compensate for unit purchases now costing a flat
--- 10 each (was 5 for the first unit). See buy_card_cost in buy_screen.lua.
-STARTING_GOLD = 14.0
--- Per-round end-of-round gold by level band. Combines with the per-kill gold
--- in GOLD_GAINED_BY_LEVEL for total round income. Tuned so the player can't
--- fully equip two units by the first boss (L6).
--- Total per-round income (GOLD_PER_ROUND + GOLD_GAINED_BY_LEVEL):
---   L1-5: 2+2=4    L6-10: 3+3=6    L11-15: 5+4=9    L16-20: 6+5=11    L21+: 8+6=14
+-- Covers the flat 10-gold first unit (see buy_card_cost in buy_screen.lua)
+-- with a little left over. Was 14, trimmed to 12.
+STARTING_GOLD = 12
+-- Flat end-of-round gold. The old per-kill trickle (GOLD_GAINED_BY_LEVEL,
+-- fractional gold per enemy) is gone — this is the whole non-boss payout,
+-- with interest/pickups/treasury on top. Boss rounds pay GOLD_FOR_BOSS_ROUND
+-- instead.
 GOLD_PER_ROUND = function(level)
-  if level <= 5 then return 2 end
-  if level <= 10 then return 3 end
-  if level <= 15 then return 5 end
-  if level <= 20 then return 6 end
-  return 8
+  return 3
 end
 GOLD_FOR_BOSS_ROUND = {10, 15, 20, 25}
 INTEREST_AMOUNT = 0.1
@@ -66,7 +61,7 @@ end
 
 
 -- Game currently ends at L11 (dragon, 2nd boss). NG+ unlocks on completion.
--- Most data tables (ROUND_POWER_BY_LEVEL, GOLD_GAINED_BY_LEVEL, etc.) still
+-- Most data tables (ROUND_POWER_BY_LEVEL, etc.) still
 -- hold entries up to 25 - those past NUMBER_OF_ROUNDS are simply unreachable.
 NUMBER_OF_ROUNDS = 11
 BOSS_ROUND_POWER = 1000

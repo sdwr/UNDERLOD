@@ -62,6 +62,11 @@ function CombatLevel:level_clear()
     self.progress_bar:flash_level_complete()
   end
 
+  -- End-of-round payout (flat round gold, boss gold, interest, treasury,
+  -- pickups). gain_gold was previously only reachable through the dead
+  -- door-era quit() path, so none of these ever paid out in this flow.
+  self:gain_gold(2)
+
   -- Wait until every enemy from the staggered death cascade (scheduled by
   -- SpawnManager — LEVEL_CLEAR_KILL_DELAY + per-enemy offsets) has actually
   -- died before transitioning. Poll every 0.1s, then hold the original
@@ -92,13 +97,7 @@ function CombatLevel:create_floor_items()
   
   -- Generate 3 random items using the new V2 system
   if not self.items then
-    self.items = {}
-    for i = 1, 3 do
-      local item = create_random_item(self.level or 1)
-      if item then
-        table.insert(self.items, item)
-      end
-    end
+    self.items = create_random_items(self.level or 1)
   end
   
   -- Position items on the floor

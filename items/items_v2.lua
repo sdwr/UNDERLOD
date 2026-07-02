@@ -561,15 +561,33 @@ end
 -- Helper function to get random set. Pass `rarity` to constrain the pool to
 -- sets tagged with that rarity; nil returns any set (legacy). Pass `tier` to
 -- exclude sets whose min_tier is above it — lower-tier sets stay in the pool.
-function get_random_set(rarity, tier)
+-- Pass `exclude_sets` (keyed by set name) to drop specific sets from the pool.
+function get_random_set(rarity, tier, exclude_sets)
   local set_keys = {}
   for set_name, set_def in pairs(ITEM_SETS) do
     if (not rarity or set_def.rarity == rarity)
-      and (not tier or (set_def.min_tier or 1) <= tier) then
+      and (not tier or (set_def.min_tier or 1) <= tier)
+      and not (exclude_sets and exclude_sets[set_name]) then
       table.insert(set_keys, set_name)
     end
   end
   return random:table(set_keys)
+end
+
+-- Collect the 1/1 sets (single-bonus sets where extra copies do nothing)
+-- present in a list of items, keyed by set name. Used to keep the same 1/1
+-- set from appearing twice in one roll of shop/floor items.
+function get_one_piece_sets(items)
+  local found = {}
+  for _, item in pairs(items or {}) do
+    if item and item.sets then
+      for _, set_key in ipairs(item.sets) do
+        local set_def = ITEM_SETS[set_key]
+        if set_def and #set_def.bonuses == 1 then found[set_key] = true end
+      end
+    end
+  end
+  return found
 end
 
 -- Helper function to roll a stat for an item type
@@ -593,14 +611,17 @@ end
 function create_random_items(level)
   local items = {}
   for i = 1, 3 do
-    table.insert(items, create_random_item(level))
+    local item = create_random_item(level, nil, get_one_piece_sets(items))
+    if item then
+      table.insert(items, item)
+    end
   end
   return items
 end
 
 
 -- Main function to create a random item
-function create_random_item(level, exclude_rarity)
+function create_random_item(level, exclude_rarity, exclude_sets)
   
   local item_slot = get_random_item_slot()
   if not item_slot then
@@ -639,7 +660,7 @@ function create_random_item(level, exclude_rarity)
   -- Items roll at most one set, drawn from the pool matching this item's
   -- rarity (common items get common sets, rare items get rare sets) and tier.
   if random:float(0, 1) < rarity_def.set_chance then
-    local candidate = get_random_set(rarity, tier)
+    local candidate = get_random_set(rarity, tier, exclude_sets)
     if candidate then
       table.insert(item.sets, candidate)
     end

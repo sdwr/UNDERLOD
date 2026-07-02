@@ -771,12 +771,6 @@ function Enemy:die()
     sm:on_enemy_removed(self)
   end
   _G[random:table{'enemy_die1', 'enemy_die2'}]:play{pitch = random:float(0.6, 0.8), volume = 0.25}
-  
-  -- Drop gold when enemy dies
-  if main.current and main.current.gold_counter then
-    local round_power = enemy_to_round_power[self.type] or 100
-    main.current.gold_counter:add_round_power(round_power, self.x, self.y)
-  end
 
   -- Add progress to wave progress bar
   if main.current and main.current.current_arena and main.current.current_arena.progress_bar then

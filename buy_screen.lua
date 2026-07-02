@@ -464,7 +464,8 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   elseif locked_state and self.reroll_shop then
     for i = 1, 3 do
       if not self.shop_item_data[i] then
-        self.shop_item_data[i] = create_random_item(self.level)
+        -- refills can't duplicate a 1/1 set already locked or rolled this shop
+        self.shop_item_data[i] = create_random_item(self.level, nil, get_one_piece_sets(self.shop_item_data))
       end
     end
   end
