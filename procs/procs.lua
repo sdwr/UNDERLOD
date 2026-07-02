@@ -1331,10 +1331,11 @@ function Proc_Shockwave:shockwave(target)
 end
 
 --proc radiance
---aura that follows the unit; once per second everything inside is ignited
---with a self.damage-strength burn (100% of that over 5s, refreshed every
---tick while inside — see Unit:burn). No direct damage: radiance is an
---igniter. Its burn is weak enough that it never overwrites a real fire hit's
+--aura that follows the unit; everything inside is ignited with a
+--self.damage-strength burn (100% of that over 5s — see Unit:burn). Ticks
+--fast (0.2s) so enemies ignite the moment they enter: this is safe because
+--only a FRESH burn deals damage (the instant tick) — re-applications just
+--refresh the duration. No direct damage: radiance is an igniter. Its burn is weak enough that it never overwrites a real fire hit's
 --burn, but its constant re-application SUSTAINS stronger burns indefinitely
 --while enemies stay in the aura. Feeds blazin/burnexplode/resonance.
 --sound: none of its own; the burn DoT's globally throttled tick cue
@@ -1351,7 +1352,7 @@ function Proc_Radiance:init(args)
   --define the proc's vars
   self.color = self.data.color or red[0]:clone()
   self.color.a = 0.0
-  self.radius = self.data.radius or 70
+  self.radius = self.data.radius or 85
   self.damage = self.data.damage or 12
 
   if self.unit then
@@ -1367,7 +1368,7 @@ end
 
 function Proc_Radiance:create_damage_aura()
 
-  -- One aura tick per second ignites everyone inside. No sound of its own —
+  -- Fast ticks ignite everyone inside near-instantly. No sound of its own —
   -- the burn DoT's globally-throttled cue (play_burn_tick) carries the audio.
   local on_hit_callback = function(area_spell, target, unit)
     if target.burn and not target.dead then
@@ -1387,7 +1388,7 @@ function Proc_Radiance:create_damage_aura()
     duration = 1000,
     color = self.color,
     opacity = 0.00,
-    tick_rate = 1,
+    tick_rate = 0.2,
     is_troop = self.unit.is_troop,
     on_hit_callback = on_hit_callback,
     floor_effect = "radiance",
