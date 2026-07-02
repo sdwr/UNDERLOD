@@ -248,9 +248,8 @@ SHOCK_DEF_REDUCTION = -0.2
 -- Resonance set: bonus damage per distinct elemental affliction on the target.
 RESONANCE_DAMAGE_PER_ELEMENT = 0.15
 
--- Treasury set: improved interest (1 gold per N saved) and a raised cap.
-TREASURY_INTEREST_PER = 5
-TREASURY_MAX_INTEREST = 6
+-- Treasury set: flat +1 gold at the end of each round (no interest changes).
+TREASURY_GOLD_PER_ROUND = 1
 
 -- Orbital set: rotating damage orbs around a unit.
 ORBITAL_BASE_COUNT = 1
@@ -315,12 +314,17 @@ LEVEL_TO_TIER = function(level)
   return tier
 end
 
--- Weights are {common, rare}.
+-- Item tiers are decoupled from LEVEL_TO_TIER (which drives enemy wave pools).
+ITEM_LEVEL_TO_TIER = function(level)
+  if level <= 6 then return 1 end
+  return 2
+end
+
+-- Weights are {common, rare}. Same split at every tier; tiers gate which sets
+-- are in the pool instead (min_tier on ITEM_SETS).
 TIER_TO_ITEM_RARITY_WEIGHTS = {
-  [1] = {0.85, 0.15},
-  [1.5] = {0.65, 0.35},
-  [2] = {0.45, 0.55},
-  [2.5] = {0.25, 0.75},
+  [1] = {0.7, 0.3},
+  [2] = {0.7, 0.3},
 }
 
 CHANCE_OF_SPECIAL_VS_NORMAL_ENEMY = 0.7

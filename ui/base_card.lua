@@ -64,9 +64,20 @@ end
 function BaseCard:creation_effect()
   if self.creation_effect_played then return end
   self.creation_effect_played = true
-  
+
+  -- Rare items get a distinct chime and a bigger pop; cost no longer signals
+  -- rarity now that commons and rares both cost 2.
+  if self.item and self.item.rarity == ITEM_RARITY.RARE then
+    unlock1:play{pitch = random:float(0.95, 1.05), volume = 0.7}
+    self.spring:pull(0.4, 200, 10)
+    for i = 1, 25 do
+      HitParticle{group = main.current.effects, x = self.x, y = self.y, color = self.tier_color}
+    end
+    return
+  end
+
   local cost = self.cost or 0
-  
+
   if cost <= 5 then
     pop2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     self.spring:pull(0.2, 200, 10)

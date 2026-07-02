@@ -2444,8 +2444,8 @@ end
 
 
 -- =====================================================================
--- Treasury set (economy): marker only. Interest is computed in arena.lua
--- by scanning item.sets, so this proc just needs to exist for the set.
+-- Treasury set (economy): marker only. The +1 gold per round is granted in
+-- arena.lua by scanning item.sets, so this proc just needs to exist.
 -- =====================================================================
 Proc_Treasury = Proc:extend()
 function Proc_Treasury:init(args)

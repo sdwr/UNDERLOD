@@ -109,7 +109,9 @@ ITEM_STATS_DAMAGE_STATS = {
 ITEM_SET_POWER_BUDGET = 1
 
 -- Set definitions with bonuses. Each set is tagged with `rarity` (common or
--- rare). Items roll a set from the pool matching their own rarity.
+-- rare) and optionally `min_tier` (default 1). Items roll a set from the pool
+-- matching their own rarity whose min_tier is at or below the current item
+-- tier — earlier tiers stay in the pool (one shared pool for now).
 ITEM_SETS = {
   [ITEM_SET.DAMAGE] = {
     name = 'Power',
@@ -222,6 +224,7 @@ ITEM_SETS = {
     summary = 'meteors',
     color = 'red',
     rarity = ITEM_RARITY.RARE,
+    min_tier = 2,
     bonuses = {
       [1] = { procs = {'meteor'} },
       [2] = { procs = {'meteorSizeBoost'} },
@@ -301,6 +304,7 @@ ITEM_SETS = {
     summary = '+aspeed on kill',
     color = 'purple',
     rarity = ITEM_RARITY.RARE,
+    min_tier = 2,
     bonuses = {
       [1] = { procs = {'bloodlust'} },
       [2] = { procs = {'bloodlustSpeedBoost'} },
@@ -356,6 +360,7 @@ ITEM_SETS = {
     summary = 'repeat chance',
     color = 'yellow',
     rarity = ITEM_RARITY.RARE,
+    min_tier = 2,
     bonuses = {
       [1] = { stats = {['repeat_attack_chance'] = 1} },
       [2] = { stats = {['repeat_attack_chance'] = 2} },
@@ -401,19 +406,18 @@ ITEM_SETS = {
       [3] = '+16 flat damage to every hit',
     }
   },
-  -- Economy: doubles your team's interest rate (1 gold per 5 saved instead
-  -- of 1 per 10) and raises the interest cap. 1/1 set - extra copies do
-  -- nothing, so one piece anywhere on the team is enough.
+  -- Economy: flat +1 gold at the end of each round. 1/1 set - extra copies
+  -- do nothing, so one piece anywhere on the team is enough.
   [ITEM_SET.TREASURY] = {
     name = 'Treasury',
-    summary = '+interest',
+    summary = '+1 gold/round',
     color = 'purple',
     rarity = ITEM_RARITY.RARE,
     bonuses = {
       [1] = { procs = {'treasury'} },
     },
     descriptions = {
-      [1] = 'Earn 1 interest gold per 5 saved (instead of 10), and a higher cap',
+      [1] = 'Gain 1 extra gold at the end of each round',
     }
   },
   -- Elemental synergy: bonus damage per distinct elemental affliction
@@ -424,6 +428,7 @@ ITEM_SETS = {
     summary = '+%damage per element',
     color = 'purple',
     rarity = ITEM_RARITY.RARE,
+    min_tier = 2,
     bonuses = {
       [1] = { procs = {'resonance'} },
     },
@@ -438,6 +443,7 @@ ITEM_SETS = {
     summary = 'damaging orbs',
     color = 'blue',
     rarity = ITEM_RARITY.RARE,
+    min_tier = 2,
     bonuses = {
       [1] = { procs = {'orbital'} },
       [2] = { procs = {'orbitalExtra'} },
@@ -456,6 +462,7 @@ ITEM_SETS = {
     summary = 'heal allies',
     color = 'green',
     rarity = ITEM_RARITY.RARE,
+    min_tier = 2,
     bonuses = {
       [1] = { procs = {'chainheal'} },
       [2] = { procs = {'chainhealBoost'} },
@@ -473,6 +480,7 @@ ITEM_SETS = {
     summary = 'deploy turrets',
     color = 'brown',
     rarity = ITEM_RARITY.RARE,
+    min_tier = 2,
     bonuses = {
       [1] = { procs = {'turret'} },
       [2] = { procs = {'turret2'} },
@@ -512,7 +520,7 @@ ITEM_RARITIES = {
   },
   [ITEM_RARITY.RARE] = {
     name = 'Rare',
-    cost = 4,
+    cost = 2,
     min_stat_value = 0,
     max_stat_value = 0,
     set_chance = 1,
@@ -531,10 +539,10 @@ end
 
 -- Helper function to get random rarity
 function get_random_rarity(level, exclude_rarity)
-  local tier = LEVEL_TO_TIER(level)
+  local tier = ITEM_LEVEL_TO_TIER(level)
 
   local rarities = {ITEM_RARITY.COMMON, ITEM_RARITY.RARE}
-  local weights = TIER_TO_ITEM_RARITY_WEIGHTS[tier] or {1, 0}
+  local weights = TIER_TO_ITEM_RARITY_WEIGHTS[tier] or TIER_TO_ITEM_RARITY_WEIGHTS[1]
 
   if exclude_rarity then
    local rarity_index = table.find(rarities, exclude_rarity)
@@ -551,11 +559,13 @@ function get_random_rarity(level, exclude_rarity)
 end
 
 -- Helper function to get random set. Pass `rarity` to constrain the pool to
--- sets tagged with that rarity; nil returns any set (legacy).
-function get_random_set(rarity)
+-- sets tagged with that rarity; nil returns any set (legacy). Pass `tier` to
+-- exclude sets whose min_tier is above it — lower-tier sets stay in the pool.
+function get_random_set(rarity, tier)
   local set_keys = {}
   for set_name, set_def in pairs(ITEM_SETS) do
-    if not rarity or set_def.rarity == rarity then
+    if (not rarity or set_def.rarity == rarity)
+      and (not tier or (set_def.min_tier or 1) <= tier) then
       table.insert(set_keys, set_name)
     end
   end
@@ -585,13 +595,6 @@ function create_random_items(level)
   for i = 1, 3 do
     table.insert(items, create_random_item(level))
   end
-
-  --pity roll
-  if table.all(items, function(item) return item.rarity == ITEM_RARITY.COMMON end) then
-    local item_index = random:int(1, 3)
-    items[item_index] = create_random_item(level, ITEM_RARITY.COMMON)
-  end
-
   return items
 end
 
@@ -616,13 +619,15 @@ function create_random_item(level, exclude_rarity)
     print("ERROR: rarity_def is nil for rarity:", rarity)
     return nil
   end
-  
+
+  local tier = ITEM_LEVEL_TO_TIER(level or 1)
+
   -- Create the item
   local item = {
     name = ITEM_SLOTS[item_slot].name,
     slot = item_slot,
     rarity = rarity,
-    tier = tier or 1,
+    tier = tier,
     icon = ITEM_SLOTS[item_slot].icon,
     stats = {},
     sets = {},
@@ -632,9 +637,9 @@ function create_random_item(level, exclude_rarity)
   }
 
   -- Items roll at most one set, drawn from the pool matching this item's
-  -- rarity (common items get common sets, rare items get rare sets).
+  -- rarity (common items get common sets, rare items get rare sets) and tier.
   if random:float(0, 1) < rarity_def.set_chance then
-    local candidate = get_random_set(rarity)
+    local candidate = get_random_set(rarity, tier)
     if candidate then
       table.insert(item.sets, candidate)
     end

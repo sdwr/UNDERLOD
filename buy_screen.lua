@@ -522,12 +522,14 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   end
 
   --create items
+  -- Dealt one at a time with a beat between cards so each rarity reveal reads.
+  local deal_interval = 0.6
   local item_count = 0
   for i = 1, 3 do
     local item_number = i
     if self.shop_item_data[i] then
       item_count = item_count + 1
-      self.t:after((0.3 * (item_count-1)) + transition_duration, function()
+      self.t:after((deal_interval * (item_count-1)) + transition_duration, function()
         local item = ItemCard{
           group = self.ui, 
           x = x + (i-1)*70, 
@@ -543,7 +545,7 @@ function BuyScreen:set_items(shop_level, is_shop_start)
       end)
     end
   end
-  self.t:after(((item_count-1) * 0.3) + transition_duration, function()
+  self.t:after(((item_count-1) * deal_interval) + transition_duration, function()
     self.reroll_button.interact_with_mouse = true
     self.lock_button.interact_with_mouse = true
   end)

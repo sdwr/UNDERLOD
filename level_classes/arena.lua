@@ -565,7 +565,7 @@ function Arena:gain_gold(duration)
         event = {type = 'interest', amount = 1}
         table.insert(self.gold_events, event)
       end
-      -- Treasury set grants improved interest (see the 'interest' branch below).
+      -- Treasury set grants flat bonus gold each round (no interest changes).
       if item.sets then
         for _, s in ipairs(item.sets) do
           if s == ITEM_SET.TREASURY then self.has_treasury = true end
@@ -574,7 +574,7 @@ function Arena:gain_gold(duration)
     end
   end
   if self.has_treasury then
-    table.insert(self.gold_events, {type = 'interest', amount = 1})
+    table.insert(self.gold_events, {type = 'treasury', amount = TREASURY_GOLD_PER_ROUND})
   end
 
   if self.gold_picked_up > 0 then
@@ -629,10 +629,11 @@ function Arena:process_gold_event()
     plusgold = event.amount
     plusgoldtext = '[wavy_mid, yellow[0]]' .. tostring(plusgold) .. ' ' .. event.type
   elseif event.type == 'interest' then
-    local rate = self.has_treasury and (1 / TREASURY_INTEREST_PER) or INTEREST_AMOUNT
-    local cap = self.has_treasury and TREASURY_MAX_INTEREST or MAX_INTEREST
-    plusgold = event.amount * math.min(cap, math.floor(gold * rate))
+    plusgold = event.amount * math.min(MAX_INTEREST, math.floor(gold * INTEREST_AMOUNT))
     plusgoldtext = '[wavy_mid, yellow[0]]' .. tostring(plusgold) .. ' ' ..event.type
+  elseif event.type == 'treasury' then
+    plusgold = event.amount
+    plusgoldtext = '[wavy_mid, yellow[0]]' .. tostring(plusgold) .. ' ' .. event.type
   elseif event.type == 'start' then
     --do nothing
   elseif event.type == 'final' then
