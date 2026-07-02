@@ -436,14 +436,19 @@ function Avalanche:init(args)
   -- same angles aren't always lit up across multiple avalanches.
   local origin_angle = random:float(0, 2 * math.pi / num_spokes)
 
+  -- Anchor the whole pattern at the cast position so the safe gap the player
+  -- reads on ring 1 stays where they read it.
+  local cx = (self.unit and self.unit.x) or self.x
+  local cy = (self.unit and self.unit.y) or self.y
+
   for ring = 1, num_rings do
     local ring_radius = inner_radius + (ring - 1) * ring_step
     self.t:after((ring - 1) * wave_delay, function()
       if not self.unit or self.unit.dead then return end
       for spoke = 1, num_spokes do
         local angle = origin_angle + (spoke - 1) * (2 * math.pi / num_spokes)
-        local x = self.unit.x + math.cos(angle) * ring_radius
-        local y = self.unit.y + math.sin(angle) * ring_radius
+        local x = cx + math.cos(angle) * ring_radius
+        local y = cy + math.sin(angle) * ring_radius
         Stomp{
           group = main.current.main,
           unit = self.unit,
@@ -467,7 +472,9 @@ function Avalanche:init(args)
   local total_duration = (num_rings - 1) * wave_delay + charge_time + 0.5
   self.t:after(total_duration, function() self:die() end)
 
-  Helper.Unit:set_state(self.unit, unit_states['idle'])
+  -- Set-piece: the caster stays frozen for the full duration, which also
+  -- blocks pick_action so no other attack overlaps the rings.
+  Helper.Unit:set_state(self.unit, unit_states['frozen'])
 end
 
 function Avalanche:update(dt)
@@ -480,6 +487,9 @@ end
 function Avalanche:die()
   self.dead = true
   self.t:cancel('avalanche')
+  if self.unit and not self.unit.dead and self.unit.state == unit_states['frozen'] then
+    Helper.Unit:set_state(self.unit, unit_states['idle'])
+  end
 end
 
 ----------------------------------------------

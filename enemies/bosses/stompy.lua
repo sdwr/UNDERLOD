@@ -33,7 +33,8 @@ fns['init_enemy'] = function(self)
 --set sensors
   self.attack_sensor = Circle(self.x, self.y, 120)
 
-
+  -- avalanche runs on its own timer, seeded here so the first one lands mid-fight
+  self.last_avalanche_time = Helper.Time.time
 
   --set attacks
   self.attack_options = {}
@@ -57,7 +58,7 @@ fns['init_enemy'] = function(self)
       rs = self.attack_sensor.rs,
       knockback = true,
       color = grey[0],
-      damage = function() return self.dmg end,
+      damage = function() return self.dmg * 1.2 end,
       parent = self
     }
   }
@@ -77,7 +78,8 @@ fns['init_enemy'] = function(self)
       spell_duration = 10,
       num_shots = 3,
       shot_interval = 0.7,
-      damage = function() return self.dmg end,
+      -- small shell, lighter hit than the telegraphed set-piece attacks
+      damage = function() return self.dmg * 0.6 end,
       rs = 25,
       parent = self
     }
@@ -85,13 +87,18 @@ fns['init_enemy'] = function(self)
 
   local avalanche = {
     name = 'avalanche',
-    viable = function() return true end,
+    -- set-piece: fires on its own cadence and preempts the random pick
+    priority = true,
+    viable = function() return Helper.Time.time - self.last_avalanche_time >= enemy_attack_cooldowns['stompy_avalanche'] end,
 
     instantspell = true,
     cast_length = GOLEM_CAST_TIME,
     cast_sound = usurer1,
     cast_volume = 1,
-    oncast = function() turret_hit_wall2:play{volume = 0.5} end,
+    oncast = function()
+      self.last_avalanche_time = Helper.Time.time
+      turret_hit_wall2:play{volume = 0.5}
+    end,
     spellclass = Avalanche,
     spelldata = {
       group = main.current.main,
@@ -105,7 +112,14 @@ fns['init_enemy'] = function(self)
 
   local summon = {
     name = 'summon',
-    viable = function() return true end,
+    -- only re-summon once the previous pack is mostly cleared
+    viable = function()
+      local count = 0
+      for _, e in ipairs(Helper.Unit:get_list(false)) do
+        if not e.dead and e.type == 'hunter_swarmer' and e.parent == self then count = count + 1 end
+      end
+      return count < 3
+    end,
     instantspell = true,
     cast_length = GOLEM_CAST_TIME,
     cast_sound = usurer1,

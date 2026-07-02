@@ -77,6 +77,8 @@ enemy_attack_cooldowns = {
   ['dragon'] = attack_cooldowns['fast'],
   ['heigan'] = attack_cooldowns['fast'],
   ['heigan_eruption'] = 8.0, -- Special case for boss abilities
+  -- Avalanche set-piece cadence: ~5s frozen cast + ~7s of normal rotation between casts.
+  ['stompy_avalanche'] = 12.0,
   
   -- Static
   ['dragonegg'] = attack_cooldowns['slow'],

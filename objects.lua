@@ -1771,8 +1771,16 @@ function Unit:pick_action()
   if self.custom_action_selector then
     type, action = self:custom_action_selector(viable_attacks, viable_movements)
   else
+    -- priority attacks (boss set-pieces on their own timer) preempt the random pick
+    local priority_attack
+    for _, v in ipairs(viable_attacks) do
+      if v.priority then priority_attack = v; break end
+    end
 
-    if #viable_attacks > 0 and math.random() > (self.move_option_weight or 0.15) then
+    if priority_attack then
+      type = 'attack'
+      action = priority_attack
+    elseif #viable_attacks > 0 and math.random() > (self.move_option_weight or 0.15) then
       type = 'attack'
       
       action = random:table(viable_attacks)
