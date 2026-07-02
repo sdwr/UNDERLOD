@@ -136,12 +136,15 @@ function Enemy:draw_fallback_base_shape()
     -- Special case: Dragon uses triangle polygon
     local points = self:make_regular_polygon(3, (self.shape.w / 2) / 60 * 70, self:get_angle())
     graphics.polygon(points, base_color)
+  elseif self.shape and self.shape.rs then
+    -- Circle colliders (rs is circle-only) draw as circles
+    graphics.circle(self.x, self.y, self.shape.rs, base_color)
   else
     -- Default case: Rounded rectangle with size-appropriate corner radius
     local corner_radius = get_enemy_corner_radius(self)
     graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, corner_radius, corner_radius, base_color)
   end
-  
+
   graphics.pop()
 end
 
@@ -155,6 +158,8 @@ function Enemy:draw_fallback_status_effects()
     if self.type == 'dragon' then
       local points = self:make_regular_polygon(3, (self.shape.w / 2) / 60 * 70, self:get_angle())
       graphics.polygon(points, mask_color)
+    elseif self.shape and self.shape.rs then
+      graphics.circle(self.x, self.y, self.shape.rs, mask_color)
     else
       local corner_radius = get_enemy_corner_radius(self)
       graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, corner_radius, corner_radius, mask_color)
@@ -169,6 +174,8 @@ function Enemy:draw_fallback_status_effects()
     if self.type == 'dragon' then
       local points = self:make_regular_polygon(3, (self.shape.w / 2) / 60 * 70 + 2, self:get_angle())
       graphics.polygon(points, CURSE_OUTLINE_COLOR, 2)
+    elseif self.shape and self.shape.rs then
+      graphics.circle(self.x, self.y, self.shape.rs + 1.5, CURSE_OUTLINE_COLOR, 2)
     else
       local corner_radius = get_enemy_corner_radius(self)
       graphics.rectangle(self.x, self.y, self.shape.w + 3, self.shape.h + 3, corner_radius, corner_radius, CURSE_OUTLINE_COLOR, 2)

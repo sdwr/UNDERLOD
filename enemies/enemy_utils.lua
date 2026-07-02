@@ -6,6 +6,8 @@ enemy_size_to_xy = {
   regular_big = {x = 16, y = 12},
   block = {x = 24, y = 24},
   special = {x = 18, y = 18},
+  -- Pulsar: miniboss-style special, deliberately bigger than a tank (block).
+  pulsar = {x = 30, y = 30},
   large = {x = 24, y = 24},
   huge = {x = 36, y = 24},
 

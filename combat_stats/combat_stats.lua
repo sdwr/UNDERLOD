@@ -50,6 +50,9 @@ enemy_attack_cooldowns = {
   -- Regular enemies
   ['roach'] = attack_cooldowns['very-fast'] * 1.4 * 1.2,
   ['orb'] = attack_cooldowns['very-slow'],
+  -- Pulsar alternates cardinal/diagonal 4-shot volleys; 'slow' keeps the
+  -- rhythm readable without long dead air between the paired volleys.
+  ['pulsar'] = attack_cooldowns['slow'],
   ['goblin_archer'] = attack_cooldowns['fast'],
   -- Small archer: one aimed shot every ~3s (the "every few seconds" poke).
   ['small_archer'] = 3.0,
@@ -124,6 +127,7 @@ enemy_cast_times = {
   ['roach'] = 0.6,
   ['sniper'] = 3.25,
   ['orb'] = 0.8,
+  ['pulsar'] = 0.8,
   -- Visible windup before slime pulse fires so the player can read it.
   ['slime'] = 0.5,
   
@@ -667,6 +671,10 @@ enemy_type_to_stats = {
     ['slime'] = { dmg = 1, mvspd = 0.7, hp = 1.4 },
     ['sniper'] = { dmg = 1, mvspd = 1, hp = 1 },
     ['orb'] = { dmg = 1, mvspd = 0.8, hp = 1.8 },
+    -- Pulsar: miniboss-style special. hp ~2.4x tank (was 4x, trimmed 40%),
+    -- brisk walk-on to a nearby park point, then a stationary compass turret
+    -- (body goes static once parked).
+    ['pulsar'] = { dmg = 1, mvspd = 0.8, hp = 1.92 },
     ['shooter'] = {},
     
     ['cleaver'] = {  },

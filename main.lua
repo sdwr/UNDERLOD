@@ -1449,6 +1449,8 @@ function init()
     ['roach'] = 200,
     ['sniper'] = 200,
     ['orb'] = 200,
+    -- Miniboss-style one-per-level special.
+    ['pulsar'] = 400,
     ['burst'] = 150,
     ['turret'] = 150,
     ['cleaver'] = 200,

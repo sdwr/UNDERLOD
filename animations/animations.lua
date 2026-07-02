@@ -933,6 +933,7 @@ enemy_type_to_size = {
   ['small_archer'] = 'regular',
   ['brute'] = 'special',
   ['orb'] = 'special',
+  ['pulsar'] = 'pulsar',
   ['roach'] = 'regular_big',
   ['sniper'] = 'special',
   ['slime'] = 'large',
