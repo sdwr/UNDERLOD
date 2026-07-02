@@ -66,6 +66,18 @@ function Helper.Sound:play_constant_distance_multiplier_sound()
   end
 end
 
+-- Burn DoT tick cue: burn ticks fire per enemy every BURN_TICK_INTERVAL, so a
+-- burning field used to layer one sound per enemy per tick. One quiet copy
+-- every BURN_SOUND_INTERVAL globally, no matter how many enemies are burning.
+Helper.Sound.burn_tick_last = -math.huge
+BURN_SOUND_INTERVAL = 2
+function Helper.Sound:play_burn_tick()
+  local window = BURN_SOUND_INTERVAL or 2
+  if Helper.Time.time - (self.burn_tick_last or -math.huge) < window then return end
+  self.burn_tick_last = Helper.Time.time
+  fire3:play{pitch = random:float(0.8, 1.2), volume = 0.15}
+end
+
 function Helper.Sound:init_radiance()
   Helper.Sound.radiance = campfire
   Helper.Sound.radiance:setLooping(true)

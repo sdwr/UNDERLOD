@@ -1331,26 +1331,28 @@ function Proc_Shockwave:shockwave(target)
 end
 
 --proc radiance
---need to add an aura to the unit that follows it around
---but only applies once to each enemy, no matter how many units have the aura
---best to do with a debuff that is applied to the enemy
---the radiance debuff should work differently than other debuffs
---last for a second, reapplied all the time, but only ticks once
+--aura that follows the unit; once per second everything inside is ignited
+--with a self.damage-strength burn (100% of that over 5s, refreshed every
+--tick while inside — see Unit:burn). No direct damage: radiance is an
+--igniter. Its burn is weak enough that it never overwrites a real fire hit's
+--burn, but its constant re-application SUSTAINS stronger burns indefinitely
+--while enemies stay in the aura. Feeds blazin/burnexplode/resonance.
+--sound: none of its own; the burn DoT's globally throttled tick cue
+--(play_burn_tick) carries the audio.
 Proc_Radiance = Proc:extend()
 function Proc_Radiance:init(args)
   self.triggers = {PROC_ON_DEATH}
   self.scope = 'troop'
 
   Proc_Radiance.super.init(self, args)
-  
-  
+
+
 
   --define the proc's vars
   self.color = self.data.color or red[0]:clone()
   self.color.a = 0.0
   self.radius = self.data.radius or 70
-  self.damage = self.data.damage or 8
-  self.damageType = DAMAGE_TYPE_FIRE
+  self.damage = self.data.damage or 12
 
   if self.unit then
     self.damage_aura = self:create_damage_aura()
@@ -1365,10 +1367,11 @@ end
 
 function Proc_Radiance:create_damage_aura()
 
+  -- One aura tick per second ignites everyone inside. No sound of its own —
+  -- the burn DoT's globally-throttled cue (play_burn_tick) carries the audio.
   local on_hit_callback = function(area_spell, target, unit)
-    if not target:has_buff('radianceburn') then
-      target:add_buff({name = 'radianceburn', damage = self.damage, duration = 1})
-      Helper.Damage:indirect_hit(target, self.damage, unit, self.damageType, false)
+    if target.burn and not target.dead then
+      target:burn(self.damage, unit)
     end
   end
   local aura = Area_Spell{
@@ -1380,11 +1383,11 @@ function Proc_Radiance:create_damage_aura()
     damage = 0,
     damage_ticks = true,
     hit_only_once = false,
-    radius = self.radius, 
-    duration = 1000, 
+    radius = self.radius,
+    duration = 1000,
     color = self.color,
     opacity = 0.00,
-    tick_rate = 0.1,
+    tick_rate = 1,
     is_troop = self.unit.is_troop,
     on_hit_callback = on_hit_callback,
     floor_effect = "radiance",

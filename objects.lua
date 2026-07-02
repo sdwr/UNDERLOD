@@ -748,13 +748,16 @@ function Unit:update_buffs(dt)
         v.elapsed_time = v.elapsed_time - BURN_TICK_INTERVAL -- Reset timer for the next tick
         v.tick_count = (v.tick_count or 0) + 1
 
-        -- Calculate damage as % of max HP
-        local damage_this_tick = self.max_hp * BURN_DAMAGE_PER_TICK_PERCENT
-        fire3:play{pitch = random:float(0.8, 1.2), volume = 0.15}
-        
-        -- Deal the damage
-        Helper.Damage:indirect_hit(self, damage_this_tick, v.from, DAMAGE_TYPE_BURN, false)
-        
+        -- Tick damage was fixed when the burn was applied (see Unit:burn):
+        -- the igniting fire hit's damage spread over the duration.
+        local damage_this_tick = v.tick_damage or 0
+        if damage_this_tick > 0 then
+          -- Globally throttled: one burn cue per tick window, however many
+          -- enemies are burning.
+          Helper.Sound:play_burn_tick()
+          Helper.Damage:indirect_hit(self, damage_this_tick, v.from, DAMAGE_TYPE_BURN, false)
+        end
+
         self:try_burn_explode()
       end 
     end
@@ -1183,13 +1186,23 @@ end
 --BURN SYSTEM
 
 function Unit:burn(damage, from)
+  -- Burn = 100% of the igniting fire hit's damage, spread evenly over
+  -- BURN_DURATION (damage * tick_interval / duration per tick). Burns never
+  -- stack: any ignite refreshes the duration, and only a STRONGER ignite
+  -- overwrites the tick damage (and takes over kill credit), so a weak
+  -- sustain source (radiance) keeps a big fireball burn alive without
+  -- downgrading it.
+  local tick_damage = (damage or 0) * BURN_TICK_INTERVAL / BURN_DURATION
   local existing_buff = self.buffs['burn']
 
   if existing_buff then
     -- Refresh duration but don't reset tick timer or tick count
     existing_buff.duration = BURN_DURATION
     existing_buff.maxDuration = BURN_DURATION
-    existing_buff.from = from
+    if tick_damage > (existing_buff.tick_damage or 0) then
+      existing_buff.tick_damage = tick_damage
+      existing_buff.from = from
+    end
     existing_buff.can_explode = existing_buff.can_explode or (from and Has_Static_Proc(from, 'burnexplode'))
   else
     -- Create new burn buff
@@ -1200,6 +1213,7 @@ function Unit:burn(damage, from)
       maxDuration = BURN_DURATION,
       elapsed_time = 0,
       tick_count = 0,
+      tick_damage = tick_damage,
       can_explode = from and Has_Static_Proc(from, 'burnexplode') or false
     }
     self:add_buff(burnBuff)
@@ -1212,6 +1226,22 @@ function Unit:burn(damage, from)
       for k, proc in ipairs(from.onBurnProcs) do
         proc:onBurn(from, self)
       end
+    end
+
+    -- Initial tick: a fresh burn deals one tick immediately (refreshes
+    -- don't). Deferred a frame so the tick's hit doesn't nest inside the
+    -- igniting fire hit's apply_hit — a nested kill would run handle_death
+    -- from both hits and double-fire onDeath/onKill callbacks.
+    if tick_damage > 0 then
+      trigger:after(0.01, function()
+        if self.dead or not self.buffs then return end
+        local b = self.buffs['burn']
+        if not b then return end
+        b.tick_count = (b.tick_count or 0) + 1
+        Helper.Sound:play_burn_tick()
+        Helper.Damage:indirect_hit(self, b.tick_damage or 0, b.from, DAMAGE_TYPE_BURN, false)
+        self:try_burn_explode()
+      end)
     end
   end
 end

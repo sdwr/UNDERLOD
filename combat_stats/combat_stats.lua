@@ -216,10 +216,14 @@ ELEMENTAL_EFFECT_TYPES = {DAMAGE_TYPE_BURN, DAMAGE_TYPE_LIGHTNING, DAMAGE_TYPE_C
 
 LIGHTNING_FLAT_DAMAGE = 20
 
--- Burn system constants
+-- Burn system constants. Burn = 100% of the igniting fire hit's damage spread
+-- over BURN_DURATION (tick = damage * INTERVAL / DURATION, see Unit:burn).
+-- Highest burn overwrites; any ignite refreshes; never stacks.
 BURN_DURATION = 5.0
 BURN_TICK_INTERVAL = 0.5
-BURN_DAMAGE_PER_TICK_PERCENT = 0.02  -- 2% of max HP per tick
+-- Unused since burn became hit-damage-based (was 2% of max HP per tick);
+-- kept so older references/docs don't nil out.
+BURN_DAMAGE_PER_TICK_PERCENT = 0.02
 BURN_EXPLOSION_BASE_CHANCE = 0.05    -- 5% base chance per tick
 BURN_EXPLOSION_DAMAGE_PERCENT = 0.1  -- 15% of max HP explosion damage
 

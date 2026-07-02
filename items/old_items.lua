@@ -521,9 +521,9 @@ item_to_item_data = {
     colors = {'red'},
     cost = 10,
     icon = 'sun',
-    desc = 'Gain a shield and a [red]fire[fg] damage aura',
+    desc = 'Gain a [red]fire[fg] damage aura',
     stats = {},
-    procs = {'radiance', 'shield'},
+    procs = {'radiance'},
     tags = {}
   },
   ['blazin'] = {

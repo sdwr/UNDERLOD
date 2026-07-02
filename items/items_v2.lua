@@ -339,15 +339,15 @@ ITEM_SETS = {
   -- },
   [ITEM_SET.SHIELD] = {
     name = 'Radiance',
-    summary = 'shield + aura',
+    summary = 'damage aura',
     color = 'red',
     rarity = ITEM_RARITY.RARE,
     bonuses = {
-      [1] = { procs = {'shield', 'radiance'} },
+      [1] = { procs = {'radiance'} },
       -- [2] = { procs = {'shieldexplode'} },
     },
     descriptions = {
-      [1] = 'Grants you a shield and damage aura',
+      [1] = 'Grants you a damage aura',
       -- [2] = 'Shield explodes when destroyed, knocking back nearby enemies'
     }
   },
