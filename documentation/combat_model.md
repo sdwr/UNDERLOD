@@ -136,30 +136,22 @@ plasma 200, splitter 200, pulse_walker 200, drone_carrier 200 (all T2-pool = 200
 bosses `BOSS_ROUND_POWER = 1000`. Killing an enemy adds its round_power to the
 level's kill tally.
 
-### 3.2 kill_quota — the level-completion gate (`levelmanager.lua:204`)
-A non-boss level clears when cumulative killed round_power ≥ `kill_quota`:
-```
-quota_level = (L <= 3) ? 1 : L
-qrp   = ROUND_POWER_BY_LEVEL[quota_level] + 500
-mult  = 1.5 + 0.10*(quota_level-1);   if quota_level>=4: mult *= 1.15
-scale = (quota_level>=4) ? 0.65 : 1.0
-kill_quota = ceil(qrp * mult * 1.5 * scale)
-```
-`ROUND_POWER_BY_LEVEL`: L1 400, L2 600, L3 800, L4 1100, L5 1300, L7 1700,
-L8 1900, L9 2100, L10 2300, L11 2500 (L6/L11 are bosses).
+### 3.2 kill_quota — the level-completion gate (`levelmanager.lua LEVEL_PACING`)
+A non-boss level clears when cumulative killed round_power ≥ `kill_quota`.
+Both numbers are authored directly, one row per level, in `LEVEL_PACING`
+(no derivation chain):
 
-Computed kill_quota (non-boss, shipping range):
-| L | kill_quota |
-|---|---|
-| 1 | 2025 |
-| 2 | 2025 |
-| 3 | 2025 |
-| 4 | 3230 |
-| 5 | 3835 |
-| 7 | 5181 |
-| 8 | 5921 |
-| 9 | 6706 |
-| 10| 7535 |
+| L | round_power (gold denominator) | kill_quota |
+|---|---|---|
+| 1 | 900 | 1520 |
+| 2 | 1100 | 1520 |
+| 3 | 1300 | 1520 |
+| 4 | 1600 | 2420 |
+| 5 | 1800 | 2880 |
+| 7 | 2200 | 3890 |
+| 8 | 2400 | 4440 |
+| 9 | 2600 | 5030 |
+| 10| 2800 | 5650 |
 | L6, L11 | boss levels — no kill_quota; clear = kill the boss (see §2.3) |
 
 ### 3.3 HP that must be dealt to clear

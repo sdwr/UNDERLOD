@@ -172,6 +172,25 @@ function Build_Debug_Level_Entry()
   }
 end
 
+-- Per-level pacing, one row per non-boss level (6/11/16/21/25 are bosses).
+-- round_power: gold-per-kill denominator — each kill grants its
+--   enemy_to_round_power as a fraction of this total.
+-- kill_quota: level-completion gate — cumulative killed round_power needed
+--   to clear the level.
+LEVEL_PACING = {
+  [1]  = { round_power = 900,  kill_quota = 1520 },
+  [2]  = { round_power = 1100, kill_quota = 1520 },
+  [3]  = { round_power = 1300, kill_quota = 1520 },
+  [4]  = { round_power = 1600, kill_quota = 2420 },
+  [5]  = { round_power = 1800, kill_quota = 2880 },
+  [7]  = { round_power = 2200, kill_quota = 3890 },
+  [8]  = { round_power = 2400, kill_quota = 4440 },
+  [9]  = { round_power = 2600, kill_quota = 5030 },
+  [10] = { round_power = 2800, kill_quota = 5650 },
+}
+-- Fallback for any level past the authored rows.
+LEVEL_PACING_DEFAULT = { round_power = 2800, kill_quota = 5650 }
+
 function Build_Level_List(max_level)
   local level_list = {}
   for i = 1, max_level do
@@ -198,24 +217,10 @@ function Build_Level_List(max_level)
       local environmental_hazards = Decide_on_Environmental_Hazards(i)
       level_list[i].environmental_hazards = environmental_hazards
 
-      -- round_power = total kill power for gold-per-kill (each kill grants
-      -- its enemy_to_round_power as a fraction of this total). kill_quota is
-      -- the level-completion gate. round_power (the gold-per-kill denominator)
-      -- still ramps per level; only the enemy COUNT below is flattened early.
-      level_list[i].round_power = (ROUND_POWER_BY_LEVEL[i] or 2000) + 500
-
-      -- Enemy count (kill_quota). Levels 1-3 all use level 1's count so the
-      -- opening stays gentle; the per-level +15% lengthening and the L4 trim
-      -- both start at level 4. Multiplier ramps 1.5 -> 1.5 + 0.10*(level-1).
-      local quota_level = (i <= 3) and 1 or i
-      local quota_round_power = (ROUND_POWER_BY_LEVEL[quota_level] or 2000) + 500
-      local quota_mult = 1.5 + 0.10 * (quota_level - 1)
-      if quota_level >= 4 then quota_mult = quota_mult * 1.15 end
-      -- L4+ kill quotas were rising too fast; trim 35% off L4 and every
-      -- subsequent non-boss level (uniform, so the L4+ ramp is preserved).
-      local quota_scale = (quota_level >= 4) and 0.65 or 1.0
-      level_list[i].kill_quota = math.ceil(quota_round_power * quota_mult * 1.5 * quota_scale)
-      level_list[i].waves_power = {level_list[i].kill_quota}
+      local pacing = LEVEL_PACING[i] or LEVEL_PACING_DEFAULT
+      level_list[i].round_power = pacing.round_power
+      level_list[i].kill_quota = pacing.kill_quota
+      level_list[i].waves_power = {pacing.kill_quota}
     end
   end
 
