@@ -32,6 +32,29 @@ function Refresh_All_Cards_Text()
   end
 end
 
+-- Title strip of a card is a drop target: items dropped there sell for xp.
+function Find_Character_Card_Title_At(x, y)
+  if not Character_Cards then return nil end
+  for _, card in ipairs(Character_Cards) do
+    if not card.dead and card.is_point_in_title and card:is_point_in_title(x, y) then
+      return card
+    end
+  end
+  return nil
+end
+
+-- Full-card hit test (real unit cards only, not the buy-a-unit card).
+function Find_Character_Card_At(x, y)
+  if not Character_Cards then return nil end
+  for _, card in ipairs(Character_Cards) do
+    if not card.dead and card.unit and card.items
+      and card.shape and card.shape:is_colliding_with_point(x, y) then
+      return card
+    end
+  end
+  return nil
+end
+
 function Kill_All_Cards()
   if not Character_Cards then return end
   for _, card in pairs(Character_Cards) do
@@ -131,6 +154,21 @@ function CharacterCard:createUIElements()
   self:cleanupUIElements()
   -- inventory_count_text is built lazily on the first refresh, so we don't
   -- duplicate the format string here.
+end
+
+function CharacterCard:first_empty_item_part()
+  if not self.unit or not self.unit.items then return nil end
+  for i = 1, MAX_ITEMS do
+    if self.items[i] and not self.unit.items[i] then
+      return self.items[i]
+    end
+  end
+  return nil
+end
+
+function CharacterCard:is_point_in_title(x, y)
+  return math.abs(x - self.x) <= self.w/2
+    and y >= self.y - self.h/2 and y <= self.y - self.h/2 + 22
 end
 
 function CharacterCard:current_item_count()
@@ -260,6 +298,26 @@ function CharacterCard:draw()
   --draw text
   self.name_text:draw(self.x, self.y - (self.h/2) + 10)
 
+  -- xp bar under the title; fills toward the next unit level, yellow at max.
+  local maxed = self.unit.level >= MAX_UNIT_LEVEL
+  local needed = UNIT_XP_TO_NEXT_LEVEL[self.unit.level]
+  local pct = maxed and 1 or math.min((self.unit.xp or 0) / (needed or 1), 1)
+  local bar_w, bar_h = self.w - 16, 2
+  local bar_y = self.y - self.h/2 + 19
+  graphics.rectangle(self.x, bar_y, bar_w, bar_h, 1, 1, bg[10])
+  if pct > 0 then
+    graphics.rectangle(self.x - bar_w/2 + bar_w*pct/2, bar_y, bar_w*pct, bar_h, 1, 1, maxed and yellow[0] or green[0])
+  end
+
+  -- While any item is being dragged the title strip is a sell-for-xp drop
+  -- zone: pulse a green frame, solid when the drag is hovering it.
+  if Loose_Inventory_Item or Grabbed_Shop_Card then
+    local pulse = 0.6 + 0.4 * math.abs(math.sin(love.timer.getTime() * 4))
+    local glow = green[0]:clone()
+    glow.a = self.title_hovered and 1 or 0.5 * pulse
+    graphics.rectangle(self.x, self.y - self.h/2 + 12, self.w - 6, 21, 3, 3, glow, self.title_hovered and 2 or 1)
+  end
+
   -- x/6 inventory count, sitting just above the bottom edge of the card.
   if self.inventory_count_text then
     self.inventory_count_text:draw(self.x, self.y + self.h/2 - 8)
@@ -277,6 +335,13 @@ function CharacterCard:update(dt)
   -- show up immediately without an explicit refresh.
   self:layout_item_parts()
   self:refresh_inventory_count_text()
+
+  if Loose_Inventory_Item or Grabbed_Shop_Card then
+    local mx, my = camera:get_mouse_position()
+    self.title_hovered = self:is_point_in_title(mx, my)
+  else
+    self.title_hovered = false
+  end
 end
 
 -- Walks unit.items, builds one row per displayed set, and positions the
@@ -314,7 +379,8 @@ function CharacterCard:layout_item_parts()
   end
 
   local row_spacing = 17
-  local first_row_y = self.y - self.h/2 + 28
+  -- First row sits below the title + xp bar (bar bottom ~ +20).
+  local first_row_y = self.y - self.h/2 + 32
   local row_left = self.x - self.w/2 + 6
   -- First copy of a set is a full pill with the set name; extra copies stack
   -- to its right as thin full-height tabs so they never run off the card edge.
@@ -346,12 +412,14 @@ function CharacterCard:layout_item_parts()
     end
   end
 
-  -- Drop-target zone: while an item is being dragged from another card, expose
-  -- the first empty slot here so the player has a visible landing spot. The
-  -- slot itself does the drop_target_glow pulse in ItemPart:draw.
-  if Loose_Inventory_Item
+  -- Drop-target zone: while an item is being dragged from another card or
+  -- from the shop, expose the first empty slot here so the player has a
+  -- visible landing spot. The slot does the drop_target_glow pulse in
+  -- ItemPart:draw.
+  local inv_drag = Loose_Inventory_Item
      and Loose_Inventory_Item.parent
-     and Loose_Inventory_Item.parent.parent ~= self then
+     and Loose_Inventory_Item.parent.parent ~= self
+  if inv_drag or Grabbed_Shop_Card then
     local empty_idx = nil
     for idx = 1, MAX_ITEMS do
       if self.items[idx] and not self.unit.items[idx] then
@@ -459,7 +527,9 @@ function ItemPart:create_item_added_effect(item)
   pop2:play{pitch = random:float(0.95, 1.05), volume = 0.4}
 end
 
-function ItemPart:sellItem()
+-- Selling grants ITEM_SELL_XP to the owning unit, or to `xp_unit` when the
+-- item was dropped on another card's title.
+function ItemPart:sellItem(xp_unit)
 
   --dont create an item object
   --add that back when there are consumables or sell effects
@@ -473,11 +543,9 @@ function ItemPart:sellItem()
     else
       --play sell sound
       coins1:play{pitch = random:float(0.8, 1.2), volume = 1}
-      local sell_value = math.floor(item.cost / 2)
-      gold = gold + sell_value
+      Add_Unit_XP(xp_unit or self.parent.unit, ITEM_SELL_XP)
 
       Stats_Sell_Item()
-      Stats_Max_Gold()
     end
     self:remove_tooltip()
   end
@@ -527,14 +595,16 @@ function ItemPart:update(dt)
     end
   end
 
-  -- Drop-target glow: while a Loose_Inventory_Item is in flight, any empty
-  -- slot on a *different* card lights up so the player can see where the
-  -- item can land. Source card's empty slots are intentionally excluded —
-  -- moving within the same unit is the trivial case.
-  if Loose_Inventory_Item and not self.hidden and not self:hasItem()
+  -- Drop-target glow: while an inventory item or shop card is mid-drag, any
+  -- empty slot it could land in lights up. Source card's empty slots are
+  -- intentionally excluded for inventory drags — moving within the same unit
+  -- is the trivial case.
+  local inv_drag_glow = Loose_Inventory_Item
      and Loose_Inventory_Item.parent ~= self
      and Loose_Inventory_Item.parent
-     and Loose_Inventory_Item.parent.parent ~= self.parent then
+     and Loose_Inventory_Item.parent.parent ~= self.parent
+  local shop_drag_glow = Grabbed_Shop_Card ~= nil
+  if (inv_drag_glow or shop_drag_glow) and not self.hidden and not self:hasItem() then
     self.drop_target_glow = true
   else
     self.drop_target_glow = false
@@ -554,9 +624,15 @@ function ItemPart:update(dt)
     Loose_Inventory_Item = nil
     local source_item = self:getItem()
     local active = Active_Inventory_Slot
-    
+
+    -- Dropped on a card title: sell for xp (to that card's unit).
+    local title_card = Find_Character_Card_Title_At(camera:get_mouse_position())
+
     -- Determine what to do based on target
-    if active and not self:isActiveInvSlot() then
+    if title_card then
+      loose_item:die()
+      self:sellItem(title_card.unit)
+    elseif active and not self:isActiveInvSlot() then
       -- Any slot accepts any item
       if active:hasItem() then
         -- SWAP: Exchange items between slots

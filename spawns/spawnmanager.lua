@@ -556,9 +556,11 @@ function Spawn_Troops(arena, team, unit, spawn_location)
 
   if unit.troop_hps then
     for i = 1, number_of_troops do
-      
+
+      -- nil = troop gained from a level-up after HPs were saved: spawn fresh.
+      -- 0 = died last round: stays down. >0 = spawn with saved HP.
       local health = unit.troop_hps[i]
-      if health and health > 0 then
+      if health == nil or health > 0 then
         if not team_spawn_location then
           spawn_location = Get_Random_Spawn_Outside_Arena(SpawnGlobals.SPAWN_DISTANCE_OUTSIDE_ARENA)
         end
@@ -567,7 +569,7 @@ function Spawn_Troops(arena, team, unit, spawn_location)
         local x = spawn_location.x + offset_x
         local y = spawn_location.y + offset_y
         local troop = team:add_troop(x, y)
-        troop.hp = unit.troop_hps[i]
+        if health then troop.hp = health end
       end
     end
   else

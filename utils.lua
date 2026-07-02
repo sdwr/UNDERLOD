@@ -326,3 +326,52 @@ Print_Steering_Forces = function(unit)
   print(unit.evade_f, 'evade_f')
   print(unit.pursuit_f, 'pursuit_f')
 end
+
+-- Unit XP: grants xp and handles level-ups (each level adds a troop, see
+-- UNIT_LEVEL_TO_NUMBER_OF_TROOPS). XP aimed at a maxed unit redirects to the
+-- first teammate that can still level; if nobody can, it's discarded.
+function Add_Unit_XP(unit, amount)
+  if not unit then return false end
+
+  if (unit.level or 1) >= MAX_UNIT_LEVEL then
+    local redirected = nil
+    for _, u in ipairs(get_team_units()) do
+      if u ~= unit and (u.level or 1) < MAX_UNIT_LEVEL then
+        redirected = u
+        break
+      end
+    end
+    if not redirected then return false end
+    unit = redirected
+  end
+
+  unit.xp = (unit.xp or 0) + amount
+  local leveled = false
+  while unit.level < MAX_UNIT_LEVEL do
+    local needed = UNIT_XP_TO_NEXT_LEVEL[unit.level]
+    if not needed or unit.xp < needed then break end
+    unit.xp = unit.xp - needed
+    unit.level = unit.level + 1
+    leveled = true
+  end
+  if unit.level >= MAX_UNIT_LEVEL then unit.xp = 0 end
+
+  if leveled then
+    level_up1:play{pitch = random:float(0.95, 1.05), volume = 0.6}
+    if Character_Cards then
+      for _, card in ipairs(Character_Cards) do
+        if card.unit == unit and not card.dead then
+          card.spring:pull(0.3, 200, 10)
+          if main.current and main.current.effects then
+            for i = 1, 20 do
+              HitParticle{group = main.current.effects, x = card.x, y = card.y - card.h/2 + 12, color = yellow[0]}
+            end
+          end
+          break
+        end
+      end
+    end
+    if Refresh_All_Cards_Text then Refresh_All_Cards_Text() end
+  end
+  return leveled
+end

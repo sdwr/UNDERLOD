@@ -238,14 +238,24 @@ LEVEL_TO_PERKS = {
   [23] = true,
 }
 
--- Leveling up unlocks item slots, not troops. Keep troop count flat across levels.
+-- Each unit level adds a troop: 2 at level 1, 3 at level 2, 4 at level 3.
 UNIT_LEVEL_TO_NUMBER_OF_TROOPS = {
-  [0] = 3,
-  [1] = 3,
+  [0] = 2,
+  [1] = 2,
   [2] = 3,
-  [3] = 3,
-  [4] = 3,
-  [5] = 3,
+  [3] = 4,
+  [4] = 4,
+  [5] = 4,
+}
+
+-- Unit XP: items sell (right click, or drag onto a unit's title) for xp
+-- instead of gold; shop items can be bought straight into xp the same way.
+ITEM_SELL_XP = 2
+MAX_UNIT_LEVEL = 3
+-- XP needed at the current level to reach the next one.
+UNIT_XP_TO_NEXT_LEVEL = {
+  [1] = 6,
+  [2] = 8,
 }
 
 MAX_ITEMS = 6

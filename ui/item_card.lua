@@ -337,9 +337,11 @@ function ItemCard:buy_item()
 
   -- Use Helper.Unit to find available slot
   local unit, slot_index = Helper.Unit:find_available_inventory_slot(self.parent.units, self.item)
-  
+
   if not unit or not slot_index then
-    print("no available slot to buy item")
+    Create_Info_Text('no empty slots - drag to a unit title for xp', self, 'error')
+    self.x = self.origX
+    self.y = self.origY
     return
   end
   
@@ -408,6 +410,27 @@ function ItemCard:start_buy_animation(target_item_part, unit, slot_index)
   end)
 end
 
+-- Buys the item straight into xp: costs gold, grants ITEM_SELL_XP to the
+-- unit whose title it was dropped on. No item changes hands.
+function ItemCard:convert_to_xp(card)
+  if self.purchased or self.flying_to_slot then return false end
+  if not card or not card.unit then return false end
+  if gold < self.cost then
+    Create_Info_Text('not enough gold', self, 'error')
+    self.x = self.origX
+    self.y = self.origY
+    return false
+  end
+
+  coins1:play{pitch = random:float(0.8, 1.2), volume = 1}
+  Add_Unit_XP(card.unit, ITEM_SELL_XP)
+  Stats_Sell_Item()
+  -- Transaction after the xp so the save it triggers captures the new xp/level.
+  self:handle_purchase_transaction()
+  self:die()
+  return true
+end
+
 function ItemCard:complete_purchase(unit, slot_index)
   -- Immediate purchase without animation
   self:handle_purchase_transaction()
@@ -427,26 +450,21 @@ function ItemCard:update(dt)
 
   if input.m1.pressed and self.colliding_with_mouse and not self.grabbed
      and not self.purchased and not self.flying_to_slot then
-    -- Check if the purchase is possible
-    local unit, slot_index = Helper.Unit:find_available_inventory_slot(self.parent.units, self.item)
-    
-    if gold >= self.cost and unit and slot_index then
-      -- SUCCESS: The player can afford it and has space.
+    -- Grabbing only needs gold; a full inventory can still drag onto a unit
+    -- title to convert the item into xp.
+    if gold >= self.cost then
       self.timeGrabbed = love.timer.getTime()
       self.grabbed = true
-      
+      Grabbed_Shop_Card = self
+
       -- Store the mouse offset from card center when grabbing
       local mouse_x, mouse_y = camera:get_mouse_position()
       self.grab_offset_x = mouse_x - self.x
       self.grab_offset_y = mouse_y - self.y
-      
-      self:remove_set_bonus_tooltip()
-        
-    elseif not unit or not slot_index then
-      self:remove_set_bonus_tooltip()
-      Create_Info_Text('no empty slots - right click to sell', self, 'error')
 
-    elseif gold < self.cost then
+      self:remove_set_bonus_tooltip()
+
+    else
       self:remove_set_bonus_tooltip()
       Create_Info_Text('not enough gold', self, 'error')
 
@@ -460,26 +478,42 @@ function ItemCard:update(dt)
   -- and have 2 different ways to cancel the purchase
   if self.grabbed and input.m1.released then
     self.grabbed = false
-    
-    -- Check if dropped over an item slot
+    if Grabbed_Shop_Card == self then Grabbed_Shop_Card = nil end
+
+    -- Check if dropped over an item slot or a card title
     local mouse_x, mouse_y = camera:get_mouse_position()
     local item_part, unit = self:find_item_part_at_position(mouse_x, mouse_y)
-    
+    local title_card = Find_Character_Card_Title_At(mouse_x, mouse_y)
+
     -- Reset scaling when released
     self.current_scale = 1.0
     self.sx = 1.0
     self.sy = 1.0
-    
+
     if love.timer.getTime() - self.timeGrabbed < self.buyTimer then
       -- Quick click - use normal buy logic
       self:buy_item()
+    elseif title_card then
+      -- Dropped on a unit title - buy straight into xp
+      self:convert_to_xp(title_card)
     elseif item_part and unit then
       -- Dropped over an item slot - try to buy to that specific slot
       self:buy_item_to_slot(item_part, unit)
     else
-      -- Dropped elsewhere - return to original position
-      self.x = self.origX
-      self.y = self.origY
+      -- Dropped anywhere else on a unit card - buy into its first empty slot
+      local card = Find_Character_Card_At(mouse_x, mouse_y)
+      local target_part = card and card:first_empty_item_part()
+      if target_part then
+        self:buy_item_to_slot(target_part, card.unit)
+      elseif card then
+        Create_Info_Text('no empty slots - drop on the title for xp', self, 'error')
+        self.x = self.origX
+        self.y = self.origY
+      else
+        -- Dropped elsewhere - return to original position
+        self.x = self.origX
+        self.y = self.origY
+      end
     end
   end
 
@@ -675,6 +709,7 @@ function ItemCard:on_mouse_exit()
 end
 
 function ItemCard:die()
+  if Grabbed_Shop_Card == self then Grabbed_Shop_Card = nil end
   -- Clean up ItemCard-specific elements
   self:remove_set_bonus_tooltip()
   for _, set_button in ipairs(self.set_bonus_elements) do

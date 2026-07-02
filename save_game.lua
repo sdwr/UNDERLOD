@@ -69,7 +69,7 @@ end
 function Get_Basic_Unit(character)
   character = character or 'chooseunit'
   local color = character_colors[character]
-  return {character = character, level = 1, reserve = {0, 0}, items = {nil, nil, nil, nil, nil, nil}, color = color}
+  return {character = character, level = 1, xp = 0, reserve = {0, 0}, items = {nil, nil, nil, nil, nil, nil}, color = color}
 end
 
 function Validate_Save_Data(data)

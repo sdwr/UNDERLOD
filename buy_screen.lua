@@ -243,7 +243,7 @@ end
 --buy functions
 
 function BuyScreen:buy_unit(character)
-  table.insert(self.units, {character = character, level = 1, reserve = {0, 0}, items = {nil, nil, nil, nil, nil, nil}})
+  table.insert(self.units, {character = character, level = 1, xp = 0, reserve = {0, 0}, items = {nil, nil, nil, nil, nil, nil}})
   self:set_party()
   if #self.items == 0 then
     self.first_shop = false
@@ -284,7 +284,7 @@ function BuyScreen:create_tutorial_popup()
     {text = '', height_multiplier = 0.1}, -- Spacer
     {text = '[yellow]Left Click:[fg] buy items and troops', font = pixul_font, height_multiplier = 1.5},
     {text = '[yellow]Left Click and drag:[fg] move items between troops', font = pixul_font, height_multiplier = 1.5},
-    {text = '[yellow]Right Click:[fg] sell items', font = pixul_font, height_multiplier = 1.5},
+    {text = '[yellow]Right Click:[fg] sell items for xp', font = pixul_font, height_multiplier = 1.5},
     {text = '[yellow]R:[fg] reroll shop', font = pixul_font, height_multiplier = 1.5},
     {text = '[yellow]Space:[fg] start next level', height_multiplier = 1.5},
     {text = '[yellow]Esc:[fg] open options', font = pixul_font, height_multiplier = 1.5},
