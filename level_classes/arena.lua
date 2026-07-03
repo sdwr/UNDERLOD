@@ -608,13 +608,33 @@ function Arena:gain_gold(duration)
   local final_event = {type = 'final', amount = 0}
   table.insert(self.gold_events, final_event)
 
-  --create a trigger to add each gold event over time
+  -- Grant all gold NOW; the timed events below are display-only. Boss levels
+  -- have no death cascade, so they transition to the buy screen within
+  -- ~0.35s — before the staggered events used to fire — which silently ate
+  -- the whole payout. Resolved in order so interest sees the running total.
+  for _, ev in ipairs(self.gold_events) do
+    ev.resolved = self:resolve_gold_event(ev)
+    gold = gold + ev.resolved
+  end
+  Stats_Max_Gold()
+
+  --create a trigger to show each gold event over time
   --have to cancel when the table is empty
   local timePerEvent = duration / #self.gold_events
-  trigger:every(timePerEvent, function() 
+  trigger:every(timePerEvent, function()
     self:process_gold_event()
   end, #self.gold_events)
 
+end
+
+-- Gold value of a single event against the current global gold total.
+function Arena:resolve_gold_event(event)
+  if event.type == 'interest' then
+    return event.amount * math.min(MAX_INTEREST, math.floor(gold * INTEREST_AMOUNT))
+  elseif event.type == 'start' or event.type == 'final' then
+    return 0
+  end
+  return event.amount or 0
 end
 
 
@@ -626,40 +646,19 @@ function Arena:process_gold_event()
   end
   local event = table.remove(self.gold_events, 1)
 
-  local plusgold = 0
+  -- Display only: the gold itself was granted upfront in gain_gold.
+  local plusgold = event.resolved or 0
   local plusgoldtext = nil
-
-  if event.type == 'gained' then
-    plusgold = event.amount
+  if event.type ~= 'start' and event.type ~= 'final' then
     plusgoldtext = '[wavy_mid, yellow[0]]' .. tostring(plusgold) .. ' ' .. event.type
-  elseif event.type == 'picked up' then
-    plusgold = event.amount
-    plusgoldtext = '[wavy_mid, yellow[0]]' .. tostring(plusgold) .. ' ' .. event.type
-  elseif event.type == 'bonus gold' then
-    plusgold = event.amount
-    plusgoldtext = '[wavy_mid, yellow[0]]' .. tostring(plusgold) .. ' ' .. event.type
-  elseif event.type == 'interest' then
-    plusgold = event.amount * math.min(MAX_INTEREST, math.floor(gold * INTEREST_AMOUNT))
-    plusgoldtext = '[wavy_mid, yellow[0]]' .. tostring(plusgold) .. ' ' ..event.type
-  elseif event.type == 'treasury' then
-    plusgold = event.amount
-    plusgoldtext = '[wavy_mid, yellow[0]]' .. tostring(plusgold) .. ' ' .. event.type
-  elseif event.type == 'start' then
-    --do nothing
-  elseif event.type == 'final' then
-    Stats_Max_Gold()
-  else
-    print('unknown gold event type')
-    return
   end
 
   self:draw_gold(plusgold, plusgoldtext)
   self:randomize_plusgold_text_offset()
 
-  -- Only events that actually grant gold make noise; the start/final
+  -- Only events that actually granted gold make noise; the start/final
   -- bookkeeping events were playing the same sound for nothing.
   if plusgold > 0 then
-    gold = gold + plusgold
     gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
   end
 end

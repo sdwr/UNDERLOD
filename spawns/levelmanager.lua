@@ -81,7 +81,7 @@ LEVEL_SPAWN_POOLS = {
 for _, lvl in ipairs({7, 8, 9, 10}) do
   LEVEL_SPAWN_POOLS[lvl] = {
     spawn_director = {
-      setpoints = { swarmer = 48, tank = 2, small_archer = 3 },
+      setpoints = { swarmer = 26, tank = 2, small_archer = 3 },
     },
   }
 end

@@ -44,7 +44,8 @@ STARTING_GOLD = 8
 GOLD_PER_ROUND = function(level)
   return 3
 end
-GOLD_FOR_BOSS_ROUND = {10, 15, 20, 25}
+-- Flat 6 gold after every boss level.
+GOLD_FOR_BOSS_ROUND = {6, 6, 6, 6}
 INTEREST_AMOUNT = 0.1
 MAX_INTEREST = 3
 
