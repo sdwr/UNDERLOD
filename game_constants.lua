@@ -131,6 +131,21 @@ KNOCKBACK_DURATION_REGULAR_ENEMY = 0.3
 KNOCKBACK_DURATION_SPECIAL_ENEMY = 0.6
 
 BOSS_RESTITUTION = 0.1
+-- Stompy pinball charge: windup with a wall-clipped signal line, then a
+-- fixed-speed launch that mirrors off walls for the duration and shoves
+-- troops along its travel direction.
+STOMPY_CHARGE_WINDUP = 1.5
+STOMPY_CHARGE_DURATION = 3.5
+STOMPY_CHARGE_SPEED = 180
+STOMPY_CHARGE_DAMAGE_MULT = 1.5
+-- Seconds before the same troop can be hit again by one pinball charge.
+PINBALL_REHIT_DELAY = 0.6
+-- Charge aim: radians of random offset either side of the troop, so the
+-- first leg passes near the player rather than straight through.
+STOMPY_CHARGE_SPREAD = 0.6
+-- Pinball bounces happen at the screen edge (not the smaller play bounds),
+-- inset by this many pixels.
+PINBALL_EDGE_MARGIN = 2
 SPECIAL_ENEMY_RESTITUTION = 0.5
 REGULAR_ENEMY_RESTITUTION = 0.5
 CRITTER_RESTITUTION = 0.5
@@ -424,6 +439,23 @@ SET_GAME_BOUNDS = function()
   RIGHT_BOUND = gw/2 + 0.8*gw/2
   TOP_BOUND = gh/2 - 0.8*gh/2
   BOTTOM_BOUND = gh/2 + 0.8*gh/2
+end
+
+-- Play-area rectangle in world space for an arena (create_walls is off, so
+-- arena.x1.. are not set; derive from the bounds + the arena's offset).
+function Get_Arena_Bounds(arena)
+  local ox = (arena and arena.offset_x) or 0
+  local oy = (arena and arena.offset_y) or 0
+  return LEFT_BOUND + ox, TOP_BOUND + oy, RIGHT_BOUND + ox, BOTTOM_BOUND + oy
+end
+
+-- Screen rectangle in world space for an arena: the pinball charge bounces
+-- off the visible edge rather than the play bounds.
+function Get_Screen_Bounds(arena)
+  local ox = (arena and arena.offset_x) or 0
+  local oy = (arena and arena.offset_y) or 0
+  local m = PINBALL_EDGE_MARGIN or 0
+  return ox + m, oy + m, ox + gw - m, oy + gh - m
 end
 
 -- Unit constants

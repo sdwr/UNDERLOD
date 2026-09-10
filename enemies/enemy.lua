@@ -305,7 +305,19 @@ function Enemy:update(dt)
     --get target / rotate to target
     if self.target and self.target.dead then self.target = nil end
     
-    if self.state == unit_states['idle'] then
+    -- A pinball charge that has run its course: stop cleanly and resume AI.
+    if self.pinball_charging and not self.is_launching then
+      self.pinball_charging = nil
+      self.pinball_hits = nil
+      self:set_pinball_collision(false)
+      self:set_velocity(0, 0)
+      self:set_idle()
+    end
+
+    if self.is_launching then
+      -- No action picks or steering while flying; the launch owns the body.
+      self:update_launch(dt)
+    elseif self.state == unit_states['idle'] then
       self.idleTimer = self.idleTimer - dt
       self:add_idle_deceleration()
       if self.idleTimer <= 0 then
@@ -313,11 +325,9 @@ function Enemy:update(dt)
         if not success then
           self:set_idle_retry()
         end
-        
-      end
-    end
 
-    if self.state == unit_states['moving'] then
+      end
+    elseif self.state == unit_states['moving'] then
       self.actionTimer = self.actionTimer - dt
       if self.actionTimer <= 0 then
         self:set_idle()
@@ -348,6 +358,62 @@ function Enemy:update(dt)
     self.attack_sensor:move_to(self.x, self.y)
   
     if self.area_sensor then self.area_sensor:move_to(self.x, self.y) end
+end
+
+-- Pinball charge. Runs instead of the AI while launching:
+--   * reflects the heading off the arena bounds (not box2d: the walls are
+--     chain edges enemies otherwise walk through when entering),
+--   * re-asserts heading and speed every frame so nothing bends the path,
+--   * hits troops by overlap (physical troop contact is masked off for the
+--     charge, see set_pinball_collision) with a per-troop rehit delay.
+function Enemy:update_launch(dt)
+  if not self.pinball_charging then return end
+  local radius = (self.shape and (self.shape.rs or self.shape.w / 2)) or 0
+  local arena = main.current and main.current.current_arena
+  do
+    local x1, y1, x2, y2 = Get_Screen_Bounds(arena)
+    local hx, hy = math.cos(self.pinball_heading), math.sin(self.pinball_heading)
+    local bounced = false
+    if (self.x - radius <= x1 and hx < 0) or (self.x + radius >= x2 and hx > 0) then
+      hx = -hx; bounced = true
+    end
+    if (self.y - radius <= y1 and hy < 0) or (self.y + radius >= y2 and hy > 0) then
+      hy = -hy; bounced = true
+    end
+    if bounced then
+      self.pinball_heading = math.atan2(hy, hx)
+      if self.on_pinball_bounce then self:on_pinball_bounce() end
+    end
+  end
+
+  local speed = self.pinball_speed or LAUNCH_MAX_V
+  self:set_velocity(math.cos(self.pinball_heading) * speed, math.sin(self.pinball_heading) * speed)
+  self.r = self.pinball_heading
+
+  self.pinball_hits = self.pinball_hits or {}
+  local now = Helper.Time.time
+  local hit_zone = Circle(self.x, self.y, radius + 6)
+  for _, troop in ipairs(self:get_objects_in_shape(hit_zone, main.current.friendlies)) do
+    if not troop.dead and (self.pinball_hits[troop.id] or -math.huge) + (PINBALL_REHIT_DELAY or 0.6) <= now then
+      self.pinball_hits[troop.id] = now
+      if self.on_pinball_hit then self:on_pinball_hit(troop) end
+    end
+  end
+end
+
+-- During a pinball charge the body must not trade impulses with troops (the
+-- contact solver would shove it off course), so mask the troop category off
+-- the fixture; overlap detection in update_launch handles the hits.
+function Enemy:set_pinball_collision(on)
+  if not self.fixture or not self.group or not self.group.collision_tags or not self.tag then return end
+  local masks = table.copy(self.group.collision_tags[self.tag].masks)
+  if on then
+    for _, tag in ipairs({'troop', 'ghost'}) do
+      local t = self.group.collision_tags[tag]
+      if t then table.insert(masks, t.category) end
+    end
+  end
+  self.fixture:setMask(unpack(masks))
 end
 
 function Enemy:set_idle()

@@ -628,6 +628,8 @@ function Troop:on_collision_enter(other, contact)
       player_hit_wall1:play{pitch = r, volume = 0.1}
       pop1:play{pitch = r, volume = 0.2}
   elseif table.any(main.current.enemies, function(v) return other:is(v) end) then
+    -- A pinball-charging boss applies its own shove and damage.
+    if other.pinball_charging then return end
 
     local duration = KNOCKBACK_DURATION_ENEMY
     local push_force = LAUNCH_PUSH_FORCE_ENEMY
@@ -636,7 +638,7 @@ function Troop:on_collision_enter(other, contact)
     -- enemy down softens the hit it lands.
     local dmg = Contact_Damage(other)
 
-    if other:is(Boss) then
+    if other.class == 'boss' then
       duration = KNOCKBACK_DURATION_BOSS
       push_force = LAUNCH_PUSH_FORCE_BOSS
       dmg = BOSS_PUSH_DAMAGE

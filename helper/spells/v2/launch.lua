@@ -21,7 +21,10 @@ function Launch_Spell:init(args)
     self:set_initial_coords()
 
     if self.keep_original_angle then
-      self.original_angle = self.unit:get_angle()
+      -- aim_spread: random offset either side of the facing, fixed for the
+      -- whole charge (line and launch agree).
+      local spread = self.aim_spread or 0
+      self.original_angle = self.unit:get_angle() + random:float(-spread, spread)
     end
 
     self.aim_width = self.aim_width or 16
@@ -54,8 +57,26 @@ function Launch_Spell:update_coords()
 
     self.r = self.keep_original_angle and self.original_angle or self.unit:get_angle()
     self.length = self.fire_distance * self.pctCharged
+    if self.line_to_wall then
+      self.length = math.min(self:distance_to_wall(self.r), self.fire_distance) * self.pctCharged
+    end
 
     self.lineCoords = {self.x, self.y, Helper.Geometry:move_point_radians(self.x, self.y, self.r, self.length)}
+end
+
+-- Distance from the unit to the arena's rectangular bounds along angle r,
+-- inset by the unit's radius so the line ends where the body will hit.
+function Launch_Spell:distance_to_wall(r)
+  local arena = main.current and main.current.current_arena
+  local x1, y1, x2, y2 = Get_Screen_Bounds(arena)
+  local inset = (self.unit.shape and (self.unit.shape.rs or self.unit.shape.w / 2)) or 0
+  local cx, cy = math.cos(r), math.sin(r)
+  local best = math.huge
+  if cx > 1e-6 then best = math.min(best, (x2 - inset - self.x) / cx) end
+  if cx < -1e-6 then best = math.min(best, (x1 + inset - self.x) / cx) end
+  if cy > 1e-6 then best = math.min(best, (y2 - inset - self.y) / cy) end
+  if cy < -1e-6 then best = math.min(best, (y1 + inset - self.y) / cy) end
+  return math.max(best, 0)
 end
 
 function Launch_Spell:update(dt)
@@ -80,7 +101,16 @@ function Launch_Spell:fire()
 
     self.is_firing = true
     self.unit:set_angle(self.r)
-    self.unit:launch_at_facing(self.impulse_magnitude)
+    self.unit:launch_at_facing(self.impulse_magnitude, self.launch_duration)
+    if self.pinball then
+      -- Enemy:update_launch holds this heading/speed and stompy's collision
+      -- handler mirrors the heading on walls.
+      self.unit.pinball_charging = true
+      self.unit.pinball_heading = self.r
+      self.unit.pinball_speed = self.pinball_speed or LAUNCH_MAX_V
+      self.unit.pinball_hits = {}
+      if self.unit.set_pinball_collision then self.unit:set_pinball_collision(true) end
+    end
 
     if self.charge_sound then
       self.charge_sound:stop()

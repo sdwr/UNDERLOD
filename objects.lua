@@ -457,10 +457,13 @@ function Unit:bounce(nx, ny)
   if nx == 0 then
     self:set_velocity(vx, -vy)
     self.r = 2*math.pi - self.r
-  end
-  if ny == 0 then
+  elseif ny == 0 then
     self:set_velocity(-vx, vy)
     self.r = math.pi - self.r
+  else
+    -- Corner: the normal is diagonal, reflect both axes.
+    self:set_velocity(-vx, -vy)
+    self.r = self.r + math.pi
   end
   return self.r
 end

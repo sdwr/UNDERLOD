@@ -154,12 +154,74 @@ fns['init_enemy'] = function(self)
     }
   }
 
+  -- Pinball charge: aim at a troop, wind up with a line to the first wall,
+  -- then launch and bounce off walls for STOMPY_CHARGE_DURATION. Troop hits
+  -- are handled in on_collision_enter below.
+  local charge = {
+    name = 'charge',
+    viable = function()
+      local target = Helper.Target:get_random_enemy(self)
+      return target and self:distance_to_object(target) > 60
+    end,
+    oncast = function()
+      self.target = Helper.Target:get_random_enemy(self)
+      if self.target then self:set_angle(self:angle_to_object(self.target)) end
+    end,
+    cast_sound = usurer1,
+    cast_volume = 2,
+    spellclass = Launch_Spell,
+    spelldata = {
+      group = main.current.main,
+      team = 'enemy',
+      charge_duration = STOMPY_CHARGE_WINDUP,
+      fire_distance = 1000,
+      line_to_wall = true,
+      aim_width = 14,
+      cancel_on_death = true,
+      keep_original_angle = true,
+      aim_spread = STOMPY_CHARGE_SPREAD,
+      draw_under_units = true,
+      show_charge_line = true,
+      play_charge_sound = true,
+      x = self.x,
+      y = self.y,
+      color = grey[5],
+      impulse_magnitude = 500,
+      launch_duration = STOMPY_CHARGE_DURATION,
+      pinball = true,
+      pinball_speed = STOMPY_CHARGE_SPEED,
+      damage = function() return self.dmg end,
+      parent = self,
+    }
+  }
+
   table.insert(self.attack_options, stomp)
   table.insert(self.attack_options, mortar)
   table.insert(self.attack_options, summon)
   table.insert(self.attack_options, avalanche)
+  table.insert(self.attack_options, charge)
   -- table.insert(self.attack_options, prevent_casting)
 
+end
+
+-- Pinball charge hooks (see Enemy:update_launch): the bounds reflection and
+-- troop overlap are detected there; these supply the effects and the hit.
+fns['on_pinball_bounce'] = function(self)
+  self.hfx:use('hit', 0.15, 200, 10, 0.1)
+  turret_hit_wall2:play{pitch = random:float(0.8, 1.0), volume = 0.6}
+  camera:shake(4, 0.2)
+end
+
+fns['on_pinball_hit'] = function(self, troop)
+  troop:push(LAUNCH_PUSH_FORCE_BOSS, self.pinball_heading, nil, KNOCKBACK_DURATION_BOSS)
+  troop:hit(self.dmg * STOMPY_CHARGE_DAMAGE_MULT, self, nil, true, true)
+end
+
+-- Physical wall contact is a no-op mid-charge (bounds reflection owns it);
+-- troop contact is masked off entirely for the charge.
+fns['on_collision_enter'] = function(self, other, contact)
+  if self.pinball_charging and other:is(Wall) then return end
+  Enemy.on_collision_enter(self, other, contact)
 end
 
 fns['draw_enemy'] = function(self)

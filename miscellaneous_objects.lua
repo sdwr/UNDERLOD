@@ -1608,7 +1608,7 @@ function Critter:on_collision_enter(other, contact)
     local duration = KNOCKBACK_DURATION_ENEMY
     local push_force = LAUNCH_PUSH_FORCE_ENEMY * push_force_reduction
     local dmg = 10
-    if other:is(Boss) then  
+    if other.class == 'boss' then
       duration = KNOCKBACK_DURATION_BOSS
       push_force = LAUNCH_PUSH_FORCE_BOSS * push_force_reduction
       dmg = 20
