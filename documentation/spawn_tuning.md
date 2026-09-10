@@ -4,6 +4,19 @@ How enemies get onto the field on campaign levels, and which knobs shape it.
 Source files: `spawns/spawnmanager.lua`, `spawns/levelmanager.lua`,
 `game_constants.lua`.
 
+The existing `kill_quota` values now define a finite **spawn power budget**.
+Queued enemies consume it immediately, including their spawn-warning delay.
+Authored specials reserve their share first. The final group is trimmed; one
+indivisible enemy may round the total above the configured budget. Offspring
+and summons remain additional enemies that must also be defeated.
+
+Once the budget has been queued, no more regular reinforcements are spawned.
+Victory requires an empty enemy group and zero pending spawns. Kill score alone
+never clears the level, and survivors are never automatically killed. Crossing
+enemies return to finite campaign arenas instead of escaping. Debug encounters
+finish after their manual queue is exhausted and the field is cleared; bosses
+retain their all-enemies-dead rule.
+
 ---
 
 ## 1. Architecture: two lanes + one events layer
@@ -22,13 +35,13 @@ in `LEVEL_SPAWN_POOLS`). It runs two independent lanes plus an authored layer:
    packed swarm delays the next special. Held closed for the first
    `SPAWN_DIRECTOR_OPENING_GRACE` (7) seconds of the level.
 3. **Authored events** (`specials = {{type=..., at=...}}` in a level config) —
-   one-shot spawns at a kill-quota progress fraction. They bypass caps AND the
+   one-shot spawns at a spawn-budget progress fraction. They bypass caps AND the
    opening grace, so `at = 0` is the deliberate "nasty thing from second one"
    override.
 
 Both lanes share per-slot setpoints, pending (in-flight) tracking, and
 weighted offscreen placement. The ramp (setpoint scales `ramp.from ->
-ramp.to` across kill-quota progress, default 0.8 -> 1.2) and the ceiling
+ramp.to` across spawn-budget progress, default 0.8 -> 1.2) and the ceiling
 (`ramped setpoint * SPAWN_DIRECTOR_CEILING_MULT`) apply to the **swarmer lane
 only** — fractional specials make no sense, so their setpoints stay fixed
 integers. Between setpoint and ceiling the swarmer interval stretches by up

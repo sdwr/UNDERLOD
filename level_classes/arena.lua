@@ -88,8 +88,8 @@ function Arena:create_progress_bar()
 
   local level_data = self.level_list and self.level_list[self.level]
   if level_data and level_data.kill_quota then
-    -- Single-segment bar matching the level's continuous kill_quota. The bar
-    -- fills as wave_kill_power accumulates and snaps full on level_clear.
+    -- Kill progress toward the finite spawn budget; only fills completely
+    -- when every enemy and pending spawn has been cleared.
     self.progress_bar = ProgressBar{
       group = self.ui, parent = self, w = 300, h = 5,
       x = gw/2, y = LEVEL_MAP_Y_POSITION, offset_x = self.offset_x, offset_y = self.offset_y,
@@ -399,7 +399,7 @@ function Arena:draw_debug_spawn_text()
 end
 
 function Arena:die()
-  -- level_cleared: the quota completed first (combat_level:level_clear), so
+  -- level_cleared: the arena was cleared first (combat_level:level_clear), so
   -- the win claimed the level — deaths during the clear cascade are ignored.
   if not self.died_text and not self.won and not self.arena_clear_text and not self.level_cleared then
     -- input:set_mouse_visible(true)

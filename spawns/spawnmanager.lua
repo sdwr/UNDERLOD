@@ -621,14 +621,14 @@ function SpawnManager:init(arena)
 
     -- Spawning State Machine. The instruction-cycling waves are gone; in their
     -- place the 'spawning' state runs per-pool timers continuously until the
-    -- level's kill_quota is met. Boss levels still use 'spawning_boss'.
+    -- level's spawn budget is committed. Boss levels still use 'spawning_boss'.
     self:change_state('arena_start')
     -- Possible States:
     -- 'entry_delay':       Initial wait before any spawn timer starts.
     -- 'spawning':          Continuous: basic clumps + each special pool on its
     --                      own jittered timer. Skip-on-cap, never queues.
     -- 'spawning_boss':     Single boss spawn for boss levels.
-    -- 'waiting_for_clear': kill_quota met; let the field finish out.
+    -- 'waiting_for_clear': budget spawned; every remaining enemy must die.
     -- 'finished':          Level complete.
 
     self.timer = arena.entry_delay or 1
@@ -637,8 +637,9 @@ function SpawnManager:init(arena)
 
     self.pending_spawns = 0
     self.wave_spawn_delay = 0
-    -- kill_power tally across the whole level (matches level.kill_quota).
     self.wave_kill_power = 0
+    self.wave_spawn_power = 0
+    self.reserved_event_power = 0
     -- Seconds spent in the 'spawning' state; drives the opening grace window
     -- (SPAWN_DIRECTOR_OPENING_GRACE) that holds back non-swarmer slots.
     self.spawning_elapsed = 0
@@ -654,6 +655,7 @@ function SpawnManager:init_spawn_pools()
   self.basic_pool = nil
   self.special_pools = {}
   self.special_events = {}
+  self.reserved_event_power = 0
 
   -- Fresh spawn-placement history each level so weighting doesn't carry over.
   SpawnGlobals.recent_spawns = {}
@@ -724,19 +726,24 @@ function SpawnManager:init_spawn_pools()
 
   -- Special config entries can be one of:
   --   {type, at = 0.3, group_size?}        -> one-shot scheduled event,
-  --                                            fires when kill progress hits `at`
+  --                                            fires when spawn progress hits `at`
   --   {type, at_window = {0.3, 0.5}}       -> one-shot event at a threshold
   --                                            rolled inside the window per level
   --   {type, interval, max_alive, ...}     -> recurring timer-based pool
   -- All kinds can coexist in one level.
   for _, pool in ipairs(config.specials or {}) do
     if pool.at or pool.at_window then
+      local group_size = pool.group_size or 1
+      if type(group_size) == 'function' then group_size = group_size() end
+      local power = (enemy_to_round_power[pool.type] or 0) * group_size
       table.insert(self.special_events, {
         type = pool.type,
         at = pool.at or random:float(pool.at_window[1], pool.at_window[2]),
-        group_size = pool.group_size,
+        group_size = group_size,
+        budget_power = power,
         fired = false,
       })
+      self.reserved_event_power = self.reserved_event_power + power
     elseif not self.spawn_director then
       local first_fire = pool.first_fire or (pool.interval * random:float(0.3, 0.8))
       table.insert(self.special_pools, {
@@ -756,9 +763,7 @@ function jittered_interval(base)
   return base * (1 + random:float(-j, j))
 end
 
--- Called from Enemy:die() and the path-across despawn. Counts toward the
--- current wave's kill_quota (measured in round_power). Safe to call when
--- there's no quota set.
+-- Kill power drives the progress display; spawning has a separate budget.
 function SpawnManager:on_enemy_removed(enemy)
   local power = (enemy_to_round_power and enemy_to_round_power[enemy.type]) or 0
   self.wave_kill_power = (self.wave_kill_power or 0) + power
@@ -826,48 +831,20 @@ function SpawnManager:update(dt)
     end
 
     if self.state == 'waiting_for_clear' then
-      -- Death wins the race: the quota can still complete AFTER the player
-      -- dies (lingering burns/effects keep killing enemies and counting kill
-      -- power), which used to trigger level_clear -> buy screen on top of
-      -- the death screen. A dead run never clears.
+      -- Lingering damage must never turn a lost run into a win.
       if self.arena.died then
         self:change_state('finished')
         return
       end
       local enemies = self.arena.main:get_objects_by_classes(main.current.enemies)
       local enemies_clear = #enemies <= 0
-      -- For non-boss levels we advance the moment the kill_power target is
-      -- hit; any stragglers are wiped in the cinematic cascade below. Boss
-      -- levels have no quota so they fall through to "all dead".
-      local quota = self.level_data and self.level_data.kill_quota
-      local done = (quota and (self.wave_kill_power or 0) >= quota) or (not quota and enemies_clear)
-
-      if done and self.pending_spawns <= 0 then
+      if enemies_clear and self.pending_spawns <= 0 then
         if self.arena and self.arena.progress_bar
           and self.arena.progress_bar.segments[1]
           and self.arena.progress_bar.segments[1].complete_wave then
           self.arena.progress_bar.segments[1]:complete_wave()
         end
 
-        -- Final cascade: staggered death for stragglers. Total cascade length
-        -- is fixed (LEVEL_CLEAR_CASCADE_DURATION) regardless of how many
-        -- enemies are left — deaths get spread evenly across that window so
-        -- 5 enemies and 100 enemies both wrap in roughly the same time.
-        local remaining = self.arena.main:get_objects_by_classes(main.current.enemies) or {}
-        local base_delay = LEVEL_CLEAR_KILL_DELAY or 0.3
-        local cascade_duration = LEVEL_CLEAR_CASCADE_DURATION or 0.5
-        local total = #remaining
-        for i, e in ipairs(remaining) do
-          if e and not e.dead then
-            local frac = (total > 1) and ((i - 1) / (total - 1)) or 0
-            local death_time = base_delay + frac * cascade_duration
-            self.t:after(death_time, function()
-              if e and not e.dead and e.die then
-                e:die()
-              end
-            end)
-          end
-        end
         self:complete_wave(1)
         self:change_state('finished')
         self.arena:level_clear()
@@ -875,10 +852,41 @@ function SpawnManager:update(dt)
     end
 end
 
+function SpawnManager:get_spawn_budget()
+  if self.debug_spawn_queue then return nil end
+  return self.level_data and self.level_data.kill_quota
+end
+
+function SpawnManager:spawn_budget_remaining()
+  local budget = self:get_spawn_budget()
+  if not budget then return math.huge end
+  return math.max(0, budget - self.wave_spawn_power - self.reserved_event_power)
+end
+
+-- Reserve on queueing, before spawn warnings, so simultaneous lanes cannot
+-- overspend. Keep authored specials in the budget; round up one final enemy.
+function SpawnManager:reserve_spawn_group(enemy_type, amount, event)
+  local budget = self:get_spawn_budget()
+  if not budget then return amount end
+  local power = enemy_to_round_power[enemy_type] or 0
+  assert(power > 0, 'Budgeted enemy needs positive round power: ' .. enemy_type)
+  if event then
+    self.reserved_event_power = math.max(0, self.reserved_event_power - event.budget_power)
+  else
+    amount = math.min(amount, math.ceil(self:spawn_budget_remaining() / power))
+  end
+  self.wave_spawn_power = self.wave_spawn_power + amount * power
+  local bar = self.arena.progress_bar
+  if bar and bar.segments[1] then
+    bar.segments[1].max_progress = math.max(budget, self.wave_spawn_power)
+  end
+  return amount
+end
+
 function SpawnManager:quota_met()
-  local quota = self.level_data and self.level_data.kill_quota
-  if not quota then return false end
-  return (self.wave_kill_power or 0) >= quota
+  if self.debug_spawn_queue then return self:debug_next_spawn() == nil end
+  local budget = self:get_spawn_budget()
+  return budget ~= nil and self.wave_spawn_power >= budget and self.reserved_event_power <= 0
 end
 
 -- Debug arena helpers. debug_next_spawn returns the queue entry that the next
@@ -1026,16 +1034,18 @@ end
 function SpawnManager:director_spawn(etype, group_size, scatter)
   local d = self.spawn_director
   self.wave_spawn_delay = 0
+  local queued = 0
   if scatter then
     -- Scatter: each swarmer at its own pure-random offscreen point (not the
     -- weighted placement), so the group fans in from all sides and these
     -- many cheap spawns don't flood the weighted history used by specials.
     for i = 1, group_size do
-      Spawn_Group_With_Location(self.arena, {etype, 1, 'nil'}, Get_Random_Offscreen_Point())
+      queued = queued + Spawn_Group_With_Location(self.arena, {etype, 1, 'nil'}, Get_Random_Offscreen_Point())
     end
   else
-    Spawn_Group_With_Location(self.arena, {etype, group_size, 'nil'}, Get_Offscreen_Spawn_Point())
+    queued = Spawn_Group_With_Location(self.arena, {etype, group_size, 'nil'}, Get_Offscreen_Spawn_Point())
   end
+  group_size = queued
   d.pending[etype] = (d.pending[etype] or 0) + group_size
   -- Group members materialize 0.1s apart (wave_spawn_delay stagger), so
   -- release each pending slot as its member lands, not the whole group at
@@ -1066,7 +1076,7 @@ function SpawnManager:tick_swarmer_lane(dt, counts)
   end
 
   local quota = self.level_data and self.level_data.kill_quota
-  local progress = (quota and quota > 0) and math.min((self.wave_kill_power or 0) / quota, 1) or 0
+  local progress = (quota and quota > 0) and math.min((self.wave_spawn_power or 0) / quota, 1) or 0
   local ramp = d.ramp_from + (d.ramp_to - d.ramp_from) * progress
 
   local sp = math.max(1, d.setpoints['swarmer'] * ramp)
@@ -1139,9 +1149,9 @@ function SpawnManager:tick_spawn_director(dt, counts)
     return
   end
 
-  -- Ramp setpoints by kill-quota progress.
+  -- Ramp setpoints by spawn-budget progress.
   local quota = self.level_data and self.level_data.kill_quota
-  local progress = (quota and quota > 0) and math.min((self.wave_kill_power or 0) / quota, 1) or 0
+  local progress = (quota and quota > 0) and math.min((self.wave_spawn_power or 0) / quota, 1) or 0
   local ramp = d.ramp_from + (d.ramp_to - d.ramp_from) * progress
 
   -- Per-slot weights: fractional deficit below setpoint, zero at or above it.
@@ -1219,20 +1229,20 @@ function SpawnManager:tick_spawn_director(dt, counts)
   d.next_fire = cd * (1 + random:float(-j, j))
 end
 
--- Scheduled events: discrete spawns at fixed kill_quota progress (e.g. brute at
--- 30%). Each fires once. Shared by the director and legacy spawn paths.
+-- Scheduled events use spawned power. If only reserved events remain, release
+-- them so a late event cannot be stranded behind an exhausted regular budget.
 function SpawnManager:tick_special_events(counts)
   if #self.special_events == 0 then return end
   local quota = self.level_data and self.level_data.kill_quota
-  local progress = (quota and quota > 0) and ((self.wave_kill_power or 0) / quota) or 0
+  local progress = (quota and quota > 0) and ((self.wave_spawn_power or 0) / quota) or 0
   for _, ev in ipairs(self.special_events) do
     -- Scheduled beats bypass the specials cap: a moment authored for `at` should
     -- arrive on time, not drift to whenever the field happens to have room.
-    if not ev.fired and progress >= ev.at and not self:quota_met() then
+    if not ev.fired and (progress >= ev.at or self:spawn_budget_remaining() <= 0) then
       local group_size = ev.group_size or 1
       if type(group_size) == 'function' then group_size = group_size() end
       self.wave_spawn_delay = 0
-      Spawn_Group_With_Location(self.arena, {ev.type, group_size, 'nil'}, Get_Offscreen_Spawn_Point())
+      Spawn_Group_With_Location(self.arena, {ev.type, group_size, 'nil'}, Get_Offscreen_Spawn_Point(), nil, nil, ev)
       counts.specials = (counts.specials or 0) + group_size
       counts.by_type[ev.type] = (counts.by_type[ev.type] or 0) + group_size
       ev.fired = true
@@ -1447,9 +1457,10 @@ function Spawn_Group(arena, group_data, on_finished)
     Spawn_Group_Internal(arena, spawn_marker_index, group_data, on_finished)
 end
 
-function Spawn_Group_With_Location(arena, group_data, wave_spawn_location, on_finished, path_heading_override)
+function Spawn_Group_With_Location(arena, group_data, wave_spawn_location, on_finished, path_heading_override, budget_event)
     local type, amount, spawn_type = group_data[1], group_data[2], group_data[3]
-    amount = amount or 1
+    amount = arena.spawn_manager:reserve_spawn_group(type, amount or 1, budget_event)
+    if amount <= 0 then return 0 end
 
     arena.last_spawn_point = wave_spawn_location
 
@@ -1486,11 +1497,12 @@ function Spawn_Group_With_Location(arena, group_data, wave_spawn_location, on_fi
         -- Increment wave spawn delay for next enemy
         arena.spawn_manager.wave_spawn_delay = arena.spawn_manager.wave_spawn_delay + 0.1
     end
+    return amount
 end
 
 function Spawn_Group_Scattered(arena, group_data)
   local type, amount = group_data[1], group_data[2]
-  amount = amount or 1
+  amount = arena.spawn_manager:reserve_spawn_group(type, amount or 1)
 
   arena.last_spawn_point = nil
 
@@ -1522,7 +1534,7 @@ end
 function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
     local type, amount = group_data[1], group_data[2]
     local spawn_type = group_data[3]
-    amount = amount or 1
+    amount = arena.spawn_manager:reserve_spawn_group(type, amount or 1)
 
     -- For path-across-varied movement, compute one heading for the whole group
     -- so the swarm moves as a unit instead of fanning out individually. Use the
@@ -1853,6 +1865,7 @@ function SpawnManager:spawn_group_immediately(arena, group_data, group_x)
 end
 
 function SpawnManager:spawn_enemy_immediately(type, location)
+  if self:reserve_spawn_group(type, 1) == 0 then return end
   local enemy = Enemy{
     type = type, 
     group = self.arena.main,

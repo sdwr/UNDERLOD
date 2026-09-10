@@ -255,22 +255,22 @@ function Enemy:update(dt)
       self.in_arena_radius = Helper.Unit:in_range_of_player_location(self, ARENA_RADIUS)
     end
 
-    -- Path-across enemies that have crossed off the opposite edge despawn
-    -- silently. Escapes are NOT counted toward kill_quota and do NOT fill the
-    -- progress bar - the bar is "enemies you defeated", not "enemies that
-    -- passed through." If a wave's path-across enemies never get intercepted,
-    -- the wave will keep cycling until enough are killed.
+    -- Finite rounds require path-across enemies to return instead of escape.
     if self.currentMovementAction == MOVEMENT_TYPE_PATH_ACROSS
       or self.currentMovementAction == MOVEMENT_TYPE_PATH_ACROSS_VARIED then
       local buffer = 80
       if self.x < -buffer or self.x > gw + buffer
         or self.y < -buffer or self.y > gh + buffer then
-        -- Escaped: never counts toward kill_quota. Setting dead here already
-        -- bypasses Enemy:die (the only on_enemy_removed caller); flag it too so
-        -- a future refactor that routes despawns through die() can't count them.
-        self._counted_for_quota = true
-        self.dead = true
-        return
+        local arena = main.current.current_arena
+        local sm = arena and arena.spawn_manager
+        if sm and sm:get_spawn_budget() then
+          -- Finite rounds require this enemy's defeat; send it back across.
+          self.path_heading = math.atan2(gh / 2 - self.y, gw / 2 - self.x)
+        else
+          self._counted_for_quota = true
+          self.dead = true
+          return
+        end
       end
     end
 
@@ -283,6 +283,9 @@ function Enemy:update(dt)
 
 
     self:calculate_stats()
+    if self.get_proximity_speed_ratio and not self.being_knocked_back and not self.is_launching then
+      self.max_v = self.max_v * self:get_proximity_speed_ratio()
+    end
     
     self.random_dest_timer = self.random_dest_timer - dt
 
@@ -771,7 +774,7 @@ function Enemy:die()
   if self.dead then return end
   self.super.die(self)
   self.dead = true
-  -- Notify the spawn manager so it can track progress against wave.kill_quota.
+  -- Track defeated enemy power for the progress display.
   local sm = main.current and main.current.current_arena and main.current.current_arena.spawn_manager
   if sm and not self._counted_for_quota then
     self._counted_for_quota = true

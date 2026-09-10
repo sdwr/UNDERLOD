@@ -203,6 +203,11 @@ end
 
 function ProgressBarSegment:increase_progress(amount)
   self.progress = self.progress + amount
+  local arena = main.current and main.current.current_arena
+  local sm = arena and arena.spawn_manager
+  if sm and sm.level_data.kill_quota and sm.state ~= 'finished' then
+    self.progress = math.min(self.progress, self.max_progress * 0.99)
+  end
 
   if self.progress >= self.max_progress then
     self:complete_wave()

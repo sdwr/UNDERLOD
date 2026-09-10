@@ -32,6 +32,30 @@ fns['init_enemy'] = function(self)
   self.attack_options = {}
 end
 
+fns['get_proximity_speed_ratio'] = function(self)
+  local radius = SWARMER_PROXIMITY_SLOW_RADIUS
+  local min_radius = SWARMER_PROXIMITY_MIN_RADIUS
+  local nearest_distance_sq = radius * radius
+  -- Scan only player troops; no arena scan or temporary lists.
+  for _, team in ipairs(Helper.Unit.teams) do
+    for _, troop in ipairs(team.troops) do
+      if not troop.dead then
+        local dx, dy = troop.x - self.x, troop.y - self.y
+        local distance_sq = dx * dx + dy * dy
+        if distance_sq <= min_radius * min_radius then
+          return SWARMER_PROXIMITY_MIN_SPEED_RATIO
+        end
+        if distance_sq < nearest_distance_sq then
+          nearest_distance_sq = distance_sq
+        end
+      end
+    end
+  end
+  if nearest_distance_sq >= radius * radius then return 1 end
+  local progress = (math.sqrt(nearest_distance_sq) - min_radius) / (radius - min_radius)
+  return SWARMER_PROXIMITY_MIN_SPEED_RATIO + (1 - SWARMER_PROXIMITY_MIN_SPEED_RATIO) * progress
+end
+
 fns['draw_enemy'] = function(self)
 
   local animation_success = self:draw_animation()

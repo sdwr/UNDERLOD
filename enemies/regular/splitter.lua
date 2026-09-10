@@ -32,19 +32,23 @@ fns['init_enemy'] = function(self)
     self.already_split = true
     -- Stagger the spawns by a hair so they don't all share one frame's
     -- physics tick (which can wedge them inside each other).
+    local arena = main.current.current_arena
+    local sm = arena.spawn_manager
     for i = 1, self.split_count do
       local angle = (i - 1) * (2 * math.pi / self.split_count) + random:float(-0.3, 0.3)
       local ox, oy = math.cos(angle) * 10, math.sin(angle) * 10
-      self.t:after(0.02 * i, function()
+      sm.pending_spawns = sm.pending_spawns + 1
+      arena.t:after(0.02 * i, function()
         Enemy{
           type = 'swarmer',
-          group = main.current.main,
+          group = arena.main,
           x = self.x + ox,
           y = self.y + oy,
           path_heading = angle,
           level = self.level,
           data = {},
         }
+        sm.pending_spawns = sm.pending_spawns - 1
       end)
     end
   end

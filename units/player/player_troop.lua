@@ -33,6 +33,7 @@ function Troop:init(args)
 
   -- This new variable will store the speed from the previous frame
   self.last_speed = 0
+  self.follow_hold_time = 0
 
   self:calculate_stats(true)
 
@@ -82,7 +83,12 @@ function Troop:follow_mouse()
   -- If not, continue moving towards the mouse.
   if self.being_knocked_back then return end
   if self:distance_to_mouse() > 10 then
+    local previous_max_move_v = self.max_move_v
+    local progress = math.min(self.follow_hold_time / TROOP_FOLLOW_ACCELERATION_TIME, 1)
+    local speed_ratio = TROOP_FOLLOW_START_SPEED_RATIO + (1 - TROOP_FOLLOW_START_SPEED_RATIO) * progress
+    self.max_move_v = (previous_max_move_v or self.max_v) * speed_ratio
     self:seek_mouse(SEEK_DECELERATION, SEEK_WEIGHT * 3)
+    self.max_move_v = previous_max_move_v
     self:wander(TROOP_WANDER_RADIUS, TROOP_WANDER_DISTANCE, TROOP_WANDER_JITTER)
     self:rotate_towards_velocity(1)
   else
@@ -163,6 +169,11 @@ function Troop:update(dt)
   self:onTickCallbacks(dt)
   self:update_buffs(dt)
   self:calculate_stats()
+  if not input['m1'].down or input['m1'].pressed or self.state ~= unit_states['following'] then
+    self.follow_hold_time = 0
+  else
+    self.follow_hold_time = math.min(self.follow_hold_time + dt, TROOP_FOLLOW_ACCELERATION_TIME)
+  end
   self:update_targets() -- Updates who the unit is targeting
 
   self:update_movement_effect(dt)
@@ -229,10 +240,7 @@ function Troop:update(dt)
     end
   end
 
-  -- Light idle brake: troops at rest (no active movement driver) get a small
-  -- deceleration so they don't coast far past the cursor after M1 release,
-  -- but still glide visibly. Only zeroes the velocity below a 1-unit/sec
-  -- floor to prevent perpetual physics jitter.
+  -- Brake after M1 release; zero speeds below 1 unit/sec to prevent jitter.
   local can_brake =
     self.state ~= unit_states['following']
     and not self.rallying

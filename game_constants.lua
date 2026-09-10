@@ -292,6 +292,9 @@ ARENA_RADIUS = 200
 SEEK_DECELERATION = 1.1
 SEEK_WEIGHT = 1.75
 
+TROOP_FOLLOW_START_SPEED_RATIO = 0.15
+TROOP_FOLLOW_ACCELERATION_TIME = 0.2
+
 get_seek_weight_by_enemy_type = function(enemy_type)
   return seek_weight_by_enemy_type[enemy_type] or seek_weight_by_enemy_type['default']
 end
@@ -318,6 +321,10 @@ TROOP_WANDER_JITTER = 5
 ENEMY_SEPARATION_RADIUS = 7
 ENEMY_SEPARATION_WEIGHT = 10
 
+SWARMER_PROXIMITY_SLOW_RADIUS = 80
+SWARMER_PROXIMITY_MIN_RADIUS = 20
+SWARMER_PROXIMITY_MIN_SPEED_RATIO = 0.5
+
 ENEMY_CRITTER_SEPARATION_RADIUS = 8
 
 -- Enemy wander behavior constants  
@@ -335,10 +342,8 @@ DISTANCE_TO_TARGET_FOR_IDLE = 7
 
 IDLE_DECEL_FORCE = 100
 DECELERATION_WEIGHT = 5
--- Troops use a softer brake than enemies (5) so the post-M1 coast is
--- visible-but-short rather than a snap-stop. Raise to 4-5 if too floaty,
--- lower to 1 if you want a longer glide.
-TROOP_IDLE_BRAKE_WEIGHT = 2
+-- Stronger troop braking shortens the coast after releasing M1.
+TROOP_IDLE_BRAKE_WEIGHT = 5
 
 MAX_BOSS_FORCE = 1000
 MAX_ENEMY_FORCE = 1000
@@ -494,8 +499,8 @@ SPAWN_DIRECTOR_FILL_EXP = 1
 -- RATE_EXP shapes the curve: >1 keeps it near MIN until close to setpoint then
 -- slows sharply (aggressive when low). Self-regulating: kills drop the fill and
 -- shorten the next cooldown, so it's responsive without per-unit cost spikes.
-SPAWN_DIRECTOR_INTERVAL_MIN = 0.2
-SPAWN_DIRECTOR_INTERVAL_MAX = 2
+SPAWN_DIRECTOR_INTERVAL_MIN = 0.25
+SPAWN_DIRECTOR_INTERVAL_MAX = 2.5
 SPAWN_DIRECTOR_RATE_EXP = 2
 SPAWN_DIRECTOR_JITTER = 0.25
 -- (Unused since pacing went fill-based; kept so per-level overrides don't error.)
@@ -529,7 +534,7 @@ SWARMER_GROUP_MIX = {
 -- refill pressure scales linearly with the setpoint as levels grow. The math
 -- (documentation/spawn_tuning.md §2) integrates the catch-up curve's early
 -- speedup. Per-level override: spawn_director.fill_time.
-SWARMER_LANE_FILL_TIME = 2
+SWARMER_LANE_FILL_TIME = 2.5
 SWARMER_LANE_TARGET_FILL = 0.8
 -- Catch-up curve: the interval scales by c + (1-c)*min(fill/frac, 1) —
 -- half-length on an empty field, full length from half-setpoint up. Fires are
@@ -543,8 +548,8 @@ SWARMER_LANE_OVERFILL_SLOWDOWN = 2
 -- Safety clamp on the derived interval (floor guards huge late setpoints,
 -- ceiling keeps tiny/debug setpoints from feeling dead), and the recheck
 -- delay when a fire is skipped at the ceiling.
-SWARMER_LANE_INTERVAL_MIN = 0.4
-SWARMER_LANE_INTERVAL_MAX = 2.5
+SWARMER_LANE_INTERVAL_MIN = 0.5
+SWARMER_LANE_INTERVAL_MAX = 3.125
 SWARMER_LANE_RETRY = 0.5
 
 -- Weighted offscreen spawn placement. Every enemy spawn (basics, specials,

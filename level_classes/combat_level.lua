@@ -23,10 +23,8 @@ function CombatLevel:on_character_selected(character)
 end
 
 function CombatLevel:level_clear()
-  -- Win/lose exclusivity: if the player died first, the clear is void; once
-  -- the clear starts, level_cleared suppresses any later death (see
-  -- Arena:die) so a projectile landing during the cascade can't show the
-  -- death screen mid-win.
+  -- A lost run cannot clear; after victory, lingering projectiles cannot
+  -- replace the win with a death screen.
   if self.died then return end
   self.level_cleared = true
 
@@ -67,10 +65,7 @@ function CombatLevel:level_clear()
   -- door-era quit() path, so none of these ever paid out in this flow.
   self:gain_gold(2)
 
-  -- Wait until every enemy from the staggered death cascade (scheduled by
-  -- SpawnManager — LEVEL_CLEAR_KILL_DELAY + per-enemy offsets) has actually
-  -- died before transitioning. Poll every 0.1s, then hold the original
-  -- transition_delay as a post-cascade beat for the wipe/flash to settle.
+  -- Keep the post-clear pause for the victory flash before transitioning.
   local transition_delay = LEVEL_CLEAR_TRANSITION_DELAY or 2.5
   local poll_id = 'level_clear_wait_for_enemies'
   self.t:every(0.1, function()
