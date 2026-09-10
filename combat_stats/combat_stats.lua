@@ -189,7 +189,7 @@ MINIBOSS_MS = 50
 BOSS_HP = 1400
 
 BOSS_HP_MULT_BY_TYPE = {
-  ['stompy'] = 3.36,
+  ['stompy'] = 1.68,
   ['dragon'] = 2.5,
 }
 BOSS_DAMAGE = 20
@@ -197,6 +197,19 @@ BOSS_MS = 70
 
 REGULAR_PUSH_DAMAGE = 20
 SPECIAL_PUSH_DAMAGE = 20
+-- Contact rule: a non-boss enemy that touches a troop dies and deals its own
+-- dmg scaled by the fraction of hp it had left, times this multiplier.
+CONTACT_DAMAGE_HP_SCALE = 1.0
+
+function Dies_On_Contact(enemy)
+  return enemy.class ~= 'boss' and enemy.class ~= 'miniboss' and not enemy.survives_contact
+end
+
+function Contact_Damage(enemy)
+  local max_hp = enemy.max_hp or 0
+  local frac = (max_hp > 0) and math.clamp((enemy.hp or 0) / max_hp, 0, 1) or 1
+  return (enemy.dmg or 0) * frac * CONTACT_DAMAGE_HP_SCALE
+end
 BOSS_PUSH_DAMAGE = 20
 
 STUN_DURATION_CRITTER = 2.5
@@ -692,8 +705,8 @@ enemy_type_to_stats = {
     ['charger'] = {  },
     ['summoner'] = {},
     ['bomb'] = { hp = -0.25 },
-    -- Dart: fast angular seeker. hp 0.3 => 84 HP at L1, ~6 archer shots.
-    ['dart'] = { dmg = 1, hp = 0.3, mvspd = 3.0 },
+    -- Dart: fast angular seeker. hp 0.24 => 67 HP at L1, ~5 archer shots.
+    ['dart'] = { dmg = 1, hp = 0.24, mvspd = 3.0 },
     ['firewall_caster'] = {  },
 }
 

@@ -1778,12 +1778,9 @@ end
 -- collision handler is what applies enemy contact damage in this engine).
 function FriendlyTurret:on_collision_enter(other, contact)
   if table.any(main.current.enemies, function(v) return other:is(v) end) then
-    local dmg = REGULAR_PUSH_DAMAGE
-    if other:is(Boss) then
-      dmg = BOSS_PUSH_DAMAGE
-    elseif other.class == 'special_enemy' then
-      dmg = SPECIAL_PUSH_DAMAGE
-    end
+    -- Same contact rule as troops: hp-scaled damage from a non-boss enemy,
+    -- which then dies (see Enemy:on_collision_enter).
+    local dmg = other:is(Boss) and BOSS_PUSH_DAMAGE or Contact_Damage(other)
     -- Delay the hit to avoid mutating the box2d world during a contact callback.
     self.t:after(0, function()
       if self and not self.dead then

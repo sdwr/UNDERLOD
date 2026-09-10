@@ -604,16 +604,18 @@ function Troop:on_collision_enter(other, contact)
 
     local duration = KNOCKBACK_DURATION_ENEMY
     local push_force = LAUNCH_PUSH_FORCE_ENEMY
-    local dmg = REGULAR_PUSH_DAMAGE
+    -- Non-boss enemies spend themselves on contact (see Enemy:on_collision_enter):
+    -- damage scales with the fraction of hp they had left, so whittling an
+    -- enemy down softens the hit it lands.
+    local dmg = Contact_Damage(other)
 
-    if other:is(Boss) then  
+    if other:is(Boss) then
       duration = KNOCKBACK_DURATION_BOSS
       push_force = LAUNCH_PUSH_FORCE_BOSS
       dmg = BOSS_PUSH_DAMAGE
     elseif other.class == 'special_enemy' then
       duration = KNOCKBACK_DURATION_SPECIAL_ENEMY
       push_force = LAUNCH_PUSH_FORCE_SPECIAL_ENEMY
-      dmg = SPECIAL_PUSH_DAMAGE
     end
     
     self:push(push_force, self:angle_to_object(other) + math.pi, nil, duration)

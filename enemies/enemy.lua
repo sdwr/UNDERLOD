@@ -722,27 +722,22 @@ function Enemy:on_collision_enter(other, contact)
         self:bounce(contact:getNormal())
 
     elseif table.any(main.current.friendlies, function(v) return other:is(v) end) then
-      if self.class == 'regular_enemy' then
-        local duration = KNOCKBACK_DURATION_ENEMY
-        local push_force = ENEMY_KNOCKBACK_FORCE_TROOP_COLLISION
-        local dmg = REGULAR_PUSH_DAMAGE
-        self:push(push_force, self:angle_to_object(other) + math.pi, nil, duration)
-        --delay the damage to avoid box2d lock
+      -- Contact spends the enemy: the troop takes the knockback and hp-scaled
+      -- damage (Troop:on_collision_enter), the enemy dies. Bosses and
+      -- minibosses keep pressing.
+      if Dies_On_Contact(self) then
+        --delay the death to avoid box2d lock
         self.t:after(0, function()
-          if self and not self.dead then
-            self:hit(dmg, other, nil, false, true)
+          if self and not self.dead then self:die() end
+        end)
+      elseif self.haltOnPlayerContact then
+        self:set_velocity(0,0)
+        Helper.Unit:set_state(self, unit_states['frozen'])
+        self.t:after(0.8, function()
+          if self.state == unit_states['frozen'] then
+            Helper.Unit:set_state(self, unit_states['idle'])
           end
         end)
-      else
-        if self.haltOnPlayerContact then
-          self:set_velocity(0,0)
-          Helper.Unit:set_state(self, unit_states['frozen'])
-          self.t:after(0.8, function()
-            if self.state == unit_states['frozen'] then
-              Helper.Unit:set_state(self, unit_states['idle'])
-            end
-          end)
-        end
       end
     elseif table.any(main.current.enemies, function(v) return other:is(v) end) then
       if self.being_knocked_back and math.length(self:get_velocity()) > ENEMY_KNOCKBACK_CHAIN_VELOCITY_THRESHOLD then
