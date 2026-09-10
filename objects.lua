@@ -482,7 +482,8 @@ function Unit:show_hp(n)
 end
 
 function Unit:hide_hp()
-  self.hp_bar.hidden = true
+  -- A t:after(0) death inside update_game_object can nil the bar mid-update.
+  if self.hp_bar then self.hp_bar.hidden = true end
 end
 
 --have full data passed in instead of just type?
@@ -958,6 +959,8 @@ function Unit:calculate_stats(first_run)
           self.class_hp_m = amt
         elseif stat == buff_types['status_resist'] then
           self.status_resist = amt
+        elseif stat == 'hp_scale' then
+          -- Consumed by _set_unit_base_stats (Enemy_HP_Growth); not a buff.
         elseif stat == 'knockback_resistance' then
           -- Per-type override of the class default set just above. Stored
           -- as an absolute value (not a multiplier), then clamped later.

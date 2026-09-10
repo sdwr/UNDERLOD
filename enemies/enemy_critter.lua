@@ -38,8 +38,10 @@ function EnemyCritter:update(dt)
       self:set_angular_damping(0)
     end
   else
-    if not self.target then self.target = random:table(self.group:get_objects_by_classes(main.current.friendlies)) end
-    if self.target and self.target.dead then self.target = random:table(self.group:get_objects_by_classes(main.current.friendlies)) end
+    if not self.target or self.target.dead then
+      self.target = random:table(table.select(self.group:get_objects_by_classes(main.current.friendlies),
+        function(o) return not o.untargetable end))
+    end
     if not self.target or self:distance_to_object(self.target) < self.attack_sensor.rs then
       self:set_velocity(0,0)
       self:rotate_towards_velocity(1)

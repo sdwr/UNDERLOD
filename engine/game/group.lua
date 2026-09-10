@@ -381,12 +381,12 @@ function Group:get_closest_object_by_class(object, object_types, exclude_list)
     local is_valid_type = table.any(object_types, function(v) return o:is(v) end)
     local is_not_excluded = not exclude_list or not table.any(exclude_list, function(v) return v.id == o.id end)
     local fully_onscreen = o.fully_onscreen
-    return is_valid_type and is_not_excluded and fully_onscreen
+    return is_valid_type and is_not_excluded and fully_onscreen and not o.untargetable
   end)
 end
 
 function Group:get_random_object_by_class(object_types)
-  local objects = self:get_objects_by_classes(object_types)
+  local objects = table.select(self:get_objects_by_classes(object_types), function(o) return not o.untargetable end)
   return table.random(objects)
 end
 
@@ -417,7 +417,7 @@ function Group:get_random_close_object(object, object_types, exclude_list, max_r
 
   -- First, get all potential candidates based on their class and exclude list.
   -- This pre-filters the objects, making the distance check more efficient.
-  local candidates = self:get_objects_by_classes(object_types)
+  local candidates = table.select(self:get_objects_by_classes(object_types), function(o) return not o.untargetable end)
 
   -- Filter out any objects that are in the exclude list.
   if #exclude_list > 0 then

@@ -1665,6 +1665,9 @@ function FriendlyTurret:init(args)
   self.faction = 'friendly'
   self.is_troop = false
   self.class = 'friendly_turret'
+  -- Enemies never pick the turret as a target (engine pick functions skip
+  -- untargetable objects); it still takes area hits and contact.
+  self.untargetable = true
 
   self:init_game_object(args)
   if tostring(self.x) == tostring(0/0) or tostring(self.y) == tostring(0/0) then self.dead = true; return end
@@ -1774,18 +1777,13 @@ end
 function FriendlyTurret:push(f, r, push_invulnerable, duration)
 end
 
--- Take contact damage when an enemy rams the turret (the friendly's own
--- collision handler is what applies enemy contact damage in this engine).
+-- Any enemy that reaches the turret destroys it (the enemy dies too under
+-- the contact rule in Enemy:on_collision_enter).
 function FriendlyTurret:on_collision_enter(other, contact)
   if table.any(main.current.enemies, function(v) return other:is(v) end) then
-    -- Same contact rule as troops: hp-scaled damage from a non-boss enemy,
-    -- which then dies (see Enemy:on_collision_enter).
-    local dmg = other:is(Boss) and BOSS_PUSH_DAMAGE or Contact_Damage(other)
-    -- Delay the hit to avoid mutating the box2d world during a contact callback.
+    -- Delay the death to avoid mutating the box2d world during a contact callback.
     self.t:after(0, function()
-      if self and not self.dead then
-        self:hit(dmg, other, nil, true, false)
-      end
+      if self and not self.dead then self:die() end
     end)
   end
 end

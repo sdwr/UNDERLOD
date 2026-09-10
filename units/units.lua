@@ -76,10 +76,17 @@ end
 --state is doubling as active state (is moving) and intention (rally point)
 function Team:set_troop_state_to_following()
   for i, troop in ipairs(self.troops) do
+    local mid_attack = troop.state == unit_states['casting'] or troop.state == unit_states['channeling']
+    if troop.shoot_while_moving and mid_attack then
+      -- Skirmisher: this command arrives every frame M1 is held, so let the
+      -- attack finish; Troop:update keeps the troop on the mouse meanwhile.
+      troop.resume_following = true
+    else
       -- Kiting: a move command cancels any in-progress attack and resets the
       -- cooldown to 0 (cancel_cast already zeroes attack_cooldown_timer).
       troop:cancel_cast()
       Helper.Unit:set_state(troop, unit_states['following'])
+    end
   end
 end
 function Team:set_troop_state(state)

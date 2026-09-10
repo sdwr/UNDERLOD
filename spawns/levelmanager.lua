@@ -78,23 +78,46 @@ LEVEL_SPAWN_POOLS = {
   -- 6 is stompy boss. 7-10 (T2) are built below.
 }
 
--- T2 levels: specials removed pending the miniboss-special rework (pulsar);
--- swarmer/tank/small_archer only for now.
-local T2_ROSTERS = {
-  [7]  = { length = 45, swarmer = 100, tank = 4, small_archer = 6, dart = 3 },
-  [8]  = { length = 50, swarmer = 115, tank = 4, small_archer = 7, dart = 4 },
-  [9]  = { length = 55, swarmer = 130, tank = 4, small_archer = 8, dart = 5 },
-  [10] = { length = 60, swarmer = 145, tank = 4, small_archer = 9, dart = 6 },
+-- T2 levels (7-10; 11 is the dragon). Each introduces one ranged special on
+-- top of the T1 cast, then L10 stacks them all.
+-- L7 Skirmish line: roach pairs rush in behind the tanks and spam close-range
+--   shots; first ranged pressure that closes distance.
+LEVEL_SPAWN_POOLS[7] = {
+  spawn_director = {
+    length = 45,
+    swarmer = { cap = 26, total = 100 },
+    timeline = { tank = 4, small_archer = 4, dart = 3, roach = { total = 4, group = 2 } },
+  },
 }
-for lvl, r in pairs(T2_ROSTERS) do
-  LEVEL_SPAWN_POOLS[lvl] = {
-    spawn_director = {
-      length = r.length,
-      swarmer = { cap = 26, total = r.swarmer },
-      timeline = { tank = r.tank, small_archer = r.small_archer, dart = r.dart },
+-- L8 Overwatch: thinner swarm so the laser's charge-and-lock beam is the
+--   thing to watch; archers and darts punish standing still to dodge it.
+LEVEL_SPAWN_POOLS[8] = {
+  spawn_director = {
+    length = 50,
+    swarmer = { cap = 22, total = 90 },
+    timeline = { laser = 2, small_archer = 4, dart = 4, tank = 2 },
+  },
+}
+-- L9 Bombardment: mortars zone the ground while roach pairs and darts force
+--   movement through the shell pattern.
+LEVEL_SPAWN_POOLS[9] = {
+  spawn_director = {
+    length = 55,
+    swarmer = { cap = 26, total = 110 },
+    timeline = { mortar = 2, roach = { total = 6, group = 2 }, tank = 3, dart = 4 },
+  },
+}
+-- L10 Combined arms: everything, densest swarm, before the dragon.
+LEVEL_SPAWN_POOLS[10] = {
+  spawn_director = {
+    length = 60,
+    swarmer = { cap = 26, total = 120 },
+    timeline = {
+      laser = 2, mortar = 2, roach = { total = 6, group = 2 },
+      tank = 3, small_archer = 4, dart = 5,
     },
-  }
-end
+  },
+}
 
 -- Spawn budget implied by a level's roster: every swarmer, every timeline
 -- special and every scripted event, priced by enemy_to_round_power. Doubles

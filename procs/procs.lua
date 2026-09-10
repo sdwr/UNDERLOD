@@ -2624,6 +2624,24 @@ end
 -- turret3 raise the active cap to 3/4; dropping past the cap removes the
 -- oldest turret first.
 -- =====================================================================
+-- Skirmisher set: the troop keeps attacking while it follows the mouse (see
+-- Troop:update, shoot_while_moving). Flag only; no triggers.
+Proc_MobileFire = Proc:extend()
+function Proc_MobileFire:init(args)
+  self.triggers = {}
+  self.scope = 'troop'
+  Proc_MobileFire.super.init(self, args)
+  if self.unit then self.unit.shoot_while_moving = true end
+end
+
+function Proc_MobileFire:die()
+  if self.unit then
+    self.unit.shoot_while_moving = nil
+    self.unit.resume_following = nil
+  end
+  Proc_MobileFire.super.die(self)
+end
+
 Proc_Turret = Proc:extend()
 function Proc_Turret:init(args)
   self.triggers = {PROC_ON_TICK}
@@ -2825,6 +2843,7 @@ proc_name_to_class = {
   ['turret'] = Proc_Turret,
   ['turret2'] = Proc_Turret2,
   ['turret3'] = Proc_Turret3,
+  ['mobilefire'] = Proc_MobileFire,
 }
 
 

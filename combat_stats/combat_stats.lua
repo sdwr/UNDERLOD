@@ -515,9 +515,18 @@ local function _scale_for(level)
   return ENEMY_SCALE_BY_LEVEL[level] or ENEMY_SCALE_BY_LEVEL[#ENEMY_SCALE_BY_LEVEL] or 0
 end
 
-SCALED_ENEMY_HP = function(level, base_hp)
+-- growth (default 1) scales how much of the level + post-boss hp growth a
+-- unit receives: 0.5 = half the growth, 0 = flat base hp on every level.
+SCALED_ENEMY_HP = function(level, base_hp, growth)
   local scale = _scale_for(level)
-  return (base_hp + (base_hp * 0.2 * scale)) * POST_BOSS_HP_MULT(level)
+  local total_mult = (1 + 0.2 * scale) * POST_BOSS_HP_MULT(level)
+  return base_hp * (1 + (total_mult - 1) * (growth or 1))
+end
+
+-- Per-type hp growth from enemy_type_to_stats[type].hp_scale.
+function Enemy_HP_Growth(unit)
+  local stats = unit and unit.type and enemy_type_to_stats and enemy_type_to_stats[unit.type]
+  return (stats and stats.hp_scale) or 1
 end
 
 SCALED_ENEMY_DAMAGE = function(level, base_dmg)
@@ -679,7 +688,7 @@ enemy_type_to_stats = {
     ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
     ['chaser'] = { dmg = 1, mvspd = 1 },
     ['brute'] = { dmg = 1, mvspd = 1.5, hp = 1.6 },
-    ['roach'] = { dmg = 1, mvspd = 1.6, hp = 1 },
+    ['roach'] = { dmg = 1, mvspd = 1.6, hp = 0.42 },
     ['slime'] = { dmg = 1, mvspd = 0.7, hp = 1.4 },
     ['sniper'] = { dmg = 1, mvspd = 1, hp = 1 },
     ['orb'] = { dmg = 1, mvspd = 0.8, hp = 1.8 },
@@ -706,7 +715,8 @@ enemy_type_to_stats = {
     ['summoner'] = {},
     ['bomb'] = { hp = -0.25 },
     -- Dart: fast angular seeker. hp 0.24 => 67 HP at L1, ~5 archer shots.
-    ['dart'] = { dmg = 1, hp = 0.24, mvspd = 3.0 },
+    -- hp_scale 0.5: only half the level/post-boss growth so it stays burstable.
+    ['dart'] = { dmg = 1, hp = 0.24, mvspd = 3.0, hp_scale = 0.5 },
     ['firewall_caster'] = {  },
 }
 
@@ -837,7 +847,7 @@ _set_unit_base_stats = function(unit)
         unit.base_dmg = TROOP_DAMAGE
         unit.base_mvspd = TROOP_MS
     elseif unit.class == 'regular_enemy' then
-        unit.base_hp = SCALED_ENEMY_HP(level, REGULAR_ENEMY_HP)
+        unit.base_hp = SCALED_ENEMY_HP(level, REGULAR_ENEMY_HP, Enemy_HP_Growth(unit))
         unit.base_dmg = SCALED_ENEMY_DAMAGE(level, REGULAR_ENEMY_DAMAGE)
         unit.base_mvspd = SCALED_ENEMY_MS(level, REGULAR_ENEMY_MS)
 
@@ -845,7 +855,7 @@ _set_unit_base_stats = function(unit)
         unit.baseline_hp = unit.base_hp
         
     elseif unit.class == 'special_enemy' then
-        unit.base_hp = SCALED_ENEMY_HP(level, SPECIAL_ENEMY_HP)
+        unit.base_hp = SCALED_ENEMY_HP(level, SPECIAL_ENEMY_HP, Enemy_HP_Growth(unit))
         unit.base_dmg = SCALED_ENEMY_DAMAGE(level, SPECIAL_ENEMY_DAMAGE)
         unit.base_mvspd = SCALED_ENEMY_MS(level, SPECIAL_ENEMY_MS)
         

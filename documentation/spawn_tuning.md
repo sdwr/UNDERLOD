@@ -72,7 +72,7 @@ Rates with current rosters (opening burst excluded):
 | L3 | 10 | 40 | 30s | 1.0/s — every 5s |
 | L4 | 22 | 70 | 35s | 1.4/s — every 3.6s |
 | L5 | 22 | 80 | 40s | 1.45/s — every 3.4s |
-| L7-10 | 26 | 100-145 | 45-60s | 1.6-2.0/s — every 2.5-3s |
+| L7-10 | 22-26 | 90-120 | 45-60s | 1.4-1.7/s — every 3-3.5s |
 
 A player who clears fast sees a thinner field between clumps; a slow player
 sits at cap and the bank spills at the end. Either way the count is fixed.

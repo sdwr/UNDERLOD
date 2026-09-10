@@ -12,7 +12,7 @@ function BaseLevel:init(args)
   -- Buy character properties
   self.buy_character = nil
   self.character_items = {}
-  self.character_options = {'swordsman', 'archer', 'laser'}
+  self.character_options = {'archer', 'shotgun', 'laser'}
   
   -- Create door for this level
   self:create_door()

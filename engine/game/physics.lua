@@ -276,7 +276,7 @@ end
 -- self:get_closest_object_in_shape(Circle(self.x, self.y, 100), {Enemy1, Enemy2, Enemy3}) -> closest object of class Enemy1, Enemy2 or Enemy3 in a circle of radius 100 around this object
 -- self:get_closest_object_in_shape(Circle(self.x, self.y, 100), {Enemy1, Enemy2, Enemy3}, {object_1, object_2}) -> same as above except excluding object instances object_1 and object_2
 function Physics:get_closest_object_in_shape(shape, object_types, exclude_list)
-  local objects = self:get_objects_in_shape(shape, object_types)
+  local objects = table.select(self:get_objects_in_shape(shape, object_types), function(v) return not v.untargetable end)
   local min_d, min_i = 1000000, 0
   local exclude_list = exclude_list or {}
   for i, object in ipairs(objects) do
@@ -310,7 +310,9 @@ end
 -- self:get_random_object_in_shape(Circle(self.x, self.y, 100), {Enemy1, Enemy2, Enemy3}) -> random object of class Enemy1, Enemy2 or Enemy3 in a circle of radius 100 around this object
 -- self:get_random_object_in_shape(Circle(self.x, self.y, 100), {Enemy1, Enemy2, Enemy3}, {object_1, object_2}) -> same as above except excluding object instances object_1 and object_2
 function Physics:get_random_object_in_shape(shape, object_types, exclude_list)
-  local objects = self:get_objects_in_shape(shape, object_types)
+  -- untargetable objects (garrison turrets) are never picked as a target;
+  -- get_objects_in_shape still returns them for area effects.
+  local objects = table.select(self:get_objects_in_shape(shape, object_types), function(v) return not v.untargetable end)
   local exclude_list = exclude_list or {}
   local random_object = random:table(objects)
   local tries = 0

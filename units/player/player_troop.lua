@@ -169,7 +169,10 @@ function Troop:update(dt)
   self:onTickCallbacks(dt)
   self:update_buffs(dt)
   self:calculate_stats()
-  if not input['m1'].down or input['m1'].pressed or self.state ~= unit_states['following'] then
+  local mobile_casting = self.shoot_while_moving and self.resume_following
+    and (self.state == unit_states['casting'] or self.state == unit_states['channeling'])
+  if not input['m1'].down or input['m1'].pressed
+    or (self.state ~= unit_states['following'] and not mobile_casting) then
     self.follow_hold_time = 0
   else
     self.follow_hold_time = math.min(self.follow_hold_time + dt, TROOP_FOLLOW_ACCELERATION_TIME)
@@ -185,9 +188,21 @@ function Troop:update(dt)
   -- This is one big if/elseif block. Only ONE of these can run per frame,
   -- which prevents state flickering. The order is based on priority.
 
+  -- shoot_while_moving (Skirmisher set): a finished cast hands the unit back
+  -- to the mouse while M1 is still held.
+  if self.shoot_while_moving and self.resume_following then
+    if not input['m1'].down then
+      self.resume_following = false
+    elseif self.state == unit_states['normal'] or self.state == unit_states['idle'] then
+      Helper.Unit:set_state(self, unit_states['following'])
+    end
+  end
+
   -- Don't run AI logic while following (kiting): the player commanded movement,
   -- so units should not auto-acquire targets or start new casts until they stop.
-  if self.state == unit_states['normal'] or self.state == unit_states['idle'] then
+  -- shoot_while_moving lifts that: the unit attacks on the move.
+  if self.state == unit_states['normal'] or self.state == unit_states['idle']
+    or (self.shoot_while_moving and self.state == unit_states['following']) then
     self:update_ai_logic()
   end
 
@@ -237,6 +252,18 @@ function Troop:update(dt)
       if Helper.Unit:target_out_of_range(self, self.castObject.target) then
         self:cancel_cast()
       end
+    end
+    -- shoot_while_moving: keep following the mouse through the cast.
+    if self.shoot_while_moving and input['m1'].down then
+      self.resume_following = true
+      self:follow_mouse()
+    end
+
+  -- Channeled attacks (laser) sit in 'channeling' instead of 'casting'.
+  elseif self.state == unit_states['channeling'] then
+    if self.shoot_while_moving and input['m1'].down then
+      self.resume_following = true
+      self:follow_mouse()
     end
   end
 

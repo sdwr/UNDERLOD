@@ -45,6 +45,7 @@ ITEM_SET = {
   ORBITAL = 'orbital',
   MEND = 'mend',
   TURRET = 'turret',
+  MOBILE = 'mobile',
 }
 
 -- Stat definitions
@@ -490,6 +491,20 @@ ITEM_SETS = {
       [1] = 'Periodically deploy turrets (max 2; replaces the oldest)',
       [2] = 'Deploy up to 3 turrets',
       [3] = 'Deploy up to 4 turrets',
+    }
+  },
+  -- Skirmisher: 1/1 rare, T2+. The troop attacks while following the mouse.
+  [ITEM_SET.MOBILE] = {
+    name = 'Skirmisher',
+    summary = 'attack while moving',
+    color = 'purple',
+    rarity = ITEM_RARITY.RARE,
+    min_tier = 2,
+    bonuses = {
+      [1] = { procs = {'mobilefire'} },
+    },
+    descriptions = {
+      [1] = 'Attack while moving',
     }
   },
   -- [ITEM_SET.STUN] = {
