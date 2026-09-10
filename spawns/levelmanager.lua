@@ -54,32 +54,19 @@ LEVEL_SPAWN_POOLS = {
       setpoints = { swarmer = 15, tank = 1, small_archer = 1 },
     },
   },
-  -- L3 "Splinter Cell": no swarmer lane. Swarmers only appear as splitter
-  -- death bursts, so the level tests target selection (kill splitters away
-  -- from you, or walk around the slow bodies).
   [3] = {
     spawn_director = {
-      setpoints = { splitter = 3, small_archer = 1 },
+      setpoints = { swarmer = 20, tank = 2 },
     },
   },
-  -- L4 "Firing Squad": no swarmers. One sniper (aim locks 0.75s before the
-  -- shot) plus two small archers; a second sniper drops in at half progress.
   [4] = {
     spawn_director = {
-      setpoints = { sniper = 1, small_archer = 2 },
-    },
-    specials = {
-      {type = 'sniper', at = 0.5},
+      setpoints = { swarmer = 22, tank = 1, small_archer = 2 },
     },
   },
-  -- L5 "Artillery Battery": no swarmers. One mortar zones the ground while a
-  -- roach spams close-range shots; a second roach arrives at 40% progress.
   [5] = {
     spawn_director = {
-      setpoints = { mortar = 1, roach = 1 },
-    },
-    specials = {
-      {type = 'roach', at = 0.4},
+      setpoints = { swarmer = 22, tank = 2, small_archer = 2 },
     },
   },
   -- 6 is stompy boss. 7-10 (T2) are built below.
@@ -189,12 +176,9 @@ end
 LEVEL_PACING = {
   [1]  = { round_power = 900,  kill_quota = 1020 },
   [2]  = { round_power = 1100, kill_quota = 1020 },
-  -- L3-5 are swarmer-free: specials give far less round_power per HP than
-  -- swarmers, so quotas are cut to keep level length near L2. round_power
-  -- keeps each level's old quota ratio so gold per level is unchanged.
-  [3]  = { round_power = 975,  kill_quota = 900 },
-  [4]  = { round_power = 790,  kill_quota = 800 },
-  [5]  = { round_power = 930,  kill_quota = 1000 },
+  [3]  = { round_power = 1300, kill_quota = 1200 },
+  [4]  = { round_power = 1600, kill_quota = 1620 },
+  [5]  = { round_power = 1800, kill_quota = 1930 },
   [7]  = { round_power = 2200, kill_quota = 2610 },
   [8]  = { round_power = 2400, kill_quota = 2970 },
   [9]  = { round_power = 2600, kill_quota = 3370 },
