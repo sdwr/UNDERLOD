@@ -21,6 +21,7 @@ function Enemy:init(args)
     self.z_index = 1
   end
   self._sep_comparator = function(other)
+    if self.passes_through or other.passes_through then return false end
     local self_special = self.class == 'special_enemy' or self.class == 'boss' or self.class == 'miniboss'
     local other_special = other.class == 'special_enemy' or other.class == 'boss' or other.class == 'miniboss'
     local self_normal_swarmer = self.type == 'swarmer' and not self.special_swarmer_type
@@ -125,14 +126,17 @@ function Enemy:draw_fallback_animation()
   self:draw_fallback_status_effects()
 end
 
--- Draw the base shape (triangle for dragon, rounded rectangle for others)
+-- Draw the base shape (draw_body hook, triangle for dragon, rounded rectangle for others)
 function Enemy:draw_fallback_base_shape()
   -- Determine base color (hit flash, silenced, or normal color)
   local base_color = self.hfx.hit.f and fg[0] or (self.silenced and bg[10]) or self.color
   
   graphics.push(self.x, self.y, self.r or 0, self.hfx.hit.x, self.hfx.hit.x)
   
-  if self.type == 'dragon' then
+  if self.draw_body then
+    -- Custom body (e.g. dart): draws in local space, rotated once by the push.
+    self:draw_body(base_color)
+  elseif self.type == 'dragon' then
     -- Special case: Dragon uses triangle polygon
     local points = self:make_regular_polygon(3, (self.shape.w / 2) / 60 * 70, self:get_angle())
     graphics.polygon(points, base_color)
@@ -155,7 +159,9 @@ function Enemy:draw_fallback_status_effects()
   if mask_color ~= nil then
     graphics.push(self.x, self.y, self.r or 0, self.hfx.hit.x, self.hfx.hit.x)
 
-    if self.type == 'dragon' then
+    if self.draw_body then
+      self:draw_body(mask_color)
+    elseif self.type == 'dragon' then
       local points = self:make_regular_polygon(3, (self.shape.w / 2) / 60 * 70, self:get_angle())
       graphics.polygon(points, mask_color)
     elseif self.shape and self.shape.rs then
@@ -171,7 +177,9 @@ function Enemy:draw_fallback_status_effects()
   if self.buffs['curse'] then
     graphics.push(self.x, self.y, self.r or 0, self.hfx.hit.x, self.hfx.hit.x)
 
-    if self.type == 'dragon' then
+    if self.draw_body then
+      self:draw_body(CURSE_OUTLINE_COLOR, 2, 2)
+    elseif self.type == 'dragon' then
       local points = self:make_regular_polygon(3, (self.shape.w / 2) / 60 * 70 + 2, self:get_angle())
       graphics.polygon(points, CURSE_OUTLINE_COLOR, 2)
     elseif self.shape and self.shape.rs then

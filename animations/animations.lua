@@ -964,6 +964,7 @@ enemy_type_to_size = {
   ['pulse_walker'] = 'special',
   ['drone_carrier'] = 'special',
   ['linker'] = 'special',
+  ['dart'] = 'special',
 
   -- Minibosses
   ['bigstomper'] = 'huge',

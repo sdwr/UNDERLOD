@@ -4,125 +4,117 @@ How enemies get onto the field on campaign levels, and which knobs shape it.
 Source files: `spawns/spawnmanager.lua`, `spawns/levelmanager.lua`,
 `game_constants.lua`.
 
-The existing `kill_quota` values now define a finite **spawn power budget**.
-Queued enemies consume it immediately, including their spawn-warning delay.
-Authored specials reserve their share first. The final group is trimmed; one
-indivisible enemy may round the total above the configured budget. Offspring
-and summons remain additional enemies that must also be defeated.
-
-Once the budget has been queued, no more regular reinforcements are spawned.
-Victory requires an empty enemy group and zero pending spawns. Kill score alone
-never clears the level, and survivors are never automatically killed. Crossing
-enemies return to finite campaign arenas instead of escaping. Debug encounters
-finish after their manual queue is exhausted and the field is cleared; bosses
-retain their all-enemies-dead rule.
+Every campaign level is a **roster released over a clock**. The level config
+says how many of each enemy exist and how long the release takes; what the
+player kills only changes *when* things arrive, never *how many*. Victory
+requires an empty enemy group and zero pending spawns once the roster is
+spent. Kill score alone never clears the level, and survivors are never
+automatically killed. Offspring and summons are extra enemies that must also
+be defeated. Bosses keep their all-enemies-dead rule; the debug arena finishes
+after its manual queue is exhausted and the field is cleared.
 
 ---
 
-## 1. Architecture: two lanes + one events layer
+## 1. Level config
 
-Campaign levels are driven by the **spawn director** (`spawn_director` config
-in `LEVEL_SPAWN_POOLS`). It runs two independent lanes plus an authored layer:
-
-1. **Swarmer lane** (`SpawnManager:tick_swarmer_lane`) — chaff. Fires clumps
-   on its own adaptive cooldown (see §2). Runs from the first second of the
-   level.
-2. **Specials queue** (`SpawnManager:tick_spawn_director`) — tanks, small
-   archers, and the `special` pool. Deficit-weighted pick: each fire spawns
-   whichever slot is furthest below its setpoint. These setpoints are **hard
-   caps**: a slot at setpoint never spawns, so `tank = 2` means at most 2
-   tanks alive. Paced by **whole-field** power fill (swarmers included), so a
-   packed swarm delays the next special. Held closed for the first
-   `SPAWN_DIRECTOR_OPENING_GRACE` (7) seconds of the level.
-3. **Authored events** (`specials = {{type=..., at=...}}` in a level config) —
-   one-shot spawns at a spawn-budget progress fraction. They bypass caps AND the
-   opening grace, so `at = 0` is the deliberate "nasty thing from second one"
-   override.
-
-Both lanes share per-slot setpoints, pending (in-flight) tracking, and
-weighted offscreen placement. The ramp (setpoint scales `ramp.from ->
-ramp.to` across spawn-budget progress, default 0.8 -> 1.2) and the ceiling
-(`ramped setpoint * SPAWN_DIRECTOR_CEILING_MULT`) apply to the **swarmer lane
-only** — fractional specials make no sense, so their setpoints stay fixed
-integers. Between setpoint and ceiling the swarmer interval stretches by up
-to `(1 + SWARMER_LANE_OVERFILL_SLOWDOWN)`x, so overshoot is a slow drift,
-not full-rate spawning.
-
-## 2. Swarmer lane: fill-time-based cooldown
-
-The lane's base interval is **derived, not authored**. The design goal:
-starting from an empty field, reach `SWARMER_LANE_TARGET_FILL` (80%) of the
-swarmer setpoint in `SWARMER_LANE_FILL_TIME` (8) seconds — on every level,
-regardless of setpoint. Levels with bigger swarms spawn proportionally
-faster; sustained throughput scales linearly with the setpoint.
-
-Mechanics per fire:
-
-- Average clump size `G` is computed from `SWARMER_GROUP_MIX` (currently 5:
-  1/3 chance of a 4-6 scatter group, 2/3 chance of a clustered 4-6).
-- The catch-up curve scales the interval by
-  `m(fill) = c + (1-c) * min(fill / frac, 1)` with
-  `c = SWARMER_LANE_CATCHUP_MULT` (0.5), `frac = SWARMER_LANE_CATCHUP_FRACTION`
-  (0.5): half-length intervals on an empty field, full length from half-
-  setpoint up.
-- The base interval solves the fill-time goal, integrating that slowdown:
-
-```
-M      = TARGET_FILL - frac*(1-c)/2          (= 0.675 with defaults)
-I_base = FILL_TIME * G / (setpoint_ramped * M)
+```lua
+[3] = {
+  spawn_director = {
+    length = 30,                              -- seconds
+    swarmer = { cap = 10, total = 30 },       -- alive ceiling, roster
+    timeline = { small_archer = 6 },          -- specials: totals only
+    clustered_only = true,                    -- optional
+  },
+  specials = { {type = 'pulsar', at = 0.5} }, -- optional scripted beats
+},
 ```
 
-clamped to `[SWARMER_LANE_INTERVAL_MIN, SWARMER_LANE_INTERVAL_MAX]`
-(1.2s-6.5s). Because `setpoint_ramped` includes the within-level ramp, the
-cadence tightens ~20% over a level automatically.
+- `length` — seconds over which the roster is released. The level usually
+  runs longer than this: leftover swarmers spill afterward, and the player
+  still has to clear the field.
+- `swarmer.cap` / `swarmer.total` — at most `cap` swarmers alive (ramped, see
+  §2); `total` spawn over the level.
+- `timeline` — `{type = total}` or `{type = {total = n, group = g}}` for
+  enemies that spawn in groups (linker pairs). Specials have **no alive cap**.
+- `clustered_only` — every swarmer clump uses the clustered roll from
+  `SWARMER_GROUP_MIX`; no scatter groups.
+- `specials` events — one-shot spawns at a fraction of `length`. They bypass
+  caps and the opening grace, so `at = 0` is the deliberate "nasty thing from
+  second one" override.
 
-- At or above the ceiling the fire is skipped (recheck in
-  `SWARMER_LANE_RETRY` = 0.5s); it also respects quota-met and the global cap.
+The spawn budget (`kill_quota`) is **derived**: every swarmer, timeline
+special and scripted event priced by `enemy_to_round_power`
+(`Director_Spawn_Quota`). It is exact, so there is no overshoot, and it is
+the progress bar's total. `LEVEL_PACING` only carries `round_power` (the
+gold-per-kill denominator) now.
 
-Resulting steady-state intervals with defaults (FILL_TIME 8, G 5):
+## 2. Swarmer lane
 
-| level | swarmer setpoint | ramped (x0.8 open) | I_base open | I_base level end (x1.2) |
+`SpawnManager:tick_swarmer_lane`. The roster is metered through a **bank**:
+
+- The bank opens at `cap`, so the field fills to cap immediately (clumps
+  fire `SWARMER_LANE_MIN_GAP` apart).
+- It then accrues at `(total - cap) / length` per second — the even release
+  rate. A clump fires only when the bank holds a whole clump's worth and the
+  cap has room; a full cap just delays it, the bank keeps growing.
+- When the clock passes `length`, the whole remainder is banked and spills
+  as fast as the cap frees up.
+- The cap ramps `SPAWN_DIRECTOR_RAMP_FROM -> _TO` (0.8 -> 1.2) across the
+  clock, so the standing swarm grows about 50% over a level. Per-level
+  `ramp = {from=, to=}` overrides.
+
+Rates with current rosters (opening burst excluded):
+
+| level | cap | total | length | drip after opening |
 |---|---|---|---|---|
-| L1-2 | 15 | 12.0 | 4.9s | 3.3s |
-| L3 | 20 | 16.0 | 3.7s | 2.5s |
-| L4-5 | 22 | 17.6 | 3.4s | 2.2s |
-| L7-10 | 48 | 38.4 | 1.5s | 1.2s (clamped) |
+| L1 | 15 | 45 | 20s | 1.5/s — a 5-clump every 3.3s |
+| L2 | 15 | 55 | 25s | 1.6/s — every 3s |
+| L3 | 10 | 40 | 30s | 1.0/s — every 5s |
+| L4 | 22 | 70 | 35s | 1.4/s — every 3.6s |
+| L5 | 22 | 80 | 40s | 1.45/s — every 3.4s |
+| L7-10 | 26 | 100-145 | 45-60s | 1.6-2.0/s — every 2.5-3s |
 
-Caveat: at low setpoints (L1-2) a single clump is roughly a third of the
-field, so "80% in 8s" quantizes coarsely; the fill-time promise really
-governs bigger setpoints where multiple fires matter. If early levels should
-open lazier, shrink clump sizes at low setpoints (group mix), don't raise
-FILL_TIME.
+A player who clears fast sees a thinner field between clumps; a slow player
+sits at cap and the bank spills at the end. Either way the count is fixed.
 
-## 3. Knobs
+## 3. Specials timeline
+
+`SpawnManager:tick_special_timeline`. At level start each timeline type is
+spread evenly over `length`: `n` entries at `length * (i - 0.5) / n`, each
+shifted by up to `SPAWN_TIMELINE_JITTER` (20%) of that spacing, clamped to
+`[SPAWN_DIRECTOR_OPENING_GRACE, length]`. All types merge into one sorted
+schedule. An entry fires when the spawn clock reaches it, **regardless of
+how many specials are alive** — only `SPAWN_DIRECTOR_GLOBAL_CAP` (200, a
+performance backstop) can delay it. Killing a special never summons another;
+ignoring one never prevents the next.
+
+## 4. Knobs
 
 ### Per-level (`LEVEL_SPAWN_POOLS[n].spawn_director`)
 
 | you want | knob | effect |
 |---|---|---|
-| denser/thinner swarm | `setpoints.swarmer` | standing density AND refill rate (throughput scales linearly with it) — the main difficulty dial |
-| more/other specials | `setpoints.tank/small_archer/special`, `special_pool` | deficit queue handles composition |
-| front-load the level | `ramp = {from = 1.3, to = 0.9}` | swarmer lane only: opens heavy, eases off; also speeds the opening cadence since I_base uses the ramped setpoint |
+| a longer/shorter level | `length` | stretches both the swarmer drip and the special schedule |
+| denser/thinner standing swarm | `swarmer.cap` | alive ceiling; also the size of the opening burst |
+| more/fewer swarmers overall | `swarmer.total` | roster; with `length` sets the drip rate |
+| more/other specials | `timeline` | totals per type; evenly interleaved |
+| front-load the swarm | `ramp = {from = 1.2, to = 0.8}` | cap opens high and eases off |
 | scripted opening punch | `specials = {{type='brute', at=0}}` | fires immediately, ignores caps and grace |
-| this level fills faster/slower | `fill_time = 4` | per-level override of SWARMER_LANE_FILL_TIME |
-| clumps only, never scatter | `clustered_only = true` | every swarmer fire uses the clustered roll from the group mix |
-| more swarmer overshoot room | `ceilings`, `ceiling_mult` | swarmer ceiling override (specials cap at setpoint) |
+| clumps only, never scatter | `clustered_only = true` | every swarmer fire uses the clustered roll |
 
 ### Global (`game_constants.lua`)
 
 | knob | default | meaning |
 |---|---|---|
-| `SWARMER_LANE_FILL_TIME` | 8 | seconds to reach TARGET_FILL from empty — the game-wide opening pace |
-| `SWARMER_LANE_TARGET_FILL` | 0.8 | definition of "filled"; rarely touch |
-| `SWARMER_LANE_CATCHUP_MULT/FRACTION` | 0.5 / 0.5 | recovery speed after the player wipes the field; lower mult = punishes big clears faster |
-| `SWARMER_LANE_INTERVAL_MIN/MAX` | 1.2 / 6.5 | safety clamp on the derived interval |
-| `SWARMER_GROUP_MIX` | 4-6 scatter / 8-12 clump | **burstiness, rate-neutral**: avg size G is in the interval formula, so bigger clumps = longer gaps at identical throughput |
-| `SPAWN_DIRECTOR_OPENING_GRACE` | 7 | seconds before the specials queue opens |
-| `SPAWN_DIRECTOR_TANK_SWARM_GATE` | 0.5 | tanks wait until the swarm is at this fraction of setpoint |
-| `SPAWN_DIRECTOR_INTERVAL_MIN/MAX`, `RATE_EXP` | 0.2 / 6 / 2 | specials-queue pacing curve (whole-field power fill) |
-| `SPAWN_DIRECTOR_RAMP_FROM/TO` | 0.8 / 1.2 | within-level escalation of the swarmer setpoint (per-level `ramp` overrides) |
-| `SWARMER_LANE_OVERFILL_SLOWDOWN` | 2 | interval stretch above the swarmer setpoint, up to (1+this)x at the ceiling |
+| `SPAWN_DIRECTOR_DEFAULT_LENGTH` | 60 | length for configs that omit one |
+| `SPAWN_DIRECTOR_RAMP_FROM/TO` | 0.8 / 1.2 | swarmer cap scaling across the clock |
+| `SPAWN_DIRECTOR_OPENING_GRACE` | 2 | earliest second a timeline special can be scheduled |
+| `SPAWN_TIMELINE_JITTER` | 0.2 | per-special schedule shift, as a fraction of its spacing |
+| `SWARMER_GROUP_MIX` | 4-6 scatter (2) / 4-6 clustered (4) | clump size and texture, weighted |
+| `SWARMER_LANE_MIN_GAP` | 0.75 | shortest gap between clumps (opening burst cadence) |
+| `SWARMER_LANE_RETRY` | 0.5 | recheck delay when a fire is skipped |
+| `SPAWN_DIRECTOR_JITTER` | 0.25 | jitter on the swarmer gap |
+| `SPAWN_DIRECTOR_GLOBAL_CAP` | 200 | hard total-alive backstop |
 
-Mental model: **setpoint = how hard, fill time = how fast it gets there,
-ramp = the shape within a level, group mix = the texture, catch-up = the
-slack for clearing well.**
+Mental model: **total = how much, cap = how thick, length = how fast, ramp
+= the shape within a level, group mix = the texture.**

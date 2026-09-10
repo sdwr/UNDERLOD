@@ -47,6 +47,7 @@ require 'enemies/regular/splitter'
 require 'enemies/regular/pulse_walker'
 require 'enemies/regular/drone_carrier'
 require 'enemies/regular/linker'
+require 'enemies/regular/dart'
 
 require 'enemies/miniboss/bigstomper'
 

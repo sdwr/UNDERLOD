@@ -1488,6 +1488,7 @@ function init()
     ['pulse_walker'] = 200,
     ['drone_carrier'] = 200,
     ['linker'] = 200,
+    ['dart'] = 100,
 
     --bosses
     ['stompy'] = BOSS_ROUND_POWER,
@@ -1534,6 +1535,7 @@ function init()
     ['pulse_walker'] = yellow[3],
     ['drone_carrier'] = blue[3],
     ['linker'] = blue[3],
+    ['dart'] = orange[5],
   }
 
   DAMAGE_TYPE_TO_COLOR = {

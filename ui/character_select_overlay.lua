@@ -7,11 +7,12 @@ CharacterSelectOverlay:implement(GameObject)
 CHARACTER_SELECT_REROLL_COSTS = {5, 10, 20}
 
 function CharacterSelectOverlay:get_unlocked_pool()
-  -- Archer, sword, shotgun, and laser are always available. Laser's
-  -- "global range" + the new attack-timer mechanic make it play well
-  -- alongside the base picks, so it's no longer gated behind the dragon.
-  -- Swordsman remains gated on stompy.
-  local pool = {'archer', 'sword', 'shotgun', 'laser'}
+  -- Archer, shotgun, and laser are always available. Laser's "global range"
+  -- + the new attack-timer mechanic make it play well alongside the base
+  -- picks, so it's no longer gated behind the dragon. Sword is retired from
+  -- the pool (its unit code stays so old saves still load). Swordsman
+  -- remains gated on stompy.
+  local pool = {'archer', 'shotgun', 'laser'}
   if USER_STATS.stompy_defeated and USER_STATS.stompy_defeated >= 1 then
     table.insert(pool, 'swordsman')
   end

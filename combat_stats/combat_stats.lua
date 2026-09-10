@@ -692,6 +692,8 @@ enemy_type_to_stats = {
     ['charger'] = {  },
     ['summoner'] = {},
     ['bomb'] = { hp = -0.25 },
+    -- Dart: fast angular seeker. hp 0.3 => 84 HP at L1, ~6 archer shots.
+    ['dart'] = { dmg = 1, hp = 0.3, mvspd = 3.0 },
     ['firewall_caster'] = {  },
 }
 

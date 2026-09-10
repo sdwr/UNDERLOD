@@ -301,6 +301,7 @@ end
 
 seek_weight_by_enemy_type = {
   ['goblin_archer'] = 3,
+  ['dart'] = 3,
   ['default'] = SEEK_WEIGHT,
 }
 
@@ -470,86 +471,39 @@ MAX_ALIVE_SMALL_SPECIALS = 3
 SMALL_SPECIAL_INTERVAL = 10
 
 -- ============================================================================
--- Spawn director (D): power-paced homeostatic spawner. A level's spawn_director
--- config gives a per-slot setpoint (ideal alive count). One queue spawns
--- whichever slot is most lacking (weighted by fractional deficit) and paces the
--- next spawn by the POWER just spawned / a drip-rate, so cheap singles don't
--- starve the queue. Slots are concrete types (swarmer, tank, small_archer) or
--- the 'special' category (draws a random type from special_pool). See
--- SpawnManager:tick_spawn_director.
+-- Spawn director: roster-based. A level's spawn_director config gives a
+-- length (seconds), a swarmer {cap, total} and a timeline of special totals.
+-- Swarmers release evenly over length under the alive cap; specials fire on
+-- a fixed schedule regardless of how many are alive. See
+-- documentation/spawn_tuning.md and SpawnManager:init_spawn_director.
 -- ============================================================================
--- Swarmer ceiling = ceil(ramped setpoint * mult) unless overridden per slot
--- (spawn_director.ceilings). Only the swarmer lane has a ceiling; every other
--- slot caps hard at its setpoint and never spawns above it.
-SPAWN_DIRECTOR_CEILING_MULT = 1.75
+-- Length used when a director config omits one.
+SPAWN_DIRECTOR_DEFAULT_LENGTH = 60
 -- Hard total-alive cap (performance backstop): halts all director spawns.
 SPAWN_DIRECTOR_GLOBAL_CAP = 200
--- Specials-queue weight curve. Below setpoint a slot's weight is the
--- FRACTIONAL deficit (1 - alive/setpoint) ^ FILL_EXP, so slots compete on how
--- empty they are, not how many bodies they need. FILL_EXP = 1 -> pick chance
--- proportional to emptiness; >1 biases harder toward the most-depleted slot.
--- At or above setpoint the weight is zero.
-SPAWN_DIRECTOR_FILL_GAIN = 1.0
-SPAWN_DIRECTOR_FILL_EXP = 1
--- Pacing: the cooldown between spawns is a function of the level's TOTAL power
--- fill (alive + in-flight power / setpoint power), not the unit just spawned.
---   fill = 0 (empty)        -> INTERVAL_MIN  (fast fill)
---   fill >= 1 (at setpoint) -> INTERVAL_MAX  (slow trickle)
---   cooldown = lerp(MIN, MAX, fill ^ RATE_EXP)
--- RATE_EXP shapes the curve: >1 keeps it near MIN until close to setpoint then
--- slows sharply (aggressive when low). Self-regulating: kills drop the fill and
--- shorten the next cooldown, so it's responsive without per-unit cost spikes.
-SPAWN_DIRECTOR_INTERVAL_MIN = 0.25
-SPAWN_DIRECTOR_INTERVAL_MAX = 2.5
-SPAWN_DIRECTOR_RATE_EXP = 2
-SPAWN_DIRECTOR_JITTER = 0.25
--- (Unused since pacing went fill-based; kept so per-level overrides don't error.)
-SPAWN_DIRECTOR_RATE_MAX = 250
-SPAWN_DIRECTOR_RATE_MIN = 30
--- The SWARMER setpoint scales by lerp(FROM, TO, kill-quota progress) over the
--- level. Non-swarmer setpoints are fixed counts and don't ramp (fractional
--- tanks make no sense).
+-- The swarmer cap scales by lerp(FROM, TO, spawn-clock progress) over the
+-- level. Per-level `ramp = {from=, to=}` overrides.
 SPAWN_DIRECTOR_RAMP_FROM = 0.8
 SPAWN_DIRECTOR_RAMP_TO = 1.2
--- Tanks only spawn once swarmers are at least this fraction of their setpoint,
--- so tanks read as escorts embedded in the mass rather than solo rushers.
-SPAWN_DIRECTOR_TANK_SWARM_GATE = 0.5
--- Opening grace: for this many seconds after spawning starts, only the basic
--- swarmer slot may fire — specials (incl. tanks) and small archers hold back
+-- Opening grace: no timeline special is scheduled before this many seconds,
 -- so every level opens as pure chaff before the pressure pieces arrive.
 SPAWN_DIRECTOR_OPENING_GRACE = 2
--- Swarmer group mix: weighted roll, clamped to ceiling headroom. No singles
--- (they waste a director cycle on one body); the common case is a 4-6 group
--- that SCATTERS (each member at its own random offscreen point, fanning in from
--- all sides), with occasional clustered 8-12 waves at a weighted point.
+-- Timeline jitter: each special's slot shifts by up to this fraction of its
+-- type's spacing, so the schedule isn't metronomic.
+SPAWN_TIMELINE_JITTER = 0.2
+-- Jitter on the swarmer lane's gap between clumps.
+SPAWN_DIRECTOR_JITTER = 0.25
+-- Swarmer group mix: weighted roll, clamped to cap headroom and the bank.
+-- The common case is a 4-6 group that SCATTERS (each member at its own random
+-- offscreen point, fanning in from all sides), with clustered 4-6 waves at a
+-- weighted point. Levels can force clustered clumps with clustered_only.
 SWARMER_GROUP_MIX = {
   { weight = 2, min = 4, max = 6, scatter = true },
   { weight = 4, min = 4, max = 6 },
 }
-
--- Swarmer lane: swarmers spawn on their own clump cadence instead of through
--- the director's shared queue (specials/tanks/small archers keep the queue).
--- The base interval is DERIVED from a fill-time goal — reach TARGET_FILL of
--- the swarmer setpoint within FILL_TIME seconds from an empty field — so
--- refill pressure scales linearly with the setpoint as levels grow. The math
--- (documentation/spawn_tuning.md §2) integrates the catch-up curve's early
--- speedup. Per-level override: spawn_director.fill_time.
-SWARMER_LANE_FILL_TIME = 2.5
-SWARMER_LANE_TARGET_FILL = 0.8
--- Catch-up curve: the interval scales by c + (1-c)*min(fill/frac, 1) —
--- half-length on an empty field, full length from half-setpoint up. Fires are
--- skipped entirely at the ceiling. Jitter reuses SPAWN_DIRECTOR_JITTER.
-SWARMER_LANE_CATCHUP_MULT = 0.5
-SWARMER_LANE_CATCHUP_FRACTION = 0.5
--- Above setpoint the interval stretches linearly, up to (1 + this)x at the
--- ceiling, so overshoot toward the ceiling is a slow drift rather than
--- full-rate spawning.
-SWARMER_LANE_OVERFILL_SLOWDOWN = 2
--- Safety clamp on the derived interval (floor guards huge late setpoints,
--- ceiling keeps tiny/debug setpoints from feeling dead), and the recheck
--- delay when a fire is skipped at the ceiling.
-SWARMER_LANE_INTERVAL_MIN = 0.5
-SWARMER_LANE_INTERVAL_MAX = 3.125
+-- Minimum gap between swarmer clumps (the opening burst to cap fires this
+-- fast), and the recheck delay when a fire is skipped (cap full, bank short).
+SWARMER_LANE_MIN_GAP = 0.75
 SWARMER_LANE_RETRY = 0.5
 
 -- Weighted offscreen spawn placement. Every enemy spawn (basics, specials,

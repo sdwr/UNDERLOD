@@ -11,19 +11,22 @@ function Is_Boss_Level(level)
   end
 end
 
--- Per-level spawn config. Each level has:
---   basic        - the continuous swarmer clump filler (+ optional tank
---                  substitution via replace_type/replace_every).
---   special_pool - a flat list of special enemy types. The SpawnManager draws
---                  one at random each time the dynamic cadence fires (see
---                  SPECIAL_CADENCE_* in game_constants). Omit/empty for no
---                  specials. Per-type group sizes are handled centrally by
---                  Special_Cadence_Group_Size (roach in 2-3s, linker as a
---                  tethered pair, everything else single).
--- Boss levels are handled separately and have no entry here.
--- (The legacy timer/`at`-event `specials` field is still honored by the
--- SpawnManager and is used by the debug arena, but campaign levels use
--- special_pool exclusively.)
+-- Per-level spawn config. Campaign levels use spawn_director:
+--   length   - seconds over which the level's roster is released.
+--   swarmer  - {cap, total}: at most `cap` alive (ramped 0.8x -> 1.2x over
+--              length); `total` spawn over the level. Opens with a burst to
+--              cap, then an even drip; leftovers spill after length as the
+--              cap frees up.
+--   timeline - {type = total | {total, group}}: specials. No alive cap; each
+--              type is spread evenly over length and merged into one schedule,
+--              so a level's composition is fixed no matter what the player
+--              kills first.
+--   clustered_only - every swarmer clump is clustered (no scatter roll).
+-- Optional `specials = {{type=, at=}}` events fire once at a time fraction
+-- of length, bypassing everything. Boss levels have no entry here.
+-- kill_quota (the finite spawn budget, and the progress bar's total) is
+-- derived from the roster: see Director_Spawn_Quota.
+-- documentation/spawn_tuning.md has the full model.
 
 -- BENCHED: specials are being reworked into larger one-per-level miniboss
 -- style enemies (see pulsar); no level draws from this pool right now. Kept
@@ -32,61 +35,93 @@ end
 -- 'orb', 'boomerang', 'sniper', 'plasma', 'splitter', 'pulse_walker',
 -- 'drone_carrier'.
 
--- D: per-level spawn_director configs. setpoints = ideal alive count per slot
--- (swarmer / tank / small_archer / special category). The director maintains
--- these, paced by power; tuning falls back to the SPAWN_DIRECTOR_* globals.
--- Non-swarmer setpoints are hard caps: those slots never spawn above them.
--- Optional per-level overrides: fill_time (seconds for the swarmer lane to
--- fill to SWARMER_LANE_TARGET_FILL of setpoint — lower = hotter opening),
--- ramp = {from=, to=} (swarmer lane only; front-load with from > to). See
--- documentation/spawn_tuning.md.
 LEVEL_SPAWN_POOLS = {
+  -- Swarmers only: L1 is the pure clump-fighting tutorial.
   [1] = {
     spawn_director = {
-      -- Swarmers only: L1 is the pure clump-fighting tutorial.
-      setpoints = { swarmer = 15 },
+      length = 20,
+      swarmer = { cap = 15, total = 45 },
     },
   },
+  -- First tanks and small archers, one pair in each half of the level.
   [2] = {
     spawn_director = {
-      -- First tank and first small_archer show up here (after the opening
-      -- grace window) so L2 has one thing a kiting archer can't ignore.
-      setpoints = { swarmer = 15, tank = 1, small_archer = 1 },
+      length = 25,
+      swarmer = { cap = 15, total = 55 },
+      timeline = { tank = 2, small_archer = 2 },
     },
   },
-  -- L3: thin swarm, three parked archers. Clumps only (no scatter) so the
-  -- swarm reads as waves while the archers make the edges hostile.
+  -- Thin swarm, clumps only, and a steady stream of archers making the edges
+  -- hostile.
   [3] = {
     spawn_director = {
-      setpoints = { swarmer = 10, small_archer = 3 },
+      length = 30,
+      swarmer = { cap = 10, total = 40 },
+      timeline = { small_archer = 6 },
       clustered_only = true,
     },
   },
   [4] = {
     spawn_director = {
-      setpoints = { swarmer = 22, tank = 1, small_archer = 2 },
+      length = 35,
+      swarmer = { cap = 22, total = 70 },
+      timeline = { tank = 2, small_archer = 4, dart = 2 },
     },
   },
   [5] = {
     spawn_director = {
-      setpoints = { swarmer = 22, tank = 2, small_archer = 2 },
+      length = 40,
+      swarmer = { cap = 22, total = 80 },
+      timeline = { tank = 3, small_archer = 5, dart = 3 },
     },
   },
   -- 6 is stompy boss. 7-10 (T2) are built below.
 }
 
 -- T2 levels: specials removed pending the miniboss-special rework (pulsar);
--- swarmer/tank/small_archer lanes only for now.
-for _, lvl in ipairs({7, 8, 9, 10}) do
+-- swarmer/tank/small_archer only for now.
+local T2_ROSTERS = {
+  [7]  = { length = 45, swarmer = 100, tank = 4, small_archer = 6, dart = 3 },
+  [8]  = { length = 50, swarmer = 115, tank = 4, small_archer = 7, dart = 4 },
+  [9]  = { length = 55, swarmer = 130, tank = 4, small_archer = 8, dart = 5 },
+  [10] = { length = 60, swarmer = 145, tank = 4, small_archer = 9, dart = 6 },
+}
+for lvl, r in pairs(T2_ROSTERS) do
   LEVEL_SPAWN_POOLS[lvl] = {
     spawn_director = {
-      setpoints = { swarmer = 26, tank = 2, small_archer = 3 },
+      length = r.length,
+      swarmer = { cap = 26, total = r.swarmer },
+      timeline = { tank = r.tank, small_archer = r.small_archer, dart = r.dart },
     },
   }
 end
 
--- Per-type spawn group size for the dynamic cadence. Each group member counts
--- toward the cadence's "specials on screen" increment.
+-- Spawn budget implied by a level's roster: every swarmer, every timeline
+-- special and every scripted event, priced by enemy_to_round_power. Doubles
+-- as the progress bar's total.
+function Director_Spawn_Quota(spawn_config)
+  local d = spawn_config and spawn_config.spawn_director
+  if not d then return nil end
+  assert(enemy_to_round_power, 'Director_Spawn_Quota needs enemy_to_round_power')
+  local function power(etype)
+    return assert(enemy_to_round_power[etype], 'no round power for ' .. etype)
+  end
+  local total = 0
+  if d.swarmer then total = total + (d.swarmer.total or 0) * power('swarmer') end
+  for etype, spec in pairs(d.timeline or {}) do
+    local n = (type(spec) == 'table') and (spec.total or 0) or spec
+    total = total + n * power(etype)
+  end
+  for _, ev in ipairs(spawn_config.specials or {}) do
+    local gs = ev.group_size or 1
+    if type(gs) == 'function' then gs = gs() end
+    total = total + gs * power(ev.type)
+  end
+  return total
+end
+
+-- Per-type spawn group size for the legacy special cadence (non-director
+-- levels only).
 function Special_Cadence_Group_Size(enemy_type)
   if enemy_type == 'roach' then return random:int(2, 3) end
   -- Linkers spawn as a tethered pair so the beam has two endpoints.
@@ -122,7 +157,7 @@ local DEBUG_SPECIAL_TYPES = {
   'archer', 'goblin_archer', 'big_goblin_archer',
   'firewall_caster', 'turret', 'shooter', 'spawner', 'tank', 'pulsar',
   -- Custom specials added in this pass:
-  'splitter', 'pulse_walker', 'drone_carrier', 'linker',
+  'splitter', 'pulse_walker', 'drone_carrier', 'linker', 'dart',
 }
 
 function Build_Debug_Level_Entry()
@@ -171,24 +206,23 @@ function Build_Debug_Level_Entry()
   }
 end
 
--- Per-level pacing, one row per non-boss level (6/11/16/21/25 are bosses).
--- round_power: gold-per-kill denominator — each kill grants its
---   enemy_to_round_power as a fraction of this total.
--- kill_quota: round_power budget for queued enemies. Once spent, spawning
---   stops and the player must kill every remaining enemy to clear the level.
+-- Per-level gold pacing, one row per non-boss level (6/11/16/21/25 are
+-- bosses). round_power: gold-per-kill denominator — each kill grants its
+-- enemy_to_round_power as a fraction of this total. The spawn budget
+-- (kill_quota) is derived from the roster, see Director_Spawn_Quota.
 LEVEL_PACING = {
-  [1]  = { round_power = 900,  kill_quota = 1020 },
-  [2]  = { round_power = 1100, kill_quota = 1020 },
-  [3]  = { round_power = 1300, kill_quota = 1200 },
-  [4]  = { round_power = 1600, kill_quota = 1620 },
-  [5]  = { round_power = 1800, kill_quota = 1930 },
-  [7]  = { round_power = 2200, kill_quota = 2610 },
-  [8]  = { round_power = 2400, kill_quota = 2970 },
-  [9]  = { round_power = 2600, kill_quota = 3370 },
-  [10] = { round_power = 2800, kill_quota = 3790 },
+  [1]  = { round_power = 900 },
+  [2]  = { round_power = 1100 },
+  [3]  = { round_power = 1300 },
+  [4]  = { round_power = 1600 },
+  [5]  = { round_power = 1800 },
+  [7]  = { round_power = 2200 },
+  [8]  = { round_power = 2400 },
+  [9]  = { round_power = 2600 },
+  [10] = { round_power = 2800 },
 }
 -- Fallback for any level past the authored rows.
-LEVEL_PACING_DEFAULT = { round_power = 2800, kill_quota = 3790 }
+LEVEL_PACING_DEFAULT = { round_power = 2800 }
 
 function Build_Level_List(max_level)
   local level_list = {}
@@ -218,8 +252,9 @@ function Build_Level_List(max_level)
 
       local pacing = LEVEL_PACING[i] or LEVEL_PACING_DEFAULT
       level_list[i].round_power = pacing.round_power
-      level_list[i].kill_quota = pacing.kill_quota
-      level_list[i].waves_power = {pacing.kill_quota}
+      local quota = Director_Spawn_Quota(level_list[i].spawn_config)
+      level_list[i].kill_quota = quota
+      level_list[i].waves_power = {quota}
     end
   end
 

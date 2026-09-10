@@ -739,18 +739,30 @@ function get_team_units()
   return {}
 end
 
+-- A set counts once per unit: two items carrying the same set on one troop
+-- add one, the same set on two troops adds two.
 function count_team_meta_colors(units)
   local counts = {red = 0, yellow = 0, blue = 0, brown = 0, purple = 0}
   if not units then return counts end
+  local function add(color)
+    if counts[color] ~= nil then counts[color] = counts[color] + 1 end
+  end
   for _, u in ipairs(units) do
     if u and u.items then
+      local seen = {}
       for _, item in pairs(u.items) do
-        if item and item.colors then
-          for _, color in ipairs(item.colors) do
-            if counts[color] ~= nil then
-              counts[color] = counts[color] + 1
+        if item and item.sets and #item.sets > 0 then
+          for _, set_key in ipairs(item.sets) do
+            local set_def = ITEM_SETS[set_key]
+            if not seen[set_key] and set_def and set_def.color then
+              seen[set_key] = true
+              add(set_def.color)
             end
           end
+        elseif item and item.colors and not seen[item.name] then
+          -- Legacy items without set keys: dedupe by name instead.
+          seen[item.name] = true
+          for _, color in ipairs(item.colors) do add(color) end
         end
       end
     end
