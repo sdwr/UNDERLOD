@@ -54,9 +54,12 @@ LEVEL_SPAWN_POOLS = {
       setpoints = { swarmer = 15, tank = 1, small_archer = 1 },
     },
   },
+  -- L3: thin swarm, three parked archers. Clumps only (no scatter) so the
+  -- swarm reads as waves while the archers make the edges hostile.
   [3] = {
     spawn_director = {
-      setpoints = { swarmer = 20, tank = 2 },
+      setpoints = { swarmer = 10, small_archer = 3 },
+      clustered_only = true,
     },
   },
   [4] = {

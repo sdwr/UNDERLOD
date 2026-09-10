@@ -1,9 +1,17 @@
 -- Small Archer: the first "small-special" — a squishy ranged poke unit. Spawns
 -- offscreen, makes one approach toward the perimeter (SEEK_TO_RANGE at a large
 -- radius so it posts up near the edge rather than in the player's face), then
--- becomes a stationary turret firing a single aimed projectile every few
--- seconds. Cast animation windup, no targeting line, medium-slow projectile.
+-- fires a single aimed projectile every few seconds, stepping toward the arena
+-- middle between shots until it reaches an inner ring. Cast animation windup,
+-- no targeting line, medium-slow projectile.
 -- Modeled on orb.lua (approach-then-turret) + archer.lua (single aimed shot).
+
+-- Between-shot hop: distance stepped toward the arena center after each shot,
+-- and how close to the center the archer will creep before holding.
+SMALL_ARCHER_HOP_STEP = 30
+SMALL_ARCHER_MIN_CENTER_DIST = 70
+-- Cap on a hop so a blocked archer still shoots on cooldown.
+SMALL_ARCHER_HOP_TIMER = 2.5
 
 local fns = {}
 
@@ -51,16 +59,45 @@ fns['init_enemy'] = function(self)
     return true
   end
 
-  -- One positioning move, then nothing but attacks (stationary turret).
+  -- Next park point one hop toward the arena center, stopping on the inner
+  -- ring. nil when already there.
+  self.next_hop_point = function(self)
+    local cx, cy = gw / 2, gh / 2
+    local dist = math.distance(self.x, self.y, cx, cy)
+    if dist <= SMALL_ARCHER_MIN_CENTER_DIST + DISTANCE_TO_TARGET_FOR_IDLE then return nil end
+    local step = math.min(SMALL_ARCHER_HOP_STEP, dist - SMALL_ARCHER_MIN_CENTER_DIST)
+    local angle = math.atan2(cy - self.y, cx - self.x)
+    return {
+      x = math.clamp(self.x + math.cos(angle) * step, margin, gw - margin),
+      y = math.clamp(self.y + math.sin(angle) * step, margin, gh - margin),
+    }
+  end
+
+  -- One positioning move, then alternate: shoot, hop toward the middle while
+  -- the shot cools down, shoot again.
   self.moves_left = 1
+  self.hop_pending = false
   self.custom_action_selector = function(self, viable_attacks, viable_movements)
-    if self.attack_cooldown_timer > 0 then return 'retry', nil end
+    if self.attack_cooldown_timer > 0 then
+      if self.hop_pending then
+        self.hop_pending = false
+        local hop = self:next_hop_point()
+        if hop then
+          self.park_point = hop
+          self.baseActionTimer = SMALL_ARCHER_HOP_TIMER
+          return 'movement', MOVEMENT_TYPE_SEEK_TO_RANGE
+        end
+      end
+      return 'retry', nil
+    end
     if self.moves_left > 0 then
       self.moves_left = self.moves_left - 1
       return 'movement', MOVEMENT_TYPE_SEEK_TO_RANGE
-    else
+    elseif #viable_attacks > 0 then
+      self.hop_pending = true
       return 'attack', random:table(viable_attacks)
     end
+    return 'retry', nil
   end
 
   self.attack_options = {}

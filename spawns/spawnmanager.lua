@@ -928,6 +928,8 @@ function SpawnManager:init_spawn_director(cfg)
     -- Per-level override of SWARMER_LANE_FILL_TIME (seconds to fill the
     -- swarm to TARGET_FILL of setpoint from an empty field).
     fill_time = cfg.fill_time,
+    -- Per-level: every swarmer clump uses the clustered roll (no scatter).
+    clustered_only = cfg.clustered_only,
     -- Per-type in-flight count: spawns queued but not yet alive (still in their
     -- spawn-warning window). Counted toward slot population so the director
     -- doesn't re-pick a slot and overshoot its cap before the first one lands.
@@ -1090,8 +1092,9 @@ function SpawnManager:tick_swarmer_lane(dt, counts)
 
   -- The level's first swarmer spawn is always a clustered clump (never the
   -- scatter roll) so the opening reads as a wave, not lone stragglers.
-  local first = not d.swarmer_lane_fired
-  local etype, group_size, scatter = self:director_resolve_spawn('swarmer', counts, d, ramp, first)
+  -- clustered_only levels force every clump.
+  local clustered = (not d.swarmer_lane_fired) or d.clustered_only
+  local etype, group_size, scatter = self:director_resolve_spawn('swarmer', counts, d, ramp, clustered)
   if etype and group_size and group_size > 0 then
     self:director_spawn(etype, group_size, scatter)
     d.swarmer_lane_fired = true

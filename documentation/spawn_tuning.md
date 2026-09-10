@@ -105,6 +105,7 @@ FILL_TIME.
 | front-load the level | `ramp = {from = 1.3, to = 0.9}` | swarmer lane only: opens heavy, eases off; also speeds the opening cadence since I_base uses the ramped setpoint |
 | scripted opening punch | `specials = {{type='brute', at=0}}` | fires immediately, ignores caps and grace |
 | this level fills faster/slower | `fill_time = 4` | per-level override of SWARMER_LANE_FILL_TIME |
+| clumps only, never scatter | `clustered_only = true` | every swarmer fire uses the clustered roll from the group mix |
 | more swarmer overshoot room | `ceilings`, `ceiling_mult` | swarmer ceiling override (specials cap at setpoint) |
 
 ### Global (`game_constants.lua`)
