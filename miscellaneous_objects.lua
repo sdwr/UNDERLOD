@@ -800,6 +800,54 @@ end
 
 
 
+MortarShell = Stomp:extend()
+MortarShell.__class_name = 'MortarShell'
+
+function MortarShell:init(args)
+  self.source_x, self.source_y = args.source_x, args.source_y
+  self.shell_color = (args.shell_color or orange[0]):clone()
+  self.shadow_color = black[0]:clone()
+  self.shadow_color.a = 0.3
+  MortarShell.super.init(self, args)
+  local dx, dy = self.x - self.source_x, self.y - self.source_y
+  self.arc_height = math.min(65, math.max(24, math.sqrt(dx*dx + dy*dy) * 0.3))
+  self.z_index = 2
+end
+
+function MortarShell:flight_position()
+  local progress = math.min(self.currentTime / self.chargeTime, 1)
+  local dx, dy = self.x - self.source_x, self.y - self.source_y
+  local ground_x = self.source_x + dx * progress
+  local ground_y = self.source_y + dy * progress
+  local height = 4 * self.arc_height * progress * (1 - progress)
+  local angle = math.atan2(dy - 4 * self.arc_height * (1 - 2 * progress), dx)
+  return ground_x, ground_y, height, angle
+end
+
+function MortarShell:draw_ground()
+  MortarShell.super.draw_ground(self)
+  if self.visual_phase ~= 'charging' then return end
+  local x, y, height = self:flight_position()
+  local scale = 1 - 0.35 * height / self.arc_height
+  graphics.push(x, y, 0, scale, scale * 0.5)
+  graphics.circle(x, y, 4, self.shadow_color)
+  graphics.pop()
+end
+
+function MortarShell:draw()
+  if self.hidden then return end
+  if self.visual_phase ~= 'charging' then
+    MortarShell.super.draw(self)
+    return
+  end
+  local x, ground_y, height, angle = self:flight_position()
+  local y = ground_y - height
+  graphics.push(x, y, angle)
+  graphics.polygon({x+4,y, x+2,y+2, x-3,y+2, x-3,y-2, x+2,y-2}, self.shell_color)
+  graphics.line(x+1, y-1, x+2, y, fg[0], 1)
+  graphics.pop()
+end
+
 -- One-shot ground impact flash: bright gradient pool + rim burst that fade out
 -- over duration, with an optional expanding shockwave ring (impact_ring) drawn
 -- over units. For spells whose object dies the moment they deal damage (e.g.

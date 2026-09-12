@@ -41,16 +41,26 @@ function Mortar_Spell:fire()
   self.shots_left = self.shots_left - 1
   if self.shots_left <= 0 then self:die() end
 
+  if not self.unit or self.unit.dead then return end
   local target = self.target
-  if not target then return end
+  if not target or target.dead then
+    target = Helper.Target:get_random_enemy(self.unit)
+    self.target = target
+  end
+  if not target or target.dead then return end
   cannoneer1:play{pitch = random:float(0.95, 1.05), volume = 0.9}
 
-  Stomp{
+  local target_x = target.x + random:float(-self.target_offset, self.target_offset)
+  local target_y = target.y + random:float(-self.target_offset, self.target_offset)
+  local facing = self.unit.r or 0
+  MortarShell{
     group = main.current.main,
     unit = self.unit,
     team = "enemy",
-    target_offset = self.target_offset,
-    target = target,
+    x = target_x,
+    y = target_y,
+    source_x = self.unit.x + 12 * math.cos(facing),
+    source_y = self.unit.y + 12 * math.sin(facing),
     rs = self.rs,
     chargeTime = 1.5,
     knockback = self.knockback,
