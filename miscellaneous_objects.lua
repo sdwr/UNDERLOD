@@ -805,10 +805,21 @@ MortarShell.__class_name = 'MortarShell'
 
 function MortarShell:init(args)
   self.source_x, self.source_y = args.source_x, args.source_y
-  self.shell_color = (args.shell_color or orange[0]):clone()
+  self.shell_color = (args.shell_color or (args.shell_style == 'rock' and grey[0]) or orange[0]):clone()
   self.shadow_color = black[0]:clone()
   self.shadow_color.a = 0.3
   MortarShell.super.init(self, args)
+  if self.shell_style == 'rock' then
+    self.rock_size = random:float(5, 7)
+    self.rock_rotation = random:float(0, 2 * math.pi)
+    self.rock_spin = random:float(1.5, 3)
+    self.rock_highlight = self.shell_color:clone()
+    self.rock_shade = self.shell_color:clone()
+    for _, channel in ipairs({'r', 'g', 'b'}) do
+      self.rock_highlight[channel] = math.min(1, self.rock_highlight[channel] + 0.16)
+      self.rock_shade[channel] = math.max(0, self.rock_shade[channel] - 0.14)
+    end
+  end
   local dx, dy = self.x - self.source_x, self.y - self.source_y
   self.arc_height = math.min(65, math.max(24, math.sqrt(dx*dx + dy*dy) * 0.3))
   self.z_index = 2
@@ -830,7 +841,7 @@ function MortarShell:draw_ground()
   local x, y, height = self:flight_position()
   local scale = 1 - 0.35 * height / self.arc_height
   graphics.push(x, y, 0, scale, scale * 0.5)
-  graphics.circle(x, y, 4, self.shadow_color)
+  graphics.circle(x, y, self.rock_size or 4, self.shadow_color)
   graphics.pop()
 end
 
@@ -842,6 +853,18 @@ function MortarShell:draw()
   end
   local x, ground_y, height, angle = self:flight_position()
   local y = ground_y - height
+  if self.shell_style == 'rock' then
+    local size = self.rock_size
+    graphics.push(x, y, self.rock_rotation + self.rock_spin * self.currentTime, size, size)
+    graphics.polygon({x-1,y-0.3, x-0.55,y-0.9, x+0.35,y-1,
+      x+0.95,y-0.35, x+0.7,y+0.65, x-0.1,y+1, x-0.85,y+0.5}, self.shell_color)
+    graphics.polygon({x-1,y-0.3, x-0.55,y-0.9, x+0.35,y-1,
+      x+0.15,y-0.15, x-0.5,y+0.2}, self.rock_highlight)
+    graphics.polygon({x+0.15,y-0.15, x+0.95,y-0.35, x+0.7,y+0.65,
+      x-0.1,y+1}, self.rock_shade)
+    graphics.pop()
+    return
+  end
   graphics.push(x, y, angle)
   graphics.polygon({x+4,y, x+2,y+2, x-3,y+2, x-3,y-2, x+2,y-2}, self.shell_color)
   graphics.line(x+1, y-1, x+2, y, fg[0], 1)

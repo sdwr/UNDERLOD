@@ -59,6 +59,7 @@ function Mortar_Spell:fire()
     team = "enemy",
     x = target_x,
     y = target_y,
+    shell_style = self.shell_style,
     source_x = self.unit.x + 12 * math.cos(facing),
     source_y = self.unit.y + 12 * math.sin(facing),
     rs = self.rs,
@@ -90,9 +91,11 @@ function LineMortar_Spell:init(args)
 
   self.damage = get_dmg_value(self.damage)
   self.rs = self.rs or 20
+  self.line_origin_x = (self.unit and self.unit.x) or self.x
+  self.line_origin_y = (self.unit and self.unit.y) or self.y
 
   if self.target then
-    self.line_angle = math.atan2(self.target.y - self.y, self.target.x - self.x)
+    self.line_angle = math.atan2(self.target.y - self.line_origin_y, self.target.x - self.line_origin_x)
   else
     self.line_angle = random:float(0, 2 * math.pi)
   end
@@ -105,6 +108,8 @@ end
 
 function LineMortar_Spell:update(dt)
   LineMortar_Spell.super.update(self, dt)
+  if self.dead then return end
+  if not self.unit or self.unit.dead then self:die(); return end
   self.next_shot = self.next_shot - dt
   if self.next_shot <= 0 then
     self.next_shot = self.shot_interval
@@ -117,6 +122,7 @@ function LineMortar_Spell:draw()
 end
 
 function LineMortar_Spell:fire()
+  if self.dead or not self.unit or self.unit.dead then return end
   self.shots_left = self.shots_left - 1
   self.shots_fired = self.shots_fired + 1
   if self.shots_left <= 0 then self:die() end
@@ -128,14 +134,16 @@ function LineMortar_Spell:fire()
   local distance_along_line = progress * self.line_length
   
   -- Calculate target position
-  local target_x = self.unit.x + math.cos(self.line_angle) * distance_along_line
-  local target_y = self.unit.y + math.sin(self.line_angle) * distance_along_line
+  local target_x = self.line_origin_x + math.cos(self.line_angle) * distance_along_line
+  local target_y = self.line_origin_y + math.sin(self.line_angle) * distance_along_line
 
-  Stomp{
+  MortarShell{
     group = main.current.main,
     unit = self.unit,
     team = "enemy",
-    target_offset = 10,
+    source_x = self.unit.x,
+    source_y = self.unit.y,
+    shell_style = self.shell_style,
     x = target_x,
     y = target_y,
     rs = self.rs,

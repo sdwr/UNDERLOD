@@ -76,6 +76,7 @@ fns['init_enemy'] = function(self)
       group = main.current.main,
       team = "enemy",
       spell_duration = 10,
+      shell_style = 'rock',
       num_shots = 3,
       shot_interval = 0.7,
       -- small shell, lighter hit than the telegraphed set-piece attacks

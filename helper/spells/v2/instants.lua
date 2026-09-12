@@ -417,12 +417,12 @@ Avalanche:implement(GameObject)
 Avalanche:implement(Physics)
 function Avalanche:init(args)
   self:init_game_object(args)
-  if not self.group.world then self.dead = true; return end
+  if not self.group.world or not self.unit or self.unit.dead then self.dead = true; return end
   self.color = grey[0]
   self.damage = get_dmg_value(self.damage)
 
   -- Tunables -------------------------------------------------------------
-  -- The avalanche fires concentric rings of Stomp areas centred on the boss.
+  -- The avalanche fires concentric rings of arcing rocks centred on the boss.
   -- Each ring places `num_spokes` stomps at evenly spaced angles, and each
   -- successive ring sits `ring_step` further from the boss. The inner ring
   -- is sized so its stomps touch around the boss (no gap to hide in), and
@@ -455,11 +455,14 @@ function Avalanche:init(args)
         local angle = origin_angle + (spoke - 1) * (2 * math.pi / num_spokes)
         local x = cx + math.cos(angle) * ring_radius
         local y = cy + math.sin(angle) * ring_radius
-        Stomp{
+        MortarShell{
           group = main.current.main,
           unit = self.unit,
           team = self.team,
           x = x, y = y,
+          source_x = self.unit.x,
+          source_y = self.unit.y - 12,
+          shell_style = 'rock',
           rs = stomp_rs,
           color = self.color,
           damage = self.damage,
@@ -484,6 +487,8 @@ function Avalanche:init(args)
 end
 
 function Avalanche:update(dt)
+  if self.dead then return end
+  if not self.unit or self.unit.dead then self:die(); return end
   self:update_game_object(dt)
 end
 
