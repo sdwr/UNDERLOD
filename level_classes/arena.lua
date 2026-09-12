@@ -1,4 +1,12 @@
 Arena = Object:extend()
+
+-- Spawn-manager states during which the level timer runs.
+ARENA_COMBAT_STATES = {
+  entry_delay = true,
+  spawning = true,
+  spawning_boss = true,
+  waiting_for_clear = true,
+}
 Arena.__class_name = 'Arena'
 Arena:implement(GameObject)
 function Arena:init(args)
@@ -24,6 +32,13 @@ function Arena:init(args)
   self.main_slow_amount = 1
   self.transition_complete = false
   self.enemies_spawned = false
+
+  -- Per-level telemetry counters (shipped in level_end via CrashLog.snapshot_level).
+  -- time_elapsed only ticks while combat is live (see Arena:update);
+  -- damage_* are bumped by Helper.Damage:process_post_damage.
+  self.time_elapsed = 0
+  self.damage_dealt = 0
+  self.damage_taken = 0
 
   self.color = self.color or fg[0]
 
@@ -250,6 +265,13 @@ function Arena:update(dt)
   end
   
   if not self.paused then
+    -- Level duration: count only while enemies are in play (door opened ->
+    -- level clear / death), not the buy screen or the pre-fight idle.
+    if self.spawn_manager and ARENA_COMBAT_STATES[self.spawn_manager.state]
+       and not self.died and not self.won then
+      self.time_elapsed = (self.time_elapsed or 0) + dt
+    end
+
     -- Update arena groups
     star_group:update(dt)
     self.floor:update(dt)

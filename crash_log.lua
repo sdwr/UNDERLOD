@@ -301,12 +301,13 @@ function CrashLog.snapshot_level(arena, outcome, extra)
     loop = arena and arena.loop,
     ng_plus = current_new_game_plus,
     difficulty = state and state.difficulty,
-    time_elapsed = arena and arena.time_elapsed,
+    -- level duration in seconds (combat only), 0.1s resolution
+    time_elapsed = arena and arena.time_elapsed and math.floor(arena.time_elapsed * 10 + 0.5) / 10,
     gold = gold,
     units = CrashLog.snapshot_units(units),
     meta = CrashLog.snapshot_meta(units),
-    damage_dealt = arena and arena.damage_dealt,
-    damage_taken = arena and arena.damage_taken,
+    damage_dealt = arena and arena.damage_dealt and math.floor(arena.damage_dealt + 0.5),
+    damage_taken = arena and arena.damage_taken and math.floor(arena.damage_taken + 0.5),
   }
   if type(extra) == "table" then
     for k, v in pairs(extra) do payload[k] = v end

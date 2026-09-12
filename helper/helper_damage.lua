@@ -391,9 +391,15 @@ function Helper.Damage:process_post_damage(unit, actual_damage, damageType, from
   -- Show damage number
   unit:show_damage_number(actual_damage, damageType)
   
-  -- Update global damage tracking
+  -- Update global + per-level damage tracking. The per-level counters live
+  -- on the arena and are shipped in level_end telemetry.
+  local arena = main.current and main.current.current_arena
   if unit.isEnemy then
-    main.current.damage_dealt = main.current.damage_dealt + actual_damage
+    main.current.damage_dealt = (main.current.damage_dealt or 0) + actual_damage
+    if arena then arena.damage_dealt = (arena.damage_dealt or 0) + actual_damage end
+  elseif unit.is_troop then
+    main.current.damage_taken = (main.current.damage_taken or 0) + actual_damage
+    if arena then arena.damage_taken = (arena.damage_taken or 0) + actual_damage end
   end
 end
 
