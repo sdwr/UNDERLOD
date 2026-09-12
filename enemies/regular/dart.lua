@@ -80,7 +80,23 @@ fns['draw_body'] = function(self, color, grow, line_width)
   graphics.polygon({x + nose, y, x, y + wing, x - tail, y, x, y - wing}, color, line_width)
 end
 
+fns['draw_burner'] = function(self)
+  local x, y = self.x, self.y
+  local phase = Helper.Time.time * 40 + x * 0.11 + y * 0.07
+  local length = 8 + 2 * math.sin(phase) + math.sin(phase * 1.7)
+  local flicker = 0.5 * math.sin(phase * 1.3)
+  graphics.push(x, y, self.r or 0, self.hfx.hit.x, self.hfx.hit.x)
+  graphics.polygon({x-6,y-2, x-9,y-2.5, x-6-length,y+flicker,
+    x-9,y+2.5, x-6,y+2}, orange[0])
+  graphics.polygon({x-6,y-1.2, x-6-length*0.65,y+flicker*0.5,
+    x-6,y+1.2}, yellow[0])
+  graphics.rectangle(x-6, y, 2, 3, 0, 0, grey[-2])
+  graphics.line(x-7, y-1, x-7, y+1, fg[0], 1)
+  graphics.pop()
+end
+
 fns['draw_enemy'] = function(self)
+  self:draw_burner()
   if not self:draw_animation() then
     self:draw_fallback_animation()
   end
