@@ -760,7 +760,7 @@ function RestartButton:update(dt)
     ui_switch2:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     TransitionEffect{group = main.transitions, x = gw/2, y = gh/2, color = state.dark_transitions and bg[-2] or fg[0], transition_action = function()
-      current_new_game_plus = current_new_game_plus + 1
+      current_new_game_plus = math.min(current_new_game_plus + 1, NG_PLUS_MAX)
       Start_New_Run_And_Go_To_Buy_Screen()
     end, text = Text({{text = '[wavy, ' .. tostring(state.dark_transitions and 'fg' or 'bg') .. ']restarting...', font = pixul_font, alignment = 'center'}}, global_text_tags)}
   end

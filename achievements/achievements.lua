@@ -21,7 +21,6 @@ local BOSS_LIST = {
   {id = 'kill_heigan', stat = 'heigan_defeated', name = 'Heigan Vanquisher', desc = 'Defeat Heigan',     icon = 'heigandefeated'},
 }
 
-local NG_PLUS_MAX = 7
 
 ACHIEVEMENTS_INDEX = {}
 ACHIEVEMENTS_UNLOCKED = {}

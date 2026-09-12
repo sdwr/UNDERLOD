@@ -48,7 +48,7 @@ LEVEL_SPAWN_POOLS = {
     spawn_director = {
       length = 25,
       swarmer = { cap = 15, total = 55 },
-      timeline = { tank = 2, small_archer = 2 },
+      timeline = { tank = 1, small_archer = 2 },
     },
   },
   -- Thin swarm, clumps only, and a steady stream of archers making the edges
@@ -56,8 +56,8 @@ LEVEL_SPAWN_POOLS = {
   [3] = {
     spawn_director = {
       length = 30,
-      swarmer = { cap = 10, total = 40 },
-      timeline = { small_archer = 6 },
+      swarmer = { cap = 14, total = 75 },
+      timeline = { small_archer = 5 },
       clustered_only = true,
     },
   },
@@ -66,6 +66,8 @@ LEVEL_SPAWN_POOLS = {
       length = 35,
       swarmer = { cap = 22, total = 70 },
       timeline = { tank = 2, small_archer = 4, dart = 2 },
+      -- One of these is merged into the timeline per run.
+      one_of = { { laser = 1 }, { mortar = { total = 1, at = 0.3 } } },
     },
   },
   [5] = {
@@ -125,6 +127,7 @@ LEVEL_SPAWN_POOLS[10] = {
 function Director_Spawn_Quota(spawn_config)
   local d = spawn_config and spawn_config.spawn_director
   if not d then return nil end
+  assert(not d.one_of, 'Director_Spawn_Quota needs a resolved config (Resolve_Spawn_Config)')
   assert(enemy_to_round_power, 'Director_Spawn_Quota needs enemy_to_round_power')
   local function power(etype)
     return assert(enemy_to_round_power[etype], 'no round power for ' .. etype)
@@ -152,15 +155,48 @@ function Special_Cadence_Group_Size(enemy_type)
   return 1
 end
 
+local function deep_copy(t)
+  if type(t) ~= 'table' then return t end
+  local out = {}
+  for k, v in pairs(t) do out[k] = deep_copy(v) end
+  return out
+end
+
+-- Per-run roster variation: `spawn_director.one_of` is a list of timeline
+-- fragments ({laser = 1}, {mortar = 1}, ...); one is picked at random and
+-- merged into the timeline. Returns a resolved copy; the authored pool is
+-- untouched. Configs without one_of are returned as-is.
+function Resolve_Spawn_Config(config)
+  local d = config and config.spawn_director
+  if not d or not d.one_of then return config end
+  local resolved = deep_copy(config)
+  local rd = resolved.spawn_director
+  rd.timeline = rd.timeline or {}
+  local pick = d.one_of[random:int(1, #d.one_of)]
+  for etype, spec in pairs(pick) do
+    local add = (type(spec) == 'table') and (spec.total or 0) or spec
+    local cur = rd.timeline[etype]
+    if type(cur) == 'table' then
+      cur.total = (cur.total or 0) + add
+    elseif cur == nil and type(spec) == 'table' then
+      rd.timeline[etype] = deep_copy(spec)
+    else
+      rd.timeline[etype] = (cur or 0) + add
+    end
+  end
+  rd.one_of = nil
+  return resolved
+end
+
 local function get_spawn_config_for_level(level)
-  if LEVEL_SPAWN_POOLS[level] then return LEVEL_SPAWN_POOLS[level] end
+  if LEVEL_SPAWN_POOLS[level] then return Resolve_Spawn_Config(LEVEL_SPAWN_POOLS[level]) end
   -- Pick the highest defined level <= this one as a fallback so later levels
   -- aren't empty if they haven't been authored yet.
   local best = nil
   for i = 1, level do
     if LEVEL_SPAWN_POOLS[i] then best = LEVEL_SPAWN_POOLS[i] end
   end
-  return best or LEVEL_SPAWN_POOLS[1]
+  return Resolve_Spawn_Config(best or LEVEL_SPAWN_POOLS[1])
 end
 
 -- Debug arena: a non-shipping level for inspecting every special enemy in

@@ -131,6 +131,13 @@ fns['poison'] = function(self)
     on_tick_hit_sound = wizard1,
     parent = self,
     floor_effect = 'poison',
+    -- Area_Spell damages troops via chained_hit, which skips the Troop:hit
+    -- audio; play the player-hit cue so pool ticks register.
+    on_hit_callback = function(spell, target, from)
+      if target and target.is_troop and not target.dead then
+        table.random({player_hit1, player_hit2}):play{pitch = random:float(0.95, 1.05), volume = 0.9}
+      end
+    end,
   }
 end
 

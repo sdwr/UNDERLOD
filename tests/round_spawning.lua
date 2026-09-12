@@ -146,7 +146,7 @@ local function roster_totals(config)
   return totals
 end
 for _, level in ipairs({1, 2, 3, 4, 5, 7, 8, 9, 10}) do
-  local config = LEVEL_SPAWN_POOLS[level]
+  local config = Resolve_Spawn_Config(LEVEL_SPAWN_POOLS[level])
   a, sm = arena_for(nil, config)
   local budget = sm.level_data.kill_quota
   assert(budget > 0)
@@ -172,6 +172,41 @@ for _, level in ipairs({1, 2, 3, 4, 5, 7, 8, 9, 10}) do
     assert(spawned_types[etype] == total,
       ('level %d spawned %s x%s, roster says %d'):format(level, etype, tostring(spawned_types[etype]), total))
   end
+end
+
+-- one_of: each resolve merges exactly one fragment into a copy; over many
+-- runs every option shows up and the authored pool is never mutated.
+do
+  local L4 = LEVEL_SPAWN_POOLS[4]
+  assert(L4.spawn_director.one_of and #L4.spawn_director.one_of == 2)
+  local seen = {}
+  for _ = 1, 200 do
+    local r = Resolve_Spawn_Config(L4).spawn_director
+    assert(r.one_of == nil)
+    local picked = 0
+    for _, frag in ipairs(L4.spawn_director.one_of) do
+      for etype in pairs(frag) do
+        if r.timeline[etype] then picked = picked + 1; seen[etype] = true end
+      end
+    end
+    eq(picked, 1)
+    eq(r.timeline.tank, L4.spawn_director.timeline.tank)
+  end
+  assert(seen.laser and seen.mortar, 'both one_of options should roll')
+  assert(L4.spawn_director.timeline.laser == nil and L4.spawn_director.timeline.mortar == nil)
+  assert(Resolve_Spawn_Config(LEVEL_SPAWN_POOLS[1]) == LEVEL_SPAWN_POOLS[1])
+end
+
+-- timeline `at`: the first slot lands at that fraction of the level.
+do
+  a, sm = arena_for(nil, {spawn_director = {length = 40, timeline = {mortar = {total = 1, at = 0.3}, laser = 1}}})
+  local d = sm.spawn_director
+  local mortar_at, laser_at
+  for _, e in ipairs(d.timeline) do
+    if e.type == 'mortar' then mortar_at = e.at elseif e.type == 'laser' then laser_at = e.at end
+  end
+  assert(mortar_at and math.abs(mortar_at - 12) <= 40 * (SPAWN_TIMELINE_JITTER or 0) + 1e-6, 'mortar at ' .. tostring(mortar_at))
+  assert(laser_at and math.abs(laser_at - 20) <= 40 * (SPAWN_TIMELINE_JITTER or 0) + 1e-6, 'laser at ' .. tostring(laser_at))
 end
 
 -- Composition does not depend on kills: with nothing killed, every timeline

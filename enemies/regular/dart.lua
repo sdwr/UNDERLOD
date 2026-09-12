@@ -23,7 +23,7 @@ fns['init_enemy'] = function(self)
 
   -- Detonate just before the bodies touch, so it never bumps the troop.
   self.trigger_radius = 22
-  self.explosion_radius = 40
+  self.explosion_radius = 28
   self.exploded = false
   self.area_sensor = Circle(self.x, self.y, self.trigger_radius)
   self.state_always_run_functions['always_run'] = function(self)
@@ -37,21 +37,28 @@ fns['init_enemy'] = function(self)
   end
 end
 
+-- Same impact as stompy's stomp (Stomp_Spell:die), scaled down: ground
+-- flash with a ring, then a direct hit on every troop in the radius.
 fns['explode'] = function(self)
   self.exploded = true
-  explosion_new:play{pitch = random:float(1.1, 1.2), volume = 0.6}
-  Area{
-    group = main.current.effects,
-    unit = self,
-    x = self.x,
-    y = self.y,
-    r = self.explosion_radius,
-    pick_shape = 'circle',
-    duration = 0.15,
-    dmg = self.dmg,
-    is_troop = false,
-    color = orange[0]
+  usurer1:play{pitch = random:float(1.15, 1.3), volume = 0.35}
+  GroundFlash{
+    group = main.current.main,
+    x = self.x, y = self.y,
+    rs = self.explosion_radius,
+    duration = 0.3,
+    impact_ring = true,
+    color = orange[0],
+    ring_color = orange[5],
   }
+  local blast = Circle(self.x, self.y, self.explosion_radius)
+  for _, target in ipairs(main.current.main:get_objects_in_shape(blast, main.current.friendlies)) do
+    if not target.dead then
+      target:hit(self.dmg, self, nil, true, false)
+      HitCircle{group = main.current.effects, x = target.x, y = target.y, rs = 5, color = fg[0], duration = 0.1}
+      HitParticle{group = main.current.effects, x = target.x, y = target.y, color = orange[0]}
+    end
+  end
   self:die()
 end
 

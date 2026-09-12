@@ -195,6 +195,15 @@ function Laser_Spell:update(dt)
 
   self.current_laser_aim_width = math.max(0.5, self.laser_aim_width * (self.charge_time / self.charge_duration))
 
+  -- face_beam: the caster's body turns with the aim line and holds that
+  -- heading through the lock and the burst (Enemy:update skips its own
+  -- rotation while freezerotation is set).
+  if self.face_beam and self.unit and not self.unit.dead then
+    self.unit.freezerotation = true
+    self.unit:set_angle(self.r)
+    self.unit.r = self.r
+  end
+
   self:update_charge(dt)
   if self.is_firing then
     self.next_tick = self.next_tick - dt
@@ -390,6 +399,7 @@ end
 
 function Laser_Spell:die()
   if self.charge_sound then self.charge_sound:stop() end
+  if self.face_beam and self.unit then self.unit.freezerotation = false end
   Laser_Spell.super.die(self)
 end
 

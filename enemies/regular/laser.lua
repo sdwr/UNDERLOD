@@ -14,8 +14,6 @@ fns['init_enemy'] = function(self)
   Set_Enemy_Shape(self, self.size)
 
   self.class = 'special_enemy'
-  self.single_animation = true
-  self.icon = 'mech1'
 
 
   --set special attrs
@@ -66,18 +64,29 @@ fns['init_enemy'] = function(self)
       fade_in_aim_draw = true,
       lock_last_duration = 1.5,
       charge_duration = 2.0,
+      face_beam = true,
     },
   }
 
   table.insert(self.attack_options, laser)
 end
 
-fns['draw_enemy'] = function(self)
-  local animation_success = self:draw_animation()
-
-  if not animation_success then
-    self:draw_fallback_animation()
+fns['draw_body'] = function(self, color, grow, line_width)
+  local x, y, g = self.x, self.y, grow or 0
+  if line_width then
+    graphics.polygon({x-12-g,y-7-g, x-8-g,y-11-g, x+13+g,y-11-g,
+      x+13+g,y-4+g, x+g,y-4+g, x+g,y+4-g, x+13+g,y+4-g,
+      x+13+g,y+11+g, x-8-g,y+11+g, x-12-g,y+7+g}, color, line_width)
+    return
   end
+  graphics.polygon({x-12,y-7, x-8,y-11, x,y-11, x,y+11, x-8,y+11, x-12,y+7}, color)
+  graphics.polygon({x-3,y-11, x+11,y-11, x+13,y-8, x+13,y-4, x-3,y-4}, color)
+  graphics.polygon({x-3,y+4, x+13,y+4, x+13,y+8, x+11,y+11, x-3,y+11}, color)
+  graphics.rectangle(x-5, y, 4, 8, 0, 0, bg[0])
 end
- 
+
+fns['draw_enemy'] = function(self)
+  self:draw_fallback_animation()
+end
+
 enemy_to_class['laser'] = fns

@@ -951,9 +951,13 @@ function SpawnManager:init_spawn_director(cfg)
     local total = (type(spec) == 'table') and (spec.total or 0) or spec
     local group = (type(spec) == 'table' and spec.group) or 1
     local n = math.ceil(total / group)
+    local first_at = type(spec) == 'table' and spec.at or nil
     for i = 1, n do
       local interval = length / n
-      local at = interval * (i - 0.5) + interval * jitter * random:float(-1, 1)
+      -- spec.at pins the first slot to a fraction of the level; the rest
+      -- follow at the usual spacing.
+      local center = first_at and (length * first_at + interval * (i - 1)) or interval * (i - 0.5)
+      local at = center + interval * jitter * random:float(-1, 1)
       table.insert(d.timeline, {
         type = etype,
         group = math.min(group, total - (i - 1) * group),

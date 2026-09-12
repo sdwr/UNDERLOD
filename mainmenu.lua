@@ -106,7 +106,8 @@ function MainMenu:on_enter(from)
           'intimidation', 'vulnerability', 'temporal_chains', 'ceremonial_dagger', 'homing_barrage', 'critical_strike', 'noxious_strike', 'infesting_strike', 'burning_strike', 'lucky_strike', 'healing_strike', 'stunning_strike',
           'silencing_strike', 'culling_strike', 'lightning_strike', 'psycholeak', 'divine_blessing', 'hardening', 'kinetic_strike',
         }
-        current_new_game_plus = run.current_new_game_plus or current_new_game_plus or 0
+        -- Continue at the tier the run was started on, not the menu selection.
+        current_new_game_plus = run.ng_plus or run.current_new_game_plus or current_new_game_plus or 0
         Helper.Unit.team_saves = run.team_saves or {{}, {}, {}, {}}
         system.save_state()
         main:add(BuyScreen'buy_screen')
@@ -135,31 +136,12 @@ function MainMenu:on_enter(from)
 
   -- NG+ selector (replaces the old 'hard' button). Plays at the currently
   -- selected NG+ level when the normal button is pressed. Each level adds
-  -- +10% enemy hp and dmg; the next level unlocks automatically by winning.
-  local NG_PLUS_MAX = 7
+  -- NG_PLUS_STAT_PER_LEVEL enemy hp and dmg; every tier is unlocked.
 
   local function refresh_ng_label()
     if self.ng_plus_label and self.ng_plus_label.text then
       self.ng_plus_label.text:set_text({{text = '[bg10]NG+' .. tostring(current_new_game_plus or 0), font = pixul_font, alignment = 'center'}})
     end
-  end
-
-  local function ng_locked_toast()
-    if not self.ng_plus_locked_info then
-      self.ng_plus_locked_info = InfoText{group = self.ui}
-    end
-    self.ng_plus_locked_info:activate({
-      {text = '[fg]beat NG+' .. tostring(new_game_plus or 0) .. ' to unlock', font = pixul_font, alignment = 'center'},
-    }, nil, nil, nil, nil, 16, 4, nil, 2)
-    self.ng_plus_locked_info.x, self.ng_plus_locked_info.y = gw/2, gh/2 + 10
-    self.t:after(2, function()
-      if self.ng_plus_locked_info then
-        self.ng_plus_locked_info:deactivate()
-        self.ng_plus_locked_info.dead = true
-        self.ng_plus_locked_info = nil
-      end
-    end, 'ng_plus_locked_info')
-    error1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
   end
 
   self.ng_plus_down_button = Button{group = self.main_ui, x = 152, y = gh/2 - 10, w = 18, force_update = true, button_text = '-', fg_color = 'fg', bg_color = 'bg', action = function(b)
@@ -181,10 +163,6 @@ function MainMenu:on_enter(from)
     ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     b.spring:pull(0.2, 200, 10)
     b.selected = true
-    if target > (new_game_plus or 0) then
-      ng_locked_toast()
-      return
-    end
     current_new_game_plus = target
     state.current_new_game_plus = current_new_game_plus
     refresh_ng_label()
@@ -285,11 +263,9 @@ end
 
 
 -- Greys out the - / + NG+ buttons when they have nothing to do.
--- - is dead at 0; + is dead at the hard cap or when the next level is locked.
+-- - is dead at 0; + is dead at the cap.
 function MainMenu:refresh_ng_button_states()
-  local NG_PLUS_MAX = 7
   local cur = current_new_game_plus or 0
-  local maxu = new_game_plus or 0
 
   local function apply(button, glyph, disabled)
     if not button or not button.text then return end
@@ -306,7 +282,7 @@ function MainMenu:refresh_ng_button_states()
   end
 
   apply(self.ng_plus_down_button, '-', cur <= 0)
-  apply(self.ng_plus_up_button, '+', cur >= NG_PLUS_MAX or cur >= maxu)
+  apply(self.ng_plus_up_button, '+', cur >= NG_PLUS_MAX)
 end
 
 

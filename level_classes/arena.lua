@@ -440,7 +440,7 @@ end
 function Arena:endless()
   if self.clicked_loop then return end
   self.clicked_loop = true
-  if current_new_game_plus >= 7 then current_new_game_plus = 7
+  if current_new_game_plus >= NG_PLUS_MAX then current_new_game_plus = NG_PLUS_MAX
   else current_new_game_plus = current_new_game_plus - 1 end
   if current_new_game_plus < 0 then current_new_game_plus = 0 end
   self.loop = self.loop + 1
@@ -745,13 +745,9 @@ function Arena:on_run_complete()
     end
   end
 
-  -- Track whether this win unlocks a new NG+ tier (player reached the cap).
-  local newly_unlocked = (current_new_game_plus == new_game_plus)
-  if newly_unlocked then
-    new_game_plus = new_game_plus + 1
-    state.new_game_plus = new_game_plus
-  end
-  current_new_game_plus = current_new_game_plus + 1
+  -- Step the next run up a tier, capped at the top tier.
+  local at_cap = (current_new_game_plus or 0) >= NG_PLUS_MAX
+  current_new_game_plus = math.min((current_new_game_plus or 0) + 1, NG_PLUS_MAX)
   state.current_new_game_plus = current_new_game_plus
   max_units = MAX_UNITS
 
@@ -776,8 +772,8 @@ function Arena:on_run_complete()
   -- NG+ status appears a beat later so the headline has room to land.
   trigger:after(1.2, function()
     local ng_line
-    if newly_unlocked then
-      ng_line = '[wavy_mid, yellow]NG+' .. tostring(current_new_game_plus) .. ' unlocked!'
+    if at_cap then
+      ng_line = '[wavy_mid, yellow]NG+' .. tostring(current_new_game_plus) .. ' cleared, the top tier!'
     else
       ng_line = '[wavy_mid, yellow]NG+' .. tostring(current_new_game_plus) .. ' continues...'
     end
@@ -826,11 +822,7 @@ function Arena:on_win()
       CrashLog.log_event('level_end', CrashLog.snapshot_level(self, 'run_complete'))
     end
 
-    if current_new_game_plus == new_game_plus then
-      new_game_plus = new_game_plus + 1
-      state.new_game_plus = new_game_plus
-    end
-    current_new_game_plus = current_new_game_plus + 1
+    current_new_game_plus = math.min(current_new_game_plus + 1, NG_PLUS_MAX)
     state.current_new_game_plus = current_new_game_plus
     max_units = MAX_UNITS
 
@@ -859,12 +851,8 @@ function Arena:on_win()
         ItemCard{group = self.ui, x = 120 + (i-1)*30, y = 20, w = ITEM_CARD_WIDTH, h = ITEM_CARD_HEIGHT, sx = 0.75, sy = 0.75, force_update = true, passive = passive.passive , level = passive.level, xp = passive.xp, parent = self}
       end
 
-      if current_new_game_plus == 8 then
-        if current_new_game_plus == new_game_plus then
-          new_game_plus = 7
-          state.new_game_plus = new_game_plus
-        end
-        current_new_game_plus = 7
+      if current_new_game_plus >= NG_PLUS_MAX then
+        current_new_game_plus = NG_PLUS_MAX
         state.current_new_game_plus = current_new_game_plus
         max_units = MAX_UNITS
 
@@ -920,7 +908,7 @@ function Arena:on_win()
       system.save_state()
     end
 
-    if current_new_game_plus == 8 then
+    if current_new_game_plus >= NG_PLUS_MAX then
       state.achievement_new_game_5 = true
       system.save_state()
     end

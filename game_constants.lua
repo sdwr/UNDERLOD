@@ -65,6 +65,10 @@ end
 -- Most data tables (ROUND_POWER_BY_LEVEL, etc.) still
 -- hold entries up to 25 - those past NUMBER_OF_ROUNDS are simply unreachable.
 NUMBER_OF_ROUNDS = 11
+-- NG+: five tiers, all selectable from the start. Each tier adds this much
+-- to enemy base hp and dmg (NG+5 = x2.0).
+NG_PLUS_MAX = 5
+NG_PLUS_STAT_PER_LEVEL = 0.2
 BOSS_ROUND_POWER = 1000
 BOSS_ROUNDS = {6, 11, 16, 21, 25}
 LEVELS_TO_HEAL_ON_CLEAR = BOSS_ROUNDS

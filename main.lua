@@ -1557,10 +1557,12 @@ function init()
   }
 
   Load_Steam_State()
-  new_game_plus = state.new_game_plus or 0
-  if not state.new_game_plus then state.new_game_plus = new_game_plus end
-  current_new_game_plus = state.current_new_game_plus or new_game_plus
-  if not state.current_new_game_plus then state.current_new_game_plus = current_new_game_plus end
+  -- All NG+ tiers are unlocked; new_game_plus (the unlock cap) is pinned to
+  -- the max so older saves and the menu agree.
+  new_game_plus = NG_PLUS_MAX
+  state.new_game_plus = new_game_plus
+  current_new_game_plus = math.clamp(state.current_new_game_plus or 0, 0, NG_PLUS_MAX)
+  state.current_new_game_plus = current_new_game_plus
 
   state.show_damage_numbers = state.show_damage_numbers or DAMAGE_NUMBERS_SETTING[4]
   state.show_combat_controls = not not state.show_combat_controls

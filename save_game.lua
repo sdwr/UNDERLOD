@@ -18,6 +18,10 @@ function Start_New_Run()
   data.difficulty = state.difficulty or 'normal'
   state.difficulty = data.difficulty
 
+  -- The run keeps the NG+ tier it was started on; the main menu selector
+  -- only picks the tier for the next new run.
+  data.ng_plus = current_new_game_plus or 0
+
   return data
 end
 
@@ -96,6 +100,7 @@ function Collect_Save_Data_From_State(state)
   end
   data.locked_state = locked_state
   data.gold = gold
+  data.ng_plus = current_new_game_plus or 0
 
   Validate_Save_Data(data)
   return data
@@ -111,6 +116,7 @@ function Load_Save_Data_Into_State(state, data)
 
   locked_state = data.locked_state
   gold = data.gold
+  if data.ng_plus then current_new_game_plus = data.ng_plus end
 
 end
 

@@ -12,6 +12,8 @@ function Mortar_Spell:init(args)
 
   self.damage = get_dmg_value(self.damage)
   self.rs = self.rs or 25
+  -- Shells land within a square of +-target_offset around the target.
+  self.target_offset = self.target_offset or 10
 
   --memory
   self.next_shot = 0.2
@@ -20,6 +22,9 @@ end
 
 function Mortar_Spell:update(dt)
   Mortar_Spell.super.update(self, dt)
+  if self.dead then return end
+  -- A dead caster fires no further shells; shells already in the air land.
+  if not self.unit or self.unit.dead then self:die() return end
   self.next_shot = self.next_shot - dt
   if self.next_shot <= 0 then
     self.next_shot = self.shot_interval
@@ -44,7 +49,7 @@ function Mortar_Spell:fire()
     group = main.current.main,
     unit = self.unit,
     team = "enemy",
-    target_offset = 10,
+    target_offset = self.target_offset,
     target = target,
     rs = self.rs,
     chargeTime = 1.5,

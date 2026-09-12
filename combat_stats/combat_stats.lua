@@ -60,7 +60,8 @@ enemy_attack_cooldowns = {
   ['spread'] = attack_cooldowns['fast'],
   -- Mortar's heavy lob is hard to dodge when it spams; +1.5s on top of
   -- 'fast' (1.1s) gives the player a real beat between shells.
-  ['mortar'] = attack_cooldowns['fast'] + 1.5,
+  -- Mortar: seconds between walking volleys (see mortar.lua fire_volley).
+  ['mortar'] = 6.5,
   -- Arcspread fires a 4-arc fan that blankets a wide area; at the old
   -- 'medium' (1.5s) cadence it was overtuned — near-constant pressure with
   -- little room to dodge between volleys. Pushed well past 'very-slow' to
@@ -69,6 +70,7 @@ enemy_attack_cooldowns = {
   ['cleaver'] = attack_cooldowns['slow'],
   ['charger'] = attack_cooldowns['slow'],
   ['summoner'] = attack_cooldowns['slow'],
+  ['spawner'] = 5.0,
   ['seeker'] = attack_cooldowns['very-slow'],
   -- Slime pauses ~6s between 8-way pulses so the player has time to leave the
   -- previous pulse's danger zone before the next windup.
@@ -175,11 +177,11 @@ TROOP_SHOTGUN_RANGE = 76
 TROOP_ARCHER_RANGE = 95
 
 REGULAR_ENEMY_HP = 45
-REGULAR_ENEMY_DAMAGE = 15
+REGULAR_ENEMY_DAMAGE = 20
 REGULAR_ENEMY_MS = 18
 
 SPECIAL_ENEMY_HP = 280
-SPECIAL_ENEMY_DAMAGE = 20
+SPECIAL_ENEMY_DAMAGE = 28
 SPECIAL_ENEMY_MS = 20
 
 MINIBOSS_HP = 400
@@ -199,7 +201,8 @@ REGULAR_PUSH_DAMAGE = 20
 SPECIAL_PUSH_DAMAGE = 20
 -- Contact rule: a non-boss enemy that touches a troop dies and deals its own
 -- dmg scaled by the fraction of hp it had left, times this multiplier.
-CONTACT_DAMAGE_HP_SCALE = 1.0
+-- 1.25: a full-hp swarmer lands 12.5 (10% of an archer), a tank 35.
+CONTACT_DAMAGE_HP_SCALE = 1.25
 
 function Dies_On_Contact(enemy)
   return enemy.class ~= 'boss' and enemy.class ~= 'miniboss' and not enemy.survives_contact
@@ -210,7 +213,7 @@ function Contact_Damage(enemy)
   local frac = (max_hp > 0) and math.clamp((enemy.hp or 0) / max_hp, 0, 1) or 1
   return (enemy.dmg or 0) * frac * CONTACT_DAMAGE_HP_SCALE
 end
-BOSS_PUSH_DAMAGE = 20
+BOSS_PUSH_DAMAGE = 30
 
 STUN_DURATION_CRITTER = 2.5
 STUN_DURATION_REGULAR_ENEMY = 2.5
@@ -565,11 +568,11 @@ local function _scale_for(level)
   return ENEMY_SCALE_BY_LEVEL[level] or ENEMY_SCALE_BY_LEVEL[#ENEMY_SCALE_BY_LEVEL] or 0
 end
 
--- growth (default 1) scales how much of the level + post-boss hp growth a
--- unit receives: 0.5 = half the growth, 0 = flat base hp on every level.
+-- Enemy hp only steps up after each boss (POST_BOSS_HP_MULT); there is no
+-- per-level growth. growth (default 1) scales how much of that step a unit
+-- receives: 0.5 = half the step, 0 = flat base hp on every level.
 SCALED_ENEMY_HP = function(level, base_hp, growth)
-  local scale = _scale_for(level)
-  local total_mult = (1 + 0.2 * scale) * POST_BOSS_HP_MULT(level)
+  local total_mult = POST_BOSS_HP_MULT(level)
   return base_hp * (1 + (total_mult - 1) * (growth or 1))
 end
 
@@ -579,9 +582,10 @@ function Enemy_HP_Growth(unit)
   return (stats and stats.hp_scale) or 1
 end
 
+-- +20% per scale step: L4-6 x1.2, L7-9 x1.4, L10+ x1.6.
 SCALED_ENEMY_DAMAGE = function(level, base_dmg)
   local scale = _scale_for(level)
-  return base_dmg + (base_dmg * 0.1 * scale)
+  return base_dmg + (base_dmg * 0.2 * scale)
 end
 
 SCALED_ENEMY_MS = function(level, base_ms)
@@ -723,7 +727,8 @@ unit_stat_multipliers = {
 enemy_type_to_stats = {
     -- hp 0.28 => 12.6 HP at L1: dies to one archer shot (16.5 dmg - def 25
     -- => 13.2 effective) through L3; level scaling makes it 2 shots from L4.
-    ['swarmer'] = { dmg = 0.5, hp = 0.28, mvspd = 1.3},
+    -- hp 0.45 => 20 hp: two bare archer hits (16.5), one with 2 Power pieces (23.1).
+    ['swarmer'] = { dmg = 0.5, hp = 0.45, mvspd = 1.3},
     ['hunter_swarmer'] = { dmg = 0.6, hp = 1.4, mvspd = 1.1 },
     -- Tank: slow, chunky body. No attacks, just contact pressure. hp=0.4
     -- on special_enemy base (280) = 112 HP at L1, ~220 at L7 with
@@ -733,7 +738,8 @@ enemy_type_to_stats = {
     ['tank'] = { dmg = 1, hp = 0.4, mvspd = 0.6 },
 
     -- Small archer: squishy ranged poke. special_enemy base scaled way down.
-    ['small_archer'] = { dmg = 0.5, hp = 0.4, mvspd = 0.9 },
+    -- hp 0.35 => 98: six bare archer shots (16.5), three two-troop volleys.
+    ['small_archer'] = { dmg = 0.5, hp = 0.35, mvspd = 0.9 },
 
     ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
     ['chaser'] = { dmg = 1, mvspd = 1 },
@@ -756,8 +762,8 @@ enemy_type_to_stats = {
 
     ['arcspread'] = {  },
     ['assassin'] = {},
-    ['laser'] = {},
-    ['mortar'] = {  },
+    ['laser'] = { hp = 1.4 },
+    ['mortar'] = { hp = 1.4, mvspd = 0.7 },
     ['rager'] = {  },
     ['spawner'] = {},
     ['stomper'] = {  },
@@ -766,7 +772,7 @@ enemy_type_to_stats = {
     ['bomb'] = { hp = -0.25 },
     -- Dart: fast angular seeker. hp 0.24 => 67 HP at L1, ~5 archer shots.
     -- hp_scale 0.5: only half the level/post-boss growth so it stays burstable.
-    ['dart'] = { dmg = 1, hp = 0.24, mvspd = 3.0, hp_scale = 0.5 },
+    ['dart'] = { dmg = 1, hp = 0.24, mvspd = 2.6, hp_scale = 0.5 },
     ['firewall_caster'] = {  },
 }
 
@@ -930,6 +936,18 @@ _set_unit_base_stats = function(unit)
         unit.base_hp = unit.base_hp * boss_hp_mult
 
         unit.baseline_hp = unit.base_hp
+    end
+
+    -- NG+ scaling for enemies: baked into the base so calculate_stats and
+    -- any later recalc keep it.
+    if unit.isEnemy and unit.base_hp then
+      local ngp = math.clamp(current_new_game_plus or 0, 0, NG_PLUS_MAX)
+      if ngp > 0 then
+        local mult = 1 + NG_PLUS_STAT_PER_LEVEL * ngp
+        unit.base_hp = unit.base_hp * mult
+        unit.base_dmg = (unit.base_dmg or 0) * mult
+        unit.baseline_hp = unit.base_hp
+      end
     end
 
     unit.stun_cooldown = 0

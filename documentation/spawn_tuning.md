@@ -21,9 +21,10 @@ after its manual queue is exhausted and the field is cleared.
 [3] = {
   spawn_director = {
     length = 30,                              -- seconds
-    swarmer = { cap = 10, total = 30 },       -- alive ceiling, roster
-    timeline = { small_archer = 6 },          -- specials: totals only
+    swarmer = { cap = 14, total = 75 },       -- alive ceiling, roster
+    timeline = { small_archer = 5 },          -- specials: totals only
     clustered_only = true,                    -- optional
+    one_of = { { laser = 1 }, { mortar = { total = 1, at = 0.3 } } }, -- optional: one fragment per run
   },
   specials = { {type = 'pulsar', at = 0.5} }, -- optional scripted beats
 },
@@ -69,7 +70,7 @@ Rates with current rosters (opening burst excluded):
 |---|---|---|---|---|
 | L1 | 15 | 45 | 20s | 1.5/s — a 5-clump every 3.3s |
 | L2 | 15 | 55 | 25s | 1.6/s — every 3s |
-| L3 | 10 | 40 | 30s | 1.0/s — every 5s |
+| L3 | 14 | 75 | 30s | 2.0/s — every 2.5s |
 | L4 | 22 | 70 | 35s | 1.4/s — every 3.6s |
 | L5 | 22 | 80 | 40s | 1.45/s — every 3.4s |
 | L7-10 | 22-26 | 90-120 | 45-60s | 1.4-1.7/s — every 3-3.5s |
@@ -98,6 +99,8 @@ ignoring one never prevents the next.
 | denser/thinner standing swarm | `swarmer.cap` | alive ceiling; also the size of the opening burst |
 | more/fewer swarmers overall | `swarmer.total` | roster; with `length` sets the drip rate |
 | more/other specials | `timeline` | totals per type; evenly interleaved |
+| a special earlier/later | `timeline.<type> = {total=, at=}` | `at` pins the first slot to that fraction of `length`; the rest keep their spacing |
+| per-run variety | `one_of` | list of timeline fragments; one is merged in when the level list is built (`Resolve_Spawn_Config`) |
 | front-load the swarm | `ramp = {from = 1.2, to = 0.8}` | cap opens high and eases off |
 | scripted opening punch | `specials = {{type='brute', at=0}}` | fires immediately, ignores caps and grace |
 | clumps only, never scatter | `clustered_only = true` | every swarmer fire uses the clustered roll |

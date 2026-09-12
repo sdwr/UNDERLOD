@@ -31,16 +31,6 @@ function Enemy:init(args)
     return true
   end
 
-  -- NG+ scaling: every level adds +10% to enemy base hp and dmg, baked
-  -- into base stats so calculate_stats picks it up and any later recalc
-  -- preserves the scaling.
-  local ngp = current_new_game_plus or 0
-  if ngp > 0 then
-    local mult = 1 + 0.1 * ngp
-    if self.base_hp then self.base_hp = self.base_hp * mult end
-    if self.base_dmg then self.base_dmg = self.base_dmg * mult end
-  end
-
   self:init_unit()
   self:init_hitbox_points()
 
@@ -835,6 +825,10 @@ function Enemy:onDeath()
     enemy = self
   }
   
+  -- Per-type death effect (exploder burst, poison pool). Runs from the
+  -- group's cleanup pass, so both hit and contact deaths reach it.
+  if self.on_death then self:on_death() end
+
   self.state_change_functions['death'](self)
   self.death_function()
 end
