@@ -17,7 +17,7 @@ ITEM_RARITY = {
   RARE = 'rare',
 }
 
--- Item Sets
+-- Item Sets. Removed sets keep their keys so old saves still resolve.
 ITEM_SET = {
   DAMAGE = 'damage',
   ASPD = 'aspd',
@@ -46,6 +46,12 @@ ITEM_SET = {
   MEND = 'mend',
   TURRET = 'turret',
   MOBILE = 'mobile',
+  VOLT = 'volt',
+  VITALITY = 'vitality',
+  PIERCE = 'pierce',
+  FOCUS = 'focus',
+  RICOCHET = 'ricochet',
+  RECOIL = 'recoil',
 }
 
 -- Stat definitions
@@ -112,7 +118,13 @@ ITEM_SET_POWER_BUDGET = 1
 -- Set definitions with bonuses. Each set is tagged with `rarity` (common or
 -- rare) and optionally `min_tier` (default 1). Items roll a set from the pool
 -- matching their own rarity whose min_tier is at or below the current item
--- tier — earlier tiers stay in the pool (one shared pool for now).
+-- tier. Bonus tiers stack: a 3-piece set applies [1], [2] and [3] together,
+-- so descriptions list cumulative totals.
+--
+-- Commons are 3-piece stat sets with a linear curve. Rares are 1 or 2 pieces:
+-- a specific rare set is ~2% of any roll, so 3-piece rares never completed.
+-- `disabled` keeps a definition loadable for old saves but out of the roll
+-- pool.
 ITEM_SETS = {
   [ITEM_SET.DAMAGE] = {
     name = 'Power',
@@ -120,44 +132,30 @@ ITEM_SETS = {
     color = 'red',
     rarity = ITEM_RARITY.COMMON,
     bonuses = {
-      [1] = { stats = {['dmg'] = 1} },
-      [2] = { stats = {['dmg'] = 3} },
-      [3] = { stats = {['dmg'] = 5} },
+      [1] = { stats = {['dmg'] = 2} },
+      [2] = { stats = {['dmg'] = 2} },
+      [3] = { stats = {['dmg'] = 2} },
     },
     descriptions = {
-      [1] = '+10% damage',
-      [2] = '+30% damage',
-      [3] = '+50% damage',
+      [1] = '+20% damage',
+      [2] = '+40% damage',
+      [3] = '+60% damage',
     }
   },
   [ITEM_SET.ASPD] = {
     name = 'Swift',
+    summary = '+%attack speed',
     color = 'yellow',
     rarity = ITEM_RARITY.COMMON,
     bonuses = {
-      [1] = { stats = {['aspd'] = 1} },
-      [2] = { stats = {['aspd'] = 3} },
-      [3] = { stats = {['aspd'] = 5} },
+      [1] = { stats = {['aspd'] = 2} },
+      [2] = { stats = {['aspd'] = 2} },
+      [3] = { stats = {['aspd'] = 2} },
     },
     descriptions = {
-      [1] = '+5% attack speed',
-      [2] = '+15% attack speed',
-      [3] = '+25% attack speed',
-    }
-  },
-  [ITEM_SET.RANGE] = {
-    name = 'Reach',
-    color = 'brown',
-    rarity = ITEM_RARITY.COMMON,
-    bonuses = {
-      [1] = { stats = {['range'] = 1} },
-      [2] = { stats = {['range'] = 3} },
-      [3] = { stats = {['range'] = 5} },
-    },
-    descriptions = {
-      [1] = '+5% range',
-      [2] = '+15% range',
-      [3] = '+25% range',
+      [1] = '+10% attack speed',
+      [2] = '+20% attack speed',
+      [3] = '+30% attack speed',
     }
   },
   [ITEM_SET.CRIT] = {
@@ -166,42 +164,14 @@ ITEM_SETS = {
     color = 'blue',
     rarity = ITEM_RARITY.COMMON,
     bonuses = {
-      [1] = { stats = {['crit_chance'] = 1} },
-      [2] = { stats = {['crit_chance'] = 3} },
-      [3] = { stats = {['crit_chance'] = 5} },
+      [1] = { stats = {['crit_chance'] = 1.5} },
+      [2] = { stats = {['crit_chance'] = 1.5} },
+      [3] = { stats = {['crit_chance'] = 1.5} },
     },
     descriptions = {
-      [1] = '+10% crit chance',
+      [1] = '+15% crit chance (crits deal double damage)',
       [2] = '+30% crit chance',
-      [3] = '+50% crit chance',
-    }
-  },
-  [ITEM_SET.COLD] = {
-    name = 'Frost',
-    summary = '+cold damage',
-    color = 'blue',
-    rarity = ITEM_RARITY.COMMON,
-    bonuses = {
-      [1] = { stats = {['cold_damage'] = 5} },
-      [2] = { stats = {['cold_damage'] = 7} },
-      [3] = { stats = {['cold_damage'] = 10} }
-    },
-    descriptions = {
-      [1] = '+5 cold damage per hit; cold attacks slow enemies',
-      [2] = '+7 cold damage per hit',
-      [3] = '+10 cold damage per hit'
-    }
-  },
-  [ITEM_SET.FROST_NOVA] = {
-    name = 'Frost Nova',
-    summary = 'frost nova',
-    color = 'blue',
-    rarity = ITEM_RARITY.RARE,
-    bonuses = {
-      [1] = { stats = {}, procs = {'frostnova'} }
-    },
-    descriptions = {
-      [1] = 'Creates a frost nova when enemies get close'
+      [3] = '+45% crit chance',
     }
   },
   [ITEM_SET.FIRE] = {
@@ -210,47 +180,81 @@ ITEM_SETS = {
     color = 'red',
     rarity = ITEM_RARITY.COMMON,
     bonuses = {
-        [1] = { stats = {['fire_damage'] = 5} },
-        [2] = { stats = {['fire_damage'] = 7} },
-        [3] = { stats = {['fire_damage'] = 10} }
+      [1] = { stats = {['fire_damage'] = 6} },
+      [2] = { stats = {['fire_damage'] = 6} },
+      [3] = { stats = {['fire_damage'] = 6} },
     },
     descriptions = {
-      [1] = '+5 fire damage per hit; fire attacks burn enemies over time',
-      [2] = '+7 fire damage per hit',
-      [3] = '+10 fire damage per hit'
+      [1] = '+6 fire damage per hit; fire burns enemies over time',
+      [2] = '+12 fire damage per hit',
+      [3] = '+18 fire damage per hit',
     }
   },
-  [ITEM_SET.METEOR] = {
-    name = 'Meteor',
-    summary = 'meteors',
-    color = 'red',
-    rarity = ITEM_RARITY.RARE,
-    min_tier = 2,
+  [ITEM_SET.COLD] = {
+    name = 'Frost',
+    summary = '+cold damage',
+    color = 'blue',
+    rarity = ITEM_RARITY.COMMON,
     bonuses = {
-      [1] = { procs = {'meteor'} },
-      [2] = { procs = {'meteorSizeBoost'} },
-      [3] = { procs = {'meteorDamageBoost'} }
+      [1] = { stats = {['cold_damage'] = 6} },
+      [2] = { stats = {['cold_damage'] = 6} },
+      [3] = { stats = {['cold_damage'] = 6} },
     },
     descriptions = {
-      [1] = 'Periodically summon meteors',
-      [2] = 'Meteors have a larger radius',
-      [3] = 'Meteors deal more damage'
+      [1] = '+6 cold damage per hit; cold slows enemies',
+      [2] = '+12 cold damage per hit',
+      [3] = '+18 cold damage per hit',
     }
   },
+  -- Third element so Resonance can see burn, chill and shock together.
+  [ITEM_SET.VOLT] = {
+    name = 'Volt',
+    summary = '+lightning damage',
+    color = 'yellow',
+    rarity = ITEM_RARITY.COMMON,
+    bonuses = {
+      [1] = { stats = {['lightning_damage'] = 6} },
+      [2] = { stats = {['lightning_damage'] = 6} },
+      [3] = { stats = {['lightning_damage'] = 6} },
+    },
+    descriptions = {
+      [1] = '+6 lightning damage per hit; lightning shocks enemies',
+      [2] = '+12 lightning damage per hit',
+      [3] = '+18 lightning damage per hit',
+    }
+  },
+  -- The only defensive stat set. Contact damage scales with enemy hp now, so
+  -- raw hp is the counter.
+  [ITEM_SET.VITALITY] = {
+    name = 'Vitality',
+    summary = '+%hp',
+    color = 'green',
+    rarity = ITEM_RARITY.COMMON,
+    bonuses = {
+      [1] = { stats = {['hp'] = 1} },
+      [2] = { stats = {['hp'] = 1} },
+      [3] = { stats = {['hp'] = 1} },
+    },
+    descriptions = {
+      [1] = '+20% max hp',
+      [2] = '+40% max hp',
+      [3] = '+60% max hp',
+    }
+  },
+
+  -- ---------------------------------------------------------------- rares
   [ITEM_SET.SHOCK] = {
     name = 'Storm',
     summary = 'chain lightning',
     color = 'yellow',
-    rarity = ITEM_RARITY.COMMON,
+    rarity = ITEM_RARITY.RARE,
     bonuses = {
       [1] = { procs = {'shock'} },
       [2] = { procs = {'shock2'} },
-      [3] = { procs = {'shock3'} },
     },
     descriptions = {
-      [1] = 'Chance on hit to chain lightning to 3 targets, shocking each',
-      [2] = 'Chains to more targets, more often',
-      [3] = 'Chains to even more targets, more often',
+      [1] = '25% chance on hit to chain lightning through 3 enemies, shocking each',
+      [2] = '35% chance, chains through 5 enemies',
     }
   },
   [ITEM_SET.LIGHTNING_BALL] = {
@@ -262,59 +266,102 @@ ITEM_SETS = {
       [1] = { procs = {'lightningball'} }
     },
     descriptions = {
-      [1] = 'Chance to create a lightning ball on attack'
+      [1] = '20% chance on hit to launch a lightning ball that zaps nearby enemies'
     }
   },
-  [ITEM_SET.CURSE] = {
-    name = 'Curse',
-    summary = 'curse enemies',
-    color = 'purple',
+  -- Ricochet: a hit has a chance to fire a bolt at another nearby enemy.
+  [ITEM_SET.RICOCHET] = {
+    name = 'Ricochet',
+    summary = 'hits bounce',
+    color = 'yellow',
     rarity = ITEM_RARITY.RARE,
     bonuses = {
-      [1] = { procs = {'curse'} }
+      [1] = { procs = {'ricochet'} }
     },
     descriptions = {
-      [1] = 'Curses nearby enemies, increasing damage taken'
+      [1] = '30% chance on hit to fire a bolt at a nearby enemy for 60% damage'
     }
   },
-  -- [ITEM_SET.ATTACK_EFFECTS] = {
-  --   name = 'Critical',
-  --   color = 'purple',
-  --   bonuses = {
-  --     [1] = { stats = {['attack_effects'] = 1} },
-  --     [2] = { stats = {['crit_chance'] = 2} },
-  --     [3] = { stats = {['crit_chance'] = 4} }
-  --   },
-  --   descriptions = {
-  --     [1] = 'Every 4th attack is a critical hit',
-  --     [2] = 'Every 3rd attack is a critical hit',
-  --     [3] = 'Every 2nd attack is a critical hit'
-  --   }
-  -- },
-  -- [ITEM_SET.LASER] = {
-  --   name = 'Laser Set',
-  --   color = 'purple',
-  --   bonuses = {
-  --     [1] = { stats = {['laser'] = 1} }, --a laser attacks nearby enemies periodically
-  --     [2] = { stats = {['range'] = 2} }, --laser pierces through enemies
-  --     [3] = { stats = {['range'] = 4} } --get a second laser
-  --   }
-  -- },
-  [ITEM_SET.BLOODLUST] = {
-    name = 'Bloodlust',
-    summary = '+aspeed on kill',
-    color = 'purple',
+  [ITEM_SET.REPEAT] = {
+    name = 'Repeat',
+    summary = 'repeat chance',
+    color = 'yellow',
     rarity = ITEM_RARITY.RARE,
     min_tier = 2,
     bonuses = {
-      [1] = { procs = {'bloodlust'} },
-      [2] = { procs = {'bloodlustSpeedBoost'} },
-      -- [3] = { procs = {'bloodlustMaxStacks'} }
+      [1] = { stats = {['repeat_attack_chance'] = 1.5} },
+      [2] = { stats = {['repeat_attack_chance'] = 2} },
     },
     descriptions = {
-      [1] = 'Gain stacking attack speed when you kill an enemy',
-      [2] = 'Bloodlust grants movement speed as well',
-      -- [3] = 'Bloodlust can stack up to 10 times'
+      [1] = '30% chance to repeat your attacks',
+      [2] = '70% chance to repeat your attacks',
+    }
+  },
+  [ITEM_SET.FROST_NOVA] = {
+    name = 'Frost Nova',
+    summary = 'frost nova',
+    color = 'blue',
+    rarity = ITEM_RARITY.RARE,
+    bonuses = {
+      [1] = { procs = {'frostnova'} }
+    },
+    descriptions = {
+      [1] = 'Pulse a chilling nova when enemies get close (every 5s)'
+    }
+  },
+  [ITEM_SET.ORBITAL] = {
+    name = 'Orbit',
+    summary = 'damaging orbs',
+    color = 'blue',
+    rarity = ITEM_RARITY.RARE,
+    min_tier = 2,
+    bonuses = {
+      [1] = { procs = {'orbital'} },
+      [2] = { procs = {'orbitalPower'} },
+    },
+    descriptions = {
+      [1] = 'Two damaging orbs rotate around you',
+      [2] = 'Orbs are larger and hit harder',
+    }
+  },
+  [ITEM_SET.SHIELD] = {
+    name = 'Radiance',
+    summary = 'burn aura',
+    color = 'red',
+    rarity = ITEM_RARITY.RARE,
+    bonuses = {
+      [1] = { procs = {'radiance'} },
+    },
+    descriptions = {
+      [1] = 'Enemies near you catch fire',
+    }
+  },
+  [ITEM_SET.METEOR] = {
+    name = 'Meteor',
+    summary = 'meteors',
+    color = 'red',
+    rarity = ITEM_RARITY.RARE,
+    min_tier = 2,
+    bonuses = {
+      [1] = { procs = {'meteor'} },
+      [2] = { procs = {'meteorSizeBoost', 'meteorDamageBoost'} },
+    },
+    descriptions = {
+      [1] = 'A meteor strikes a nearby enemy every 4s',
+      [2] = 'Meteors are larger and deal double damage',
+    }
+  },
+  -- Focus: repeated hits on one target ramp damage. The anti-tank tool.
+  [ITEM_SET.FOCUS] = {
+    name = 'Focus',
+    summary = 'ramping damage',
+    color = 'red',
+    rarity = ITEM_RARITY.RARE,
+    bonuses = {
+      [1] = { procs = {'focus'} },
+    },
+    descriptions = {
+      [1] = 'Each hit on the same enemy deals +6% more, up to +48%; resets after 2s without a hit',
     }
   },
   [ITEM_SET.SPLASH] = {
@@ -325,52 +372,10 @@ ITEM_SETS = {
     bonuses = {
       [1] = { procs = {'splash'} },
       [2] = { procs = {'splashSizeBoost'} },
-      -- [3] = { procs = {'splashSizeBoost2'} }
     },
     descriptions = {
-      [1] = 'Attacks do splash damage to nearby enemies',
-      [2] = 'Attacks splash in a larger area',
-      -- [3] = 'Attacks splash in an even larger area'
-    }
-  },
-  -- [ITEM_SET.SUPPORT] = {
-  --   name = 'Support Set',
-  --   color = 'green',
-  --   bonuses = {
-  --     [1] = { stats = {['heal'] = 1} }, -- global attack speed
-  --     [2] = { stats = {['heal'] = 2} },
-  --     [3] = { stats = {['heal'] = 5} }
-  --   }
-  -- },
-  [ITEM_SET.SHIELD] = {
-    name = 'Radiance',
-    summary = 'damage aura',
-    color = 'red',
-    rarity = ITEM_RARITY.RARE,
-    bonuses = {
-      [1] = { procs = {'radiance'} },
-      -- [2] = { procs = {'shieldexplode'} },
-    },
-    descriptions = {
-      [1] = 'Grants you a damage aura',
-      -- [2] = 'Shield explodes when destroyed, knocking back nearby enemies'
-    }
-  },
-  [ITEM_SET.REPEAT] = {
-    name = 'Repeat',
-    summary = 'repeat chance',
-    color = 'yellow',
-    rarity = ITEM_RARITY.RARE,
-    min_tier = 2,
-    bonuses = {
-      [1] = { stats = {['repeat_attack_chance'] = 1} },
-      [2] = { stats = {['repeat_attack_chance'] = 2} },
-      [3] = { stats = {['repeat_attack_chance'] = 4} }
-    },
-    descriptions = {
-      [1] = '20% chance to repeat your attacks',
-      [2] = '40% chance to repeat your attacks',
-      [3] = '80% chance to repeat your attacks'
+      [1] = 'Attacks deal 40% splash damage to nearby enemies',
+      [2] = 'Splash covers a 50% larger area',
     }
   },
   [ITEM_SET.MULTI_SHOT] = {
@@ -379,51 +384,72 @@ ITEM_SETS = {
     color = 'brown',
     rarity = ITEM_RARITY.RARE,
     bonuses = {
-      [1] = { procs = {'multishot'} },
-      [2] = { procs = {'multishotFullDamage'} },
-      [3] = { procs = {'extraMultishot'} }
+      [1] = { procs = {'multishot', 'multishotFullDamage'} },
+      [2] = { procs = {'extraMultishot'} },
     },
     descriptions = {
-      [1] = 'Shoot extra attacks at an angle (for 25% damage)',
-      [2] = 'Your multi-shot attacks deal 50% damage',
-      [3] = 'Shoot an extra 2 attacks'
+      [1] = 'Fire 2 extra shots at an angle for 50% damage',
+      [2] = 'Fire 2 more extra shots',
     }
   },
-  -- Flat physical damage. Unlike Power (a % multiplier), this raises the
-  -- per-hit floor, so it shines on fast/multi-hit units early and naturally
-  -- tapers off as % scaling takes over. Cumulative totals: +3 / +8 / +16.
-  [ITEM_SET.HEFT] = {
-    name = 'Heft',
-    color = 'red',
-    rarity = ITEM_RARITY.COMMON,
+  -- Pierce: projectiles pass through enemies; the laser loses its falloff.
+  [ITEM_SET.PIERCE] = {
+    name = 'Pierce',
+    summary = 'projectiles pierce',
+    color = 'brown',
+    rarity = ITEM_RARITY.RARE,
     bonuses = {
-      [1] = { stats = {['flat_dmg'] = 3} },
-      [2] = { stats = {['flat_dmg'] = 5} },
-      [3] = { stats = {['flat_dmg'] = 8} },
+      [1] = { procs = {'pierce'} },
+      [2] = { procs = {'pierce2'} },
     },
     descriptions = {
-      [1] = '+3 flat damage to every hit',
-      [2] = '+8 flat damage to every hit',
-      [3] = '+16 flat damage to every hit',
+      [1] = 'Projectiles pierce 1 extra enemy; lasers lose no damage through enemies',
+      [2] = 'Projectiles pierce 3 extra enemies',
     }
   },
-  -- Economy: flat +1 gold at the end of each round. 1/1 set - extra copies
-  -- do nothing, so one piece anywhere on the team is enough.
-  [ITEM_SET.TREASURY] = {
-    name = 'Treasury',
-    summary = '+1 gold/round',
+  [ITEM_SET.TURRET] = {
+    name = 'Garrison',
+    summary = 'deploy turrets',
+    color = 'brown',
+    rarity = ITEM_RARITY.RARE,
+    min_tier = 2,
+    bonuses = {
+      [1] = { procs = {'turret'} },
+      [2] = { procs = {'turret3'} },
+    },
+    descriptions = {
+      [1] = 'Deploy a turret every 6s (max 2; replaces the oldest)',
+      [2] = 'Deploy up to 4 turrets',
+    }
+  },
+  [ITEM_SET.BLOODLUST] = {
+    name = 'Bloodlust',
+    summary = '+aspeed on kill',
+    color = 'purple',
+    rarity = ITEM_RARITY.RARE,
+    min_tier = 2,
+    bonuses = {
+      [1] = { procs = {'bloodlust'} },
+      [2] = { procs = {'bloodlustSpeedBoost'} },
+    },
+    descriptions = {
+      [1] = 'Kills grant +8% attack speed for 5s, stacking up to 4 times',
+      [2] = 'Bloodlust also grants +5% move speed per stack',
+    }
+  },
+  -- Recoil: hits shove enemies back hard, specials included.
+  [ITEM_SET.RECOIL] = {
+    name = 'Recoil',
+    summary = 'hits knock back',
     color = 'purple',
     rarity = ITEM_RARITY.RARE,
     bonuses = {
-      [1] = { procs = {'treasury'} },
+      [1] = { procs = {'recoil'} },
     },
     descriptions = {
-      [1] = 'Gain 1 extra gold at the end of each round',
+      [1] = 'Hits knock enemies back 3x harder, special enemies too',
     }
   },
-  -- Elemental synergy: bonus damage per distinct elemental affliction
-  -- (burn/chill/shock) on the target, from any ally. Rewards rainbow
-  -- elemental teams. 1/1 set.
   [ITEM_SET.RESONANCE] = {
     name = 'Resonance',
     summary = '+%damage per element',
@@ -437,63 +463,6 @@ ITEM_SETS = {
       [1] = '+15% damage per element afflicting the target (burn/chill/shock)',
     }
   },
-  -- Orbitals: damaging orbs that rotate around the unit. 3-tier: more orbs,
-  -- then bigger/harder-hitting orbs.
-  [ITEM_SET.ORBITAL] = {
-    name = 'Orbit',
-    summary = 'damaging orbs',
-    color = 'blue',
-    rarity = ITEM_RARITY.RARE,
-    min_tier = 2,
-    bonuses = {
-      [1] = { procs = {'orbital'} },
-      [2] = { procs = {'orbitalExtra'} },
-      [3] = { procs = {'orbitalPower'} },
-    },
-    descriptions = {
-      [1] = 'A damaging orb rotates around you',
-      [2] = 'Gain a second orb',
-      [3] = 'Orbs are larger and hit harder',
-    }
-  },
-  -- Support: periodically chain-heals injured allies. 2/2 set, tier 2 makes
-  -- the heal stronger and bounce further.
-  [ITEM_SET.MEND] = {
-    name = 'Mend',
-    summary = 'heal allies',
-    color = 'green',
-    rarity = ITEM_RARITY.RARE,
-    min_tier = 2,
-    bonuses = {
-      [1] = { procs = {'chainheal'} },
-      [2] = { procs = {'chainhealBoost'} },
-    },
-    descriptions = {
-      [1] = 'Periodically send a healing chain through injured allies',
-      [2] = 'Healing chains are stronger and reach more allies',
-    }
-  },
-  -- Summon: periodically drops a stationary turret that shoots enemies and
-  -- can be destroyed. 3-tier raises the active cap to 2/3/4; a new drop past
-  -- the cap replaces the oldest turret.
-  [ITEM_SET.TURRET] = {
-    name = 'Garrison',
-    summary = 'deploy turrets',
-    color = 'brown',
-    rarity = ITEM_RARITY.RARE,
-    min_tier = 2,
-    bonuses = {
-      [1] = { procs = {'turret'} },
-      [2] = { procs = {'turret2'} },
-      [3] = { procs = {'turret3'} },
-    },
-    descriptions = {
-      [1] = 'Periodically deploy turrets (max 2; replaces the oldest)',
-      [2] = 'Deploy up to 3 turrets',
-      [3] = 'Deploy up to 4 turrets',
-    }
-  },
-  -- Skirmisher: 1/1 rare, T2+. The troop attacks while following the mouse.
   [ITEM_SET.MOBILE] = {
     name = 'Skirmisher',
     summary = 'attack while moving',
@@ -507,20 +476,82 @@ ITEM_SETS = {
       [1] = 'Attack while moving',
     }
   },
-  -- [ITEM_SET.STUN] = {
-  --   name = 'Stun',
-  --   color = 'black',
-  --   bonuses = {
-  --     [1] = { stats = {['stun_chance'] = 1} },
-  --     [2] = { stats = {['stun_chance'] = 2} },
-  --     [3] = { stats = {['stun_chance'] = 4} }
-  --   },
-  --   descriptions = {
-  --     [1] = '20% chance to stun an enemy',
-  --     [2] = '40% chance to stun an enemy',
-  --     [3] = '80% chance to stun an enemy'
-  --   }
-  -- }
+  [ITEM_SET.MEND] = {
+    name = 'Mend',
+    summary = 'heal allies',
+    color = 'green',
+    rarity = ITEM_RARITY.RARE,
+    min_tier = 2,
+    bonuses = {
+      [1] = { procs = {'chainheal'} },
+      [2] = { procs = {'chainhealBoost'} },
+    },
+    descriptions = {
+      [1] = 'Every 5s a healing chain jumps through up to 3 injured allies',
+      [2] = 'Heals for double and reaches 5 allies',
+    }
+  },
+
+  -- ------------------------------------------------------------- disabled
+  -- Kept so items from older saves still resolve; never rolled.
+  [ITEM_SET.HEFT] = {
+    name = 'Heft',
+    color = 'red',
+    rarity = ITEM_RARITY.COMMON,
+    disabled = true,
+    bonuses = {
+      [1] = { stats = {['flat_dmg'] = 3} },
+      [2] = { stats = {['flat_dmg'] = 5} },
+      [3] = { stats = {['flat_dmg'] = 8} },
+    },
+    descriptions = {
+      [1] = '+3 flat damage to every hit',
+      [2] = '+8 flat damage to every hit',
+      [3] = '+16 flat damage to every hit',
+    }
+  },
+  [ITEM_SET.RANGE] = {
+    name = 'Reach',
+    color = 'brown',
+    rarity = ITEM_RARITY.COMMON,
+    disabled = true,
+    bonuses = {
+      [1] = { stats = {['range'] = 1} },
+      [2] = { stats = {['range'] = 3} },
+      [3] = { stats = {['range'] = 5} },
+    },
+    descriptions = {
+      [1] = '+5% range',
+      [2] = '+20% range',
+      [3] = '+45% range',
+    }
+  },
+  [ITEM_SET.CURSE] = {
+    name = 'Curse',
+    summary = 'curse enemies',
+    color = 'purple',
+    rarity = ITEM_RARITY.RARE,
+    disabled = true,
+    bonuses = {
+      [1] = { procs = {'curse'} }
+    },
+    descriptions = {
+      [1] = 'Curses nearby enemies, increasing damage taken'
+    }
+  },
+  [ITEM_SET.TREASURY] = {
+    name = 'Treasury',
+    summary = '+1 gold/round',
+    color = 'purple',
+    rarity = ITEM_RARITY.RARE,
+    disabled = true,
+    bonuses = {
+      [1] = { procs = {'treasury'} },
+    },
+    descriptions = {
+      [1] = 'Gain 1 extra gold at the end of each round',
+    }
+  },
 }
 
 -- Rarity definitions
@@ -580,7 +611,8 @@ end
 function get_random_set(rarity, tier, exclude_sets)
   local set_keys = {}
   for set_name, set_def in pairs(ITEM_SETS) do
-    if (not rarity or set_def.rarity == rarity)
+    if not set_def.disabled
+      and (not rarity or set_def.rarity == rarity)
       and (not tier or (set_def.min_tier or 1) <= tier)
       and not (exclude_sets and exclude_sets[set_name]) then
       table.insert(set_keys, set_name)
@@ -720,22 +752,24 @@ end
 -- team, grant a team-wide stat multiplier at fixed thresholds.
 -- Bonus applies to every unit unconditionally.
 -- ============================================================
-META_COLORS = {'red', 'yellow', 'blue', 'brown', 'purple'}
+META_COLORS = {'red', 'yellow', 'blue', 'brown', 'purple', 'green'}
 
 META_COLOR_TO_STAT = {
   red    = 'dmg',
   yellow = 'aspd',
   blue   = 'crit_chance',
-  brown  = 'range',
+  brown  = 'area_size',
   purple = 'mvspd',
+  green  = 'hp',
 }
 
 META_COLOR_LABEL = {
   red    = 'damage',
   yellow = 'attack speed',
   blue   = 'crit',
-  brown  = 'range',
+  brown  = 'area size',
   purple = 'move speed',
+  green  = 'hp',
 }
 
 META_THRESHOLDS = {
@@ -757,7 +791,8 @@ end
 -- A set counts once per unit: two items carrying the same set on one troop
 -- add one, the same set on two troops adds two.
 function count_team_meta_colors(units)
-  local counts = {red = 0, yellow = 0, blue = 0, brown = 0, purple = 0}
+  local counts = {}
+  for _, color in ipairs(META_COLORS) do counts[color] = 0 end
   if not units then return counts end
   local function add(color)
     if counts[color] ~= nil then counts[color] = counts[color] + 1 end

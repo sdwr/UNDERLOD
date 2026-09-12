@@ -55,6 +55,12 @@ function Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects,
     end
   end
   
+  -- Focus set: the attacker's repeated hits on one target ramp its damage.
+  if from and from.is_troop and not isChained and not isElementalConversion
+    and Has_Static_Proc(from, 'focus') then
+    damage = damage * Helper.Damage:focus_multiplier(unit, from)
+  end
+
   -- Calculate final damage
   local actual_damage = Helper.Damage:calculate_final_damage(unit, damage, damageType)
   
@@ -92,6 +98,12 @@ function Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects,
   
   -- Handle callbacks
   Helper.Damage:process_callbacks(unit, from, actual_damage, damageType, not canProcOnHit)
+
+  -- Ricochet set: a chance to fire a bolt from this target at another enemy.
+  if from and from.is_troop and not isChained and not isElementalConversion
+    and not hitOptions.noRicochet and Has_Static_Proc(from, 'ricochet') then
+    Helper.Damage:try_ricochet(unit, damage, from)
+  end
   
   -- Handle death
   if unit.hp <= 0 then
@@ -146,15 +158,72 @@ end
 
 function Helper.Damage:apply_knockback(unit, from)
   if unit and from then
-    --dont knockback special enemies or bosses
-    if unit.class == 'special_enemy' or unit.class == 'boss' then
+    -- Recoil set: harder shove, and special enemies are pushed too.
+    local recoil = from.is_troop and Has_Static_Proc(from, 'recoil')
+    if unit.class == 'boss' or (unit.class == 'special_enemy' and not recoil) then
       return
     end
-    
+
     local duration = KNOCKBACK_DURATION_TROOP_ATTACK
     local push_force = LAUNCH_PUSH_FORCE_TROOP_ATTACK
+    if recoil then push_force = push_force * RECOIL_FORCE_MULT end
     unit:push(push_force, unit:angle_to_object(from) + math.pi, nil, duration)
   end
+end
+
+-- Focus set. Stacks live on the target, keyed by attacker, and reset after
+-- FOCUS_DECAY seconds without a hit from that attacker.
+function Helper.Damage:focus_multiplier(unit, from)
+  local now = Helper.Time.time or 0
+  unit.focus_marks = unit.focus_marks or {}
+  local mark = unit.focus_marks[from.id]
+  if not mark or now - mark.last > FOCUS_DECAY then
+    mark = {stacks = 0, last = now}
+    unit.focus_marks[from.id] = mark
+  end
+  local mult = 1 + FOCUS_DAMAGE_PER_STACK * mark.stacks
+  mark.stacks = math.min(mark.stacks + 1, FOCUS_MAX_STACKS)
+  mark.last = now
+  return mult
+end
+
+-- Ricochet set. Spawns the bolt next tick: hits arrive inside box2d
+-- callbacks, where creating a body asserts.
+function Helper.Damage:try_ricochet(unit, damage, from)
+  if random:float(0, 1) >= RICOCHET_CHANCE then return end
+  if not main.current or not main.current.main then return end
+  local nearby = main.current.main:get_objects_in_shape(Circle(unit.x, unit.y, RICOCHET_RANGE), main.current.enemies)
+  local best, best_d
+  for _, e in ipairs(nearby or {}) do
+    if e ~= unit and not e.dead then
+      local d = math.distance(unit.x, unit.y, e.x, e.y)
+      if not best_d or d < best_d then best, best_d = e, d end
+    end
+  end
+  if not best then return end
+
+  local sx, sy = unit.x, unit.y
+  local bolt_damage = damage * RICOCHET_DAMAGE_MULT
+  local arena = main.current.current_arena
+  local schedule = (arena and arena.t) or from.t
+  local fire = function()
+    if from.dead or best.dead then return end
+    ArrowProjectile{
+      group = main.current.main,
+      unit = from,
+      start_at = {x = sx, y = sy},
+      target = best,
+      homing = true,
+      damage = bolt_damage,
+      bullet_size = 2,
+      speed = 260,
+      is_troop = true,
+      color = yellow[0],
+      volume = 0.4,
+      is_ricochet = true,
+    }
+  end
+  if schedule then schedule:after(0, fire) else fire() end
 end
 
 function Helper.Damage:deal_damage(unit, damage)

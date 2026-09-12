@@ -250,7 +250,7 @@ BURN_EXPLOSION_DAMAGE_PERCENT = 0.1  -- 15% of max HP explosion damage
 SHIELD_EXPLOSION_RADIUS = 50
 SHIELD_EXPLOSION_DURATION = 0.25
 
-MAX_STACKS_BLOODLUST = 5
+MAX_STACKS_BLOODLUST = 4
 MAX_STACKS_BLOODLUST_WITH_BOOST = 10
 BLOODLUST_ASPD_BOOST_PER_STACK = 0.08
 BLOODLUST_SPEED_BOOST_PER_STACK = 0.05
@@ -270,14 +270,14 @@ RESONANCE_DAMAGE_PER_ELEMENT = 0.15
 TREASURY_GOLD_PER_ROUND = 1
 
 -- Orbital set: rotating damage orbs around a unit.
-ORBITAL_BASE_COUNT = 1
-ORBITAL_EXTRA_COUNT = 1          -- added by orbitalExtra (tier 2)
+ORBITAL_BASE_COUNT = 2
+ORBITAL_EXTRA_COUNT = 1          -- legacy orbitalExtra proc (no longer in the set)
 ORBITAL_RADIUS = 52             -- orbit distance from the unit
 ORBITAL_ORB_RADIUS = 4         -- hit/draw radius of each orb (small)
-ORBITAL_ORB_RADIUS_BOOST = 1.5  -- orbitalPower (tier 3) size multiplier
+ORBITAL_ORB_RADIUS_BOOST = 1.5  -- orbitalPower (tier 2) size multiplier
 ORBITAL_SPEED = 1.5             -- radians/sec
 ORBITAL_DAMAGE = 8
-ORBITAL_DAMAGE_BOOST = 1.8      -- orbitalPower (tier 3) damage multiplier
+ORBITAL_DAMAGE_BOOST = 1.8      -- orbitalPower (tier 2) damage multiplier
 ORBITAL_TICK_RATE = 0.25        -- min seconds between hits on the same enemy
 
 -- Mend set: periodic chain-heal of injured allies.
@@ -295,6 +295,56 @@ TURRET_DAMAGE = 9
 TURRET_ATTACK_COOLDOWN = 0.8
 TURRET_RANGE = 130
 TURRET_PROJECTILE_SPEED = 160
+
+-- Meteor set.
+METEOR_INTERVAL = 4
+METEOR_DAMAGE = 40
+METEOR_RADIUS = 20
+
+-- Splash set: base radius; splashSizeBoost multiplies it by 1.5.
+SPLASH_RADIUS = 24
+
+-- Pierce set: extra enemies a projectile passes through at 1 / 2 pieces.
+PIERCE_BONUS = 1
+PIERCE_BONUS_2 = 3
+
+-- Focus set: repeated hits by one attacker on one target ramp damage.
+FOCUS_DAMAGE_PER_STACK = 0.06
+FOCUS_MAX_STACKS = 8
+FOCUS_DECAY = 2                 -- seconds without a hit before stacks reset
+
+-- Ricochet set: chance on hit to fire a bolt at another nearby enemy.
+RICOCHET_CHANCE = 0.3
+RICOCHET_RANGE = 80
+RICOCHET_DAMAGE_MULT = 0.6
+
+-- Recoil set: knockback multiplier on hits; also pushes special enemies.
+RECOIL_FORCE_MULT = 3
+
+-- Meteor set.
+METEOR_INTERVAL = 4
+METEOR_DAMAGE = 40
+METEOR_RADIUS = 20
+
+-- Splash set: base radius; splashSizeBoost multiplies it by 1.5.
+SPLASH_RADIUS = 24
+
+-- Pierce set: extra enemies a projectile passes through at 1 / 2 pieces.
+PIERCE_BONUS = 1
+PIERCE_BONUS_2 = 3
+
+-- Focus set: repeated hits by one attacker on one target ramp damage.
+FOCUS_DAMAGE_PER_STACK = 0.06
+FOCUS_MAX_STACKS = 8
+FOCUS_DECAY = 2                 -- seconds without a hit before stacks reset
+
+-- Ricochet set: chance on hit to fire a bolt at another nearby enemy.
+RICOCHET_CHANCE = 0.3
+RICOCHET_RANGE = 80
+RICOCHET_DAMAGE_MULT = 0.6
+
+-- Recoil set: knockback multiplier on hits; also pushes special enemies.
+RECOIL_FORCE_MULT = 3
 
 REPEAT_ATTACK_DELAY = 0.15
 

@@ -40,7 +40,7 @@ function Shotgun_Troop:create_spelldata()
     on_attack_callbacks = true,
     spell_duration = 1.5,
     bullet_size = 2,
-    pierce = false,
+    pierce = self:get_bonus_pierce(),
     homing = false,
     speed = 320,
     is_troop = true,

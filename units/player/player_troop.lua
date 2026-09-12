@@ -55,6 +55,13 @@ function Troop:init(args)
 end
 
 
+-- Pierce set: extra enemies a projectile passes through.
+function Troop:get_bonus_pierce()
+  if Has_Static_Proc(self, 'pierce2') then return PIERCE_BONUS_2 end
+  if Has_Static_Proc(self, 'pierce') then return PIERCE_BONUS end
+  return 0
+end
+
 -- Default multishot for target-based troops (laser, swordsman, sword_weapon).
 -- Projectile troops (archer, shotgun) override this to fan extras at offset angles.
 function Troop:multishot(angle, target)

@@ -720,7 +720,7 @@ function Proc_Splash:init(args)
   self.triggers = {PROC_ON_PRIMARY_HIT}
   self.scope = 'troop'
 
-  self.radius = args.radius or 15
+  self.radius = args.radius or SPLASH_RADIUS
   self.color = args.color or brown[0]
   self.duration = args.duration or 0.15
 
@@ -1538,15 +1538,13 @@ function Proc_Shock:init(args)
 end
 
 function Proc_Shock:get_chance(from)
-  if Has_Static_Proc(from, 'shock3') then return 0.35 end
-  if Has_Static_Proc(from, 'shock2') then return 0.30 end
+  if Has_Static_Proc(from, 'shock2') or Has_Static_Proc(from, 'shock3') then return 0.35 end
   return 0.25
 end
 
 -- Total targets the chain hits, counting the struck enemy. Tier 1 = 3 (2 jumps).
 function Proc_Shock:get_max_targets(from)
-  if Has_Static_Proc(from, 'shock3') then return 5 end
-  if Has_Static_Proc(from, 'shock2') then return 4 end
+  if Has_Static_Proc(from, 'shock2') or Has_Static_Proc(from, 'shock3') then return 5 end
   return 3
 end
 
@@ -1730,15 +1728,15 @@ function Proc_Meteor:init(args)
   --define the proc's vars
   self.attack_radius = self.data.attack_radius or 150
   self.target_offset = self.data.target_offset or 8
-  self.radius = self.data.radius or 18
+  self.radius = self.data.radius or METEOR_RADIUS
   self.color = self.data.color or red[0]
-  self.damage = self.data.damage or 30
+  self.damage = self.data.damage or METEOR_DAMAGE
 
   self.charge_time = self.data.charge_time or 0.25
 
   self.attack_sensor = Circle(0, 0, self.attack_radius)
 
-  self.baseTickInterval = 5
+  self.baseTickInterval = METEOR_INTERVAL
   self.adjustedTickInterval = Helper.Unit:apply_cooldown_reduction(self, self.baseTickInterval)
 
   --proc memory
@@ -2733,6 +2731,53 @@ function Proc_Turret3:init(args)
   Proc_Turret3.super.init(self, args)
 end
 
+-- =====================================================================
+-- Static markers for the Pierce / Focus / Ricochet / Recoil sets. The
+-- work happens where the flag is read: troop spelldata (pierce),
+-- Helper.Damage:apply_hit (focus, ricochet) and apply_knockback (recoil).
+-- =====================================================================
+-- Multi-Shot tier 2 marker (read by Troop:multishot).
+Proc_ExtraMultishot = Proc:extend()
+function Proc_ExtraMultishot:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'troop'
+  Proc_ExtraMultishot.super.init(self, args)
+end
+
+Proc_Pierce = Proc:extend()
+function Proc_Pierce:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'troop'
+  Proc_Pierce.super.init(self, args)
+end
+
+Proc_Pierce2 = Proc:extend()
+function Proc_Pierce2:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'troop'
+  Proc_Pierce2.super.init(self, args)
+end
+
+Proc_Focus = Proc:extend()
+function Proc_Focus:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'troop'
+  Proc_Focus.super.init(self, args)
+end
+
+Proc_Ricochet = Proc:extend()
+function Proc_Ricochet:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'troop'
+  Proc_Ricochet.super.init(self, args)
+end
+
+Proc_Recoil = Proc:extend()
+function Proc_Recoil:init(args)
+  self.triggers = {PROC_STATIC}
+  self.scope = 'troop'
+  Proc_Recoil.super.init(self, args)
+end
 
 proc_name_to_class = {
   ['reroll'] = Proc_Reroll,
@@ -2844,6 +2889,12 @@ proc_name_to_class = {
   ['turret2'] = Proc_Turret2,
   ['turret3'] = Proc_Turret3,
   ['mobilefire'] = Proc_MobileFire,
+  ['extraMultishot'] = Proc_ExtraMultishot,
+  ['pierce'] = Proc_Pierce,
+  ['pierce2'] = Proc_Pierce2,
+  ['focus'] = Proc_Focus,
+  ['ricochet'] = Proc_Ricochet,
+  ['recoil'] = Proc_Recoil,
 }
 
 

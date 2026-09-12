@@ -13,7 +13,7 @@ function Archer_Troop:create_spelldata()
     on_attack_callbacks = true,
     spell_duration = 10,
     bullet_size = 3,
-    pierce = false,
+    pierce = self:get_bonus_pierce(),
     homing = true,
     speed = 210,
     is_troop = true,

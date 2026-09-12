@@ -91,8 +91,9 @@ function ArrowProjectile:init(args)
   self.height = self.bullet_size or 3
   self.width = self.height * 2
   local shape_type = self.is_troop and 'projectile' or 'enemy_projectile'
-  self.x = self.unit.x
-  self.y = self.unit.y
+  -- start_at: spawn somewhere other than the unit (ricochet bolts).
+  self.x = (self.start_at and self.start_at.x) or self.unit.x
+  self.y = (self.start_at and self.start_at.y) or self.unit.y
   self:set_as_rectangle(self.width, self.height, 'dynamic', shape_type)
   
   self.damage = get_dmg_value(self.damage)
@@ -189,7 +190,12 @@ function ArrowProjectile:hit_target(target)
 
   local hit_target = false
   if #self.already_hit_targets == 0 then
-    Helper.Damage:primary_hit(target, self.damage, self.unit, DAMAGE_TYPE_PHYSICAL, true)
+    if self.is_ricochet then
+      -- Ricochet bolts don't ricochet again.
+      Helper.Damage:apply_hit(target, self.damage, self.unit, DAMAGE_TYPE_PHYSICAL, true, {isPrimary = true, noRicochet = true})
+    else
+      Helper.Damage:primary_hit(target, self.damage, self.unit, DAMAGE_TYPE_PHYSICAL, true)
+    end
     self.damage = self.damage * 0.8
     table.insert(self.already_hit_targets, target)
     hit_target = true
