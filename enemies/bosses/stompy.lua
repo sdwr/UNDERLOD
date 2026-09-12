@@ -196,7 +196,8 @@ fns['init_enemy'] = function(self)
     }
   }
 
-  table.insert(self.attack_options, stomp)
+  -- stomp (big ground circle) pulled from the rotation; definition kept above
+  -- table.insert(self.attack_options, stomp)
   table.insert(self.attack_options, mortar)
   table.insert(self.attack_options, summon)
   table.insert(self.attack_options, avalanche)
