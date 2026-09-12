@@ -170,12 +170,15 @@ end
 function Laser_Spell:update(dt)
   self.total_time = self.total_time + dt
   if not self.unit or self.unit.dead then
-    if not self.lasermode == 'fixed' then
+    -- (was `not self.lasermode == 'fixed'`, which never held, so a killed
+    -- caster left the spell and its charge loop alive forever)
+    if self.lasermode ~= 'fixed' then
       self:die()
     end
     return
   end
-  if self.lasermode ~= 'fixed' then
+  -- Once fired the beam just lingers; the caster may walk off mid-fade.
+  if self.lasermode ~= 'fixed' and not self.is_firing then
     if not table.any(unit_states_can_continue_cast, function(v) return self.unit.state == v end) then
       self:die()
       return
@@ -284,6 +287,10 @@ function Laser_Spell:fire_laser()
     self:die()
   else 
     self:try_end_cast()
+    -- The cast is over but the beam lingers for fire_duration. Clear the
+    -- channel duration so Try_Cancel_Cast doesn't kill the spell for the
+    -- caster having left the channeling state.
+    self.spell_duration = 0
   end
   if self.charge_sound then self.charge_sound:stop() end
 end

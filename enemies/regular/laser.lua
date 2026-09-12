@@ -64,6 +64,8 @@ fns['init_enemy'] = function(self)
       fade_in_aim_draw = true,
       lock_last_duration = 1.5,
       charge_duration = 2.0,
+      -- Beam lingers (fading) after the hit lands.
+      fire_duration = 0.8,
       face_beam = true,
     },
   }

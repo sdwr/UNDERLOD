@@ -61,8 +61,18 @@ end
 function EnemyCritter:draw()
   if not self.hfx.hit then return end
   graphics.push(self.x, self.y, self.r, self.hfx.hit.x, self.hfx.hit.x)
-    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 2, 2, self.hfx.hit.f and fg[0] or self.color)
+    self:draw_body(self.hfx.hit.f and fg[0] or self.color)
   graphics.pop()
+end
+
+function EnemyCritter:draw_body(color)
+  if self.brood_model then
+    local x, y = self.x, self.y
+    local w, h = self.shape.w / 2, self.shape.h / 2
+    graphics.polygon({x+w,y, x,y+h, x-w,y, x,y-h}, color)
+  else
+    graphics.rectangle(self.x, self.y, self.shape.w, self.shape.h, 2, 2, color)
+  end
 end
 
 function EnemyCritter:attack()
