@@ -109,15 +109,15 @@ function CharacterCard:createItemParts()
     local item_x = self.x + CHARACTER_CARD_ITEM_X
     local item_y = self.y + CHARACTER_CARD_ITEM_Y
 
-    for i = 1, MAX_ITEMS do
-      if i <= UNIT_LEVEL_TO_NUMBER_OF_ITEMS[self.unit.level] then
-        local location = get_item_list_location(i)
-        table.insert(self.items, ItemPart{group = self.group,
-            x = item_x + (CHARACTER_CARD_ITEM_X_SPACING*location.x),
-            y = item_y + (CHARACTER_CARD_ITEM_Y_SPACING*location.y),
-            w = CARD_ITEM_PART_WIDTH, h = CARD_ITEM_PART_HEIGHT,
-            i = i, parent = self})
-      end
+    -- One ItemPart per physical slot (MAX_ITEMS stacks x MAX_ITEM_STACK
+    -- copies). Empty ones are hidden by layout_item_parts.
+    for i = 1, MAX_ITEM_SLOTS do
+      local location = get_item_list_location(i)
+      table.insert(self.items, ItemPart{group = self.group,
+          x = item_x + (CHARACTER_CARD_ITEM_X_SPACING*location.x),
+          y = item_y + (CHARACTER_CARD_ITEM_Y_SPACING*location.y),
+          w = CARD_ITEM_PART_WIDTH, h = CARD_ITEM_PART_HEIGHT,
+          i = i, parent = self})
     end
 end
 
@@ -158,7 +158,7 @@ end
 
 function CharacterCard:first_empty_item_part()
   if not self.unit or not self.unit.items then return nil end
-  for i = 1, MAX_ITEMS do
+  for i = 1, MAX_ITEM_SLOTS do
     if self.items[i] and not self.unit.items[i] then
       return self.items[i]
     end
@@ -171,14 +171,9 @@ function CharacterCard:is_point_in_title(x, y)
     and y >= self.y - self.h/2 and y <= self.y - self.h/2 + 22
 end
 
+-- Distinct entries: a 3/3 stack of one item counts once toward MAX_ITEMS.
 function CharacterCard:current_item_count()
-  local n = 0
-  if self.unit and self.unit.items then
-    for _, item in pairs(self.unit.items) do
-      if item then n = n + 1 end
-    end
-  end
-  return n
+  return Helper.Unit:unit_distinct_item_count(self.unit)
 end
 
 function CharacterCard:show_last_round_stats_popup()
@@ -361,11 +356,12 @@ function CharacterCard:layout_item_parts()
   -- unit.items in slot order means a linear scan to find an existing group
   -- (max MAX_ITEMS groups) — cheaper and shorter than parallel key+order
   -- tables.
+  -- Copies of one item share a group (up to MAX_ITEM_STACK).
   local groups = {}
-  for idx = 1, MAX_ITEMS do
+  for idx = 1, MAX_ITEM_SLOTS do
     local item = self.unit.items[idx]
     if item then
-      local key = (item.sets and item.sets[1]) or '_no_set'
+      local key = Helper.Unit:item_group_key(item)
       local group
       for _, g in ipairs(groups) do
         if g.key == key then group = g; break end
@@ -419,9 +415,12 @@ function CharacterCard:layout_item_parts()
   local inv_drag = Loose_Inventory_Item
      and Loose_Inventory_Item.parent
      and Loose_Inventory_Item.parent.parent ~= self
-  if inv_drag or Grabbed_Shop_Card then
+  -- Only offer a landing spot when this unit can actually take the dragged
+  -- item (not at MAX_ITEMS distinct entries, not already MAX_ITEM_STACK of it).
+  local dragged = (inv_drag and Loose_Inventory_Item.item) or (Grabbed_Shop_Card and Grabbed_Shop_Card.item)
+  if dragged and Helper.Unit:unit_can_take_item(self.unit, dragged) then
     local empty_idx = nil
-    for idx = 1, MAX_ITEMS do
+    for idx = 1, MAX_ITEM_SLOTS do
       if self.items[idx] and not self.unit.items[idx] then
         empty_idx = idx
         break
@@ -468,7 +467,7 @@ end
 
 function CharacterCard:die()
   --kill all items
-  for i =1, 6 do
+  for i = 1, #self.items do
     if self.items[i] then
       self.items[i]:die()
     end
@@ -604,7 +603,9 @@ function ItemPart:update(dt)
      and Loose_Inventory_Item.parent
      and Loose_Inventory_Item.parent.parent ~= self.parent
   local shop_drag_glow = Grabbed_Shop_Card ~= nil
-  if (inv_drag_glow or shop_drag_glow) and not self.hidden and not self:hasItem() then
+  local dragged = (inv_drag_glow and Loose_Inventory_Item.item) or (shop_drag_glow and Grabbed_Shop_Card.item)
+  if dragged and not self.hidden and not self:hasItem()
+     and Helper.Unit:unit_can_take_item(self.parent.unit, dragged) then
     self.drop_target_glow = true
   else
     self.drop_target_glow = false
@@ -632,8 +633,9 @@ function ItemPart:update(dt)
     if title_card then
       loose_item:die()
       self:sellItem(title_card.unit)
-    elseif active and not self:isActiveInvSlot() then
-      -- Any slot accepts any item
+    elseif active and not self:isActiveInvSlot() and not self:cross_unit_drop_blocked(active, source_item, loose_item) then
+      -- Any slot accepts any item (cap/stack rules checked above for moves
+      -- between different units; within one unit nothing changes)
       if active:hasItem() then
         -- SWAP: Exchange items between slots
         local target_item = active:getItem()
@@ -697,6 +699,28 @@ function ItemPart:update(dt)
   if self.cant_click then return end
 
   self.shape:move_to(self.x, self.y)
+end
+
+-- Moving/swapping between two different units has to respect the receiving
+-- unit's caps. Returns true (and sends the loose item home with an error
+-- message) when the drop must be refused; same-unit drops are never blocked.
+function ItemPart:cross_unit_drop_blocked(active, source_item, loose_item)
+  local source_unit, target_unit = self.parent.unit, active.parent.unit
+  if source_unit == target_unit then return false end
+  local why
+  if active:hasItem() then
+    -- Swap: each side vacates its own slot while taking the other's item.
+    why = Helper.Unit:item_blocked_reason_for_unit(target_unit, source_item, active.i)
+      or Helper.Unit:item_blocked_reason_for_unit(source_unit, active:getItem(), self.i)
+  else
+    why = Helper.Unit:item_blocked_reason_for_unit(target_unit, source_item)
+  end
+  if not why then return false end
+  Create_Info_Text(Helper.Unit:blocked_reason_text(why), active, 'error')
+  loose_item:move_item_to_slot(self, function()
+    self.hide_item_display = false
+  end, false, 0)
+  return true
 end
 
 function ItemPart:draw()

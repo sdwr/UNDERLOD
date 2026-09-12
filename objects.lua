@@ -830,8 +830,7 @@ end
 function Unit:get_item_stats_for_display()
   -- Step A: Aggregate all stats into a temporary hash table for quick summation.
   local aggregated_stats = {}
-  for i = 1, UNIT_LEVEL_TO_NUMBER_OF_ITEMS[self.level] do
-      local item = self.items[i]
+  for _, item in pairs(self.items or {}) do
       if item and item.stats then
           for stat, amt in pairs(item.stats) do
               -- For V2 items, amt is the incremental value (e.g., 2 for +2 move)

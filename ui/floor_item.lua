@@ -77,10 +77,8 @@ function FloorItem:init(args)
     else
       if gold < self.cost then
         Create_Info_Text('not enough gold to buy item', self, 'error')
-      elseif Helper.Unit:item_one_piece_blocked(main.current.units, self.item) then
-        Create_Info_Text('already have this set', self, 'error')
       else
-        Create_Info_Text('no empty slots - right click to sell', self)
+        Create_Info_Text(Helper.Unit:item_blocked_text(main.current.units, self.item) .. ' - right click to sell', self, 'error')
       end
     end
   end
@@ -316,11 +314,7 @@ function FloorItem:purchase_item()
   local try_purchase = main.current:put_in_first_available_inventory_slot(self.item)
   if not try_purchase then
     self:remove_tooltip()
-    if Helper.Unit:item_one_piece_blocked(main.current.units, self.item) then
-      Create_Info_Text('already have this set', self, 'error')
-    else
-      Create_Info_Text('no empty slots - right click to sell', self, 'error')
-    end
+    Create_Info_Text(Helper.Unit:item_blocked_text(main.current.units, self.item) .. ' - right click to sell', self, 'error')
     return false
   end
 

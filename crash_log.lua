@@ -228,24 +228,21 @@ function CrashLog.snapshot_units(units)
   if type(units) ~= "table" then return out end
   for i, u in ipairs(units) do
     if type(u) == "table" then
+      -- Compact list of held items (one entry per copy, so a 3/3 stack shows
+      -- up three times). Slots are sparse, so walk every physical index.
       local items, item_colors = {}, {}
       if type(u.items) == "table" then
-        for s = 1, 6 do
+        for s = 1, (MAX_ITEM_SLOTS or 18) do
           local it = u.items[s]
           if type(it) == "table" then
-            items[s] = item_label(it)
+            items[#items + 1] = item_label(it)
             if type(it.colors) == "table" then
-              item_colors[s] = table.concat(it.colors, ",")
+              item_colors[#item_colors + 1] = table.concat(it.colors, ",")
             else
-              item_colors[s] = ""
+              item_colors[#item_colors + 1] = ""
             end
-          else
-            items[s] = ""
-            item_colors[s] = ""
           end
         end
-      else
-        for s = 1, 6 do items[s] = ""; item_colors[s] = "" end
       end
       out[i] = {
         character = u.character,

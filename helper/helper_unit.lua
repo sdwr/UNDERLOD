@@ -1069,6 +1069,92 @@ function Helper.Unit:item_one_piece_blocked(units, item)
   return false
 end
 
+-- ============================================================
+-- Item stacking
+-- Copies of the same item (same first set; set-less items form their own
+-- group) share one inventory entry up to MAX_ITEM_STACK deep and count once
+-- toward the MAX_ITEMS cap of distinct entries. unit.items stays a sparse
+-- array of MAX_ITEM_SLOTS physical indices; the grouping is derived.
+-- ============================================================
+
+function Helper.Unit:item_group_key(item)
+  return (item and item.sets and item.sets[1]) or '_no_set'
+end
+
+-- Returns {group_key -> copies}, distinct-group count. `ignore_slot` leaves
+-- that physical index out (a slot about to be vacated by a move/swap).
+function Helper.Unit:count_unit_item_groups(unit, ignore_slot)
+  local groups, distinct = {}, 0
+  if unit and unit.items then
+    for idx, item in pairs(unit.items) do
+      if item and idx ~= ignore_slot then
+        local key = Helper.Unit:item_group_key(item)
+        if not groups[key] then
+          groups[key] = 0
+          distinct = distinct + 1
+        end
+        groups[key] = groups[key] + 1
+      end
+    end
+  end
+  return groups, distinct
+end
+
+-- Number of distinct entries (what the x/MAX_ITEMS counter shows).
+function Helper.Unit:unit_distinct_item_count(unit)
+  local _, distinct = Helper.Unit:count_unit_item_groups(unit)
+  return distinct
+end
+
+-- First empty physical index, or nil.
+function Helper.Unit:first_open_item_slot(unit)
+  if not unit or not unit.items then return nil end
+  for i = 1, MAX_ITEM_SLOTS do
+    if not unit.items[i] then return i end
+  end
+  return nil
+end
+
+-- nil when `unit` can take `item`, otherwise why not:
+--   'stack_full'  already MAX_ITEM_STACK copies of this item
+--   'full'        MAX_ITEMS distinct entries and this would be a new one
+--   'no_slot'     no free physical index (shouldn't happen unless corrupted)
+function Helper.Unit:item_blocked_reason_for_unit(unit, item, ignore_slot)
+  local groups, distinct = Helper.Unit:count_unit_item_groups(unit, ignore_slot)
+  local copies = groups[Helper.Unit:item_group_key(item)] or 0
+  if copies >= MAX_ITEM_STACK then return 'stack_full' end
+  if copies == 0 and distinct >= MAX_ITEMS then return 'full' end
+  if not ignore_slot and not Helper.Unit:first_open_item_slot(unit) then return 'no_slot' end
+  return nil
+end
+
+function Helper.Unit:unit_can_take_item(unit, item, ignore_slot)
+  return Helper.Unit:item_blocked_reason_for_unit(unit, item, ignore_slot) == nil
+end
+
+function Helper.Unit:blocked_reason_text(why)
+  if why == 'one_piece' then return 'already have this set' end
+  if why == 'stack_full' then return 'already ' .. MAX_ITEM_STACK .. '/' .. MAX_ITEM_STACK .. ' of this item' end
+  return 'no room - ' .. MAX_ITEMS .. ' different items max'
+end
+
+-- Why no unit in `units` can take `item` (assumes
+-- find_available_inventory_slot came back empty): 'one_piece' if the 1/1 set
+-- is saturated, 'full' if any unit is out of distinct entries, else
+-- 'stack_full' (everyone who could hold it already has a full stack).
+function Helper.Unit:item_blocked_reason(units, item)
+  if Helper.Unit:item_one_piece_blocked(units, item) then return 'one_piece' end
+  for _, unit in ipairs(units or {}) do
+    local why = Helper.Unit:item_blocked_reason_for_unit(unit, item)
+    if why == 'full' or why == 'no_slot' then return 'full' end
+  end
+  return 'stack_full'
+end
+
+function Helper.Unit:item_blocked_text(units, item)
+  return Helper.Unit:blocked_reason_text(Helper.Unit:item_blocked_reason(units, item))
+end
+
 function Helper.Unit:find_available_inventory_slot(units, item)
   -- 1/1 set carriers get skipped: a duplicate would do nothing, so walk to the
   -- next unit instead. If every unit already owns the set the loop finishes
@@ -1086,13 +1172,11 @@ function Helper.Unit:find_available_inventory_slot(units, item)
     return false
   end
 
-  -- Slots are untyped: first empty index up to the unit's level cap, or nil.
+  -- Physical index this item would land in on `unit`, or nil when the unit
+  -- can't take it (full stack of it, or MAX_ITEMS distinct entries already).
   local function first_open_slot(unit)
-    local capacity = UNIT_LEVEL_TO_NUMBER_OF_ITEMS[unit.level] or 0
-    for i = 1, capacity do
-      if not unit.items[i] then return i end
-    end
-    return nil
+    if item and not Helper.Unit:unit_can_take_item(unit, item) then return nil end
+    return Helper.Unit:first_open_item_slot(unit)
   end
 
   -- Pass 1: stacking. If the item belongs to a stacking set, send it to the
@@ -1125,11 +1209,8 @@ function Helper.Unit:find_available_inventory_slot(units, item)
     if not unit_skipped(unit) then
       local slot = first_open_slot(unit)
       if slot then
-        local capacity = UNIT_LEVEL_TO_NUMBER_OF_ITEMS[unit.level] or 0
-        local count = 0
-        for i = 1, capacity do
-          if unit.items[i] then count = count + 1 end
-        end
+        -- fewest distinct entries wins (a 3/3 stack counts once)
+        local count = Helper.Unit:unit_distinct_item_count(unit)
         if best_count == nil or count < best_count then
           best_unit, best_slot, best_count = unit, slot, count
         end
@@ -1143,11 +1224,7 @@ function Helper.Unit:unit_has_open_inventory_slot(unit, slot_index)
   if slot_index then
     return not unit.items[slot_index]
   end
-  local capacity = UNIT_LEVEL_TO_NUMBER_OF_ITEMS[unit.level] or 0
-  for i = 1, capacity do
-    if not unit.items[i] then return true end
-  end
-  return false
+  return Helper.Unit:first_open_item_slot(unit) ~= nil
 end
 
 function Helper.Unit:get_all_troops()

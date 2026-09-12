@@ -268,6 +268,13 @@ function ItemCard:buy_item_to_slot(item_part, unit)
     return false
   end
 
+  -- Distinct-item cap / per-item stack cap.
+  local why = Helper.Unit:item_blocked_reason_for_unit(unit, self.item)
+  if why then
+    Create_Info_Text(Helper.Unit:blocked_reason_text(why), self, 'error')
+    return false
+  end
+
   -- Check gold (same as existing)
   if gold < self.cost then
     Create_Info_Text('not enough gold', self, 'error')
@@ -339,7 +346,7 @@ function ItemCard:buy_item()
   local unit, slot_index = Helper.Unit:find_available_inventory_slot(self.parent.units, self.item)
 
   if not unit or not slot_index then
-    Create_Info_Text('no empty slots - drag to a unit title for xp', self, 'error')
+    Create_Info_Text(Helper.Unit:item_blocked_text(self.parent.units, self.item) .. ' - drag to a unit title for xp', self, 'error')
     self.x = self.origX
     self.y = self.origY
     return
@@ -498,15 +505,20 @@ function ItemCard:update(dt)
       self:convert_to_xp(title_card)
     elseif item_part and unit then
       -- Dropped over an item slot - try to buy to that specific slot
-      self:buy_item_to_slot(item_part, unit)
+      if not self:buy_item_to_slot(item_part, unit) then
+        self.x = self.origX
+        self.y = self.origY
+      end
     else
       -- Dropped anywhere else on a unit card - buy into its first empty slot
       local card = Find_Character_Card_At(mouse_x, mouse_y)
       local target_part = card and card:first_empty_item_part()
-      if target_part then
-        self:buy_item_to_slot(target_part, card.unit)
+      if target_part and self:buy_item_to_slot(target_part, card.unit) then
+        -- bought
       elseif card then
-        Create_Info_Text('no empty slots - drop on the title for xp', self, 'error')
+        if not target_part then
+          Create_Info_Text('no room - drop on the title for xp', self, 'error')
+        end
         self.x = self.origX
         self.y = self.origY
       else

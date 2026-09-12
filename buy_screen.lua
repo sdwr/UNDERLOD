@@ -255,12 +255,7 @@ end
 --item functions
 --NO LONGER FUNCTIONAL WITH SLOT SYSTEM
 function BuyScreen:unit_first_available_inventory_slot(unit)
-  for i = 1, UNIT_LEVEL_TO_NUMBER_OF_ITEMS[unit.level] do
-    if not unit.items[i] then
-      return i
-    end
-  end
-  return nil
+  return Helper.Unit:first_open_item_slot(unit)
 end
 
 --this returns the UI element "ItemPart" that corresponds to the first available inventory slot

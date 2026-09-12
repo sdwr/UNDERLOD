@@ -272,15 +272,22 @@ UNIT_XP_TO_NEXT_LEVEL = {
   [2] = 6,
 }
 
+-- Distinct items a unit can carry. Copies of the same item (same set) stack
+-- into one entry, up to MAX_ITEM_STACK deep, and count once toward this cap:
+-- a unit can hold 3/3 of one item and still be at 1/6.
 MAX_ITEMS = 6
+MAX_ITEM_STACK = 3
+-- Physical unit.items indices needed to hold MAX_ITEMS full stacks.
+MAX_ITEM_SLOTS = MAX_ITEMS * MAX_ITEM_STACK
 
--- Every unit gets the full six item slots regardless of level.
+-- Physical slot capacity per unit level (all levels: every stack of every
+-- entry). The distinct-item cap is MAX_ITEMS, enforced in Helper.Unit.
 UNIT_LEVEL_TO_NUMBER_OF_ITEMS = {
-  [1] = 6,
-  [2] = 6,
-  [3] = 6,
-  [4] = 6,
-  [5] = 6,
+  [1] = MAX_ITEM_SLOTS,
+  [2] = MAX_ITEM_SLOTS,
+  [3] = MAX_ITEM_SLOTS,
+  [4] = MAX_ITEM_SLOTS,
+  [5] = MAX_ITEM_SLOTS,
 }
 
 UNIT_LEVEL_TO_LEVELUP_COST = {
