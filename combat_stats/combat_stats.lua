@@ -728,7 +728,7 @@ enemy_type_to_stats = {
     -- hp 0.28 => 12.6 HP at L1: dies to one archer shot (16.5 dmg - def 25
     -- => 13.2 effective) through L3; level scaling makes it 2 shots from L4.
     -- hp 0.45 => 20 hp: two bare archer hits (16.5), one with 2 Power pieces (23.1).
-    ['swarmer'] = { dmg = 0.5, hp = 0.45, mvspd = 1.3},
+    ['swarmer'] = { dmg = 0.5, hp = 0.45, mvspd = 0.8},
     ['hunter_swarmer'] = { dmg = 0.6, hp = 1.4, mvspd = 1.1 },
     -- Tank: slow, chunky body. No attacks, just contact pressure. hp=0.4
     -- on special_enemy base (280) = 112 HP at L1, ~220 at L7 with
@@ -739,7 +739,7 @@ enemy_type_to_stats = {
 
     -- Small archer: squishy ranged poke. special_enemy base scaled way down.
     -- hp 0.35 => 98: six bare archer shots (16.5), three two-troop volleys.
-    ['small_archer'] = { dmg = 0.5, hp = 0.35, mvspd = 0.9 },
+    ['small_archer'] = { dmg = 0.5, hp = 0.35, mvspd = 1.15 },
 
     ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
     ['chaser'] = { dmg = 1, mvspd = 1 },

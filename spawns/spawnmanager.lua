@@ -1477,10 +1477,11 @@ function Spawn_Enemy(arena, type, location, offset, path_heading)
   Spawn_Enemy_Effect(arena, enemy)
 end
 
--- Distinct cue for special enemies appearing. A low-pitched chime so it reads
--- as "something dangerous just arrived" without competing with the boss alert.
+-- Distinct cue for special enemies appearing. Uses a debuff sting (not the
+-- bonus chime) so it reads as "something dangerous just arrived" without
+-- competing with the boss alert.
 function Spawn_Special_Sound(arena)
-  spawn_mark1:play{pitch = random:float(0.65, 0.8), volume = 0.5}
+  special_spawn1:play{pitch = random:float(0.9, 1.05), volume = 0.5}
 end
 
 -- Returns a single path-across heading shared by an entire spawn group, or nil

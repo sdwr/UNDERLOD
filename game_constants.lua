@@ -352,6 +352,11 @@ SWARMER_PROXIMITY_SLOW_RADIUS = 80
 SWARMER_PROXIMITY_MIN_RADIUS = 20
 SWARMER_PROXIMITY_MIN_SPEED_RATIO = 0.5
 
+-- Offscreen entry boost: max_v multiplier for non-boss enemies until they've
+-- first come fully on screen (center at least radius + margin px inside).
+ENEMY_ENTRY_SPEED_MULT = 2.5
+ENEMY_ENTRY_ONSCREEN_MARGIN = 2
+
 ENEMY_CRITTER_SEPARATION_RADIUS = 8
 
 -- Enemy wander behavior constants  
@@ -537,12 +542,13 @@ SPAWN_TIMELINE_JITTER = 0.2
 -- Jitter on the swarmer lane's gap between clumps.
 SPAWN_DIRECTOR_JITTER = 0.25
 -- Swarmer group mix: weighted roll, clamped to cap headroom and the bank.
--- The common case is a 4-6 group that SCATTERS (each member at its own random
--- offscreen point, fanning in from all sides), with clustered 4-6 waves at a
--- weighted point. Levels can force clustered clumps with clustered_only.
+-- The common case (~90%) is a clustered 4-6 clump at a weighted point; rarely
+-- the group SCATTERS instead (each member at its own random offscreen point,
+-- fanning in from all sides). Levels can force clustered clumps with
+-- clustered_only.
 SWARMER_GROUP_MIX = {
-  { weight = 2, min = 4, max = 6, scatter = true },
-  { weight = 4, min = 4, max = 6 },
+  { weight = 1, min = 4, max = 6, scatter = true },
+  { weight = 9, min = 4, max = 6 },
 }
 -- Minimum gap between swarmer clumps (the opening burst to cap fires this
 -- fast), and the recheck delay when a fire is skipped (cap full, bank short).

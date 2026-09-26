@@ -284,6 +284,18 @@ function Enemy:update(dt)
     if self.get_proximity_speed_ratio and not self.being_knocked_back and not self.is_launching then
       self.max_v = self.max_v * self:get_proximity_speed_ratio()
     end
+
+    -- Entry boost: enemies spawn just off the screen edge; hurry them on
+    -- until they're fully visible once, then latch off so a later knockback
+    -- past the edge doesn't re-trigger it. Bosses keep their own entrance.
+    if not self.entered_screen then
+      local m = (self.radius or 0) + ENEMY_ENTRY_ONSCREEN_MARGIN
+      if self.x >= m and self.x <= gw - m and self.y >= m and self.y <= gh - m then
+        self.entered_screen = true
+      elseif self.max_v and self.class ~= 'boss' and not self.being_knocked_back and not self.is_launching then
+        self.max_v = self.max_v * ENEMY_ENTRY_SPEED_MULT
+      end
+    end
     
     self.random_dest_timer = self.random_dest_timer - dt
 
