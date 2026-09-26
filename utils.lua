@@ -202,6 +202,17 @@ function find_character_image(character)
   return image
 end
 
+-- Units are color coded by purchase order (1, 2, 3...), wrapping around.
+function unit_order_color(index)
+  local n = #unit_order_colors
+  return unit_order_colors[((index or 1) - 1) % n + 1]
+end
+
+function unit_order_color_string(index)
+  local n = #unit_order_color_strings
+  return unit_order_color_strings[((index or 1) - 1) % n + 1]
+end
+
 function character_to_color(character)
   return character_colors[character] or character_colors['default']
 end

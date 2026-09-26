@@ -5,6 +5,9 @@
 SafetyDanceSpell = Spell:extend()
 
 function SafetyDanceSpell:init(args)
+    -- The arena draws this group's ground effects before Heigan and units.
+    args.group = main.current.main
+
     -- Call the parent Spell's init function
     SafetyDanceSpell.super.init(self, args)
 
@@ -40,6 +43,10 @@ end
 
 -- This function replaces the logic from the old :create_all()
 function SafetyDanceSpell:create_damage_zones()
+    if self.hit_busiest_lane then
+        self:create_busiest_lane_zone()
+        return
+    end
     for i = 1, self.total_zones do
         if i ~= SafetyDanceSpell.safe_zone_index then
             local x, y, w, h = Helper.Geometry:get_arena_rect(i, self.total_zones)
@@ -50,6 +57,24 @@ function SafetyDanceSpell:create_damage_zones()
             })
         end
     end
+end
+
+-- Inverted dance: only the lane holding the most troops erupts (ties broken at
+-- random), so a split team loses at most one unit's worth.
+function SafetyDanceSpell:create_busiest_lane_zone()
+    local best, best_count = {}, -1
+    for i = 1, self.total_zones do
+        local x, y, w, h = Helper.Geometry:get_arena_rect(i, self.total_zones)
+        local shape = Rectangle(x, y, w, h)
+        local count = #main.current.main:get_objects_in_shape(shape, main.current.friendlies)
+        local zone = {x = x, y = y, w = w, h = h, shape = shape}
+        if count > best_count then
+            best, best_count = {zone}, count
+        elseif count == best_count then
+            table.insert(best, zone)
+        end
+    end
+    table.insert(self.damage_zones, best[math.random(1, #best)])
 end
 
 function SafetyDanceSpell:update(dt)
@@ -107,6 +132,11 @@ function SafetyDanceSpell:apply_damage()
 end
 
 function SafetyDanceSpell:draw()
+    SafetyDanceSpell.super.draw(self)
+end
+
+-- Render both the warning and active hazard in the existing ground pass.
+function SafetyDanceSpell:draw_ground()
     if self.state == 'charging' then
         self:draw_aiming_rects()
     elseif self.state == 'active' then
@@ -114,86 +144,54 @@ function SafetyDanceSpell:draw()
     end
 end
 
--- ===================================================================
--- NEW HELPER FUNCTION
--- This function draws a tiled hexagonal pattern inside a given rectangle.
--- ===================================================================
-function SafetyDanceSpell:draw_tiled_hexagons(zone, color, mode)
-    mode = mode or 'fill' -- Default to filled hexagons
-    -- TWEAK: Increased the radius to make each hexagon larger, resulting in fewer hexagons overall.
-    local hex_radius = 18
+-- Keep the texture subordinate to the boundary: the entire rectangle is unsafe,
+-- including the gaps between stripes. Anchor bands in arena space so adjacent
+-- zones form one continuous pattern instead of restarting at every edge.
+function SafetyDanceSpell:draw_danger_zone(zone, fill_alpha, stripe_alpha, edge_alpha)
+    local fill = self.color:clone()
+    fill.a = fill_alpha
+    local stripe = self.color:clone():lighten(0.15)
+    stripe.a = stripe_alpha
+    local edge = self.color:clone():lighten(0.3)
+    edge.a = edge_alpha
+    local shadow = self.color:clone():darken(0.25)
+    shadow.a = 0.7
 
-    -- Pre-calculate hexagon geometry constants for a pointy-topped hexagon
-    local hex_height = math.sqrt(3) * hex_radius
-    local hex_width = 2 * hex_radius
-    
-    -- Get the boundaries of the rectangular zone
-    local start_x, end_x = zone.x - zone.w / 2, zone.x + zone.w / 2
-    local start_y, end_y = zone.y - zone.h / 2, zone.y + zone.h / 2
-
-    local row = 0
-    -- Iterate through the vertical space of the zone
-    for y = start_y - hex_height, end_y + hex_height, hex_height do
-        row = row + 1
-        -- TWEAK: Increased the horizontal step to create a small gap between hexagons, preventing overlap.
-        local horizontal_step = hex_width * 0.8
-        -- Iterate through the horizontal space of the zone
-        for x = start_x - hex_width, end_x + hex_width, horizontal_step do
-            -- Apply horizontal offset for every other row to create a staggered grid
-            local current_x = x
-            if row % 2 == 0 then
-                current_x = x + horizontal_step / 2
-            end
-
-            -- Calculate the 6 vertices for a single hexagon
-            local points = {}
-            for i = 0, 5 do
-                local angle = math.pi / 3 * i
-                table.insert(points, current_x + hex_radius * math.cos(angle))
-                table.insert(points, y + hex_radius * math.sin(angle))
-            end
-
-            -- Draw the hexagon using the specified mode ('fill' or 'line')
-            graphics.polygon(points, color, mode == 'line' and 1 or nil)
+    local left, right = zone.x - zone.w / 2, zone.x + zone.w / 2
+    local top, bottom = zone.y - zone.h / 2, zone.y + zone.h / 2
+    local spacing, band_width = 24, 3
+    graphics.draw_with_mask(function()
+        graphics.rectangle(zone.x, zone.y, zone.w, zone.h, nil, nil, fill)
+        for offset = math.floor((left + top) / spacing) * spacing, right + bottom, spacing do
+            graphics.polygon({
+                offset - top, top, offset - top + band_width, top,
+                offset - bottom + band_width, bottom, offset - bottom, bottom
+            }, stripe)
         end
-    end
+
+        -- Inset both strokes so their outer edges match the damage rectangle
+        -- without painting over the safe lane. The dark backing separates the
+        -- bright boundary from both the texture and the arena background.
+        graphics.rectangle(zone.x, zone.y, zone.w - 4, zone.h - 4, nil, nil, shadow, 4)
+        graphics.rectangle(zone.x, zone.y, zone.w - 2, zone.h - 2, nil, nil, edge, 2)
+    end, function()
+        graphics.rectangle(zone.x, zone.y, zone.w, zone.h, nil, nil, fill)
+    end)
 end
 
--- ===================================================================
--- REFACTORED: draw_aiming_rects
--- Now draws a grid of hexagon outlines.
--- ===================================================================
 function SafetyDanceSpell:draw_aiming_rects()
-    local pctCharged = self.charge_timer / self.charge_duration
-    local alpha = math.min(pctCharged * 0.4, 0.4)
-    local color = self.color:clone()
-    color.a = alpha
-
-    -- Use a stencil to ensure hexagons only draw inside the zone's rectangle
+    local progress = math.min(self.charge_timer / self.charge_duration, 1)
     for _, zone in ipairs(self.damage_zones) do
-        graphics.draw_with_mask(
-            function() self:draw_tiled_hexagons(zone, color, 'line') end,
-            function() graphics.rectangle(zone.x, zone.y, zone.w, zone.h, nil, nil, color) end
-        )
+        self:draw_danger_zone(zone, 0.08 + 0.10 * progress,
+            0.12 + 0.12 * progress, 0.65 + 0.30 * progress)
     end
 end
 
--- ===================================================================
--- REFACTORED: draw_active_rects
--- Now draws a solid field of filled hexagons.
--- ===================================================================
 function SafetyDanceSpell:draw_active_rects()
-    local color = self.color:clone()
-    -- Optional: Fade out the effect as its duration ends
-    local fade_pct = self.active_timer / self.active_duration
-    color.a = 0.8 * (1 - fade_pct)
-
-    -- Use a stencil to ensure hexagons only draw inside the zone's rectangle
+    -- Brief impact accent, then hold the warning until damage actually ends.
+    local impact = math.max(0, 1 - self.active_timer / 0.2)
     for _, zone in ipairs(self.damage_zones) do
-        graphics.draw_with_mask(
-            function() self:draw_tiled_hexagons(zone, color, 'fill') end,
-            function() graphics.rectangle(zone.x, zone.y, zone.w, zone.h, nil, nil, color) end
-        )
+        self:draw_danger_zone(zone, 0.30 + 0.12 * impact, 0.32, 1)
     end
 end
 

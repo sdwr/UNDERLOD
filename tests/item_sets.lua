@@ -49,7 +49,7 @@ for key, def in pairs(ITEM_SETS) do
     end
   end
 end
-assert(commons == 7, 'expected 7 common sets, got ' .. commons)
+assert(commons == 3, 'expected 3 common sets, got ' .. commons)
 assert(rares == 18, 'expected 18 rare sets, got ' .. rares)
 
 -- Disabled sets never roll, at any rarity or tier.

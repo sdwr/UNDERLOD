@@ -45,7 +45,7 @@ function CharacterSelectOverlay:init(args)
   local units_owned = (main.current and main.current.units) and #main.current.units or 0
   if units_owned == 0 then
     self.overlay = Overlay{group = self.group, x = gw/2, y = gh/2, w = gw, h = gh}
-    main.current:buy_unit('archer')
+    main.current:buy_unit()
     ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     _G[random:table{'coins1', 'coins2', 'coins3'}]:play{pitch = random:float(0.95, 1.05), volume = 0.5}
     self.t:after(0.01, function() self:die(0) end)

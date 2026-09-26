@@ -46,6 +46,8 @@ fns['init_enemy'] = function(self)
         active_duration = 2.0, -- How long the damage zones stay active
         color = orange[-5],
         damage_troops = true,
+        -- Only the lane with the most troops erupts: rewards splitting up.
+        hit_busiest_lane = true,
     }
   }
 
@@ -70,33 +72,10 @@ fns['init_enemy'] = function(self)
     },
   }
 
-  --spell ends after # of balls, not duration
-  local plasma_barrage_spiral = {
-    name = 'plasma_barrage',
-    viable = function () return true end,
-
-    oncast = function() end,
-    cast_length = BEHOLDER_CAST_TIME,
-    cast_sound = earth1,
-    cast_volume = 1.5,
-    spellclass = Plasma_Barrage,  
-    spelldata = {
-      group = main.current.main,
-      team = "enemy",
-      spell_duration = 100,
-      x = self.x,
-      y = self.y,
-      movement_type = 'spiral',
-      rotation_speed = 1,
-      color = purple[-5],
-      damage = function() return self.dmg end,
-      parent = self
-    },
-  }
-
-  --spell ends after # of balls, not duration
-  local plasma_barrage_straight = {
-    name = 'plasma_barrage_straight',
+  -- Narrow orb cone aimed at one unit (3 volleys, re-aimed each volley). Only
+  -- the targeted unit has to sidestep unless the team is stacked in the cone.
+  local orb_cone = {
+    name = 'orb_cone',
     viable = function () return true end,
 
     oncast = function() end,
@@ -110,11 +89,42 @@ fns['init_enemy'] = function(self)
       spell_duration = 100,
       x = self.x,
       y = self.y,
-      movement_type = 'straight',
+      cone_count = 5,
+      cone_spread = math.pi / 7,
+      num_balls = 3,
+      time_between_balls = 0.6,
+      speed = 65,
       color = purple[-5],
       damage = function() return self.dmg end,
       parent = self
     },
+  }
+
+  -- Slam telegraphed on the average position of all troops: a clumped team
+  -- all gets hit, a split team leaves empty ground in the middle.
+  local center_slam = {
+    name = 'center_slam',
+    viable = function() return Helper.Unit:get_player_location() ~= nil end,
+
+    oncast = function() end,
+    cast_length = BEHOLDER_CAST_TIME,
+    cast_sound = earth1,
+    cast_volume = 1.5,
+    spellclass = function(data)
+      local p = Helper.Unit:get_player_location()
+      data.x, data.y = p.x, p.y
+      return Stomp_Spell(data)
+    end,
+    spelldata = {
+      group = main.current.main,
+      team = "enemy",
+      spell_duration = HEIGAN_CENTER_SLAM_CHARGE,
+      cancel_on_death = true,
+      rs = HEIGAN_CENTER_SLAM_RADIUS,
+      color = orange[-5],
+      damage = function() return self.dmg * 1.2 end,
+      parent = self,
+    }
   }
 
   local plasma_ball = {
@@ -160,8 +170,8 @@ fns['init_enemy'] = function(self)
     }
   }
 
-  table.insert(self.attack_options, plasma_barrage_spiral)
-  table.insert(self.attack_options, plasma_barrage_straight)
+  table.insert(self.attack_options, orb_cone)
+  table.insert(self.attack_options, center_slam)
   table.insert(self.attack_options, safety_dance)
   table.insert(self.attack_options, laser_ball)
   -- table.insert(self.attack_options, plasma_ball)

@@ -1044,6 +1044,8 @@ function Unit:calculate_stats(first_run)
   self.stun_chance = math.clamp(self.stun_chance, 0, 1)
   self.knockback_resistance = math.clamp(self.knockback_resistance, -1, 0.8)
   self.cooldown_reduction = math.clamp(self.cooldown_reduction, 0, 0.8)
+
+  if self.update_weapon_stats then self:update_weapon_stats() end
 end  
 
 function Unit:onTickCallbacks(dt)
@@ -2089,7 +2091,11 @@ function HPBar:update(dt)
 
   --update "last hp" for the hp bar effect
   --messy AF!
-  if self.isBoss and self.parent and self.last_hp ~= self.parent.hp then
+  -- No damage flash until the bar has faded in (the boss can be hit during
+  -- its intro, before the bar is visible).
+  if self.isBoss and self.parent and self.last_hp ~= self.parent.hp and (self.alpha or 1) < 1 then
+    self.last_hp = self.parent.hp
+  elseif self.isBoss and self.parent and self.last_hp ~= self.parent.hp then
     local w = 200
     local x = gw/2 - w/2
 

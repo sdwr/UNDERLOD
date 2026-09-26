@@ -179,6 +179,7 @@ ITEM_SETS = {
     summary = '+fire damage',
     color = 'red',
     rarity = ITEM_RARITY.COMMON,
+    disabled = true, -- removed; kept for old saves
     bonuses = {
       [1] = { stats = {['fire_damage'] = 6} },
       [2] = { stats = {['fire_damage'] = 6} },
@@ -195,6 +196,7 @@ ITEM_SETS = {
     summary = '+cold damage',
     color = 'blue',
     rarity = ITEM_RARITY.COMMON,
+    disabled = true, -- removed; kept for old saves
     bonuses = {
       [1] = { stats = {['cold_damage'] = 6} },
       [2] = { stats = {['cold_damage'] = 6} },
@@ -212,6 +214,7 @@ ITEM_SETS = {
     summary = '+lightning damage',
     color = 'yellow',
     rarity = ITEM_RARITY.COMMON,
+    disabled = true, -- removed; kept for old saves
     bonuses = {
       [1] = { stats = {['lightning_damage'] = 6} },
       [2] = { stats = {['lightning_damage'] = 6} },
@@ -230,6 +233,7 @@ ITEM_SETS = {
     summary = '+%hp',
     color = 'green',
     rarity = ITEM_RARITY.COMMON,
+    disabled = true, -- removed; kept for old saves
     bonuses = {
       [1] = { stats = {['hp'] = 1} },
       [2] = { stats = {['hp'] = 1} },
@@ -655,10 +659,19 @@ function roll_stat_for_type(item_type)
   end
 end
 
+-- One shop/floor roll: sometimes a weapon item (items/weapons.lua), otherwise
+-- a set item.
+function roll_shop_item(level, exclude_sets)
+  if create_random_weapon_item and random:float(0, 1) < (WEAPON_ITEM_ROLL_CHANCE or 0) then
+    return create_random_weapon_item(ITEM_LEVEL_TO_TIER(level or 1))
+  end
+  return create_random_item(level, nil, exclude_sets)
+end
+
 function create_random_items(level)
   local items = {}
   for i = 1, 3 do
-    local item = create_random_item(level, nil, get_one_piece_sets(items))
+    local item = roll_shop_item(level, get_one_piece_sets(items))
     if item then
       table.insert(items, item)
     end
@@ -801,7 +814,15 @@ function count_team_meta_colors(units)
     if u and u.items then
       local seen = {}
       for _, item in pairs(u.items) do
-        if item and item.sets and #item.sets > 0 then
+        local weapon_def = item and item.weapon and WEAPON_DEFS and WEAPON_DEFS[item.weapon]
+        if weapon_def then
+          -- Weapons count like sets: once per weapon type per unit.
+          local key = 'weapon:' .. item.weapon
+          if not seen[key] then
+            seen[key] = true
+            add(weapon_def.color)
+          end
+        elseif item and item.sets and #item.sets > 0 then
           for _, set_key in ipairs(item.sets) do
             local set_def = ITEM_SETS[set_key]
             if not seen[set_key] and set_def and set_def.color then
@@ -818,6 +839,14 @@ function count_team_meta_colors(units)
     end
   end
   return counts
+end
+
+-- Meta colors an item contributes (weapons use their weapon color).
+function get_item_meta_colors(item)
+  if not item then return {} end
+  local weapon_def = item.weapon and WEAPON_DEFS and WEAPON_DEFS[item.weapon]
+  if weapon_def then return {weapon_def.color} end
+  return item.colors or {}
 end
 
 function get_meta_bonus_for_count(count)

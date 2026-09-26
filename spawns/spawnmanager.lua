@@ -438,6 +438,8 @@ function Replace_Team(arena, index, unit)
   team:die()
   Helper.Unit.teams[index] = nil
 
+  unit.items = {}
+  migrate_unit_to_weapon_items(unit)
   local newTeam = Team(index, unit)
   table.insert(Helper.Unit.teams, index, newTeam)
 
@@ -446,8 +448,8 @@ function Replace_Team(arena, index, unit)
     x = unit_locations[1].x,
     y = unit_locations[1].y,
     level = 1,
-    character = unit.character,
-    items = {nil, nil, nil, nil, nil, nil},
+    character = 'unit',
+    items = unit.items,
     passives = arena.passives
   })
   
@@ -468,7 +470,8 @@ function Spawn_Team(arena, index, unit)
   end
 
   local spawn_location = first_team:get_center()
-  
+  migrate_unit_to_weapon_items(unit)
+
   local newTeam = Team(index, unit)
   table.insert(Helper.Unit.teams, index, newTeam)
 
@@ -497,6 +500,7 @@ function Spawn_Teams(arena, suction_enabled)
   local spawn_locations = SpawnGlobals.Get_Team_Spawn_Locations(#arena.units)
 
   for i, unit in ipairs(arena.units) do
+      migrate_unit_to_weapon_items(unit)
       --add a new team
       local team = Team(i, unit)
       table.insert(Helper.Unit.teams, i, team)

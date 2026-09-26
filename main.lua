@@ -22,6 +22,7 @@ require 'procs/perks'
 require 'items/constants'
 require 'items/old_items'
 require 'items/items_v2'
+require 'items/weapons'
 require 'mainmenu'
 require 'buy_screen_utils'
 require 'buy_screen'
@@ -984,6 +985,17 @@ function init()
     ['shotgun'] = orange[0],
   }
 
+  -- Generic unit: attacks come from weapon items, color from purchase order.
+  character_names['unit'] = 'Unit'
+  character_colors['unit'] = yellow[0]
+  character_color_strings['unit'] = 'yellow'
+  character_types['unit'] = 'ranger'
+  character_type_strings['unit'] = '[fg]Unit'
+  character_images['unit'] = bow2
+
+  unit_order_colors = {yellow[0], blue[0], red[0], green[0], purple[0], orange[0]}
+  unit_order_color_strings = {'yellow', 'blue', 'red', 'green', 'purple', 'orange'}
+
   item_stat_lookup = {
     ['dmg'] = 'damage',
     ['flat_dmg'] = 'flat damage',
@@ -1322,8 +1334,8 @@ function init()
 
   level_to_boss_enemy = {
     [6] = 'stompy',
-    [11] = 'dragon',
-    [16] = 'heigan',
+    [11] = 'heigan',
+    [16] = 'dragon',
     [21] = 'final_boss',
     [25] = 'final_boss',
   }

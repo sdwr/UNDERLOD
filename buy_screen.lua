@@ -242,8 +242,10 @@ end
 
 --buy functions
 
-function BuyScreen:buy_unit(character)
-  table.insert(self.units, {character = character, level = 1, xp = 0, reserve = {0, 0}, items = {nil, nil, nil, nil, nil, nil}})
+-- Units are generic: every new unit starts with one level of the archer
+-- weapon; everything else comes from items.
+function BuyScreen:buy_unit()
+  table.insert(self.units, {character = 'unit', level = 1, xp = 0, reserve = {0, 0}, items = {create_weapon_item('archer')}})
   self:set_party()
   if #self.items == 0 then
     self.first_shop = false
@@ -347,6 +349,7 @@ function BuyScreen:gain_gold(amount)
 end
 
 function BuyScreen:set_party()
+  for _, unit in ipairs(self.units) do migrate_unit_to_weapon_items(unit) end
   Kill_All_Cards()
   Character_Cards = {}
 
@@ -409,9 +412,8 @@ function BuyScreen:try_buy_unit(cost)
   if gold >= cost then
     self:gain_gold(-cost)
     gold2:play{pitch = random:float(0.95, 1.05), volume = 1}
-    self.select_character_overlay = CharacterSelectOverlay{
-      group = self.overlay_ui
-    }
+    ui_switch1:play{pitch = random:float(0.95, 1.05), volume = 0.5}
+    self:buy_unit()
     self.first_shop = false
   end
 end
@@ -460,7 +462,7 @@ function BuyScreen:set_items(shop_level, is_shop_start)
     for i = 1, 3 do
       if not self.shop_item_data[i] then
         -- refills can't duplicate a 1/1 set already locked or rolled this shop
-        self.shop_item_data[i] = create_random_item(self.level, nil, get_one_piece_sets(self.shop_item_data))
+        self.shop_item_data[i] = roll_shop_item(self.level, get_one_piece_sets(self.shop_item_data))
       end
     end
   end

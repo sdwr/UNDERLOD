@@ -1147,8 +1147,8 @@ function LaserBall:init(args)
   end)
 
   --set the velocity and rotation speed
-  self.rotation_speed = 0.5
-  self.speed = 100
+  self.rotation_speed = 0.25
+  self.speed = 55
 
   self.damage = get_dmg_value(self.damage)
 
@@ -1162,7 +1162,7 @@ function LaserBall:init(args)
   
   self.duration_init = 2
   self.duration_prefire = 1
-  self.duration_fire = args.duration_fire or 1
+  self.duration_fire = args.duration_fire or 1.5
   self.duration_wait = 2
   
   self.nextLaser = self.duration_init
@@ -1182,10 +1182,28 @@ function LaserBall:update(dt)
   self:set_angular_velocity(self.rotation_speed)
 
 
+  self:bounce_off_screen_edges()
+
   self.duration = self.duration - dt
   if self.duration < 0 then self.dead = true end
   self.elapsed = self.elapsed + dt
   self:update_fire()
+end
+
+-- Laser_Spell ends its caster's cast when the beam fires and dies outright if
+-- the caster has no end_cast, which killed every beam on its first frame.
+function LaserBall:end_cast() end
+
+-- The arena has no walls, so reflect off the screen edges manually.
+function LaserBall:bounce_off_screen_edges()
+  local r = self.radius
+  local cx, cy = math.cos(self.r), math.sin(self.r)
+  if (self.x < r and cx < 0) or (self.x > gw - r and cx > 0) then
+    self.r = math.pi - self.r
+  end
+  if (self.y < r and cy < 0) or (self.y > gh - r and cy > 0) then
+    self.r = -self.r
+  end
 end
 
 function LaserBall:update_fire()

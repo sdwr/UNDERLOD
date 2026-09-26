@@ -147,8 +147,8 @@ function MetaRow:highlight_matching_items(on)
       for _, part in ipairs(card.items) do
         local item = part.getItem and part:getItem() or nil
         local matches = false
-        if item and item.colors then
-          for _, c in ipairs(item.colors) do
+        if item then
+          for _, c in ipairs(get_item_meta_colors(item)) do
             if c == self.color_name then matches = true; break end
           end
         end

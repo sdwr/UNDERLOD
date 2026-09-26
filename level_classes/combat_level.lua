@@ -43,13 +43,7 @@ function CombatLevel:level_clear()
       boss = Is_Boss_Level and Is_Boss_Level(self.level) or false,
     }))
   end
-  if Is_Boss_Level(self.level) then
-    if self.level == 6 then USER_STATS.stompy_defeated = USER_STATS.stompy_defeated + 1
-    elseif self.level == 11 then USER_STATS.dragon_defeated = USER_STATS.dragon_defeated + 1
-    elseif self.level == 16 then USER_STATS.heigan_defeated = USER_STATS.heigan_defeated + 1
-    elseif self.level == 21 then USER_STATS.final_boss_defeated = USER_STATS.final_boss_defeated + 1
-    end
-  end
+  Record_Boss_Defeated(self.level)
   if Stats_Level_Complete then Stats_Level_Complete() end
   if Stats_Max_Gold then Stats_Max_Gold() end
   system.save_stats()

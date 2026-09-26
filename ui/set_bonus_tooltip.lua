@@ -35,6 +35,11 @@ end
 function SetBonusTooltip:build_text_lines()
   self.text_lines = {}
 
+  if self.item.weapon and WEAPON_DEFS[self.item.weapon] then
+    self:build_weapon_text_lines()
+    return
+  end
+
   -- Get all sets this item belongs to
   local item_sets = self:get_item_sets()
 
@@ -91,6 +96,21 @@ function SetBonusTooltip:build_text_lines()
     if set_index < #item_sets then
       table.insert(self.text_lines, {text = '', font = pixul_font, alignment = 'center'})
     end
+  end
+end
+
+-- Weapon items: name + level on this unit, then the per-level damage rows.
+function SetBonusTooltip:build_weapon_text_lines()
+  local def = WEAPON_DEFS[self.item.weapon]
+  local level = self.unit and (get_unit_weapon_counts(self.unit)[self.item.weapon] or 0) or 0
+  local header = '[' .. def.color .. ']' .. def.name:upper()
+  if self.unit then header = header .. ' [fg](Lv ' .. math.min(level, MAX_ITEM_STACK) .. '/' .. MAX_ITEM_STACK .. ')' end
+  table.insert(self.text_lines, {text = header, font = pixul_font, alignment = 'center'})
+  table.insert(self.text_lines, {text = '[fg]' .. def.description, font = pixul_font, alignment = 'center'})
+  for i = 1, MAX_ITEM_STACK do
+    local color = level >= i and def.color or 'fgm2'
+    local pct = math.floor(WEAPON_LEVEL_DMG_MULT[i] * 100 + 0.5)
+    table.insert(self.text_lines, {text = '[' .. color .. ']Lv ' .. i .. ': ' .. pct .. '% damage', font = pixul_font, alignment = 'center'})
   end
 end
 

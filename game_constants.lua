@@ -319,7 +319,7 @@ SEEK_DECELERATION = 1.1
 SEEK_WEIGHT = 1.75
 
 TROOP_FOLLOW_START_SPEED_RATIO = 0.15
-TROOP_FOLLOW_ACCELERATION_TIME = 0.2
+TROOP_FOLLOW_ACCELERATION_TIME = 0.45
 
 get_seek_weight_by_enemy_type = function(enemy_type)
   return seek_weight_by_enemy_type[enemy_type] or seek_weight_by_enemy_type['default']
@@ -351,6 +351,15 @@ ENEMY_SEPARATION_WEIGHT = 10
 SWARMER_PROXIMITY_SLOW_RADIUS = 80
 SWARMER_PROXIMITY_MIN_RADIUS = 20
 SWARMER_PROXIMITY_MIN_SPEED_RATIO = 0.5
+
+-- Swarmer clumping. Wander/separation are multipliers on the enemy defaults;
+-- the clump pull steers toward the centroid of swarmers within CLUMP_RADIUS.
+SWARMER_WANDER_MULT = 0.2
+SWARMER_SEPARATION_MULT = 0.35
+SWARMER_CLUMP_RADIUS = 45
+SWARMER_CLUMP_MIN_DISTANCE = 6
+SWARMER_CLUMP_WEIGHT = 3
+SWARMER_CLUMP_MAX_FORCE = 90
 
 -- Offscreen entry boost: max_v multiplier for non-boss enemies until they've
 -- first come fully on screen (center at least radius + margin px inside).

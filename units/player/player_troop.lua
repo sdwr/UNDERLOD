@@ -42,6 +42,7 @@ function Troop:init(args)
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 40)
   
   self:set_character()
+  self:build_weapons()
 
   Helper.Unit:set_state(self, unit_states['idle'])
 
@@ -178,7 +179,8 @@ function Troop:update(dt)
   self:calculate_stats()
   local mobile_casting = self.shoot_while_moving and self.resume_following
     and (self.state == unit_states['casting'] or self.state == unit_states['channeling'])
-  if not input['m1'].down or input['m1'].pressed
+  local move_down = Helper.Unit:move_down(self.team)
+  if not move_down or Helper.Unit:move_pressed(self.team)
     or (self.state ~= unit_states['following'] and not mobile_casting) then
     self.follow_hold_time = 0
   else
@@ -196,9 +198,9 @@ function Troop:update(dt)
   -- which prevents state flickering. The order is based on priority.
 
   -- shoot_while_moving (Skirmisher set): a finished cast hands the unit back
-  -- to the mouse while M1 is still held.
+  -- to the mouse while M1 (or space) is still held.
   if self.shoot_while_moving and self.resume_following then
-    if not input['m1'].down then
+    if not move_down then
       self.resume_following = false
     elseif self.state == unit_states['normal'] or self.state == unit_states['idle'] then
       Helper.Unit:set_state(self, unit_states['following'])
@@ -208,10 +210,10 @@ function Troop:update(dt)
   -- Don't run AI logic while following (kiting): the player commanded movement,
   -- so units should not auto-acquire targets or start new casts until they stop.
   -- shoot_while_moving lifts that: the unit attacks on the move.
-  if self.state == unit_states['normal'] or self.state == unit_states['idle']
-    or (self.shoot_while_moving and self.state == unit_states['following']) then
-    self:update_ai_logic()
-  end
+  local can_fire = self.state == unit_states['normal'] or self.state == unit_states['idle']
+    or self.state == unit_states['stopped']
+    or (self.shoot_while_moving and self.state == unit_states['following'])
+  self:update_weapons(dt, can_fire)
 
   --dont need to check if following, because m1 cancels the rally point
   if table.contains(unit_states_can_rally, self.state) then
@@ -244,7 +246,8 @@ function Troop:update(dt)
       -- self:clear_assigned_target()
 
       -- Check if we should STOP following.
-      if input['m1'].released then
+      -- Down, not released: deselecting this team mid-hold also stops it.
+      if not move_down then
           Helper.Unit:set_state(self, unit_states['idle'])
       else
         self:follow_mouse()
@@ -261,14 +264,14 @@ function Troop:update(dt)
       end
     end
     -- shoot_while_moving: keep following the mouse through the cast.
-    if self.shoot_while_moving and input['m1'].down then
+    if self.shoot_while_moving and move_down then
       self.resume_following = true
       self:follow_mouse()
     end
 
   -- Channeled attacks (laser) sit in 'channeling' instead of 'casting'.
   elseif self.state == unit_states['channeling'] then
-    if self.shoot_while_moving and input['m1'].down then
+    if self.shoot_while_moving and move_down then
       self.resume_following = true
       self:follow_mouse()
     end
@@ -396,6 +399,126 @@ function Troop:update_ai_logic()
 end
 
 
+-- ===================================================================
+-- Weapons: one entry per weapon item type the unit holds (level = copies).
+-- Each fires on its own cooldown at a target inside its own range; unit
+-- stats (dmg, aspd, range, procs) apply to every weapon.
+-- ===================================================================
+function Troop:build_weapons()
+  local counts, order = get_unit_weapon_counts(self)
+  if #order == 0 then
+    -- No weapon items (scripted teams): use the old character's weapon.
+    local key = WEAPON_DEFS[self.character or ''] and self.character or 'archer'
+    counts, order = {[key] = 1}, {key}
+  end
+  self.weapons = {}
+  for _, key in ipairs(order) do
+    table.insert(self.weapons, {
+      key = key,
+      def = WEAPON_DEFS[key],
+      level = math.min(counts[key], #WEAPON_LEVEL_DMG_MULT),
+      elapsed = 99,
+    })
+  end
+  self:update_weapon_stats()
+end
+
+function Troop:update_weapon_stats()
+  if not self.weapons then return end
+  local max_range = 0
+  for _, w in ipairs(self.weapons) do
+    w.damage = self.dmg * w.def.dmg_mult * WEAPON_LEVEL_DMG_MULT[w.level]
+    w.cooldown = w.def.cooldown * self.aspd_m
+    w.range = (w.def.range() + self.buff_range_a) * self.buff_range_m
+    max_range = math.max(max_range, w.range)
+  end
+  self.attack_range = max_range
+  self.infinite_range = false
+  if self.attack_sensor then self.attack_sensor.rs = max_range end
+end
+
+function Troop:weapon_target_in_range(w, target)
+  return target and not target.dead and self:distance_to_object(target) <= w.range
+end
+
+-- Commanded target first, then the troop's current target, then a random
+-- close enemy inside this weapon's range.
+function Troop:get_weapon_target(w)
+  if self:weapon_target_in_range(w, self.assigned_target) then return self.assigned_target end
+  if self:weapon_target_in_range(w, self.target) then return self.target end
+  local candidate = main.current.main:get_random_close_object(self, main.current.enemies, nil, w.range)
+  if candidate and candidate.fully_onscreen ~= false and self:weapon_target_in_range(w, candidate) then
+    if not self.target then self:set_target(candidate) end
+    return candidate
+  end
+end
+
+function Troop:update_weapons(dt, can_fire)
+  if not self.weapons then return end
+  if self.assigned_target and self.assigned_target.dead then self:clear_assigned_target() end
+  if self.target and self.target.dead then self:clear_my_target() end
+  if self.target and self:distance_to_object(self.target) > (self.attack_range or 0) then
+    self:clear_my_target()
+  end
+
+  -- Closer enemies speed every weapon up (same multiplier the old cast used).
+  local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier or 1
+  for _, w in ipairs(self.weapons) do
+    w.elapsed = w.elapsed + dt
+    if can_fire and w.elapsed >= w.cooldown * distance_multiplier then
+      local target = self:get_weapon_target(w)
+      if target then
+        w.elapsed = 0
+        self:fire_weapon(w, target)
+      end
+    end
+  end
+end
+
+function Troop:fire_weapon(w, target)
+  local fire = WEAPON_FIRE[w.key]
+  fire(self, w, target, 1)
+  self:stretch_on_attack()
+  self.last_attack_started = Helper.Time.time
+  self:onAttackCallbacks(target)
+
+  if Has_Static_Proc(self, 'multishot') then
+    self:weapon_multishot(w, target)
+  end
+  -- The laser rolls its own repeat inside Laser_Spell.
+  if w.key ~= 'laser' and self.repeat_attack_chance
+    and random:float(0, 1) < self.repeat_attack_chance then
+    self.t:after(random:float(0.1, 0.2), function()
+      if not self.dead and target and not target.dead then fire(self, w, target, 1) end
+    end)
+  end
+end
+
+function Troop:weapon_multishot(w, target)
+  local proc = Get_Static_Proc(self, 'multishot')
+  local damage_multi = proc and proc:get_damage_multi() or 1
+  local angle = math.atan2(target.y - self.y, target.x - self.x)
+  local offsets = {MULTISHOT_ANGLE_OFFSET, -MULTISHOT_ANGLE_OFFSET}
+  if Get_Static_Proc(self, 'extraMultishot') then
+    table.insert(offsets, MULTISHOT_ANGLE_OFFSET / 2)
+    table.insert(offsets, -MULTISHOT_ANGLE_OFFSET / 2)
+  end
+  for _, offset in ipairs(offsets) do
+    WEAPON_FIRE[w.key](self, w, target, damage_multi, angle + offset)
+  end
+end
+
+-- Proc-driven extra attacks (retaliate etc.): every weapon that reaches the
+-- target fires once, no on-attack procs.
+function Troop:instant_attack(target, damage_multi)
+  if not target or target.dead or not self.weapons then return end
+  for _, w in ipairs(self.weapons) do
+    if self:weapon_target_in_range(w, target) then
+      WEAPON_FIRE[w.key](self, w, target, damage_multi or 1)
+    end
+  end
+end
+
 function Troop:set_rally_position(i)
   local team = Helper.Unit.teams[self.team]
   self.target_pos = {x = team.rallyCircle.x + math.random(-i, i), y = team.rallyCircle.y + math.random(-i, i)}
@@ -426,6 +549,13 @@ function Troop:draw()
     * self.hfx.move_scale_y.x
     * self.hfx.survivor_scale.x
     * self.hfx.hit.x 
+
+  -- Thin yellow selection ring for units that take commands right now: the
+  -- hotbar-selected team(s), or everyone while space is held. Drawn before
+  -- the push so the move/attack squash doesn't warp it.
+  if Helper.Unit:is_team_commanded(self.team) then
+    graphics.circle(self.x, self.y, self.display_size*0.55, yellow[0], 1)
+  end
 
   graphics.push(self.x, self.y, self.r, final_scale_x, final_scale_y)
   self:draw_buffs()
@@ -474,34 +604,28 @@ function Troop:draw()
   self:draw_attack_timer_bar()
 end
 
+-- One thin cooldown bar per weapon, stacked under the body (tinted by weapon
+-- when there's more than one). A bar hides once its weapon is ready.
 function Troop:draw_attack_timer_bar()
-  -- Cooldown-only bar (the cast-phase "firing bar" was removed). Progress
-  -- matches the engine's actual readiness check, which scales attack_cooldown
-  -- by closest_enemy_distance_multiplier; using the raw timer would end the
-  -- bar early or hide it before the unit is truly ready.
-  if self.state == unit_states['casting'] then return end
-
-  local base_cd = self.attack_cooldown or 1
-  local cd_timer = self.attack_cooldown_timer or 0
+  if not self.weapons then return end
   local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier or 1
-  local adjusted_cd = base_cd * distance_multiplier
-  -- elapsed since cooldown started; valid for both positive and negative timer values.
-  local elapsed = base_cd - cd_timer
-  if adjusted_cd <= 0 or elapsed >= adjusted_cd then
-    return -- unit is actually ready, hide the bar
-  end
-  local progress = math.clamp(elapsed / adjusted_cd, 0, 1)
-
-  local body_size = self.display_size or (self.shape and (self.shape.w or self.shape.rs)) or 8
+  local body_size = self.display_size or 8
   local bar_w = math.max(10, body_size)
   local bar_h = 2
   local bar_x = self.x - bar_w / 2
   local bar_y = self.y + (body_size / 2) + 3
-
-  graphics.rectangle(self.x, bar_y + bar_h / 2, bar_w, bar_h, 1, 1, bg[5])
-  if progress > 0 then
-    local fill_w = bar_w * progress
-    graphics.rectangle(bar_x + fill_w / 2, bar_y + bar_h / 2, fill_w, bar_h, 1, 1, white_transparent)
+  for i, w in ipairs(self.weapons) do
+    local adjusted_cd = (w.cooldown or 1) * distance_multiplier
+    if adjusted_cd > 0 and w.elapsed < adjusted_cd then
+      local y = bar_y + (i - 1) * (bar_h + 1) + bar_h / 2
+      local progress = math.clamp(w.elapsed / adjusted_cd, 0, 1)
+      graphics.rectangle(self.x, y, bar_w, bar_h, 1, 1, bg[5])
+      if progress > 0 then
+        local fill_w = bar_w * progress
+        local color = #self.weapons > 1 and (_G[w.def.color] or white)[0] or white_transparent
+        graphics.rectangle(bar_x + fill_w / 2, y, fill_w, bar_h, 1, 1, color)
+      end
+    end
   end
 end
 
@@ -598,7 +722,10 @@ end
 
 
 function Troop:set_character()
-  --override in subclasses
+  self.state_change_functions['death'] = function(self)
+    self:cancel_cast()
+    Helper.Unit:unclaim_target(self)
+  end
 end
 
 function Troop:hit(damage, from, damageType, playHitEffects, cannotProcOnHit)

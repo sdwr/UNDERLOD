@@ -174,13 +174,7 @@ function BaseLevel:quit()
     self:demo_end()
   else
     print('beat level')
-    if Is_Boss_Level(self.level) then
-      if self.level == 6 then USER_STATS.stompy_defeated = USER_STATS.stompy_defeated + 1
-      elseif self.level == 11 then USER_STATS.dragon_defeated = USER_STATS.dragon_defeated + 1
-      elseif self.level == 16 then USER_STATS.heigan_defeated = USER_STATS.heigan_defeated + 1
-      elseif self.level == 21 then USER_STATS.final_boss_defeated = USER_STATS.final_boss_defeated + 1
-      end
-    end
+    Record_Boss_Defeated(self.level)
     system.save_stats()
     Check_All_Achievements()
 

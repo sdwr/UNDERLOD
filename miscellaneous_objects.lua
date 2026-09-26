@@ -1406,7 +1406,7 @@ function CustomCursor:draw()
         self:draw_simple_mode()
     else
         -- Check if the left mouse button is being held down OR space is held
-        if input['m1'].down then
+        if input['m1'].down or input['space'].down then
             self:draw_pull_state()
         else
             self:draw_idle_state()

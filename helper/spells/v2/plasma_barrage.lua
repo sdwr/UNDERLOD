@@ -29,6 +29,10 @@ function Plasma_Barrage:init(args)
   self.ball_i = 0
   self.trigger = self.t:every(self.time_between_balls, function()
     self.ball_i = self.ball_i + 1
+    if self.cone_count then
+      self:fire_cone_volley()
+      return
+    end
     local ballData = {
       group = self.group,
       unit = self.unit,
@@ -53,6 +57,30 @@ function Plasma_Barrage:init(args)
   end, self.num_balls, function() self:die() end)
 
 end
+-- Cone mode (cone_count set): each tick fires cone_count straight balls spread
+-- over cone_spread radians, re-aimed at the target (a random troop if the
+-- target is gone), so only the aimed-at unit has to sidestep.
+function Plasma_Barrage:fire_cone_volley()
+  if not self.target or self.target.dead then
+    self.target = self.unit and Helper.Target:get_random_enemy(self.unit)
+  end
+  local center = self.initial_r
+  if self.target and not self.target.dead then
+    center = math.atan2(self.target.y - self.y, self.target.x - self.x)
+  end
+  local n = self.cone_count
+  for i = 1, n do
+    local offset = n > 1 and (i - 1) / (n - 1) - 0.5 or 0
+    PlasmaBall{
+      group = self.group, unit = self.unit, team = self.team,
+      x = self.x, y = self.y, r = center + offset * self.cone_spread,
+      speed = self.speed, movement_type = 'straight', duration = self.ball_duration,
+      color = self.color, explosion_radius = self.explosion_radius, damage = self.damage,
+    }
+  end
+  dot1:play{pitch = random:float(0.95, 1.05), volume = 0.4}
+end
+
 function Plasma_Barrage:draw()
   Plasma_Barrage.super.draw(self)
 end

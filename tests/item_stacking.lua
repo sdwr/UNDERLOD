@@ -59,4 +59,43 @@ u2 = unit(item('b'), item('c'), item('d'), item('e'), item('f'), item('g'))
 assert(H:item_blocked_reason({u1, u2}, item('h')) == 'full')
 assert(H:blocked_reason_text('stack_full') == 'already 3/3 of this item')
 
+-- weapons: stack by weapon type, count toward the cap, never drop to zero
+dofile('items/weapons.lua')
+local function weapon(key) return create_weapon_item(key) end
+u = unit(weapon('archer'), weapon('archer'), weapon('shotgun'), item('a'))
+assert(H:unit_distinct_item_count(u) == 3, 'weapons group by type')
+assert(H:item_group_key(weapon('laser')) == 'weapon:laser')
+local counts, order, total = get_unit_weapon_counts(u)
+assert(counts.archer == 2 and counts.shotgun == 1 and total == 3 and order[1] == 'archer')
+assert(not H:would_leave_no_weapons(u, 1), 'other weapons remain')
+assert(not H:would_leave_no_weapons(u, 4), 'non-weapon never blocks')
+u = unit(weapon('archer'), item('a'))
+assert(H:would_leave_no_weapons(u, 1), 'last weapon blocked')
+assert(not H:would_leave_no_weapons(u, 1, weapon('laser')), 'swap for a weapon is fine')
+assert(H:would_leave_no_weapons(u, 1, item('b')), 'swap for a non-weapon is blocked')
+assert(H:blocked_reason_text('last_weapon') == 'units need at least 1 weapon')
+-- auto-buy sends a weapon to the unit holding the most copies of it
+u1 = unit(weapon('archer'))
+u2 = unit(weapon('laser'), weapon('laser'))
+pick = H:find_available_inventory_slot({u1, u2}, weapon('laser'))
+assert(pick == u2, 'weapon stacks onto its holder')
+pick = H:find_available_inventory_slot({u1, u2}, weapon('shotgun'))
+assert(pick == u1, 'new weapon spreads by distinct count')
+-- old saves: a unit with no weapon gets its character's weapon
+u = {character = 'laser', items = {item('a')}}
+migrate_unit_to_weapon_items(u)
+assert(u.items[2] and u.items[2].weapon == 'laser' and u.character == 'unit', 'migrated')
+u = {character = 'swordsman', items = {}}
+migrate_unit_to_weapon_items(u)
+assert(u.items[1].weapon == 'archer', 'unknown character falls back to archer')
+
+-- weapons count toward meta colors once per type per unit
+dofile('items/items_v2.lua')
+local meta = count_team_meta_colors({
+  {items = {weapon('archer'), weapon('archer'), weapon('laser')}},
+  {items = {weapon('archer'), weapon('shotgun')}},
+})
+assert(meta.yellow == 2 and meta.blue == 1 and meta.red == 1, 'weapon meta colors')
+assert(get_item_meta_colors(weapon('shotgun'))[1] == 'red')
+
 print('item_stacking: ok')

@@ -429,6 +429,74 @@ function Helper.Unit:all_teams_set_rally_point(x, y)
     end
 end
 
+-- Team selection (hotbar): 0 = ALL, 1..n = one team. Mouse commands (M1
+-- follow, M2 rally/target) go only to the selected team(s); holding space
+-- makes every team follow the cursor regardless of selection.
+function Helper.Unit:set_selected_team(index)
+    if index ~= 0 and not self:get_team_by_index(index) then return end
+    if self.selected_team_index == index then return end
+    self.selected_team_index = index
+    self:deselect_all_troops()
+    for i, team in ipairs(self.teams) do
+        if self:is_team_selected(i) then team:select() end
+    end
+    ui_switch1:play{pitch = random:float(1.1, 1.3), volume = 0.4}
+end
+
+-- A selection pointing at a team that doesn't exist falls back to ALL.
+function Helper.Unit:is_team_selected(team_index)
+    local sel = self.selected_team_index or 0
+    if sel == 0 or not self:get_team_by_index(sel) then return true end
+    return sel == team_index
+end
+
+-- Selected via hotbar, or overridden to all while space is held. Drives the
+-- troop selection ring.
+function Helper.Unit:is_team_commanded(team_index)
+    return self.space_all_override or self:is_team_selected(team_index)
+end
+
+-- Per-team movement input: space (all teams) or M1 (selected teams only).
+function Helper.Unit:move_down(team_index)
+    return input['space'].down or (input['m1'].down and self:is_team_selected(team_index))
+end
+
+function Helper.Unit:move_pressed(team_index)
+    return input['space'].pressed or (input['m1'].pressed and self:is_team_selected(team_index))
+end
+
+function Helper.Unit:selected_teams_target_flagged_enemy(enemy)
+    for i, team in ipairs(Helper.Unit.teams) do
+        if self:is_team_selected(i) then
+            team:clear_team_target()
+            team:clear_rally_point()
+            team:set_team_target(enemy)
+        end
+    end
+end
+
+function Helper.Unit:selected_teams_set_rally_point(x, y)
+    for i, team in ipairs(Helper.Unit.teams) do
+        if self:is_team_selected(i) then
+            team:clear_team_target()
+            team:clear_rally_point()
+            team:set_rally_point(x, y)
+        end
+    end
+end
+
+-- Hotkeys: 1..9 pick a purchased team. Skipped while the passive picker is
+-- open (it uses the same number keys).
+function Helper.Unit:update_team_hotkeys()
+    local arena = main and main.current and main.current.current_arena
+    if arena and arena.choosing_passives then return end
+    for i = 1, math.min(#self.teams, 9) do
+        if input[tostring(i)] and input[tostring(i)].pressed then
+            self:set_selected_team(i)
+        end
+    end
+end
+
 function Helper.Unit:block_troop_movement()
     arena_states_cant_move = {
         'arena_start',
@@ -451,9 +519,11 @@ end
 
 --select + target from input
 function Helper.Unit:select()
+    self.space_all_override = input['space'].down and true or false
+    self:update_team_hotkeys()
+
     if not Helper.disable_unit_controls then
         local flag = false
-        --should be on key release, not press? or at least only check the first press
 
         if input['m2'].pressed then
 
@@ -463,29 +533,24 @@ function Helper.Unit:select()
                     break
                 end
             end
-            --target the flagged enemy with the selected troop
+            --target the flagged enemy with the selected team(s)
             if flag then
                 local flagged_enemy = Helper.Spell:get_nearest_target_from_point(Helper.mousex, Helper.mousey, false)
-                    --make all units target the flagged enemy
-                Helper.Unit:all_teams_target_flagged_enemy(flagged_enemy)
-
+                Helper.Unit:selected_teams_target_flagged_enemy(flagged_enemy)
             else
-                local x, y = Helper.mousex, Helper.mousey
-                    --make all units untarget the flagged enemy
-                Helper.Unit:all_teams_set_rally_point(x, y)
+                Helper.Unit:selected_teams_set_rally_point(Helper.mousex, Helper.mousey)
             end
-        --bug with not moving if you start holding m1 while a unit is casting
-        --it will not move until you release m1 and press it again
-        --switched to down, but need a longer term solution? same thing will happen with m2 prob
-        elseif input['m1'].down then
-            --clear rally point for all teams
-            for i, team in ipairs(Helper.Unit.teams) do
-                team:clear_rally_point()
-                team:set_troop_state_to_following()
-            end
-        elseif input['space'].down then
-            --scatter all units
+        end
 
+        --M1 moves the selected team(s), space moves everyone. Uses down (not
+        --pressed) so a unit that was casting when the hold began still joins.
+        if not input['m2'].pressed then
+            for i, team in ipairs(Helper.Unit.teams) do
+                if self:move_down(i) then
+                    team:clear_rally_point()
+                    team:set_troop_state_to_following()
+                end
+            end
         end
     end
 
@@ -514,16 +579,6 @@ function Helper.Unit:select()
     --     self.do_draw_selection = false
     -- end
 
-    -- for i = 1, #main.current.units do
-    --     if input[tostring(i)].pressed and main.current.hotbar.hotbar_by_index[i] then
-    --         main.current.hotbar.hotbar_by_index[i]:action_animation()
-    --         main.current.hotbar:select_by_index(i)
-    --     end
-
-    --     if input[tostring(i)].released and main.current.hotbar.hotbar_by_index[i] then
-    --         --unnecessary, leave here for now
-    --     end
-    -- end
 end
 
 function Helper.Unit:draw_selection()
@@ -865,22 +920,14 @@ function Helper.Unit:update_units_with_combat_data(arena)
   end
 end
 
+-- Units are color coded by purchase order (team index).
 function Helper.Unit:update_unit_colors()
-    local previous_teams = {}
-    for _, team in pairs(Helper.Unit.teams) do
-        if previous_teams[team.unit.character] then
-            local color = character_colors[team.unit.character] or fg[0]
-            color = color:clone():lighten(0.12 * previous_teams[team.unit.character])
-            team.unit.color = color
-            previous_teams[team.unit.character] = previous_teams[team.unit.character] + 1
-        else
-            local color = character_colors[team.unit.character] or fg[0]
-            team.unit.color = color:clone()
-            previous_teams[team.unit.character] = 1
-        end
-
+    for i, team in pairs(Helper.Unit.teams) do
+        local color = unit_order_color(team.index or i):clone()
+        team.color = color
+        team.unit.color = color
         for _, troop in pairs(team.troops) do
-            troop.color = team.unit.color
+            troop.color = color
         end
     end
 end
@@ -1078,7 +1125,18 @@ end
 -- ============================================================
 
 function Helper.Unit:item_group_key(item)
+  if item and item.weapon then return 'weapon:' .. item.weapon end
   return (item and item.sets and item.sets[1]) or '_no_set'
+end
+
+-- A unit must always hold at least one weapon item. True when giving up the
+-- item in `out_slot` (and receiving `in_item`, if any) would leave none.
+function Helper.Unit:would_leave_no_weapons(unit, out_slot, in_item)
+  local item = unit and unit.items and unit.items[out_slot]
+  if not (item and item.weapon) then return false end
+  if in_item and in_item.weapon then return false end
+  local _, _, remaining = get_unit_weapon_counts(unit, out_slot)
+  return remaining == 0
 end
 
 -- Returns {group_key -> copies}, distinct-group count. `ignore_slot` leaves
@@ -1133,6 +1191,7 @@ function Helper.Unit:unit_can_take_item(unit, item, ignore_slot)
 end
 
 function Helper.Unit:blocked_reason_text(why)
+  if why == 'last_weapon' then return 'units need at least 1 weapon' end
   if why == 'one_piece' then return 'already have this set' end
   if why == 'stack_full' then return 'already ' .. MAX_ITEM_STACK .. '/' .. MAX_ITEM_STACK .. ' of this item' end
   return 'no room - ' .. MAX_ITEMS .. ' different items max'
@@ -1177,6 +1236,22 @@ function Helper.Unit:find_available_inventory_slot(units, item)
   local function first_open_slot(unit)
     if item and not Helper.Unit:unit_can_take_item(unit, item) then return nil end
     return Helper.Unit:first_open_item_slot(unit)
+  end
+
+  -- Weapons level up by stacking: send one to the unit that already holds
+  -- the most copies of it.
+  if item and item.weapon then
+    local best_unit, best_slot, best_copies = nil, nil, 0
+    for _, unit in ipairs(units) do
+      local slot = first_open_slot(unit)
+      if slot then
+        local copies = get_unit_weapon_counts(unit)[item.weapon] or 0
+        if copies > best_copies then
+          best_unit, best_slot, best_copies = unit, slot, copies
+        end
+      end
+    end
+    if best_unit then return best_unit, best_slot end
   end
 
   -- Pass 1: stacking. If the item belongs to a stacking set, send it to the

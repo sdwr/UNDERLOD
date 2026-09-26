@@ -472,6 +472,7 @@ function Enemy:choose_movement_target()
 end
 
 function Enemy:update_movement()
+  if self.clump_radius and self.cohesion_f then self.cohesion_f:set(0, 0) end
   if self.being_knocked_back then return end
   if not self.transition_active then return end
 
@@ -496,6 +497,12 @@ function Enemy:update_movement()
 end
 
 function Enemy:acquire_target_seek()
+  -- Clumping enemies share a nearby clump-mate's target so a clump chases one
+  -- troop instead of splitting across the whole party.
+  if self.clump_radius then
+    self.target = self:get_clump_mate_target() or Helper.Target:get_closest_enemy(self)
+    return self.target ~= nil
+  end
   -- 30% chance to target critters
   if random:float(0, 1) < ENEMY_CHANCE_TO_TARGET_CRITTER then
     self.target = Helper.Target:get_closest_enemy(self)
@@ -700,10 +707,46 @@ function Enemy:update_move_seek()
 
   -- 3. Apply final steering adjustments in all active cases.
   self:rotate_towards_velocity(0.5)
-  self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT, self._sep_comparator)
+  self:steering_separate(ENEMY_SEPARATION_RADIUS, {Enemy}, ENEMY_SEPARATION_WEIGHT * (self.separation_mult or 1), self._sep_comparator)
+  if self.clump_radius then self:clump_pull() end
 
   -- 4. Return true because the movement action is successfully ongoing.
   return true
+end
+
+-- Clumping (swarmers): mates are other enemies of the same type within
+-- clump_radius.
+function Enemy:for_each_clump_mate(fn)
+  local r2 = self.clump_radius * self.clump_radius
+  for _, other in ipairs(self.group:get_objects_by_class(Enemy)) do
+    if other ~= self and not other.dead and other.type == self.type then
+      local dx, dy = other.x - self.x, other.y - self.y
+      if dx * dx + dy * dy <= r2 then fn(other) end
+    end
+  end
+end
+
+function Enemy:get_clump_mate_target()
+  local target
+  self:for_each_clump_mate(function(other)
+    if not target and other.target and not other.target.dead then target = other.target end
+  end)
+  return target
+end
+
+-- Steer toward the centroid of nearby clump-mates, scaled by distance.
+function Enemy:clump_pull()
+  local cx, cy, n = 0, 0, 0
+  self:for_each_clump_mate(function(other)
+    cx, cy, n = cx + other.x, cy + other.y, n + 1
+  end)
+  self.cohesing = true
+  if n == 0 then self.cohesion_f:set(0, 0); return end
+  local dx, dy = cx / n - self.x, cy / n - self.y
+  local d = math.length(dx, dy)
+  if d <= SWARMER_CLUMP_MIN_DISTANCE then self.cohesion_f:set(0, 0); return end
+  local f = math.min((d - SWARMER_CLUMP_MIN_DISTANCE) * SWARMER_CLUMP_WEIGHT, SWARMER_CLUMP_MAX_FORCE)
+  self.cohesion_f:set(dx / d * f, dy / d * f)
 end
 
 function Enemy:update_move_loose_seek()

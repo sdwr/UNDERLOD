@@ -45,7 +45,7 @@ function Team:init(i, unit)
   self.rallyCircle = nil
   self.index = i
   self.unit = unit
-  self.color = character_colors[unit.character] or fg[0]
+  self.color = unit_order_color(i)
   
   -- Combat tracking
   self.total_damage_dealt = 0
@@ -64,6 +64,7 @@ function Team:add_troop(x, y)
   self.troop_data.y = y
   local troop = Create_Troop(self.troop_data)
   troop.team = self.index
+  troop.color = self.color
   troop.created_at = love.timer.getTime()
   table.insert(self.troops, troop)
   
@@ -480,20 +481,10 @@ function Create_Team(args)
   return Team(args)
 end
 
+-- Troops are generic; their attacks come from weapon items (items/weapons.lua).
+-- The old per-character troop classes stay loaded but are no longer created.
 function Create_Troop(args)
-  if args.character == 'laser' then
-    return Laser_Troop(args)
-  elseif args.character == 'swordsman' then
-    return Swordsman_Troop(args)
-  elseif args.character == 'archer' then
-    return Archer_Troop(args)
-  elseif args.character == 'sword' then
-    return SwordWeapon_Troop(args)
-  elseif args.character == 'shotgun' then
-    return Shotgun_Troop(args)
-  else
-    return Troop(args)
-  end
+  return Troop(args)
 end
 
 

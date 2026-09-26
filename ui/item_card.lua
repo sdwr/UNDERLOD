@@ -97,9 +97,12 @@ function ItemCard:init(args)
   end
   self.set_button_hovered = false
 
+  self.weapon_def = self.item.weapon and WEAPON_DEFS[self.item.weapon]
+  if self.weapon_def then
+    self.weapon_lines = card_wrap(self.weapon_def.description, self.card_theme.fonts[5], self.w - 10)
   -- Setless items (or items whose sets were removed) fall back to the old stat
   -- line so the card is not blank.
-  if #self.set_bonus_elements == 0 then
+  elseif #self.set_bonus_elements == 0 then
     self:create_stats_text()
   else
     self:layout_set_summaries()
@@ -618,6 +621,8 @@ function ItemCard:draw_card_contents(x, y)
     card_print('RARE',fonts[5],x+11,y+4,theme.common,w-30)
     graphics.rectangle(x+7,y+h-4,8,1,0,0,theme.gold)
     graphics.rectangle(x+w-7,y+h-4,8,1,0,0,theme.gold)
+  elseif self.weapon_def then
+    card_print('WEAPON',fonts[5],x+5,y+4,theme.muted,w-23)
   else
     card_print('COMMON',fonts[5],x+5,y+4,theme.muted,w-23)
   end
@@ -645,7 +650,9 @@ function ItemCard:draw_card_contents(x, y)
       graphics.pop()
     end
   end
-  if #self.set_defs == 0 then
+  if self.weapon_def then
+    self:draw_weapon_contents(x, y, background)
+  elseif #self.set_defs == 0 then
     card_print(self.item.name or 'Item',fonts[6],x+5,y+20,theme.text,w-10)
     if self.bottom_text then
       local scale = math.min(1,(w-10)/math.max(self.bottom_text.w,1),36/math.max(self.bottom_text.h,1))
@@ -667,6 +674,38 @@ function ItemCard:draw_card_contents(x, y)
       if n > owned and n <= next_piece then
         graphics.rectangle(px,py,4,1,0,0,background)
       end
+    end
+  end
+end
+
+-- Highest level this weapon reaches on any unit (or the preview unit).
+function ItemCard:compute_weapon_level()
+  local owned = 0
+  local units = self.preview_unit and {self.preview_unit} or (self.parent and self.parent.units) or {}
+  for _, unit in ipairs(units) do
+    owned = math.max(owned, get_unit_weapon_counts(unit)[self.item.weapon] or 0)
+  end
+  return math.min(owned, MAX_ITEM_STACK), MAX_ITEM_STACK
+end
+
+function ItemCard:draw_weapon_contents(x, y, background)
+  local theme, fonts, w, h = self.card_theme, self.card_theme.fonts, self.w, self.h
+  local color = card_set_color(theme, self.weapon_def.color)
+  card_print(self.weapon_def.name, fonts[8], x+5, y+19, color, w-10)
+  for j, line in ipairs(self.weapon_lines or {}) do
+    card_print(line, fonts[5], x+5, y+34+(j-1)*fonts[5].h, theme.text, w-10)
+  end
+  -- Level pips: owned levels filled, the level this copy adds hollow-filled.
+  local owned, total = self:compute_weapon_level()
+  local next_level = math.min(owned + 1, total)
+  local spacing = math.min(9, (w-12)/total)
+  local left = x+w/2-(total-1)*spacing/2
+  local py = y+h-7
+  for n = 1, total do
+    local px = left+(n-1)*spacing
+    graphics.rectangle(px, py, 6, 3, 0, 0, n <= next_level and color or theme.border)
+    if n > owned and n <= next_level then
+      graphics.rectangle(px, py, 4, 1, 0, 0, background)
     end
   end
 end

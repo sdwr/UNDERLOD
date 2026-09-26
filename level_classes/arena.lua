@@ -52,7 +52,7 @@ function Arena:init(args)
   self:create_progress_bar()
   -- self:create_walls()
 
-  -- self:create_hotbar()
+  self:create_hotbar()
 
   self.plusgold_text_offset_x = 0
   self.plusgold_text_offset_y = 0
@@ -117,41 +117,13 @@ function Arena:create_progress_bar()
 end
 
 function Arena:select_character_by_index(i)
-  --self.hotbar:select_by_index(i)
+  Helper.Unit:set_selected_team(i)
 end
 
+-- Team hotbar (SPACE / 1 / 2 / 3). Reads Helper.Unit.teams lazily, so it
+-- picks up teams created after the arena itself.
 function Arena:create_hotbar()
-    --need to group units by character
-  -- HotbarGlobals:clear_hotbar()
-
-  -- Helper.Unit.team_button_width = 47
-  -- local total_width = (#self.units + 1) * Helper.Unit.team_button_width + #self.units * 5  -- Total width including spacing (+1 for space button)
-  -- local start_x = gw/2 - total_width/2  -- Center the entire hotbar
-  
-  -- -- Add space button at the beginning
-  -- local space_button = HotbarButton{group = self.ui, x = start_x + Helper.Unit.team_button_width/2, 
-  --                   y = gh - 15, force_update = true, button_text = 'SPACE', w = Helper.Unit.team_button_width, fg_color = 'white', bg_color = 'bg',
-  --                   color_marks = {}, character = 'space',
-  --                   action = function() 
-  --                     -- Space button action - this will be handled by input system
-  --                   end
-  --                 }
-  -- -- self.hotbar:add_button(0, space_button)  -- Use index 0 for space button
-  
-  -- for i = 1, #self.units do
-  --   local character = self.units[i].character
-  --   local type = character_types[character]
-  --   local number = i
-  --   local b = HotbarButton{group = self.ui, x = start_x + Helper.Unit.team_button_width/2 + (Helper.Unit.team_button_width + 5) * i, 
-  --                         y = gh - 15, force_update = true, button_text = tostring(i), w = Helper.Unit.team_button_width, fg_color = 'white', bg_color = 'bg',
-  --                         color_marks = {[1] = character_colors[character]}, character = character,
-  --                         action = function() 
-  --                           Helper.Unit.selected_team_index = number
-  --                           Helper.Unit:select_team(number)
-  --                         end
-  --                       }
-  --   -- self.hotbar:add_button(i, b)
-  -- end
+  self.hotbar = TeamHotbar{group = self.ui, parent = self, y = gh - 12}
 end
 
 function Arena:spawn_critters(spawn_point, amount)

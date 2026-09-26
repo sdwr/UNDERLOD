@@ -190,9 +190,14 @@ MINIBOSS_MS = 50
 
 BOSS_HP = 1400
 
+HEIGAN_CENTER_SLAM_RADIUS = 50
+HEIGAN_CENTER_SLAM_CHARGE = 1.5
+
 BOSS_HP_MULT_BY_TYPE = {
   ['stompy'] = 1.68,
   ['dragon'] = 2.5,
+  -- Heigan is the L11 final boss now; same final-boss hp as the dragon had.
+  ['heigan'] = 2.5,
 }
 BOSS_DAMAGE = 20
 BOSS_MS = 70
@@ -601,7 +606,7 @@ local SWARMER_CLUMP_BY_LEVEL = {
   10, 9, 10,           -- L1-3  opening (L2 = 0.9x L1)
   12, 12, 12,          -- L4-5  (L6 stompy)
   14, 14, 16, 16, 16,  -- L7-8, L9-10  (L11 dragon)
-  18, 18, 20, 20, 20,  -- L12-13, L14-15  (L16 heigan)
+  18, 18, 20, 20, 20,  -- L12-13, L14-15  (L16 dragon)
   22, 22, 24, 24,      -- L17-18, L19-20
   26, 26, 28, 28, 30,  -- L21-22, L23-24, L25
 }
@@ -707,6 +712,9 @@ unit_classes = {
 }
 
 unit_stat_multipliers = {
+    -- Generic unit (attacks come from weapon items). Carries the old archer
+    -- multipliers so archer-weapon numbers and proc damage stay the same.
+    ['unit'] = { hp = 1.25, dmg = 1.5, def = 1, mvspd = 1 },
     ['swordsman'] = { hp = 1.5, dmg = 1.25, def = 1.25, mvspd = 1 },
     ['laser'] = { hp = 1, aspd = 1, dmg = 1, def = 1, mvspd = 1 },
     ['archer'] = { hp = 1.25, dmg = 1.5, def = 1, mvspd = 1 },
@@ -728,7 +736,7 @@ enemy_type_to_stats = {
     -- hp 0.28 => 12.6 HP at L1: dies to one archer shot (16.5 dmg - def 25
     -- => 13.2 effective) through L3; level scaling makes it 2 shots from L4.
     -- hp 0.45 => 20 hp: two bare archer hits (16.5), one with 2 Power pieces (23.1).
-    ['swarmer'] = { dmg = 0.5, hp = 0.45, mvspd = 0.8},
+    ['swarmer'] = { dmg = 0.5, hp = 0.45, mvspd = 0.65},
     ['hunter_swarmer'] = { dmg = 0.6, hp = 1.4, mvspd = 1.1 },
     -- Tank: slow, chunky body. No attacks, just contact pressure. hp=0.4
     -- on special_enemy base (280) = 112 HP at L1, ~220 at L7 with

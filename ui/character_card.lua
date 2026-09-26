@@ -78,8 +78,9 @@ function CharacterCard:init(args)
     self:init_game_object(args)
     self.background_color = args.background_color or bg[0]
     self.character = args.unit.character or 'none'
-    self.character_color = args.unit.color or character_colors[self.character]
-    self.character_color_string = character_color_strings[self.character]
+    -- Units are color coded by purchase order.
+    self.character_color = args.i and unit_order_color(args.i) or args.unit.color or character_colors[self.character]
+    self.character_color_string = args.i and unit_order_color_string(args.i) or character_color_strings[self.character]
     
     self.w = CHARACTER_CARD_WIDTH
     self.h = CHARACTER_CARD_HEIGHT
@@ -134,7 +135,8 @@ function CharacterCard:createNameText()
   if self.name_text then
     self.name_text.dead = true
   end
-  local class_text = '[' .. self.character_color_string .. '[3]]' .. self.unit.character .. ' ' .. self.unit.level
+  local name = self.i and ('unit ' .. self.i) or self.unit.character
+  local class_text = '[' .. self.character_color_string .. '[3]]' .. name .. ' lv' .. self.unit.level
   self.name_text = Text({{text = class_text, font = pixul_font, alignment = 'center'}}, global_text_tags)
 end
 
@@ -528,10 +530,15 @@ end
 
 -- Selling grants ITEM_SELL_XP to the owning unit, or to `xp_unit` when the
 -- item was dropped on another card's title.
-function ItemPart:sellItem(xp_unit)
+function ItemPart:sell_blocked()
+  return Helper.Unit:would_leave_no_weapons(self.parent.unit, self.i)
+end
 
-  --dont create an item object
-  --add that back when there are consumables or sell effects
+function ItemPart:sellItem(xp_unit)
+  if self:sell_blocked() then
+    Create_Info_Text(Helper.Unit:blocked_reason_text('last_weapon'), self, 'error')
+    return
+  end
 
   local item = self.parent.unit.items[self.i]
   if item then
@@ -630,7 +637,12 @@ function ItemPart:update(dt)
     local title_card = Find_Character_Card_Title_At(camera:get_mouse_position())
 
     -- Determine what to do based on target
-    if title_card then
+    if title_card and self:sell_blocked() then
+      Create_Info_Text(Helper.Unit:blocked_reason_text('last_weapon'), self, 'error')
+      loose_item:move_item_to_slot(self, function()
+        self.hide_item_display = false
+      end, false, 0)
+    elseif title_card then
       loose_item:die()
       self:sellItem(title_card.unit)
     elseif active and not self:isActiveInvSlot() and not self:cross_unit_drop_blocked(active, source_item, loose_item) then
@@ -710,8 +722,16 @@ function ItemPart:cross_unit_drop_blocked(active, source_item, loose_item)
   local why
   if active:hasItem() then
     -- Swap: each side vacates its own slot while taking the other's item.
-    why = Helper.Unit:item_blocked_reason_for_unit(target_unit, source_item, active.i)
-      or Helper.Unit:item_blocked_reason_for_unit(source_unit, active:getItem(), self.i)
+    local target_item = active:getItem()
+    if Helper.Unit:would_leave_no_weapons(source_unit, self.i, target_item)
+      or Helper.Unit:would_leave_no_weapons(target_unit, active.i, source_item) then
+      why = 'last_weapon'
+    else
+      why = Helper.Unit:item_blocked_reason_for_unit(target_unit, source_item, active.i)
+        or Helper.Unit:item_blocked_reason_for_unit(source_unit, target_item, self.i)
+    end
+  elseif Helper.Unit:would_leave_no_weapons(source_unit, self.i) then
+    why = 'last_weapon'
   else
     why = Helper.Unit:item_blocked_reason_for_unit(target_unit, source_item)
   end
@@ -751,7 +771,7 @@ function ItemPart:draw()
       -- changes on add/swap/sell.
       if self.cached_item ~= item then
         local set_key = item.sets and item.sets[1]
-        local set_def = set_key and ITEM_SETS[set_key]
+        local set_def = (item.weapon and WEAPON_DEFS[item.weapon]) or (set_key and ITEM_SETS[set_key])
         local color_name = set_def and set_def.color or 'grey'
         local tint = (_G[color_name] or grey)[0]:clone()
         tint.a = 0.6
