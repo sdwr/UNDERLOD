@@ -35,14 +35,14 @@ system.load_stats()
 --gold
 --note that HoG econ check is in arena.lua (gain_gold)
 -- Covers the flat 6-gold first unit (see buy_card_cost in buy_screen.lua)
--- with a little left over.
-STARTING_GOLD = 8
+-- plus one 2-gold item; saving the remaining 2 buys unit #2 after round 1.
+STARTING_GOLD = 10
 -- Flat end-of-round gold. The old per-kill trickle (GOLD_GAINED_BY_LEVEL,
 -- fractional gold per enemy) is gone — this is the whole non-boss payout,
 -- with interest/pickups/treasury on top. Boss rounds pay GOLD_FOR_BOSS_ROUND
 -- instead.
 GOLD_PER_ROUND = function(level)
-  return 3
+  return 4
 end
 -- Flat 6 gold after every boss level.
 GOLD_FOR_BOSS_ROUND = {6, 6, 6, 6}

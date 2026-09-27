@@ -11,7 +11,7 @@ WEAPON_LEVEL_DMG_MULT = {1, 1.6, 2.2}
 
 -- Chance each shop/floor item roll is a weapon instead of a set item.
 WEAPON_ITEM_ROLL_CHANCE = 0.25
-WEAPON_ITEM_COST = 2
+WEAPON_ITEM_COST = 3
 
 SHOTGUN_PELLET_COUNT = SHOTGUN_PELLET_COUNT or 5
 SHOTGUN_HALF_SPREAD = SHOTGUN_HALF_SPREAD or math.pi / 16

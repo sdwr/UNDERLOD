@@ -987,14 +987,14 @@ function init()
 
   -- Generic unit: attacks come from weapon items, color from purchase order.
   character_names['unit'] = 'Unit'
-  character_colors['unit'] = yellow[0]
-  character_color_strings['unit'] = 'yellow'
+  character_colors['unit'] = teal[0]
+  character_color_strings['unit'] = 'teal'
   character_types['unit'] = 'ranger'
   character_type_strings['unit'] = '[fg]Unit'
   character_images['unit'] = bow2
 
-  unit_order_colors = {yellow[0], blue[0], red[0], green[0], purple[0], orange[0]}
-  unit_order_color_strings = {'yellow', 'blue', 'red', 'green', 'purple', 'orange'}
+  unit_order_colors = {teal[0], blue[0], red[0], green[0], purple[0], orange[0]}
+  unit_order_color_strings = {'teal', 'blue', 'red', 'green', 'purple', 'orange'}
 
   item_stat_lookup = {
     ['dmg'] = 'damage',

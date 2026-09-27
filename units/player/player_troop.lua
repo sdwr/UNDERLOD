@@ -38,6 +38,9 @@ function Troop:init(args)
   self:calculate_stats(true)
 
   self.color = character_colors[self.character]
+  -- Cool neutral tones keep selection separate from team and hazard colors.
+  self.selection_shadow_inner = Color(0.72, 0.77, 0.80, 0.32)
+  self.selection_shadow_outer = Color(0.72, 0.77, 0.80, 0)
   self.type = character_types[self.character]
   self.attack_sensor = self.attack_sensor or Circle(self.x, self.y, 40)
   
@@ -538,6 +541,19 @@ function Troop:push(f, r, push_invulnerable, duration)
 end
 
 
+-- A feathered footprint replaces the selection outline. This ground pass runs
+-- before every unit, so the marker never washes over a neighbouring body.
+function Troop:draw_ground()
+  if not Helper.Unit:is_team_commanded(self.team) then return end
+
+  local size = self.display_size
+  local x, y = self.x, self.y + size*0.22
+  graphics.push(x, y, 0, 1, 0.65)
+    graphics.gradient_circle(x, y, size*0.85,
+      self.selection_shadow_inner, self.selection_shadow_outer)
+  graphics.pop()
+end
+
 function Troop:draw()
   --graphics.circle(self.x, self.y, self.attack_sensor.rs, orange[0], 1)
 
@@ -550,12 +566,6 @@ function Troop:draw()
     * self.hfx.survivor_scale.x
     * self.hfx.hit.x 
 
-  -- Thin yellow selection ring for units that take commands right now: the
-  -- hotbar-selected team(s), or everyone while space is held. Drawn before
-  -- the push so the move/attack squash doesn't warp it.
-  if Helper.Unit:is_team_commanded(self.team) then
-    graphics.circle(self.x, self.y, self.display_size*0.55, yellow[0], 1)
-  end
 
   graphics.push(self.x, self.y, self.r, final_scale_x, final_scale_y)
   self:draw_buffs()

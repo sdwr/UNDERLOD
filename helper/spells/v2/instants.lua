@@ -1147,7 +1147,7 @@ function LaserBall:init(args)
   end)
 
   --set the velocity and rotation speed
-  self.rotation_speed = 0.25
+  self.rotation_speed = 0.12
   self.speed = 55
 
   self.damage = get_dmg_value(self.damage)
@@ -1162,7 +1162,7 @@ function LaserBall:init(args)
   
   self.duration_init = 2
   self.duration_prefire = 1
-  self.duration_fire = args.duration_fire or 1.5
+  self.duration_fire = args.duration_fire or 2
   self.duration_wait = 2
   
   self.nextLaser = self.duration_init
