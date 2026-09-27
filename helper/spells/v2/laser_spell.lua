@@ -286,7 +286,7 @@ function Laser_Spell:fire_laser()
   if self.end_spell_on_fire then
     self:die()
   else 
-    self:try_end_cast()
+    if not self.weapon_hit then self:try_end_cast() end
     -- The cast is over but the beam lingers for fire_duration. Clear the
     -- channel duration so Try_Cancel_Cast doesn't kill the spell for the
     -- caster having left the channeling state.
@@ -322,7 +322,11 @@ function Laser_Spell:try_damage()
         if self.already_damaged[unit] then
           break
         end
-        Helper.Spell:register_damage_point(point, self.unit, damage)
+        if self.weapon_hit then
+          Helper.Damage:indirect_hit(unit, damage, self.unit, DAMAGE_TYPE_PHYSICAL, true, {canCrit = true})
+        else
+          Helper.Spell:register_damage_point(point, self.unit, damage)
+        end
         if self.reduce_pierce_damage then
           damage = damage * (1 - self.reduce_pierce_damage_amount)
         end

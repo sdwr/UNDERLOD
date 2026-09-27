@@ -201,13 +201,14 @@ function ArrowProjectile:hit_target(target)
     hit_target = true
   else
     if self.pierce and self.pierce > 0 then
-      Helper.Damage:indirect_hit(target, self.damage, self.unit, DAMAGE_TYPE_PHYSICAL, true)
+      Helper.Damage:indirect_hit(target, self.damage, self.unit, DAMAGE_TYPE_PHYSICAL, true, {canCrit = self.crit_on_pierce})
       self.damage = self.damage * 0.8
       table.insert(self.already_hit_targets, target)
       hit_target = true
       self.pierce = self.pierce - 1
     end
   end
+  if hit_target and self.straight_after_hit then self.homing = false end
   if hit_target and self.pierce <= 0 then
     self:die()
   end

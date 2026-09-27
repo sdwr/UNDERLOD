@@ -615,14 +615,14 @@ function ItemCard:draw_card_contents(x, y)
   if self.selected and not self.flying_to_slot then card_box(x-1,y-1,w+2,h+2,theme.text) end
   card_box(x,y,w,h,border)
   card_box(x+1,y+1,w-2,h-2,background)
-  if rare then
+  if self.item.equipment or self.weapon_def then
+    card_print('TIER ' .. EQUIPMENT_TIER_NAMES[self.item.tier or 1],fonts[5],x+5,y+4,theme.muted,w-23)
+  elseif rare then
     graphics.rectangle(x+w/2,y+8,w-6,10,0,0,theme.gold)
     graphics.polygon({x+7,y+6, x+9,y+8, x+7,y+10, x+5,y+8}, theme.common)
     card_print('RARE',fonts[5],x+11,y+4,theme.common,w-30)
     graphics.rectangle(x+7,y+h-4,8,1,0,0,theme.gold)
     graphics.rectangle(x+w-7,y+h-4,8,1,0,0,theme.gold)
-  elseif self.weapon_def then
-    card_print('WEAPON',fonts[5],x+5,y+4,theme.muted,w-23)
   else
     card_print('COMMON',fonts[5],x+5,y+4,theme.muted,w-23)
   end

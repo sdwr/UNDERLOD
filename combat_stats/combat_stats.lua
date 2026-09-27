@@ -392,12 +392,13 @@ end
 
 -- Item tiers are decoupled from LEVEL_TO_TIER (which drives enemy wave pools).
 ITEM_LEVEL_TO_TIER = function(level)
-  if level <= 6 then return 1 end
-  return 2
+  if level <= 3 then return 1 end
+  if level <= 6 then return 2 end
+  return 3
 end
 
--- Weights are {common, rare}. Same split at every tier; tiers gate which sets
--- are in the pool instead (min_tier on ITEM_SETS).
+-- Legacy rarity weights for older helpers. Live shops roll equipment tiers
+-- using items/equipment_tiers.lua rather than common/rare rarity.
 TIER_TO_ITEM_RARITY_WEIGHTS = {
   [1] = {0.7, 0.3},
   [2] = {0.7, 0.3},

@@ -42,8 +42,8 @@ end
 
 function BuyScreen:on_enter(from)
 
-  self.shop_level = level_to_shop_tier(self.level)
-  self.last_shop_level = level_to_shop_tier(self.level - 1)
+  self.shop_level = ITEM_LEVEL_TO_TIER(self.level)
+  self.last_shop_level = ITEM_LEVEL_TO_TIER(self.level - 1)
   
   if not locked_state and self.reroll_shop then
     self.shop_item_data = {}
@@ -392,9 +392,8 @@ function BuyScreen:set_party()
   local num_cards = #Character_Cards
   local buy_card_index = num_cards + 1
   local buy_card_order = card_order[buy_card_index]
-  -- Flat 6 gold per unit (was 5*(n+1): 5/10/15). STARTING_GOLD covers the
-  -- first unit with a little left over.
-  local buy_card_cost = 6
+  -- Flat 4 gold per unit: the starting 10 can buy two units and one item.
+  local buy_card_cost = 4
 
   if #Character_Cards < 3 then
     table.insert(Character_Cards, CharacterCardBuy{group = self.main, x = x + (buy_card_order-1)*(CHARACTER_CARD_WIDTH+CHARACTER_CARD_SPACING), y = y, i = buy_card_index, parent = self,
@@ -442,11 +441,6 @@ function BuyScreen:set_items(shop_level, is_shop_start)
   --clear item cards (UI elements)
   if self.items then for _, item in ipairs(self.items) do item:die() end end
   self.items = {}
-  local shop_level = shop_level or 1
-  local tier_weights = level_to_item_odds[shop_level]
-  local item_1
-  local item_2
-  local item_3
 
   if self.first_shop then
     return
@@ -456,13 +450,21 @@ function BuyScreen:set_items(shop_level, is_shop_start)
     self.shop_item_data = {nil, nil, nil}
   end
 
-  if not locked_state and self.reroll_shop then
+  local legacy_offers = false
+  local seen_offers = {}
+  for i = 1, 3 do
+    local item = self.shop_item_data[i]
+    local key = equipment_offer_key(item)
+    if not is_current_equipment_offer(item, i) or (key and seen_offers[key]) then legacy_offers = true end
+    if key then seen_offers[key] = true end
+  end
+  if legacy_offers or (not locked_state and self.reroll_shop) then
     self.shop_item_data = create_random_items(self.level)
   elseif locked_state and self.reroll_shop then
     for i = 1, 3 do
       if not self.shop_item_data[i] then
-        -- refills can't duplicate a 1/1 set already locked or rolled this shop
-        self.shop_item_data[i] = roll_shop_item(self.level, get_one_piece_sets(self.shop_item_data))
+        -- Keep two stat slots and one weapon slot, with no identical offers.
+        self.shop_item_data[i] = roll_shop_item(self.level, get_shop_exclusions(self.shop_item_data), i)
       end
     end
   end
@@ -696,7 +698,7 @@ function ArenaLevelButton:update(dt)
           self.parent.level_map:reset()
         end
       end
-      self.parent.shop_level = level_to_shop_tier(self.parent.level)
+      self.parent.shop_level = ITEM_LEVEL_TO_TIER(self.parent.level)
       system.save_state()
       buyScreen:save_run()
     end

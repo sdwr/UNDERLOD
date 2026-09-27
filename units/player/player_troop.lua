@@ -414,6 +414,9 @@ function Troop:build_weapons()
     local key = WEAPON_DEFS[self.character or ''] and self.character or 'archer'
     counts, order = {[key] = 1}, {key}
   end
+  for _, w in ipairs(self.weapons or {}) do
+    if w.effect then w.effect.dead = true end
+  end
   self.weapons = {}
   for _, key in ipairs(order) do
     table.insert(self.weapons, {
@@ -433,6 +436,7 @@ function Troop:update_weapon_stats()
     w.damage = self.dmg * w.def.dmg_mult * WEAPON_LEVEL_DMG_MULT[w.level]
     w.cooldown = w.def.cooldown * self.aspd_m
     w.range = (w.def.range() + self.buff_range_a) * self.buff_range_m
+    if w.def.aura then w.range = w.range * (self.area_size_m or 1) end
     max_range = math.max(max_range, w.range)
   end
   self.attack_range = max_range
@@ -468,7 +472,12 @@ function Troop:update_weapons(dt, can_fire)
   local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier or 1
   for _, w in ipairs(self.weapons) do
     w.elapsed = w.elapsed + dt
-    if can_fire and w.elapsed >= w.cooldown * distance_multiplier then
+    w.can_fire = can_fire or (w.def.mobile and self.state == unit_states['following'])
+    if w.def.persistent then
+      if w.can_fire and (not w.effect or w.effect.dead) then
+        WEAPON_FIRE[w.key](self, w, nil, 1)
+      end
+    elseif w.can_fire and w.elapsed >= w.cooldown * distance_multiplier then
       local target = self:get_weapon_target(w)
       if target then
         w.elapsed = 0

@@ -103,7 +103,7 @@ end
 function SetBonusTooltip:build_weapon_text_lines()
   local def = WEAPON_DEFS[self.item.weapon]
   local level = self.unit and (get_unit_weapon_counts(self.unit)[self.item.weapon] or 0) or 0
-  local header = '[' .. def.color .. ']' .. def.name:upper()
+  local header = '[' .. def.color .. ']' .. def.name:upper() .. ' ' .. EQUIPMENT_TIER_NAMES[def.tier]
   if self.unit then header = header .. ' [fg](Lv ' .. math.min(level, MAX_ITEM_STACK) .. '/' .. MAX_ITEM_STACK .. ')' end
   table.insert(self.text_lines, {text = header, font = pixul_font, alignment = 'center'})
   table.insert(self.text_lines, {text = '[fg]' .. def.description, font = pixul_font, alignment = 'center'})

@@ -31,9 +31,10 @@ function Helper.Damage:apply_hit(unit, damage, from, damageType, playHitEffects,
   -- ===================================================================
   -- CONDITIONAL LOGIC BASED ON HIT TYPE FLAGS
   -- ===================================================================
+  -- Weapon area/contact hits can crit without triggering primary-hit procs.
+  if isPrimary or hitOptions.canCrit then damage = Helper.Damage:roll_crit(from, damage) end
   if isPrimary then
-    -- Only primary hits can crit and stun
-    damage = Helper.Damage:roll_crit(from, damage)
+    -- Only primary hits can stun and trigger primary-hit callbacks.
     -- Resonance set: +RESONANCE_DAMAGE_PER_ELEMENT per distinct elemental
     -- affliction (burn/chill/shock) currently on the target, from any source.
     if from and Has_Static_Proc(from, 'resonance') and unit.count_elemental_afflictions then

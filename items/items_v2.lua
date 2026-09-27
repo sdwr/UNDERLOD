@@ -1,3 +1,5 @@
+require 'items/equipment_tiers'
+
 -- Items V2 System
 -- Modern item generation with types, rarities, sets, and random stats
 
@@ -558,6 +560,39 @@ ITEM_SETS = {
   },
 }
 
+-- Old sets remain readable on saved equipment but no longer enter shops.
+for _, def in pairs(ITEM_SETS) do def.disabled = true end
+
+-- Tiered stat items. Each copy contributes the same additive bonus, and
+-- different tiers use different set keys so they can coexist on one unit.
+ITEM_STATS.mvspd = {name = 'mvspd', min = 1, max = 5, increment = 0.05}
+STAT_ITEM_FAMILIES = {
+  {key = 'power', name = 'Power', stat = 'dmg', label = 'damage', color = 'red', values = {20, 35, 50}},
+  {key = 'swift', name = 'Swift', stat = 'aspd', label = 'attack speed', color = 'yellow', values = {10, 18, 25}},
+  {key = 'precision', name = 'Precision', stat = 'crit_chance', label = 'crit chance', color = 'blue', values = {10, 18, 25}},
+  {key = 'reach', name = 'Reach', stat = 'range', label = 'range', color = 'brown', values = {10, 18, 25}},
+  {key = 'area', name = 'Area', stat = 'area_size', label = 'area size', color = 'brown', values = {15, 25, 40}, min_level = 4},
+  {key = 'vitality', name = 'Vitality', stat = 'hp', label = 'max health', color = 'green', values = {20, 35, 50}},
+  {key = 'mobility', name = 'Mobility', stat = 'mvspd', label = 'move speed', color = 'purple', values = {5, 8, 12}},
+}
+for _, family in ipairs(STAT_ITEM_FAMILIES) do
+  for tier = 1, 3 do
+    local key = family.key .. '_tier_' .. tier
+    local value = family.values[tier]
+    local def = {
+      name = family.name .. ' ' .. EQUIPMENT_TIER_NAMES[tier],
+      summary = '+' .. value .. '% ' .. family.label,
+      color = family.color, rarity = ITEM_RARITY.COMMON,
+      equipment = true, family = family.key, tier = tier, min_tier = tier,
+      min_level = family.min_level or 1, bonuses = {}, descriptions = {},
+    }
+    for copies = 1, (MAX_ITEM_STACK or 3) do
+      def.bonuses[copies] = {stats = {[family.stat] = value / (100 * ITEM_STATS[family.stat].increment)}}
+      def.descriptions[copies] = '+' .. (value * copies) .. '% ' .. family.label
+    end
+    ITEM_SETS[key] = def
+  end
+end
 -- Rarity definitions
 ITEM_RARITIES = {
   [ITEM_RARITY.COMMON] = {
@@ -622,6 +657,7 @@ function get_random_set(rarity, tier, exclude_sets)
       table.insert(set_keys, set_name)
     end
   end
+  if #set_keys == 0 then return nil end
   return random:table(set_keys)
 end
 
@@ -659,91 +695,47 @@ function roll_stat_for_type(item_type)
   end
 end
 
--- One shop/floor roll: sometimes a weapon item (items/weapons.lua), otherwise
--- a set item.
-function roll_shop_item(level, exclude_sets)
-  if create_random_weapon_item and random:float(0, 1) < (WEAPON_ITEM_ROLL_CHANCE or 0) then
-    return create_random_weapon_item(ITEM_LEVEL_TO_TIER(level or 1))
+-- Two stat items and one weapon in every shop. Floor rewards share the same
+-- spread. Locked refills keep their slot's type and exclude identical offers.
+function roll_shop_item(level, excluded, slot)
+  local tier = roll_equipment_tier(level or 1)
+  if slot == 3 or (not slot and random:float(0, 1) < WEAPON_ITEM_ROLL_CHANCE) then
+    return create_random_weapon_item(tier, excluded)
   end
-  return create_random_item(level, nil, exclude_sets)
+  return create_random_item(level, nil, excluded, tier)
 end
 
 function create_random_items(level)
   local items = {}
-  for i = 1, 3 do
-    local item = roll_shop_item(level, get_one_piece_sets(items))
-    if item then
-      table.insert(items, item)
-    end
+  for slot = 1, 3 do
+    items[slot] = roll_shop_item(level, get_shop_exclusions(items), slot)
   end
   return items
 end
 
-
--- Main function to create a random item
-function create_random_item(level, exclude_rarity, exclude_sets)
-  
-  local item_slot = get_random_item_slot()
-  if not item_slot then
-    print("ERROR: Failed to get random item slot!")
-    return nil
+-- Only stat equipment is generated now. Legacy set items remain valid when
+-- loaded from an inventory, but never compete with weapons in the new pool.
+function create_random_item(level, exclude_rarity, excluded, tier)
+  level = level or 1
+  tier = tier or roll_equipment_tier(level)
+  local candidates = {}
+  for _, family in ipairs(STAT_ITEM_FAMILIES) do
+    local key = family.key .. '_tier_' .. tier
+    local def = ITEM_SETS[key]
+    if level >= def.min_level and not (excluded and excluded[key]) then
+      table.insert(candidates, key)
+    end
   end
-  
-  local rarity =  get_random_rarity(level, exclude_rarity)
-  if not rarity then
-    print("ERROR: Failed to get random rarity!")
-    return nil
-  end
-  
-  local rarity_def = ITEM_RARITIES[rarity]
-  if not rarity_def then
-    print("ERROR: rarity_def is nil for rarity:", rarity)
-    return nil
-  end
-
-  local tier = ITEM_LEVEL_TO_TIER(level or 1)
-
-  -- Create the item
-  local item = {
-    name = ITEM_SLOTS[item_slot].name,
-    slot = item_slot,
-    rarity = rarity,
-    tier = tier,
-    icon = ITEM_SLOTS[item_slot].icon,
-    stats = {},
-    sets = {},
-    cost = rarity_def.cost,
-    procs = {}, -- Empty procs for compatibility with existing system
-    tags = {} -- Empty tags for compatibility with existing system
+  if #candidates == 0 then return nil end
+  local key = random:table(candidates)
+  if not key then return nil end
+  local def = ITEM_SETS[key]
+  return {
+    name = def.name, slot = 'amulet', rarity = ITEM_RARITY.COMMON,
+    tier = tier, equipment = true, icon = 'orb', stats = {}, sets = {key},
+    cost = EQUIPMENT_ITEM_COSTS[tier], procs = {}, tags = {}, colors = {def.color},
   }
-
-  -- Items roll at most one set, drawn from the pool matching this item's
-  -- rarity (common items get common sets, rare items get rare sets) and tier.
-  if random:float(0, 1) < rarity_def.set_chance then
-    local candidate = get_random_set(rarity, tier, exclude_sets)
-    if candidate then
-      table.insert(item.sets, candidate)
-    end
-  end
-  
-  -- Items no longer roll flat stats on top of sets; sets are the entire payload.
-
-  -- Set colors based on sets only (rarity color is used as tier color)
-  item.colors = {}
-  
-  -- Add set colors if item has sets
-  if #item.sets > 0 then
-    for _, set_key in ipairs(item.sets) do
-      local set_def = ITEM_SETS[set_key]
-      if set_def and set_def.color then
-        table.insert(item.colors, set_def.color)
-      end
-    end
-  end
-  
-  return item
 end
-
 -- Function to convert V2 item to legacy format for compatibility
 function convert_v2_item_to_legacy(v2_item)
   local legacy_item = {
@@ -825,8 +817,9 @@ function count_team_meta_colors(units)
         elseif item and item.sets and #item.sets > 0 then
           for _, set_key in ipairs(item.sets) do
             local set_def = ITEM_SETS[set_key]
-            if not seen[set_key] and set_def and set_def.color then
-              seen[set_key] = true
+            local family = set_def and (set_def.family or set_key)
+            if family and not seen[family] and set_def.color then
+              seen[family] = true
               add(set_def.color)
             end
           end
