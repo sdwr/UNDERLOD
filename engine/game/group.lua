@@ -514,6 +514,8 @@ function Group:set_as_physics_world(meter, xg, yg, tags)
     function(fa, fb, c) --presolve
       local oa, ob = self:get_object_by_id(fa:getUserData()), self:get_object_by_id(fb:getUserData())
       if oa and ob then
+        if oa.on_collision_pre_solve then oa:on_collision_pre_solve(ob, c) end
+        if ob.on_collision_pre_solve then ob:on_collision_pre_solve(oa, c) end
         -- Projectile-vs-unit: kill Box2D's collision impulse for this step so
         -- bullets never physically shove troops or enemies. Damage still
         -- resolves because begincontact has already fired before presolve

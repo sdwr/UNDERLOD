@@ -275,6 +275,7 @@ function Enemy:update(dt)
     if self.being_knocked_back then
       if math.length(self:get_velocity()) < ENEMY_KNOCKBACK_VELOCITY_REGAIN_CONTROL_THRESHOLD then
         Helper.Unit:reset_knockback_variables(self)
+        self.contact_recoil = nil
       end
     end
 
@@ -827,14 +828,16 @@ function Enemy:draw()
 end
 
 function Enemy:on_collision_enter(other, contact)
+    if self.dead or other.dead then return end
     local x, y = contact:getPositions()
     
     if other:is(Wall) then
         self:bounce(contact:getNormal())
 
     elseif table.any(main.current.friendlies, function(v) return other:is(v) end) then
-      -- Contact spends the enemy: the troop takes the knockback and hp-scaled
-      -- damage (Troop:on_collision_enter), the enemy dies. Bosses and
+      -- Troop handles swarmer recoil and damage together, once per contact.
+      if Is_Swarmer(self) and other.is_troop then return end
+      -- Other non-boss enemies spend themselves on contact; bosses and
       -- minibosses keep pressing.
       if Dies_On_Contact(self) then
         --delay the death to avoid box2d lock
@@ -851,7 +854,7 @@ function Enemy:on_collision_enter(other, contact)
         end)
       end
     elseif table.any(main.current.enemies, function(v) return other:is(v) end) then
-      if self.being_knocked_back and math.length(self:get_velocity()) > ENEMY_KNOCKBACK_CHAIN_VELOCITY_THRESHOLD then
+      if self.being_knocked_back and not self.contact_recoil and math.length(self:get_velocity()) > ENEMY_KNOCKBACK_CHAIN_VELOCITY_THRESHOLD then
         other:push(math.floor(self.push_force * ENEMY_KNOCKBACK_FORCE_CHAIN_MULTIPLIER), other:angle_to_object(self))
         --delay the damage to avoid box2d lock
         self.t:after(0, function()

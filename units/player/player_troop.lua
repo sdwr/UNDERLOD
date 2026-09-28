@@ -772,7 +772,13 @@ function Troop:die()
   self.death_function()
 end
 
+function Troop:on_collision_pre_solve(other, contact)
+  -- Keep contact callbacks, but remove the solver impulse on the player.
+  if Is_Swarmer(other) then contact:setEnabled(false) end
+end
+
 function Troop:on_collision_enter(other, contact)
+  if self.dead or other.dead then return end
   local x, y = contact:getPositions()
 
   if other:is(Wall) then
@@ -786,12 +792,25 @@ function Troop:on_collision_enter(other, contact)
 
     local duration = KNOCKBACK_DURATION_ENEMY
     local push_force = LAUNCH_PUSH_FORCE_ENEMY
-    -- Non-boss enemies spend themselves on contact (see Enemy:on_collision_enter):
-    -- damage scales with the fraction of hp they had left, so whittling an
-    -- enemy down softens the hit it lands.
+    -- Wounding an enemy softens its contact hit. Swarmers recoil instead
+    -- of spending themselves or interrupting the player's movement.
     local dmg = Contact_Damage(other)
 
-    if other.class == 'boss' then
+    if Is_Swarmer(other) then
+      local now = Helper.Time.time
+      if now < (other.swarmer_contact_ready_at or 0) then return end
+      other.swarmer_contact_ready_at = now + SWARMER_CONTACT_COOLDOWN
+      local angle = self:angle_to_object(other)
+      other.t:after(0, function()
+        if not other.dead then
+          other:push(SWARMER_CONTACT_PUSH_FORCE, angle)
+          -- Contact recoil must not turn the crowd into free chain damage.
+          other.contact_recoil = other.being_knocked_back or nil
+        end
+      end)
+      if now < (self.swarmer_hit_ready_at or 0) then return end
+      self.swarmer_hit_ready_at = now + SWARMER_HIT_GRACE
+    elseif other.class == 'boss' then
       duration = KNOCKBACK_DURATION_BOSS
       push_force = LAUNCH_PUSH_FORCE_BOSS
       dmg = BOSS_PUSH_DAMAGE
@@ -800,7 +819,9 @@ function Troop:on_collision_enter(other, contact)
       push_force = LAUNCH_PUSH_FORCE_SPECIAL_ENEMY
     end
     
-    self:push(push_force, self:angle_to_object(other) + math.pi, nil, duration)
+    if not Is_Swarmer(other) then
+      self:push(push_force, self:angle_to_object(other) + math.pi, nil, duration)
+    end
     --delay the damage to avoid box2d lock
     self.t:after(0, function()
       if self and not self.dead then

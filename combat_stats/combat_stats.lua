@@ -204,19 +204,26 @@ BOSS_MS = 70
 
 REGULAR_PUSH_DAMAGE = 20
 SPECIAL_PUSH_DAMAGE = 20
--- Contact rule: a non-boss enemy that touches a troop dies and deals its own
--- dmg scaled by the fraction of hp it had left, times this multiplier.
--- 1.25: a full-hp swarmer lands 12.5 (10% of an archer), a tank 35.
+-- Contact damage falls with the enemy's remaining health. Swarmers bounce
+-- away alive and deal chip damage; specials retain their heavier impact.
 CONTACT_DAMAGE_HP_SCALE = 1.25
+SWARMER_CONTACT_DAMAGE_MULT = 0.5
+SWARMER_CONTACT_COOLDOWN = 0.75 -- one swarmer cannot bite several troops at once
+SWARMER_HIT_GRACE = 0.35 -- per troop, swarm contacts only; specials still hit
+
+function Is_Swarmer(enemy)
+  return enemy and (enemy.type == 'swarmer' or enemy.type == 'hunter_swarmer')
+end
 
 function Dies_On_Contact(enemy)
-  return enemy.class ~= 'boss' and enemy.class ~= 'miniboss' and not enemy.survives_contact
+  return not Is_Swarmer(enemy) and enemy.class ~= 'boss' and enemy.class ~= 'miniboss' and not enemy.survives_contact
 end
 
 function Contact_Damage(enemy)
   local max_hp = enemy.max_hp or 0
   local frac = (max_hp > 0) and math.clamp((enemy.hp or 0) / max_hp, 0, 1) or 1
-  return (enemy.dmg or 0) * frac * CONTACT_DAMAGE_HP_SCALE
+  local contact_mult = Is_Swarmer(enemy) and SWARMER_CONTACT_DAMAGE_MULT or 1
+  return (enemy.dmg or 0) * frac * CONTACT_DAMAGE_HP_SCALE * contact_mult
 end
 BOSS_PUSH_DAMAGE = 30
 
