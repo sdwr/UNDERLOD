@@ -1,4 +1,13 @@
 -- Shared functions and classes for projects using JUGGLRX's visual style.
+local arena_background_tints
+function get_arena_background_tint(level)
+  if not arena_background_tints then
+    arena_background_tints = {Color('#9cd9bd'), Color('#a8bee8'), Color('#d0a7d9')}
+  end
+  -- Quiet jade, slate blue, and plum chapters; preserve the floor's texture.
+  local chapter = (level or 1) <= 3 and 1 or ((level or 1) <= 6 and 2 or 3)
+  return arena_background_tints[chapter]
+end
 function shared_init()
 
   local colors = {
@@ -105,7 +114,7 @@ function shared_draw(draw_action)
     if in_combat and level_background_image then
       local sx_bg = gw / level_background_image.w
       local sy_bg = gh / level_background_image.h
-      level_background_image:draw(gw/2, gh/2, 0, sx_bg, sy_bg)
+      level_background_image:draw(gw/2, gh/2, 0, sx_bg, sy_bg, nil, nil, get_arena_background_tint(main.current.level))
     else
       for i = 1, 64 do
         for j = 1, 18 do

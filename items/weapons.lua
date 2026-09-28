@@ -31,6 +31,20 @@ WEAPON_DEFS = {
     range = function() return TROOP_ARCHER_RANGE * 1.25 end, cooldown = 2.8, dmg_mult = 4, radius = 38},
 }
 
+-- Render colors are independent of the weapon's gameplay/meta color.
+local weapon_effect_hex = {
+  archer = '#b5dbc1', shotgun = '#efa17e', crossbow = '#7fcca9',
+  cannon = '#dda575', radiance = '#f4cc78', orbit = '#b9a0ed',
+  laser = '#80d9e5', lightning = '#a7c8ff', meteor = '#f28b70',
+}
+local weapon_effect_colors = {}
+function get_weapon_effect_color(key)
+  if not weapon_effect_colors[key] then
+    weapon_effect_colors[key] = Color(weapon_effect_hex[key] or '#dadada')
+  end
+  return weapon_effect_colors[key]
+end
+
 function is_weapon_item(item)
   return item and item.weapon and WEAPON_DEFS[item.weapon] and true or false
 end
@@ -105,7 +119,7 @@ end
 local function projectile_data(troop, damage)
   return {group = main.current.main, spell_duration = 10, bullet_size = 3,
     pierce = troop:get_bonus_pierce(), homing = true, speed = 210, is_troop = true,
-    unit = troop, color = blue[0], damage = damage, volume = 0.6, pitch = 1.4}
+    unit = troop, color = get_weapon_effect_color('archer'), damage = damage, volume = 0.6, pitch = 1.4}
 end
 
 WEAPON_FIRE = {}
@@ -118,7 +132,7 @@ end
 function WEAPON_FIRE.crossbow(troop, weapon, target, damage_multi, angle)
   local data = projectile_data(troop, weapon.damage * damage_multi)
   data.pierce = 2 + troop:get_bonus_pierce()
-  data.speed, data.bullet_size, data.color = 280, 4, green[0]
+  data.speed, data.bullet_size, data.color = 280, 4, get_weapon_effect_color('crossbow')
   data.max_distance = weapon.range * 1.3
   data.straight_after_hit, data.crit_on_pierce = true, true
   if angle then data.angle = angle else data.target = target end
@@ -130,7 +144,7 @@ function WEAPON_FIRE.shotgun(troop, weapon, target, damage_multi, angle)
   for _ = 1, SHOTGUN_PELLET_COUNT do
     local data = projectile_data(troop, weapon.damage * damage_multi)
     data.bullet_size, data.homing, data.speed = 2, false, 320
-    data.color = orange[0]
+    data.color = get_weapon_effect_color('shotgun')
     data.max_distance = weapon.range * SHOTGUN_PELLET_MAX_DISTANCE_MULT
     data.volume, data.pitch, data.sound_duration = 0.25, 0.95, 0.2
     data.sound_table = {cannoneer1, cannoneer2}
@@ -142,7 +156,8 @@ end
 function WEAPON_FIRE.laser(troop, weapon, target, damage_multi)
   if not target or target.dead then return end
   Laser_Spell{group = main.current.effects, target = target, unit = troop,
-    on_attack_callbacks = false, spell_duration = 0, color = blue[0],
+    on_attack_callbacks = false, spell_duration = 0, color = get_weapon_effect_color('laser'),
+    aim_color = get_weapon_effect_color('laser'),
     damage = weapon.damage * damage_multi, reduce_pierce_damage = false, weapon_hit = true, length = weapon.range,
     lasermode = 'target', laser_aim_width = 1, laser_width = 8,
     charge_duration = math.max(0.08, 0.3 * troop.aspd_m),

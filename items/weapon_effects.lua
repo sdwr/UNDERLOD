@@ -11,7 +11,7 @@ function WeaponEffect:init(args)
   self.start_x, self.start_y = self.x, self.y
   self.target_x = self.target and self.target.x or self.x
   self.target_y = self.target and self.target.y or self.y
-  self.color = _G[self.weapon.def.color][0]
+  self.color = get_weapon_effect_color(self.kind)
   self.elapsed, self.impact_age = 0, nil
   self.damage = self.weapon.damage * self.damage_multi
   self.radius = (self.weapon.def.radius or self.weapon.range) * (self.unit.area_size_m or 1)

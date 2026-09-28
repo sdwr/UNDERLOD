@@ -5,6 +5,11 @@ local function get_card_theme()
       common = Color('#1f2125'), rare = Color('#302d24'), border = Color('#61666b'),
       gold = Color('#deb561'), text = Color('#dadad4'), muted = Color('#888d90'),
       shadow = Color('#141619'), divider = Color('#434749'),
+      tiers = {
+        {background = Color('#202b29'), border = Color('#466858'), accent = Color('#86bea6')},
+        {background = Color('#242b39'), border = Color('#516c93'), accent = Color('#92b9ec')},
+        {background = Color('#302838'), border = Color('#826494'), accent = Color('#c7a0df')},
+      },
       fonts = {[4] = Font('PixulBrush', 4), [5] = Font('PixulBrush', 5),
         [6] = Font('PixulBrush', 6), [8] = Font('PixulBrush', 8), [10] = Font('PixulBrush', 10)},
     }
@@ -610,13 +615,15 @@ function ItemCard:draw_card_contents(x, y)
   local rare = self.item.rarity == ITEM_RARITY.RARE
   local background = rare and theme.rare or theme.common
   local border = rare and theme.gold or theme.border
+  local tier_theme = (self.item.equipment or self.weapon_def) and theme.tiers[self.item.tier or 1]
+  if tier_theme then background, border = tier_theme.background, tier_theme.border end
   local w, h = self.w, self.h
   card_box(x+1, y+2, w, h, theme.shadow)
   if self.selected and not self.flying_to_slot then card_box(x-1,y-1,w+2,h+2,theme.text) end
   card_box(x,y,w,h,border)
   card_box(x+1,y+1,w-2,h-2,background)
   if self.item.equipment or self.weapon_def then
-    card_print('TIER ' .. EQUIPMENT_TIER_NAMES[self.item.tier or 1],fonts[5],x+5,y+4,theme.muted,w-23)
+    card_print('TIER ' .. EQUIPMENT_TIER_NAMES[self.item.tier or 1],fonts[5],x+5,y+4,tier_theme and tier_theme.accent or theme.muted,w-23)
   elseif rare then
     graphics.rectangle(x+w/2,y+8,w-6,10,0,0,theme.gold)
     graphics.polygon({x+7,y+6, x+9,y+8, x+7,y+10, x+5,y+8}, theme.common)
