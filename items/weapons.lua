@@ -15,8 +15,8 @@ WEAPON_DEFS = {
     range = function() return TROOP_ARCHER_RANGE end, cooldown = 0.6, dmg_mult = 1},
   shotgun = {name = 'Shotgun', tier = 1, color = 'red', description = 'Five close-range pellets',
     range = function() return TROOP_SHOTGUN_RANGE end, cooldown = 1.4, dmg_mult = 0.45},
-  crossbow = {name = 'Crossbow', tier = 2, color = 'green', description = 'Heavy bolts pierce 2 extra enemies',
-    range = function() return TROOP_ARCHER_RANGE * 1.15 end, cooldown = 0.65, dmg_mult = 1.4},
+  crossbow = {name = 'Crossbow', tier = 1, color = 'green', description = 'Heavy bolts pierce 2 extra enemies; slow reload',
+    range = function() return TROOP_ARCHER_RANGE * 1.15 end, cooldown = 1.5, dmg_mult = 1.4},
   cannon = {name = 'Cannon', tier = 2, color = 'brown', description = 'Explosive shells hit an area',
     range = function() return TROOP_ARCHER_RANGE end, cooldown = 1.7, dmg_mult = 2, radius = 26},
   radiance = {name = 'Radiance', tier = 2, color = 'red', description = 'Burning pulses; works while moving',
@@ -33,7 +33,7 @@ WEAPON_DEFS = {
 
 -- Render colors are independent of the weapon's gameplay/meta color.
 local weapon_effect_hex = {
-  archer = '#b5dbc1', shotgun = '#efa17e', crossbow = '#7fcca9',
+  archer = '#b5dbc1', shotgun = '#efa17e', crossbow = '#e0b66a',
   cannon = '#dda575', radiance = '#f4cc78', orbit = '#b9a0ed',
   laser = '#80d9e5', lightning = '#a7c8ff', meteor = '#f28b70',
 }
@@ -112,7 +112,7 @@ function is_current_equipment_offer(item, slot)
     return def and item.tier == def.tier and item.cost == EQUIPMENT_WEAPON_COSTS[def.tier]
   end
   local def = item.sets and ITEM_SETS[item.sets[1]]
-  return not item.weapon and def and def.equipment and item.tier == def.tier
+  return not item.weapon and def and not def.disabled and def.equipment and item.tier == def.tier
     and item.cost == EQUIPMENT_ITEM_COSTS[def.tier]
 end
 
@@ -132,7 +132,8 @@ end
 function WEAPON_FIRE.crossbow(troop, weapon, target, damage_multi, angle)
   local data = projectile_data(troop, weapon.damage * damage_multi)
   data.pierce = 2 + troop:get_bonus_pierce()
-  data.speed, data.bullet_size, data.color = 280, 4, get_weapon_effect_color('crossbow')
+  data.speed, data.bullet_size, data.color = 160, 5, get_weapon_effect_color('crossbow')
+  data.projectile_style = 'crossbow'
   data.max_distance = weapon.range * 1.3
   data.straight_after_hit, data.crit_on_pierce = true, true
   if angle then data.angle = angle else data.target = target end

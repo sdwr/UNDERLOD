@@ -218,8 +218,16 @@ function ArrowProjectile:draw()
   -- Draw an arrow shape
   graphics.push(self.x, self.y, self.r, 1, 1)
   
-  -- Arrow body (rectangle)
-  graphics.rectangle(self.x, self.y, self.width, self.height, 2, 2, self.color)
+  if self.projectile_style == 'crossbow' then
+    -- A broad metal head and short shaft distinguish the heavy piercing bolt.
+    local x, y, w, h = self.x, self.y, self.width, self.height
+    graphics.line(x - w * 0.6, y, x, y, self.color, 2)
+    graphics.polygon({x + w * 0.55, y, x - w * 0.1, y - h * 0.65,
+      x - w * 0.3, y, x - w * 0.1, y + h * 0.65}, self.color)
+    graphics.line(x - w * 0.1, y, x + w * 0.3, y, fg[0], 1)
+  else
+    graphics.rectangle(self.x, self.y, self.width, self.height, 2, 2, self.color)
+  end
   
   -- Arrow head (triangle)
   --arrow head Center

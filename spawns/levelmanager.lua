@@ -57,12 +57,12 @@ LEVEL_SPAWN_POOLS = {
       swarmer = { cap = 15, total = 45 },
     },
   },
-  -- First tanks and small archers, one pair in each half of the level.
+  -- Introduce two tanks alongside swarmers; archers begin on level 3.
   [2] = {
     spawn_director = {
       length = 25,
       swarmer = { cap = 15, total = 55 },
-      timeline = { tank = 1, small_archer = 2 },
+      timeline = { tank = 2 },
     },
   },
   -- Thin swarm, clumps only, and a steady stream of archers making the edges
@@ -80,8 +80,8 @@ LEVEL_SPAWN_POOLS = {
       length = 35,
       swarmer = { cap = 22, total = 70 },
       timeline = { tank = 2, small_archer = 4, dart = 2 },
-      -- One of these is merged into the timeline per run.
-      one_of = { { laser = 1 }, { mortar = { total = 1, at = 0.3 } } },
+      -- Keep the occasional laser; mortars first appear in T2 on level 7.
+      one_of = { { laser = 1 }, {} },
     },
   },
   [5] = {

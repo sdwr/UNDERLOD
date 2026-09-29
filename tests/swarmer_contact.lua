@@ -22,9 +22,9 @@ local function near(actual, expected)
   assert(math.abs(actual - expected) < 0.0001, tostring(actual) .. ' ~= ' .. tostring(expected))
 end
 local function timer()
-  return {pending = {}, after = function(self, delay, fn)
-    assert(delay == 0, 'contact work should be deferred to the next update')
-    self.pending[#self.pending + 1] = fn
+  return {pending = {}, delayed = {}, after = function(self, delay, fn)
+    local queue = delay == 0 and self.pending or self.delayed
+    queue[#queue + 1] = fn
   end, flush = function(self)
     local pending = self.pending; self.pending = {}
     for _, fn in ipairs(pending) do fn() end
@@ -40,7 +40,9 @@ local function troop(hp_bonus)
     preprocess_perks_to_stats=empty, process_team_meta_to_stats=empty,
     count_elemental_afflictions=function() return 0 end,
     update_weapon_stats=function() end,
-    push=function(self) self.pushes=self.pushes+1 end,
+    push=function(self,force,angle,invulnerable,duration)
+      self.pushes=self.pushes+1; self.push_angle=angle; self.push_strength=force
+    end,
     hit=function(self, damage)
       self.hits=self.hits+1; self.hp=self.hp-self:calculate_damage(damage)
     end,
@@ -69,7 +71,7 @@ local function collide(t,e,enemy_first)
   t:on_collision_pre_solve(e,contact)
 end
 
--- Either Box2D callback order must preserve the swarmer and the player's control.
+-- Either Box2D callback order must push the troop away and preserve swarmer recoil.
 for _, kind in ipairs({'swarmer','hunter_swarmer'}) do
   for _, enemy_first in ipairs({false,true}) do
     Helper.Time.time=0
@@ -79,7 +81,8 @@ for _, kind in ipairs({'swarmer','hunter_swarmer'}) do
     t.t:flush(); e.t:flush()
     assert(not e.dead and e.being_knocked_back and e.contact_recoil)
     assert(e:get_velocity()>0, 'swarmer should recoil away from the troop')
-    assert(t.pushes==0 and contact.enabled==false)
+    assert(t.pushes==1 and contact.enabled==false)
+    near(t.push_angle,math.pi); near(t.push_strength,LAUNCH_PUSH_FORCE_ENEMY)
     near(t.hp,kind=='swarmer' and 120 or 119)
   end
 end
@@ -92,7 +95,7 @@ Helper.Time.time=0; t=troop()
 local swarm={}
 for i=1,10 do swarm[i]=enemy('swarmer'); collide(t,swarm[i]) end
 t.t:flush()
-near(t.hp,120); assert(t.hits==1 and t.pushes==0)
+near(t.hp,120); assert(t.hits==1 and t.pushes==1)
 for _,s in ipairs(swarm) do s.t:flush(); assert(s.contact_recoil) end
 -- A rebounding swarmer also cannot bite the next troop immediately.
 local second=troop(); collide(second,swarm[1]); second.t:flush(); near(second.hp,125)
@@ -104,7 +107,7 @@ collide(second,swarm[1]); second.t:flush(); near(second.hp,120)
 -- Grace applies only to swarmer contact: a special still hits and shoves.
 Helper.Time.time=0; t=troop(); collide(t,enemy('swarmer')); t.t:flush()
 local tank=enemy('tank'); contact.enabled=true; collide(t,tank); t.t:flush(); tank.t:flush()
-near(t.hp,92); assert(t.pushes==1 and tank.dead and contact.enabled)
+near(t.hp,92); assert(t.pushes==2 and tank.dead and contact.enabled)
 local boss=enemy('tank'); boss.class='boss'; boss.pinball_charging=true
 local hits=t.hits; collide(t,boss); t.t:flush(); assert(t.hits==hits and not boss.dead)
 boss.pinball_charging=false; collide(t,boss); t.t:flush(); near(t.hp,68); assert(not boss.dead)
@@ -149,16 +152,16 @@ if love and love.physics then
       o.fixture:setUserData(o.id); o.body:setMass(1); o.body:setFixedRotation(true)
     end
     if enemy_first then body(e,5); body(t,2.5) else body(t,2.5); body(e,5) end
+    t.push=Troop.push -- Exercise the production knockback helper against Box2D.
     e.body:setLinearVelocity(-20,0)
     g.world:update(1/60)
-    near(t.body:getLinearVelocity(),0)
-    near(t.body:getX(),0)
+    assert(t.body:getLinearVelocity()<0 and t.body:getX()<0, 'player should move away from the swarmer')
     t.t:flush(); e.t:flush()
     near(t.hp,120); assert(not e.dead and e.body:getLinearVelocity()>0)
     for _=1,10 do g.world:update(1/60); t.t:flush(); e.t:flush() end
-    near(t.body:getLinearVelocity(),0); near(t.hp,120)
+    assert(t.body:getLinearVelocity()<0); near(t.hp,120)
     g.world:destroy()
   end
-  print('swarmer_contact: real Box2D recoil and zero player impulse passed')
+  print('swarmer_contact: real Box2D player knockback and swarmer recoil passed')
 end
 print('swarmer_contact: callback order, recoil, cooldowns, special threats, and HP audit passed')

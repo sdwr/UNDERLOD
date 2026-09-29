@@ -448,16 +448,21 @@ function Troop:weapon_target_in_range(w, target)
   return target and not target.dead and self:distance_to_object(target) <= w.range
 end
 
--- Commanded target first, then the troop's current target, then a random
--- close enemy inside this weapon's range.
+-- Recheck the nearest eligible enemy for every attack; explicit commands
+-- retain priority while their target is in this weapon's range.
 function Troop:get_weapon_target(w)
   if self:weapon_target_in_range(w, self.assigned_target) then return self.assigned_target end
-  if self:weapon_target_in_range(w, self.target) then return self.target end
-  local candidate = main.current.main:get_random_close_object(self, main.current.enemies, nil, w.range)
-  if candidate and candidate.fully_onscreen ~= false and self:weapon_target_in_range(w, candidate) then
-    if not self.target then self:set_target(candidate) end
-    return candidate
+  local target, closest_distance = nil, w.range
+  for _, candidate in ipairs(main.current.main:get_objects_by_classes(main.current.enemies)) do
+    if not candidate.dead and not candidate.untargetable and candidate.fully_onscreen ~= false then
+      local distance = self:distance_to_object(candidate)
+      if distance <= w.range and (not target or distance < closest_distance) then
+        target, closest_distance = candidate, distance
+      end
+    end
   end
+  if target then self:set_target(target) end
+  return target
 end
 
 function Troop:update_weapons(dt, can_fire)
@@ -773,7 +778,7 @@ function Troop:die()
 end
 
 function Troop:on_collision_pre_solve(other, contact)
-  -- Keep contact callbacks, but remove the solver impulse on the player.
+  -- Use the controlled push below instead of adding an extra solver impulse.
   if Is_Swarmer(other) then contact:setEnabled(false) end
 end
 
@@ -792,8 +797,8 @@ function Troop:on_collision_enter(other, contact)
 
     local duration = KNOCKBACK_DURATION_ENEMY
     local push_force = LAUNCH_PUSH_FORCE_ENEMY
-    -- Wounding an enemy softens its contact hit. Swarmers recoil instead
-    -- of spending themselves or interrupting the player's movement.
+    -- Wounding an enemy softens its contact hit. Swarmers survive and recoil;
+    -- their accepted hits also knock the troop back.
     local dmg = Contact_Damage(other)
 
     if Is_Swarmer(other) then
@@ -819,9 +824,7 @@ function Troop:on_collision_enter(other, contact)
       push_force = LAUNCH_PUSH_FORCE_SPECIAL_ENEMY
     end
     
-    if not Is_Swarmer(other) then
-      self:push(push_force, self:angle_to_object(other) + math.pi, nil, duration)
-    end
+    self:push(push_force, self:angle_to_object(other) + math.pi, nil, duration)
     --delay the damage to avoid box2d lock
     self.t:after(0, function()
       if self and not self.dead then

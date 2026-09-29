@@ -13,10 +13,10 @@ ROUND_POWER_TO_GOLD = 100
 
 --stat constants
 TROOP_HP = 100
+LEVEL_ORB_HP = 100
 TROOP_DAMAGE = 11
--- Troop base movement speed. Fast: the whole game is paced around short
--- (10-15s) levels, so repositioning has to be near-instant.
-TROOP_MS = 100
+-- Troop top speed; the follow acceleration ramp still controls takeoff.
+TROOP_MS = 80
 -- Legacy constants (will be replaced)
 TROOP_BASE_COOLDOWN = 1.25
 TROOP_SWORDSMAN_BASE_COOLDOWN = 0.8
@@ -213,6 +213,10 @@ SWARMER_HIT_GRACE = 0.35 -- per troop, swarm contacts only; specials still hit
 
 function Is_Swarmer(enemy)
   return enemy and (enemy.type == 'swarmer' or enemy.type == 'hunter_swarmer')
+end
+
+function Targets_Level_Orb(enemy)
+  return Is_Swarmer(enemy) or (enemy and enemy.type == 'tank')
 end
 
 function Dies_On_Contact(enemy)
@@ -744,14 +748,12 @@ enemy_type_to_stats = {
     -- hp 0.28 => 12.6 HP at L1: dies to one archer shot (16.5 dmg - def 25
     -- => 13.2 effective) through L3; level scaling makes it 2 shots from L4.
     -- hp 0.45 => 20 hp: two bare archer hits (16.5), one with 2 Power pieces (23.1).
-    ['swarmer'] = { dmg = 0.5, hp = 0.45, mvspd = 0.65},
+    ['swarmer'] = { dmg = 0.5, hp = 0.45, mvspd = 0.52},
     ['hunter_swarmer'] = { dmg = 0.6, hp = 1.4, mvspd = 1.1 },
-    -- Tank: slow, chunky body. No attacks, just contact pressure. hp=0.4
-    -- on special_enemy base (280) = 112 HP at L1, ~220 at L7 with
-    -- level/post-boss scaling - a soak target you have to commit damage to.
+    -- Tank: a slow siege body. 537.6 HP at L1 and 8 base movement speed.
     -- Full knockback immunity is set via `knockback_immune` in tank.lua's
     -- init_enemy (knockback_resistance caps at 0.8 so a flag is required).
-    ['tank'] = { dmg = 1, hp = 0.4, mvspd = 0.6 },
+    ['tank'] = { dmg = 1, hp = 1.92, mvspd = 0.4 },
 
     -- Small archer: squishy ranged poke. special_enemy base scaled way down.
     -- hp 0.35 => 98: six bare archer shots (16.5), three two-troop volleys.
@@ -764,7 +766,7 @@ enemy_type_to_stats = {
     ['slime'] = { dmg = 1, mvspd = 0.7, hp = 1.4 },
     ['sniper'] = { dmg = 1, mvspd = 1, hp = 1 },
     ['orb'] = { dmg = 1, mvspd = 0.8, hp = 1.8 },
-    -- Pulsar: miniboss-style special. hp ~2.4x tank (was 4x, trimmed 40%),
+    -- Pulsar: miniboss-style special with 537.6 base HP,
     -- brisk walk-on to a nearby park point, then a stationary compass turret
     -- (body goes static once parked).
     ['pulsar'] = { dmg = 1, mvspd = 0.8, hp = 1.92 },

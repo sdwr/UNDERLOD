@@ -1,4 +1,4 @@
--- Dart: angular glass cannon. Seeks the nearest troop fast and straight,
+-- Dart: angular glass cannon. Locks onto the nearest troop and seeks it straight,
 -- ignoring other enemies (no separation either way), so it cuts through the
 -- swarm, then explodes when it reaches a troop. Low hp so focused fire
 -- deletes it first; a dart killed in flight does not explode.
@@ -17,6 +17,9 @@ fns['init_enemy'] = function(self)
   self.haltOnPlayerContact = false
   self.baseIdleTimer = 0
   self.baseActionTimer = 2
+  self.movement_options = {MOVEMENT_TYPE_SEEK}
+  self.target_marker_color = red[0]:clone()
+  self.target_marker_color.a = 0.8
 
   self.attack_sensor = Circle(self.x, self.y, 500)
   self.attack_options = {}
@@ -28,6 +31,7 @@ fns['init_enemy'] = function(self)
   self.area_sensor = Circle(self.x, self.y, self.trigger_radius)
   self.state_always_run_functions['always_run'] = function(self)
     if self.exploded or self.dead then return end
+    self:acquire_target_seek()
     for _, friendly in ipairs(self:get_objects_in_shape(self.area_sensor, main.current.friendlies)) do
       if not friendly.dead then
         self:explode()
@@ -62,9 +66,39 @@ fns['explode'] = function(self)
   self:die()
 end
 
+-- Keep the lock through movement restarts and generic target clearing. Only
+-- choose another troop when the previous one dies; never chase summons.
+fns['acquire_target_seek'] = function(self)
+  if not self.dart_target or self.dart_target.dead then
+    self.dart_target = nil
+    local nearest_distance = math.huge
+    for _, team in ipairs(Helper.Unit.teams) do
+      for _, troop in ipairs(team.troops) do
+        if not troop.dead then
+          local dx, dy = troop.x - self.x, troop.y - self.y
+          local distance = dx*dx + dy*dy
+          if distance < nearest_distance then
+            nearest_distance, self.dart_target = distance, troop
+          end
+        end
+      end
+    end
+  end
+  self.target = self.dart_target
+  return self.target ~= nil
+end
+
+-- Ground pass keeps the warning visible around, rather than over, the troop.
+fns['draw_ground'] = function(self)
+  local target = self.dart_target
+  if self.dead or self.exploded or not target or target.dead then return end
+  local radius = (target.display_size or 14)/2 + 4
+  graphics.circle(target.x, target.y, radius, self.target_marker_color, 1)
+end
+
 -- Straight seek: no wander, no separation.
 fns['update_move_seek'] = function(self)
-  if not self.target then return false end
+  if not self:acquire_target_seek() then return false end
   self:seek_point(self.target.x, self.target.y, SEEK_DECELERATION, get_seek_weight_by_enemy_type(self.type))
   self:rotate_towards_velocity(1)
   return true

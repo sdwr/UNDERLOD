@@ -53,8 +53,8 @@ function world:get_objects_in_shape(shape)
   end
   return matches
 end
-function world:get_random_close_object(troop, classes, unused, radius)
-  return self:get_objects_in_shape(Circle(troop.x, troop.y, radius))[1]
+function world:get_objects_by_classes()
+  return enemies
 end
 main = {current = {main = world, effects = {}, enemies = {}}}
 dofile('items/weapons.lua')
@@ -175,3 +175,29 @@ assert(beam_target.hits == 1 and beyond.hits == 0)
 near(10000-beam_target.hp, 60)
 assert(lasers[1].weapon_hit and lasers[1].length == laser.weapons[1].range)
 print('tiered_weapons: shared stats, crits, scheduling, area damage, persistence, and cleanup passed')
+
+-- Each attack switches to the closest valid enemy, even while the old one lives.
+enemies = {}
+local far = enemy(60, 0)
+local aiming = troop('archer')
+aiming:update_weapons(0.01, true)
+assert(arrows[#arrows].target == far)
+local close = enemy(20, 0)
+aiming:update_weapons(aiming.weapons[1].cooldown, true)
+assert(arrows[#arrows].target == close and aiming.target == close)
+local dead = enemy(1, 0); dead.dead = true
+local hidden = enemy(2, 0); hidden.fully_onscreen = false
+local immune = enemy(3, 0); immune.untargetable = true
+aiming:update_weapons(aiming.weapons[1].cooldown, true)
+assert(arrows[#arrows].target == close)
+aiming.assigned_target = far
+aiming:update_weapons(aiming.weapons[1].cooldown, true)
+assert(arrows[#arrows].target == far, 'manual target retains priority')
+far.x = 200
+aiming:update_weapons(aiming.weapons[1].cooldown, true)
+assert(arrows[#arrows].target == close, 'out-of-range command falls back to nearest')
+close.dead = true
+local before = #arrows
+aiming:update_weapons(aiming.weapons[1].cooldown, true)
+assert(#arrows == before, 'no shot when every enemy is invalid or out of range')
+print('weapon targeting: nearest per attack, eligibility, range, and manual priority passed')

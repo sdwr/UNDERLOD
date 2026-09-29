@@ -47,6 +47,7 @@ function Arena:init(args)
   -- Initialize arena components
   self:init_physics()
   self:init_spawn_manager()
+  self:create_level_orb()
   
   self:create_gold_counter()
   self:create_progress_bar()
@@ -91,6 +92,13 @@ function Arena:create_walls()
   self.walls[8] = WallCover{group = self.post_main, vertices = math.to_rectangle_vertices(self.x1, self.y2, self.x2, self.offset_y + gh + 40), color = bg[-1]}
 end
 
+function Arena:create_level_orb()
+  if self.level == 0 or Is_Boss_Level(self.level) then return end
+  self.level_orb = LevelOrb{group = self.main, parent = self,
+    x = gw/2 + self.offset_x, y = gh/2 + self.offset_y}
+  self.main.level_orb = self.level_orb
+end
+
 function Arena:create_gold_counter()
   -- Create gold counter in top left
   self.gold_counter = GoldCounter{group = self.ui, parent = self,x = GOLD_COUNTER_X_OFFSET, y = LEVEL_MAP_Y_POSITION + 1, offset_x = self.offset_x, offset_y = self.offset_y}
@@ -132,7 +140,7 @@ end
 
 function Arena:init_physics()
   self.floor = Group()
-  self.main = Group():set_as_physics_world(32, 0, 0, {'troop', 'enemy', 'projectile', 'enemy_projectile', 'force_field', 'ghost', 'effect', 'door'})
+  self.main = Group():set_as_physics_world(32, 0, 0, {'troop', 'enemy', 'projectile', 'enemy_projectile', 'force_field', 'ghost', 'effect', 'door', 'level_orb'})
   self.post_main = Group()
   self.effects = Group()
   self.effects:set_custom_draw_list(main_after_characters)
@@ -144,6 +152,12 @@ function Arena:init_physics()
   self.options_ui:set_custom_draw_list(main_after_characters)
   self.credits = Group()
   self.credits:set_custom_draw_list(main_after_characters)
+
+  -- The orb is a sensor, not a troop or projectile. Only enemy bodies need
+  -- to overlap it; its own handler accepts swarmers, not bosses or specials.
+  for _, tag in ipairs(self.main.tags) do
+    if tag ~= 'enemy' then self.main:disable_collision_between('level_orb', tag) end
+  end
 
   self.main:disable_collision_between('troop', 'projectile')
   self.main:disable_collision_between('troop', 'troop')
@@ -249,6 +263,9 @@ function Arena:update(dt)
     self.floor:update(dt)
     
     self.main:update(dt)
+    -- Resolve sensor impacts outside Box2D, before the spawn manager can
+    -- declare the level clear after the last swarmer sacrifices itself.
+    if self.level_orb then self.level_orb:resolve_contacts() end
     
     self.post_main:update(dt)
     self.effects:update(dt)
@@ -392,13 +409,14 @@ function Arena:draw_debug_spawn_text()
   graphics.print_centered(line, pixul_font, x, y, 0, 1, 1, nil, nil, fg[0])
 end
 
-function Arena:die()
+function Arena:die(reason)
   -- level_cleared: the arena was cleared first (combat_level:level_clear), so
   -- the win claimed the level — deaths during the clear cascade are ignored.
   if not self.died_text and not self.won and not self.arena_clear_text and not self.level_cleared then
     -- input:set_mouse_visible(true)
     self.t:cancel('divine_punishment')
     self.died = true
+    self.loss_reason = reason
     locked_state = false
     system.save_run()
 
@@ -409,7 +427,7 @@ function Arena:die()
     self.t:tween(2, self, {main_slow_amount = 0}, math.linear, function() self.main_slow_amount = 0 end)
     self.t:tween(2, _G, {music_slow_amount = 0}, math.linear, function() music_slow_amount = 0 end)
     self.died_text = Text2{group = self.ui, x = gw/2 + self.offset_x, y = gh/2 - 32 + self.offset_y, lines = {
-      {text = '[wavy_mid, cbyc]you died...', font = fat_font, alignment = 'center', height_multiplier = 1.25},
+      {text = '[wavy_mid, cbyc]' .. (reason == 'orb' and 'orb destroyed...' or 'you died...'), font = fat_font, alignment = 'center', height_multiplier = 1.25},
     }}
     -- trigger:tween(2, camera, {x = gw/2 + self.offset_x, y = gh/2 + self.offset_y, r = 0}, math.linear, function() camera.x, camera.y, camera.r = gw/2 + self.offset_x, gh/2 + self.offset_y, 0 end)
     self.t:after(2, function()

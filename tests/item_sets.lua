@@ -19,7 +19,7 @@ dofile('items/weapons.lua')
 Helper = {}
 dofile('helper/helper_unit.lua')
 
--- Old saved effects still resolve, but only 7 stat families x 3 tiers roll.
+-- Old saved effects still resolve, but only 5 stat families x 3 tiers roll.
 local enabled = 0
 for key, def in pairs(ITEM_SETS) do
   if not def.disabled then
@@ -32,7 +32,15 @@ for key, def in pairs(ITEM_SETS) do
     end
   end
 end
-assert(enabled == 21)
+assert(enabled == 15)
+for _, family in ipairs({'vitality', 'mobility'}) do
+  for tier = 1, 3 do
+    local key = family .. '_tier_' .. tier
+    assert(ITEM_SETS[key].disabled and ITEM_SETS[key].bonuses[1], 'owned ' .. family .. ' must still resolve')
+    assert(not is_current_equipment_offer({sets = {key}, tier = tier, cost = EQUIPMENT_ITEM_COSTS[tier]}, 1),
+      'saved ' .. family .. ' offers must be replaced')
+  end
+end
 assert(ITEM_SETS[ITEM_SET.SPLASH].disabled and ITEM_SETS[ITEM_SET.SPLASH].bonuses[1])
 assert(ITEM_SETS[ITEM_SET.PIERCE].disabled and ITEM_SETS[ITEM_SET.ORBITAL].disabled)
 
@@ -102,6 +110,7 @@ migrate_unit_to_weapon_items(old)
 assert(old.items[1].tier == 3 and old.items[1].cost == 7)
 assert(old.level == 2 and old.xp == 3 and old.items[2].sets[1] == ITEM_SET.SPLASH)
 assert(not is_current_equipment_offer(old.items[2], 1), 'old shop proc must be replaced')
-assert(create_weapon_item('crossbow').cost == 5)
-assert(create_random_weapon_item(1, {['weapon:archer'] = true, ['weapon:shotgun'] = true}) == nil)
+assert(create_weapon_item('crossbow').cost == 3 and create_weapon_item('crossbow').tier == 1)
+assert(create_random_weapon_item(1, {['weapon:archer'] = true, ['weapon:shotgun'] = true}).weapon == 'crossbow')
+assert(create_random_weapon_item(1, {['weapon:archer'] = true, ['weapon:shotgun'] = true, ['weapon:crossbow'] = true}) == nil)
 print('item_sets: tier odds, slot composition, stacking, stats, and migration passed')

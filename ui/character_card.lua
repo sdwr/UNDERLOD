@@ -135,8 +135,7 @@ function CharacterCard:createNameText()
   if self.name_text then
     self.name_text.dead = true
   end
-  local name = self.i and ('unit ' .. self.i) or self.unit.character
-  local class_text = '[' .. self.character_color_string .. '[3]]' .. name .. ' lv' .. self.unit.level
+  local class_text = '[' .. self.character_color_string .. '[3]]level ' .. self.unit.level
   self.name_text = Text({{text = class_text, font = pixul_font, alignment = 'center'}}, global_text_tags)
 end
 

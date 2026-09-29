@@ -799,6 +799,10 @@ function SpawnManager:complete_wave(wave_index)
 end
 
 function SpawnManager:update(dt)
+    if self.arena.died then
+      self:change_state('finished')
+      return
+    end
     if self.state == 'finished' then return end
     --don't do anything until triggered by world manager
     if self.state == 'arena_start' then return end
@@ -1076,7 +1080,8 @@ function SpawnManager:tick_swarmer_lane(dt, counts)
   local ramp = d.ramp_from + (d.ramp_to - d.ramp_from) * self:spawn_progress()
   local cap = math.max(1, math.ceil(sw.cap * ramp))
   local headroom = cap - self:director_slot_alive('swarmer', counts)
-  if headroom <= 0 then
+  local minimum = SWARMER_GROUP_MIN_SIZE or 4
+  if headroom < minimum then
     sw.next_fire = retry
     return
   end
@@ -1085,8 +1090,14 @@ function SpawnManager:tick_swarmer_lane(dt, counts)
   -- wave, not lone stragglers; clustered_only levels force every clump.
   local clustered = (not sw.fired) or d.clustered_only
   local size, scatter = roll_swarmer_group_size(clustered)
-  size = math.min(size, headroom, remaining)
-  if math.floor(sw.bank) < size then
+  size = math.min(math.max(size, minimum), headroom, remaining)
+  -- Preserve exact rosters (including odd totals like 55) without leaving
+  -- a final group of 1-3. Merge that tail, or leave a full clump for later.
+  local tail = remaining - size
+  if tail > 0 and tail < minimum then
+    size = remaining >= 2*minimum and remaining-minimum or remaining
+  end
+  if size < minimum or size > headroom or math.floor(sw.bank) < size then
     sw.next_fire = retry
     return
   end

@@ -553,14 +553,11 @@ SPAWN_DIRECTOR_OPENING_GRACE = 2
 SPAWN_TIMELINE_JITTER = 0.2
 -- Jitter on the swarmer lane's gap between clumps.
 SPAWN_DIRECTOR_JITTER = 0.25
--- Swarmer group mix: weighted roll, clamped to cap headroom and the bank.
--- The common case (~90%) is a clustered 4-6 clump at a weighted point; rarely
--- the group SCATTERS instead (each member at its own random offscreen point,
--- fanning in from all sides). Levels can force clustered clumps with
--- clustered_only.
+-- Swarmers always arrive together. Wait for room for a full clump rather
+-- than trimming to one or two enemies when the alive cap is nearly full.
+SWARMER_GROUP_MIN_SIZE = 4
 SWARMER_GROUP_MIX = {
-  { weight = 1, min = 4, max = 6, scatter = true },
-  { weight = 9, min = 4, max = 6 },
+  { weight = 1, min = 4, max = 6 },
 }
 -- Minimum gap between swarmer clumps (the opening burst to cap fires this
 -- fast), and the recheck delay when a fire is skipped (cap full, bank short).

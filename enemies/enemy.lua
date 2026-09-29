@@ -234,7 +234,9 @@ end
 
 --set castcooldown and in the enemy file (init)
 function Enemy:update(dt)
+    if self.dead then return end
     Enemy.super.update(self, dt)
+    if self.dead then return end
     self:update_cast_cooldown(dt)
 
     self:onTickCallbacks(dt)
@@ -498,6 +500,11 @@ function Enemy:update_movement()
 end
 
 function Enemy:acquire_target_seek()
+  local orb = self.group and self.group.level_orb
+  if Targets_Level_Orb(self) and orb then
+    self.target = not orb.dead and orb or nil
+    return self.target ~= nil
+  end
   -- Clumping enemies share a nearby clump-mate's target so a clump chases one
   -- troop instead of splitting across the whole party.
   if self.clump_radius then
@@ -811,6 +818,7 @@ function Enemy:update_move_random()
 end
 
 function Enemy:draw()
+    if self.dead then return end
   if DEBUG_ENEMY_MOVEMENT then
     self:draw_debug_info()
   end

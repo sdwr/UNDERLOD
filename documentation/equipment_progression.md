@@ -45,8 +45,8 @@ A family contributes its meta color once per unit, regardless of tier/copies.
 | Precision | Crit chance | +10% | +18% | +25% |
 | Reach | Range | +10% | +18% | +25% |
 | Area | Area size | +15% | +25% | +40% |
-| Vitality | Max health | +20% | +35% | +50% |
-| Mobility | Move speed | +5% | +8% | +12% |
+
+Vitality and Mobility are retired from shop and reward rolls; owned copies remain valid in old saves.
 
 These bonuses apply to the unit and its entire loadout. Crit chance uses the
 existing cap of 100%. Area affects blast radii, aura radius, orb size, lightning
@@ -59,7 +59,7 @@ radius, and orbit distance. Attack speed changes firing/pulse/contact frequency.
 | --- | --- | --- |
 | I | Archer | Fast homing arrows |
 | I | Shotgun | Five close-range pellets |
-| II | Crossbow | Stronger homing bolts; travel straight after impact and pierce two extra enemies |
+| I | Crossbow | Heavy homing bolts; travel straight after impact and pierce two extra enemies; 1.5-second base reload |
 | II | Cannon | Shell travels to the aimed position and explodes |
 | II | Radiance | Close-range damaging pulses that ignite enemies; works while moving |
 | II | Orbit | Two persistent rotating orbs with per-target contact cooldowns; works while moving |

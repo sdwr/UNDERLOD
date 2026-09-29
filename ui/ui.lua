@@ -1,6 +1,7 @@
 require 'ui/ui_constants'
 require 'ui/hotbar_button'
 require 'ui/team_hotbar'
+require 'ui/level_orb'
 require 'ui/floating_text'
 require 'ui/character_select_overlay'
 require 'ui/character_card'

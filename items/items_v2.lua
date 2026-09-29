@@ -572,8 +572,8 @@ STAT_ITEM_FAMILIES = {
   {key = 'precision', name = 'Precision', stat = 'crit_chance', label = 'crit chance', color = 'blue', values = {10, 18, 25}},
   {key = 'reach', name = 'Reach', stat = 'range', label = 'range', color = 'brown', values = {10, 18, 25}},
   {key = 'area', name = 'Area', stat = 'area_size', label = 'area size', color = 'brown', values = {15, 25, 40}, min_level = 4},
-  {key = 'vitality', name = 'Vitality', stat = 'hp', label = 'max health', color = 'green', values = {20, 35, 50}},
-  {key = 'mobility', name = 'Mobility', stat = 'mvspd', label = 'move speed', color = 'purple', values = {5, 8, 12}},
+  {key = 'vitality', name = 'Vitality', stat = 'hp', label = 'max health', color = 'green', values = {20, 35, 50}, disabled = true},
+  {key = 'mobility', name = 'Mobility', stat = 'mvspd', label = 'move speed', color = 'purple', values = {5, 8, 12}, disabled = true},
 }
 for _, family in ipairs(STAT_ITEM_FAMILIES) do
   for tier = 1, 3 do
@@ -583,7 +583,7 @@ for _, family in ipairs(STAT_ITEM_FAMILIES) do
       name = family.name .. ' ' .. EQUIPMENT_TIER_NAMES[tier],
       summary = '+' .. value .. '% ' .. family.label,
       color = family.color, rarity = ITEM_RARITY.COMMON,
-      equipment = true, family = family.key, tier = tier, min_tier = tier,
+      equipment = true, family = family.key, tier = tier, min_tier = tier, disabled = family.disabled,
       min_level = family.min_level or 1, bonuses = {}, descriptions = {},
     }
     for copies = 1, (MAX_ITEM_STACK or 3) do
@@ -722,7 +722,7 @@ function create_random_item(level, exclude_rarity, excluded, tier)
   for _, family in ipairs(STAT_ITEM_FAMILIES) do
     local key = family.key .. '_tier_' .. tier
     local def = ITEM_SETS[key]
-    if level >= def.min_level and not (excluded and excluded[key]) then
+    if not def.disabled and level >= def.min_level and not (excluded and excluded[key]) then
       table.insert(candidates, key)
     end
   end

@@ -168,9 +168,8 @@ function WeaponEffect:draw()
     end
     graphics.circle(self.x, self.y, radius, fg[0])
   elseif self.kind == 'cannon' then
-    local lift = math.sin(math.pi * self.elapsed / self.flight_time) * 12
-    graphics.circle(self.x, self.y - lift, 4, self.color)
-    graphics.circle(self.x - 1, self.y - lift - 1, 1.5, fg[0])
+    graphics.circle(self.x, self.y, 4, self.color)
+    graphics.circle(self.x - 1, self.y - 1, 1.5, fg[0])
   elseif self.kind == 'meteor' then
     local progress = math.min(1, self.elapsed / self.flight_time)
     local x, y = self.target_x + 24 * (1 - progress), self.target_y - 80 * (1 - progress)

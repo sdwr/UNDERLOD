@@ -151,6 +151,16 @@ for _, level in ipairs({1, 2, 3, 4, 5, 7, 8, 9, 10}) do
   local budget = sm.level_data.kill_quota
   assert(budget > 0)
   local exhausted_power
+  local director_spawn = sm.director_spawn
+  sm.director_spawn = function(self, kind, count, scatter)
+    if kind == 'swarmer' then
+      assert(count >= SWARMER_GROUP_MIN_SIZE, 'undersized swarmer clump on level ' .. level)
+      assert(not scatter, 'swarmers must arrive together')
+    end
+    local queued = director_spawn(self, kind, count, scatter)
+    if kind == 'swarmer' then assert(queued == count, 'budget split the last clump') end
+    return queued
+  end
   for frame = 1, 20000 do
     a.t:update(.05)
     if frame % 4 == 0 and #a.enemies > 1 then kill(a, 1) end
@@ -183,16 +193,17 @@ do
   for _ = 1, 200 do
     local r = Resolve_Spawn_Config(L4).spawn_director
     assert(r.one_of == nil)
-    local picked = 0
-    for _, frag in ipairs(L4.spawn_director.one_of) do
-      for etype in pairs(frag) do
-        if r.timeline[etype] then picked = picked + 1; seen[etype] = true end
-      end
+    assert(r.timeline.mortar == nil, 'mortars must wait until T2')
+    if r.timeline.laser then
+      eq(r.timeline.laser, 1)
+      seen.laser = true
+    else
+      seen.no_extra = true
     end
-    eq(picked, 1)
     eq(r.timeline.tank, L4.spawn_director.timeline.tank)
   end
-  assert(seen.laser and seen.mortar, 'both one_of options should roll')
+  assert(seen.laser and seen.no_extra, 'both one_of options should roll')
+  eq(LEVEL_SPAWN_POOLS[7].spawn_director.timeline.mortar, 2)
   assert(L4.spawn_director.timeline.laser == nil and L4.spawn_director.timeline.mortar == nil)
   assert(Resolve_Spawn_Config(LEVEL_SPAWN_POOLS[1]) == LEVEL_SPAWN_POOLS[1])
 end
@@ -208,6 +219,30 @@ do
   assert(mortar_at and math.abs(mortar_at - 12) <= 40 * (SPAWN_TIMELINE_JITTER or 0) + 1e-6, 'mortar at ' .. tostring(mortar_at))
   assert(laser_at and math.abs(laser_at - 20) <= 40 * (SPAWN_TIMELINE_JITTER or 0) + 1e-6, 'laser at ' .. tostring(laser_at))
 end
+
+-- Two free slots must not turn a full clump into a pair. Odd totals finish
+-- without leaving stragglers, and without adding enemies to the roster.
+a, sm = arena_for(nil, {spawn_director = {length = 20, swarmer = {cap = 10, total = 11}}})
+local clumps = {}
+local d = sm.spawn_director
+d.ramp_from, d.ramp_to = 1, 1
+sm.spawning_elapsed = 20
+sm.director_spawn = function(_, kind, count, scatter)
+  assert(kind == 'swarmer' and count >= 4 and not scatter)
+  clumps[#clumps+1] = count
+  return count
+end
+d.swarmer.next_fire = 0
+sm:tick_swarmer_lane(.1, {basics=8, by_type={swarmer=8}})
+eq(#clumps,0)
+for _ = 1, 4 do
+  d.swarmer.next_fire = 0
+  sm:tick_swarmer_lane(.1, {basics=0, by_type={}})
+end
+eq(d.swarmer.spawned,11)
+local sum = 0
+for _, count in ipairs(clumps) do sum = sum + count end
+eq(sum,11)
 
 -- Composition does not depend on kills: with nothing killed, every timeline
 -- special still arrives on schedule while the swarm sits at its cap; the

@@ -8,7 +8,7 @@ levels add troops; they do not automatically multiply each troop's health.
 ## Contact behavior
 
 - Normal, colored, and hunter swarmers survive contact and recoil away.
-- Neither scripted knockback nor the Box2D contact solver moves the player.
+- Accepted swarmer hits knock the player back through the controlled push helper; extra Box2D contact impulses are suppressed.
 - Swarmer contact damage is half the previous value and still scales with
   the enemy's remaining health. Death abilities retain their existing damage.
 - Each swarmer can make one contact attack every 0.75 seconds across all troops.
@@ -40,14 +40,13 @@ At the swarm grace limit, repeated full-health contacts could kill a troop
 in 5.25–8.4 seconds; that is a theoretical bound, not a measured playtest.
 Recoil, movement, and killing or wounding enemies provide opportunities to escape.
 
-A single Vitality I / II / III raises per-troop HP to 150 / 168.75 / 187.5.
-These bonuses stack additively, so dedicated health investment remains useful.
-There is no blanket health reduction in this pass.
+Vitality no longer appears in shop or reward rolls. Owned copies in old saves
+retain their health bonuses. Base troop health remains 125 HP.
 
 ## Verification
 
 `luajit tests/swarmer_contact.lua` checks callback order, deferred recoil,
 swarm cooldowns, special/boss contact, chain-damage suppression, and the live
 HP/armor calculation. Its optional LÖVE path checks actual Box2D player velocity
-and swarmer rebound with both body creation orders. Existing tiered-weapon,
+and swarmer rebound with both body creation orders, including restored player knockback. Existing tiered-weapon,
 spawner, mortar, and Stompy regressions also passed. No full-run playtest yet.
