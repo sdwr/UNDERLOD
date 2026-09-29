@@ -64,6 +64,14 @@ local function enemy(kind, level, fraction)
     angle_to_object=function(self, other) return math.atan2(other.y-self.y,other.x-self.x) end,
   },Enemy)
 end
+-- Mini swarmers keep normal speed but halve the scaled health and damage bases.
+local mini = enemy('swarmer', 7); mini.level = 7
+_set_unit_base_stats(mini)
+local full_hp, full_damage, full_speed = mini.base_hp, mini.base_dmg, mini.base_mvspd
+mini.mini_swarmer = true
+_set_unit_base_stats(mini)
+near(mini.base_hp, full_hp * 0.5); near(mini.baseline_hp, mini.base_hp)
+near(mini.base_dmg, full_damage * 0.5); near(mini.base_mvspd, full_speed)
 local contact = {getPositions=function() return 0,0 end, setEnabled=function(self,b) self.enabled=b end}
 local function collide(t,e,enemy_first)
   if enemy_first then e:on_collision_enter(t,contact); t:on_collision_enter(e,contact)

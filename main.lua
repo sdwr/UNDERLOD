@@ -508,7 +508,7 @@ function init()
     ['magician'] = 'Magician',
     ['pyro'] = 'Pyro',
     ['laser'] = 'Laser',
-    ['archer'] = 'Archer',
+    ['archer'] = 'Marine',
     ['sword'] = 'Sword',
     ['shotgun'] = 'Shotgun',
     ['bomber'] = 'Bomber',

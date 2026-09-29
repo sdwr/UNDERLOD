@@ -2,7 +2,7 @@
 
 ## Economy
 
-- Start with 10 gold. Every unit costs 4 and includes Archer I.
+- Start with 10 gold. Every unit costs 4 and includes Marine I.
 - Normal round income: 4 gold on levels 1–3, 5 on 4–6, 6 on 7–11.
 - Boss rounds pay the existing 6-gold boss reward instead.
 - Selling equipment still grants 2 unit XP, never gold. Unit levels add troops.
@@ -57,7 +57,7 @@ radius, and orbit distance. Attack speed changes firing/pulse/contact frequency.
 
 | Tier | Weapon | Behavior |
 | --- | --- | --- |
-| I | Archer | Fast homing arrows |
+| I | Marine | Tiny high-speed bullets; 0.6-second base firing interval |
 | I | Shotgun | Five close-range pellets |
 | I | Crossbow | Heavy homing bolts; travel straight after impact and pierce two extra enemies; 1.5-second base reload |
 | II | Cannon | Shell travels to the aimed position and explodes |
@@ -67,10 +67,10 @@ radius, and orbit distance. Attack speed changes firing/pulse/contact frequency.
 | III | Lightning | Moving lightning ball that repeatedly zaps up to three nearby enemies |
 | III | Meteor | Delayed, telegraphed blast at the aimed position |
 
-All weapons scale with unit damage, attack speed, and range. Every weapon's
+All weapons scale with unit damage, attack speed, and range. Base troop damage is 5.5 (halved from 11); an unupgraded generic unit has 8.25 damage before weapon multipliers and enemy armor. Every weapon's
 direct damage can crit, including its area/contact damage. Weapon copies keep
-the existing 1x / 1.6x / 2.2x damage progression. Archer and Crossbow are separate
-purchases; there is no automatic evolution. Selling Archer grants XP to the unit.
+the existing 1x / 1.6x / 2.2x damage progression. Marine and Crossbow are separate
+purchases; there is no automatic evolution. Selling Marine grants XP to the unit.
 The last weapon cannot be sold until a replacement has been equipped.
 
 ## Removed shop items and compatibility

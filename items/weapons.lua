@@ -11,14 +11,14 @@ SHOTGUN_HALF_SPREAD = SHOTGUN_HALF_SPREAD or math.pi / 16
 SHOTGUN_PELLET_MAX_DISTANCE_MULT = SHOTGUN_PELLET_MAX_DISTANCE_MULT or 1.3
 
 WEAPON_DEFS = {
-  archer = {name = 'Archer', tier = 1, color = 'yellow', description = 'Fast homing arrows',
+  archer = {name = 'Marine', tier = 1, color = 'yellow', description = 'Rapid fire with small, high-speed bullets',
     range = function() return TROOP_ARCHER_RANGE end, cooldown = 0.6, dmg_mult = 1},
   shotgun = {name = 'Shotgun', tier = 1, color = 'red', description = 'Five close-range pellets',
     range = function() return TROOP_SHOTGUN_RANGE end, cooldown = 1.4, dmg_mult = 0.45},
   crossbow = {name = 'Crossbow', tier = 1, color = 'green', description = 'Heavy bolts pierce 2 extra enemies; slow reload',
     range = function() return TROOP_ARCHER_RANGE * 1.15 end, cooldown = 1.5, dmg_mult = 1.4},
   cannon = {name = 'Cannon', tier = 2, color = 'brown', description = 'Explosive shells hit an area',
-    range = function() return TROOP_ARCHER_RANGE end, cooldown = 1.7, dmg_mult = 2, radius = 26},
+    range = function() return TROOP_ARCHER_RANGE end, cooldown = 1.7, dmg_mult = 1.6, radius = 22},
   radiance = {name = 'Radiance', tier = 2, color = 'red', description = 'Burning pulses; works while moving',
     range = function() return 42 end, cooldown = 0.85, dmg_mult = 0.75, mobile = true, aura = true},
   orbit = {name = 'Orbit', tier = 2, color = 'blue', description = 'Two damage orbs; works while moving',
@@ -123,8 +123,10 @@ local function projectile_data(troop, damage)
 end
 
 WEAPON_FIRE = {}
+-- Keep the saved weapon key so existing Archer equipment becomes Marine.
 function WEAPON_FIRE.archer(troop, weapon, target, damage_multi, angle)
   local data = projectile_data(troop, weapon.damage * damage_multi)
+  data.bullet_size, data.speed, data.projectile_style = 1.25, 500, 'marine'
   if angle then data.angle = angle else data.target = target end
   ArrowProjectile(data)
 end

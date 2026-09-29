@@ -177,6 +177,11 @@ function Laser_Spell:update(dt)
     end
     return
   end
+  -- Rally travel cancels new player weapon windups; queued repeats still fire.
+  if self.weapon_hit and not self.is_repeat and not self.is_firing and self.unit:is_travelling_to_rally() then
+    self:die()
+    return
+  end
   -- Once fired the beam just lingers; the caster may walk off mid-fade.
   if self.lasermode ~= 'fixed' and not self.is_firing then
     if not table.any(unit_states_can_continue_cast, function(v) return self.unit.state == v end) then

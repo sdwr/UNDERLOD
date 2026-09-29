@@ -465,6 +465,10 @@ function Troop:get_weapon_target(w)
   return target
 end
 
+function Troop:is_travelling_to_rally()
+  return self.rallying and self.target_pos and not Helper.Unit:in_range_of_rally_point(self)
+end
+
 function Troop:update_weapons(dt, can_fire)
   if not self.weapons then return end
   if self.assigned_target and self.assigned_target.dead then self:clear_assigned_target() end
@@ -477,7 +481,8 @@ function Troop:update_weapons(dt, can_fire)
   local distance_multiplier = Helper.Unit.closest_enemy_distance_multiplier or 1
   for _, w in ipairs(self.weapons) do
     w.elapsed = w.elapsed + dt
-    w.can_fire = can_fire or (w.def.mobile and self.state == unit_states['following'])
+    w.can_fire = (w.key == 'orbit' or not self:is_travelling_to_rally())
+      and (can_fire or (w.def.mobile and self.state == unit_states['following']))
     if w.def.persistent then
       if w.can_fire and (not w.effect or w.effect.dead) then
         WEAPON_FIRE[w.key](self, w, nil, 1)
@@ -528,7 +533,7 @@ end
 -- Proc-driven extra attacks (retaliate etc.): every weapon that reaches the
 -- target fires once, no on-attack procs.
 function Troop:instant_attack(target, damage_multi)
-  if not target or target.dead or not self.weapons then return end
+  if not target or target.dead or not self.weapons or self:is_travelling_to_rally() then return end
   for _, w in ipairs(self.weapons) do
     if self:weapon_target_in_range(w, target) then
       WEAPON_FIRE[w.key](self, w, target, damage_multi or 1)

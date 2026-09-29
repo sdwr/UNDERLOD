@@ -35,7 +35,7 @@ end
 --              type is spread evenly over length and merged into one schedule,
 --              so a level's composition is fixed no matter what the player
 --              kills first.
---   clustered_only - every swarmer clump is clustered (no scatter roll).
+--   Swarmers always spawn as clumps; scatter is disabled.
 -- Optional `specials = {{type=, at=}}` events fire once at a time fraction
 -- of length, bypassing everything. Boss levels have no entry here.
 -- kill_quota (the finite spawn budget, and the progress bar's total) is
@@ -97,12 +97,12 @@ LEVEL_SPAWN_POOLS = {
 -- T2 levels (7-10; 11 is heigan). Each introduces one ranged special on
 -- top of the T1 cast, then L10 stacks them all.
 -- L7 Bombardment: mortars zone the ground while tanks and darts force
---   movement through the shell pattern.
+--   movement through the shell pattern. One spawner parks and releases mini swarms.
 LEVEL_SPAWN_POOLS[7] = {
   spawn_director = {
     length = 45,
     swarmer = { cap = 26, total = 100 },
-    timeline = { tank = 4, small_archer = 4, dart = 3, mortar = 2 },
+    timeline = { tank = 4, small_archer = 4, dart = 3, mortar = 2, spawner = 1 },
   },
 }
 -- L8 Overwatch: thinner swarm so the laser's charge-and-lock beam is the
@@ -129,7 +129,7 @@ LEVEL_SPAWN_POOLS[10] = {
     length = 60,
     swarmer = { cap = 26, total = 120 },
     timeline = {
-      laser = 2, mortar = 2, roach = { total = 6, group = 2 },
+      laser = 2, mortar = 2, spawner = 1, roach = { total = 6, group = 2 },
       tank = 3, small_archer = 4, dart = 5,
     },
   },

@@ -932,8 +932,6 @@ function SpawnManager:init_spawn_director(cfg)
     ramp_from = (cfg.ramp and cfg.ramp.from) or SPAWN_DIRECTOR_RAMP_FROM,
     ramp_to = (cfg.ramp and cfg.ramp.to) or SPAWN_DIRECTOR_RAMP_TO,
     global_cap = cfg.global_cap or SPAWN_DIRECTOR_GLOBAL_CAP,
-    -- Per-level: every swarmer clump uses the clustered roll (no scatter).
-    clustered_only = cfg.clustered_only,
     -- Per-type in-flight count: spawns queued but not yet alive (still in their
     -- spawn-warning window). Counted toward the swarmer cap so the lane doesn't
     -- overshoot before the first clump lands.
@@ -989,26 +987,18 @@ function SpawnManager:spawn_progress()
   return (quota and quota > 0) and ((self.wave_spawn_power or 0) / quota) or 0
 end
 
--- Weighted roll for a swarmer group from SWARMER_GROUP_MIX. Returns the size and
--- whether the group should scatter (each member at its own random point).
--- force_clustered restricts the roll to non-scatter entries.
-function roll_swarmer_group_size(force_clustered)
-  local mix = SWARMER_GROUP_MIX or {{weight = 1, min = 1, max = 1}}
-  if force_clustered then
-    local clustered = {}
-    for _, e in ipairs(mix) do
-      if not e.scatter then clustered[#clustered + 1] = e end
-    end
-    if #clustered > 0 then mix = clustered end
-  end
+-- Every swarmer group uses one shared spawn point.
+function roll_swarmer_group_size()
+  local minimum = SWARMER_GROUP_MIN_SIZE or 6
+  local mix = SWARMER_GROUP_MIX or {{weight = 1, min = minimum, max = minimum}}
   local total = 0
   for _, e in ipairs(mix) do total = total + (e.weight or 1) end
   local r = random:float(0, total)
   for _, e in ipairs(mix) do
     r = r - (e.weight or 1)
-    if r <= 0 then return random:int(e.min or 1, e.max or 1), e.scatter end
+    if r <= 0 then return random:int(e.min or minimum, e.max or minimum) end
   end
-  return 1, false
+  return minimum
 end
 
 -- Alive + in-flight count for one enemy type.
@@ -1019,20 +1009,10 @@ end
 
 -- Spawn a group and track it as pending until it materializes (after the
 -- spawn warning). Returns how many were actually queued (the budget may trim).
-function SpawnManager:director_spawn(etype, group_size, scatter)
+function SpawnManager:director_spawn(etype, group_size)
   local d = self.spawn_director
   self.wave_spawn_delay = 0
-  local queued = 0
-  if scatter then
-    -- Scatter: each swarmer at its own pure-random offscreen point (not the
-    -- weighted placement), so the group fans in from all sides and these
-    -- many cheap spawns don't flood the weighted history used by specials.
-    for i = 1, group_size do
-      queued = queued + Spawn_Group_With_Location(self.arena, {etype, 1, 'nil'}, Get_Random_Offscreen_Point())
-    end
-  else
-    queued = Spawn_Group_With_Location(self.arena, {etype, group_size, 'nil'}, Get_Offscreen_Spawn_Point())
-  end
+  local queued = Spawn_Group_With_Location(self.arena, {etype, group_size, 'nil'}, Get_Offscreen_Spawn_Point())
   d.pending[etype] = (d.pending[etype] or 0) + queued
   -- Group members materialize 0.1s apart (wave_spawn_delay stagger), so
   -- release each pending slot as its member lands, not the whole group at
@@ -1080,19 +1060,16 @@ function SpawnManager:tick_swarmer_lane(dt, counts)
   local ramp = d.ramp_from + (d.ramp_to - d.ramp_from) * self:spawn_progress()
   local cap = math.max(1, math.ceil(sw.cap * ramp))
   local headroom = cap - self:director_slot_alive('swarmer', counts)
-  local minimum = SWARMER_GROUP_MIN_SIZE or 4
+  local minimum = math.min(SWARMER_GROUP_MIN_SIZE or 6, sw.total)
   if headroom < minimum then
     sw.next_fire = retry
     return
   end
 
-  -- The level's first clump is always clustered so the opening reads as a
-  -- wave, not lone stragglers; clustered_only levels force every clump.
-  local clustered = (not sw.fired) or d.clustered_only
-  local size, scatter = roll_swarmer_group_size(clustered)
+  local size = roll_swarmer_group_size()
   size = math.min(math.max(size, minimum), headroom, remaining)
   -- Preserve exact rosters (including odd totals like 55) without leaving
-  -- a final group of 1-3. Merge that tail, or leave a full clump for later.
+  -- an undersized final group. Merge that tail, or leave a full clump for later.
   local tail = remaining - size
   if tail > 0 and tail < minimum then
     size = remaining >= 2*minimum and remaining-minimum or remaining
@@ -1102,10 +1079,9 @@ function SpawnManager:tick_swarmer_lane(dt, counts)
     return
   end
 
-  local queued = self:director_spawn('swarmer', size, scatter)
+  local queued = self:director_spawn('swarmer', size)
   sw.spawned = sw.spawned + queued
   sw.bank = sw.bank - queued
-  sw.fired = true
   local j = SPAWN_DIRECTOR_JITTER or 0
   sw.next_fire = (SWARMER_LANE_MIN_GAP or 0.5) * (1 + random:float(-j, j))
 end
@@ -1428,6 +1404,10 @@ end
 
 function Spawn_Group_Internal(arena, group_index, group_data, on_finished)
     local type, amount = group_data[1], group_data[2]
+    -- Legacy scatter requests must also keep swarmers in a single clump.
+    if type == 'swarmer' or type == 'hunter_swarmer' then
+      return Spawn_Group_With_Location(arena, group_data, Get_Offscreen_Spawn_Point(), on_finished)
+    end
     local spawn_type = group_data[3]
     amount = arena.spawn_manager:reserve_spawn_group(type, amount or 1)
 

@@ -30,6 +30,9 @@ TROOP_ARCHER_RANGE, TROOP_SHOTGUN_RANGE, TROOP_RANGE = 100, 70, 100
 unit_states = {normal='normal', idle='idle', stopped='stopped', following='following', stunned='stunned'}
 Has_Static_Proc = function() return false end
 Helper = {Time = {time = 0}, Unit = {closest_enemy_distance_multiplier = 1}}
+Helper.Unit.in_range_of_rally_point = function(_, unit)
+  return math.distance(unit.x, unit.y, unit.target_pos.x, unit.target_pos.y) < 5
+end
 default_to = function(value, fallback) if value == nil then return fallback end return value end
 DAMAGE_TYPE_PHYSICAL = 'physical'
 ELEMENTAL_HIT_DAMAGE_TYPES, ELEMENTAL_EFFECT_TYPES = {}, {}
@@ -93,10 +96,13 @@ for _, key in ipairs(WEAPON_KEYS) do
   near(w.damage, base_damage*2); near(w.cooldown, base_cd*0.5); near(w.range, base_range*1.25)
 end
 
--- Archer remains the starter; Crossbow keeps homing until impact and pierces.
+-- Marine remains the starter; Crossbow keeps homing until impact and pierces.
 enemies = {}; local target = enemy(35,0)
 local archer = troop('archer'); archer:update_weapons(0.01,true)
 assert(#arrows == 1 and arrows[1].homing)
+assert(create_weapon_item('archer').name == 'Marine')
+assert(WEAPON_DEFS.archer.cooldown == 0.6)
+assert(arrows[1].bullet_size == 1.25 and arrows[1].speed == 500 and arrows[1].projectile_style == 'marine')
 local crossbow = troop('crossbow'); crossbow:update_weapons(0.01,true)
 assert(arrows[2].pierce == 2 and arrows[2].straight_after_hit and arrows[2].crit_on_pierce)
 assert(arrows[2].damage > arrows[1].damage)
@@ -107,7 +113,7 @@ assert(#lasers == 1 and lasers[1].reduce_pierce_damage == false)
 local cannon = troop('cannon'); cannon.crit_chance = 1; cannon.area_size_m = 2
 local nearby = enemy(70,0); local distant = enemy(130,0)
 cannon:update_weapons(0.01,true)
-local shell = spawned[#spawned]; assert(shell.kind == 'cannon' and shell.radius == 52)
+local shell = spawned[#spawned]; assert(shell.kind == 'cannon' and shell.radius == 44)
 assert(target.hits == 0)
 target.x = 150 -- impact remains at the original point
 shell:update(shell.flight_time + 0.01)
@@ -201,3 +207,58 @@ local before = #arrows
 aiming:update_weapons(aiming.weapons[1].cooldown, true)
 assert(#arrows == before, 'no shot when every enemy is invalid or out of range')
 print('weapon targeting: nearest per attack, eligibility, range, and manual priority passed')
+-- Rally travel blocks every weapon, even in otherwise fire-ready states.
+for _, key in ipairs(WEAPON_KEYS) do
+  if not WEAPON_DEFS[key].persistent then
+    for _, state in ipairs({'normal', 'idle', 'stopped', 'following'}) do
+      enemies = {}; local victim = enemy(5, 0)
+      local u = troop(key); u.state = state; u.rallying = true; u.target_pos = {x=200,y=0}
+      local shots = 0
+      u.fire_weapon = function() shots = shots + 1 end
+      u:update_weapons(1, true); assert(shots == 0 and not u.weapons[1].can_fire, key)
+      u.x = 200; victim.x = 205
+      u:update_weapons(0, true); assert(shots == 1, key .. ' must fire on arrival')
+      u.target_pos.x = 400
+      u:update_weapons(10, true); assert(shots == 1, key .. ' must stop on a new rally')
+      u.rallying = false; u.target_pos = nil
+      u:update_weapons(0, true); assert(shots == 2, key .. ' must resume after rally cancellation')
+    end
+  end
+end
+-- Orbit can start and keep dealing contact damage while travelling to a rally.
+enemies = {}; local u = troop('orbit')
+u.rallying = true; u.target_pos = {x=200,y=0}
+u:update_weapons(0, true)
+local effect = u.weapons[1].effect; assert(effect and u.weapons[1].can_fire)
+local victim = enemy(u.weapons[1].range, 0)
+effect:update(0); assert(victim.hits == 1)
+u:update_weapons(0, true); effect:update(0)
+assert(victim.hits == 1, 'Orbit must still respect contact cooldown')
+u.x = 200; local next_victim = enemy(200 + u.weapons[1].range, 0)
+u:update_weapons(0, true); effect:update(0); assert(next_victim.hits == 1)
+-- A repeat queued before movement starts still fires automatically in transit.
+enemies = {}; victim = enemy(5, 0); u = troop('archer')
+u.repeat_attack_chance = 1
+local pending
+u.t = {after = function(_, delay, callback) pending = callback end}
+u:update_weapons(0, true)
+local before = #arrows
+u.rallying = true; u.target_pos = {x=200,y=0}
+assert(pending); pending(); assert(#arrows == before + 1)
+u:instant_attack(victim, 1); assert(#arrows == before + 1)
+-- A player laser already winding up is cancelled by rally travel.
+local update_start = assert(laser_source:find('function Laser_Spell:update(dt)', 1, true))
+local update_end = assert(laser_source:find('function Laser_Spell:update_target_coords()', update_start, true))
+assert(loadstring(laser_source:sub(update_start, update_end - 1)))()
+local charging = setmetatable({unit=u, weapon_hit=true, total_time=0,
+  die=function(self) self.dead=true end}, {__index=Laser_Spell})
+charging:update(0.01); assert(charging.dead)
+-- A queued repeat laser continues its windup during travel.
+Laser_Spell.super = {update = function() end}
+local repeated = setmetatable({unit=u, weapon_hit=true, is_repeat=true,
+  total_time=0, total_duration=10, lasermode='fixed', charge_time=0, charge_duration=1, laser_aim_width=1,
+  update_target_coords=function() end, update_coords=function() end,
+  update_charge=function(self) self.charge_advanced=true end,
+  die=function(self) self.dead=true end}, {__index=Laser_Spell})
+repeated:update(0.01); assert(not repeated.dead and repeated.charge_advanced)
+print('rally attacks: new attacks wait for arrival; Orbit and queued repeats continue')

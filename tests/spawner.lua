@@ -1,5 +1,8 @@
 -- Run from the repository root: luajit tests/spawner.lua
 dofile('engine/game/object.lua')
+dofile('engine/math/math.lua')
+gw, gh = 480, 270
+MOVEMENT_TYPE_SEEK_TO_RANGE, SEEK_DECELERATION, SEEK_WEIGHT = 'seek_to_range', 1.1, 1.75
 GameObject = {init_game_object = function(self, args)
   for k, v in pairs(args) do self[k] = v end
 end}
@@ -14,20 +17,27 @@ random = {float = function(_, lo, hi) return (lo + hi) / 2 end}
 Has_Static_Proc = function() return false end
 Can_Spawn = function() return true end
 local children = {}
-EnemyCritter = function(args)
+Enemy = function(args)
   children[#children + 1] = args
   return args
 end
 enemy_to_class = {}
 dofile('helper/spells/v2/spell.lua')
 dofile('enemies/regular/spawner.lua')
-local function spawner()
+local function spawner(approaching)
   local unit = {x = 100, y = 100, level = 7, size = 'special', state = 'idle',
     hfx = {use = function() end},
     end_cast = function(self) self.state = 'idle' end,
     cancel_cast = function(self) self.state = 'idle' end}
   for k, v in pairs(enemy_to_class.spawner) do unit[k] = v end
+  unit.body = {setType = function(_, kind) unit.body_type = kind end}
+  unit.set_velocity = function(self, x, y) self.vx, self.vy = x, y end
+  unit.distance_to_point = function(self, x, y) return math.distance(self.x, self.y, x, y) end
+  unit.seek_point = function(self, x, y) self.seek_x, self.seek_y = x, y end
+  unit.rotate_towards_velocity = function() end
+  if approaching then unit.x = -20 end
   unit:init_enemy()
+  if not approaching then assert(not unit:update_move_seek_to_range()) end
   return unit
 end
 local function start_cast(unit)
@@ -49,25 +59,42 @@ local function hatch(unit)
   cast:update(0.6)
   assert(cast.dead and unit.state == 'idle', 'cast must finish cleanly')
 end
+local entering = spawner(true)
+assert(not entering.attack_options[1].viable(), 'must not hatch offscreen')
+entering:spawn_brood(); assert(#children == 0)
+local action, movement = entering:custom_action_selector({})
+assert(action == 'movement' and movement == MOVEMENT_TYPE_SEEK_TO_RANGE)
+assert(entering:acquire_target_seek_to_range())
+assert(entering:update_move_seek_to_range() and entering.seek_x == 55)
+assert(not entering.parked)
+entering.x, entering.y = entering.park_point.x, entering.park_point.y
+assert(not entering:update_move_seek_to_range())
+assert(entering.parked and entering.body_type == 'static' and entering.vx == 0)
+assert(entering:custom_action_selector({}) == 'retry', 'stay parked between waves')
+assert(entering:custom_action_selector(entering.attack_options) == 'attack')
 local unit = spawner()
 hatch(unit)
-assert(unit:count_brood() == 4)
+assert(unit:count_brood() == 6)
 for _, child in ipairs(children) do
-  assert(child.brood_model and child.parent == unit and child.level == 7)
+    assert(child.type == 'swarmer' and child.size == 'critter' and child.mini_swarmer)
+  assert(child.parent == unit and child.level == 7 and child._counted_for_quota)
   assert(math.abs((child.x - unit.x)^2 + (child.y - unit.y)^2 - 18^2) < 0.01)
 end
 hatch(unit)
-hatch(unit)
-assert(unit:count_brood() == 10, 'last batch must respect living cap')
+assert(unit:count_brood() == 12, 'two waves fill the living cap')
 assert(not unit.attack_options[1].viable())
 unit.brood[1].dead = true
 unit.brood[2].dead = true
 unit.brood[3].dead = true
+assert(not unit.attack_options[1].viable(), 'wait for room for a full wave')
+unit.brood[1].dead = true
+unit.brood[2].dead = true
+unit.brood[3].dead = true
 hatch(unit)
-assert(unit:count_brood() == 10, 'dead offspring must free slots')
+assert(unit:count_brood() == 12, 'dead offspring must free slots')
 local other = spawner()
 hatch(other)
-assert(other:count_brood() == 4 and unit:count_brood() == 10, 'caps are per spawner')
+assert(other:count_brood() == 6 and unit:count_brood() == 12, 'caps are per spawner')
 Can_Spawn = function() return false end
 local blocked = spawner()
 hatch(blocked)
@@ -83,4 +110,4 @@ for _, cancelled_state in ipairs({'dead', 'stunned'}) do
   cast:update(2)
   assert(#children == before, 'interrupted hatch must not spawn offspring')
 end
-print('Spawner checks passed: windup, batches, living cap, refill, placement failure, independent broods, cancellation.')
+print('Spawner checks passed: entrance, parking, windup, mini-swarmer waves, living cap, refill, placement failure, independent broods, cancellation.')

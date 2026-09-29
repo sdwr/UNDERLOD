@@ -37,8 +37,8 @@ after its manual queue is exhausted and the field is cleared.
   §2); `total` spawn over the level.
 - `timeline` — `{type = total}` or `{type = {total = n, group = g}}` for
   enemies that spawn in groups (linker pairs). Specials have **no alive cap**.
-- `clustered_only` — every swarmer clump uses the clustered roll from
-  `SWARMER_GROUP_MIX`; no scatter groups.
+- Swarmers always arrive at one shared spawn point per clump. Scatter is
+  disabled; the legacy `clustered_only` field is no longer needed.
 - `specials` events — one-shot spawns at a fraction of `length`. They bypass
   caps and the opening grace, so `at = 0` is the deliberate "nasty thing from
   second one" override.
@@ -103,7 +103,7 @@ ignoring one never prevents the next.
 | per-run variety | `one_of` | list of timeline fragments; one is merged in when the level list is built (`Resolve_Spawn_Config`) |
 | front-load the swarm | `ramp = {from = 1.2, to = 0.8}` | cap opens high and eases off |
 | scripted opening punch | `specials = {{type='brute', at=0}}` | fires immediately, ignores caps and grace |
-| clumps only, never scatter | `clustered_only = true` | every swarmer fire uses the clustered roll |
+| larger clumps | `SWARMER_GROUP_MIN_SIZE` / `SWARMER_GROUP_MIX` | every swarmer group is clustered |
 
 ### Global (`game_constants.lua`)
 
@@ -113,7 +113,8 @@ ignoring one never prevents the next.
 | `SPAWN_DIRECTOR_RAMP_FROM/TO` | 0.8 / 1.2 | swarmer cap scaling across the clock |
 | `SPAWN_DIRECTOR_OPENING_GRACE` | 2 | earliest second a timeline special can be scheduled |
 | `SPAWN_TIMELINE_JITTER` | 0.2 | per-special schedule shift, as a fraction of its spacing |
-| `SWARMER_GROUP_MIX` | 4-6 scatter (2) / 4-6 clustered (4) | clump size and texture, weighted |
+| `SWARMER_GROUP_MIN_SIZE` | 6 | wait for room for a full group |
+| `SWARMER_GROUP_MIX` | 6–9 clustered | final groups can merge leftovers to preserve exact roster totals |
 | `SWARMER_LANE_MIN_GAP` | 0.75 | shortest gap between clumps (opening burst cadence) |
 | `SWARMER_LANE_RETRY` | 0.5 | recheck delay when a fire is skipped |
 | `SPAWN_DIRECTOR_JITTER` | 0.25 | jitter on the swarmer gap |
@@ -121,3 +122,21 @@ ignoring one never prevents the next.
 
 Mental model: **total = how much, cap = how thick, length = how fast, ramp
 = the shape within a level, group mix = the texture.**
+
+## Tier 2 spawner
+
+Levels 7 and 10 each include one spawner. It walks to a point 55 pixels
+inside the arena, becomes stationary, and hatches six mini swarmers after
+a one-second windup. Its five-second attack cooldown separates waves.
+It waits for space for a full wave under a twelve-living-child cap.
+Mini swarmers are smaller and have half normal swarmer health and damage.
+They seek the orb, survive their parent's death, and must be cleared before
+victory. They do not consume the director's authored spawn budget.
+
+Regular, colored, and hunter swarmers move 20% slower in this balance pass.
+Swarmer speed depends on distance to the orb, not distance to troops. Within
+80 pixels they slow smoothly to half speed at 20 pixels. Beyond half the
+screen height they accelerate smoothly, reaching double speed at one full
+screen height. This replaces their entry boost in orb arenas, so the two
+multipliers never stack. It applies to colored, mini, and hunter swarmers.
+Without an orb, there is no proximity slowdown and the usual entry boost remains.

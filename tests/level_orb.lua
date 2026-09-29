@@ -114,6 +114,13 @@ local tank_orb=tank_arena.level_orb
 tank_orb:on_trigger_enter(tank); tank_orb:resolve_contacts()
 near(tank_orb.hp,86); assert(tank.dead and tank.death_count==1)
 
+-- Spawned mini swarmers inherit orb seeking and contact sacrifice.
+local brood_arena=arena(7); brood_arena:create_level_orb()
+local child=swarmer(brood_arena); child.mini_swarmer=true; child.dmg=5
+assert(child:acquire_target_seek() and child.target==brood_arena.level_orb)
+brood_arena.level_orb:on_trigger_enter(child); brood_arena.level_orb:resolve_contacts()
+assert(child.dead and brood_arena.level_orb.hp==95)
+
 -- Arena update resolves a fatal last-enemy impact before the clear check.
 a=arena(); a:create_level_orb(); orb=a.level_orb; orb.hp=5
 e=swarmer(a)

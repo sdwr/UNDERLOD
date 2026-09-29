@@ -288,6 +288,10 @@ function Enemy:update(dt)
       self.max_v = self.max_v * self:get_proximity_speed_ratio()
     end
 
+    -- Orb-seeking swarmers already accelerate at distance; do not stack
+    -- the separate entry boost on top of their distance curve.
+    local orb = self.group and self.group.level_orb
+    local orb_speed_control = orb and not orb.dead and Is_Swarmer(self)
     -- Entry boost: enemies spawn just off the screen edge; hurry them on
     -- until they're fully visible once, then latch off so a later knockback
     -- past the edge doesn't re-trigger it. Bosses keep their own entrance.
@@ -295,7 +299,7 @@ function Enemy:update(dt)
       local m = (self.radius or 0) + ENEMY_ENTRY_ONSCREEN_MARGIN
       if self.x >= m and self.x <= gw - m and self.y >= m and self.y <= gh - m then
         self.entered_screen = true
-      elseif self.max_v and self.class ~= 'boss' and not self.being_knocked_back and not self.is_launching then
+      elseif self.max_v and not orb_speed_control and self.class ~= 'boss' and not self.being_knocked_back and not self.is_launching then
         self.max_v = self.max_v * ENEMY_ENTRY_SPEED_MULT
       end
     end

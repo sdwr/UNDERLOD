@@ -15,6 +15,8 @@ fns['init_enemy'] = function(self)
   self.attack_options = {}
 end
 
+fns['get_proximity_speed_ratio'] = Get_Swarmer_Orb_Speed_Ratio
+
 fns['draw_enemy'] = function(self)
   local animation_success = self:draw_animation()
   if not animation_success then

@@ -18,7 +18,24 @@ fns['init_enemy'] = function(self)
   self.color = purple[0]:clone()
   Set_Enemy_Shape(self, self.size)
   self.class = 'special_enemy'
-  self.maxSummons = 10
+  self.maxSummons = 12
+  self.brood_wave_size = 6
+  self.holds_position = true
+  self.knockback_immune = true
+  self.baseIdleTimer = 0
+  self.baseActionTimer = 30
+  local arena = main.current.current_arena
+  local ox, oy = arena and arena.offset_x or 0, arena and arena.offset_y or 0
+  local margin = 55
+  self.park_point = {
+    x = math.clamp(self.x, ox + margin, ox + gw - margin),
+    y = math.clamp(self.y, oy + margin, oy + gh - margin),
+  }
+  self.custom_action_selector = function(self, viable_attacks)
+    if not self.parked then return 'movement', MOVEMENT_TYPE_SEEK_TO_RANGE end
+    if #viable_attacks > 0 then return 'attack', viable_attacks[1] end
+    return 'retry', nil
+  end
   self.summons = 0
   self.brood = {}
   self.stopChasingInRange = true
@@ -26,13 +43,33 @@ fns['init_enemy'] = function(self)
   self.attack_sensor = Circle(self.x, self.y, self.attack_range)
   self.attack_options = {{
     name = 'hatch_brood',
-    viable = function() return self:count_brood() < self.maxSummons end,
+    viable = function() return self.parked and self:count_brood() <= self.maxSummons - self.brood_wave_size end,
     oncast = function() end,
     cast_length = 1,
+    cancel_on_range = false,
+    cancel_no_target = false,
     instantspell = true,
     spellclass = SpawnerHatch,
     spelldata = {group = main.current.main},
   }}
+end
+
+fns['acquire_target_seek_to_range'] = function(self)
+  self.target_location = self.park_point
+  return true
+end
+
+fns['update_move_seek_to_range'] = function(self)
+  local p = self.park_point
+  if self:distance_to_point(p.x, p.y) <= 4 then
+    self:set_velocity(0, 0)
+    self.parked = true
+    if self.body then self.body:setType('static') end
+    return false
+  end
+  self:seek_point(p.x, p.y, SEEK_DECELERATION, SEEK_WEIGHT)
+  self:rotate_towards_velocity(0.5)
+  return true
 end
 
 fns['count_brood'] = function(self)
@@ -44,17 +81,19 @@ fns['count_brood'] = function(self)
 end
 
 fns['spawn_brood'] = function(self)
-  if self.dead then return end
-  local count = math.min(4, self.maxSummons - self:count_brood())
-  if count <= 0 then return end
+  if self.dead or not self.parked then return end
+  local count = self.brood_wave_size
+  if self.maxSummons - self:count_brood() < count then return end
   local spawned = 0
   for i = 1, count do
     local angle = (self.r or 0) + (i - 1) * 2 * math.pi / count
     local x, y = self.x + 18 * math.cos(angle), self.y + 18 * math.sin(angle)
     if Can_Spawn(4, {x = x, y = y}) then
-      local child = EnemyCritter{
-        group = main.current.main, x = x, y = y, r = angle,
-        color = self.color:clone(), level = self.level, parent = self, brood_model = true,
+      local child = Enemy{
+        type = 'swarmer', size = 'critter', mini_swarmer = true,
+        group = self.group or main.current.main, x = x, y = y, r = angle,
+        level = self.level, parent = self, data = {},
+        _counted_for_quota = true,
       }
       if not child.dead then
         table.insert(self.brood, child)

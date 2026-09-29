@@ -351,9 +351,10 @@ TROOP_WANDER_JITTER = 5
 ENEMY_SEPARATION_RADIUS = 7
 ENEMY_SEPARATION_WEIGHT = 10
 
-SWARMER_PROXIMITY_SLOW_RADIUS = 80
-SWARMER_PROXIMITY_MIN_RADIUS = 20
-SWARMER_PROXIMITY_MIN_SPEED_RATIO = 0.5
+SWARMER_ORB_SLOW_RADIUS = 80
+SWARMER_ORB_MIN_RADIUS = 20
+SWARMER_ORB_MIN_SPEED_RATIO = 0.5
+SWARMER_ORB_MAX_SPEED_RATIO = 2
 
 -- Swarmer clumping. Wander/separation are multipliers on the enemy defaults;
 -- the clump pull steers toward the centroid of swarmers within CLUMP_RADIUS.
@@ -555,9 +556,9 @@ SPAWN_TIMELINE_JITTER = 0.2
 SPAWN_DIRECTOR_JITTER = 0.25
 -- Swarmers always arrive together. Wait for room for a full clump rather
 -- than trimming to one or two enemies when the alive cap is nearly full.
-SWARMER_GROUP_MIN_SIZE = 4
+SWARMER_GROUP_MIN_SIZE = 6
 SWARMER_GROUP_MIX = {
-  { weight = 1, min = 4, max = 6 },
+  { weight = 1, min = 6, max = 9 },
 }
 -- Minimum gap between swarmer clumps (the opening burst to cap fires this
 -- fast), and the recheck delay when a fire is skipped (cap full, bank short).

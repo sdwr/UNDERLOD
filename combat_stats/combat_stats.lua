@@ -14,7 +14,7 @@ ROUND_POWER_TO_GOLD = 100
 --stat constants
 TROOP_HP = 100
 LEVEL_ORB_HP = 100
-TROOP_DAMAGE = 11
+TROOP_DAMAGE = 5.5
 -- Troop top speed; the follow acceleration ramp still controls takeoff.
 TROOP_MS = 80
 -- Legacy constants (will be replaced)
@@ -217,6 +217,22 @@ end
 
 function Targets_Level_Orb(enemy)
   return Is_Swarmer(enemy) or (enemy and enemy.type == 'tank')
+end
+
+-- Distance from the objective controls the whole swarm, including minis and
+-- colored variants. Orb-free boss arenas retain normal movement speed.
+function Get_Swarmer_Orb_Speed_Ratio(enemy)
+  local orb = enemy.group and enemy.group.level_orb
+  if not orb or orb.dead then return 1 end
+  local distance = math.distance(enemy.x, enemy.y, orb.x, orb.y)
+  if distance < SWARMER_ORB_SLOW_RADIUS then
+    local progress = math.clamp((distance - SWARMER_ORB_MIN_RADIUS)
+      / (SWARMER_ORB_SLOW_RADIUS - SWARMER_ORB_MIN_RADIUS), 0, 1)
+    return SWARMER_ORB_MIN_SPEED_RATIO + (1 - SWARMER_ORB_MIN_SPEED_RATIO) * progress
+  end
+  local screen_radius = gh / 2
+  local progress = math.clamp((distance - screen_radius) / screen_radius, 0, 1)
+  return 1 + (SWARMER_ORB_MAX_SPEED_RATIO - 1) * progress
 end
 
 function Dies_On_Contact(enemy)
@@ -745,18 +761,16 @@ unit_stat_multipliers = {
 }
 
 enemy_type_to_stats = {
-    -- hp 0.28 => 12.6 HP at L1: dies to one archer shot (16.5 dmg - def 25
-    -- => 13.2 effective) through L3; level scaling makes it 2 shots from L4.
-    -- hp 0.45 => 20 hp: two bare archer hits (16.5), one with 2 Power pieces (23.1).
-    ['swarmer'] = { dmg = 0.5, hp = 0.45, mvspd = 0.52},
-    ['hunter_swarmer'] = { dmg = 0.6, hp = 1.4, mvspd = 1.1 },
+    -- 20.25 HP at L1: four unupgraded Marine hits at 6.6 damage after armor.
+    ['swarmer'] = { dmg = 0.5, hp = 0.45, mvspd = 0.416},
+    ['hunter_swarmer'] = { dmg = 0.6, hp = 1.4, mvspd = 0.88 },
     -- Tank: a slow siege body. 537.6 HP at L1 and 8 base movement speed.
     -- Full knockback immunity is set via `knockback_immune` in tank.lua's
     -- init_enemy (knockback_resistance caps at 0.8 so a flag is required).
     ['tank'] = { dmg = 1, hp = 1.92, mvspd = 0.4 },
 
     -- Small archer: squishy ranged poke. special_enemy base scaled way down.
-    -- hp 0.35 => 98: six bare archer shots (16.5), three two-troop volleys.
+    -- hp 0.35 => 98 HP before level scaling.
     ['small_archer'] = { dmg = 0.5, hp = 0.35, mvspd = 1.15 },
 
     ['seeker'] = { dmg = 0.25, mvspd = 0.7 },
@@ -924,6 +938,10 @@ _set_unit_base_stats = function(unit)
         unit.base_hp = SCALED_ENEMY_HP(level, REGULAR_ENEMY_HP, Enemy_HP_Growth(unit))
         unit.base_dmg = SCALED_ENEMY_DAMAGE(level, REGULAR_ENEMY_DAMAGE)
         unit.base_mvspd = SCALED_ENEMY_MS(level, REGULAR_ENEMY_MS)
+        if unit.mini_swarmer then
+          unit.base_hp = unit.base_hp * 0.5
+          unit.base_dmg = unit.base_dmg * 0.5
+        end
 
         --store baseline for burn max hp calculation
         unit.baseline_hp = unit.base_hp

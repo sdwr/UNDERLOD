@@ -12,10 +12,11 @@ function Archer_Troop:create_spelldata()
     group = main.current.main,
     on_attack_callbacks = true,
     spell_duration = 10,
-    bullet_size = 3,
+    bullet_size = 1.25,
+    projectile_style = 'marine',
     pierce = self:get_bonus_pierce(),
     homing = true,
-    speed = 210,
+    speed = 500,
     is_troop = true,
     color = blue[0],
     damage = function() return self.dmg end,
@@ -29,7 +30,7 @@ end
 
 function Archer_Troop:setup_cast(cast_target)
   local data = {
-    name = 'arrow',
+    name = 'bullet',
     viable = function() return Helper.Spell:target_is_in_range(self, self.attack_sensor.rs, cast_target, false) end,
     oncast = function() end,
     oncastfinish = function() 

@@ -108,9 +108,12 @@ eq(queue(a, 'swarmer', 3), 0)
 sm:tick_special_events({specials = 0, by_type = {}})
 eq(sm.wave_spawn_power, 400); eq(sm.pending_spawns, 2); assert(sm:quota_met())
 
--- Scatter pending counts reflect only enemies actually admitted by the budget.
+-- Legacy scatter requests stay clustered; pending counts respect the budget.
 a, sm = arena_for(75, {spawn_director = {swarmer = {cap = 10, total = 10}}})
+local random_offscreen = Get_Random_Offscreen_Point
+Get_Random_Offscreen_Point = function() error('scatter placement is disabled') end
 sm:director_spawn('swarmer', 10, true)
+Get_Random_Offscreen_Point = random_offscreen
 eq(sm.wave_spawn_power, 75); eq(sm.pending_spawns, 3); eq(sm.spawn_director.pending.swarmer, 3)
 a.t:update(10); eq(sm.pending_spawns, 0); eq(sm.spawn_director.pending.swarmer, 0)
 
@@ -222,27 +225,27 @@ end
 
 -- Two free slots must not turn a full clump into a pair. Odd totals finish
 -- without leaving stragglers, and without adding enemies to the roster.
-a, sm = arena_for(nil, {spawn_director = {length = 20, swarmer = {cap = 10, total = 11}}})
+a, sm = arena_for(nil, {spawn_director = {length = 20, swarmer = {cap = 12, total = 17}}})
 local clumps = {}
 local d = sm.spawn_director
 d.ramp_from, d.ramp_to = 1, 1
 sm.spawning_elapsed = 20
 sm.director_spawn = function(_, kind, count, scatter)
-  assert(kind == 'swarmer' and count >= 4 and not scatter)
+  assert(kind == 'swarmer' and count >= SWARMER_GROUP_MIN_SIZE and not scatter)
   clumps[#clumps+1] = count
   return count
 end
 d.swarmer.next_fire = 0
-sm:tick_swarmer_lane(.1, {basics=8, by_type={swarmer=8}})
+sm:tick_swarmer_lane(.1, {basics=10, by_type={swarmer=10}})
 eq(#clumps,0)
 for _ = 1, 4 do
   d.swarmer.next_fire = 0
   sm:tick_swarmer_lane(.1, {basics=0, by_type={}})
 end
-eq(d.swarmer.spawned,11)
+eq(d.swarmer.spawned,17)
 local sum = 0
 for _, count in ipairs(clumps) do sum = sum + count end
-eq(sum,11)
+eq(sum,17)
 
 -- Composition does not depend on kills: with nothing killed, every timeline
 -- special still arrives on schedule while the swarm sits at its cap; the
@@ -349,8 +352,17 @@ sm:update(.01); eq(a.wins, 0)
 while #a.enemies > 0 do kill(a) end
 sm:update(.01); eq(a.wins, 1)
 
+-- Spawner offspring still block victory after their parent dies, without
+-- reserving extra director budget or advancing the authored roster.
+a, sm = arena_for(250)
+sm.wave_spawn_power = 250
+sm:change_state('waiting_for_clear')
+a.enemies = {{type='swarmer', class='regular_enemy', mini_swarmer=true}}
+sm:update(.01); eq(a.wins, 0); eq(sm.wave_spawn_power, 250)
+a.enemies = {}; sm:update(.01); eq(a.wins, 1)
+
 -- Compile all changed gameplay files with the project's Lua version.
 for _, path in ipairs({'spawns/spawnmanager.lua', 'spawns/levelmanager.lua',
   'enemies/enemy.lua', 'enemies/regular/splitter.lua', 'enemies/regular/dart.lua', 'ui/progress_bar.lua',
   'level_classes/arena.lua', 'level_classes/combat_level.lua'}) do assert(loadfile(path)) end
-print('PASS: finite budget, delayed spawns, no score-based wins, scripted events, scatter accounting, loss priority, debug, bosses, all campaign rosters, kill-independent composition, swarmer-free levels, clock-based events, progress display, returning enemies, and splitter offspring.')
+print('PASS: finite budget, delayed spawns, no score-based wins, scripted events, clustered spawn accounting, loss priority, debug, bosses, all campaign rosters, kill-independent composition, swarmer-free levels, clock-based events, progress display, returning enemies, and splitter offspring.')

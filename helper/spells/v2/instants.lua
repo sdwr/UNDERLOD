@@ -95,6 +95,8 @@ function ArrowProjectile:init(args)
   self.x = (self.start_at and self.start_at.x) or self.unit.x
   self.y = (self.start_at and self.start_at.y) or self.unit.y
   self:set_as_rectangle(self.width, self.height, 'dynamic', shape_type)
+  -- Small, fast Marine rounds need continuous collision detection.
+  if self.projectile_style == 'marine' then self.body:setBullet(true) end
   
   self.damage = get_dmg_value(self.damage)
   self.pierce = self.pierce or 0
