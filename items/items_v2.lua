@@ -793,8 +793,8 @@ function get_team_units()
   return {}
 end
 
--- A set counts once per unit: two items carrying the same set on one troop
--- add one, the same set on two troops adds two.
+-- Each distinct set/tier counts once per unit. Copies of the same tier add
+-- one; different tiers or the same set on different units each contribute.
 function count_team_meta_colors(units)
   local counts = {}
   for _, color in ipairs(META_COLORS) do counts[color] = 0 end
@@ -817,9 +817,8 @@ function count_team_meta_colors(units)
         elseif item and item.sets and #item.sets > 0 then
           for _, set_key in ipairs(item.sets) do
             local set_def = ITEM_SETS[set_key]
-            local family = set_def and (set_def.family or set_key)
-            if family and not seen[family] and set_def.color then
-              seen[family] = true
+            if set_def and not seen[set_key] and set_def.color then
+              seen[set_key] = true
               add(set_def.color)
             end
           end

@@ -584,9 +584,6 @@ function Troop:draw()
   graphics.push(self.x, self.y, self.r, final_scale_x, final_scale_y)
   self:draw_buffs()
 
-  -- Distance multiplier glow effect
-  self:draw_distance_glow()
-
   -- -- darken the non-selected units
   -- local color = self.color:clone()
   -- color = color:lighten(SELECTED_PLAYER_LIGHTEN)
@@ -650,31 +647,6 @@ function Troop:draw_attack_timer_bar()
         graphics.rectangle(bar_x + fill_w / 2, y, fill_w, bar_h, 1, 1, color)
       end
     end
-  end
-end
-
-function Troop:draw_distance_glow()
-  local tier = Helper.Unit.closest_enemy_distance_tier
-
-  if tier then
-    local glow_multipliers = {
-      [1] = 0.1,
-      [2] = 0.07,
-      [3] = 0.04,
-    }
-
-    local glow_intensity = glow_multipliers[tier]
-    
-    local glow_color = green[0]:clone()
-    glow_color.a = glow_intensity
-
-    local glow_color_2 = green[0]:clone()
-    glow_color_2.a = glow_intensity * 0.5
-    
-    -- Draw glow rings
-    local body_size = (self.display_size or self.shape.w) / 2
-    graphics.circle(self.x, self.y, body_size, glow_color, 2)
-    graphics.circle(self.x, self.y, body_size + 2, glow_color_2, 2)
   end
 end
 

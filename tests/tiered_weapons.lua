@@ -130,11 +130,11 @@ local count = #spawned; radiance:update_weapons(1,false); assert(#spawned == cou
 enemies = {}; local orbital = troop('orbit'); orbital.state = 'following'; orbital.crit_chance = 1
 orbital:update_weapons(0,false)
 local orbit = orbital.weapons[1].effect; assert(orbit and orbit.kind == 'orbit')
-local touching = enemy(32,0); orbit:update(0)
+local touching = enemy(38,0); orbit:update(0)
 assert(touching.hits == 1); near(10000-touching.hp, orbital.weapons[1].damage*2)
 orbit:update(0); assert(touching.hits == 1, 'contact cannot hit every frame')
 orbital.aspd_m = 0.5; orbital.area_size_m = 2; orbital:update_weapon_stats()
-orbit:update(0.51); near(orbit.radius, 12)
+orbit:update(0.51); near(orbit.radius, 8)
 orbital.x = 20; orbit:draw(); orbit:draw_ground()
 orbital.items = {create_weapon_item('archer')}; orbital:build_weapons(); assert(orbit.dead)
 

@@ -35,7 +35,7 @@ dart.state_always_run_functions.always_run(dart)
 assert(dart.target==first and dart.dart_target==first)
 dart:draw_ground()
 assert(#rings==1 and rings[1].x==40 and rings[1].y==10)
-assert(rings[1].r==11 and rings[1].width==1)
+assert(math.abs(rings[1].r-6.6)<0.0001 and rings[1].width==1)
 assert(rings[1].color.r>rings[1].color.g and rings[1].color.a==0.8)
 
 -- A closer troop must not steal the lock when the action timer restarts.

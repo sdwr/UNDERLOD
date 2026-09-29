@@ -92,7 +92,7 @@ end
 fns['draw_ground'] = function(self)
   local target = self.dart_target
   if self.dead or self.exploded or not target or target.dead then return end
-  local radius = (target.display_size or 14)/2 + 4
+  local radius = (target.display_size or 14)*0.4 + 1
   graphics.circle(target.x, target.y, radius, self.target_marker_color, 1)
 end
 

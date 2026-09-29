@@ -683,7 +683,7 @@ end
 -- Distance-based cooldown buff disabled: troops no longer attack faster when
 -- close to the nearest enemy. Restore the old 0.25 / 0.5 / 0.75 values to
 -- re-enable. The multiplier mechanism (and the closest_enemy_distance_tier
--- glow + audio hooks) still functions, this just neutralises the cooldown
+-- audio hooks) still functions, this just neutralises the cooldown
 -- effect.
 DISTANCE_TIER_TO_COOLDOWN_MULTIPLIER = {
   [1] = 1,

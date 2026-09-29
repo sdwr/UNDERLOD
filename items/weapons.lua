@@ -22,7 +22,7 @@ WEAPON_DEFS = {
   radiance = {name = 'Radiance', tier = 2, color = 'red', description = 'Burning pulses; works while moving',
     range = function() return 42 end, cooldown = 0.85, dmg_mult = 0.75, mobile = true, aura = true},
   orbit = {name = 'Orbit', tier = 2, color = 'blue', description = 'Two damage orbs; works while moving',
-    range = function() return 32 end, cooldown = 0.5, dmg_mult = 0.65, mobile = true, persistent = true, radius = 6},
+    range = function() return 38 end, cooldown = 0.5, dmg_mult = 0.65, mobile = true, persistent = true, radius = 4},
   laser = {name = 'Laser', tier = 3, color = 'blue', description = 'Powerful beam pierces every enemy',
     range = function() return TROOP_RANGE * 1.2 end, cooldown = 1.5, dmg_mult = 3},
   lightning = {name = 'Lightning', tier = 3, color = 'yellow', description = 'Lightning ball zaps 3 nearby enemies',

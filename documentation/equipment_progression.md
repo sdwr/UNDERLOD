@@ -36,7 +36,7 @@ later shop even if their tier is no longer rolled there.
 Bonuses below are per copy, additive across copies and tiers. Different tiers
 occupy separate inventory entries. Same-tier copies stack to three, using
 one entry. The unit still has six distinct inventory entries including weapons.
-A family contributes its meta color once per unit, regardless of tier/copies.
+Each item tier contributes its meta color once per unit. Area I and Area II count separately; multiple copies of Area I still count once.
 
 | Family | Stat | I | II | III |
 | --- | --- | ---: | ---: | ---: |

@@ -100,7 +100,15 @@ assert(Helper.Unit:item_blocked_reason_for_unit(u, {sets = {'power_tier_2'}}) ==
 u.items[6] = {sets = {'power_tier_2'}}
 assert(Helper.Unit:item_blocked_reason_for_unit(u, {sets = {'power_tier_2'}}) == 'stack_full')
 local meta = count_team_meta_colors({u})
-assert(meta.red == 1, 'tiers/copies must not duplicate one family in team colors')
+assert(meta.red == 2, 'different tiers count separately; same-tier copies count once')
+local area_unit = {items = {
+  {sets = {'area_tier_1'}}, {sets = {'area_tier_1'}}, {sets = {'area_tier_2'}},
+}}
+assert(count_team_meta_colors({area_unit}).brown == 2)
+local other_area_unit = {items = {{sets = {'area_tier_1'}}}}
+assert(count_team_meta_colors({area_unit, other_area_unit}).brown == 3)
+assert(get_team_meta_stats({area_unit, other_area_unit}).area_size == 0.10,
+  'separate tiers and units must activate the three-item meta bonus')
 
 -- Replacements preserve roster identity and refresh old weapon metadata.
 local old = {character = 'unit', level = 2, xp = 3, items = {
